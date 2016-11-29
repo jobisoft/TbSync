@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://tzpush/locale/overlay.dtd">
+
+<prefwindow id="tzpush.tzsettings" 
+ xmlns:html="http://www.w3.org/1999/xhtml"
+ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+ xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+ style="width: 600px; height: 400px"
+ persist="width height"
+
+ onload="tzpush.onopen()" onunload="tzpush.onclose()" 
+ title="TZ Settings" >
+
+ 
+ 
+	<prefpane id="settings" label="&pref.SettingDialog;" image="chrome://tzpush/skin/settings.png" >
+		     <preferences>
+            <preference id="host" name="extensions.tzpush.host" type="string" instantApply="true"/>
+            <preference id="synckey" name="extensions.tzpush.synckey" type="string"/>
+            <preference id="folderID" name="extensions.tzpush.folderID" type="string"/>
+            <preference id="user" name="extensions.tzpush.user" type="string" instantApply="true"/>
+            <preference id="deviceID" name="extensions.tzpush.deviceId" type="string" instantApply="true" />
+            <preference id="https" name="extensions.tzpush.https" type="bool" instantApply="true" />
+            <preference id="prov" name="extensions.tzpush.prov" type="bool" instantApply="true"/>
+            <preference id="polkey" name="extensions.tzpush.polkey" type="string"/>
+	        <preference id="deviceId" name="extensions.tzpush.deviceId" type="string"/>
+            <preference id="AutoSync" name="extensions.tzpush.autosync" type="string" instantApply="true"/>
+            <preference id="wbxmldebug" name="extensions.tzpush.wbxmldebug" type="bool"/>
+            <preference id="birthday" name="extensions.tzpush.birthday" type="bool" instantApply="true"/>
+            <preference id="seperatorcheckbox" name="extensions.tzpush.selectseperator" type="bool" instantApply="true"/>
+            <preference id="displayoverride" name="extensions.tzpush.displayoverride" type="bool" instantApply="true"/>
+			<preference id="asversion" name="extensions.tzpush.asversion" type="string" instantApply="true"/>
+			</preferences>
+ <grid flex="0" align="center">
+  
+  <columns>
+    <column flex="0"/>
+    <column flex="0"/>
+    <column flex="0"/>
+  </columns>               
+   <rows>
+	    <row>
+      <label control="asversion" value="ActiveSync Version"/>
+      <menulist preference="asversion" id="asversion" >
+         <menupopup id = "as" >
+   <menuitem label="2.5" value="2.5" />
+   <menuitem label="14.0" value="14.0" />
+	    </menupopup>
+	    </menulist>
+    </row>   
+    <row>
+      <label control="hostbox" value="&pref.Server;"/>
+      <textbox preference="host" id="hostbox" />
+      <checkbox id="httpbox" label="&pref.usehttps;" preference="https" checked="true" />
+    </row>
+    <row>
+      <label control="userbox" value="&pref.UserName; "/>
+      <textbox preference="user" id="userbox" />
+    </row>
+    <row>
+       <label control="passbox" value="&pref.Password;" />
+       <textbox id="passbox" type="password" onblur="tzpush.updatepass();" />
+    </row>
+    <row>
+      <label control="devbox" value="&pref.DeviceId;" tooltiptext="&pref.blank;"/>
+      <textbox preference="deviceId" id="devbox" tooltiptext="&pref.blank;" />
+    </row>
+ 
+    <row>
+        <label control="provboxbox" value="&pref.UseProvisioning;"/>
+        <checkbox  preference="prov" checked="true" />
+    </row>
+    <row>
+        <label control="birthdaybox" value="&pref.birthday;"/>
+        <checkbox  preference="birthday" checked="false"/>
+    </row>
+        <row>
+        <label control="seperatorbox" value="&pref.seperator;" tooltiptext="&pref.seperatortooltip;"/>
+        <checkbox  preference="seperatorcheckbox" tooltiptext="&pref.seperatortooltip;" label="  Else use new line" />
+    </row>
+        <row>
+        <label control="displayoverridebox" value="&pref.displayoverride;" tooltiptext="&pref.displayoverridetooltip;"/>
+        <checkbox  preference="displayoverride" tooltiptext="&pref.displayoverridetooltip;" label=' "First Name Second Name"' />
+    </row>
+    <row>
+	  <label control="autobox" value="&pref.autotime;" tooltiptext="&pref.never;" />
+      <textbox preference="AutoSync" id="autobox" tooltiptext="&pref.never;"/>
+    </row>
+    <row>
+        <label />
+        <button label="&pref.SyncAdddressbook;" id="syncbut" onclick="tzpush.toggelgo();"/>
+    </row>
+        
+    <row>
+        <label />
+        <button label="&pref.Resync;" id="softresetbut" onclick="tzpush.softreset();" tooltiptext="&pref.ResyncText;" />
+    </row>
+    <label value=" "/>
+    <row>
+        <label />
+        <button label="&pref.Reset;" id="resetbut" onclick="tzpush.reset();" />
+    </row>
+   
+    <label align="center" value="&pref.Caution;" />
+
+  </rows>
+              
+
+</grid>
+
+</prefpane>
+         
+        <prefpane id="PrefAddressBook" label="&pref.AddressBookOptions;"  image="chrome://tzpush/skin/address-book.png" >
+            
+	<preferences>
+	
+	</preferences>
+	<vbox>
+		<groupbox>
+			<caption label="&pref.LocalAddressBook;" />
+	<listbox id="localContactsFolder" rows="10" onclick="tzpush.setselect(this.value)">
+            
+        </listbox>
+			
+		</groupbox>
+		
+	</vbox>
+  </prefpane>
+	
+<prefpane id="Help" label="&pref.About;" image="chrome://tzpush/skin/cape.png"  >
+<button label="Notes and Extra Settings"
+        oncommand="tzpush.notes();"/>
+
+ <grid flex="1" align="center">
+     <columns>
+    <column flex="0"/>
+    <column flex="1"/>
+  </columns>
+     <rows>
+<row>
+    <image src="chrome://tzpush/skin/cape.png" width='100' height='70' align='center' onclick="tzpush.cape() "  onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
+     <html:h4> Cape is an established registered charity offering a dynamic and flexible outreach and day service for people who experience severe and enduring mental health difficulties. <html:br/>
+     Tz-push is free software, but feel free to donate to good cause, like CAPE or <html:a href="https://addons.mozilla.org/en-US/thunderbird/addon/tzpush/developers?src=api" style="color:blue;text-decoration: underline">
+Buy me a cup of tea and a slice of cake.
+</html:a> <html:br/>
+     Thankyou,<html:br/>
+     Mark.
+</html:h4> 
+</row>
+<row>
+ <label value="www.capeproject.org.uk"
+        style="color: blue; text-decoration: underline"
+        onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" 
+        align="center" onclick="cape()"/> 
+</row>
+</rows>
+ </grid>
+ 
+</prefpane>
+ 
+ <script type="application/x-javascript" src="chrome://tzpush/content/pref.js" />	 
+
+ 
+  
+ 
+</prefwindow>

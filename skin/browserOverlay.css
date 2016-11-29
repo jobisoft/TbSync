@@ -1,0 +1,14 @@
+/*  skin/toolbar-button.css  */
+
+#myextension-button {
+  list-style-image: url("chrome://tzpush/skin/sync.png");
+}
+
+toolbar[iconsize="small"] #myextension-button {
+  list-style-image: url("chrome://tzpush/skin/syncsmall.png");
+}
+#myextension-button-1{
+  list-style-image: url("chrome://tzpush/skin/sync.png");
+}
+
+

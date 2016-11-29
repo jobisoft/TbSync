@@ -1,0 +1,45 @@
+<!ENTITY overlay.tzpush "TZ-Push">
+<!ENTITY overlay.TZ-Settings "TZ-Settings">       
+<!ENTITY overlay.tz-sync "TZ-Sync">
+
+
+
+<!ENTITY pref.SettingDialog "Setting Dialog">
+<!ENTITY pref.Server "Server">
+<!ENTITY pref.usehttps "Use https://">
+<!ENTITY pref.UserName "User Name">
+<!ENTITY pref.Password "Password">
+<!ENTITY pref.DeviceId "Device Id">
+<!ENTITY pref.UseProvisioning "Use Provisioning">
+<!ENTITY pref.autotime "Auto Sync time in minutes">
+<!ENTITY pref.SyncAdddressbook "Sync Adddressbook">
+<!ENTITY pref.Reset "Reset">
+<!ENTITY pref.Caution "Caution! Will remove all sync information and download/upload everything.">
+<!ENTITY pref.never "0 for never">
+<!ENTITY pref.blank "Enter unique value or leave blank to auto generate"> 
+<!ENTITY pref.AddressBookOptions "AddressBook Options">
+<!ENTITY pref.birthday "Send Birthday Information">
+<!ENTITY pref.Resync "Resync All">
+<!ENTITY pref.seperator 'Use "," as seperator'>
+<!ENTITY pref.seperatortooltip 'Send address line one +", "+ address line two or if unchecked send line return (best for zarafa/zentyal)'>
+<!ENTITY pref.seperatorlable ' Else use linefeed '>
+<!ENTITY pref.displayoverride 'Overide Display'>
+<!ENTITY pref.displayoverridetooltip 'Display as First Name then Second Name'>
+
+<!ENTITY pref.ResyncText "Get new sync key and resync folders. Use if z-push information is lost">
+
+<!ENTITY pref.LocalAddressBook "Local Address Book">
+<!ENTITY pref.About "Notes Etc.">
+<!ENTITY pref.ResetStatus "Reset SyncStatus">
+
+<!ENTITY pref.BusinessFaxNumber "Work Fax:">
+<!ENTITY pref.Business2PhoneNumber "Work Phone 2:">
+<!ENTITY pref.AssistantPhoneNumber "Assistant Phone:">
+<!ENTITY pref.CarPhoneNumber "Car Phone:">
+<!ENTITY pref.RadioPhoneNumber "Radio Phone:">
+<!ENTITY pref.Email3Address "Additional Email2:">
+<!ENTITY pref.Home2PhoneNumber "Home Phone 2:">
+<!ENTITY pref.CompanyMainPhone "Work Main Phone:">
+
+
+

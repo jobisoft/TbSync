@@ -1,0 +1,413 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
+<?xml-stylesheet type="text/css"
+  href="chrome://tzpush/skin/browserOverlay.css" ?>
+<!DOCTYPE overlay SYSTEM "chrome://tzpush/locale/overlay.dtd">
+<overlay id="tzpush.tzpush_fieldOverlay"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+       
+         >
+<script type="application/x-javascript" src="chrome://tzpush/content/fields.js" />         
+      <tabs id="abTabs">
+      <tab id="tzpushTabButton" label="ActiveSync Fields" />
+       <tab id="otherAddress" label="Other Address"  />
+    </tabs>
+ <tabpanels id="abTabPanels" flex="1">
+	 <vbox id="tzpushNameTab" >
+
+        <hbox>
+          <vbox id="WorkPhoneNumbers"> <!-- This box contains the Names and Emailnames -->
+			  <groupbox> 
+			  <caption label="Work Numbers:-" />
+			<hbox  id="eWorkPhoneContainer" align="center">
+			<spacer flex="1"/>
+			<label control="eWorkPhone" value="Work:" accesskey="k"/>
+			<textbox id="eWorkPhone" class="PhoneEditWidth"  onblur="updatecard('WorkPhone',value);"/>
+			</hbox>
+			
+			  <hbox id="eBusiness2PhoneNumberContainer" align="center" >
+              <spacer flex="1"/>
+              <label control="eBusiness2PhoneNumber" value="&pref.Business2PhoneNumber;"
+                     />
+              <textbox id="eBusiness2PhoneNumber" class="PhoneEditWidth" onblur="updatecard('Business2PhoneNumber',value);"/>
+            </hbox>   
+
+              <hbox id="eBusinessFaxNumberContainer" align="center" insertafter="FaxNumberContainer">
+              <spacer flex="1"/>
+              <label control="eBusinessFaxNumber" value="&pref.BusinessFaxNumber;" />
+              <textbox id="eBusinessFaxNumber" class="PhoneEditWidth" onblur="updatecard('BusinessFaxNumber',value);"/>
+            </hbox>
+                   
+            
+               <hbox id="eCompanyMainPhoneContainer" align="center" >
+              <spacer flex="1"/>
+              <label control="eCompanyMainPhone" value="&pref.CompanyMainPhone;"
+                     />
+              <textbox id="eCompanyMainPhone" class="PhoneEditWidth" onblur="updatecard('CompanyMainPhone',value);"/>
+            </hbox>             
+            
+           
+
+            
+                        
+              <hbox id="eAssistantPhoneNumberContainer" align="center" >
+              <spacer flex="1"/>
+              <label control="eAssistantPhoneNumber" value="&pref.AssistantPhoneNumber;"
+                     />
+              <textbox id="eAssistantPhoneNumber" class="PhoneEditWidth" onblur="updatecard('AssistantPhoneNumber',value);"/>
+            </hbox>
+            
+
+
+</groupbox> 
+<groupbox>
+          <caption label="People:-" />
+           <hbox id="ManagerNameField" align="center">
+  <spacer flex="1" />
+  <label control="ManagerName" value="Manager Name:" />
+  <textbox id="ManagerName" class="PhoneEditWidth" />
+</hbox>  
+ <hbox id="AssistantNameField" align="center">
+  <spacer flex="1" />
+  <label control="AssistantName" value="Assistant Name:" />
+  <textbox id="AssistantName" class="PhoneEditWidth" />
+</hbox> 
+ <hbox id="SpouseField" align="center">
+  <spacer flex="1" />
+  <label control="Spouse" value="Spouse:" />
+  <textbox id="Spouse" class="PhoneEditWidth" />
+</hbox> 
+ 
+<hbox id="eAnniversaryField" align="center">
+  <spacer flex="1" />
+   
+  <hbox  align="center" class="PhoneEditWidth">
+	  <label control="eAnniversary" value="Anniversary:" />
+    <datepicker id="eAnniversary" onblur="updatefromeann();" type="popup" align="center" />
+  </hbox>
+</hbox>
+
+ 
+          </groupbox>
+
+
+           
+          </vbox> <!-- End of Name/Email -->
+          <!-- Phone Number section -->
+          <vbox id="HomePhoneNumbers:-" >
+			  <groupbox> 
+			  <caption label="Home Numbers:-" />
+<hbox id="eHomePhoneContainer" align="center">
+  <spacer flex="1" />
+  <label control="eHomePhone" value="Home:"/>
+  <textbox id="eHomePhone" class="PhoneEditWidth" onblur="updatecard('HomePhone',value);"/>
+</hbox>
+            
+            <hbox id="eHome2PhoneNumberContainer" align="center">
+			<spacer flex="1" />
+			<label control="eHome2PhoneNumber" value="Home Phone 2:" />
+			<textbox id="eHome2PhoneNumber" class="PhoneEditWidth" onblur="updatecard('Home2PhoneNumber',value);"/>
+			</hbox>
+			
+			<hbox id="eFaxNumberContainer" align="center">
+  <spacer flex="1" />
+  <label control="eFaxNumber" value="Home Fax:" accesskey="x" />
+  <textbox id="eFaxNumber" class="PhoneEditWidth" onblur="updatecard('FaxNumber',value);"/>
+</hbox>
+		
+	</groupbox>		
+   <groupbox>
+   <caption label="Other Numbers:-" />
+   			<hbox  id="eCellularNumberContainer" align="center">
+			<spacer flex="1"/>
+			<label control="eCellularNumber" value="Mobile:" accesskey="b"/>
+			<textbox id="eCellularNumber" class="PhoneEditWidth" onblur="updatecard('CellularNumber',value);"/>
+			</hbox>
+			
+				<hbox  id="ePagerNumberContainer" align="center">
+			<spacer flex="1"/>
+			<label control="ePagerNumber" value="Pager:" accesskey="g"/>
+			<textbox id="ePagerNumber" class="PhoneEditWidth" onblur="updatecard('PagerNumber',value);"/>
+			</hbox>	
+			
+              <hbox id="eCarPhoneNumberContainer" align="center" >
+              <spacer flex="1"/>
+              <label control="eCarPhoneNumber" value="&pref.CarPhoneNumber;"
+                     />
+              <textbox id="eCarPhoneNumber" class="PhoneEditWidth" onblur="updatecard('CarPhoneNumber',value);"/>
+            </hbox>
+            
+               <hbox id="eRadioPhoneNumberContainer" align="center" >
+              <spacer flex="1"/>
+              <label control="eRadioPhoneNumber" value="&pref.RadioPhoneNumber;"
+                     />
+              <textbox id="eRadioPhoneNumber" class="PhoneEditWidth" onblur="updatecard('RadioPhoneNumber',value);"/>
+            </hbox> 				
+   </groupbox>        
+<groupbox>
+<caption label="Messaging:-" />
+               <hbox id="IMAddressContainer" align="center" >
+              <spacer flex="1"/>
+              <label control="IMAddress" value="IMAddress:"
+                     />
+              <textbox id="IMAddress" class="PhoneEditWidth" />
+            </hbox> 
+            
+                <hbox id="IMAddress2Container" align="center" >
+              <spacer flex="1"/>
+              <label control="IMAddress2" value="IMAddress2:"
+                     />
+              <textbox id="IMAddress2" class="PhoneEditWidth" />
+            </hbox> 
+ 
+                <hbox id="IMAddress3Container" align="center" >
+              <spacer flex="1"/>
+              <label control="IMAddress3" value="IMAddress3"
+                     />
+              <textbox id="IMAddress3" class="PhoneEditWidth" />
+            </hbox> 
+            
+                <hbox id="MMSContainer" align="center" >
+              <spacer flex="1"/>
+              <label control="MMS" value="MMS:"
+                     />
+              <textbox id="MMS" class="PhoneEditWidth" />
+            </hbox>           
+
+</groupbox>
+          </vbox> <!-- End of Phonenumbers -->
+
+
+
+      </hbox> <!-- End of Name Tab -->
+          <hbox>
+			  <vbox>
+          
+          </vbox>
+          <vbox>
+			<groupbox>
+			 
+ 
+        </groupbox>
+          </vbox>
+          </hbox>
+	 </vbox>
+	 
+
+	<vbox id="OtherTab">
+  <hbox align="center">
+    <spacer flex="1" />
+    <label control="OtherAddress" value="Address:" />
+    <hbox class="AddressCardEditWidth">
+      <textbox id="OtherAddressStreet" flex="1" />
+    </hbox>
+  </hbox>
+  <hbox align="center">
+    <spacer flex="1" />
+    <label control="OtherAddress2" value="" />
+    <hbox class="AddressCardEditWidth">
+      <textbox id="OtherAddress2" flex="1" />
+    </hbox>
+  </hbox>
+  <hbox id="OtherCityContainer" align="center">
+    <spacer flex="1" />
+    <label control="OtherCity" value="City:" />
+    <hbox id="OtherCityFieldContainer" align="center" class="AddressCardEditWidth">
+      <textbox id="OtherAddressCity" flex="1" />
+    </hbox>
+  </hbox>
+  <hbox align="center">
+    <spacer flex="1" />
+    <label control="OtherState" value="State:" />
+    <hbox align="center" class="AddressCardEditWidth">
+      <textbox id="OtherAddressState" flex="1" />
+      <spacer class="stateZipSpacer" />
+      <label control="OtherZipCode" value="ZIP/Postal Code:" />
+      <textbox id="OtherAddressPostalCode" class="ZipWidth" />
+    </hbox>
+  </hbox>
+  <hbox align="center">
+    <spacer flex="1" />
+    <label control="OtherCountry" value="Country:" />
+    <hbox class="AddressCardEditWidth">
+      <textbox id="OtherAddressCountry" flex="1" />
+    </hbox>
+  </hbox>
+
+</vbox>
+
+
+
+
+	  </tabpanels>
+        <vbox id="namesAndEmailAddresses">
+              <hbox id="MiddleNameContainer" align="center" insertafter="NameField1Container">
+              <spacer flex="1"/>
+              <label control="MiddleName" value="Middle:"
+                     />
+              <hbox class="CardEditWidth">
+                <textbox id="MiddleName" flex="1" class="CardEditWidth"/>
+              </hbox>
+            </hbox>
+               
+                   
+              <hbox id="Email3AddressContainer" align="center" insertafter="SecondaryEmailContainer">
+              <spacer flex="1"/>
+              <label control="Email3Address" value="&pref.Email3Address;"
+                     />
+              <hbox class="CardEditWidth">
+                <textbox id="Email3Address" flex="1" class="uri-element"/>
+              </hbox>
+            </hbox>
+        
+        </vbox>
+  
+
+         <vbox id="PhoneNumbers">    
+            
+              <hbox id="Business2PhoneNumberContainer" align="center" insertafter="WorkPhoneContainer">
+              <spacer flex="1"/>
+              <label control="Business2PhoneNumber" value="&pref.Business2PhoneNumber;"
+                     />
+              <textbox id="Business2PhoneNumber" class="PhoneEditWidth" />
+            </hbox>            
+            
+               <hbox id="CompanyMainPhoneContainer" align="center">
+              <spacer flex="1"/>
+              <label control="CompanyMainPhone" value="&pref.CompanyMainPhone;"
+                     />
+              <textbox id="CompanyMainPhone" class="PhoneEditWidth" />
+            </hbox>             
+            
+           
+              <hbox id="Home2PhoneNumberContainer" align="center" insertafter="HomePhoneContainer">
+              <spacer flex="1"/>
+              <label control="Home2PhoneNumber" value="&pref.Home2PhoneNumber;"
+                     />
+              <textbox id="Home2PhoneNumber" class="PhoneEditWidth" />
+              
+            </hbox>
+                          <hbox id="BusinessFaxNumberContainer" align="center" insertafter="Home2PhoneNumberContainer" >
+              <spacer flex="1"/>
+              <label control="BusinessFaxNumber" value="&pref.BusinessFaxNumber;" />
+              <textbox id="BusinessFaxNumber" class="PhoneEditWidth" />
+            </hbox>
+                        
+              <hbox id="AssistantPhoneNumberContainer" align="center">
+              <spacer flex="1"/>
+              <label control="AssistantPhoneNumber" value="&pref.AssistantPhoneNumber;"
+                     />
+              <textbox id="AssistantPhoneNumber" class="PhoneEditWidth" />
+            </hbox>
+            
+              <hbox id="CarPhoneNumberContainer" align="center">
+              <spacer flex="1"/>
+              <label control="CarPhoneNumber" value="&pref.CarPhoneNumber;"
+                     />
+              <textbox id="CarPhoneNumber" class="PhoneEditWidth" />
+            </hbox>
+            
+               <hbox id="RadioPhoneNumberContainer" align="center">
+              <spacer flex="1"/>
+              <label control="RadioPhoneNumber" value="&pref.RadioPhoneNumber;"
+                     />
+              <textbox id="RadioPhoneNumber" class="PhoneEditWidth" />
+            </hbox>           
+          
+          </vbox>
+           
+ <vbox id="abHomeTab">           
+        <hbox id="tzAnniversaryField" align="center" hidden="true">
+          <spacer flex="1"/>
+          <label control="tzAnniversary" value="Anniversary:"/>
+          <hbox class="AddressCardEditWidth" align="center">
+            <!-- NOTE: This datepicker is modified.
+                 See abCardOverlay.js for details-->
+            <datepicker id="tzAnniversary" onblur="updateann();" type="popup"/>
+            <label value=""/>
+            <textbox id="tzAnniversaryYear" onblur="updateannyear();" maxlength="4"
+                     placeholder="year" class="YearWidth" />
+
+            <spacer flex="1"/>
+          </hbox>
+        </hbox>
+  </vbox>           
+           
+ <script>
+ window.addEventListener("load",onopen,false)
+ function onopen() {
+    prefs = Components.classes["@mozilla.org/preferences-service;1"]
+    .getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush.")
+    var show = prefs.getBoolPref("showanniversary")
+//var eann = document.getElementById("eAnniversary");
+//modifyDatepicker(eann)    
+var AnniversaryDay = gEditCard.card.getProperty("AnniversaryDay","" );
+var AnniversaryMonth = gEditCard.card.getProperty("AnniversaryMonth","" );
+var AnniversaryYear = gEditCard.card.getProperty("AnniversaryYear","" );     
+var eAnniversaryxul = document.getElementById("eAnniversary")
+eAnniversaryxul.monthField.value = AnniversaryMonth 
+eAnniversaryxul.dateField.value = AnniversaryDay 
+eAnniversaryxul.yearField.value = AnniversaryYear 
+//var eAnniversaryYearxul = document.getElementById("eAnniversaryYear")
+//eAnniversaryYearxul.value = AnniversaryYear    
+ if (show) {
+document.getElementById("tzAnniversaryField").hidden = false
+
+var ann = document.getElementById("tzAnniversary");
+modifyDatepicker(ann)
+
+
+var Anniversaryxul = document.getElementById("tzAnniversary")
+Anniversaryxul.monthField.value = AnniversaryMonth 
+Anniversaryxul.dateField.value = AnniversaryDay 
+var AnniversaryYearxul = document.getElementById("tzAnniversaryYear")
+AnniversaryYearxul.value = AnniversaryYear
+
+}
+else {
+function updateeann() {
+var AnniversaryElem = document.getElementById("Anniversary");
+var AnniversaryMonth = AnniversaryElem.monthField.value;
+var AnniversaryDay = AnniversaryElem.dateField.value;
+var AnniversaryYear = AnniversaryElem.yearField.value
+var eAnniversaryxul = document.getElementById("eAnniversary")
+eAnniversaryxul.monthField.value = AnniversaryMonth 
+eAnniversaryxul.dateField.value = AnniversaryDay 
+eAnniversaryxul.yearField.value = AnniversaryYear 
+
+gEditCard.card.setProperty("AnniversaryDay", AnniversaryDay);
+gEditCard.card.setProperty("AnniversaryMonth", AnniversaryMonth);
+gEditCard.card.setProperty("AnniversaryYear", AnniversaryYear);
+}
+var fff = document.getElementById("Anniversary").monthField.value
+
+document.getElementById("Anniversary").addEventListener("blur", updateeann , false)
+} 
+if (prefs.getBoolPref("hidephones")){
+var fields = ["BusinessFaxNumberContainer","Business2PhoneNumberContainer","CompanyMainPhoneContainer","Home2PhoneNumberContainer",
+"AssistantPhoneNumberContainer","CarPhoneNumberContainer","RadioPhoneNumberContainer"]
+for (var z in fields) {
+document.getElementById(fields[z]).hidden = true
+
+}
+}
+var fax = document.getElementById("FaxNumberContainer")
+fax.getElementsByTagName("label")[0].value = "Home Fax:"
+}
+
+
+ </script>           
+ 
+
+
+ 
+
+
+
+ 
+</overlay>
+
+
+
