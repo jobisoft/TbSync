@@ -15,14 +15,11 @@ tzpush.statusObserver = {
     prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
 
     register: function() {
-        var prefService = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
-        this.branch = prefService.getBranch("extensions.tzpush.");
-        this.branch.addObserver("", this, false);
-
+        this.prefs.addObserver("", this, false);
     },
 
     unregister: function() {
-        this.branch.removeObserver("", this);
+        this.prefs.removeObserver("", this);
     },
 
     observe: function(aSubject, aTopic, aData) {
@@ -30,7 +27,7 @@ tzpush.statusObserver = {
             case "syncstate":
                 var state = this.prefs.getCharPref("syncstate")
                 var status = document.getElementById("tzstatus");
-                status.label = "TzPush is: " + state;
+                if (status) status.label = "TzPush is: " + state;
         }
     },
 

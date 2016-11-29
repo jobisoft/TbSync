@@ -1004,7 +1004,7 @@ var tzpush = {
                 synckey = this.FindKey(wbxml)
                 this.prefs.setCharPref("synckey", synckey)
 
-                var oParser = new DOMParser();
+                var oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
                 var oDOM = oParser.parseFromString(tzpush.toxml(wbxml), "text/xml");
                 addressBook = abManager.getDirectory(this.prefs.getCharPref("abname"));
 
