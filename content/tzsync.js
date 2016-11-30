@@ -1,14 +1,11 @@
 /* Copyright (c) 2012 Mark Nethersole
    See the file LICENSE.txt for licensing information. */
-   
-// Pretty print by http://jsbeautifier.org/
 
 "use strict";
 
 if (typeof tzpush === "undefined") {
     var tzpush = {};
 }
-
 
 
 var tzpush = {
@@ -258,11 +255,12 @@ var tzpush = {
         var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
         var moreavilable = 1;
         var folderID = this.prefs.getCharPref("folderID");
+
+        var wbxmlsend = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x1E, 0x13, 0x55, 0x03, 0x31, 0x30, 0x30, 0x00, 0x01, 0x57, 0x00, 0x11, 0x45, 0x46, 0x03, 0x31, 0x00, 0x01, 0x47, 0x03, 0x32, 0x30, 0x30, 0x30, 0x30, 0x30, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01);
         if (this.prefs.getCharPref("asversion") === "2.5") {
-            var wbxmlsend = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x1E, 0x13, 0x55, 0x03, 0x31, 0x30, 0x30, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01);
-        } else {
-            var wbxmlsend = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x1E, 0x13, 0x55, 0x03, 0x31, 0x30, 0x30, 0x00, 0x01, 0x57, 0x00, 0x11, 0x45, 0x46, 0x03, 0x31, 0x00, 0x01, 0x47, 0x03, 0x32, 0x30, 0x30, 0x30, 0x30, 0x30, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01);
+            wbxmlsend = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x1E, 0x13, 0x55, 0x03, 0x31, 0x30, 0x30, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01);
         }
+
         var synckey = this.prefs.getCharPref("synckey");
         var wbxml = wbxmlsend.replace('SyncKeyReplace', synckey);
         wbxml = wbxml.replace('Id2Replace', folderID);
@@ -303,10 +301,9 @@ var tzpush = {
                 wbxml = returnedwbxml;
                 var firstcmd = wbxml.indexOf(String.fromCharCode(0x56));
 
+                var truncwbxml = wbxml;
                 if (firstcmd !== -1) {
-                    var truncwbxml = wbxml.substring(0, firstcmd);
-                } else {
-                    var truncwbxml = wbxml;
+                    truncwbxml = wbxml.substring(0, firstcmd);
                 }
 
                 var n = truncwbxml.lastIndexOf(String.fromCharCode(0x4E, 0x03));
@@ -349,7 +346,7 @@ var tzpush = {
                     var propname;
                     var file1;
                     var file;
-                    var newCard;
+                    /* var newCard; */
                     var tmpProp;
                     var modcard;
                     var ServerId;
@@ -374,7 +371,7 @@ var tzpush = {
                             } else if (x === 0x01 && temptoken === 0x48) {
                                 card.setProperty("Birthday", data);
                                 if (data.substr(12, 1) !== "00") {
-                                    var bd = new Date(data);
+                                    let bd = new Date(data);
                                     bd.setHours(bd.getHours() + 12);
                                     data = bd.toISOString();
                                 }
@@ -387,7 +384,7 @@ var tzpush = {
                             } else if (x === 0x01 && temptoken === 0x45) {
                                 card.setProperty("Anniversary", data);
                                 if (data.substr(12, 1) !== "00") {
-                                    var bd = new Date(data);
+                                    let bd = new Date(data);
                                     bd.setHours(bd.getHours() + 12);
                                     data = bd.toISOString();
                                 }
@@ -399,14 +396,14 @@ var tzpush = {
                                 card.setProperty("AnniversaryMonth", Amonth);
                                 card.setProperty("AnniversaryDay", Aday);
                             } else if (x === 0x01 && temptoken === 0x65) {
-                                var lines = data.split(seperator);
+                                let lines = data.split(seperator);
 
                                 card.setProperty("HomeAddress", lines[0]);
                                 if (lines[1] !== undefined) {
                                     card.setProperty("HomeAddress2", lines[1]);
                                 }
                             } else if (x === 0x01 && temptoken === 0x51) {
-                                var lines = data.split(seperator);
+                                let lines = data.split(seperator);
 
                                 card.setProperty("WorkAddress", lines[0]);
                                 if (lines[1] !== undefined) {
@@ -439,15 +436,16 @@ var tzpush = {
                                     photo = '';
                                 }
                                 if (this.prefs.getCharPref("go", "") === "firstsync") {
+                                    let tempsid;
                                     try {
-                                        var tempsid = card.getProperty("ServerId", "");
+                                        tempsid = card.getProperty("ServerId", "");
                                     } catch (e) {}
 
                                     if (!addressBook.getCardFromProperty("ServerId", tempsid, false)) {
                                         if (this.prefs.getBoolPref("displayoverride")) {
                                             card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
                                         }
-                                        newCard = addressBook.addCard(card);
+                                        /* newCard = */ addressBook.addCard(card);
                                     } else {
                                         ServerId = card.getProperty("ServerId", "");
                                         modcard = addressBook.getCardFromProperty("ServerId", ServerId, false);
@@ -479,7 +477,7 @@ var tzpush = {
                                             modcard.setProperty("DisplayName", modcard.getProperty("FirstName", "") + " " + modcard.getProperty("LastName", ""));
                                         }
 
-                                        var newCard = addressBook.modifyCard(modcard);
+                                        /* newCard = */ addressBook.modifyCard(modcard);
                                         card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
                                     }
 
@@ -487,7 +485,7 @@ var tzpush = {
                                     if (this.prefs.getBoolPref("displayoverride")) {
                                         card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
                                     }
-                                    newCard = addressBook.addCard(card);
+                                    /* newCard = */ addressBook.addCard(card);
                                 }
 
                                 card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
@@ -548,7 +546,7 @@ var tzpush = {
                                 if (this.prefs.getBoolPref("displayoverride")) {
                                     modcard.setProperty("DisplayName", modcard.getProperty("FirstName", "") + " " + modcard.getProperty("LastName", ""));
                                 }
-                                var newCard = addressBook.modifyCard(modcard);
+                                /* newCard = */ addressBook.modifyCard(modcard);
 
                                 card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
                             }
@@ -591,11 +589,12 @@ var tzpush = {
         this.prefs.setCharPref("syncstate", "Sending changes");
         var folderID = this.prefs.getCharPref("folderID");
         var synckey = this.prefs.getCharPref("synckey");
+
+        var wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
         if (this.prefs.getCharPref("asversion") === "2.5") {
-            var wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
-        } else {
-            var wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
+            wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
         }
+
         var wbxml = '';
         var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
         var addressBook = abManager.getDirectory(this.prefs.getCharPref("abname"));
@@ -640,7 +639,7 @@ var tzpush = {
             if (card instanceof Components.interfaces.nsIAbCard) {
                 if (card.getProperty('ServerId', '') === '' && !card.isMailList) {
                     card.setProperty('localId', card.localId);
-                    var newCard = addressBook.modifyCard(card);
+                    /* var newCard = */ addressBook.modifyCard(card);
                     numofcards = numofcards + 1;
                     wbxml = wbxml + String.fromCharCode(0x47, 0x4C, 0x03) + card.localId + String.fromCharCode(0x00, 0x01, 0x5D, 0x00, 0x01);
                     for (x in this.Contacts2) {
@@ -722,14 +721,14 @@ var tzpush = {
                                     }
                                 }
                             } else if (x === 'Category') {
-                                var cat = String.fromCharCode(0x55, 0x56, 0x3, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x0, 0x1, 0x1);
+                                let cat = String.fromCharCode(0x55, 0x56, 0x3, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x0, 0x1, 0x1);
                                 cat = cat.replace("replaceme", utf8Encode(card.getProperty(x, '')));
                                 wbxml = wbxml + cat;
                             } else if (x === 'Notes') {
                                 if (this.prefs.getCharPref("asversion") === "2.5") {
                                     wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + utf8Encode(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
                                 } else {
-                                    var body = String.fromCharCode(0x00, 0x11, 0x4a, 0x46, 0x03, 0x31, 0x00, 0x01, 0x4c, 0x03, 0x37, 0x00, 0x01, 0x4b, 0x03, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x00, 0x01);
+                                    let body = String.fromCharCode(0x00, 0x11, 0x4a, 0x46, 0x03, 0x31, 0x00, 0x01, 0x4c, 0x03, 0x37, 0x00, 0x01, 0x4b, 0x03, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x00, 0x01);
                                     body = body.replace("replace", utf8Encode(card.getProperty(x, '')));
                                     body = body.replace("7", card.getProperty(x, '').length);
                                     wbxml = wbxml + body;
@@ -740,7 +739,7 @@ var tzpush = {
                         }
                     }
 
-                    cardArr.push(card)
+                    cardArr.push(card);
                     for (x in this.Contacts22) {
                         if (card.getProperty(x, "") !== '') {
                             wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.Contacts22[x]) + String.fromCharCode(0x03) + utf8Encode(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
@@ -851,14 +850,14 @@ var tzpush = {
                                         }
                                     }
                                 } else if (x === 'Category') {
-                                    var cat = String.fromCharCode(0x55, 0x56, 0x3, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x0, 0x1, 0x1);
+                                    let cat = String.fromCharCode(0x55, 0x56, 0x3, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x0, 0x1, 0x1);
                                     cat = cat.replace("replaceme", utf8Encode(card.getProperty(x, '')));
                                     wbxml = wbxml + cat;
                                 } else if (x === 'Notes') {
                                     if (this.prefs.getCharPref("asversion") === "2.5") {
                                         wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + utf8Encode(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
                                     } else {
-                                        var body = String.fromCharCode(0x00, 0x11, 0x4a, 0x46, 0x03, 0x31, 0x00, 0x01, 0x4c, 0x03, 0x37, 0x00, 0x01, 0x4b, 0x03, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x00, 0x01);
+                                        let body = String.fromCharCode(0x00, 0x11, 0x4a, 0x46, 0x03, 0x31, 0x00, 0x01, 0x4c, 0x03, 0x37, 0x00, 0x01, 0x4b, 0x03, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x00, 0x01);
                                         body = body.replace("replace", utf8Encode(card.getProperty(x, '')));
                                         body = body.replace("7", card.getProperty(x, '').length);
                                         wbxml = wbxml + body;
@@ -896,10 +895,9 @@ var tzpush = {
             wbxml = returnedwbxml;
             var firstcmd = wbxml.indexOf(String.fromCharCode(0x01, 0x46));
 
+            var truncwbxml = wbxml;
             if (firstcmd !== -1) {
-                var truncwbxml = wbxml.substring(0, firstcmd);
-            } else {
-                var truncwbxml = wbxml;
+                truncwbxml = wbxml.substring(0, firstcmd);
             }
 
             var n = truncwbxml.lastIndexOf(String.fromCharCode(0x4E, 0x03));
@@ -933,21 +931,17 @@ var tzpush = {
                     for (count = 0; count < add.length; count++) {
                         var inadd = add[count];
 
-                        var tag = inadd.getElementsByTagName("ServerId");
-                        if (tag.length > 0) {
-                            var ServerId = tag[0].childNodes[0].nodeValue;
-                        } else {
-                            ServerId = "dontsend";
-                        }
-
+                        let tag = inadd.getElementsByTagName("ServerId");
+                        let ServerId = "dontsend";
+                        if (tag.length > 0) ServerId = tag[0].childNodes[0].nodeValue;
 
                         tag = inadd.getElementsByTagName("ClientId");
-                        var ClientId = tag[0].childNodes[0].nodeValue;
+                        let ClientId = tag[0].childNodes[0].nodeValue;
 
                         try {
-                            var addserverid = addressBook.getCardFromProperty("localId", ClientId, false);
+                            let addserverid = addressBook.getCardFromProperty("localId", ClientId, false);
                             addserverid.setProperty('ServerId', ServerId);
-                            var newCard = addressBook.modifyCard(addserverid);
+                            /* var newCard = */ addressBook.modifyCard(addserverid);
                         } catch (e) {
                             this.myDump("tzpush error", e);
                         }
@@ -958,21 +952,21 @@ var tzpush = {
                 var change = oDOM.getElementsByTagName("Change");
                 if (change.length !== 0) {
                     for (count = 0; count < change.length; count++) {
-                        var inchange = change[count];
-                        var tag = inchange.getElementsByTagName("Status");
+                        let inchange = change[count];
+                        let tag = inchange.getElementsByTagName("Status");
+
+                        let status = "1";
                         try {
-                            var status = tag[0].childNodes[0].nodeValue;
-                        } catch (e) {
-                            status = "1";
-                        }
+                            status = tag[0].childNodes[0].nodeValue;
+                        } catch (e) { }
 
                         if (status !== "1") {
                             try {
                                 tag = inchange.getElementsByTagName("ServerId");
-                                var ServerId = tag[0].childNodes[0].nodeValue;
-                                var addserverid = addressBook.getCardFromProperty('ServerId', ServerId, false);
+                                let ServerId = tag[0].childNodes[0].nodeValue;
+                                let addserverid = addressBook.getCardFromProperty('ServerId', ServerId, false);
                                 addserverid.setProperty('ServerId', '');
-                                var newCard = addressBook.modifyCard(addserverid);
+                                /* newCard = */ addressBook.modifyCard(addserverid);
                                 morecards = true;
                             } catch (e) {
                                 this.myDump("tzpush error", e);
@@ -1024,11 +1018,12 @@ var tzpush = {
         this.prefs.setCharPref("syncstate", "Sending items to delete");
         var folderID = this.prefs.getCharPref("folderID");
         var synckey = this.prefs.getCharPref("synckey");
+
+        var wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
         if (this.prefs.getCharPref("asversion") === "2.5") {
-            var wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
-        } else {
-            var wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
+            wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
         }
+
         var wbxml = '';
         var numofdel = 0;
         var entry;
@@ -1041,7 +1036,7 @@ var tzpush = {
         Components.utils.import("resource://gre/modules/FileUtils.jsm");
         var file = FileUtils.getFile("ProfD", ["DeletedCards"], true);
         var entries = file.directoryEntries;
-        var cardstodelete = new Array();
+        var cardstodelete = [];
         while (entries.hasMoreElements()) {
             if (numofdel === maxnumbertosend) {
                 more = true;
@@ -1075,11 +1070,8 @@ var tzpush = {
             wbxml = returnedwbxml;
             var firstcmd = wbxml.indexOf(String.fromCharCode(0x01, 0x46));
 
-            if (firstcmd !== -1) {
-                var truncwbxml = wbxml.substring(0, firstcmd);
-            } else {
-                var truncwbxml = wbxml;
-            }
+            var truncwbxml = wbxml;
+            if (firstcmd !== -1) truncwbxml = wbxml.substring(0, firstcmd);
 
             var n = truncwbxml.lastIndexOf(String.fromCharCode(0x4E, 0x03));
             var n1 = truncwbxml.indexOf(String.fromCharCode(0x00), n);
@@ -1148,13 +1140,12 @@ var tzpush = {
     },
 
     InitContact2: function() {
-        tzpush.Contacts2 = new Array();
+        tzpush.Contacts2 = [];
         for (var x in tzpush.ToContacts) {
             tzpush.Contacts2[tzpush.ToContacts[x]] = x;
         }
     }
-
-}
+};
 
 
 tzpush.InitContact2();
