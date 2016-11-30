@@ -1,13 +1,11 @@
 var EXPORTED_SYMBOLS = ["toxml", "xml", "wbxml", "writewbxml"];
 
-function writewbxml(wbxml) {
+function writewbxml (wbxml) {
     Components.utils.import("resource://gre/modules/FileUtils.jsm");
     var dir = FileUtils.getDir("ProfD", ["wbxml"], true);
     var file = FileUtils.getFile("ProfD", ["wbxml"]);
-    file.append("wbxml-output")
+    file.append("wbxml-output");
     file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE);
-
-
 
     var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
 
@@ -17,11 +15,8 @@ function writewbxml(wbxml) {
     foStream.close();
 }
 
-function toxml(wbxml) {
-    function decode_utf8(s) {
-        return decodeURIComponent(escape(s));
-    }
-    AirSyncBase = ({
+function toxml (wbxml) {
+    let AirSyncBase = ({
         0x05: '<BodyPreference>',
         0x06: '<Type>',
         0x07: '<TruncationSize>',
@@ -44,9 +39,9 @@ function toxml(wbxml) {
         0x19: '<BodyPartPreference>',
         0x1A: '<BodyPart>',
         0x1B: '<Status>'
-    })
+    });
 
-    AirSync = ({
+    let AirSync = ({
         0x05: '<Sync>',
         0x06: '<Responses>',
         0x07: '<Add>',
@@ -80,10 +75,9 @@ function toxml(wbxml) {
         0x27: '<ConversationMode>',
         0x28: '<MaxItems>',
         0x29: '<HeartbeatInterval>'
+    });
 
-    })
-
-    Contacts = ({
+    let Contacts = ({
         0x05: '<Anniversary>',
         0x06: '<AssistantName>',
         0x07: '<AssistantPhoneNumber>',
@@ -141,9 +135,9 @@ function toxml(wbxml) {
         0x3C: '<Picture>',
         0x3D: '<Alias>',
         0x3E: '<WeightedRank>',
-    })
+    });
 
-    Settings = ({
+    let Settings = ({
         0x05: '<Settings>',
         0x06: '<Status>',
         0x07: '<Get>',
@@ -182,9 +176,9 @@ function toxml(wbxml) {
         0x28: '<UserDisplayName>',
         0x29: '<SendDisabled>',
         0x2B: '<RightsManagementInformation>'
-    })
+    });
 
-    Provision = ({
+    let Provision = ({
         0x05: '<Provision>',
         0x06: '<Policies>',
         0x07: '<Policy>',
@@ -239,9 +233,9 @@ function toxml(wbxml) {
         0x38: '<ApplicationName>',
         0x39: '<ApprovedApplicationList>',
         0x3A: '<Hash>',
-    })
+    });
 
-    FolderHierarchy = ({
+    let FolderHierarchy = ({
         0x07: '<DisplayName>',
         0x08: '<ServerId>',
         0x09: '<ParentId>',
@@ -257,9 +251,9 @@ function toxml(wbxml) {
         0x15: '<FolderUpdate>',
         0x16: '<FolderSync>',
         0x17: '<Count>'
-    })
+    });
 
-    Contacts2 = ({
+    let Contacts2 = ({
         0x05: '<CustomerId>',
         0x06: '<GovernmentId>',
         0x07: '<IMAddress>',
@@ -270,9 +264,9 @@ function toxml(wbxml) {
         0x0C: '<AccountName>',
         0x0D: '<NickName>',
         0x0E: '<MMS>'
-    })
+    });
 
-    Search = ({
+    let Search = ({
         0x05: '<Search>',
         0x07: '<Store>',
         0x08: '<Name>',
@@ -300,9 +294,9 @@ function toxml(wbxml) {
         0x21: '<Picture>',
         0x22: '<MaxSize>',
         0x23: '<MaxPictures>'
-    })
+    });
 
-    GAL = ({
+    let GAL = ({
         0x05: '<DisplayName>',
         0x06: '<Phone>',
         0x07: '<Office>',
@@ -317,9 +311,9 @@ function toxml(wbxml) {
         0x10: '<Picture>',
         0x11: '<Status>',
         0x12: '<Data>'
-    })
+    });
 
-    Code = ({
+    let Code = ({
         0x07: FolderHierarchy,
         0x01: Contacts,
         0x00: AirSync,
@@ -329,8 +323,9 @@ function toxml(wbxml) {
         0x0C: Contacts2,
         0x0F: Search,
         0x10: GAL
-    })
-    Codestring = ({
+    });
+    
+    let Codestring = ({
         0x07: "FolderHierarchy",
         0x01: "Contacts",
         0x00: "AirSync",
@@ -340,52 +335,50 @@ function toxml(wbxml) {
         0x0C: "Contacts2",
         0x0F: "Search",
         0x10: "GAL"
-    })
+    });
 
-    CodePage = Code[0]
-    var stack = new Array();
-    num = 4
-    xml = '<?xml version="1.0"?>'
-    x = '0'
-    firstxmlns = true
-    firstx = '0'
+    let CodePage = Code[0];
+    let stack = [];
+    let num = 4;
+    let xml = '<?xml version="1.0"?>';
+    let x = '0';
+    let firstxmlns = true;
+    let firstx = '0';
+    
     while (num < wbxml.length) {
-        token = wbxml.substr(num, 1);
-        tokencontent = token.charCodeAt(0) & 0xbf
+        let token = wbxml.substr(num, 1);
+        let tokencontent = token.charCodeAt(0) & 0xbf;
         if (token || tokencontent in Code) {
             if (token == String.fromCharCode(0x00)) {
-                num = num + 1
-                x = (wbxml.substr(num, 1)).charCodeAt(0)
-                CodePage = Code[x]
+                num = num + 1;
+                x = (wbxml.substr(num, 1)).charCodeAt(0);
+                CodePage = Code[x];
                 if (firstxmlns) {
-                    firstx = x
+                    firstx = x;
                 }
-
             } else if (token == String.fromCharCode(0x03)) {
-                xml = xml + (wbxml.substring(num + 1, wbxml.indexOf(String.fromCharCode(0x00, 0x01), num)))
-                num = wbxml.indexOf(String.fromCharCode(0x00, 0x01), num)
+                xml = xml + (wbxml.substring(num + 1, wbxml.indexOf(String.fromCharCode(0x00, 0x01), num)));
+                num = wbxml.indexOf(String.fromCharCode(0x00, 0x01), num);
             } else if (token == String.fromCharCode(0x01)) {
-                xml = xml + (stack.pop())
+                xml = xml + (stack.pop());
             } else if (token.charCodeAt(0) in CodePage) {
-                xml = xml + (CodePage[token.charCodeAt(0)]).replace('>', '/>')
+                xml = xml + (CodePage[token.charCodeAt(0)]).replace('>', '/>');
             } else if (tokencontent in CodePage) {
-
                 if (firstxmlns || x !== firstx) {
-                    xml = xml + (CodePage[tokencontent].replace('>', ' xmlns="' + Codestring[x] + ':">'))
-                    firstxmlns = false
+                    xml = xml + (CodePage[tokencontent].replace('>', ' xmlns="' + Codestring[x] + ':">'));
+                    firstxmlns = false;
                 } else {
-                    xml = xml + (CodePage[tokencontent])
+                    xml = xml + (CodePage[tokencontent]);
                 }
 
-                stack.push((CodePage[tokencontent]).replace('<', '</'))
+                stack.push((CodePage[tokencontent]).replace('<', '</'));
             } else {
 
             }
         }
 
-        num = num + 1
+        num = num + 1;
     }
-
-    return xml
-
+    
+    return xml;
 }

@@ -1,15 +1,10 @@
 /* Copyright (c) 2012 Mark Nethersole
    See the file LICENSE.txt for licensing information. */
-   
-// Pretty print by http://jsbeautifier.org/
-
 "use strict";
 
 if (typeof tzpush === "undefined") {
     var tzpush = {};
 }
-
-
 
 var tzpush = {
     prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
@@ -30,23 +25,19 @@ var tzpush = {
     },
 
     getpassword: function() {
-        var SSL = this.prefs.getBoolPref("https")
-        var host = this.prefs.getCharPref("host")
-        var USER = this.prefs.getCharPref("user")
+        var SSL = this.prefs.getBoolPref("https");
+        var host = this.prefs.getCharPref("host");
+        var USER = this.prefs.getCharPref("user");
+        var hthost = "http://" + host;
+        var SERVER = "http://" + host + "/Microsoft-Server-ActiveSync";
         if (SSL === true) {
-            var hthost = "https://" + host
-        } else {
-            var hthost = "http://" + host
+            hthost = "https://" + host;
+            SERVER = "https://" + host + "/Microsoft-Server-ActiveSync";
         }
-        if (SSL === true) {
-            var SERVER = "https://" + host + "/Microsoft-Server-ActiveSync"
-        } else {
-            var SERVER = "http://" + host + "/Microsoft-Server-ActiveSync"
-        }
-        var myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
 
+        var myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
         var logins = myLoginManager.findLogins({}, hthost, SERVER, null);
-        var password = ''
+        var password = '';
         for (var i = 0; i < logins.length; i++) {
             if (logins[i].username === USER) {
                 password = logins[i].password;
@@ -55,26 +46,22 @@ var tzpush = {
         }
 
         if (typeof password === 'undefined') {
-            password = ""
+            password = "";
         }
-        return password
+        return password;
     },
 
     setpassword: function() {
-        var SSL = this.prefs.getBoolPref("https")
-        var host = this.prefs.getCharPref("host")
-        var USER = this.prefs.getCharPref("user")
+        var SSL = this.prefs.getBoolPref("https");
+        var host = this.prefs.getCharPref("host");
+        var USER = this.prefs.getCharPref("user");
+        var hthost = "http://" + host;
+        var SERVER = "http://" + host + "/Microsoft-Server-ActiveSync";
         if (SSL === true) {
-            var hthost = "https://" + host
-        } else {
-            var hthost = "http://" + host
+            hthost = "https://" + host;
+            SERVER = "https://" + host + "/Microsoft-Server-ActiveSync";
         }
-        if (SSL === true) {
-            var SERVER = "https://" + host + "/Microsoft-Server-ActiveSync"
-        } else {
-            var SERVER = "http://" + host + "/Microsoft-Server-ActiveSync"
-        }
-        this.PASSWORD = this.getpassword()
+        this.PASSWORD = this.getpassword();
         if (this.NEWPASSWORD !== this.PASSWORD) {
 
             var nsLoginInfo = new Components.Constructor(
@@ -89,99 +76,91 @@ var tzpush = {
             if (this.NEWPASSWORD !== '') {
                 if (this.NEWPASSWORD !== this.PASSWORD) {
                     if (this.PASSWORD !== '') {
-
-                        myLoginManager.removeLogin(loginInfo)
+                        myLoginManager.removeLogin(loginInfo);
                     }
                 }
-                myLoginManager.addLogin(updateloginInfo)
-                this.updateprefs()
+                myLoginManager.addLogin(updateloginInfo);
+                this.updateprefs();
             } else if (this.PASSWORD === "" || typeof this.PASSWORD === 'undefined') {
                 myLoginManager.addLogin(updateloginInfo);
-
             } else {
-                myLoginManager.removeLogin(loginInfo)
+                myLoginManager.removeLogin(loginInfo);
             }
         }
     },
 
     updateprefs: function() {
 
-        var addressUrl = this.prefs.getCharPref("abname")
-        var SSL = this.prefs.getBoolPref("https")
-        var host = this.prefs.getCharPref("host")
+        var addressUrl = this.prefs.getCharPref("abname");
+        var SSL = this.prefs.getBoolPref("https");
+        var host = this.prefs.getCharPref("host");
         if (SSL === true) {
-            this.hthost = "https://" + host
+            this.hthost = "https://" + host;
+            this.SERVER = "https://" + host + "/Microsoft-Server-ActiveSync";
         } else {
-            this.hthost = "http://" + host
+            this.hthost = "http://" + host;
+            this.SERVER = "http://" + host + "/Microsoft-Server-ActiveSync";
         }
-        if (SSL === true) {
-            this.SERVER = "https://" + host + "/Microsoft-Server-ActiveSync"
-        } else {
-            this.SERVER = "http://" + host + "/Microsoft-Server-ActiveSync"
-        }
-        this.USER = this.prefs.getCharPref("user")
-        this.PASSWORD = this.getpassword()
-        this.NEWPASSWORD = ''
-        var deviceType = 'Thunderbird'
-        var deviceId = this.prefs.getCharPref("deviceId")
+
+        this.USER = this.prefs.getCharPref("user");
+        this.PASSWORD = this.getpassword();
+        this.NEWPASSWORD = '';
+
+        var deviceId = this.prefs.getCharPref("deviceId");
         if (deviceId === "") {
             deviceId = Date.now();
-            this.prefs.setCharPref("deviceId", deviceId)
+            this.prefs.setCharPref("deviceId", deviceId);
         }
-        var polkey = this.prefs.getCharPref("polkey")
-        var synckey = this.prefs.getCharPref("synckey")
+        var polkey = this.prefs.getCharPref("polkey");
+        var synckey = this.prefs.getCharPref("synckey");
     },
 
     localAbs: function() {
-
-        var count = -1
+        var count = -1;
         while (document.getElementById('localContactsFolder').children.length > 0) {
-            document.getElementById('localContactsFolder').removeChild(document.getElementById('localContactsFolder').firstChild)
+            document.getElementById('localContactsFolder').removeChild(document.getElementById('localContactsFolder').firstChild);
         }
         let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
         let allAddressBooks = abManager.directories;
 
         while (allAddressBooks.hasMoreElements()) {
             let addressBook = allAddressBooks.getNext();
-            if (addressBook instanceof Components.interfaces.nsIAbDirectory &&
-                !addressBook.isRemote && !addressBook.isMailList && addressBook.fileName !== 'history.mab') {
+            if (addressBook instanceof Components.interfaces.nsIAbDirectory && !addressBook.isRemote && !addressBook.isMailList && addressBook.fileName !== 'history.mab') {
                 var ab = document.createElement('listitem');
                 ab.setAttribute('label', addressBook.dirName);
                 ab.setAttribute('value', addressBook.URI);
-                count = count + 1
+                count = count + 1;
                 if (this.prefs.getCharPref('abname') === addressBook.URI) {
-
-                    this.select = count
+                    this.select = count;
                 }
                 document.getElementById('localContactsFolder').appendChild(ab);
-
             }
         }
 
         if (this.select !== -1) {
-            document.getElementById('localContactsFolder').selectedIndex = this.select
+            document.getElementById('localContactsFolder').selectedIndex = this.select;
         }
     },
 
     reset: function() {
-        var addressUrl = this.prefs.getCharPref("abname")
-        this.prefs.setCharPref("polkey", '0')
-        this.prefs.setCharPref("folderID", "")
-        this.prefs.setCharPref("synckey", "")
-        this.prefs.setCharPref("LastSyncTime", "-1")
-        this.prefs.setCharPref("deviceId", "")
-        this.prefs.setCharPref("autosync", "0")
+        var addressUrl = this.prefs.getCharPref("abname");
+        this.prefs.setCharPref("polkey", '0');
+        this.prefs.setCharPref("folderID", "");
+        this.prefs.setCharPref("synckey", "");
+        this.prefs.setCharPref("LastSyncTime", "-1");
+        this.prefs.setCharPref("deviceId", "");
+        this.prefs.setCharPref("autosync", "0");
 
         var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
         var addressBook = abManager.getDirectory(addressUrl);
-        var card
+        var card;
         var cards = addressBook.childCards;
         while (cards.hasMoreElements()) {
-            card = cards.getNext()
+            card = cards.getNext();
             if (card instanceof Components.interfaces.nsIAbCard) {
-                card.setProperty('ServerId', '')
-                card.setProperty("LastModifiedDate", '')
-                addressBook.modifyCard(card)
+                card.setProperty('ServerId', '');
+                card.setProperty("LastModifiedDate", '');
+                addressBook.modifyCard(card);
             }
         }
         Components.utils.import("resource://gre/modules/FileUtils.jsm");
@@ -189,24 +168,23 @@ var tzpush = {
         var entries = file.directoryEntries;
 
         while (entries.hasMoreElements()) {
-            var entry = entries.getNext()
-            entry.QueryInterface(Components.interfaces.nsIFile)
-            entry.remove("true")
+            var entry = entries.getNext();
+            entry.QueryInterface(Components.interfaces.nsIFile);
+            entry.remove("true");
         }
     },
 
     softreset: function() {
-        this.prefs.setCharPref("go", "resync")
+        this.prefs.setCharPref("go", "resync");
     },
 
     toggelgo: function() {
-
         if (this.prefs.getCharPref("go") === "0") {
-            this.prefs.setCharPref("go", "1")
-        } else(this.prefs.setCharPref("go", "0"))
+            this.prefs.setCharPref("go", "1");
+        } else {
+            this.prefs.setCharPref("go", "0");
+        }
     },
-
-
 
     cape: function() {
         function openTBtab(tempURL) {
@@ -224,10 +202,10 @@ var tzpush = {
                     contentPage: tempURL
                 });
             }
-            return (tabmail != null)
+            return (tabmail != null);
         }
 
-        openTBtab("http://www.c-a-p-e.co.uk")
+        openTBtab("http://www.c-a-p-e.co.uk");
     },
 
     notes: function() {
@@ -246,20 +224,19 @@ var tzpush = {
                     contentPage: tempURL
                 });
             }
-            return (tabmail != null)
+            return (tabmail != null);
         }
 
-        openTBtab("chrome://tzpush/content/notes.html")
+        openTBtab("chrome://tzpush/content/notes.html");
     },
 
-
     updatepass: function() {
-        this.NEWPASSWORD = document.getElementById('passbox').value
-        this.setpassword()
+        this.NEWPASSWORD = document.getElementById('passbox').value;
+        this.setpassword();
     },
 
     setselect: function(value) {
-        this.prefs.setCharPref('abname', value)
+        this.prefs.setCharPref('abname', value);
     }
 
-}
+};

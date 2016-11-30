@@ -1,14 +1,19 @@
 /* Copyright (c) 2012 Mark Nethersole
-   See the file LICENSE.txt for licensing information. */
-   
-// Pretty print by http://jsbeautifier.org/
-
+   See the file LICENSE.txt for licensing information. */  
 "use strict";
 
 if (typeof tzpush === "undefined") {
     var tzpush = {};
 }
 
+/* Address book delete + create:
+Timestamp: 11/30/2016 05:37:30 PM
+Error: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIAbDirectory.URI]
+Source File: chrome://tzpush/content/observers.js
+Line: 93
+
+AbListeners onItemAdded
+*/
 
 
 tzpush.myPrefObserver = {
@@ -30,7 +35,7 @@ tzpush.myPrefObserver = {
                     if (status) status.label = "TzPush is: " + state;
 		    break;
                 case "autosync":
-                    tzpush.Timer.auto()
+                    tzpush.Timer.auto();
                     break;
                 case "selectseperator":
                     tzpush.changesep();
@@ -93,7 +98,7 @@ tzpush.AbListener = {
                     aParentDir.modifyCard(acard);
                 }
             }
-            var ServerId = ""
+            var ServerId = "";
             aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
             if (aParentDir.URI !== tzpush.prefs.getCharPref("abname")) {
 
@@ -156,7 +161,7 @@ tzpush.Timer = {
     },
 
     start: function() {
-        tzpush.prefs.setCharPref("syncstate", "alldone")
+        tzpush.prefs.setCharPref("syncstate", "alldone");
         if (tzpush.prefs.getCharPref("autosync") !== "0") {
             tzpush.checkgo();
         }
