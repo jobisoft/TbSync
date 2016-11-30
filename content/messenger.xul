@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
+<?xml-stylesheet type="text/css" href="chrome://tzpush/skin/browserOverlay.css" ?>
+<!DOCTYPE overlay SYSTEM "chrome://tzpush/locale/overlay.dtd">
+
+<overlay
+    id="tzpush.tzpush_extensionOverlay"
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
+ 
+    <script type="application/x-javascript" src="chrome://tzpush/content/tzsync.js" />
+    <script type="application/x-javascript" src="chrome://tzpush/content/observers.js" />
+
+     <statusbar id="status-bar">
+        <statusbarpanel id="tzstatus" label="Tz Status" context="statusmenu" />
+        <popupset>
+            <menupopup id="statusmenu">
+                <menuitem label="&pref.SyncAdddressbook;" onclick="tzpush.checkgo();" />
+                <menuitem label="&overlay.TZ-Settings;" onclick="tzpush.onMenuItemCommand(event);" />
+                <menuitem label="&pref.ResetStatus;" onclick="tzpush.reststatus();" />
+            </menupopup>
+        </popupset>	
+    </statusbar>
+
+    <menubar id="taskPopup">
+        <menu id="tzpushmain"  label="&overlay.tzpush;" >
+            <menupopup>
+                <menuitem id="tzpush.tzsettingsmenu" label="&overlay.TZ-Settings;" oncommand="tzpush.onMenuItemCommand(event);" />
+                <menuitem id="tzpush.go" label="&overlay.tz-sync;" oncommand="tzpush.go();" />
+            </menupopup>
+        </menu>
+    </menubar>
+ 
+    <toolbarpalette id="MailToolbarPalette">
+        <toolbarbutton 
+            id="myextension-button" 
+            class="toolbarbutton"
+            label="tz-sync" 
+            tooltiptext="sync address book button"
+            oncommand="tzpush.go();"/>
+    </toolbarpalette>
+ 
+</overlay>
+
+

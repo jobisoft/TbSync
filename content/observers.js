@@ -15,17 +15,20 @@ tzpush.myPrefObserver = {
         prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
 
         register: function() {
-            var prefService = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
-            this.branch = prefService.getBranch("extensions.tzpush.");
-            this.branch.addObserver("", this, false);
+            this.prefs.addObserver("", this, false);
         },
 
         unregister: function() {
-            this.branch.removeObserver("", this);
+            this.prefs.removeObserver("", this);
         },
 
         observe: function(aSubject, aTopic, aData) {
             switch (aData) {
+                case "syncstate":
+                    var state = this.prefs.getCharPref("syncstate");
+                    var status = document.getElementById("tzstatus");
+                    if (status) status.label = "TzPush is: " + state;
+		    break;
                 case "autosync":
                     tzpush.Timer.auto()
                     break;
@@ -41,12 +44,12 @@ tzpush.myPrefObserver = {
                             tzpush.checkgo();
                             break;
                         case "resync":
-                            tzpush.prefs.setCharPref("polkey", '0')
-                            tzpush.prefs.setCharPref("folderID", "")
-                            tzpush.prefs.setCharPref("synckey", "")
-                            tzpush.prefs.setCharPref("LastSyncTime", "-1")
+                            tzpush.prefs.setCharPref("polkey", '0');
+                            tzpush.prefs.setCharPref("folderID", "");
+                            tzpush.prefs.setCharPref("synckey", "");
+                            tzpush.prefs.setCharPref("LastSyncTime", "-1");
                             if (tzpush.prefs.getCharPref("syncstate") === "alldone") {
-                                tzpush.prefs.setCharPref("go", "firstsync")
+                                tzpush.prefs.setCharPref("go", "firstsync");
                             }
                             break;
                         case "firstsync":
@@ -59,12 +62,12 @@ tzpush.myPrefObserver = {
                     }
             }
         }
-    },
+};
 
 
 
 
-    tzpush.AbListener = {
+tzpush.AbListener = {
 
         onItemRemoved: function AbListener_onItemRemoved(aParentDir, aItem) {
             aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
@@ -72,11 +75,11 @@ tzpush.myPrefObserver = {
             if (aParentDir.URI === tzpush.prefs.getCharPref("abname")) {
                 if (aItem instanceof Components.interfaces.nsIAbCard) {
                     var deleted = aItem.getProperty("ServerId", "");
-                    deleted = deleted.replace(":", "COLON")
+                    deleted = deleted.replace(":", "COLON");
 
                     Components.utils.import("resource://gre/modules/FileUtils.jsm");
                     var file = FileUtils.getFile("ProfD", ["DeletedCards"]);
-                    file.append(deleted)
+                    file.append(deleted);
                     file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE);
                 }
             }
@@ -84,10 +87,10 @@ tzpush.myPrefObserver = {
 
         onItemAdded: function AbListener_onItemAdded(aParentDir, aItem) {
             function removeSId(aParent, ServerId) {
-                var acard = aParentDir.getCardFromProperty("ServerId", ServerId, false)
+                var acard = aParentDir.getCardFromProperty("ServerId", ServerId, false);
                 if (acard instanceof Components.interfaces.nsIAbCard) {
-                    acard.setProperty("ServerId", "")
-                    aParentDir.modifyCard(acard)
+                    acard.setProperty("ServerId", "");
+                    aParentDir.modifyCard(acard);
                 }
             }
             var ServerId = ""
@@ -95,9 +98,9 @@ tzpush.myPrefObserver = {
             if (aParentDir.URI !== tzpush.prefs.getCharPref("abname")) {
 
                 if (aItem instanceof Components.interfaces.nsIAbCard) {
-                    ServerId = aItem.getProperty("ServerId", "")
+                    ServerId = aItem.getProperty("ServerId", "");
                     if (ServerId !== "") {
-                        removeSId(aParentDir, ServerId)
+                        removeSId(aParentDir, ServerId);
                     }
                 }
 
@@ -138,11 +141,12 @@ tzpush.myPrefObserver = {
                 .getService(Components.interfaces.nsIAddrBookSession)
                 .removeAddressBookListener(tzpush.AbListener);
         }
-    }
+};
 
 
 tzpush.Timer = {
     timer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
+
     auto: function() {
         var synctime = tzpush.prefs.getCharPref("autosync") * 1000 * 60;
         this.timer.cancel();
@@ -154,20 +158,21 @@ tzpush.Timer = {
     start: function() {
         tzpush.prefs.setCharPref("syncstate", "alldone")
         if (tzpush.prefs.getCharPref("autosync") !== "0") {
-            tzpush.checkgo()
+            tzpush.checkgo();
         }
         tzpush.Timer.auto();
     },
+
     event: {
         notify: function(timer) {
             if (tzpush.prefs.getCharPref("autosync") !== "0") {
-                tzpush.checkgo()
+                tzpush.checkgo();
             }
 
         }
     }
-}
+};
 
-tzpush.Timer.start()
+tzpush.Timer.start();
 tzpush.myPrefObserver.register();
-tzpush.AbListener.add()
+tzpush.AbListener.add();
