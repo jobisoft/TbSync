@@ -1,31 +1,27 @@
 /* Copyright (c) 2012 Mark Nethersole
    See the file LICENSE.txt for licensing information. */
-var EXPORTED_SYMBOLS = ["Send", "callback"];
+var EXPORTED_SYMBOLS = ["Send" /*, "callback" */];
 
-//tzprefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush.")
-var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush.");
-var Components;
+Components.utils.import("chrome://tzpush/content/toxml.js");
+
+// Redundancy ...
 function myDump(what, aMessage) {
-    var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
+    let consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
     consoleService.logStringMessage(what + " : " + aMessage);
 }
 
-
+// The entire module gets exported (this one function), why do wen need a module?
 function Send(wbxml, callback, command) {
-    var appInfo = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
-    var platformVer = appInfo.platformVersion;
-    
-    var _bundle = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/statusstrings");
+    let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
+    let prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush.");
 
-    function getLocalizedMessage(msg) {
-        return _bundle.GetStringFromName(msg);
-    }
-
-    Components.utils.import("chrome://tzpush/content/toxml.js");
+/*    function getLocalizedMessage(msg) {
+        let bundle = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/statusstrings");
+        return bundle.GetStringFromName(msg);
+    }*/
 
     function decode_utf8(s) {
-        var appInfo = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
-        var platformVer = appInfo.platformVersion;
+        let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;
         if (platformVer >= 40) {
             return s;
         } else {
@@ -37,30 +33,10 @@ function Send(wbxml, callback, command) {
         }
     }
 
-    if (this.prefs.getCharPref("debugwbxml") === "1") {
-        this.myDump("sending", decodeURIComponent(escape(toxml(wbxml).split('><').join('>\n<'))));
-        writewbxml(wbxml);
-    }
-    
-    var SSL = this.prefs.getBoolPref("https");
-    var host = this.prefs.getCharPref("host");
-    var hthost;
-    var SERVER;
-    var USER;
-    var PASSWORD;
-    var deviceType;
-    var deviceId;
-    var polkey;
-    var req;
-    var LastSyncTime;
-    var sending = getLocalizedMessage("sendingString");
-    var receiving = getLocalizedMessage("receivingString");
-    var NEWPASSWORD;
-
-    function setpassword() {
-        var SSL = this.prefs.getBoolPref("https");
-        var host = this.prefs.getCharPref("host");
-        var USER = this.prefs.getCharPref("user");
+/*    function setpassword() {
+        var SSL = prefs.getBoolPref("https");
+        var host = prefs.getCharPref("host");
+        var USER = prefs.getCharPref("user");
         var hthost = "http://" + host;
         var SERVER = "http://" + host + "/Microsoft-Server-ActiveSync";
         if (SSL === true) {
@@ -94,152 +70,162 @@ function Send(wbxml, callback, command) {
                 myLoginManager.removeLogin(loginInfo);
             }
         }
-    }
+    } */
 
-    function getpassword() {
-
-        var myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-
-        var logins = myLoginManager.findLogins({}, hthost, SERVER, null);
-        var password = '';
-        for (var i = 0; i < logins.length; i++) {
-            if (logins[i].username === USER) {
-                password = logins[i].password;
-                break;
+    function getpassword(host, user) {
+        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
+        let logins = myLoginManager.findLogins({}, host, host + "/Microsoft-Server-ActiveSync", null);
+        for (let i = 0; i < logins.length; i++) {
+            if (logins[i].username === user) {
+                return logins[i].password;
             }
         }
-        return password;
+        //No password found - we should ask for one - this will be triggered by the 401 response, which also catches wrong passwords
+        return "";
     }
 
-    hthost = "http://" + host;
-    SERVER = "http://" + host + "/Microsoft-Server-ActiveSync";
-    if (SSL === true) {
-        hthost = "https://" + host;
-        SERVER = "https://" + host + "/Microsoft-Server-ActiveSync";
-    }
-    USER = this.prefs.getCharPref("user");
-    PASSWORD = getpassword();
-    deviceType = 'Thunderbird';
-    deviceId = this.prefs.getCharPref("deviceId");
-    polkey = this.prefs.getCharPref("polkey");
 
-    req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+    
+    if (prefs.getCharPref("debugwbxml") === "1") {
+        this.myDump("sending", decodeURIComponent(escape(toxml(wbxml).split('><').join('>\n<'))));
+        writewbxml(wbxml);
+    }
+
+
+    let protocol = (prefs.getBoolPref("https")) ? "https://" : "http://";
+    let host = protocol + prefs.getCharPref("host");
+    let server = host + "/Microsoft-Server-ActiveSync";
+
+    let user = prefs.getCharPref("user");
+    let password = getpassword(host, user)
+    let deviceType = 'Thunderbird';
+    let deviceId = prefs.getCharPref("deviceId");
+    
+    // Create request handler
+    let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
     req.mozBackgroundRequest = true;
-    if (this.prefs.getCharPref("debugwbxml") === "1") {
-        myDump("sending", "POST " + SERVER + '?Cmd=' + command + '&User=' + USER + '&DeviceType=Thunderbird' + '&DeviceId=' + deviceId, true);
+    if (prefs.getCharPref("debugwbxml") === "1") {
+        myDump("sending", "POST " + server + '?Cmd=' + command + '&User=' + user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
     }
-    req.open("POST", SERVER + '?Cmd=' + command + '&User=' + USER + '&DeviceType=Thunderbird' + '&DeviceId=' + deviceId, true);
+    req.open("POST", server + '?Cmd=' + command + '&User=' + user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
     req.overrideMimeType("text/plain");
     req.setRequestHeader("User-Agent", deviceType + ' ActiveSync');
     req.setRequestHeader("Content-Type", "application/vnd.ms-sync.wbxml");
-    req.setRequestHeader("Authorization", 'Basic ' + btoa(USER + ':' + PASSWORD));
-    if (this.prefs.getCharPref("asversion") === "2.5") {
+    req.setRequestHeader("Authorization", 'Basic ' + btoa(user + ':' + password));
+    if (prefs.getCharPref("asversion") === "2.5") {
         req.setRequestHeader("MS-ASProtocolVersion", "2.5");
     } else {
         req.setRequestHeader("MS-ASProtocolVersion", "14.0");
     }
     req.setRequestHeader("Content-Length", wbxml.length);
-    if (this.prefs.getBoolPref("prov")) {
-        req.setRequestHeader("X-MS-PolicyKey", polkey);
+    if (prefs.getBoolPref("prov")) {
+        req.setRequestHeader("X-MS-PolicyKey", prefs.getCharPref("polkey"));
     }
 
-    req.onreadystatechange = function() { //this.myDump("header",req.getAllResponseHeaders().toLowerCase())
+    // Define response handler for our request
+    req.onreadystatechange = function() { 
+        //this.myDump("header",req.getAllResponseHeaders().toLowerCase())
         if (req.readyState === 4 && req.status === 200) {
 
             wbxml = req.responseText;
-            if (this.prefs.getCharPref("debugwbxml") === "1") {
+            if (prefs.getCharPref("debugwbxml") === "1") {
                 this.myDump("recieved", decode_utf8(toxml(wbxml).split('><').join('>\n<')));
                 writewbxml(wbxml);
-                    //this.myDump("header",req.getAllResponseHeaders().toLowerCase())
+                //this.myDump("header",req.getAllResponseHeaders().toLowerCase())
             }
             if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
                 if (wbxml.length !== 0) {
-                    this.myDump("tzpush", "expecting wbxml but got - " + req.responseText + " request status = " + req.status + " ready state = " + req.readyState);
+                    this.myDump("tzpush", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
                 }
             }
             callback(req.responseText);
         } else if (req.readyState === 4) {
-            if (req.status === 0) {
-                this.myDump("tzpush request status", "0 -- No connection - check server address");
-            } else if (req.status === 401) {
-                this.myDump("tzpush request status", "401 -- Auth error - check username and password");
-            } else if (req.status === 449) {
-                if (this.prefs.getBoolPref("prov")) {
-                    this.prefs.setCharPref("go", "resync");
-                } else {
-                    this.myDump("tzpush request status", "449 -- Insufficient information - retry with provisioning");
-                }
-            } else if (req.status === 451) {
-                var header = req.getResponseHeader("X-MS-Location");
-                this.myDump("header =", header);
-                var newurl = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
-                this.myDump("newurl", newurl);
-                var password = getpassword();
-                this.prefs.setCharPref("host", newurl);
-                this.myDump("password = ", password);
-                var SSL = this.prefs.getBoolPref("https");
-                var host = this.prefs.getCharPref("host");
-                var USER = this.prefs.getCharPref("user");
 
-                var hthost = "http://" + host;
-                var SERVER = "http://" + host + "/Microsoft-Server-ActiveSync";
-                if (SSL === true) {
-                    hthost = "https://" + host;
-                    SERVER = "https://" + host + "/Microsoft-Server-ActiveSync";
-                }
-                var nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
-                var updateloginInfo = new nsLoginInfo(hthost, SERVER, null, USER, password, "USER", "PASSWORD");
-                var myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-                try {
-                    myLoginManager.addLogin(updateloginInfo);
-                    if (this.prefs.getBoolPref("prov")) {
-                        this.Polkey();
+            switch(req.status) {
+                case 0:
+                    this.myDump("tzpush request status", "0 -- No connection - check server address");
+                    break;
+                
+                case 401: // AuthError
+                    this.myDump("tzpush request status", "401 -- Auth error - check username and password");
+                    break;
+                
+                case 449: // Request for new provision
+                    if (prefs.getBoolPref("prov")) {
+                        prefs.setCharPref("go", "resync");
                     } else {
-                        if (this.prefs.getCharPref("synckey") === '') {
-                            this.GetFolderId();
-                        } else {
-                            this.fromzpush();
-                        }
+                        this.myDump("tzpush request status", "449 -- Insufficient information - retry with provisioning");
                     }
-                } catch (e) {
-                    if (e.message.match("This login already exists")) {
-                        this.myDump("login ", "Already exists");
-                        if (this.prefs.getBoolPref("prov")) {
+                    break;
+            
+                case 451: // Redirect - update host and login manager 
+                    let header = req.getResponseHeader("X-MS-Location");
+                    let newurl = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
+                    let password = getpassword();
+
+                    this.myDump("Redirect (451)", "header: " + header + ", newurl: " + newurl + ", password: " + password);
+                    prefs.setCharPref("host", newurl);
+
+                    let protocol = (prefs.getBoolPref("https")) ? "http://" : "https://";
+                    let host = protocol + newurl;
+                    let server = host + "/Microsoft-Server-ActiveSync";
+                    let user = prefs.getCharPref("user");
+
+                    let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
+                    let updateloginInfo = new nsLoginInfo(host, server, null, user, password, "USER", "PASSWORD");
+                    let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
+
+                    // We are trying to update the LoginManager (because the host changed), but what about Polkey, GetFolderId and fromzpush?
+                    try {
+                        myLoginManager.addLogin(updateloginInfo);
+                        if (prefs.getBoolPref("prov")) {
                             this.Polkey();
                         } else {
-                            if (this.prefs.getCharPref("synckey") === '') {
+                            if (prefs.getCharPref("synckey") === '') {
                                 this.GetFolderId();
                             } else {
                                 this.fromzpush();
                             }
                         }
-                    } else {
-                        this.myDump("login error", e);
+                    } catch (e) {
+                        if (e.message.match("This login already exists")) {
+                            this.myDump("login ", "Already exists");
+                            if (prefs.getBoolPref("prov")) {
+                                this.Polkey();
+                            } else {
+                                if (prefs.getCharPref("synckey") === '') {
+                                    this.GetFolderId();
+                                } else {
+                                    this.fromzpush();
+                                }
+                            }
+                        } else {
+                            this.myDump("login error", e);
+                        }
                     }
-                }
-            } else {
-                this.myDump("tzpush request status", "reported -- " + req.status);
+                    break;
+                    
+                default:
+                    this.myDump("tzpush request status", "reported -- " + req.status);
             }
-            this.prefs.setCharPref("syncstate", "alldone");
+            prefs.setCharPref("syncstate", "alldone"); // Maybe inform user about errors?
         }
 
     }.bind(this);
 
-    try {
-        var nBytes;
-        var ui8Data;
-        
+
+    try {        
         if (platformVer >= 50) {
-            nBytes = wbxml.length;
+            /*nBytes = wbxml.length;
             ui8Data = new Uint8Array(nBytes);
             for (let nIdx = 0; nIdx < nBytes; nIdx++) {
                 ui8Data[nIdx] = wbxml.charCodeAt(nIdx) & 0xff;
-            }
+            }*/
 
             req.send(wbxml);
         } else {
-            nBytes = wbxml.length;
-            ui8Data = new Uint8Array(nBytes);
+            let nBytes = wbxml.length;
+            let ui8Data = new Uint8Array(nBytes);
             for (let nIdx = 0; nIdx < nBytes; nIdx++) {
                 ui8Data[nIdx] = wbxml.charCodeAt(nIdx) & 0xff;
             }

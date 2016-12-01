@@ -91,7 +91,7 @@ var tzpush = {
                 ab.setAttribute('value', addressBook.URI);
                 count = count + 1;
 
-                //is this book the selected one? 
+                //is this book the selected one? TODO! This will check for the FILENAME, not the ID (delete book #3, create a new one -> the new one is selected!
                 if (this.prefs.getCharPref('abname') === addressBook.URI) {
                     selected = count;
                 }
@@ -123,7 +123,9 @@ var tzpush = {
             }
         }
 
-        /* Looks like a cleanup of cards marked for cleanup - WHY ??? */
+        /* Cleanup of cards marked for deletion */
+        /*  - the folder "DeletedCards" contains ids of deleted cards, which still need to be deleted from server */
+        /*  - after a reset, no further action should be pending */
         Components.utils.import("resource://gre/modules/FileUtils.jsm");
         var file = FileUtils.getFile("ProfD", ["DeletedCards"]);
         var entries = file.directoryEntries;

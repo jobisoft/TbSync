@@ -6,16 +6,7 @@ if (typeof tzpush === "undefined") {
     var tzpush = {};
 }
 
-/* Address book delete + create:
-Timestamp: 11/30/2016 05:37:30 PM
-Error: NS_ERROR_NOT_INITIALIZED: Component returned failure code: 0xc1f30001 (NS_ERROR_NOT_INITIALIZED) [nsIAbDirectory.URI]
-Source File: chrome://tzpush/content/observers.js
-Line: 93
-
-AbListeners onItemAdded
-*/
-
-
+// Everytime a preference is changed, this observer is called.
 tzpush.myPrefObserver = {
         prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
 
@@ -30,10 +21,10 @@ tzpush.myPrefObserver = {
         observe: function(aSubject, aTopic, aData) {
             switch (aData) {
                 case "syncstate":
-                    var state = this.prefs.getCharPref("syncstate");
-                    var status = document.getElementById("tzstatus");
+                    let state = this.prefs.getCharPref("syncstate");
+                    let status = document.getElementById("tzstatus");
                     if (status) status.label = "TzPush is: " + state;
-		    break;
+                    break;
                 case "autosync":
                     tzpush.Timer.auto();
                     break;
@@ -43,8 +34,6 @@ tzpush.myPrefObserver = {
                 case "go":
                     switch (tzpush.prefs.getCharPref("go")) {
                         case "0":
-                            tzpush.checkgo();
-                            break;
                         case "1":
                             tzpush.checkgo();
                             break;
@@ -61,8 +50,7 @@ tzpush.myPrefObserver = {
                             tzpush.go();
                             break;
                         case "alldone":
-                            var LastSyncTime = Date.now();
-                            tzpush.prefs.setCharPref("LastSyncTime", LastSyncTime);
+                            tzpush.prefs.setCharPref("LastSyncTime", Date.now());
                             break;
                     }
             }
@@ -74,31 +62,35 @@ tzpush.myPrefObserver = {
 
 tzpush.AbListener = {
 
+        // If a card is removed from the addressbook we are syncing, keep track of the deletions and log them to a file in the profile folder
         onItemRemoved: function AbListener_onItemRemoved(aParentDir, aItem) {
             aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
 
             if (aParentDir.URI === tzpush.prefs.getCharPref("abname")) {
                 if (aItem instanceof Components.interfaces.nsIAbCard) {
-                    var deleted = aItem.getProperty("ServerId", "");
-                    deleted = deleted.replace(":", "COLON");
+                    let deleted = aItem.getProperty("ServerId", "").replace(":", "COLON"); // So the ServerId can be used as a filename...
 
                     Components.utils.import("resource://gre/modules/FileUtils.jsm");
-                    var file = FileUtils.getFile("ProfD", ["DeletedCards"]);
+                    // Create directory "DeletedCards" in profile folder and later get file inside that folder with name $deleted
+                    FileUtils.getDir("ProfD", ["DeletedCards"], true);
+                    let file = FileUtils.getFile("ProfD", ["DeletedCards"]);
                     file.append(deleted);
+                    // Create file, but do not add any content - just "log" deletion
                     file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE);
                 }
             }
         },
 
+        // If a card is added to a book, but not to the one we are syncing, and that card has a ServerId, remove that ServerId from the first card found in that book - Does not look too right (TODO)
         onItemAdded: function AbListener_onItemAdded(aParentDir, aItem) {
             function removeSId(aParent, ServerId) {
-                var acard = aParentDir.getCardFromProperty("ServerId", ServerId, false);
+                let acard = aParentDir.getCardFromProperty("ServerId", ServerId, false);
                 if (acard instanceof Components.interfaces.nsIAbCard) {
                     acard.setProperty("ServerId", "");
                     aParentDir.modifyCard(acard);
                 }
             }
-            var ServerId = "";
+            let ServerId = "";
             aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
             if (aParentDir.URI !== tzpush.prefs.getCharPref("abname")) {
 
@@ -113,8 +105,6 @@ tzpush.AbListener = {
         },
 
         add: function AbListener_add() {
-            Components.utils.import("resource://gre/modules/FileUtils.jsm");
-            var dir = FileUtils.getDir("ProfD", ["DeletedCards"], true);
             var flags;
             var flags1;
             if (Components.classes["@mozilla.org/abmanager;1"]) { // Thunderbird 3
@@ -131,11 +121,6 @@ tzpush.AbListener = {
             }
         },
 
-
-
-        /**
-         * Removes this listener.
-         */
         remove: function AbListener_remove() {
             if (Components.classes["@mozilla.org/abmanager;1"]) // Thunderbird 3
                 Components.classes["@mozilla.org/abmanager;1"]
@@ -147,6 +132,8 @@ tzpush.AbListener = {
                 .removeAddressBookListener(tzpush.AbListener);
         }
 };
+
+
 
 
 tzpush.Timer = {
@@ -177,6 +164,7 @@ tzpush.Timer = {
         }
     }
 };
+
 
 tzpush.Timer.start();
 tzpush.myPrefObserver.register();
