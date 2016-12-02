@@ -18,16 +18,11 @@
           <preferences>
                <!-- TODO: Since all prefs are instantApply, the CANCEL button does not work -->
                <preference id="host" name="extensions.tzpush.host" type="string" instantApply="true"/>
-               <preference id="synckey" name="extensions.tzpush.synckey" type="string"/>
-               <preference id="folderID" name="extensions.tzpush.folderID" type="string"/>
                <preference id="user" name="extensions.tzpush.user" type="string" instantApply="true"/>
-               <preference id="deviceID" name="extensions.tzpush.deviceId" type="string" instantApply="true" />
                <preference id="https" name="extensions.tzpush.https" type="bool" instantApply="true" />
                <preference id="prov" name="extensions.tzpush.prov" type="bool" instantApply="true"/>
-               <preference id="polkey" name="extensions.tzpush.polkey" type="string"/>
-               <preference id="deviceId" name="extensions.tzpush.deviceId" type="string"/>
-               <preference id="AutoSync" name="extensions.tzpush.autosync" type="string" instantApply="true"/>
-               <preference id="wbxmldebug" name="extensions.tzpush.wbxmldebug" type="bool"/>
+               <preference id="deviceId" name="extensions.tzpush.deviceId" type="string" instantApply="true" />
+               <preference id="autosync" name="extensions.tzpush.autosync" type="int" instantApply="true"/>
                <preference id="birthday" name="extensions.tzpush.birthday" type="bool" instantApply="true"/>
                <preference id="seperator" name="extensions.tzpush.seperator" type="string" instantApply="true"/>
                <preference id="displayoverride" name="extensions.tzpush.displayoverride" type="bool" instantApply="true"/>
@@ -91,7 +86,7 @@
                     </row>
                     <row>
                          <label control="autobox" value="&pref.autotime;" tooltiptext="&pref.never;" />
-                         <textbox preference="AutoSync" id="autobox" tooltiptext="&pref.never;"/>
+                         <textbox preference="autosync" id="autobox" tooltiptext="&pref.never;"/>
                     </row>
                     <row>
                          <label />

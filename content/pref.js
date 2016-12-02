@@ -103,12 +103,12 @@ var tzpush = {
     },
 
     reset: function() {
-        this.prefs.setCharPref("polkey", '0');
+        this.prefs.setCharPref("polkey", "0");
         this.prefs.setCharPref("folderID", "");
         this.prefs.setCharPref("synckey", "");
-        this.prefs.setCharPref("LastSyncTime", "-1");
         this.prefs.setCharPref("deviceId", Date.now());
-        this.prefs.setCharPref("autosync", "0");
+        this.prefs.setIntPref("autosync", 0);
+        this.prefs.setCharPref("LastSyncTime", "0");
 
         /* Clear ServerId and LastModDate of all cards in addressbook selected for sync - WHY ??? */
         var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);

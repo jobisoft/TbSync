@@ -571,9 +571,8 @@ var tzpush = {
                         wbxml = wbxml.replace('Id2Replace', folderID);
                         command = "Sync";
                         this.Send(wbxml, callback.bind(this), command);
-                    } else if (tzpush.prefs.getBoolPref("downloadonly")) {
-                        var LastSyncTime = Date.now();
-                        tzpush.prefs.setCharPref("LastSyncTime", LastSyncTime);
+                    } else if (this.prefs.getBoolPref("downloadonly")) {
+                        this.prefs.setCharPref("LastSyncTime", Date.now());
                         this.prefs.setCharPref("syncstate", "alldone");
                         this.prefs.setCharPref("go", "alldone");
                     } else {
@@ -1060,8 +1059,7 @@ var tzpush = {
             command = "Sync";
             var returned = this.Send(wbxml, callback.bind(this), command);
         } else {
-            var LastSyncTime = Date.now();
-            tzpush.prefs.setCharPref("LastSyncTime", LastSyncTime);
+            this.prefs.setCharPref("LastSyncTime", Date.now());
             this.prefs.setCharPref("syncstate", "alldone");
             this.prefs.setCharPref("go", "alldone");
         }
@@ -1098,8 +1096,7 @@ var tzpush = {
                 if (more) {
                     this.senddel();
                 } else {
-                    var LastSyncTime = Date.now();
-                    tzpush.prefs.setCharPref("LastSyncTime", LastSyncTime);
+                    this.prefs.setCharPref("LastSyncTime", Date.now());
                     this.prefs.setCharPref("syncstate", "alldone");
                     this.prefs.setCharPref("go", "alldone");
                 }

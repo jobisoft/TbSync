@@ -20,17 +20,16 @@ tzpush.myPrefObserver = {
 
         observe: function(aSubject, aTopic, aData) {
             switch (aData) {
-                case "syncstate":
-                    let state = this.prefs.getCharPref("syncstate");
+                case "syncstate": //update status bar to inform user
                     let status = document.getElementById("tzstatus");
-                    if (status) status.label = "TzPush is: " + state;
+                    if (status) status.label = "TzPush is: " + this.prefs.getCharPref("syncstate");
                     break;
-                case "autosync":
+/*                case "autosync": not needed anymore: timer runs every 10 sec and checks for each account, if lastsync is older than autosync and executes sync if needed, no need to update timer on pref changes
                     tzpush.Timer.auto();
-                    break;
-                case "selectseperator":
+                    break; */
+/*                case "selectseperator":
                     tzpush.changesep();
-                    break;
+                    break; */
                 case "go":
                     switch (tzpush.prefs.getCharPref("go")) {
                         case "0":
@@ -38,10 +37,10 @@ tzpush.myPrefObserver = {
                             tzpush.checkgo();
                             break;
                         case "resync":
-                            tzpush.prefs.setCharPref("polkey", '0');
+                            tzpush.prefs.setCharPref("polkey", "0");
                             tzpush.prefs.setCharPref("folderID", "");
                             tzpush.prefs.setCharPref("synckey", "");
-                            tzpush.prefs.setCharPref("LastSyncTime", "-1");
+                            tzpush.prefs.setCharPref("LastSyncTime", "0");
                             if (tzpush.prefs.getCharPref("syncstate") === "alldone") {
                                 tzpush.prefs.setCharPref("go", "firstsync");
                             }
@@ -139,28 +138,22 @@ tzpush.AbListener = {
 tzpush.Timer = {
     timer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
-    auto: function() {
-        var synctime = tzpush.prefs.getCharPref("autosync") * 1000 * 60;
-        this.timer.cancel();
-        if (tzpush.prefs.getCharPref("autosync") !== "0") {
-            this.timer.initWithCallback(this.event, synctime, 3);
-        }
-    },
-
     start: function() {
+        this.timer.cancel();
         tzpush.prefs.setCharPref("syncstate", "alldone");
-        if (tzpush.prefs.getCharPref("autosync") !== "0") {
-            tzpush.checkgo();
-        }
-        tzpush.Timer.auto();
+        tzpush.prefs.setCharPref("LastSyncTime", "0");
+        this.timer.initWithCallback(this.event, 10000, 3); //run timer every 10s
     },
 
     event: {
         notify: function(timer) {
-            if (tzpush.prefs.getCharPref("autosync") !== "0") {
+            let prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush.");
+            //prepared for multi account mode, simply ask every account
+            let syncInterval = tzpush.prefs.getIntPref("autosync") * 60 * 1000;
+
+            if ((syncInterval > 0) && ((Date.now() - prefs.getCharPref("LastSyncTime")) > syncInterval)) {
                 tzpush.checkgo();
             }
-
         }
     }
 };
