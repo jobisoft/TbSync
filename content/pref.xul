@@ -12,10 +12,11 @@
      onunload="tzpush.onclose()"
      title="TZ Settings" >
 
-     <script type="application/x-javascript" src="chrome://tzpush/content/pref.js" />	 
+     <script type="application/x-javascript" src="chrome://tzpush/content/pref.js" /> 
 
      <prefpane id="settings" label="&pref.SettingDialog;" image="chrome://tzpush/skin/settings.png" >
           <preferences>
+               <!-- TODO: Since all prefs are instantApply, the CANCEL button does not work -->
                <preference id="host" name="extensions.tzpush.host" type="string" instantApply="true"/>
                <preference id="synckey" name="extensions.tzpush.synckey" type="string"/>
                <preference id="folderID" name="extensions.tzpush.folderID" type="string"/>
