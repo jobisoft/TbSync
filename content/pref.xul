@@ -28,7 +28,7 @@
                <preference id="AutoSync" name="extensions.tzpush.autosync" type="string" instantApply="true"/>
                <preference id="wbxmldebug" name="extensions.tzpush.wbxmldebug" type="bool"/>
                <preference id="birthday" name="extensions.tzpush.birthday" type="bool" instantApply="true"/>
-               <preference id="seperatorcheckbox" name="extensions.tzpush.selectseperator" type="bool" instantApply="true"/>
+               <preference id="seperator" name="extensions.tzpush.seperator" type="string" instantApply="true"/>
                <preference id="displayoverride" name="extensions.tzpush.displayoverride" type="bool" instantApply="true"/>
                <preference id="asversion" name="extensions.tzpush.asversion" type="string" instantApply="true"/>
           </preferences>
@@ -76,7 +76,13 @@
                     </row>
                     <row>
                          <label control="seperatorbox" value="&pref.seperator;" tooltiptext="&pref.seperatortooltip;"/>
-                         <checkbox  preference="seperatorcheckbox" tooltiptext="&pref.seperatortooltip;" label="  Else use new line" />
+                         <menulist preference="seperator">
+                              <menupopup>
+                                   <menuitem label="," value="," />
+                                   <menuitem label="line break" value="&#10;" />
+                              </menupopup>
+                         </menulist>
+                         <!--checkbox   tooltiptext="&pref.seperatortooltip;" label="  Else use new line" /-->
                     </row>
                     <row>
                          <label control="displayoverridebox" value="&pref.displayoverride;" tooltiptext="&pref.displayoverridetooltip;"/>

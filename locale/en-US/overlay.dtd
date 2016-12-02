@@ -1,5 +1,5 @@
 <!ENTITY overlay.tzpush "TZ-Push">
-<!ENTITY overlay.TZ-Settings "TZ-Settings">       
+<!ENTITY overlay.TZ-Settings "TZ-Settings">
 <!ENTITY overlay.tz-sync "TZ-Sync">
 
 
@@ -20,7 +20,7 @@
 <!ENTITY pref.AddressBookOptions "AddressBook Options">
 <!ENTITY pref.birthday "Send Birthday Information">
 <!ENTITY pref.Resync "Resync All">
-<!ENTITY pref.seperator 'Use "," as seperator'>
+<!ENTITY pref.seperator 'Seperator'>
 <!ENTITY pref.seperatortooltip 'Send address line one +", "+ address line two or if unchecked send line return (best for zarafa/zentyal)'>
 <!ENTITY pref.seperatorlable ' Else use linefeed '>
 <!ENTITY pref.displayoverride 'Overide Display'>

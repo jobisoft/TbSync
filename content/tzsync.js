@@ -53,14 +53,14 @@ var tzpush = {
         }
     },
 
-    changesep: function show() {
+/*    changesep: function show() {
         var state = this.prefs.getBoolPref("selectseperator");
         if (state) {
             this.prefs.setCharPref("seperator", ", ");
         } else {
             this.prefs.setCharPref("seperator", "\n");
         }
-    },
+    }, */
 
 
     ToContacts: ({
