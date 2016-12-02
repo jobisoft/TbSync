@@ -76,11 +76,11 @@
                          <checkbox  preference="birthday" checked="false"/>
                     </row>
                     <row>
-                         <label control="seperatorbox" value="&pref.seperator;" tooltiptext="&pref.seperatortooltip;"/>
+                         <label control="seperatorbox" value="&pref.seperator;" />
                          <menulist preference="seperator">
                               <menupopup>
-                                   <menuitem label="," value="," />
-                                   <menuitem label="line break" value="&#10;" />
+                                   <menuitem label="&pref.seperator.comma; (Horde)" value="," />
+                                   <menuitem label="&pref.seperator.linebreak; (Zarafa, Zentyal, Kopano)" value="&#10;" />
                               </menupopup>
                          </menulist>
                          <!--checkbox   tooltiptext="&pref.seperatortooltip;" label="  Else use new line" /-->

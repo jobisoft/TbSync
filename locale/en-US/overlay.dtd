@@ -3,12 +3,10 @@
 <!ENTITY overlay.tz-sync "TZ-Sync">
 
 
-
 <!ENTITY pref.SettingDialog "Setting Dialog">
 <!ENTITY pref.Server "Server">
 <!ENTITY pref.usehttps "Use https://">
 <!ENTITY pref.UserName "User Name">
-<!ENTITY pref.Password "Password">
 <!ENTITY pref.DeviceId "Device Id">
 <!ENTITY pref.UseProvisioning "Use Provisioning">
 <!ENTITY pref.autotime "Auto Sync time in minutes">
@@ -20,11 +18,13 @@
 <!ENTITY pref.AddressBookOptions "AddressBook Options">
 <!ENTITY pref.birthday "Send Birthday Information">
 <!ENTITY pref.Resync "Resync All">
-<!ENTITY pref.seperator 'Seperator'>
-<!ENTITY pref.seperatortooltip 'Send address line one +", "+ address line two or if unchecked send line return (best for zarafa/zentyal)'>
-<!ENTITY pref.seperatorlable ' Else use linefeed '>
-<!ENTITY pref.displayoverride 'Overide Display'>
-<!ENTITY pref.displayoverridetooltip 'Display as First Name then Second Name'>
+
+<!ENTITY pref.seperator "Seperator">
+<!ENTITY pref.seperator.comma "Comma">
+<!ENTITY pref.seperator.linebreak "Line break">
+
+<!ENTITY pref.displayoverride "Overide Display">
+<!ENTITY pref.displayoverridetooltip "Display as First Name then Second Name">
 
 <!ENTITY pref.ResyncText "Get new sync key and resync folders. Use if z-push information is lost">
 
