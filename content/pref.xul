@@ -79,7 +79,7 @@
                          <label control="seperatorbox" value="&pref.seperator;" />
                          <menulist preference="seperator">
                               <menupopup>
-                                   <menuitem label="&pref.seperator.comma; (Horde)" value="," />
+                                   <menuitem label="&pref.seperator.comma; (Horde)" value=", " />
                                    <menuitem label="&pref.seperator.linebreak; (Zarafa, Zentyal, Kopano)" value="&#10;" />
                               </menupopup>
                          </menulist>
