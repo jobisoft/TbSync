@@ -1,6 +1,6 @@
 "use strict";
 
-var EXPORTED_SYMBOLS = ["addCardToDeleteLog", "clearDeleteLog"];
+var EXPORTED_SYMBOLS = ["appendToFile", "addCardToDeleteLog", "clearDeleteLog"];
 
 
 function appendToFile(filename, data) { //writewbxml 
@@ -12,6 +12,7 @@ function appendToFile(filename, data) { //writewbxml
     foStream.write(data, data.length);
     foStream.close();
 }
+
 
 function addphoto(data, card) {
     Components.utils.import("resource://gre/modules/FileUtils.jsm");
@@ -33,7 +34,6 @@ function addphoto(data, card) {
 }
 
 
-
 function addCardToDeleteLog(cardId) { //that is appendToFile!
     Components.utils.import("resource://gre/modules/FileUtils.jsm");
     // Get fileobject of a file called "DeletedCards" inside the directory "ZPush" inside the users profile folder
@@ -44,6 +44,7 @@ function addCardToDeleteLog(cardId) { //that is appendToFile!
     foStream.close();
 }
 
+
 /* Cleanup of cards marked for deletion */
 /*  - the file "DeletedCards" inside the ZPush folder in the users profile folder contains a list of ids of deleted cards, which still need to be deleted from server */
 /*  - after a reset, no further action should be pending  -> delete that file*/
@@ -53,38 +54,38 @@ function clearDeleteLog() {
     if (file.exists()) file.remove("true");
 }
 
-// Redundancy ...
+
 function myDump(what, aMessage) {
     let consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
     consoleService.logStringMessage(what + " : " + aMessage);
 }
 
 
-    function decode_utf8(s) {
-        let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;
-        if (platformVer >= 40) {
-            return s;
-        } else {
-            try {
-                return decodeURIComponent(escape(s));
-            } catch (e) {
-                return s;
-            }
-        }
+function decode_utf8(s) {
+let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;
+if (platformVer >= 40) {
+    return s;
+} else {
+    try {
+	return decodeURIComponent(escape(s));
+    } catch (e) {
+	return s;
     }
+}
+}
 
 
-    function getpassword(host, user) {
-        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-        let logins = myLoginManager.findLogins({}, host, host + "/Microsoft-Server-ActiveSync", null);
-        for (let i = 0; i < logins.length; i++) {
-            if (logins[i].username === user) {
-                return logins[i].password;
-            }
-        }
-        //No password found - we should ask for one - this will be triggered by the 401 response, which also catches wrong passwords
-        return "";
+function getpassword(host, user) {
+let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
+let logins = myLoginManager.findLogins({}, host, host + "/Microsoft-Server-ActiveSync", null);
+for (let i = 0; i < logins.length; i++) {
+    if (logins[i].username === user) {
+	return logins[i].password;
     }
+}
+//No password found - we should ask for one - this will be triggered by the 401 response, which also catches wrong passwords
+return "";
+}
 
 
 /*    function getLocalizedMessage(msg) {

@@ -88,7 +88,7 @@ function Send(wbxml, callback, command) {
     
     if (prefs.getCharPref("debugwbxml") === "1") {
         this.myDump("sending", decodeURIComponent(escape(toxml(wbxml).split('><').join('>\n<'))));
-        writewbxml(wbxml);
+        appendToFile("wbxml-debug.log", wbxml);
     }
 
 
@@ -130,7 +130,7 @@ function Send(wbxml, callback, command) {
             wbxml = req.responseText;
             if (prefs.getCharPref("debugwbxml") === "1") {
                 this.myDump("recieved", decode_utf8(toxml(wbxml).split('><').join('>\n<')));
-                writewbxml(wbxml);
+                appendToFile("wbxml-debug.log", wbxml);
                 //this.myDump("header",req.getAllResponseHeaders().toLowerCase())
             }
             if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {

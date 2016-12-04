@@ -1,28 +1,6 @@
 "use strict";
 
-var EXPORTED_SYMBOLS = ["toxml", "writewbxml"];
-
-//Write content of wbxml into a file in the profile directory (for debug purposes)
-function writewbxml (wbxml) {
-    Components.utils.import("resource://gre/modules/FileUtils.jsm");
-
-    // create folder "wbxml" in profile directory
-    FileUtils.getDir("ProfD", ["wbxml"], true);
-
-    // get the "wbxml-output" file ind the "wbxml" directory
-    let file = FileUtils.getFile("ProfD", ["wbxml"]);
-    file.append("wbxml-output");
-
-    //create the unique file, by adding a number to the end of the filename
-    file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE);
-
-    //create a strem to write to that file
-    let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
-    foStream.init(file, 0x02 | 0x08 | 0x20, parseInt("0666", 8), 0); // write, create, truncate
-    foStream.write(wbxml, wbxml.length);
-    foStream.close();
-}
-
+var EXPORTED_SYMBOLS = ["toxml"];
 
 // Convert a WAP Binary XML to plain XML
 function toxml (wbxml) {
