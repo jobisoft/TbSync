@@ -10,16 +10,8 @@ if (typeof tzpush === "undefined") {
 
 var tzpush = {
     prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
-/*    hthost: "",
-//    PASSWORD: "",
-    SERVER: "",
-    USER: "",
-//    NEWPASSWORD: "",
-    select: "",*/
 
     onopen: function() {
-//        this.updateprefs();
-//        document.getElementById('passbox').value = this.PASSWORD;
         //Check, if a new deviceID needs to be generated
         if (this.prefs.getCharPref("deviceId") === "") this.prefs.setCharPref("deviceId", Date.now());
         this.localAbs();
@@ -27,52 +19,6 @@ var tzpush = {
 
     onclose: function() {
     },
-
-/*    getpassword: function() {
-        let USER = this.prefs.getCharPref("user");
-        let HOST = "http://";
-        if (this.prefs.getBoolPref("https") === true) HOST = "https://";
-
-        HOST = HOST + this.prefs.getCharPref("host");
-        let SERVER = HOST + "/Microsoft-Server-ActiveSync";
-
-        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-        let logins = myLoginManager.findLogins({}, HOST, SERVER, null);
-        for (let i = 0; i < logins.length; i++) {
-            if (logins[i].username === USER) {
-                return logins[i].password;
-            }
-        }
-
-        //uups, no password found - we should ask for it - this will be triggered by the 401 AUTH Error
-        return "";
-    }, */
-
-/*    updateprefs: function() {
-
-        var addressUrl = this.prefs.getCharPref("abname");
-        var SSL = this.prefs.getBoolPref("https");
-        var host = this.prefs.getCharPref("host");
-        if (SSL === true) {
-            this.hthost = "https://" + host;
-            this.SERVER = "https://" + host + "/Microsoft-Server-ActiveSync";
-        } else {
-            this.hthost = "http://" + host;
-            this.SERVER = "http://" + host + "/Microsoft-Server-ActiveSync";
-        }
-
-        this.USER = this.prefs.getCharPref("user");
-//        this.PASSWORD = this.getpassword();
-//        this.NEWPASSWORD = ''; 
-
-        var deviceId = this.prefs.getCharPref("deviceId");
-        if (deviceId === "") {
-            deviceId = Date.now();
-            this.prefs.setCharPref("deviceId", deviceId);
-        }
-        var polkey = this.prefs.getCharPref("polkey");
-        var synckey = this.prefs.getCharPref("synckey");
-    }, */
 
     localAbs: function() {
         //clear list of address books
@@ -182,11 +128,6 @@ var tzpush = {
 
         openTBtab("chrome://tzpush/content/notes.html");
     },
-
-/*    updatepass: function() {
-        this.NEWPASSWORD = document.getElementById('passbox').value;
-        this.setpassword();
-    }, */
 
     setselect: function(value) {
         this.prefs.setCharPref('abname', value);

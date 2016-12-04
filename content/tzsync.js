@@ -41,15 +41,6 @@ var tzpush = {
         }
     },
 
-/*    changesep: function show() {
-        var state = this.prefs.getBoolPref("selectseperator");
-        if (state) {
-            this.prefs.setCharPref("seperator", ", ");
-        } else {
-            this.prefs.setCharPref("seperator", "\n");
-        }
-    }, */
-
 
     ToContacts: ({
         //0x89:'Anniversary',
@@ -1111,7 +1102,6 @@ var tzpush = {
 
 
 
-
 tzpush.Send = function (wbxml, callback, command) {
     let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
     let prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush.");
@@ -1268,6 +1258,7 @@ tzpush.Send = function (wbxml, callback, command) {
 
     return true;
 }
+
 
 
 

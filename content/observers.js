@@ -26,12 +26,6 @@ tzpush.myPrefObserver = {
                     let status = document.getElementById("tzstatus");
                     if (status) status.label = "TzPush is: " + this.prefs.getCharPref("syncstate");
                     break;
-/*                case "autosync": not needed anymore: timer runs every 10 sec and checks for each account, if lastsync is older than autosync and executes sync if needed, no need to update timer on pref changes
-                    tzpush.Timer.auto();
-                    break; */
-/*                case "selectseperator":
-                    tzpush.changesep();
-                    break; */
                 case "go":
                     switch (tzpush.prefs.getCharPref("go")) {
                         case "0":
