@@ -54,10 +54,6 @@
                          <label control="userbox" value="&pref.UserName; "/>
                          <textbox preference="user" id="userbox" />
                     </row>
-                    <!-- row>
-                         <label control="passbox" value="&pref.Password;" />
-                         <textbox id="passbox" type="password" onblur="tzpush.updatepass();" />
-                    </row -->
                     <row>
                          <label control="devbox" value="&pref.DeviceId;" tooltiptext="&pref.blank;"/>
                          <textbox preference="deviceId" id="devbox" tooltiptext="&pref.blank;" />
@@ -78,7 +74,6 @@
                                    <menuitem label="&pref.seperator.linebreak; (Zarafa, Zentyal, Kopano)" value="&#10;" />
                               </menupopup>
                          </menulist>
-                         <!--checkbox   tooltiptext="&pref.seperatortooltip;" label="  Else use new line" /-->
                     </row>
                     <row>
                          <label control="displayoverridebox" value="&pref.displayoverride;" tooltiptext="&pref.displayoverridetooltip;"/>

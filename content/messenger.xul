@@ -20,7 +20,7 @@
                 <menuitem label="&overlay.TZ-Settings;" onclick="tzpush.onMenuItemCommand(event);" />
                 <menuitem label="&pref.ResetStatus;" onclick="tzpush.reststatus();" />
             </menupopup>
-        </popupset>	
+        </popupset>
     </statusbar>
 
     <menubar id="taskPopup">
@@ -42,5 +42,3 @@
     </toolbarpalette>
  
 </overlay>
-
-
