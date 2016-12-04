@@ -4,87 +4,10 @@ var EXPORTED_SYMBOLS = ["Send" /*, "callback" */];
 
 Components.utils.import("chrome://tzpush/content/toxml.js");
 
-// Redundancy ...
-function myDump(what, aMessage) {
-    let consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
-    consoleService.logStringMessage(what + " : " + aMessage);
-}
-
 // The entire module gets exported (this one function), why do wen need a module?
 function Send(wbxml, callback, command) {
     let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
     let prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush.");
-
-/*    function getLocalizedMessage(msg) {
-        let bundle = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/statusstrings");
-        return bundle.GetStringFromName(msg);
-    }*/
-
-    function decode_utf8(s) {
-        let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;
-        if (platformVer >= 40) {
-            return s;
-        } else {
-            try {
-                return decodeURIComponent(escape(s));
-            } catch (e) {
-                return s;
-            }
-        }
-    }
-
-/*    function setpassword() {
-        var SSL = prefs.getBoolPref("https");
-        var host = prefs.getCharPref("host");
-        var USER = prefs.getCharPref("user");
-        var hthost = "http://" + host;
-        var SERVER = "http://" + host + "/Microsoft-Server-ActiveSync";
-        if (SSL === true) {
-            hthost = "https://" + host;
-            SERVER = "https://" + host + "/Microsoft-Server-ActiveSync";
-        }
-
-        PASSWORD = getpassword();
-        if (NEWPASSWORD !== PASSWORD) {
-
-            var nsLoginInfo = new Components.Constructor(
-                "@mozilla.org/login-manager/loginInfo;1",
-                Components.interfaces.nsILoginInfo,
-                "init");
-            var loginInfo = new nsLoginInfo(hthost, SERVER, null, USER, PASSWORD, "USER", "PASSWORD");
-
-            var updateloginInfo = new nsLoginInfo(hthost, SERVER, null, USER, NEWPASSWORD, "USER", "PASSWORD");
-            var myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-
-            if (NEWPASSWORD !== '') {
-                if (NEWPASSWORD !== PASSWORD) {
-                    if (PASSWORD !== '') {
-                        myLoginManager.removeLogin(loginInfo);
-                    }
-                }
-                myLoginManager.addLogin(updateloginInfo);
-
-            } else if (PASSWORD === "" || typeof PASSWORD === 'undefined') {
-                myLoginManager.addLogin(updateloginInfo);
-            } else {
-                myLoginManager.removeLogin(loginInfo);
-            }
-        }
-    } */
-
-    function getpassword(host, user) {
-        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-        let logins = myLoginManager.findLogins({}, host, host + "/Microsoft-Server-ActiveSync", null);
-        for (let i = 0; i < logins.length; i++) {
-            if (logins[i].username === user) {
-                return logins[i].password;
-            }
-        }
-        //No password found - we should ask for one - this will be triggered by the 401 response, which also catches wrong passwords
-        return "";
-    }
-
-
     
     if (prefs.getCharPref("debugwbxml") === "1") {
         this.myDump("sending", decodeURIComponent(escape(toxml(wbxml).split('><').join('>\n<'))));
