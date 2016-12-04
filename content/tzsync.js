@@ -1,27 +1,15 @@
 /* Copyright (c) 2012 Mark Nethersole
    See the file LICENSE.txt for licensing information. */
-
 "use strict";
+
+Components.utils.import("chrome://tzpush/content/tools.jsm");
 
 if (typeof tzpush === "undefined") {
     var tzpush = {};
 }
 
-
 var tzpush = {
-
-    prefbranch: "tzpush.",
     prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
-    _bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/statusstrings"),
-
-    getLocalizedMessage: function(msg) {
-        return this._bundle.GetStringFromName(msg);
-    },
-
-    myDump: function(what, aMessage) {
-        var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
-        consoleService.logStringMessage(what + " : " + aMessage);
-    },
 
     onMenuItemCommand: function() {
         window.open("chrome://tzpush/content/pref.xul", "", "chrome,centerscreen,resizable,toolbar", null, null);
@@ -37,7 +25,7 @@ var tzpush = {
     },
 
     go: function() {
-        var syncing = this.getLocalizedMessage("syncingString");
+        var syncing = tztools.getLocalizedMessage("syncingString");
         this.prefs.setCharPref("syncstate", syncing);
         this.time = this.prefs.getCharPref("LastSyncTime") / 1000;
         this.time2 = (Date.now() / 1000) - 1;
@@ -268,31 +256,6 @@ var tzpush = {
         var command = "Sync";
         this.Send(wbxml, callback.bind(this), command);
 
-
-        function addphoto(data) {
-            var photo = card.getProperty("PhotoName", "");
-
-            Components.utils.import("resource://gre/modules/FileUtils.jsm");
-            var dir = FileUtils.getDir("ProfD", ["Photos"], true);
-
-            photo = card.getProperty("ServerId", "") + '.jpg';
-            card.setProperty("PhotoName", photo);
-
-            var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
-            var file = Components.classes["@mozilla.org/file/directory_service;1"].getService(Components.interfaces.nsIProperties).get("ProfD", Components.interfaces.nsIFile);
-            file.append("Photos");
-            file.append(photo);
-            foStream.init(file, 0x02 | 0x08 | 0x20, 0x180, 0); // write, create, truncate
-            var binary = atob(data);
-            foStream.write(binary, binary.length);
-            foStream.close();
-            card.setProperty("PhotoType", "file");
-            var filePath = 'file:///' + file.path.replace(/\\/g, '\/').replace(/^\s*\/?/, '').replace(/\ /g, '%20');
-            card.setProperty("PhotoURI", filePath);
-
-            return filePath;
-        }
-
         function callback(returnedwbxml) {
             if (returnedwbxml.length === 0) {
                 tzpush.tozpush();
@@ -312,11 +275,11 @@ var tzpush = {
                 var wbxmlstatus = truncwbxml.substring(n + 2, n1);
 
                 if (wbxmlstatus === '3' || wbxmlstatus === '12') {
-                    this.myDump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
+                    tztools.dump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
                     this.prefs.setCharPref("syncstate", "alldone");
                     this.prefs.setCharPref("go", "resync");
                 } else if (wbxmlstatus !== '1') {
-                    this.myDump("tzpush wbxml status", "server error? " + wbxmlstatus);
+                    tztools.dump("tzpush wbxml status", "server error? " + wbxmlstatus);
                     this.prefs.setCharPref("syncstate", "alldone");
                     this.prefs.setCharPref("go", "alldone");
                 } else {
@@ -366,7 +329,7 @@ var tzpush = {
                             num = wbxml.indexOf(String.fromCharCode(0x00), num);
 
                             if (x === 0x01 && temptoken === 0x7C) {
-                                filePath = addphoto(data);
+                                filePath = tztools.addphoto(card, data);
                                 photo = card.getProperty("ServerId", "") + '.jpg';
                             } else if (x === 0x01 && temptoken === 0x48) {
                                 card.setProperty("Birthday", data);
@@ -905,12 +868,12 @@ var tzpush = {
             var wbxmlstatus = truncwbxml.substring(n + 2, n1);
 
             if (wbxmlstatus === '3' || wbxmlstatus === '12') {
-                this.myDump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
+                tztools.dump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
                 this.prefs.setCharPref("syncstate", "alldone");
                 this.prefs.setCharPref("go", "resync");
 
             } else if (wbxmlstatus !== '1') {
-                this.myDump("tzpush wbxml status", "server error? " + wbxmlstatus);
+                tztools.dump("tzpush wbxml status", "server error? " + wbxmlstatus);
                 this.prefs.setCharPref("syncstate", "alldone");
                 this.prefs.setCharPref("go", "alldone");
             } else {
@@ -942,7 +905,7 @@ var tzpush = {
                             addserverid.setProperty('ServerId', ServerId);
                             /* var newCard = */ addressBook.modifyCard(addserverid);
                         } catch (e) {
-                            this.myDump("tzpush error", e);
+                            tztools.dump("tzpush error", e);
                         }
                     }
                 }
@@ -968,7 +931,7 @@ var tzpush = {
                                 /* newCard = */ addressBook.modifyCard(addserverid);
                                 morecards = true;
                             } catch (e) {
-                                this.myDump("tzpush error", e);
+                                tztools.dump("tzpush error", e);
                             }
                         }
                     }
@@ -1076,11 +1039,11 @@ var tzpush = {
             var wbxmlstatus = truncwbxml.substring(n + 2, n1);
 
             if (wbxmlstatus === '3' || wbxmlstatus === '12') {
-                this.myDump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
+                tztools.dump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
                 this.prefs.setCharPref("syncstate", "alldone");
                 this.prefs.setCharPref("go", "resync");
             } else if (wbxmlstatus !== '1') {
-                this.myDump("tzpush wbxml status", "server error? " + wbxmlstatus);
+                tztools.dump("tzpush wbxml status", "server error? " + wbxmlstatus);
                 this.prefs.setCharPref("syncstate", "alldone");
                 this.prefs.setCharPref("go", "alldone");
             } else {
@@ -1154,8 +1117,8 @@ tzpush.Send = function (wbxml, callback, command) {
     let prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush.");
     
     if (prefs.getCharPref("debugwbxml") === "1") {
-        this.myDump("sending", decodeURIComponent(escape(toxml(wbxml).split('><').join('>\n<'))));
-        appendToFile("wbxml-debug.log", wbxml);
+        tztools.dump("sending", decodeURIComponent(escape(tzpush.toxml(wbxml).split('><').join('>\n<'))));
+        tztools.appendToFile("wbxml-debug.log", wbxml);
     }
 
 
@@ -1164,7 +1127,7 @@ tzpush.Send = function (wbxml, callback, command) {
     let server = host + "/Microsoft-Server-ActiveSync";
 
     let user = prefs.getCharPref("user");
-    let password = getpassword(host, user)
+    let password = tztools.getpassword(host, user)
     let deviceType = 'Thunderbird';
     let deviceId = prefs.getCharPref("deviceId");
     
@@ -1172,7 +1135,7 @@ tzpush.Send = function (wbxml, callback, command) {
     let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
     req.mozBackgroundRequest = true;
     if (prefs.getCharPref("debugwbxml") === "1") {
-        myDump("sending", "POST " + server + '?Cmd=' + command + '&User=' + user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
+        tztools.dump("sending", "POST " + server + '?Cmd=' + command + '&User=' + user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
     }
     req.open("POST", server + '?Cmd=' + command + '&User=' + user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
     req.overrideMimeType("text/plain");
@@ -1191,18 +1154,18 @@ tzpush.Send = function (wbxml, callback, command) {
 
     // Define response handler for our request
     req.onreadystatechange = function() { 
-        //this.myDump("header",req.getAllResponseHeaders().toLowerCase())
+        //tztools.dump("header",req.getAllResponseHeaders().toLowerCase())
         if (req.readyState === 4 && req.status === 200) {
 
             wbxml = req.responseText;
             if (prefs.getCharPref("debugwbxml") === "1") {
-                this.myDump("recieved", decode_utf8(toxml(wbxml).split('><').join('>\n<')));
-                appendToFile("wbxml-debug.log", wbxml);
-                //this.myDump("header",req.getAllResponseHeaders().toLowerCase())
+                tztools.dump("recieved", tztools.decode_utf8(tzpush.toxml(wbxml).split('><').join('>\n<')));
+                tztools.appendToFile("wbxml-debug.log", wbxml);
+                //tztools.dump("header",req.getAllResponseHeaders().toLowerCase())
             }
             if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
                 if (wbxml.length !== 0) {
-                    this.myDump("tzpush", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
+                    tztools.dump("tzpush", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
                 }
             }
             callback(req.responseText);
@@ -1210,27 +1173,27 @@ tzpush.Send = function (wbxml, callback, command) {
 
             switch(req.status) {
                 case 0:
-                    this.myDump("tzpush request status", "0 -- No connection - check server address");
+                    tztools.dump("tzpush request status", "0 -- No connection - check server address");
                     break;
                 
                 case 401: // AuthError
-                    this.myDump("tzpush request status", "401 -- Auth error - check username and password");
+                    tztools.dump("tzpush request status", "401 -- Auth error - check username and password");
                     break;
                 
                 case 449: // Request for new provision
                     if (prefs.getBoolPref("prov")) {
                         prefs.setCharPref("go", "resync");
                     } else {
-                        this.myDump("tzpush request status", "449 -- Insufficient information - retry with provisioning");
+                        tztools.dump("tzpush request status", "449 -- Insufficient information - retry with provisioning");
                     }
                     break;
             
                 case 451: // Redirect - update host and login manager 
                     let header = req.getResponseHeader("X-MS-Location");
                     let newurl = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
-                    let password = getpassword();
+                    let password = tztools.getpassword();
 
-                    this.myDump("Redirect (451)", "header: " + header + ", newurl: " + newurl + ", password: " + password);
+                    tztools.dump("Redirect (451)", "header: " + header + ", newurl: " + newurl + ", password: " + password);
                     prefs.setCharPref("host", newurl);
 
                     let protocol = (prefs.getBoolPref("https")) ? "http://" : "https://";
@@ -1256,7 +1219,7 @@ tzpush.Send = function (wbxml, callback, command) {
                         }
                     } catch (e) {
                         if (e.message.match("This login already exists")) {
-                            this.myDump("login ", "Already exists");
+                            tztools.dump("login ", "Already exists");
                             if (prefs.getBoolPref("prov")) {
                                 this.Polkey();
                             } else {
@@ -1267,13 +1230,13 @@ tzpush.Send = function (wbxml, callback, command) {
                                 }
                             }
                         } else {
-                            this.myDump("login error", e);
+                            tztools.dump("login error", e);
                         }
                     }
                     break;
                     
                 default:
-                    this.myDump("tzpush request status", "reported -- " + req.status);
+                    tztools.dump("tzpush request status", "reported -- " + req.status);
             }
             prefs.setCharPref("syncstate", "alldone"); // Maybe inform user about errors?
         }
@@ -1296,11 +1259,11 @@ tzpush.Send = function (wbxml, callback, command) {
             for (let nIdx = 0; nIdx < nBytes; nIdx++) {
                 ui8Data[nIdx] = wbxml.charCodeAt(nIdx) & 0xff;
             }
-            //this.myDump("ui8Data",toxml(wbxml))	
+            //tztools.dump("ui8Data",toxml(wbxml))	
             req.send(ui8Data);
         }
     } catch (e) {
-        this.myDump("tzpush error", e);
+        tztools.dump("tzpush error", e);
     }
 
     return true;

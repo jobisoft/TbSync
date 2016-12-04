@@ -2,6 +2,8 @@
    See the file LICENSE.txt for licensing information. */
 "use strict";
 
+Components.utils.import("chrome://tzpush/content/tools.jsm");
+
 if (typeof tzpush === "undefined") {
     var tzpush = {};
 }
@@ -126,8 +128,7 @@ var tzpush = {
         /* Cleanup of cards marked for deletion */
         /*  - the file "DeletedCards" inside the ZPush folder in the users profile folder contains a list of ids of deleted cards, which still need to be deleted from server */
         /*  - after a reset, no further action should be pending  -> clear that log! */
-        Components.utils.import("chrome://tzpush/content/tools.jsm");
-        clearDeleteLog();
+        tztools.clearDeleteLog();
     },
 
     softreset: function() {

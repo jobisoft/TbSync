@@ -2,6 +2,8 @@
    See the file LICENSE.txt for licensing information. */  
 "use strict";
 
+Components.utils.import("chrome://tzpush/content/tools.jsm");
+
 if (typeof tzpush === "undefined") {
     var tzpush = {};
 }
@@ -70,8 +72,7 @@ tzpush.AbListener = {
                     let deleted = aItem.getProperty("ServerId", "");
 
                     if (deleted) {
-                        Components.utils.import("chrome://tzpush/content/tools.jsm");
-                        addCardToDeleteLog(deleted);
+                        tztools.addCardToDeleteLog(deleted);
                     }
                 }
             }
