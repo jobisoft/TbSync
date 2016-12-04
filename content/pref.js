@@ -124,16 +124,10 @@ var tzpush = {
         }
 
         /* Cleanup of cards marked for deletion */
-        /*  - the folder "DeletedCards" contains ids of deleted cards, which still need to be deleted from server */
-        /*  - after a reset, no further action should be pending */
-        Components.utils.import("resource://gre/modules/FileUtils.jsm");
-        var file = FileUtils.getFile("ProfD", ["DeletedCards"]);
-        var entries = file.directoryEntries;
-        while (entries.hasMoreElements()) {
-            var entry = entries.getNext();
-            entry.QueryInterface(Components.interfaces.nsIFile);
-            entry.remove("true");
-        }
+        /*  - the file "DeletedCards" inside the ZPush folder in the users profile folder contains a list of ids of deleted cards, which still need to be deleted from server */
+        /*  - after a reset, no further action should be pending  -> clear that log! */
+        Components.utils.import("chrome://tzpush/content/tools.jsm");
+        clearDeleteLog();
     },
 
     softreset: function() {

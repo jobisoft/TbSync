@@ -67,15 +67,12 @@ tzpush.AbListener = {
 
             if (aParentDir.URI === tzpush.prefs.getCharPref("abname")) {
                 if (aItem instanceof Components.interfaces.nsIAbCard) {
-                    let deleted = aItem.getProperty("ServerId", "").replace(":", "COLON"); // So the ServerId can be used as a filename...
+                    let deleted = aItem.getProperty("ServerId", "");
 
-                    Components.utils.import("resource://gre/modules/FileUtils.jsm");
-                    // Create directory "DeletedCards" in profile folder and later get file inside that folder with name $deleted
-                    FileUtils.getDir("ProfD", ["DeletedCards"], true);
-                    let file = FileUtils.getFile("ProfD", ["DeletedCards"]);
-                    file.append(deleted);
-                    // Create file, but do not add any content - just "log" deletion
-                    file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE);
+                    if (deleted) {
+                        Components.utils.import("chrome://tzpush/content/tools.jsm");
+                        addCardToDeleteLog(deleted);
+                    }
                 }
             }
         },
