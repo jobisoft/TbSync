@@ -9,16 +9,15 @@
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
  
-    <script type="application/x-javascript" src="chrome://tzpush/content/tzsync.js" />
-    <script type="application/x-javascript" src="chrome://tzpush/content/observers.js" />
+    <script type="application/x-javascript" src="chrome://tzpush/content/messenger.js" />
 
-     <statusbar id="status-bar">
+    <statusbar id="status-bar">
         <statusbarpanel id="tzstatus" label="Tz Status" context="statusmenu" />
         <popupset>
             <menupopup id="statusmenu">
-                <menuitem label="&pref.SyncAdddressbook;" onclick="tzpush.checkgo();" />
-                <menuitem label="&overlay.TZ-Settings;" onclick="tzpush.onMenuItemCommand(event);" />
-                <menuitem label="&pref.ResetStatus;" onclick="tzpush.reststatus();" />
+                <menuitem label="&pref.SyncAdddressbook;" onclick="tzpush.requestSync();" />
+                <menuitem label="&overlay.TZ-Settings;" onclick="tzpush.openPrefs(event);" />
+                <menuitem label="&pref.ResetStatus;" onclick="tzpush.resetStatus();" />
             </menupopup>
         </popupset>
     </statusbar>
@@ -26,8 +25,8 @@
     <menubar id="taskPopup">
         <menu id="tzpushmain"  label="&overlay.tzpush;" >
             <menupopup>
-                <menuitem id="tzpush.tzsettingsmenu" label="&overlay.TZ-Settings;" oncommand="tzpush.onMenuItemCommand(event);" />
-                <menuitem id="tzpush.go" label="&overlay.tz-sync;" oncommand="tzpush.go();" />
+                <menuitem id="tzpush.tzsettingsmenu" label="&overlay.TZ-Settings;" oncommand="tzpush.openPrefs(event);" />
+                <menuitem id="tzpush.go" label="&overlay.tz-sync;" oncommand="tzpush.requestSync();" />
             </menupopup>
         </menu>
     </menubar>
@@ -38,7 +37,7 @@
             class="toolbarbutton"
             label="tz-sync" 
             tooltiptext="sync address book button"
-            oncommand="tzpush.go();"/>
+            oncommand="tzpush.requestSync();"/>
     </toolbarpalette>
  
 </overlay>

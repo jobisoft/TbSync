@@ -1,39 +1,21 @@
 /* Copyright (c) 2012 Mark Nethersole
    See the file LICENSE.txt for licensing information. */
 "use strict";
+var EXPORTED_SYMBOLS = ["tzsync"];
+Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 
-Components.utils.import("chrome://tzpush/content/tools.jsm");
-
-if (typeof tzpush === "undefined") {
-    var tzpush = {};
-}
-
-var tzpush = {
-    prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
-
-    onMenuItemCommand: function() {
-        window.open("chrome://tzpush/content/pref.xul", "", "chrome,centerscreen,resizable,toolbar", null, null);
-    },
-
-    reststatus: function() {
-        this.prefs.setCharPref("syncstate", "alldone");
-    },
-
-    checkgo: function() {
-        if (this.prefs.getCharPref("syncstate") === "alldone")
-            this.go();
-    },
+var tzsync = {
 
     go: function() {
-        var syncing = tztools.getLocalizedMessage("syncingString");
-        this.prefs.setCharPref("syncstate", syncing);
-        this.time = this.prefs.getCharPref("LastSyncTime") / 1000;
+        var syncing = tzcommon.getLocalizedMessage("syncingString");
+        tzcommon.prefs.setCharPref("syncstate", syncing);
+        this.time = tzcommon.prefs.getCharPref("LastSyncTime") / 1000;
         this.time2 = (Date.now() / 1000) - 1;
 
-        if (this.prefs.getBoolPref("prov")) {
+        if (tzcommon.prefs.getBoolPref("prov")) {
             this.Polkey();
         } else {
-            if (this.prefs.getCharPref("synckey") === '') {
+            if (tzcommon.prefs.getCharPref("synckey") === '') {
                 this.GetFolderId();
             } else {
                 this.fromzpush();
@@ -139,21 +121,21 @@ var tzpush = {
     },
 
     Polkey: function() {
-        var polkey = this.prefs.getCharPref("polkey");
+        var polkey = tzcommon.prefs.getCharPref("polkey");
         if (isNaN(polkey)) {
             polkey = 0;
         }
         if (polkey === "0") {
 
             var wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x01, 0x01, 0x01);
-            if (this.prefs.getCharPref("asversion") !== "2.5") {
+            if (tzcommon.prefs.getCharPref("asversion") !== "2.5") {
                 wbxml = wbxml.replace("MS-WAP-Provisioning-XML", "MS-EAS-Provisioning-WBXML");
             }
             var command = "Provision";
             wbxml = this.Send(wbxml, polcallback.bind(this), command);
 
         } else {
-            if (this.prefs.getCharPref("synckey") === '') {
+            if (tzcommon.prefs.getCharPref("synckey") === '') {
                 this.GetFolderId();
             } else {
                 this.fromzpush();
@@ -164,7 +146,7 @@ var tzpush = {
         function polcallback(returnedwbxml) {
             wbxml = returnedwbxml;
             polkey = FindPolkey(wbxml);
-            this.prefs.setCharPref("polkey", polkey);
+            tzcommon.prefs.setCharPref("polkey", polkey);
             wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x49, 0x03, 0x50, 0x6F, 0x6C, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x4B, 0x03, 0x31, 0x00, 0x01, 0x01, 0x01, 0x01);
             wbxml = wbxml.replace('PolKeyReplace', polkey);
             command = "Provision";
@@ -174,7 +156,7 @@ var tzpush = {
         function polcallback1(returnedwbxml) {
             wbxml = returnedwbxml;
             polkey = FindPolkey(wbxml);
-            this.prefs.setCharPref("polkey", polkey);
+            tzcommon.prefs.setCharPref("polkey", polkey);
             wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x49, 0x03, 0x50, 0x6F, 0x6C, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x4B, 0x03, 0x31, 0x00, 0x01, 0x01, 0x01, 0x01);
             wbxml = wbxml.replace('PolKeyReplace', polkey);
             command = "Provision";
@@ -184,7 +166,7 @@ var tzpush = {
         function polcallback2(returnedwbxml) {
             wbxml = returnedwbxml;
             polkey = FindPolkey(wbxml);
-            this.prefs.setCharPref("polkey", polkey);
+            tzcommon.prefs.setCharPref("polkey", polkey);
             this.GetFolderId();
         }
 
@@ -208,9 +190,9 @@ var tzpush = {
         function callback1(returnedwbxml) {
             wbxml = returnedwbxml;
             synckey = this.FindKey(wbxml);
-            this.prefs.setCharPref("folderSynckey", synckey);
+            tzcommon.prefs.setCharPref("folderSynckey", synckey);
             folderID = this.FindFolder(wbxml, 9);
-            if (this.prefs.getCharPref("asversion") === "2.5") {
+            if (tzcommon.prefs.getCharPref("asversion") === "2.5") {
                 wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x30, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x01, 0x01);
             } else {
                 wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x30, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x01, 0x01);
@@ -223,24 +205,24 @@ var tzpush = {
         function callback2(returnedwbxml) {
             wbxml = returnedwbxml;
             synckey = this.FindKey(wbxml);
-            this.prefs.setCharPref("synckey", synckey);
-            this.prefs.setCharPref("folderID", folderID);
+            tzcommon.prefs.setCharPref("synckey", synckey);
+            tzcommon.prefs.setCharPref("folderID", folderID);
             this.fromzpush();
         }
     },
 
     fromzpush: function() {
-        this.prefs.setCharPref("syncstate", "Requesting Changes");
+        tzcommon.prefs.setCharPref("syncstate", "Requesting Changes");
         var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
         var moreavilable = 1;
-        var folderID = this.prefs.getCharPref("folderID");
+        var folderID = tzcommon.prefs.getCharPref("folderID");
 
         var wbxmlsend = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x1E, 0x13, 0x55, 0x03, 0x31, 0x30, 0x30, 0x00, 0x01, 0x57, 0x00, 0x11, 0x45, 0x46, 0x03, 0x31, 0x00, 0x01, 0x47, 0x03, 0x32, 0x30, 0x30, 0x30, 0x30, 0x30, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01);
-        if (this.prefs.getCharPref("asversion") === "2.5") {
+        if (tzcommon.prefs.getCharPref("asversion") === "2.5") {
             wbxmlsend = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x1E, 0x13, 0x55, 0x03, 0x31, 0x30, 0x30, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01);
         }
 
-        var synckey = this.prefs.getCharPref("synckey");
+        var synckey = tzcommon.prefs.getCharPref("synckey");
         var wbxml = wbxmlsend.replace('SyncKeyReplace', synckey);
         wbxml = wbxml.replace('Id2Replace', folderID);
 
@@ -249,9 +231,9 @@ var tzpush = {
 
         function callback(returnedwbxml) {
             if (returnedwbxml.length === 0) {
-                tzpush.tozpush();
+                this.tozpush();
             } else {
-                this.prefs.setCharPref("syncstate", "Recieving changes");
+                tzcommon.prefs.setCharPref("syncstate", "Recieving changes");
                 wbxml = returnedwbxml;
                 var firstcmd = wbxml.indexOf(String.fromCharCode(0x56));
 
@@ -266,18 +248,18 @@ var tzpush = {
                 var wbxmlstatus = truncwbxml.substring(n + 2, n1);
 
                 if (wbxmlstatus === '3' || wbxmlstatus === '12') {
-                    tztools.dump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-                    this.prefs.setCharPref("syncstate", "alldone");
-                    this.prefs.setCharPref("go", "resync");
+                    tzcommon.dump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
+                    tzcommon.prefs.setCharPref("syncstate", "alldone");
+                    tzcommon.prefs.setCharPref("go", "resync");
                 } else if (wbxmlstatus !== '1') {
-                    tztools.dump("tzpush wbxml status", "server error? " + wbxmlstatus);
-                    this.prefs.setCharPref("syncstate", "alldone");
-                    this.prefs.setCharPref("go", "alldone");
+                    tzcommon.dump("tzpush wbxml status", "server error? " + wbxmlstatus);
+                    tzcommon.prefs.setCharPref("syncstate", "alldone");
+                    tzcommon.prefs.setCharPref("go", "alldone");
                 } else {
                     synckey = this.FindKey(wbxml);
-                    this.prefs.setCharPref("synckey", synckey);
+                    tzcommon.prefs.setCharPref("synckey", synckey);
                     var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-                    var addressBook = abManager.getDirectory(this.prefs.getCharPref("abname"));
+                    var addressBook = abManager.getDirectory(tzcommon.prefs.getCharPref("abname"));
 
                     var stack = [];
                     var num = 4;
@@ -305,7 +287,7 @@ var tzpush = {
                     var modcard;
                     var ServerId;
                     var cardsToDelete;
-                    var seperator = this.prefs.getCharPref("seperator");
+                    var seperator = tzcommon.prefs.getCharPref("seperator");
 
                     while (num < wbxml.length) {
                         token = wbxml.substr(num, 1);
@@ -320,7 +302,7 @@ var tzpush = {
                             num = wbxml.indexOf(String.fromCharCode(0x00), num);
 
                             if (x === 0x01 && temptoken === 0x7C) {
-                                filePath = tztools.addphoto(card, data);
+                                filePath = tzcommon.addphoto(card, data);
                                 photo = card.getProperty("ServerId", "") + '.jpg';
                             } else if (x === 0x01 && temptoken === 0x48) {
                                 card.setProperty("Birthday", data);
@@ -389,14 +371,14 @@ var tzpush = {
                                     card.setProperty("PhotoURI", filePath);
                                     photo = '';
                                 }
-                                if (this.prefs.getCharPref("go", "") === "firstsync") {
+                                if (tzcommon.prefs.getCharPref("go", "") === "firstsync") {
                                     let tempsid;
                                     try {
                                         tempsid = card.getProperty("ServerId", "");
                                     } catch (e) {}
 
                                     if (!addressBook.getCardFromProperty("ServerId", tempsid, false)) {
-                                        if (this.prefs.getBoolPref("displayoverride")) {
+                                        if (tzcommon.prefs.getBoolPref("displayoverride")) {
                                             card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
                                         }
                                         /* newCard = */ addressBook.addCard(card);
@@ -427,7 +409,7 @@ var tzpush = {
                                             modcard.setProperty("PhotoURI", filePath);
                                             photo = '';
                                         }
-                                        if (this.prefs.getBoolPref("displayoverride")) {
+                                        if (tzcommon.prefs.getBoolPref("displayoverride")) {
                                             modcard.setProperty("DisplayName", modcard.getProperty("FirstName", "") + " " + modcard.getProperty("LastName", ""));
                                         }
 
@@ -436,7 +418,7 @@ var tzpush = {
                                     }
 
                                 } else {
-                                    if (this.prefs.getBoolPref("displayoverride")) {
+                                    if (tzcommon.prefs.getBoolPref("displayoverride")) {
                                         card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
                                     }
                                     /* newCard = */ addressBook.addCard(card);
@@ -497,7 +479,7 @@ var tzpush = {
                                     modcard.setProperty("PhotoURI", filePath);
                                     photo = '';
                                 }
-                                if (this.prefs.getBoolPref("displayoverride")) {
+                                if (tzcommon.prefs.getBoolPref("displayoverride")) {
                                     modcard.setProperty("DisplayName", modcard.getProperty("FirstName", "") + " " + modcard.getProperty("LastName", ""));
                                 }
                                 /* newCard = */ addressBook.modifyCard(modcard);
@@ -525,10 +507,10 @@ var tzpush = {
                         wbxml = wbxml.replace('Id2Replace', folderID);
                         command = "Sync";
                         this.Send(wbxml, callback.bind(this), command);
-                    } else if (this.prefs.getBoolPref("downloadonly")) {
-                        this.prefs.setCharPref("LastSyncTime", Date.now());
-                        this.prefs.setCharPref("syncstate", "alldone");
-                        this.prefs.setCharPref("go", "alldone");
+                    } else if (tzcommon.prefs.getBoolPref("downloadonly")) {
+                        tzcommon.prefs.setCharPref("LastSyncTime", Date.now());
+                        tzcommon.prefs.setCharPref("syncstate", "alldone");
+                        tzcommon.prefs.setCharPref("go", "alldone");
                     } else {
                         this.tozpush();
                     }
@@ -539,18 +521,18 @@ var tzpush = {
     },
 
     tozpush: function() {
-        this.prefs.setCharPref("syncstate", "Sending changes");
-        var folderID = this.prefs.getCharPref("folderID");
-        var synckey = this.prefs.getCharPref("synckey");
+        tzcommon.prefs.setCharPref("syncstate", "Sending changes");
+        var folderID = tzcommon.prefs.getCharPref("folderID");
+        var synckey = tzcommon.prefs.getCharPref("synckey");
 
         var wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
-        if (this.prefs.getCharPref("asversion") === "2.5") {
+        if (tzcommon.prefs.getCharPref("asversion") === "2.5") {
             wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
         }
 
         var wbxml = '';
         var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-        var addressBook = abManager.getDirectory(this.prefs.getCharPref("abname"));
+        var addressBook = abManager.getDirectory(tzcommon.prefs.getCharPref("abname"));
         var x;
         var birthd;
         var birthm;
@@ -576,9 +558,9 @@ var tzpush = {
         var wbxmlinner;
         var command;
         var card;
-        var maxnumbertosend = parseInt(this.prefs.getCharPref("maxnumbertosend"));
+        var maxnumbertosend = parseInt(tzcommon.prefs.getCharPref("maxnumbertosend"));
         var morecards = false;
-        var seperator = this.prefs.getCharPref("seperator"); // default is " ," can be changed to "/n"
+        var seperator = tzcommon.prefs.getCharPref("seperator"); // default is " ," can be changed to "/n"
         var cards = addressBook.childCards;
 
         while (cards.hasMoreElements()) {
@@ -650,7 +632,7 @@ var tzpush = {
                                 if (mbd === 3) {
                                     birthymd = birthy + "-" + birthm + "-" + birthd + "T00:00:00.000Z";
                                     mbd = 0;
-                                    if (this.prefs.getBoolPref("birthday") === true) {
+                                    if (tzcommon.prefs.getBoolPref("birthday") === true) {
                                         wbxml = wbxml + String.fromCharCode(0x48) + String.fromCharCode(0x03) + birthymd + String.fromCharCode(0x00, 0x01);
                                     }
                                 }
@@ -669,7 +651,7 @@ var tzpush = {
                                 if (ambd === 3) {
                                     annymd = anny + "-" + annm + "-" + annd + "T00:00:00.000Z";
                                     ambd = 0;
-                                    if (this.prefs.getBoolPref("birthday") === true) {
+                                    if (tzcommon.prefs.getBoolPref("birthday") === true) {
                                         wbxml = wbxml + String.fromCharCode(0x45) + String.fromCharCode(0x03) + annymd + String.fromCharCode(0x00, 0x01);
                                     }
                                 }
@@ -678,7 +660,7 @@ var tzpush = {
                                 cat = cat.replace("replaceme", utf8Encode(card.getProperty(x, '')));
                                 wbxml = wbxml + cat;
                             } else if (x === 'Notes') {
-                                if (this.prefs.getCharPref("asversion") === "2.5") {
+                                if (tzcommon.prefs.getCharPref("asversion") === "2.5") {
                                     wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + utf8Encode(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
                                 } else {
                                     let body = String.fromCharCode(0x00, 0x11, 0x4a, 0x46, 0x03, 0x31, 0x00, 0x01, 0x4c, 0x03, 0x37, 0x00, 0x01, 0x4b, 0x03, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x00, 0x01);
@@ -778,7 +760,7 @@ var tzpush = {
                                     if (mbd === 3) {
                                         birthymd = birthy + "-" + birthm + "-" + birthd + "T00:00:00.000Z";
                                         mbd = 0;
-                                        if (this.prefs.getBoolPref("birthday") === true) {
+                                        if (tzcommon.prefs.getBoolPref("birthday") === true) {
                                             wbxml = wbxml + String.fromCharCode(0x48) + String.fromCharCode(0x03) + birthymd + String.fromCharCode(0x00, 0x01);
                                         }
                                     }
@@ -798,7 +780,7 @@ var tzpush = {
                                         annymd = anny + "-" + annm + "-" + annd + "T00:00:00.000Z";
                                         ambd = 0;
 
-                                        if (this.prefs.getBoolPref("birthday") === true) {
+                                        if (tzcommon.prefs.getBoolPref("birthday") === true) {
                                             wbxml = wbxml + String.fromCharCode(0x45) + String.fromCharCode(0x03) + annymd + String.fromCharCode(0x00, 0x01);
                                         }
                                     }
@@ -807,7 +789,7 @@ var tzpush = {
                                     cat = cat.replace("replaceme", utf8Encode(card.getProperty(x, '')));
                                     wbxml = wbxml + cat;
                                 } else if (x === 'Notes') {
-                                    if (this.prefs.getCharPref("asversion") === "2.5") {
+                                    if (tzcommon.prefs.getCharPref("asversion") === "2.5") {
                                         wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + utf8Encode(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
                                     } else {
                                         let body = String.fromCharCode(0x00, 0x11, 0x4a, 0x46, 0x03, 0x31, 0x00, 0x01, 0x4c, 0x03, 0x37, 0x00, 0x01, 0x4b, 0x03, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x00, 0x01);
@@ -859,24 +841,24 @@ var tzpush = {
             var wbxmlstatus = truncwbxml.substring(n + 2, n1);
 
             if (wbxmlstatus === '3' || wbxmlstatus === '12') {
-                tztools.dump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-                this.prefs.setCharPref("syncstate", "alldone");
-                this.prefs.setCharPref("go", "resync");
+                tzcommon.dump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
+                tzcommon.prefs.setCharPref("syncstate", "alldone");
+                tzcommon.prefs.setCharPref("go", "resync");
 
             } else if (wbxmlstatus !== '1') {
-                tztools.dump("tzpush wbxml status", "server error? " + wbxmlstatus);
-                this.prefs.setCharPref("syncstate", "alldone");
-                this.prefs.setCharPref("go", "alldone");
+                tzcommon.dump("tzpush wbxml status", "server error? " + wbxmlstatus);
+                tzcommon.prefs.setCharPref("syncstate", "alldone");
+                tzcommon.prefs.setCharPref("go", "alldone");
             } else {
-                this.prefs.setCharPref("syncstate", "Adding new serverid");
+                tzcommon.prefs.setCharPref("syncstate", "Adding new serverid");
 
                 var count = 0;
                 synckey = this.FindKey(wbxml);
-                this.prefs.setCharPref("synckey", synckey);
+                tzcommon.prefs.setCharPref("synckey", synckey);
 
                 var oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
-                var oDOM = oParser.parseFromString(tzpush.toxml(wbxml), "text/xml");
-                addressBook = abManager.getDirectory(this.prefs.getCharPref("abname"));
+                var oDOM = oParser.parseFromString(this.toxml(wbxml), "text/xml");
+                addressBook = abManager.getDirectory(tzcommon.prefs.getCharPref("abname"));
 
 
                 var add = oDOM.getElementsByTagName("Add");
@@ -896,7 +878,7 @@ var tzpush = {
                             addserverid.setProperty('ServerId', ServerId);
                             /* var newCard = */ addressBook.modifyCard(addserverid);
                         } catch (e) {
-                            tztools.dump("tzpush error", e);
+                            tzcommon.dump("tzpush error", e);
                         }
                     }
                 }
@@ -922,7 +904,7 @@ var tzpush = {
                                 /* newCard = */ addressBook.modifyCard(addserverid);
                                 morecards = true;
                             } catch (e) {
-                                tztools.dump("tzpush error", e);
+                                tzcommon.dump("tzpush error", e);
                             }
                         }
                     }
@@ -968,12 +950,12 @@ var tzpush = {
     },
 
     senddel: function() {
-        this.prefs.setCharPref("syncstate", "Sending items to delete");
-        var folderID = this.prefs.getCharPref("folderID");
-        var synckey = this.prefs.getCharPref("synckey");
+        tzcommon.prefs.setCharPref("syncstate", "Sending items to delete");
+        var folderID = tzcommon.prefs.getCharPref("folderID");
+        var synckey = tzcommon.prefs.getCharPref("synckey");
 
         var wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
-        if (this.prefs.getCharPref("asversion") === "2.5") {
+        if (tzcommon.prefs.getCharPref("asversion") === "2.5") {
             wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
         }
 
@@ -984,7 +966,7 @@ var tzpush = {
         var wbxmlinner;
         var more = false;
         var command;
-        var maxnumbertosend = parseInt(this.prefs.getCharPref("maxnumbertosend"));
+        var maxnumbertosend = parseInt(tzcommon.prefs.getCharPref("maxnumbertosend"));
 
         Components.utils.import("resource://gre/modules/FileUtils.jsm");
         var file = FileUtils.getFile("ProfD", ["DeletedCards"], true);
@@ -1013,9 +995,9 @@ var tzpush = {
             command = "Sync";
             var returned = this.Send(wbxml, callback.bind(this), command);
         } else {
-            this.prefs.setCharPref("LastSyncTime", Date.now());
-            this.prefs.setCharPref("syncstate", "alldone");
-            this.prefs.setCharPref("go", "alldone");
+            tzcommon.prefs.setCharPref("LastSyncTime", Date.now());
+            tzcommon.prefs.setCharPref("syncstate", "alldone");
+            tzcommon.prefs.setCharPref("go", "alldone");
         }
 
         function callback(returnedwbxml) {
@@ -1030,18 +1012,18 @@ var tzpush = {
             var wbxmlstatus = truncwbxml.substring(n + 2, n1);
 
             if (wbxmlstatus === '3' || wbxmlstatus === '12') {
-                tztools.dump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-                this.prefs.setCharPref("syncstate", "alldone");
-                this.prefs.setCharPref("go", "resync");
+                tzcommon.dump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
+                tzcommon.prefs.setCharPref("syncstate", "alldone");
+                tzcommon.prefs.setCharPref("go", "resync");
             } else if (wbxmlstatus !== '1') {
-                tztools.dump("tzpush wbxml status", "server error? " + wbxmlstatus);
-                this.prefs.setCharPref("syncstate", "alldone");
-                this.prefs.setCharPref("go", "alldone");
+                tzcommon.dump("tzpush wbxml status", "server error? " + wbxmlstatus);
+                tzcommon.prefs.setCharPref("syncstate", "alldone");
+                tzcommon.prefs.setCharPref("go", "alldone");
             } else {
                 synckey = this.FindKey(wbxml);
-                this.prefs.setCharPref("synckey", synckey);
+                tzcommon.prefs.setCharPref("synckey", synckey);
                 for (var count in cardstodelete) {
-                    this.prefs.setCharPref("syncstate", "Cleaning up deleted items");
+                    tzcommon.prefs.setCharPref("syncstate", "Cleaning up deleted items");
                     var file = FileUtils.getDir("ProfD", ["DeletedCards"], true);
                     file.append(cardstodelete[count]);
                     file.remove("true");
@@ -1050,9 +1032,9 @@ var tzpush = {
                 if (more) {
                     this.senddel();
                 } else {
-                    this.prefs.setCharPref("LastSyncTime", Date.now());
-                    this.prefs.setCharPref("syncstate", "alldone");
-                    this.prefs.setCharPref("go", "alldone");
+                    tzcommon.prefs.setCharPref("LastSyncTime", Date.now());
+                    tzcommon.prefs.setCharPref("syncstate", "alldone");
+                    tzcommon.prefs.setCharPref("go", "alldone");
                 }
             }
         }
@@ -1060,7 +1042,7 @@ var tzpush = {
 
 
 
-    FindKey: function(wbxml) {
+    FindKey: function (wbxml) {
         var x = String.fromCharCode(0x4b, 0x03); //<SyncKey> Code Page 0
         if (wbxml.substr(5, 1) === String.fromCharCode(0x07)) {
             x = String.fromCharCode(0x52, 0x03); //<SyncKey> Code Page 7
@@ -1073,7 +1055,7 @@ var tzpush = {
 
     },
 
-    FindFolder: function(wbxml, type) {
+    FindFolder: function (wbxml, type) {
         var start = 0;
         var end;
         var folderID;
@@ -1091,125 +1073,109 @@ var tzpush = {
     },
 
     InitContact2: function() {
-        tzpush.Contacts2 = [];
-        for (var x in tzpush.ToContacts) {
-            tzpush.Contacts2[tzpush.ToContacts[x]] = x;
+        this.Contacts2 = [];
+        for (var x in this.ToContacts) {
+            this.Contacts2[this.ToContacts[x]] = x;
         }
-    }
-};
+    },
 
-
-
-
-
-tzpush.Send = function (wbxml, callback, command) {
-    let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
-    let prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush.");
     
-    if (prefs.getCharPref("debugwbxml") === "1") {
-        tztools.dump("sending", decodeURIComponent(escape(tzpush.toxml(wbxml).split('><').join('>\n<'))));
-        tztools.appendToFile("wbxml-debug.log", wbxml);
-    }
+    Send: function (wbxml, callback, command) {
+        let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
+        let prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush.");
+        
+        if (prefs.getCharPref("debugwbxml") === "1") {
+            tzcommon.dump("sending", decodeURIComponent(escape(this.toxml(wbxml).split('><').join('>\n<'))));
+            tzcommon.appendToFile("wbxml-debug.log", wbxml);
+        }
 
 
-    let protocol = (prefs.getBoolPref("https")) ? "https://" : "http://";
-    let host = protocol + prefs.getCharPref("host");
-    let server = host + "/Microsoft-Server-ActiveSync";
+        let protocol = (prefs.getBoolPref("https")) ? "https://" : "http://";
+        let host = protocol + prefs.getCharPref("host");
+        let server = host + "/Microsoft-Server-ActiveSync";
 
-    let user = prefs.getCharPref("user");
-    let password = tztools.getpassword(host, user)
-    let deviceType = 'Thunderbird';
-    let deviceId = prefs.getCharPref("deviceId");
-    
-    // Create request handler
-    let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-    req.mozBackgroundRequest = true;
-    if (prefs.getCharPref("debugwbxml") === "1") {
-        tztools.dump("sending", "POST " + server + '?Cmd=' + command + '&User=' + user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
-    }
-    req.open("POST", server + '?Cmd=' + command + '&User=' + user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
-    req.overrideMimeType("text/plain");
-    req.setRequestHeader("User-Agent", deviceType + ' ActiveSync');
-    req.setRequestHeader("Content-Type", "application/vnd.ms-sync.wbxml");
-    req.setRequestHeader("Authorization", 'Basic ' + btoa(user + ':' + password));
-    if (prefs.getCharPref("asversion") === "2.5") {
-        req.setRequestHeader("MS-ASProtocolVersion", "2.5");
-    } else {
-        req.setRequestHeader("MS-ASProtocolVersion", "14.0");
-    }
-    req.setRequestHeader("Content-Length", wbxml.length);
-    if (prefs.getBoolPref("prov")) {
-        req.setRequestHeader("X-MS-PolicyKey", prefs.getCharPref("polkey"));
-    }
+        let user = prefs.getCharPref("user");
+        let password = tzcommon.getpassword(host, user)
+        let deviceType = 'Thunderbird';
+        let deviceId = prefs.getCharPref("deviceId");
+        
+        // Create request handler
+        let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+        req.mozBackgroundRequest = true;
+        if (prefs.getCharPref("debugwbxml") === "1") {
+            tzcommon.dump("sending", "POST " + server + '?Cmd=' + command + '&User=' + user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
+        }
+        req.open("POST", server + '?Cmd=' + command + '&User=' + user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
+        req.overrideMimeType("text/plain");
+        req.setRequestHeader("User-Agent", deviceType + ' ActiveSync');
+        req.setRequestHeader("Content-Type", "application/vnd.ms-sync.wbxml");
+        req.setRequestHeader("Authorization", 'Basic ' + btoa(user + ':' + password));
+        if (prefs.getCharPref("asversion") === "2.5") {
+            req.setRequestHeader("MS-ASProtocolVersion", "2.5");
+        } else {
+            req.setRequestHeader("MS-ASProtocolVersion", "14.0");
+        }
+        req.setRequestHeader("Content-Length", wbxml.length);
+        if (prefs.getBoolPref("prov")) {
+            req.setRequestHeader("X-MS-PolicyKey", prefs.getCharPref("polkey"));
+        }
 
-    // Define response handler for our request
-    req.onreadystatechange = function() { 
-        //tztools.dump("header",req.getAllResponseHeaders().toLowerCase())
-        if (req.readyState === 4 && req.status === 200) {
+        // Define response handler for our request
+        req.onreadystatechange = function() { 
+            //tzcommon.dump("header",req.getAllResponseHeaders().toLowerCase())
+            if (req.readyState === 4 && req.status === 200) {
 
-            wbxml = req.responseText;
-            if (prefs.getCharPref("debugwbxml") === "1") {
-                tztools.dump("recieved", tztools.decode_utf8(tzpush.toxml(wbxml).split('><').join('>\n<')));
-                tztools.appendToFile("wbxml-debug.log", wbxml);
-                //tztools.dump("header",req.getAllResponseHeaders().toLowerCase())
-            }
-            if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
-                if (wbxml.length !== 0) {
-                    tztools.dump("tzpush", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
+                wbxml = req.responseText;
+                if (prefs.getCharPref("debugwbxml") === "1") {
+                    tzcommon.dump("recieved", tzcommon.decode_utf8(this.toxml(wbxml).split('><').join('>\n<')));
+                    tzcommon.appendToFile("wbxml-debug.log", wbxml);
+                    //tzcommon.dump("header",req.getAllResponseHeaders().toLowerCase())
                 }
-            }
-            callback(req.responseText);
-        } else if (req.readyState === 4) {
-
-            switch(req.status) {
-                case 0:
-                    tztools.dump("tzpush request status", "0 -- No connection - check server address");
-                    break;
-                
-                case 401: // AuthError
-                    tztools.dump("tzpush request status", "401 -- Auth error - check username and password");
-                    break;
-                
-                case 449: // Request for new provision
-                    if (prefs.getBoolPref("prov")) {
-                        prefs.setCharPref("go", "resync");
-                    } else {
-                        tztools.dump("tzpush request status", "449 -- Insufficient information - retry with provisioning");
+                if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
+                    if (wbxml.length !== 0) {
+                        tzcommon.dump("tzpush", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
                     }
-                    break;
-            
-                case 451: // Redirect - update host and login manager 
-                    let header = req.getResponseHeader("X-MS-Location");
-                    let newurl = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
-                    let password = tztools.getpassword();
+                }
+                callback(req.responseText);
+            } else if (req.readyState === 4) {
 
-                    tztools.dump("Redirect (451)", "header: " + header + ", newurl: " + newurl + ", password: " + password);
-                    prefs.setCharPref("host", newurl);
-
-                    let protocol = (prefs.getBoolPref("https")) ? "http://" : "https://";
-                    let host = protocol + newurl;
-                    let server = host + "/Microsoft-Server-ActiveSync";
-                    let user = prefs.getCharPref("user");
-
-                    let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
-                    let updateloginInfo = new nsLoginInfo(host, server, null, user, password, "USER", "PASSWORD");
-                    let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-
-                    // We are trying to update the LoginManager (because the host changed), but what about Polkey, GetFolderId and fromzpush?
-                    try {
-                        myLoginManager.addLogin(updateloginInfo);
+                switch(req.status) {
+                    case 0:
+                        tzcommon.dump("tzpush request status", "0 -- No connection - check server address");
+                        break;
+                    
+                    case 401: // AuthError
+                        tzcommon.dump("tzpush request status", "401 -- Auth error - check username and password");
+                        break;
+                    
+                    case 449: // Request for new provision
                         if (prefs.getBoolPref("prov")) {
-                            this.Polkey();
+                            prefs.setCharPref("go", "resync");
                         } else {
-                            if (prefs.getCharPref("synckey") === '') {
-                                this.GetFolderId();
-                            } else {
-                                this.fromzpush();
-                            }
+                            tzcommon.dump("tzpush request status", "449 -- Insufficient information - retry with provisioning");
                         }
-                    } catch (e) {
-                        if (e.message.match("This login already exists")) {
-                            tztools.dump("login ", "Already exists");
+                        break;
+                
+                    case 451: // Redirect - update host and login manager 
+                        let header = req.getResponseHeader("X-MS-Location");
+                        let newurl = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
+                        let password = tzcommon.getpassword();
+
+                        tzcommon.dump("Redirect (451)", "header: " + header + ", newurl: " + newurl + ", password: " + password);
+                        prefs.setCharPref("host", newurl);
+
+                        let protocol = (prefs.getBoolPref("https")) ? "http://" : "https://";
+                        let host = protocol + newurl;
+                        let server = host + "/Microsoft-Server-ActiveSync";
+                        let user = prefs.getCharPref("user");
+
+                        let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
+                        let updateloginInfo = new nsLoginInfo(host, server, null, user, password, "USER", "PASSWORD");
+                        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
+
+                        // We are trying to update the LoginManager (because the host changed), but what about Polkey, GetFolderId and fromzpush?
+                        try {
+                            myLoginManager.addLogin(updateloginInfo);
                             if (prefs.getBoolPref("prov")) {
                                 this.Polkey();
                             } else {
@@ -1219,417 +1185,429 @@ tzpush.Send = function (wbxml, callback, command) {
                                     this.fromzpush();
                                 }
                             }
-                        } else {
-                            tztools.dump("login error", e);
+                        } catch (e) {
+                            if (e.message.match("This login already exists")) {
+                                tzcommon.dump("login ", "Already exists");
+                                if (prefs.getBoolPref("prov")) {
+                                    this.Polkey();
+                                } else {
+                                    if (prefs.getCharPref("synckey") === '') {
+                                        this.GetFolderId();
+                                    } else {
+                                        this.fromzpush();
+                                    }
+                                }
+                            } else {
+                                tzcommon.dump("login error", e);
+                            }
                         }
-                    }
-                    break;
-                    
-                default:
-                    tztools.dump("tzpush request status", "reported -- " + req.status);
-            }
-            prefs.setCharPref("syncstate", "alldone"); // Maybe inform user about errors?
-        }
-
-    }.bind(this);
-
-
-    try {        
-        if (platformVer >= 50) {
-            /*nBytes = wbxml.length;
-            ui8Data = new Uint8Array(nBytes);
-            for (let nIdx = 0; nIdx < nBytes; nIdx++) {
-                ui8Data[nIdx] = wbxml.charCodeAt(nIdx) & 0xff;
-            }*/
-
-            req.send(wbxml);
-        } else {
-            let nBytes = wbxml.length;
-            let ui8Data = new Uint8Array(nBytes);
-            for (let nIdx = 0; nIdx < nBytes; nIdx++) {
-                ui8Data[nIdx] = wbxml.charCodeAt(nIdx) & 0xff;
-            }
-            //tztools.dump("ui8Data",toxml(wbxml))	
-            req.send(ui8Data);
-        }
-    } catch (e) {
-        tztools.dump("tzpush error", e);
-    }
-
-    return true;
-}
-
-
-
-
-
-// Convert a WAP Binary XML to plain XML
-tzpush.toxml = function (wbxml) {
-    let AirSyncBase = ({
-        0x05: '<BodyPreference>',
-        0x06: '<Type>',
-        0x07: '<TruncationSize>',
-        0x08: '<AllOrNone>',
-        0x0A: '<Body>',
-        0x0B: '<Data>',
-        0x0C: '<EstimatedDataSize>',
-        0x0D: '<Truncated>',
-        0x0E: '<Attachments>',
-        0x0F: '<Attachment>',
-        0x10: '<DisplayName>',
-        0x11: '<FileReference>',
-        0x12: '<Method>',
-        0x13: '<ContentId>',
-        0x14: '<ContentLocation>',
-        0x15: '<IsInline>',
-        0x16: '<NativeBodyType>',
-        0x17: '<ContentType>',
-        0x18: '<Preview>',
-        0x19: '<BodyPartPreference>',
-        0x1A: '<BodyPart>',
-        0x1B: '<Status>'
-    });
-
-    let AirSync = ({
-        0x05: '<Sync>',
-        0x06: '<Responses>',
-        0x07: '<Add>',
-        0x08: '<Change>',
-        0x09: '<Delete>',
-        0x0A: '<Fetch>',
-        0x0B: '<SyncKey>',
-        0x0C: '<ClientId>',
-        0x0D: '<ServerId>',
-        0x0E: '<Status>',
-        0x0F: '<Collection>',
-        0x10: '<Class>',
-        0x12: '<CollectionId>',
-        0x13: '<GetChanges>',
-        0x14: '<MoreAvailable>',
-        0x15: '<WindowSize>',
-        0x16: '<Commands>',
-        0x17: '<Options>',
-        0x18: '<FilterType>',
-        0x1B: '<Conflict>',
-        0x1C: '<Collections>',
-        0x1D: '<ApplicationData>',
-        0x1E: '<DeletesAsMoves>',
-        0x20: '<Supported>',
-        0x21: '<SoftDelete>',
-        0x22: '<MIMESupport>',
-        0x23: '<MIMETruncation>',
-        0x24: '<Wait>',
-        0x25: '<Limit>',
-        0x26: '<Partial>',
-        0x27: '<ConversationMode>',
-        0x28: '<MaxItems>',
-        0x29: '<HeartbeatInterval>'
-    });
-
-    let Contacts = ({
-        0x05: '<Anniversary>',
-        0x06: '<AssistantName>',
-        0x07: '<AssistantPhoneNumber>',
-        0x08: '<Birthday>',
-        0x09: '<body>',
-        0x0A: '<BodySize>',
-        0x0B: '<BodyTruncated>',
-        0x0C: '<Business2PhoneNumber>',
-        0x0D: '<BusinessAddressCity>',
-        0x0E: '<BusinessAddressCountry>',
-        0x0F: '<BusinessAddressPostalCode>',
-        0x10: '<BusinessAddressState>',
-        0x11: '<BusinessAddressStreet>',
-        0x12: '<BusinessFaxNumber>',
-        0x13: '<BusinessPhoneNumber>',
-        0x14: '<CarPhoneNumber>',
-        0x15: '<Categories>',
-        0x16: '<Category>',
-        0x17: '<Children>',
-        0x18: '<Child>',
-        0x19: '<CompanyName>',
-        0x1A: '<Department>',
-        0x1B: '<Email1Address>',
-        0x1C: '<Email2Address>',
-        0x1D: '<Email3Address>',
-        0x1E: '<FileAs>',
-        0x1F: '<FirstName>',
-        0x20: '<Home2PhoneNumber>',
-        0x21: '<HomeAddressCity>',
-        0x22: '<HomeAddressCountry>',
-        0x23: '<HomeAddressPostalCode>',
-        0x24: '<HomeAddressState>',
-        0x25: '<HomeAddressStreet>',
-        0x26: '<HomeFaxNumber>',
-        0x27: '<HomePhoneNumber>',
-        0x28: '<JobTitle>',
-        0x29: '<LastName>',
-        0x2A: '<MiddleName>',
-        0x2B: '<MobilePhoneNumber>',
-        0x2C: '<OfficeLocation>',
-        0x2D: '<OtherAddressCity>',
-        0x2E: '<OtherAddressCountry>',
-        0x2F: '<OtherAddressPostalCode>',
-        0x30: '<OtherAddressState>',
-        0x31: '<OtherAddressStreet>',
-        0x32: '<PagerNumber>',
-        0x33: '<RadioPhoneNumber>',
-        0x34: '<Spouse>',
-        0x35: '<Suffix>',
-        0x36: '<Title>',
-        0x37: '<WebPage>',
-        0x38: '<YomiCompanyName>',
-        0x39: '<YomiFirstName>',
-        0x3A: '<YomiLastName>',
-        0x3C: '<Picture>',
-        0x3D: '<Alias>',
-        0x3E: '<WeightedRank>',
-    });
-
-    let Settings = ({
-        0x05: '<Settings>',
-        0x06: '<Status>',
-        0x07: '<Get>',
-        0x08: '<Set>',
-        0x09: '<Oof>',
-        0x0A: '<OofState>',
-        0x0B: '<StartTime>',
-        0x0C: '<EndTime>',
-        0x0D: '<OofMessage>',
-        0x0E: '<AppliesToInternal>',
-        0x0F: '<AppliesToExternalKnown>',
-        0x10: '<AppliesToExternalUnknown>',
-        0x11: '<Enabled>',
-        0x12: '<ReplyMessage>',
-        0x13: '<BodyType>',
-        0x14: '<DevicePassword>',
-        0x15: '<Password>',
-        0x16: '<DeviceInformation>',
-        0x17: '<Model>',
-        0x18: '<IMEI>',
-        0x19: '<FriendlyName>',
-        0x1A: '<OS>',
-        0x1B: '<OSLanguage>',
-        0x1C: '<PhoneNumber>',
-        0x1D: '<UserInformation>',
-        0x1E: '<EmailAddresses>',
-        0x1F: '<SMTPAddress>',
-        0x20: '<UserAgent>',
-        0x21: '<EnableOutboundSMS>',
-        0x22: '<MobileOperator>',
-        0x23: '<PrimarySmtpAddress>',
-        0x24: '<Accounts>',
-        0x25: '<Account>',
-        0x26: '<AccountId>',
-        0x27: '<AccountName>',
-        0x28: '<UserDisplayName>',
-        0x29: '<SendDisabled>',
-        0x2B: '<RightsManagementInformation>'
-    });
-
-    let Provision = ({
-        0x05: '<Provision>',
-        0x06: '<Policies>',
-        0x07: '<Policy>',
-        0x08: '<PolicyType>',
-        0x09: '<PolicyKey>',
-        0x0A: '<Data>',
-        0x0B: '<Status>',
-        0x0C: '<RemoteWipe>',
-        0x0D: '<EASProvisionDoc>',
-        0x0E: '<DevicePasswordEnabled>',
-        0x0F: '<AlphanumericDevicePasswordRequired>',
-        0x10: '<DeviceEncryptionEnabled>',
-        // 0x10:'<RequireStorageCardEncryption>',
-        0x11: '<PasswordRecoveryEnabled>',
-        0x13: '<AttachmentsEnabled>',
-        0x14: '<MinDevicePasswordLength>',
-        0x15: '<MaxInactivityTimeDeviceLock>',
-        0x16: '<MaxDevicePasswordFailedAttempts>',
-        0x17: '<MaxAttachmentSize>',
-        0x18: '<AllowSimpleDevicePassword>',
-        0x19: '<DevicePasswordExpiration>',
-        0x1A: '<DevicePasswordHistory>',
-        0x1B: '<AllowStorageCard>',
-        0x1C: '<AllowCamera>',
-        0x1D: '<RequireDeviceEncryption>',
-        0x1E: '<AllowUnsignedApplications>',
-        0x1F: '<AllowUnsignedInstallationPackages>',
-        0x20: '<MinDevicePasswordComplexCharacters>',
-        0x21: '<AllowWiFi>',
-        0x22: '<AllowTextMessaging>',
-        0x23: '<AllowPOPIMAPEmail>',
-        0x24: '<AllowBluetooth>',
-        0x25: '<AllowIrDA>',
-        0x26: '<RequireManualSyncWhenRoaming>',
-        0x27: '<AllowDesktopSync>',
-        0x28: '<MaxCalendarAgeFilter>',
-        0x29: '<AllowHTMLEmail>',
-        0x2A: '<MaxEmailAgeFilter>',
-        0x2B: '<MaxEmailBodyTruncationSize>',
-        0x2C: '<MaxEmailHTMLBodyTruncationSize>',
-        0x2D: '<RequireSignedSMIMEMessages>',
-        0x2E: '<RequireEncryptedSMIMEMessages>',
-        0x2F: '<RequireSignedSMIMEAlgorithm>',
-        0x30: '<RequireEncryptionSMIMEAlgorithm>',
-        0x31: '<AllowSMIMEEncryptionAlgorithmNegotiation>',
-        0x32: '<AllowSMIMESoftCerts>',
-        0x33: '<AllowBrowser>',
-        0x34: '<AllowConsumerEmail>',
-        0x35: '<AllowRemoteDesktop>',
-        0x36: '<AllowInternetSharing>',
-        0x37: '<UnapprovedInROMApplicationList>',
-        0x38: '<ApplicationName>',
-        0x39: '<ApprovedApplicationList>',
-        0x3A: '<Hash>',
-    });
-
-    let FolderHierarchy = ({
-        0x07: '<DisplayName>',
-        0x08: '<ServerId>',
-        0x09: '<ParentId>',
-        0x0A: '<Type>',
-        0x0C: '<Status>',
-        0x0E: '<Changes>',
-        0x0F: '<Add>',
-        0x10: '<Delete>',
-        0x11: '<Update>',
-        0x12: '<SyncKey>',
-        0x13: '<FolderCreate>',
-        0x14: '<FolderDelete>',
-        0x15: '<FolderUpdate>',
-        0x16: '<FolderSync>',
-        0x17: '<Count>'
-    });
-
-    let Contacts2 = ({
-        0x05: '<CustomerId>',
-        0x06: '<GovernmentId>',
-        0x07: '<IMAddress>',
-        0x08: '<IMAddress2>',
-        0x09: '<IMAddress3>',
-        0x0A: '<ManagerName>',
-        0x0B: '<CompanyMainPhone>',
-        0x0C: '<AccountName>',
-        0x0D: '<NickName>',
-        0x0E: '<MMS>'
-    });
-
-    let Search = ({
-        0x05: '<Search>',
-        0x07: '<Store>',
-        0x08: '<Name>',
-        0x09: '<Query>',
-        0x0A: '<Options>',
-        0x0B: '<Range>',
-        0x0C: '<Status>',
-        0x0D: '<Response>',
-        0x0E: '<Result>',
-        0x0F: '<Properties>',
-        0x10: '<Total>',
-        0x11: '<EqualTo>',
-        0x12: '<Value>',
-        0x13: '<And>',
-        0x14: '<Or>',
-        0x15: '<FreeText>',
-        0x17: '<DeepTraversal>',
-        0x18: '<LongId>',
-        0x19: '<RebuildResults>',
-        0x1A: '<LessThan>',
-        0x1B: '<GreaterThan>',
-        0x1E: '<UserName>',
-        0x1F: '<Password>',
-        0x20: '<ConversationId>',
-        0x21: '<Picture>',
-        0x22: '<MaxSize>',
-        0x23: '<MaxPictures>'
-    });
-
-    let GAL = ({
-        0x05: '<DisplayName>',
-        0x06: '<Phone>',
-        0x07: '<Office>',
-        0x08: '<Title>',
-        0x09: '<Company>',
-        0x0A: '<Alias>',
-        0x0B: '<FirstName>',
-        0x0C: '<LastName>',
-        0x0D: '<HomePhone>',
-        0x0E: '<MobilePhone>',
-        0x0F: '<EmailAddress>',
-        0x10: '<Picture>',
-        0x11: '<Status>',
-        0x12: '<Data>'
-    });
-
-    let Code = ({
-        0x07: FolderHierarchy,
-        0x01: Contacts,
-        0x00: AirSync,
-        0x0E: Provision,
-        0x11: AirSyncBase,
-        0x12: Settings,
-        0x0C: Contacts2,
-        0x0F: Search,
-        0x10: GAL
-    });
-    
-    let Codestring = ({
-        0x07: "FolderHierarchy",
-        0x01: "Contacts",
-        0x00: "AirSync",
-        0x0E: "Provision",
-        0x11: "AirSyncBase",
-        0x12: "Settings",
-        0x0C: "Contacts2",
-        0x0F: "Search",
-        0x10: "GAL"
-    });
-
-    let CodePage = Code[0];
-    let stack = [];
-    let num = 4;
-    let xml = '<?xml version="1.0"?>';
-    let x = '0';
-    let firstxmlns = true;
-    let firstx = '0';
-    
-    while (num < wbxml.length) {
-        let token = wbxml.substr(num, 1);
-        let tokencontent = token.charCodeAt(0) & 0xbf;
-        if (token || tokencontent in Code) {
-            if (token == String.fromCharCode(0x00)) {
-                num = num + 1;
-                x = (wbxml.substr(num, 1)).charCodeAt(0);
-                CodePage = Code[x];
-                if (firstxmlns) {
-                    firstx = x;
+                        break;
+                        
+                    default:
+                        tzcommon.dump("tzpush request status", "reported -- " + req.status);
                 }
-            } else if (token == String.fromCharCode(0x03)) {
-                xml = xml + (wbxml.substring(num + 1, wbxml.indexOf(String.fromCharCode(0x00, 0x01), num)));
-                num = wbxml.indexOf(String.fromCharCode(0x00, 0x01), num);
-            } else if (token == String.fromCharCode(0x01)) {
-                xml = xml + (stack.pop());
-            } else if (token.charCodeAt(0) in CodePage) {
-                xml = xml + (CodePage[token.charCodeAt(0)]).replace('>', '/>');
-            } else if (tokencontent in CodePage) {
-                if (firstxmlns || x !== firstx) {
-                    xml = xml + (CodePage[tokencontent].replace('>', ' xmlns="' + Codestring[x] + ':">'));
-                    firstxmlns = false;
-                } else {
-                    xml = xml + (CodePage[tokencontent]);
-                }
+                prefs.setCharPref("syncstate", "alldone"); // Maybe inform user about errors?
+            }
 
-                stack.push((CodePage[tokencontent]).replace('<', '</'));
+        }.bind(this);
+
+
+        try {        
+            if (platformVer >= 50) {
+                /*nBytes = wbxml.length;
+                ui8Data = new Uint8Array(nBytes);
+                for (let nIdx = 0; nIdx < nBytes; nIdx++) {
+                    ui8Data[nIdx] = wbxml.charCodeAt(nIdx) & 0xff;
+                }*/
+
+                req.send(wbxml);
             } else {
-
+                let nBytes = wbxml.length;
+                let ui8Data = new Uint8Array(nBytes);
+                for (let nIdx = 0; nIdx < nBytes; nIdx++) {
+                    ui8Data[nIdx] = wbxml.charCodeAt(nIdx) & 0xff;
+                }
+                //tzcommon.dump("ui8Data",this.toxml(wbxml))	
+                req.send(ui8Data);
             }
+        } catch (e) {
+            tzcommon.dump("tzpush error", e);
         }
 
-        num = num + 1;
-    }
-    
-    return xml;
-}
+        return true;
+    },
 
-tzpush.InitContact2();
+
+
+    // Convert a WAP Binary XML to plain XML
+    toxml: function (wbxml) {
+        let AirSyncBase = ({
+            0x05: '<BodyPreference>',
+            0x06: '<Type>',
+            0x07: '<TruncationSize>',
+            0x08: '<AllOrNone>',
+            0x0A: '<Body>',
+            0x0B: '<Data>',
+            0x0C: '<EstimatedDataSize>',
+            0x0D: '<Truncated>',
+            0x0E: '<Attachments>',
+            0x0F: '<Attachment>',
+            0x10: '<DisplayName>',
+            0x11: '<FileReference>',
+            0x12: '<Method>',
+            0x13: '<ContentId>',
+            0x14: '<ContentLocation>',
+            0x15: '<IsInline>',
+            0x16: '<NativeBodyType>',
+            0x17: '<ContentType>',
+            0x18: '<Preview>',
+            0x19: '<BodyPartPreference>',
+            0x1A: '<BodyPart>',
+            0x1B: '<Status>'
+        });
+
+        let AirSync = ({
+            0x05: '<Sync>',
+            0x06: '<Responses>',
+            0x07: '<Add>',
+            0x08: '<Change>',
+            0x09: '<Delete>',
+            0x0A: '<Fetch>',
+            0x0B: '<SyncKey>',
+            0x0C: '<ClientId>',
+            0x0D: '<ServerId>',
+            0x0E: '<Status>',
+            0x0F: '<Collection>',
+            0x10: '<Class>',
+            0x12: '<CollectionId>',
+            0x13: '<GetChanges>',
+            0x14: '<MoreAvailable>',
+            0x15: '<WindowSize>',
+            0x16: '<Commands>',
+            0x17: '<Options>',
+            0x18: '<FilterType>',
+            0x1B: '<Conflict>',
+            0x1C: '<Collections>',
+            0x1D: '<ApplicationData>',
+            0x1E: '<DeletesAsMoves>',
+            0x20: '<Supported>',
+            0x21: '<SoftDelete>',
+            0x22: '<MIMESupport>',
+            0x23: '<MIMETruncation>',
+            0x24: '<Wait>',
+            0x25: '<Limit>',
+            0x26: '<Partial>',
+            0x27: '<ConversationMode>',
+            0x28: '<MaxItems>',
+            0x29: '<HeartbeatInterval>'
+        });
+
+        let Contacts = ({
+            0x05: '<Anniversary>',
+            0x06: '<AssistantName>',
+            0x07: '<AssistantPhoneNumber>',
+            0x08: '<Birthday>',
+            0x09: '<body>',
+            0x0A: '<BodySize>',
+            0x0B: '<BodyTruncated>',
+            0x0C: '<Business2PhoneNumber>',
+            0x0D: '<BusinessAddressCity>',
+            0x0E: '<BusinessAddressCountry>',
+            0x0F: '<BusinessAddressPostalCode>',
+            0x10: '<BusinessAddressState>',
+            0x11: '<BusinessAddressStreet>',
+            0x12: '<BusinessFaxNumber>',
+            0x13: '<BusinessPhoneNumber>',
+            0x14: '<CarPhoneNumber>',
+            0x15: '<Categories>',
+            0x16: '<Category>',
+            0x17: '<Children>',
+            0x18: '<Child>',
+            0x19: '<CompanyName>',
+            0x1A: '<Department>',
+            0x1B: '<Email1Address>',
+            0x1C: '<Email2Address>',
+            0x1D: '<Email3Address>',
+            0x1E: '<FileAs>',
+            0x1F: '<FirstName>',
+            0x20: '<Home2PhoneNumber>',
+            0x21: '<HomeAddressCity>',
+            0x22: '<HomeAddressCountry>',
+            0x23: '<HomeAddressPostalCode>',
+            0x24: '<HomeAddressState>',
+            0x25: '<HomeAddressStreet>',
+            0x26: '<HomeFaxNumber>',
+            0x27: '<HomePhoneNumber>',
+            0x28: '<JobTitle>',
+            0x29: '<LastName>',
+            0x2A: '<MiddleName>',
+            0x2B: '<MobilePhoneNumber>',
+            0x2C: '<OfficeLocation>',
+            0x2D: '<OtherAddressCity>',
+            0x2E: '<OtherAddressCountry>',
+            0x2F: '<OtherAddressPostalCode>',
+            0x30: '<OtherAddressState>',
+            0x31: '<OtherAddressStreet>',
+            0x32: '<PagerNumber>',
+            0x33: '<RadioPhoneNumber>',
+            0x34: '<Spouse>',
+            0x35: '<Suffix>',
+            0x36: '<Title>',
+            0x37: '<WebPage>',
+            0x38: '<YomiCompanyName>',
+            0x39: '<YomiFirstName>',
+            0x3A: '<YomiLastName>',
+            0x3C: '<Picture>',
+            0x3D: '<Alias>',
+            0x3E: '<WeightedRank>',
+        });
+
+        let Settings = ({
+            0x05: '<Settings>',
+            0x06: '<Status>',
+            0x07: '<Get>',
+            0x08: '<Set>',
+            0x09: '<Oof>',
+            0x0A: '<OofState>',
+            0x0B: '<StartTime>',
+            0x0C: '<EndTime>',
+            0x0D: '<OofMessage>',
+            0x0E: '<AppliesToInternal>',
+            0x0F: '<AppliesToExternalKnown>',
+            0x10: '<AppliesToExternalUnknown>',
+            0x11: '<Enabled>',
+            0x12: '<ReplyMessage>',
+            0x13: '<BodyType>',
+            0x14: '<DevicePassword>',
+            0x15: '<Password>',
+            0x16: '<DeviceInformation>',
+            0x17: '<Model>',
+            0x18: '<IMEI>',
+            0x19: '<FriendlyName>',
+            0x1A: '<OS>',
+            0x1B: '<OSLanguage>',
+            0x1C: '<PhoneNumber>',
+            0x1D: '<UserInformation>',
+            0x1E: '<EmailAddresses>',
+            0x1F: '<SMTPAddress>',
+            0x20: '<UserAgent>',
+            0x21: '<EnableOutboundSMS>',
+            0x22: '<MobileOperator>',
+            0x23: '<PrimarySmtpAddress>',
+            0x24: '<Accounts>',
+            0x25: '<Account>',
+            0x26: '<AccountId>',
+            0x27: '<AccountName>',
+            0x28: '<UserDisplayName>',
+            0x29: '<SendDisabled>',
+            0x2B: '<RightsManagementInformation>'
+        });
+
+        let Provision = ({
+            0x05: '<Provision>',
+            0x06: '<Policies>',
+            0x07: '<Policy>',
+            0x08: '<PolicyType>',
+            0x09: '<PolicyKey>',
+            0x0A: '<Data>',
+            0x0B: '<Status>',
+            0x0C: '<RemoteWipe>',
+            0x0D: '<EASProvisionDoc>',
+            0x0E: '<DevicePasswordEnabled>',
+            0x0F: '<AlphanumericDevicePasswordRequired>',
+            0x10: '<DeviceEncryptionEnabled>',
+            // 0x10:'<RequireStorageCardEncryption>',
+            0x11: '<PasswordRecoveryEnabled>',
+            0x13: '<AttachmentsEnabled>',
+            0x14: '<MinDevicePasswordLength>',
+            0x15: '<MaxInactivityTimeDeviceLock>',
+            0x16: '<MaxDevicePasswordFailedAttempts>',
+            0x17: '<MaxAttachmentSize>',
+            0x18: '<AllowSimpleDevicePassword>',
+            0x19: '<DevicePasswordExpiration>',
+            0x1A: '<DevicePasswordHistory>',
+            0x1B: '<AllowStorageCard>',
+            0x1C: '<AllowCamera>',
+            0x1D: '<RequireDeviceEncryption>',
+            0x1E: '<AllowUnsignedApplications>',
+            0x1F: '<AllowUnsignedInstallationPackages>',
+            0x20: '<MinDevicePasswordComplexCharacters>',
+            0x21: '<AllowWiFi>',
+            0x22: '<AllowTextMessaging>',
+            0x23: '<AllowPOPIMAPEmail>',
+            0x24: '<AllowBluetooth>',
+            0x25: '<AllowIrDA>',
+            0x26: '<RequireManualSyncWhenRoaming>',
+            0x27: '<AllowDesktopSync>',
+            0x28: '<MaxCalendarAgeFilter>',
+            0x29: '<AllowHTMLEmail>',
+            0x2A: '<MaxEmailAgeFilter>',
+            0x2B: '<MaxEmailBodyTruncationSize>',
+            0x2C: '<MaxEmailHTMLBodyTruncationSize>',
+            0x2D: '<RequireSignedSMIMEMessages>',
+            0x2E: '<RequireEncryptedSMIMEMessages>',
+            0x2F: '<RequireSignedSMIMEAlgorithm>',
+            0x30: '<RequireEncryptionSMIMEAlgorithm>',
+            0x31: '<AllowSMIMEEncryptionAlgorithmNegotiation>',
+            0x32: '<AllowSMIMESoftCerts>',
+            0x33: '<AllowBrowser>',
+            0x34: '<AllowConsumerEmail>',
+            0x35: '<AllowRemoteDesktop>',
+            0x36: '<AllowInternetSharing>',
+            0x37: '<UnapprovedInROMApplicationList>',
+            0x38: '<ApplicationName>',
+            0x39: '<ApprovedApplicationList>',
+            0x3A: '<Hash>',
+        });
+
+        let FolderHierarchy = ({
+            0x07: '<DisplayName>',
+            0x08: '<ServerId>',
+            0x09: '<ParentId>',
+            0x0A: '<Type>',
+            0x0C: '<Status>',
+            0x0E: '<Changes>',
+            0x0F: '<Add>',
+            0x10: '<Delete>',
+            0x11: '<Update>',
+            0x12: '<SyncKey>',
+            0x13: '<FolderCreate>',
+            0x14: '<FolderDelete>',
+            0x15: '<FolderUpdate>',
+            0x16: '<FolderSync>',
+            0x17: '<Count>'
+        });
+
+        let Contacts2 = ({
+            0x05: '<CustomerId>',
+            0x06: '<GovernmentId>',
+            0x07: '<IMAddress>',
+            0x08: '<IMAddress2>',
+            0x09: '<IMAddress3>',
+            0x0A: '<ManagerName>',
+            0x0B: '<CompanyMainPhone>',
+            0x0C: '<AccountName>',
+            0x0D: '<NickName>',
+            0x0E: '<MMS>'
+        });
+
+        let Search = ({
+            0x05: '<Search>',
+            0x07: '<Store>',
+            0x08: '<Name>',
+            0x09: '<Query>',
+            0x0A: '<Options>',
+            0x0B: '<Range>',
+            0x0C: '<Status>',
+            0x0D: '<Response>',
+            0x0E: '<Result>',
+            0x0F: '<Properties>',
+            0x10: '<Total>',
+            0x11: '<EqualTo>',
+            0x12: '<Value>',
+            0x13: '<And>',
+            0x14: '<Or>',
+            0x15: '<FreeText>',
+            0x17: '<DeepTraversal>',
+            0x18: '<LongId>',
+            0x19: '<RebuildResults>',
+            0x1A: '<LessThan>',
+            0x1B: '<GreaterThan>',
+            0x1E: '<UserName>',
+            0x1F: '<Password>',
+            0x20: '<ConversationId>',
+            0x21: '<Picture>',
+            0x22: '<MaxSize>',
+            0x23: '<MaxPictures>'
+        });
+
+        let GAL = ({
+            0x05: '<DisplayName>',
+            0x06: '<Phone>',
+            0x07: '<Office>',
+            0x08: '<Title>',
+            0x09: '<Company>',
+            0x0A: '<Alias>',
+            0x0B: '<FirstName>',
+            0x0C: '<LastName>',
+            0x0D: '<HomePhone>',
+            0x0E: '<MobilePhone>',
+            0x0F: '<EmailAddress>',
+            0x10: '<Picture>',
+            0x11: '<Status>',
+            0x12: '<Data>'
+        });
+
+        let Code = ({
+            0x07: FolderHierarchy,
+            0x01: Contacts,
+            0x00: AirSync,
+            0x0E: Provision,
+            0x11: AirSyncBase,
+            0x12: Settings,
+            0x0C: Contacts2,
+            0x0F: Search,
+            0x10: GAL
+        });
+        
+        let Codestring = ({
+            0x07: "FolderHierarchy",
+            0x01: "Contacts",
+            0x00: "AirSync",
+            0x0E: "Provision",
+            0x11: "AirSyncBase",
+            0x12: "Settings",
+            0x0C: "Contacts2",
+            0x0F: "Search",
+            0x10: "GAL"
+        });
+
+        let CodePage = Code[0];
+        let stack = [];
+        let num = 4;
+        let xml = '<?xml version="1.0"?>';
+        let x = '0';
+        let firstxmlns = true;
+        let firstx = '0';
+        
+        while (num < wbxml.length) {
+            let token = wbxml.substr(num, 1);
+            let tokencontent = token.charCodeAt(0) & 0xbf;
+            if (token || tokencontent in Code) {
+                if (token == String.fromCharCode(0x00)) {
+                    num = num + 1;
+                    x = (wbxml.substr(num, 1)).charCodeAt(0);
+                    CodePage = Code[x];
+                    if (firstxmlns) {
+                        firstx = x;
+                    }
+                } else if (token == String.fromCharCode(0x03)) {
+                    xml = xml + (wbxml.substring(num + 1, wbxml.indexOf(String.fromCharCode(0x00, 0x01), num)));
+                    num = wbxml.indexOf(String.fromCharCode(0x00, 0x01), num);
+                } else if (token == String.fromCharCode(0x01)) {
+                    xml = xml + (stack.pop());
+                } else if (token.charCodeAt(0) in CodePage) {
+                    xml = xml + (CodePage[token.charCodeAt(0)]).replace('>', '/>');
+                } else if (tokencontent in CodePage) {
+                    if (firstxmlns || x !== firstx) {
+                        xml = xml + (CodePage[tokencontent].replace('>', ' xmlns="' + Codestring[x] + ':">'));
+                        firstxmlns = false;
+                    } else {
+                        xml = xml + (CodePage[tokencontent]);
+                    }
+
+                    stack.push((CodePage[tokencontent]).replace('<', '</'));
+                } else {
+
+                }
+            }
+
+            num = num + 1;
+        }
+        
+        return xml;
+    }
+
+};
+
+tzsync.InitContact2();

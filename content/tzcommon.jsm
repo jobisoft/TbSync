@@ -1,10 +1,12 @@
 "use strict";
 
-var EXPORTED_SYMBOLS = ["tztools"];
+var EXPORTED_SYMBOLS = ["tzcommon"];
 
 Components.utils.import("resource://gre/modules/FileUtils.jsm");
 
-var tztools = {
+var tzcommon = {
+
+    prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
 
     dump: function (what, aMessage) {
         var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);

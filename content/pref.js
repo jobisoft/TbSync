@@ -2,25 +2,20 @@
    See the file LICENSE.txt for licensing information. */
 "use strict";
 
-Components.utils.import("chrome://tzpush/content/tools.jsm");
+Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 
-if (typeof tzpush === "undefined") {
-    var tzpush = {};
-}
+var tzprefs = {
 
-var tzpush = {
-    prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
-
-    onopen: function() {
+    onopen: function () {
         //Check, if a new deviceID needs to be generated
-        if (this.prefs.getCharPref("deviceId") === "") this.prefs.setCharPref("deviceId", Date.now());
+        if (tzcommon.prefs.getCharPref("deviceId") === "") tzcommon.prefs.setCharPref("deviceId", Date.now());
         this.localAbs();
     },
 
-    onclose: function() {
+    onclose: function () {
     },
 
-    localAbs: function() {
+    localAbs: function () {
         //clear list of address books
         let count = -1;
         while (document.getElementById('localContactsFolder').children.length > 0) {
@@ -40,7 +35,7 @@ var tzpush = {
                 count = count + 1;
 
                 //is this book the selected one? TODO! This will check for the FILENAME, not the ID (delete book #3, create a new one -> the new one is selected!
-                if (this.prefs.getCharPref('abname') === addressBook.URI) {
+                if (tzcommon.prefs.getCharPref('abname') === addressBook.URI) {
                     selected = count;
                 }
                 document.getElementById('localContactsFolder').appendChild(ab);
@@ -50,17 +45,17 @@ var tzpush = {
         if (selected !== -1) document.getElementById('localContactsFolder').selectedIndex = selected;
     },
 
-    reset: function() {
-        this.prefs.setCharPref("polkey", "0");
-        this.prefs.setCharPref("folderID", "");
-        this.prefs.setCharPref("synckey", "");
-        this.prefs.setCharPref("deviceId", Date.now());
-        this.prefs.setIntPref("autosync", 0);
-        this.prefs.setCharPref("LastSyncTime", "0");
+    reset: function () {
+        tzcommon.prefs.setCharPref("polkey", "0");
+        tzcommon.prefs.setCharPref("folderID", "");
+        tzcommon.prefs.setCharPref("synckey", "");
+        tzcommon.prefs.setCharPref("deviceId", Date.now());
+        tzcommon.prefs.setIntPref("autosync", 0);
+        tzcommon.prefs.setCharPref("LastSyncTime", "0");
 
         /* Clear ServerId and LastModDate of all cards in addressbook selected for sync - WHY ??? */
         var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-        var addressBook = abManager.getDirectory(this.prefs.getCharPref("abname"));
+        var addressBook = abManager.getDirectory(tzcommon.prefs.getCharPref("abname"));
         var cards = addressBook.childCards;
         while (cards.hasMoreElements()) {
             let card = cards.getNext();
@@ -74,22 +69,18 @@ var tzpush = {
         /* Cleanup of cards marked for deletion */
         /*  - the file "DeletedCards" inside the ZPush folder in the users profile folder contains a list of ids of deleted cards, which still need to be deleted from server */
         /*  - after a reset, no further action should be pending  -> clear that log! */
-        tztools.clearDeleteLog();
+        tzcommon.clearDeleteLog();
     },
 
-    softreset: function() {
-        this.prefs.setCharPref("go", "resync");
+    softreset: function () {
+        tzcommon.prefs.setCharPref("go", "resync");
     },
 
-    toggelgo: function() {
-        if (this.prefs.getCharPref("go") === "0") {
-            this.prefs.setCharPref("go", "1");
-        } else {
-            this.prefs.setCharPref("go", "0");
-        }
-    }, 
-
-    cape: function() {
+    requestSync: function () {
+        tzcommon.prefs.setCharPref("go", "sync");
+    },
+    
+    cape: function () {
         function openTBtab(tempURL) {
             var tabmail = null;
             var mail3PaneWindow =
@@ -109,7 +100,7 @@ var tzpush = {
         openTBtab("http://www.c-a-p-e.co.uk");
     },
 
-    notes: function() {
+    notes: function () {
         function openTBtab(tempURL) {
             var tabmail = null;
             var mail3PaneWindow =
@@ -129,8 +120,8 @@ var tzpush = {
         openTBtab("chrome://tzpush/content/notes.html");
     },
 
-    setselect: function(value) {
-        this.prefs.setCharPref('abname', value);
+    setselect: function (value) {
+        tzcommon.prefs.setCharPref('abname', value);
     }
 
 };

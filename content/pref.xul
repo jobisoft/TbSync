@@ -2,14 +2,14 @@
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
 <!DOCTYPE window SYSTEM "chrome://tzpush/locale/overlay.dtd">
 
-<prefwindow id="tzpush.tzsettings" 
+<prefwindow id="tzprefs" 
      xmlns:html="http://www.w3.org/1999/xhtml"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-     width="500"
-     height="400"
-     onload="tzpush.onopen()"
-     onunload="tzpush.onclose()"
+     width="600"
+     height="500"
+     onload="tzprefs.onopen()"
+     onunload="tzprefs.onclose()"
      title="TZ Settings" >
 
      <script type="application/x-javascript" src="chrome://tzpush/content/pref.js" /> 
@@ -85,16 +85,16 @@
                     </row>
                     <row>
                          <label />
-                         <button label="&pref.SyncAdddressbook;" id="syncbut" onclick="tzpush.toggelgo();"/>
+                         <button label="&pref.SyncAdddressbook;" id="syncbut" onclick="tzprefs.requestSync();" />
                     </row>
                     <row>
                          <label />
-                         <button label="&pref.Resync;" id="softresetbut" onclick="tzpush.softreset();" tooltiptext="&pref.ResyncText;" />
+                         <button label="&pref.Resync;" id="softresetbut" onclick="tzprefs.softreset();" tooltiptext="&pref.ResyncText;" />
                     </row>
                     <row>
                          <label />
                          <vbox>
-                              <button label="&pref.Reset;" id="resetbut" onclick="tzpush.reset();" />
+                              <button label="&pref.Reset;" id="resetbut" onclick="tzprefs.reset();" />
                               <label align="center" value="&pref.Caution;" />
                          </vbox>
                     </row>
@@ -108,14 +108,14 @@
           <vbox>
                <groupbox>
                     <caption label="&pref.LocalAddressBook;" />
-                    <listbox id="localContactsFolder" rows="10" onclick="tzpush.setselect(this.value)" >
+                    <listbox id="localContactsFolder" rows="10" onclick="tzprefs.setselect(this.value)" >
                     </listbox>
                </groupbox>
           </vbox>
      </prefpane>
      
      <prefpane id="Help" label="&pref.About;" image="chrome://tzpush/skin/cape.png" >
-          <button label="Notes and Extra Settings" oncommand="tzpush.notes();"/>
+          <button label="Notes and Extra Settings" oncommand="tzprefs.notes();"/>
           <grid flex="1" align="center">
                <columns>
                     <column flex="0"/>
@@ -123,7 +123,7 @@
                </columns>
                <rows>
                     <row>
-                         <image src="chrome://tzpush/skin/cape.png" width='100' height='70' align='center' onclick="tzpush.cape() "  onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
+                         <image src="chrome://tzpush/skin/cape.png" width='100' height='70' align='center' onclick="tzprefs.cape() "  onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
                          <html:h4> Cape is an established registered charity offering a dynamic and flexible outreach and day service for people who experience severe and enduring mental health difficulties. <html:br/>
 Tz-push is free software, but feel free to donate to good cause, like CAPE or <html:a href="https://addons.mozilla.org/en-US/thunderbird/addon/tzpush/developers?src=api" style="color:blue;text-decoration: underline">
 Buy me a cup of tea and a slice of cake.</html:a> <html:br/>Thankyou,<html:br/>Mark.</html:h4> 
