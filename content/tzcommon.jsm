@@ -43,22 +43,27 @@ var tzcommon = {
     },
 
 
-    addCardToDeleteLog: function (cardId) { //that is very simmilar to appendToFile!
-        // Get fileobject of a file called "DeletedCards" inside the directory "ZPush" inside the users profile folder
-        let file = FileUtils.getFile("ProfD", ["ZPush","DeletedCards"], true);
-        let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
-        foStream.init(file, 0x02 | 0x08 | 0x10, parseInt("0666", 8), 0); // write, create, append
-        foStream.write(cardId, cardId.length);
-        foStream.close();
+    // For each deleted card, create a "log" file, to be able to delete it during sync from the server as well.
+    addCardToDeleteLog: function (cardId) { 
+        // Get fileobject of <UserProfileFolder>/ZPush/DeletedCards/cardId
+        let file = FileUtils.getFile("ProfD", ["ZPush","DeletedCards",cardId.replace(":", "COLON")], true);
+        try {
+            file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE)
+        } catch (e) {
+            tzpush.myDump("tzpush addCardToDeleteLog()", e)
+        }
     },
 
 
     /* Cleanup of cards marked for deletion */
-    /*  - the file "DeletedCards" inside the ZPush folder in the users profile folder contains a list of ids of deleted cards, which still need to be deleted from server */
-    /*  - after a reset, no further action should be pending  -> delete that file*/
     clearDeleteLog: function () {
-        let file = FileUtils.getFile("ProfD", ["ZPush","DeletedCards"], true);
-        if (file.exists()) file.remove("true");
+        let dir = FileUtils.getFile("ProfD", ["ZPush","DeletedCards"], true);
+        let entries = dir.directoryEntries;
+        while (entries.hasMoreElements()) {
+            let entry = entries.getNext()
+            /* entry.QueryInterface(Components.interfaces.nsIFile) */
+            entry.remove("true")
+        }
     },
 
 
