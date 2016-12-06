@@ -163,8 +163,8 @@ var tzpush = {
                 }
             }
         }
-    }    
-}
+    }
+};
 
 tzpush.syncTimer.start();
 tzpush.prefObserver.register();

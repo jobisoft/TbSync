@@ -589,7 +589,7 @@ var tzsync = {
                                     }
 
                                     if (haddressline.length !== 0) { //if address is empty do not send
-                                        wbxml = wbxml + String.fromCharCode(0x65) + String.fromCharCode(0x03) + utf8Encode(haddressline) + String.fromCharCode(0x00, 0x01);
+                                        wbxml = wbxml + String.fromCharCode(0x65) + String.fromCharCode(0x03) + tzcommon.encode_utf8(haddressline) + String.fromCharCode(0x00, 0x01);
                                     }
                                     break;
 
@@ -604,7 +604,7 @@ var tzsync = {
                                         waddressline = waddressline1 + seperator + waddressline2;
                                     }
                                     if (waddressline.length !== 0) { //if address is empty do not send
-                                        wbxml = wbxml + String.fromCharCode(0x51) + String.fromCharCode(0x03) + utf8Encode(waddressline) + String.fromCharCode(0x00, 0x01);
+                                        wbxml = wbxml + String.fromCharCode(0x51) + String.fromCharCode(0x03) + tzcommon.encode_utf8(waddressline) + String.fromCharCode(0x00, 0x01);
                                     }
                                     break;
                             }
@@ -651,19 +651,19 @@ var tzsync = {
                                 }
                             } else if (x === 'Category') {
                                 let cat = String.fromCharCode(0x55, 0x56, 0x3, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x0, 0x1, 0x1);
-                                cat = cat.replace("replaceme", utf8Encode(card.getProperty(x, '')));
+                                cat = cat.replace("replaceme", tzcommon.encode_utf8(card.getProperty(x, '')));
                                 wbxml = wbxml + cat;
                             } else if (x === 'Notes') {
                                 if (tzcommon.prefs.getCharPref("asversion") === "2.5") {
-                                    wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + utf8Encode(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
+                                    wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
                                 } else {
                                     let body = String.fromCharCode(0x00, 0x11, 0x4a, 0x46, 0x03, 0x31, 0x00, 0x01, 0x4c, 0x03, 0x37, 0x00, 0x01, 0x4b, 0x03, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x00, 0x01);
-                                    body = body.replace("replace", utf8Encode(card.getProperty(x, '')));
+                                    body = body.replace("replace", tzcommon.encode_utf8(card.getProperty(x, '')));
                                     body = body.replace("7", card.getProperty(x, '').length);
                                     wbxml = wbxml + body;
                                 }
                             } else {
-                                wbxml = wbxml + String.fromCharCode(this.Contacts2[x]) + String.fromCharCode(0x03) + utf8Encode(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
+                                wbxml = wbxml + String.fromCharCode(this.Contacts2[x]) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
                             }
                         }
                     }
@@ -671,7 +671,7 @@ var tzsync = {
                     cardArr.push(card);
                     for (x in this.Contacts22) {
                         if (card.getProperty(x, "") !== '') {
-                            wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.Contacts22[x]) + String.fromCharCode(0x03) + utf8Encode(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
+                            wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.Contacts22[x]) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
                         }
                     }
                     wbxml = wbxml + String.fromCharCode(0x01, 0x01, 0x00, 0x00);
@@ -718,7 +718,7 @@ var tzsync = {
                                             haddressline = haddressline1 + seperator + haddressline2;
                                         }
                                         if (haddressline.length !== 0) { //if address is empty do not send
-                                            wbxml = wbxml + String.fromCharCode(0x65) + String.fromCharCode(0x03) + utf8Encode(haddressline) + String.fromCharCode(0x00, 0x01);
+                                            wbxml = wbxml + String.fromCharCode(0x65) + String.fromCharCode(0x03) + tzcommon.encode_utf8(haddressline) + String.fromCharCode(0x00, 0x01);
                                         }
                                         break;
 
@@ -733,7 +733,7 @@ var tzsync = {
                                             waddressline = waddressline1 + seperator + waddressline2;
                                         }
                                         if (waddressline.length !== 0) { //if address is empty do not send
-                                            wbxml = wbxml + String.fromCharCode(0x51) + String.fromCharCode(0x03) + utf8Encode(waddressline) + String.fromCharCode(0x00, 0x01);
+                                            wbxml = wbxml + String.fromCharCode(0x51) + String.fromCharCode(0x03) + tzcommon.encode_utf8(waddressline) + String.fromCharCode(0x00, 0x01);
                                         }
                                         break;
                                 }
@@ -780,26 +780,26 @@ var tzsync = {
                                     }
                                 } else if (x === 'Category') {
                                     let cat = String.fromCharCode(0x55, 0x56, 0x3, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x0, 0x1, 0x1);
-                                    cat = cat.replace("replaceme", utf8Encode(card.getProperty(x, '')));
+                                    cat = cat.replace("replaceme", tzcommon.encode_utf8(card.getProperty(x, '')));
                                     wbxml = wbxml + cat;
                                 } else if (x === 'Notes') {
                                     if (tzcommon.prefs.getCharPref("asversion") === "2.5") {
-                                        wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + utf8Encode(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
+                                        wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
                                     } else {
                                         let body = String.fromCharCode(0x00, 0x11, 0x4a, 0x46, 0x03, 0x31, 0x00, 0x01, 0x4c, 0x03, 0x37, 0x00, 0x01, 0x4b, 0x03, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x00, 0x01);
-                                        body = body.replace("replace", utf8Encode(card.getProperty(x, '')));
+                                        body = body.replace("replace", tzcommon.encode_utf8(card.getProperty(x, '')));
                                         body = body.replace("7", card.getProperty(x, '').length);
                                         wbxml = wbxml + body;
                                     }
                                 } else {
-                                    wbxml = wbxml + String.fromCharCode(this.Contacts2[x]) + String.fromCharCode(0x03) + utf8Encode(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
+                                    wbxml = wbxml + String.fromCharCode(this.Contacts2[x]) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
                                 }
                             }
 
                         }
                         for (x in this.Contacts22) {
                             if (card.getProperty(x, "") !== '') {
-                                wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.Contacts22[x]) + String.fromCharCode(0x03) + utf8Encode(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
+                                wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.Contacts22[x]) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
                             }
                         }
                         wbxml = wbxml + String.fromCharCode(0x01, 0x01, 0x00, 0x00);
@@ -913,31 +913,6 @@ var tzsync = {
         }
 
 
-        function utf8Encode(string) {
-            var appInfo = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
-            var platformVer = appInfo.platformVersion;
-            if (platformVer >= 50) {
-                return string;
-            } else {
-                string = string.replace(/\r\n/g, "\n");
-                var utf8string = "";
-                for (var n = 0; n < string.length; n++) {
-                    var c = string.charCodeAt(n);
-                    if (c < 128) {
-                        utf8string += String.fromCharCode(c);
-                    } else if ((c > 127) && (c < 2048)) {
-                        utf8string += String.fromCharCode((c >> 6) | 192);
-                        utf8string += String.fromCharCode((c & 63) | 128);
-                    } else {
-                        utf8string += String.fromCharCode((c >> 12) | 224);
-                        utf8string += String.fromCharCode(((c >> 6) & 63) | 128);
-                        utf8string += String.fromCharCode((c & 63) | 128);
-                    }
-                }
-                return utf8string;
-
-            }
-        }
 
 
 
