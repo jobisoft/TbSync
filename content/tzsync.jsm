@@ -924,7 +924,7 @@ var tzsync = {
         let synckey = tzcommon.prefs.getCharPref("synckey");
 
         // cardstodelete will not contain more cards than max
-        let cardstodelete = getCardsFromDeleteLog(parseInt(tzcommon.prefs.getCharPref("maxnumbertosend")));
+        let cardstodelete = tzcommon.getCardsFromDeleteLog(parseInt(tzcommon.prefs.getCharPref("maxnumbertosend")));
         let wbxmlinner = "";
         for (let i = 0; i < cardstodelete.length; i++) {
             wbxmlinner = wbxmlinner + String.fromCharCode(0x49, 0x4D, 0x03) + cardstodelete[i] + String.fromCharCode(0x00, 0x01, 0x01);

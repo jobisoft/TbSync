@@ -68,7 +68,7 @@ var tzcommon = {
 
     // Remove all cards from DeleteLog
     clearDeleteLog: function () {
-        let dir = FileUtils.getFile("ProfD", ["ZPush","DeletedCards"], true);
+        let dir = FileUtils.getDir("ProfD", ["ZPush","DeletedCards"], true);
         let entries = dir.directoryEntries;
         while (entries.hasMoreElements()) {
             let entry = entries.getNext();
@@ -78,8 +78,8 @@ var tzcommon = {
     },
 
 
-    getCardsFromDeleteLog(maxnumbertosend) {
-        let dir = FileUtils.getFile("ProfD", ["ZPush","DeletedCards"], true);
+    getCardsFromDeleteLog: function (maxnumbertosend) {
+        let dir = FileUtils.getDir("ProfD", ["ZPush","DeletedCards"], true);
         let entries = dir.directoryEntries;
         let deletelog = [];
         while (entries.hasMoreElements() && deletelog.length < maxnumbertosend) {
@@ -104,7 +104,7 @@ var tzcommon = {
         }
     },
 
-    
+
     encode_utf8: function (string) {
         let appInfo = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
         let platformVer = appInfo.platformVersion;
