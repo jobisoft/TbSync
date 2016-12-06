@@ -50,12 +50,23 @@ var tzcommon = {
         try {
             file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE)
         } catch (e) {
-            tzpush.myDump("tzpush addCardToDeleteLog()", e)
+            tzpush.myDump("TZPush: Error @ addCardToDeleteLog()", e)
         }
     },
 
 
-    /* Cleanup of cards marked for deletion */
+    // Remove selected card from DeleteLog
+    removeCardFromDeleteLog: function (cardId) {
+        let file = FileUtils.getFile("ProfD", ["ZPush","DeletedCards",cardId.replace(":", "COLON")], true);
+        try {
+            file.remove("true");
+        } catch (e) {
+            tzpush.myDump("TZPush: Error @ removeCardFromDelete()", e)
+        }
+    },
+
+
+    // Remove all cards from DeleteLog
     clearDeleteLog: function () {
         let dir = FileUtils.getFile("ProfD", ["ZPush","DeletedCards"], true);
         let entries = dir.directoryEntries;

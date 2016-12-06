@@ -438,13 +438,7 @@ var tzsync = {
                                         addressBook.deleteCards(cardsToDelete);
                                     } catch (e) {}
                                     card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-                                    Components.utils.import("resource://gre/modules/FileUtils.jsm");
-                                    file1 = FileUtils.getFile("ProfD", ["DeletedCards"], true);
-                                    file1.append(data);
-                                    file1.QueryInterface(Components.interfaces.nsIFile);
-                                    try {
-                                        file1.remove("true");
-                                    } catch (e) {}
+                                    tzcommon.removeCardFromDeleteLog(data);
                                 } else {
                                     card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
                                 }
