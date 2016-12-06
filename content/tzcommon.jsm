@@ -50,7 +50,7 @@ var tzcommon = {
         try {
             file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE);
         } catch (e) {
-            tzpush.myDump("TZPush: Error @ addCardToDeleteLog()", e)
+            this.dump("TZPush: Error @ addCardToDeleteLog()", e);
         }
     },
 
@@ -61,7 +61,7 @@ var tzcommon = {
         try {
             file.remove("true");
         } catch (e) {
-            tzpush.myDump("TZPush: Error @ removeCardFromDelete()", e);
+            this.dump("TZPush: Error @ removeCardFromDelete()", e);
         }
     },
 
@@ -80,10 +80,10 @@ var tzcommon = {
 
     getCardsFromDeleteLog(maxnumbertosend) {
         let dir = FileUtils.getFile("ProfD", ["ZPush","DeletedCards"], true);
-        let entries = file.directoryEntries;
+        let entries = dir.directoryEntries;
         let deletelog = [];
-        while (entries.hasMoreElements() && cardstodelete.length < maxnumbertosend) {
-            entry = entries.getNext();
+        while (entries.hasMoreElements() && deletelog.length < maxnumbertosend) {
+            let entry = entries.getNext();
             /* entry.QueryInterface(Components.interfaces.nsIFile); */
             deletelog.push(entry.leafName.replace("COLON", ":"));
         }
