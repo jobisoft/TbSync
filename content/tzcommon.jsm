@@ -48,7 +48,7 @@ var tzcommon = {
         // Get fileobject of <UserProfileFolder>/ZPush/DeletedCards/cardId
         let file = FileUtils.getFile("ProfD", ["ZPush","DeletedCards",cardId.replace(":", "COLON")], true);
         try {
-            file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE)
+            file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE);
         } catch (e) {
             tzpush.myDump("TZPush: Error @ addCardToDeleteLog()", e)
         }
@@ -61,7 +61,7 @@ var tzcommon = {
         try {
             file.remove("true");
         } catch (e) {
-            tzpush.myDump("TZPush: Error @ removeCardFromDelete()", e)
+            tzpush.myDump("TZPush: Error @ removeCardFromDelete()", e);
         }
     },
 
@@ -71,13 +71,26 @@ var tzcommon = {
         let dir = FileUtils.getFile("ProfD", ["ZPush","DeletedCards"], true);
         let entries = dir.directoryEntries;
         while (entries.hasMoreElements()) {
-            let entry = entries.getNext()
+            let entry = entries.getNext();
             /* entry.QueryInterface(Components.interfaces.nsIFile) */
-            entry.remove("true")
+            entry.remove("true");
         }
     },
 
 
+    getCardsFromDeleteLog(maxnumbertosend) {
+        let dir = FileUtils.getFile("ProfD", ["ZPush","DeletedCards"], true);
+        let entries = file.directoryEntries;
+        let deletelog = [];
+        while (entries.hasMoreElements() && cardstodelete.length < maxnumbertosend) {
+            entry = entries.getNext();
+            /* entry.QueryInterface(Components.interfaces.nsIFile); */
+            deletelog.push(entry.leafName.replace("COLON", ":"));
+        }
+        return deletelog;
+    },
+    
+    
     decode_utf8: function (s) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;
         if (platformVer >= 40) {

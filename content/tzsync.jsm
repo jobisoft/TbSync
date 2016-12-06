@@ -945,65 +945,42 @@ var tzsync = {
 
     senddel: function() {
         tzcommon.prefs.setCharPref("syncstate", "Sending items to delete");
-        var folderID = tzcommon.prefs.getCharPref("folderID");
-        var synckey = tzcommon.prefs.getCharPref("synckey");
+        let folderID = tzcommon.prefs.getCharPref("folderID");
+        let synckey = tzcommon.prefs.getCharPref("synckey");
 
-        var wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
-        if (tzcommon.prefs.getCharPref("asversion") === "2.5") {
-            wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
+        // cardstodelete will not contain more cards than max
+        let cardstodelete = getCardsFromDeleteLog(parseInt(tzcommon.prefs.getCharPref("maxnumbertosend")));
+        let wbxmlinner = "";
+        for (let i = 0; i < cardstodelete.length; i++) {
+            wbxmlinner = wbxmlinner + String.fromCharCode(0x49, 0x4D, 0x03) + cardstodelete[i] + String.fromCharCode(0x00, 0x01, 0x01);
         }
 
-        var wbxml = '';
-        var numofdel = 0;
-        var entry;
-        var deletedcards;
-        var wbxmlinner;
-        var more = false;
-        var command;
-        var maxnumbertosend = parseInt(tzcommon.prefs.getCharPref("maxnumbertosend"));
-
-        Components.utils.import("resource://gre/modules/FileUtils.jsm");
-        var file = FileUtils.getFile("ProfD", ["DeletedCards"], true);
-        var entries = file.directoryEntries;
-        var cardstodelete = [];
-        while (entries.hasMoreElements()) {
-            if (numofdel === maxnumbertosend) {
-                more = true;
-                break;
+        if (cardstodelete.length > 0) {
+            // wbxml contains placholder Id2Replace, replacehere and SyncKeyReplace
+            let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
+            if (tzcommon.prefs.getCharPref("asversion") === "2.5") {
+                wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
             }
-            numofdel = numofdel + 1;
-
-            entry = entries.getNext();
-            entry.QueryInterface(Components.interfaces.nsIFile);
-            deletedcards = entry.leafName;
-
-            cardstodelete.push(deletedcards);
-            deletedcards = deletedcards.replace("COLON", ":");
-            wbxml = wbxml + String.fromCharCode(0x49, 0x4D, 0x03) + deletedcards + String.fromCharCode(0x00, 0x01, 0x01);
-        }
-        wbxmlinner = wbxml;
-        wbxml = wbxmlouter.replace('replacehere', wbxmlinner);
-        wbxml = wbxml.replace('SyncKeyReplace', synckey);
-        wbxml = wbxml.replace('Id2Replace', folderID);
-        if (numofdel > 0) {
-            command = "Sync";
-            var returned = this.Send(wbxml, callback.bind(this), command);
+            wbxml = wbxml.replace('replacehere', wbxmlinner);
+            wbxml = wbxml.replace('SyncKeyReplace', synckey);
+            wbxml = wbxml.replace('Id2Replace', folderID);
+            // Send will send a request to the server, a responce will trigger callback, which will call senddel again.
+            this.Send(wbxml, callback.bind(this), "Sync");
         } else {
             tzcommon.prefs.setCharPref("LastSyncTime", Date.now());
             tzcommon.prefs.setCharPref("syncstate", "alldone");
             tzcommon.prefs.setCharPref("go", "alldone");
         }
 
-        function callback(returnedwbxml) {
-            wbxml = returnedwbxml;
-            var firstcmd = wbxml.indexOf(String.fromCharCode(0x01, 0x46));
+        function callback(wbxml) {
+            let firstcmd = wbxml.indexOf(String.fromCharCode(0x01, 0x46));
 
-            var truncwbxml = wbxml;
+            let truncwbxml = wbxml;
             if (firstcmd !== -1) truncwbxml = wbxml.substring(0, firstcmd);
 
-            var n = truncwbxml.lastIndexOf(String.fromCharCode(0x4E, 0x03));
-            var n1 = truncwbxml.indexOf(String.fromCharCode(0x00), n);
-            var wbxmlstatus = truncwbxml.substring(n + 2, n1);
+            let n = truncwbxml.lastIndexOf(String.fromCharCode(0x4E, 0x03));
+            let n1 = truncwbxml.indexOf(String.fromCharCode(0x00), n);
+            let wbxmlstatus = truncwbxml.substring(n + 2, n1);
 
             if (wbxmlstatus === '3' || wbxmlstatus === '12') {
                 tzcommon.dump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
@@ -1014,22 +991,14 @@ var tzsync = {
                 tzcommon.prefs.setCharPref("syncstate", "alldone");
                 tzcommon.prefs.setCharPref("go", "alldone");
             } else {
-                synckey = this.FindKey(wbxml);
+                let synckey = this.FindKey(wbxml);
                 tzcommon.prefs.setCharPref("synckey", synckey);
-                for (var count in cardstodelete) {
+                for (let count in cardstodelete) {
                     tzcommon.prefs.setCharPref("syncstate", "Cleaning up deleted items");
-                    var file = FileUtils.getDir("ProfD", ["DeletedCards"], true);
-                    file.append(cardstodelete[count]);
-                    file.remove("true");
+                    tzcommon.removeCardFromDeleteLog(cardstodelete[count]);
                 }
-
-                if (more) {
-                    this.senddel();
-                } else {
-                    tzcommon.prefs.setCharPref("LastSyncTime", Date.now());
-                    tzcommon.prefs.setCharPref("syncstate", "alldone");
-                    tzcommon.prefs.setCharPref("go", "alldone");
-                }
+                // The selected cards have been deleted from the server and from the deletelog -> rerun senddel to look for more cards to delete
+                this.senddel();
             }
         }
     },
