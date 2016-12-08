@@ -123,7 +123,7 @@ var tzsync = {
     Polkey: function() {
         var polkey = tzcommon.prefs.getCharPref("polkey");
         if (isNaN(polkey)) {
-            polkey = 0;
+            polkey = 0; //pollkey === "0" will fail
         }
         if (polkey === "0") {
 
@@ -131,8 +131,7 @@ var tzsync = {
             if (tzcommon.prefs.getCharPref("asversion") !== "2.5") {
                 wbxml = wbxml.replace("MS-WAP-Provisioning-XML", "MS-EAS-Provisioning-WBXML");
             }
-            var command = "Provision";
-            wbxml = this.Send(wbxml, polcallback.bind(this), command);
+            wbxml = this.Send(wbxml, polcallback.bind(this), "Provision");
 
         } else {
             if (tzcommon.prefs.getCharPref("synckey") === '') {
@@ -149,8 +148,7 @@ var tzsync = {
             tzcommon.prefs.setCharPref("polkey", polkey);
             wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x49, 0x03, 0x50, 0x6F, 0x6C, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x4B, 0x03, 0x31, 0x00, 0x01, 0x01, 0x01, 0x01);
             wbxml = wbxml.replace('PolKeyReplace', polkey);
-            command = "Provision";
-            wbxml = this.Send(wbxml, polcallback1.bind(this), command);
+            wbxml = this.Send(wbxml, polcallback1.bind(this), "Provision");
         }
 
         function polcallback1(returnedwbxml) {
@@ -159,8 +157,7 @@ var tzsync = {
             tzcommon.prefs.setCharPref("polkey", polkey);
             wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x49, 0x03, 0x50, 0x6F, 0x6C, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x4B, 0x03, 0x31, 0x00, 0x01, 0x01, 0x01, 0x01);
             wbxml = wbxml.replace('PolKeyReplace', polkey);
-            command = "Provision";
-            wbxml = this.Send(wbxml, polcallback2.bind(this), command);
+            wbxml = this.Send(wbxml, polcallback2.bind(this), "Provision");
         }
 
         function polcallback2(returnedwbxml) {
@@ -182,10 +179,9 @@ var tzsync = {
     GetFolderId: function() {
         var synckey;
         var folderID;
-        var command = 'FolderSync';
         var wbxml = String.fromCharCode(0x03, 0x01, 0x6a, 0x00, 0x00, 0x07, 0x56, 0x52, 0x03, 0x30, 0x00, 0x01, 0x01);
 
-        wbxml = this.Send(wbxml, callback1.bind(this), command);
+        wbxml = this.Send(wbxml, callback1.bind(this), "FolderSync");
 
         function callback1(returnedwbxml) {
             wbxml = returnedwbxml;
@@ -198,8 +194,7 @@ var tzsync = {
                 wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x30, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x01, 0x01);
             }
             wbxml = wbxml.replace('Id2Replace', folderID);
-            command = 'Sync';
-            wbxml = this.Send(wbxml, callback2.bind(this), command);
+            wbxml = this.Send(wbxml, callback2.bind(this), "Sync");
         }
 
         function callback2(returnedwbxml) {
@@ -226,8 +221,7 @@ var tzsync = {
         var wbxml = wbxmlsend.replace('SyncKeyReplace', synckey);
         wbxml = wbxml.replace('Id2Replace', folderID);
 
-        var command = "Sync";
-        this.Send(wbxml, callback.bind(this), command);
+        this.Send(wbxml, callback.bind(this), "Sync");
 
         function callback(returnedwbxml) {
             if (returnedwbxml.length === 0) {
@@ -499,8 +493,7 @@ var tzsync = {
                     if (moreavilable === 1) {
                         wbxml = wbxmlsend.replace('SyncKeyReplace', synckey);
                         wbxml = wbxml.replace('Id2Replace', folderID);
-                        command = "Sync";
-                        this.Send(wbxml, callback.bind(this), command);
+                        this.Send(wbxml, callback.bind(this), "Sync");
                     } else if (tzcommon.prefs.getBoolPref("downloadonly")) {
                         tzcommon.prefs.setCharPref("LastSyncTime", Date.now());
                         tzcommon.prefs.setCharPref("syncstate", "alldone");
@@ -550,7 +543,6 @@ var tzsync = {
         var ambd = 0;
         var addresslinecount = 0;
         var wbxmlinner;
-        var command;
         var card;
         var maxnumbertosend = parseInt(tzcommon.prefs.getCharPref("maxnumbertosend"));
         var morecards = false;
@@ -813,8 +805,7 @@ var tzsync = {
             wbxml = wbxmlouter.replace('replacehere', wbxmlinner);
             wbxml = wbxml.replace('SyncKeyReplace', synckey);
             wbxml = wbxml.replace('Id2Replace', folderID);
-            command = "Sync";
-            wbxml = this.Send(wbxml, callback.bind(this), command);
+            wbxml = this.Send(wbxml, callback.bind(this), "Sync");
         } else {
             this.senddel();
         }
