@@ -99,7 +99,7 @@ var tzpush = {
             }
             let ServerId = "";
             aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
-            if (aParentDir.URI !== tzcommon.prefs.getCharPref("abname")) {
+            if (aParentDir.URI !== tzcommon.prefs.getCharPref("abname")) { //MÖP - do not assume, delete item is a card, it could also be a book!
 
                 if (aItem instanceof Components.interfaces.nsIAbCard) {
                     ServerId = aItem.getProperty("ServerId", "");

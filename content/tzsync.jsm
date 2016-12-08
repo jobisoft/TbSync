@@ -131,7 +131,7 @@ var tzsync = {
             if (tzcommon.prefs.getCharPref("asversion") !== "2.5") {
                 wbxml = wbxml.replace("MS-WAP-Provisioning-XML", "MS-EAS-Provisioning-WBXML");
             }
-            wbxml = this.Send(wbxml, polcallback.bind(this), "Provision");
+            wbxml = this.Send(wbxml, this.polkeyCallback0.bind(this), "Provision");
 
         } else {
             if (tzcommon.prefs.getCharPref("synckey") === '') {
@@ -140,72 +140,77 @@ var tzsync = {
                 this.fromzpush();
             }
         }
-
-
-        function polcallback(returnedwbxml) {
-            wbxml = returnedwbxml;
-            polkey = FindPolkey(wbxml);
-            tzcommon.prefs.setCharPref("polkey", polkey);
-            wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x49, 0x03, 0x50, 0x6F, 0x6C, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x4B, 0x03, 0x31, 0x00, 0x01, 0x01, 0x01, 0x01);
-            wbxml = wbxml.replace('PolKeyReplace', polkey);
-            wbxml = this.Send(wbxml, polcallback1.bind(this), "Provision");
-        }
-
-        function polcallback1(returnedwbxml) {
-            wbxml = returnedwbxml;
-            polkey = FindPolkey(wbxml);
-            tzcommon.prefs.setCharPref("polkey", polkey);
-            wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x49, 0x03, 0x50, 0x6F, 0x6C, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x4B, 0x03, 0x31, 0x00, 0x01, 0x01, 0x01, 0x01);
-            wbxml = wbxml.replace('PolKeyReplace', polkey);
-            wbxml = this.Send(wbxml, polcallback2.bind(this), "Provision");
-        }
-
-        function polcallback2(returnedwbxml) {
-            wbxml = returnedwbxml;
-            polkey = FindPolkey(wbxml);
-            tzcommon.prefs.setCharPref("polkey", polkey);
-            this.GetFolderId();
-        }
-
-        function FindPolkey(wbxml) {
-            var x = String.fromCharCode(0x49, 0x03); //<PolicyKey> Code Page 14
-            var start = wbxml.indexOf(x) + 2;
-            var end = wbxml.indexOf(String.fromCharCode(0x00), start);
-            polkey = wbxml.substring(start, end);
-            return polkey;
-        }
     },
 
+    
+    polkeyCallback0: function (responseWbxml) {
+        let polkey = this.FindPolkey(responseWbxml);
+        tzcommon.prefs.setCharPref("polkey", polkey);
+        let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x49, 0x03, 0x50, 0x6F, 0x6C, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x4B, 0x03, 0x31, 0x00, 0x01, 0x01, 0x01, 0x01);
+        wbxml = wbxml.replace('PolKeyReplace', polkey);
+        this.Send(wbxml, this.polkeyCallback1.bind(this), "Provision");
+    },
+
+    polkeyCallback1: function (responseWbxml) {
+        let polkey = this.FindPolkey(responseWbxml);
+        tzcommon.prefs.setCharPref("polkey", polkey);
+        let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x49, 0x03, 0x50, 0x6F, 0x6C, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x4B, 0x03, 0x31, 0x00, 0x01, 0x01, 0x01, 0x01);
+        wbxml = wbxml.replace('PolKeyReplace', polkey);
+        this.Send(wbxml, this.polkeyCallback2.bind(this), "Provision");
+    },
+
+    polkeyCallback2: function (responseWbxml) {
+        let polkey = this.FindPolkey(responseWbxml);
+        tzcommon.prefs.setCharPref("polkey", polkey);
+        this.GetFolderId();
+    },
+
+    FindPolkey: function (wbxml) {
+        let x = String.fromCharCode(0x49, 0x03); //<PolicyKey> Code Page 14
+        let start = wbxml.indexOf(x) + 2;
+        let end = wbxml.indexOf(String.fromCharCode(0x00), start);
+        return wbxml.substring(start, end);
+    },
+
+    
+    
+    
     GetFolderId: function() {
-        var synckey;
-        var folderID;
-        var wbxml = String.fromCharCode(0x03, 0x01, 0x6a, 0x00, 0x00, 0x07, 0x56, 0x52, 0x03, 0x30, 0x00, 0x01, 0x01);
-
-        wbxml = this.Send(wbxml, callback1.bind(this), "FolderSync");
-
-        function callback1(returnedwbxml) {
-            wbxml = returnedwbxml;
-            synckey = this.FindKey(wbxml);
-            tzcommon.prefs.setCharPref("folderSynckey", synckey);
-            folderID = this.FindFolder(wbxml, 9);
-            if (tzcommon.prefs.getCharPref("asversion") === "2.5") {
-                wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x30, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x01, 0x01);
-            } else {
-                wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x30, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x01, 0x01);
-            }
-            wbxml = wbxml.replace('Id2Replace', folderID);
-            wbxml = this.Send(wbxml, callback2.bind(this), "Sync");
-        }
-
-        function callback2(returnedwbxml) {
-            wbxml = returnedwbxml;
-            synckey = this.FindKey(wbxml);
-            tzcommon.prefs.setCharPref("synckey", synckey);
-            tzcommon.prefs.setCharPref("folderID", folderID);
-            this.fromzpush();
-        }
+        let wbxml = String.fromCharCode(0x03, 0x01, 0x6a, 0x00, 0x00, 0x07, 0x56, 0x52, 0x03, 0x30, 0x00, 0x01, 0x01);
+        this.Send(wbxml, this.GetFolderIdCallback1.bind(this), "FolderSync");
     },
 
+    GetFolderIdCallback1: function (responseWbxml) {
+        let synckey = this.FindKey(responseWbxml);
+        let folderID = this.FindFolder(responseWbxml, 9);
+        tzcommon.prefs.setCharPref("folderSynckey", synckey);
+        tzcommon.prefs.setCharPref("folderID", folderID);
+        
+        let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x30, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x01, 0x01);
+        if (tzcommon.prefs.getCharPref("asversion") === "2.5") {
+            wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x30, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x01, 0x01);
+        }
+        wbxml = wbxml.replace('Id2Replace', folderID);
+        this.Send(wbxml, this.GetFolderIdCallback2.bind(this), "Sync");
+    },
+
+    GetFolderIdCallback2: function (responseWbxml) {
+        let synckey = this.FindKey(responseWbxml);
+        tzcommon.dump("GetFolderIdCallback2", "Current Key: "+ tzcommon.prefs.getCharPref("synckey") +", New Key: " + synckey);
+        tzcommon.prefs.setCharPref("synckey", synckey);
+        this.fromzpush();
+    },
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     fromzpush: function() {
         tzcommon.prefs.setCharPref("syncstate", "Requesting Changes");
         var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
@@ -914,14 +919,14 @@ var tzsync = {
         let folderID = tzcommon.prefs.getCharPref("folderID");
         let synckey = tzcommon.prefs.getCharPref("synckey");
 
-        // cardstodelete will not contain more cards than max
-        let cardstodelete = tzcommon.getCardsFromDeleteLog(parseInt(tzcommon.prefs.getCharPref("maxnumbertosend")));
+        // cardstodelete will not contain more cards than max - but it must be "global", wo we can use it inside callback - is there any other way?
+        this.cardstodelete = tzcommon.getCardsFromDeleteLog(parseInt(tzcommon.prefs.getCharPref("maxnumbertosend")));
         let wbxmlinner = "";
-        for (let i = 0; i < cardstodelete.length; i++) {
-            wbxmlinner = wbxmlinner + String.fromCharCode(0x49, 0x4D, 0x03) + cardstodelete[i] + String.fromCharCode(0x00, 0x01, 0x01);
+        for (let i = 0; i < this.cardstodelete.length; i++) {
+            wbxmlinner = wbxmlinner + String.fromCharCode(0x49, 0x4D, 0x03) + this.cardstodelete[i] + String.fromCharCode(0x00, 0x01, 0x01);
         }
 
-        if (cardstodelete.length > 0) {
+        if (this.cardstodelete.length > 0) {
             // wbxml contains placholder Id2Replace, replacehere and SyncKeyReplace
             let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
             if (tzcommon.prefs.getCharPref("asversion") === "2.5") {
@@ -931,79 +936,76 @@ var tzsync = {
             wbxml = wbxml.replace('SyncKeyReplace', synckey);
             wbxml = wbxml.replace('Id2Replace', folderID);
             // Send will send a request to the server, a responce will trigger callback, which will call senddel again.
-            this.Send(wbxml, callback.bind(this), "Sync");
+            this.Send(wbxml, this.senddelCallback.bind(this), "Sync");
         } else {
             tzcommon.prefs.setCharPref("LastSyncTime", Date.now());
             tzcommon.prefs.setCharPref("syncstate", "alldone");
             tzcommon.prefs.setCharPref("go", "alldone");
         }
+    },
 
-        function callback(wbxml) {
-            let firstcmd = wbxml.indexOf(String.fromCharCode(0x01, 0x46));
+    senddelCallback: function (responseWbxml) {
+        let firstcmd = responseWbxml.indexOf(String.fromCharCode(0x01, 0x46));
 
-            let truncwbxml = wbxml;
-            if (firstcmd !== -1) truncwbxml = wbxml.substring(0, firstcmd);
+        let truncwbxml = responseWbxml;
+        if (firstcmd !== -1) truncwbxml = responseWbxml.substring(0, firstcmd);
 
-            let n = truncwbxml.lastIndexOf(String.fromCharCode(0x4E, 0x03));
-            let n1 = truncwbxml.indexOf(String.fromCharCode(0x00), n);
-            let wbxmlstatus = truncwbxml.substring(n + 2, n1);
+        let n = truncwbxml.lastIndexOf(String.fromCharCode(0x4E, 0x03));
+        let n1 = truncwbxml.indexOf(String.fromCharCode(0x00), n);
+        let wbxmlstatus = truncwbxml.substring(n + 2, n1);
 
-            if (wbxmlstatus === '3' || wbxmlstatus === '12') {
-                tzcommon.dump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-                tzcommon.prefs.setCharPref("syncstate", "alldone");
-                tzcommon.prefs.setCharPref("go", "resync");
-            } else if (wbxmlstatus !== '1') {
-                tzcommon.dump("tzpush wbxml status", "server error? " + wbxmlstatus);
-                tzcommon.prefs.setCharPref("syncstate", "alldone");
-                tzcommon.prefs.setCharPref("go", "alldone");
-            } else {
-                let synckey = this.FindKey(wbxml);
-                tzcommon.prefs.setCharPref("synckey", synckey);
-                for (let count in cardstodelete) {
-                    tzcommon.prefs.setCharPref("syncstate", "Cleaning up deleted items");
-                    tzcommon.removeCardFromDeleteLog(cardstodelete[count]);
-                }
-                // The selected cards have been deleted from the server and from the deletelog -> rerun senddel to look for more cards to delete
-                this.senddel();
+        if (wbxmlstatus === '3' || wbxmlstatus === '12') {
+            tzcommon.dump("tzpush wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
+            tzcommon.prefs.setCharPref("syncstate", "alldone");
+            tzcommon.prefs.setCharPref("go", "resync");
+        } else if (wbxmlstatus !== '1') {
+            tzcommon.dump("tzpush wbxml status", "server error? " + wbxmlstatus);
+            tzcommon.prefs.setCharPref("syncstate", "alldone");
+            tzcommon.prefs.setCharPref("go", "alldone");
+        } else {
+            let synckey = this.FindKey(responseWbxml);
+            tzcommon.prefs.setCharPref("synckey", synckey);            
+            for (let count in this.cardstodelete) {
+                tzcommon.prefs.setCharPref("syncstate", "Cleaning up deleted items");
+                tzcommon.removeCardFromDeleteLog(this.cardstodelete[count]);
             }
+            // The selected cards have been deleted from the server and from the deletelog -> rerun senddel to look for more cards to delete
+            this.senddel();
         }
     },
 
 
-
     FindKey: function (wbxml) {
-        var x = String.fromCharCode(0x4b, 0x03); //<SyncKey> Code Page 0
+        let x = String.fromCharCode(0x4b, 0x03); //<SyncKey> Code Page 0
         if (wbxml.substr(5, 1) === String.fromCharCode(0x07)) {
             x = String.fromCharCode(0x52, 0x03); //<SyncKey> Code Page 7
         }
 
-        var start = wbxml.indexOf(x) + 2;
-        var end = wbxml.indexOf(String.fromCharCode(0x00), start);
-        var synckey = wbxml.substring(start, end);
-        return synckey;
-
+        let start = wbxml.indexOf(x) + 2;
+        let end = wbxml.indexOf(String.fromCharCode(0x00), start);
+        return wbxml.substring(start, end);
     },
 
     FindFolder: function (wbxml, type) {
-        var start = 0;
-        var end;
-        var folderID;
-        var Scontact = String.fromCharCode(0x4A, 0x03) + type + String.fromCharCode(0x00, 0x01);
-        var contact = wbxml.indexOf(Scontact);
+        let start = 0;
+        let end;
+        let folderID;
+        let Scontact = String.fromCharCode(0x4A, 0x03) + type + String.fromCharCode(0x00, 0x01);
+        let contact = wbxml.indexOf(Scontact);
         while (wbxml.indexOf(String.fromCharCode(0x48, 0x03), start) < contact) {
             start = wbxml.indexOf(String.fromCharCode(0x48, 0x03), start) + 2;
             end = wbxml.indexOf(String.fromCharCode(0x00), start);
             if (start === 1) {
                 break;
             }
-            folderID = wbxml.substring(start, end);
+            folderID = wbxml.substring(start, end); //we should be able to end the loop with return.
         }
         return folderID;
     },
 
     InitContact2: function() {
         this.Contacts2 = [];
-        for (var x in this.ToContacts) {
+        for (let x in this.ToContacts) {
             this.Contacts2[this.ToContacts[x]] = x;
         }
     },
@@ -1024,7 +1026,7 @@ var tzsync = {
         let server = host + "/Microsoft-Server-ActiveSync";
 
         let user = prefs.getCharPref("user");
-        let password = tzcommon.getpassword(host, user)
+        let password = tzcommon.getpassword(host, user);
         let deviceType = 'Thunderbird';
         let deviceId = prefs.getCharPref("deviceId");
         
