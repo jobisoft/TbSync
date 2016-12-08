@@ -9,7 +9,7 @@ var tzsync = {
     go: function() {
         var syncing = tzcommon.getLocalizedMessage("syncingString");
         tzcommon.prefs.setCharPref("syncstate", syncing);
-        this.time = tzcommon.prefs.getCharPref("LastSyncTime") / 1000;
+        this.time = tzcommon.prefs.getCharPref("LastSyncTime") / 1000;  //TODO: Drop this here
         this.time2 = (Date.now() / 1000) - 1;
 
         if (tzcommon.prefs.getBoolPref("prov")) {
@@ -150,6 +150,8 @@ var tzsync = {
         //next == 1 and 2 = resende - next ==3 = GetFolderId() - WHY DO WE REQUEST 3 POLICYKEYS????
         if (next < 3) {
             let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x49, 0x03, 0x50, 0x6F, 0x6C, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x4B, 0x03, 0x31, 0x00, 0x01, 0x01, 0x01, 0x01);
+            //TODO: We should also do the following replacement. don't we?
+            //wbxml = wbxml.replace("MS-WAP-Provisioning-XML", "MS-EAS-Provisioning-WBXML");
             wbxml = wbxml.replace('PolKeyReplace', polkey);
             this.Send(wbxml, this.polkeyCallback.bind(this), "Provision", next + 1);
         } else {
@@ -929,7 +931,7 @@ var tzsync = {
             // Send will send a request to the server, a responce will trigger callback, which will call senddel again.
             this.Send(wbxml, this.senddelCallback.bind(this), "Sync", cardstodelete);
         } else {
-            tzcommon.prefs.setCharPref("LastSyncTime", Date.now());
+            tzcommon.prefs.setCharPref("LastSyncTime", Date.now());     //TODO: Is senddel really allowed to do this? Is this the final step of go()?
             tzcommon.prefs.setCharPref("syncstate", "alldone");
             tzcommon.prefs.setCharPref("go", "alldone");
         }
@@ -994,6 +996,7 @@ var tzsync = {
         return folderID;
     },
 
+    //TODO: What in the lords name is this?
     InitContact2: function() {
         this.Contacts2 = [];
         for (let x in this.ToContacts) {

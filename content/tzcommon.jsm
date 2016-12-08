@@ -48,7 +48,7 @@ var tzcommon = {
         // Get fileobject of <UserProfileFolder>/ZPush/DeletedCards/cardId
         let file = FileUtils.getFile("ProfD", ["ZPush","DeletedCards",cardId.replace(":", "COLON")], true);
         try {
-            file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE);
+            file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE); //TODO: File may exist already due to doubling
         } catch (e) {
             this.dump("TZPush: Error @ addCardToDeleteLog()", e);
         }
