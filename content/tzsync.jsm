@@ -919,14 +919,14 @@ var tzsync = {
         let folderID = tzcommon.prefs.getCharPref("folderID");
         let synckey = tzcommon.prefs.getCharPref("synckey");
 
-        // cardstodelete will not contain more cards than max - but it must be "global", wo we can use it inside callback - is there any other way?
-        this.cardstodelete = tzcommon.getCardsFromDeleteLog(parseInt(tzcommon.prefs.getCharPref("maxnumbertosend")));
+        // cardstodelete will not contain more cards than max
+        let cardstodelete = tzcommon.getCardsFromDeleteLog(parseInt(tzcommon.prefs.getCharPref("maxnumbertosend")));
         let wbxmlinner = "";
-        for (let i = 0; i < this.cardstodelete.length; i++) {
-            wbxmlinner = wbxmlinner + String.fromCharCode(0x49, 0x4D, 0x03) + this.cardstodelete[i] + String.fromCharCode(0x00, 0x01, 0x01);
+        for (let i = 0; i < cardstodelete.length; i++) {
+            wbxmlinner = wbxmlinner + String.fromCharCode(0x49, 0x4D, 0x03) + cardstodelete[i] + String.fromCharCode(0x00, 0x01, 0x01);
         }
 
-        if (this.cardstodelete.length > 0) {
+        if (cardstodelete.length > 0) {
             // wbxml contains placholder Id2Replace, replacehere and SyncKeyReplace
             let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
             if (tzcommon.prefs.getCharPref("asversion") === "2.5") {
@@ -936,7 +936,7 @@ var tzsync = {
             wbxml = wbxml.replace('SyncKeyReplace', synckey);
             wbxml = wbxml.replace('Id2Replace', folderID);
             // Send will send a request to the server, a responce will trigger callback, which will call senddel again.
-            this.Send(wbxml, this.senddelCallback.bind(this), "Sync");
+            this.Send(wbxml, this.senddelCallback.bind(this), "Sync", cardstodelete);
         } else {
             tzcommon.prefs.setCharPref("LastSyncTime", Date.now());
             tzcommon.prefs.setCharPref("syncstate", "alldone");
@@ -944,7 +944,7 @@ var tzsync = {
         }
     },
 
-    senddelCallback: function (responseWbxml) {
+    senddelCallback: function (responseWbxml, cardstodelete) {
         let firstcmd = responseWbxml.indexOf(String.fromCharCode(0x01, 0x46));
 
         let truncwbxml = responseWbxml;
@@ -965,9 +965,9 @@ var tzsync = {
         } else {
             let synckey = this.FindKey(responseWbxml);
             tzcommon.prefs.setCharPref("synckey", synckey);            
-            for (let count in this.cardstodelete) {
+            for (let count in cardstodelete) {
                 tzcommon.prefs.setCharPref("syncstate", "Cleaning up deleted items");
-                tzcommon.removeCardFromDeleteLog(this.cardstodelete[count]);
+                tzcommon.removeCardFromDeleteLog(cardstodelete[count]);
             }
             // The selected cards have been deleted from the server and from the deletelog -> rerun senddel to look for more cards to delete
             this.senddel();
@@ -1011,7 +1011,7 @@ var tzsync = {
     },
 
     
-    Send: function (wbxml, callback, command) {
+    Send: function (wbxml, callback, command, callbackParameter = null) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
         let prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush.");
         
@@ -1067,7 +1067,8 @@ var tzsync = {
                         tzcommon.dump("tzpush", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
                     }
                 }
-                callback(req.responseText);
+                if (callbackParameter === null) callback(req.responseText);
+                else callback(req.responseText, callbackParameter);
             } else if (req.readyState === 4) {
 
                 switch(req.status) {
