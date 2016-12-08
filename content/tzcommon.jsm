@@ -71,8 +71,7 @@ var tzcommon = {
         let dir = FileUtils.getDir("ProfD", ["ZPush","DeletedCards"], true);
         let entries = dir.directoryEntries;
         while (entries.hasMoreElements()) {
-            let entry = entries.getNext();
-            /* entry.QueryInterface(Components.interfaces.nsIFile) */
+            let entry = entries.getNext().QueryInterface(Components.interfaces.nsIFile);
             entry.remove("true");
         }
     },
@@ -83,8 +82,7 @@ var tzcommon = {
         let entries = dir.directoryEntries;
         let deletelog = [];
         while (entries.hasMoreElements() && deletelog.length < maxnumbertosend) {
-            let entry = entries.getNext();
-            /* entry.QueryInterface(Components.interfaces.nsIFile); */
+            let entry = entries.getNext().QueryInterface(Components.interfaces.nsIFile);
             deletelog.push(entry.leafName.replace("COLON", ":"));
         }
         return deletelog;
