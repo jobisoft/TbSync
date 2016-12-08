@@ -121,9 +121,9 @@ var tzsync = {
     },
 
     Polkey: function() {
-        var polkey = tzcommon.prefs.getCharPref("polkey");
+        let polkey = tzcommon.prefs.getCharPref("polkey");
         if (isNaN(polkey)) {
-            polkey = 0; //pollkey === "0" will fail
+            polkey = "0";
         }
         if (polkey === "0") {
 
