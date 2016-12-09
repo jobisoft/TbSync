@@ -34,7 +34,7 @@ var tzprefs = {
                 ab.setAttribute('value', addressBook.URI);
                 count = count + 1;
 
-                //is this book the selected one? TODO! This will check for the FILENAME, not the ID (delete book #3, create a new one -> the new one is selected!
+                //is this book the selected one?
                 if (tzcommon.prefs.getCharPref('abname') === addressBook.URI) {
                     selected = count;
                 }
@@ -54,15 +54,16 @@ var tzprefs = {
         tzcommon.prefs.setCharPref("LastSyncTime", "0");
 
         /* Clear ServerId and LastModDate of all cards in addressbook selected for sync - WHY ??? */
-        var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-        var addressBook = abManager.getDirectory(tzcommon.prefs.getCharPref("abname"));
-        var cards = addressBook.childCards;
-        while (cards.hasMoreElements()) {
-            let card = cards.getNext();
-            if (card instanceof Components.interfaces.nsIAbCard) {
-                card.setProperty('ServerId', '');
-                card.setProperty("LastModifiedDate", '');
-                addressBook.modifyCard(card);
+        let addressBook = tzcommon.getSyncedBook();
+        if (addressBook !== null) {
+            let cards = addressBook.childCards;
+            while (cards.hasMoreElements()) {
+                let card = cards.getNext();
+                if (card instanceof Components.interfaces.nsIAbCard) {
+                    card.setProperty('ServerId', '');
+                    card.setProperty("LastModifiedDate", '');
+                    addressBook.modifyCard(card);
+                }
             }
         }
 

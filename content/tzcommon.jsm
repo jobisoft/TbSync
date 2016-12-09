@@ -66,12 +66,22 @@ var tzcommon = {
 
 
     /* Address book functions */
-    removeSId: function (aParent, ServerId) {
+    removeSId: function (aParentDir, ServerId) {
         let acard = aParentDir.getCardFromProperty("ServerId", ServerId, false);
         if (acard instanceof Components.interfaces.nsIAbCard) {
             acard.setProperty("ServerId", "");
             aParentDir.modifyCard(acard);
         }
+    },
+
+    getSyncedBook: function () {
+        let abname = tzcommon.prefs.getCharPref("abname");
+        if (abname !== "") {
+            let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+            let addressBook = abManager.getDirectory(abname);
+            if (addressBook instanceof Components.interfaces.nsIAbDirectory) return addressBook;
+        }
+        return null;
     },
 
 

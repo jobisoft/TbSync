@@ -7,6 +7,12 @@ Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 var tzsync = {
 
     go: function() {
+        // Do not sync, if no book is selected
+        if (tzcommon.getSyncedBook() === null) {
+            tzcommon.dump("tzsync", "Aborting Sync, because no valid address book selected as target.");
+            return;
+        }
+
         var syncing = tzcommon.getLocalizedMessage("syncingString");
         tzcommon.prefs.setCharPref("syncstate", syncing);
         this.time = tzcommon.prefs.getCharPref("LastSyncTime") / 1000;  //TODO: Drop this here
@@ -249,8 +255,7 @@ var tzsync = {
                 } else {
                     synckey = this.FindKey(wbxml);
                     tzcommon.prefs.setCharPref("synckey", synckey);
-                    var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-                    var addressBook = abManager.getDirectory(tzcommon.prefs.getCharPref("abname"));
+                    var addressBook = tzcommon.getSyncedBook();
 
                     var stack = [];
                     var num = 4;
@@ -515,8 +520,8 @@ var tzsync = {
         }
 
         var wbxml = '';
-        var abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-        var addressBook = abManager.getDirectory(tzcommon.prefs.getCharPref("abname"));
+        var addressBook = tzcommon.getSyncedBook();
+
         var x;
         var birthd;
         var birthm;
@@ -544,7 +549,7 @@ var tzsync = {
         var maxnumbertosend = parseInt(tzcommon.prefs.getCharPref("maxnumbertosend"));
         var morecards = false;
         var seperator = tzcommon.prefs.getCharPref("seperator"); // default is " ," can be changed to "/n"
-        var cards = addressBook.childCards;
+        var cards = addressBook.childCards; //MOEP if no book selected! TODO
 
         while (cards.hasMoreElements()) {
             card = cards.getNext();
@@ -840,7 +845,7 @@ var tzsync = {
 
                 var oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
                 var oDOM = oParser.parseFromString(this.toxml(wbxml), "text/xml");
-                addressBook = abManager.getDirectory(tzcommon.prefs.getCharPref("abname"));
+                var addressBook = tzcommon.getSyncedBook();
 
 
                 var add = oDOM.getElementsByTagName("Add");

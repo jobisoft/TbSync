@@ -75,18 +75,30 @@ var tzpush = {
 
         // If a card is removed from the addressbook we are syncing, keep track of the deletions and log them to a file in the profile folder
         onItemRemoved: function addressbookListener_onItemRemoved (aParentDir, aItem) {
-            /* is this needed, if we know the item is a card?  aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory); */
-            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir.URI === tzcommon.prefs.getCharPref("abname")) {
+            if (aParentDir instanceof Components.interfaces.nsIAbDirectory) {
+                aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
+            }
+
+            let abname = tzcommon.prefs.getCharPref("abname");
+            if (aItem instanceof Components.interfaces.nsIAbCard && abname !== "" && aParentDir instanceof Components.interfaces.nsIAbDirectory && aParentDir.URI === abname) {
                     let deleted = aItem.getProperty("ServerId", "");
                     if (deleted) tzcommon.addCardToDeleteLog(deleted);
+            }
+
+            // if the book we are currently syncing is deleted, remove it from sync
+            if (aItem instanceof Components.interfaces.nsIAbDirectory && abname !== "" && aItem.URI === tzcommon.prefs.getCharPref("abname")) {
+                    tzcommon.prefs.setCharPref("abname","");
             }
         },
 
         // If a card is added to a book, but not to the one we are syncing, and that card has a ServerId, remove that ServerId from the first card found in that book
-        // This should clean up cards, that get moved from an EAS book to a standard book - hm, still TODO
+        // This should clean up cards, that get moved from an EAS book to a standard book
         onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {
-            /* is this needed, if we know the item is a card?  aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory); */
-            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir.URI !== tzcommon.prefs.getCharPref("abname")) {
+            if (aParentDir instanceof Components.interfaces.nsIAbDirectory) {
+                aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
+            }
+
+            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && aParentDir.URI !== tzcommon.prefs.getCharPref("abname")) {
                 let ServerId = aItem.getProperty("ServerId", "");
                 if (ServerId !== "") tzcommon.removeSId(aParentDir, ServerId);
             }    
@@ -94,19 +106,16 @@ var tzpush = {
         },
 
         add: function addressbookListener_add () {
-            var flags;
-            var flags1;
             if (Components.classes["@mozilla.org/abmanager;1"]) { // Thunderbird 3
-                flags = Components.interfaces.nsIAbListener.directoryItemRemoved;
-                flags1 = Components.interfaces.nsIAbListener.itemAdded;
+                let flags = Components.interfaces.nsIAbListener;
                 Components.classes["@mozilla.org/abmanager;1"]
                     .getService(Components.interfaces.nsIAbManager)
-                    .addAddressBookListener(tzpush.addressbookListener, flags | flags1);
+                    .addAddressBookListener(tzpush.addressbookListener, flags.directoryItemRemoved | flags.itemAdded | flags.directoryRemoved);
             } else { // Thunderbird 2
-                flags = Components.interfaces.nsIAddrBookSession.directoryItemRemoved;
+                let flags = Components.interfaces.nsIAddrBookSession;
                 Components.classes["@mozilla.org/addressbook/services/session;1"]
                     .getService(Components.interfaces.nsIAddrBookSession)
-                    .addAddressBookListener(tzpush.addressbookListener, flags);
+                    .addAddressBookListener(tzpush.addressbookListener, flags.directoryItemRemoved | flags.itemAdded | flags.directoryRemoved);
             }
         },
 
