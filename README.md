@@ -3,7 +3,7 @@
 
 This is work in progress. Roadmap:
 
- * [ ] store passwords in password manager, not in Prefs
+ * [x] store passwords in password manager, not in Prefs
  * [ ] change design to be more intuitive
  * [ ] simplify configuration (server profiles)
  * [ ] sync categories
