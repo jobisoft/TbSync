@@ -15,7 +15,7 @@ var tzpush = {
     
     requestSync: function () {
         if (tzcommon.prefs.getCharPref("syncstate") === "alldone")
-            tzsync.go();
+            tzsync.go(window);
     },
     
     

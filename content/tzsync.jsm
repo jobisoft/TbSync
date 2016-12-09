@@ -6,7 +6,11 @@ Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 
 var tzsync = {
 
-    go: function() {
+    w: null,
+
+    go: function(window) {
+        tzsync.w = window;
+
         // Do not sync, if no book is selected
         if (tzcommon.getSyncedBook() === null) {
             tzcommon.dump("tzsync", "Aborting Sync, because no valid address book selected as target.");
@@ -1018,13 +1022,9 @@ var tzsync = {
             tzcommon.appendToFile("wbxml-debug.log", wbxml);
         }
 
+        let connection = tzcommon.getConnection();
+        let password = tzcommon.getPassword(connection);
 
-        let protocol = (prefs.getBoolPref("https")) ? "https://" : "http://";
-        let host = protocol + prefs.getCharPref("host");
-        let server = host + "/Microsoft-Server-ActiveSync";
-
-        let user = prefs.getCharPref("user");
-        let password = tzcommon.getpassword(host, user);
         let deviceType = 'Thunderbird';
         let deviceId = prefs.getCharPref("deviceId");
         
@@ -1032,13 +1032,13 @@ var tzsync = {
         let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
         req.mozBackgroundRequest = true;
         if (prefs.getCharPref("debugwbxml") === "1") {
-            tzcommon.dump("sending", "POST " + server + '?Cmd=' + command + '&User=' + user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
+            tzcommon.dump("sending", "POST " + connection.url + '?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
         }
-        req.open("POST", server + '?Cmd=' + command + '&User=' + user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
+        req.open("POST", connection.url + '?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
         req.overrideMimeType("text/plain");
         req.setRequestHeader("User-Agent", deviceType + ' ActiveSync');
         req.setRequestHeader("Content-Type", "application/vnd.ms-sync.wbxml");
-        req.setRequestHeader("Authorization", 'Basic ' + btoa(user + ':' + password));
+        req.setRequestHeader("Authorization", 'Basic ' + btoa(connection.user + ':' + password));
         if (prefs.getCharPref("asversion") === "2.5") {
             req.setRequestHeader("MS-ASProtocolVersion", "2.5");
         } else {
@@ -1076,6 +1076,12 @@ var tzsync = {
                     
                     case 401: // AuthError
                         tzcommon.dump("tzpush request status", "401 -- Auth error - check username and password");
+                        var retVals = { password: "" };
+                        tzsync.w.openDialog("chrome://tzpush/content/password.xul", "passwordprompt", "modal,centerscreen,chrome,resizable=no", retVals, "Password for ActiveSync");
+                        if (retVals.password !== "") {
+                            tzcommon.setPassword(retVals.password);
+                            //enforce rerun TODO
+                        }
                         break;
                     
                     case 449: // Request for new provision
@@ -1088,47 +1094,43 @@ var tzsync = {
                 
                     case 451: // Redirect - update host and login manager 
                         let header = req.getResponseHeader("X-MS-Location");
-                        let newurl = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
-                        let password = tzcommon.getpassword();
+                        let newHost = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
+                        let connection = tzcommon.getConnection();
+                        let password = tzcommon.getPassword(connection);
 
-                        tzcommon.dump("Redirect (451)", "header: " + header + ", newurl: " + newurl + ", password: " + password);
-                        prefs.setCharPref("host", newurl);
+                        tzcommon.dump("Redirect (451)", "header: " + header + ", oldHost: " + connection.host + ", newHost: " + newHost);
+                        
+                        //If the current connection has a LoginInfo (password stored !== null), try to update it
+                        if (password !== null) {
+                            tzcommon.dump("Redirect (451)", "updating loginInfo");
+                            let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
+                            let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
+                            
+                            //remove current login info
+                            let currentLoginInfo = new nsLoginInfo(connection.host, connection.url, null, connection.user, password, "USER", "PASSWORD");
+                            myLoginManager.removeLogin(currentLoginInfo);
 
-                        let protocol = (prefs.getBoolPref("https")) ? "http://" : "https://";
-                        let host = protocol + newurl;
-                        let server = host + "/Microsoft-Server-ActiveSync";
-                        let user = prefs.getCharPref("user");
-
-                        let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
-                        let updateloginInfo = new nsLoginInfo(host, server, null, user, password, "USER", "PASSWORD");
-                        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-
-                        // We are trying to update the LoginManager (because the host changed), but what about Polkey, GetFolderId and fromzpush?
-                        try {
-                            myLoginManager.addLogin(updateloginInfo);
-                            if (prefs.getBoolPref("prov")) {
-                                this.Polkey();
-                            } else {
-                                if (prefs.getCharPref("synckey") === '') {
-                                    this.GetFolderId();
-                                } else {
-                                    this.fromzpush();
-                                }
+                            //update host and add new login info
+                            connection.host = newHost;
+                            let newLoginInfo = new nsLoginInfo(connection.host, connection.url, null, connection.user, password, "USER", "PASSWORD");
+                            try {
+                                myLoginManager.addLogin(newLoginInfo);
+                            } catch (e) {
+                                tzcommon.dump("Redirect (451) Error", e);
                             }
-                        } catch (e) {
-                            if (e.message.match("This login already exists")) {
-                                tzcommon.dump("login ", "Already exists");
-                                if (prefs.getBoolPref("prov")) {
-                                    this.Polkey();
-                                } else {
-                                    if (prefs.getCharPref("synckey") === '') {
-                                        this.GetFolderId();
-                                    } else {
-                                        this.fromzpush();
-                                    }
-                                }
+                        } else {
+                            //just update host
+                            connection.host = newHost;
+                        }
+
+                        //Now rerun sync - this is unsafe, because there is still a callback pending and the current sync process is not finished... also this is redundant TODO - ErrorCode-Handling should be done AFTER all syncstuff has been finished
+                        if (prefs.getBoolPref("prov")) {
+                            this.Polkey();
+                        } else {
+                            if (prefs.getCharPref("synckey") === '') {
+                                this.GetFolderId();
                             } else {
-                                tzcommon.dump("login error", e);
+                                this.fromzpush();
                             }
                         }
                         break;

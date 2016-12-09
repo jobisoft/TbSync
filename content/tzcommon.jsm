@@ -168,56 +168,54 @@ var tzcommon = {
 
 
     /* Password related functions */
-    getpassword: function (host, user) {
+    getConnection: function() {
+        let connection = {
+            protocol: (tzcommon.prefs.getBoolPref("https")) ? "https://" : "http://",
+            set host(newHost) { tzcommon.prefs.setCharPref("host", newHost); },
+            get host() { return this.protocol + tzcommon.prefs.getCharPref("host"); },
+            get url() { return this.host + "/Microsoft-Server-ActiveSync"; },
+            user: tzcommon.prefs.getCharPref("user"),
+        };
+        return connection;
+    },
+    
+    
+    getPassword: function (connection) {
         let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-        let logins = myLoginManager.findLogins({}, host, host + "/Microsoft-Server-ActiveSync", null);
+        let logins = myLoginManager.findLogins({}, connection.host, connection.url, null);
         for (let i = 0; i < logins.length; i++) {
-            if (logins[i].username === user) {
+            if (logins[i].username === connection.user) {
                 return logins[i].password;
             }
         }
         //No password found - we should ask for one - this will be triggered by the 401 response, which also catches wrong passwords
-        return "";
-    }
+        return null;
+    },
 
 
-    
-    /*    function setpassword() {
-            var SSL = prefs.getBoolPref("https");
-            var host = prefs.getCharPref("host");
-            var USER = prefs.getCharPref("user");
-            var hthost = "http://" + host;
-            var SERVER = "http://" + host + "/Microsoft-Server-ActiveSync";
-            if (SSL === true) {
-                hthost = "https://" + host;
-                SERVER = "https://" + host + "/Microsoft-Server-ActiveSync";
+    setPassword: function (newPassword) {
+        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
+        let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
+        let connection = this.getConnection();
+        let curPassword = this.getPassword(connection);
+        
+        //Is there a loginInfo for this connection?
+        if (curPassword !== null) {
+            //remove current login info
+            let currentLoginInfo = new nsLoginInfo(connection.host, connection.url, null, connection.user, curPassword, "USER", "PASSWORD");
+            try {
+                myLoginManager.removeLogin(currentLoginInfo);
+            } catch (e) {
+                tzcommon.dump("Error removing loginInfo", e);
             }
-
-            PASSWORD = getpassword();
-            if (NEWPASSWORD !== PASSWORD) {
-
-                var nsLoginInfo = new Components.Constructor(
-                    "@mozilla.org/login-manager/loginInfo;1",
-                    Components.interfaces.nsILoginInfo,
-                    "init");
-                var loginInfo = new nsLoginInfo(hthost, SERVER, null, USER, PASSWORD, "USER", "PASSWORD");
-
-                var updateloginInfo = new nsLoginInfo(hthost, SERVER, null, USER, NEWPASSWORD, "USER", "PASSWORD");
-                var myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-
-                if (NEWPASSWORD !== '') {
-                    if (NEWPASSWORD !== PASSWORD) {
-                        if (PASSWORD !== '') {
-                            myLoginManager.removeLogin(loginInfo);
-                        }
-                    }
-                    myLoginManager.addLogin(updateloginInfo);
-
-                } else if (PASSWORD === "" || typeof PASSWORD === 'undefined') {
-                    myLoginManager.addLogin(updateloginInfo);
-                } else {
-                    myLoginManager.removeLogin(loginInfo);
-                }
-            }
-        } */
+        }
+        
+        //create loginInfo with new password
+        let newLoginInfo = new nsLoginInfo(connection.host, connection.url, null, connection.user, newPassword, "USER", "PASSWORD");
+        try {
+            myLoginManager.addLogin(newLoginInfo);
+        } catch (e) {
+            tzcommon.dump("Error adding loginInfo", e);
+        }
+    } 
 };
