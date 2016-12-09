@@ -75,40 +75,22 @@ var tzpush = {
 
         // If a card is removed from the addressbook we are syncing, keep track of the deletions and log them to a file in the profile folder
         onItemRemoved: function addressbookListener_onItemRemoved (aParentDir, aItem) {
-            aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
-
-            if (aParentDir.URI === tzcommon.prefs.getCharPref("abname")) {
-                if (aItem instanceof Components.interfaces.nsIAbCard) {
+            /* is this needed, if we know the item is a card?  aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory); */
+            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir.URI === tzcommon.prefs.getCharPref("abname")) {
                     let deleted = aItem.getProperty("ServerId", "");
-
-                    if (deleted) {
-                        tzcommon.addCardToDeleteLog(deleted);
-                    }
-                }
+                    if (deleted) tzcommon.addCardToDeleteLog(deleted);
             }
         },
 
-        // If a card is added to a book, but not to the one we are syncing, and that card has a ServerId, remove that ServerId from the first card found in that book - Does not look too right (TODO)
+        // If a card is added to a book, but not to the one we are syncing, and that card has a ServerId, remove that ServerId from the first card found in that book
+        // This should clean up cards, that get moved from an EAS book to a standard book - hm, still TODO
         onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {
-            function removeSId(aParent, ServerId) {
-                let acard = aParentDir.getCardFromProperty("ServerId", ServerId, false);
-                if (acard instanceof Components.interfaces.nsIAbCard) {
-                    acard.setProperty("ServerId", "");
-                    aParentDir.modifyCard(acard);
-                }
-            }
-            let ServerId = "";
-            aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
-            if (aParentDir.URI !== tzcommon.prefs.getCharPref("abname")) { //MÖP - do not assume, delete item is a card, it could also be a book!
-
-                if (aItem instanceof Components.interfaces.nsIAbCard) {
-                    ServerId = aItem.getProperty("ServerId", "");
-                    if (ServerId !== "") {
-                        removeSId(aParentDir, ServerId);
-                    }
-                }
-
-            }
+            /* is this needed, if we know the item is a card?  aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory); */
+            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir.URI !== tzcommon.prefs.getCharPref("abname")) {
+                let ServerId = aItem.getProperty("ServerId", "");
+                if (ServerId !== "") tzcommon.removeSId(aParentDir, ServerId);
+            }    
+                
         },
 
         add: function addressbookListener_add () {

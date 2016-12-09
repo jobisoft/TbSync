@@ -8,12 +8,77 @@ var tzcommon = {
 
     prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
 
+    
+    /* tools */    
+    decode_utf8: function (s) {
+        let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;
+        if (platformVer >= 40) {
+            return s;
+        } else {
+            try {
+                return decodeURIComponent(escape(s));
+            } catch (e) {
+                return s;
+            }
+        }
+    },
+
+
+    encode_utf8: function (string) {
+        let appInfo = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
+        let platformVer = appInfo.platformVersion;
+        if (platformVer >= 50) {
+            return string;
+        } else {
+            string = string.replace(/\r\n/g, "\n");
+            let utf8string = "";
+            for (let n = 0; n < string.length; n++) {
+                let c = string.charCodeAt(n);
+                if (c < 128) {
+                    utf8string += String.fromCharCode(c);
+                } else if ((c > 127) && (c < 2048)) {
+                    utf8string += String.fromCharCode((c >> 6) | 192);
+                    utf8string += String.fromCharCode((c & 63) | 128);
+                } else {
+                    utf8string += String.fromCharCode((c >> 12) | 224);
+                    utf8string += String.fromCharCode(((c >> 6) & 63) | 128);
+                    utf8string += String.fromCharCode((c & 63) | 128);
+                }
+            }
+            return utf8string;
+        }
+    },
+
+
+    getLocalizedMessage: function (msg) {
+        let bundle = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/statusstrings");
+        return bundle.GetStringFromName(msg);
+    },
+
+
     dump: function (what, aMessage) {
         var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
         consoleService.logStringMessage(what + " : " + aMessage);
     },
 
-    
+
+
+
+
+    /* Address book functions */
+    removeSId: function (aParent, ServerId) {
+        let acard = aParentDir.getCardFromProperty("ServerId", ServerId, false);
+        if (acard instanceof Components.interfaces.nsIAbCard) {
+            acard.setProperty("ServerId", "");
+            aParentDir.modifyCard(acard);
+        }
+    },
+
+
+
+
+
+    /* Filesystem functions */
     appendToFile: function (filename, data) {
         let file = FileUtils.getFile("ProfD", ["ZPush",filename]);
         //create a strem to write to that file
@@ -87,48 +152,12 @@ var tzcommon = {
         }
         return deletelog;
     },
-    
-    
-    decode_utf8: function (s) {
-        let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;
-        if (platformVer >= 40) {
-            return s;
-        } else {
-            try {
-                return decodeURIComponent(escape(s));
-            } catch (e) {
-                return s;
-            }
-        }
-    },
 
 
-    encode_utf8: function (string) {
-        let appInfo = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
-        let platformVer = appInfo.platformVersion;
-        if (platformVer >= 50) {
-            return string;
-        } else {
-            string = string.replace(/\r\n/g, "\n");
-            let utf8string = "";
-            for (let n = 0; n < string.length; n++) {
-                let c = string.charCodeAt(n);
-                if (c < 128) {
-                    utf8string += String.fromCharCode(c);
-                } else if ((c > 127) && (c < 2048)) {
-                    utf8string += String.fromCharCode((c >> 6) | 192);
-                    utf8string += String.fromCharCode((c & 63) | 128);
-                } else {
-                    utf8string += String.fromCharCode((c >> 12) | 224);
-                    utf8string += String.fromCharCode(((c >> 6) & 63) | 128);
-                    utf8string += String.fromCharCode((c & 63) | 128);
-                }
-            }
-            return utf8string;
-        }
-    },
 
 
+
+    /* Password related functions */
     getpassword: function (host, user) {
         let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
         let logins = myLoginManager.findLogins({}, host, host + "/Microsoft-Server-ActiveSync", null);
@@ -139,14 +168,10 @@ var tzcommon = {
         }
         //No password found - we should ask for one - this will be triggered by the 401 response, which also catches wrong passwords
         return "";
-    },
-
-
-    getLocalizedMessage: function (msg) {
-        let bundle = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/statusstrings");
-        return bundle.GetStringFromName(msg);
     }
 
+
+    
     /*    function setpassword() {
             var SSL = prefs.getBoolPref("https");
             var host = prefs.getCharPref("host");
