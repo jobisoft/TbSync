@@ -549,7 +549,7 @@ var tzsync = {
         var maxnumbertosend = parseInt(tzcommon.prefs.getCharPref("maxnumbertosend"));
         var morecards = false;
         var seperator = tzcommon.prefs.getCharPref("seperator"); // default is " ," can be changed to "/n"
-        var cards = addressBook.childCards; //MOEP if no book selected! TODO
+        var cards = addressBook.childCards;
 
         while (cards.hasMoreElements()) {
             card = cards.getNext();
