@@ -324,6 +324,15 @@ var tzcommon = {
             // setup the "properties" of the new address book
             //TODO
         }
+    },
+    
+    // wrap get/set functions, to be able to switch storage backend
+    getAccountSetting: function(field) {
+        let boolFields = ["https", "prov", "birthday", "displayoverride", "showanniversary", "connected"];
+        let intFields = ["autosync"];
+        if (intFields.indexOf(field) != -1) return tzcommon.prefs.getIntPref(field);
+        else if (boolFields.indexOf(field) != -1) return tzcommon.prefs.getBoolPref(field);
+        else return tzcommon.prefs.getCharPref(field);
     }
     
 };

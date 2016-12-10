@@ -11,6 +11,11 @@ var tzsync = {
     go: function(window) {
         tzsync.w = window;
 
+        if (!tzcommon.getAccountSetting("connected")) {
+            tzcommon.dump("sync", "Aborting Sync, because account is not connected.");
+            return;
+        }
+
         // Check if connection has deviceId and target address book
         tzcommon.checkDeviceId(); 
         if (!tzcommon.checkSyncTarget()) {
