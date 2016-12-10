@@ -89,10 +89,6 @@
                          <label control="autosync" value="&pref.autotime;" tooltiptext="&pref.never;" />
                          <textbox preference="autosync" id="autosync" tooltiptext="&pref.never;"/>
                     </row>
-                    <!--row>
-                         <label />
-                         <button label="&pref.Sync;" onclick="tzprefs.requestSync();" />
-                    </row-->
                     <row>
                          <label value="&pref.SyncedAB;" />
                          <label value="" disabled="true" id="abname" />
@@ -100,6 +96,10 @@
                     <row>
                          <label value="&pref.DeviceId;" />
                          <label value="" disabled="true" id="deviceId" />
+                    </row>
+                    <row>
+                         <label />
+                         <button label="&pref.Sync;" onclick="tzprefs.requestSync();" />
                     </row>
                     <row>
                          <label />

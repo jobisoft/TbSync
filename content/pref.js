@@ -28,6 +28,7 @@ var tzprefs = {
     },
 
     requestSync: function () {
+        tzcommon.dump("request sync", tzcommon.prefs.getCharPref("go"));
         tzcommon.prefs.setCharPref("go", "sync");
     },
 
@@ -55,6 +56,7 @@ var tzprefs = {
                 tzcommon.removeBook(tzcommon.getSyncTarget().uri);
             } else {
                 //if we just connected, init sync
+                tzcommon.dump("request sync", tzcommon.prefs.getCharPref("go"));
                 tzcommon.prefs.setCharPref("go", "sync");
             }
         }
@@ -88,6 +90,14 @@ var tzprefs = {
 
         observe: function (aSubject, aTopic, aData) {
             switch (aData) {
+/*                case "syncstate": //update button to inform user
+                    if (tzcommon.prefs.getCharPref("syncstate") == "alldone") {
+                        document.getElementById("tzpref.resyncbtn").disabled = false;
+                        document.getElementById("tzpref.resyncbtn").label = tzcommon.getLocalizedMessage("resync_from_scratch");
+                    } else {
+                        document.getElementById("tzpref.resyncbtn").disabled = true;
+                        document.getElementById("tzpref.resyncbtn").label = "Busy: " + tzcommon.getLocalizedMessage(tzcommon.prefs.getCharPref("syncstate"));
+                    } */
                 case "abname": //update name of addressbook sync target
                     tzprefs.updateTarget();
                     break;
