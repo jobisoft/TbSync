@@ -1,8 +1,9 @@
 [x] reorganize js files into "gui" and "sync" - "sync" should only be loaded by messenger.js
 
-[ ] move all ProfD operations into tzcommon
-
-[ ] ask for password, if wrong or missing
+[x] move all ProfD operations into tzcommon
+[x] ask for password, if wrong or missing
+[ ] move all pref queries out of tzsync
+[ ] make books (mapping) and devideId auto managed
 
 write global function to get and set account prefs, which takes an account parameter, which is ignored first (if no id is given, pref is global) - OR prefs need to be registered - unknown prefs get ignored ?
 
