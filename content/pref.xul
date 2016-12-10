@@ -27,7 +27,6 @@
                <preference id="seperator" name="extensions.tzpush.seperator" type="string" />
                <preference id="displayoverride" name="extensions.tzpush.displayoverride" type="bool" />
                <preference id="autosync" name="extensions.tzpush.autosync" type="int" />
-               <preference id="connected" name="extensions.tzpush.connected" type="string" />
           </preferences>
 
           <grid flex="1" align="center" >
@@ -81,6 +80,10 @@
                     <row>
                          <label control="displayoverride" value="&pref.displayoverride;" tooltiptext="&pref.displayoverridetooltip;"/>
                          <checkbox  preference="displayoverride" id="displayoverride" tooltiptext="&pref.displayoverridetooltip;" label=' "First Name Second Name"' disabled="true" />
+                    </row>
+                    <row>
+                         <label />
+                         <button label="" id="tzpush.connectbtn" onclick="tzprefs.updateConnectionState(true);" />
                     </row>
                     <row>
                          <label control="autosync" value="&pref.autotime;" tooltiptext="&pref.never;" />

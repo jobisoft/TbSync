@@ -17,6 +17,7 @@ var tzprefs = {
         tzcommon.checkDeviceId(); 
         this.updateTarget();
         this.updateDeviceId();
+        this.updateConnectionState(false);
     },
 
     onclose: function () {
@@ -43,6 +44,37 @@ var tzprefs = {
         document.getElementById('deviceId').value = tzcommon.prefs.getCharPref("deviceId");
     },
 
+    
+    updateConnectionState: function (toggle) {
+        let connected = tzcommon.prefs.getBoolPref("connected");
+        if (toggle) {
+            connected = !connected;
+            tzcommon.prefs.setBoolPref("connected", connected);
+            if (!connected) {
+                //if we are no longer connected, delete all sync targets
+                tzcommon.removeBook(tzcommon.getSyncTarget().uri);
+            } else {
+                //if we just connected, init sync
+                tzcommon.prefs.setCharPref("go", "sync");
+            }
+        }
+        
+        if (connected) {
+            document.getElementById('tzpush.connectbtn').label = "Disconnect"; //we are connected and the option is to disconnect
+        } else {
+            document.getElementById('tzpush.connectbtn').label = "Connect";
+        }
+        
+        let protectedFields = ["asversion", "host", "https", "user", "prov", "birthday", "seperator", "displayoverride"];
+        for (let i=0; i<protectedFields.length;i++) {
+            document.getElementById(protectedFields[i]).disabled = connected;
+        }
+    },
+    
+    
+    
+    
+    
     // if syncTargets books are renamed/deleted in the addressbook while this pref window open, we need to update it
     prefObserver : {
 

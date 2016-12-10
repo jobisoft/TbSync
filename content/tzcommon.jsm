@@ -10,7 +10,7 @@ var tzcommon = {
     bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/strings"),
 
     
-    /* tools */    
+    /* tools */
     decode_utf8: function (s) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;
         if (platformVer >= 40) {
@@ -306,6 +306,20 @@ var tzcommon = {
             properties.dirType = 2; // address book
             if (name === null) return dir.childNodes;
             else return dir.createNewDirectory(properties);
+        }
+    },
+
+    //TODO, check if book exists
+    removeBook: function (uri) { 
+        // get all address books
+        if (Components.classes["@mozilla.org/abmanager;1"]) { // TB 3
+            let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+            abManager.deleteAddressBook(uri);
+        } else { // TB 2
+            // obtain the main directory through the RDF service
+            let dir = Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService).GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
+            // setup the "properties" of the new address book
+            //TODO
         }
     }
     
