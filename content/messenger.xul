@@ -15,7 +15,7 @@
         <statusbarpanel id="tzstatus" label="Tz Status" context="statusmenu" />
         <popupset>
             <menupopup id="statusmenu">
-                <menuitem label="&pref.SyncAdddressbook;" onclick="tzpush.requestSync();" />
+                <menuitem label="&pref.Sync;" onclick="tzpush.requestSync();" />
                 <menuitem label="&overlay.TZ-Settings;" onclick="tzpush.openPrefs(event);" />
                 <menuitem label="&pref.ResetStatus;" onclick="tzpush.resetStatus();" />
             </menupopup>
@@ -25,8 +25,9 @@
     <menubar id="taskPopup">
         <menu id="tzpushmain"  label="&overlay.tzpush;" >
             <menupopup>
-                <menuitem id="tzpush.tzsettingsmenu" label="&overlay.TZ-Settings;" oncommand="tzpush.openPrefs(event);" />
-                <menuitem id="tzpush.go" label="&overlay.tz-sync;" oncommand="tzpush.requestSync();" />
+                <menuitem label="&pref.Sync;" oncommand="tzpush.requestSync();" />
+                <menuitem label="&overlay.TZ-Settings;" oncommand="tzpush.openPrefs(event);" />
+                <menuitem label="&pref.ResetStatus;" onclick="tzpush.resetStatus();" />
             </menupopup>
         </menu>
     </menubar>

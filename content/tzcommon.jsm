@@ -7,6 +7,7 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
 var tzcommon = {
 
     prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
+    bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/strings"),
 
     
     /* tools */    
@@ -51,14 +52,13 @@ var tzcommon = {
 
 
     getLocalizedMessage: function (msg) {
-        let bundle = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/statusstrings");
-        return bundle.GetStringFromName(msg);
+        return tzcommon.bundle.GetStringFromName(msg);
     },
 
 
     dump: function (what, aMessage) {
         var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
-        consoleService.logStringMessage(what + " : " + aMessage);
+        consoleService.logStringMessage("[TzPush] " + what + " : " + aMessage);
     },
 
 
@@ -72,16 +72,6 @@ var tzcommon = {
             acard.setProperty("ServerId", "");
             aParentDir.modifyCard(acard);
         }
-    },
-
-    getSyncedBook: function () {
-        let abname = tzcommon.prefs.getCharPref("abname");
-        if (abname !== "") {
-            let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-            let addressBook = abManager.getDirectory(abname);
-            if (addressBook instanceof Components.interfaces.nsIAbDirectory) return addressBook;
-        }
-        return null;
     },
 
 
@@ -125,7 +115,7 @@ var tzcommon = {
         try {
             file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE); //TODO: File may exist already due to doubling
         } catch (e) {
-            this.dump("TZPush: Error @ addCardToDeleteLog()", e);
+            this.dump("Error @ addCardToDeleteLog()", e);
         }
     },
 
@@ -136,7 +126,7 @@ var tzcommon = {
         try {
             file.remove("true");
         } catch (e) {
-            this.dump("TZPush: Error @ removeCardFromDelete()", e);
+            this.dump("Error @ removeCardFromDelete()", e);
         }
     },
 
@@ -167,7 +157,7 @@ var tzcommon = {
 
 
 
-    /* Password related functions */
+    /* Account settings related functions */
     getConnection: function() {
         let connection = {
             protocol: (tzcommon.prefs.getBoolPref("https")) ? "https://" : "http://",
@@ -217,5 +207,106 @@ var tzcommon = {
         } catch (e) {
             tzcommon.dump("Error adding loginInfo", e);
         }
-    } 
+    } ,
+
+
+    checkDeviceId: function () {
+        if (tzcommon.prefs.getCharPref("deviceId", "") === "") tzcommon.prefs.setCharPref("deviceId", Date.now());
+        return  tzcommon.prefs.getCharPref("deviceId");
+    },
+
+
+    checkSyncTarget: function () {
+        let addressBook = this.getSyncTarget().obj;
+        if (addressBook instanceof Components.interfaces.nsIAbDirectory) return true;
+        
+        // Get unique Name for new address book
+        let testname = tzcommon.prefs.getCharPref("accountname");
+        let newname = testname;
+        let count = 1;
+        let unique = false;
+        do {
+            unique = true;
+            let booksIter = this.addBookOrGetItter();
+            while (booksIter.hasMoreElements()) {
+                let data = booksIter.getNext();
+                if (data instanceof Components.interfaces.nsIAbDirectory && data.dirName == newname) {
+                    unique = false;
+                    break;
+                }
+            }
+            if (!unique) {
+                newname = testname + "." + count;
+                count = count + 1;
+            }
+        } while (!unique);
+        
+        //Create the new book with the unique name
+        let dirPrefId = this.addBookOrGetItter(newname);
+        
+        //find uri of new book and store in prefs
+        let booksIter = this.addBookOrGetItter();
+        while (booksIter.hasMoreElements()) {
+            let data = booksIter.getNext();
+            if (data instanceof Components.interfaces.nsIAbDirectory && data.dirPrefId == dirPrefId) {
+                tzcommon.prefs.setCharPref("abname", data.URI); 
+                return true;
+            }
+        }
+        
+        return false;
+    },
+
+
+    getSyncTarget: function () { //account,type
+        let target = {
+            get name() {
+                let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+                let allAddressBooks = abManager.directories;
+                while (allAddressBooks.hasMoreElements()) {
+                    let addressBook = allAddressBooks.getNext();
+                    if (addressBook instanceof Components.interfaces.nsIAbDirectory && addressBook.URI === this.uri) {
+                        return addressBook.dirName;
+                    }
+                }
+                return null;
+            },
+            
+            get uri() { 
+                return tzcommon.prefs.getCharPref("abname"); 
+            },
+            
+            get obj() { 
+                if (this.uri !== "") {
+                    let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+                    try {
+                        let addressBook = abManager.getDirectory(this.uri);
+                        if (addressBook instanceof Components.interfaces.nsIAbDirectory) return addressBook;
+                    } catch (e) {}
+                }
+                return null;
+            }
+        };
+        return target;
+    },
+
+
+    addBookOrGetItter: function (name = null) { //if name === null, returns iter, otherwise adds book with given name
+        // get all address books
+        if (Components.classes["@mozilla.org/abmanager;1"]) { // TB 3
+            let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+            if (name === null) return abManager.directories;
+            else return abManager.newAddressBook(name, "", 2); //kPABDirectory - return abManager.newAddressBook(name, "moz-abmdbdirectory://", 2);
+        } else { // TB 2
+            // obtain the main directory through the RDF service
+            let dir = Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService).GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
+            // setup the "properties" of the new address book
+            let properties = Components.classes["@mozilla.org/addressbook/properties;1"].createInstance(Components.interfaces.nsIAbDirectoryProperties);
+            properties.description = name;
+            properties.dirType = 2; // address book
+            if (name === null) return dir.childNodes;
+            else return dir.createNewDirectory(properties);
+        }
+    }
+    
 };

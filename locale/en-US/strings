@@ -1,0 +1,12 @@
+serverid=Adding new serverid
+cleaningdeleted=Cleaning up deleted items
+sendingdeleted=Sending items to delete
+sendingchanges=Sending changes to server
+recievingchanges=Recieving changes from server
+requestingchanges=Requesting changes from server
+syncing=Syncing
+alldone=Idle
+sending=Sending
+receiving=Receiving
+
+not_syncronized=not syncronized

@@ -4,20 +4,19 @@
 
 
 <!ENTITY pref.SettingDialog "Setting Dialog">
+<!ENTITY pref.AccountName "Account Name">
 <!ENTITY pref.Server "Server">
 <!ENTITY pref.usehttps "Use https://">
 <!ENTITY pref.UserName "User Name">
 <!ENTITY pref.DeviceId "Device Id">
 <!ENTITY pref.UseProvisioning "Use Provisioning">
-<!ENTITY pref.autotime "Auto Sync time in minutes">
-<!ENTITY pref.SyncAdddressbook "Sync Adddressbook">
-<!ENTITY pref.Reset "Reset">
-<!ENTITY pref.Caution "Caution! Will remove all sync information and download/upload everything.">
-<!ENTITY pref.never "0 for never">
-<!ENTITY pref.blank "Enter unique value or leave blank to auto generate"> 
-<!ENTITY pref.AddressBookOptions "AddressBook Options">
 <!ENTITY pref.birthday "Send Birthday Information">
-<!ENTITY pref.Resync "Resync All">
+<!ENTITY pref.autotime "Auto Sync time in minutes">
+<!ENTITY pref.never "0 for never">
+<!ENTITY pref.Sync "Sync latest changes">
+<!ENTITY pref.Resync "Resync from scratch">
+
+<!ENTITY pref.SyncedAB "Synced Addressbook">
 
 <!ENTITY pref.seperator "Seperator">
 <!ENTITY pref.seperator.comma "Comma">
@@ -26,11 +25,10 @@
 <!ENTITY pref.displayoverride "Overide Display">
 <!ENTITY pref.displayoverridetooltip "Display as First Name then Second Name">
 
-<!ENTITY pref.ResyncText "Get new sync key and resync folders. Use if z-push information is lost">
+<!ENTITY pref.ResyncText "Get new sync key and resync folders. Use if sync state information is lost.">
 
-<!ENTITY pref.LocalAddressBook "Local Address Book">
 <!ENTITY pref.About "Notes Etc.">
-<!ENTITY pref.ResetStatus "Reset SyncStatus">
+<!ENTITY pref.ResetStatus "Cancel sync">
 
 <!ENTITY pref.BusinessFaxNumber "Work Fax:">
 <!ENTITY pref.Business2PhoneNumber "Work Phone 2:">

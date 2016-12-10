@@ -8,7 +8,7 @@
      xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
      width="600"
      height="500"
-     onload="tzprefs.onopen()"
+     onload="tzprefs.onload()"
      onunload="tzprefs.onclose()"
      title="TZ Settings" >
 
@@ -17,28 +17,32 @@
      <prefpane id="settings" label="&pref.SettingDialog;" image="chrome://tzpush/skin/settings.png" >
           <preferences>
                <!-- TODO: Since all prefs are instantApply, the CANCEL button does not work -->
-               <preference id="host" name="extensions.tzpush.host" type="string" instantApply="true"/>
-               <preference id="user" name="extensions.tzpush.user" type="string" instantApply="true"/>
-               <preference id="https" name="extensions.tzpush.https" type="bool" instantApply="true" />
-               <preference id="prov" name="extensions.tzpush.prov" type="bool" instantApply="true"/>
-               <preference id="deviceId" name="extensions.tzpush.deviceId" type="string" instantApply="true" />
-               <preference id="autosync" name="extensions.tzpush.autosync" type="int" instantApply="true"/>
-               <preference id="birthday" name="extensions.tzpush.birthday" type="bool" instantApply="true"/>
-               <preference id="seperator" name="extensions.tzpush.seperator" type="string" instantApply="true"/>
-               <preference id="displayoverride" name="extensions.tzpush.displayoverride" type="bool" instantApply="true"/>
-               <preference id="asversion" name="extensions.tzpush.asversion" type="string" instantApply="true"/>
+               <preference id="accountname" name="extensions.tzpush.accountname" type="string" />
+               <preference id="asversion" name="extensions.tzpush.asversion" type="string" />
+               <preference id="host" name="extensions.tzpush.host" type="string" />
+               <preference id="https" name="extensions.tzpush.https" type="bool" />
+               <preference id="user" name="extensions.tzpush.user" type="string" />
+               <preference id="prov" name="extensions.tzpush.prov" type="bool" />
+               <preference id="birthday" name="extensions.tzpush.birthday" type="bool" />
+               <preference id="seperator" name="extensions.tzpush.seperator" type="string" />
+               <preference id="displayoverride" name="extensions.tzpush.displayoverride" type="bool" />
+               <preference id="autosync" name="extensions.tzpush.autosync" type="int" />
+               <preference id="connected" name="extensions.tzpush.connected" type="string" />
           </preferences>
 
-          <grid flex="0" align="center">
+          <grid flex="1" align="center" >
                <columns>
-                    <column flex="0"/>
-                    <column flex="0"/>
-                   <column flex="0"/>
+                    <column flex="1" />
+                    <column flex="2" />
                </columns>
                <rows>
                     <row>
-                         <label control="asversion" value="ActiveSync Version"/>
-                         <menulist preference="asversion" id="asversion" >
+                         <label value="&pref.AccountName;" />
+                         <textbox preference="accountname" id="accountname" />
+                    </row>
+                    <row>
+                         <label control="asversion" value="ActiveSync Version" />
+                         <menulist preference="asversion" id="asversion" disabled="true" >
                               <menupopup id = "as" >
                                    <menuitem label="2.5" value="2.5" />
                                    <menuitem label="14.0" value="14.0" />
@@ -46,29 +50,28 @@
                          </menulist>
                     </row> 
                     <row>
-                         <label control="hostbox" value="&pref.Server;"/>
-                         <textbox preference="host" id="hostbox" />
-                         <checkbox id="httpbox" label="&pref.usehttps;" preference="https" checked="true" />
+                         <label control="host" value="&pref.Server;" />
+                         <textbox preference="host" id="host" disabled="true" />
                     </row>
                     <row>
-                         <label control="userbox" value="&pref.UserName; "/>
-                         <textbox preference="user" id="userbox" />
+                         <label control="https" value="&pref.usehttps;" />
+                         <checkbox id="https" label="" preference="https" disabled="true" />
                     </row>
                     <row>
-                         <label control="devbox" value="&pref.DeviceId;" tooltiptext="&pref.blank;"/>
-                         <textbox preference="deviceId" id="devbox" tooltiptext="&pref.blank;" />
+                         <label control="user" value="&pref.UserName;" />
+                         <textbox preference="user" id="user" disabled="true" />
                     </row>
                     <row>
-                         <label control="provboxbox" value="&pref.UseProvisioning;"/>
-                         <checkbox  preference="prov" checked="true" />
+                         <label control="prov" value="&pref.UseProvisioning;" />
+                         <checkbox  preference="prov" id="prov" disabled="true" />
                     </row>
                     <row>
-                         <label control="birthdaybox" value="&pref.birthday;"/>
-                         <checkbox  preference="birthday" checked="false"/>
+                         <label control="birthday" value="&pref.birthday;" />
+                         <checkbox  preference="birthday" id="birthday" disabled="true" />
                     </row>
                     <row>
-                         <label control="seperatorbox" value="&pref.seperator;" />
-                         <menulist preference="seperator">
+                         <label control="seperator" value="&pref.seperator;" />
+                         <menulist preference="seperator" id="seperator" disabled="true" >
                               <menupopup>
                                    <menuitem label="&pref.seperator.comma; (Horde)" value=", " />
                                    <menuitem label="&pref.seperator.linebreak; (Zarafa, Zentyal, Kopano)" value="&#10;" />
@@ -76,44 +79,33 @@
                          </menulist>
                     </row>
                     <row>
-                         <label control="displayoverridebox" value="&pref.displayoverride;" tooltiptext="&pref.displayoverridetooltip;"/>
-                         <checkbox  preference="displayoverride" tooltiptext="&pref.displayoverridetooltip;" label=' "First Name Second Name"' />
+                         <label control="displayoverride" value="&pref.displayoverride;" tooltiptext="&pref.displayoverridetooltip;"/>
+                         <checkbox  preference="displayoverride" id="displayoverride" tooltiptext="&pref.displayoverridetooltip;" label=' "First Name Second Name"' disabled="true" />
                     </row>
                     <row>
-                         <label control="autobox" value="&pref.autotime;" tooltiptext="&pref.never;" />
-                         <textbox preference="autosync" id="autobox" tooltiptext="&pref.never;"/>
-                    </row>
-                    <row>
-                         <label />
-                         <button label="&pref.SyncAdddressbook;" id="syncbut" onclick="tzprefs.requestSync();" />
+                         <label control="autosync" value="&pref.autotime;" tooltiptext="&pref.never;" />
+                         <textbox preference="autosync" id="autosync" tooltiptext="&pref.never;"/>
                     </row>
                     <row>
                          <label />
-                         <button label="&pref.Resync;" id="softresetbut" onclick="tzprefs.softreset();" tooltiptext="&pref.ResyncText;" />
+                         <button label="&pref.Sync;" onclick="tzprefs.requestSync();" />
                     </row>
                     <row>
                          <label />
-                         <vbox>
-                              <button label="&pref.Reset;" id="resetbut" onclick="tzprefs.reset();" />
-                              <label align="center" value="&pref.Caution;" />
-                         </vbox>
+                         <button label="&pref.Resync;" onclick="tzprefs.requestReSync();" tooltiptext="&pref.ResyncText;" />
+                    </row>
+                    <row>
+                         <label value="&pref.SyncedAB;" />
+                         <label value="" disabled="true" id="abname" />
+                    </row>
+                    <row>
+                         <label value="&pref.DeviceId;" />
+                         <label value="" disabled="true" id="deviceId" />
                     </row>
                </rows>
           </grid>
      </prefpane>
-         
-     <prefpane id="PrefAddressBook" label="&pref.AddressBookOptions;"  image="chrome://tzpush/skin/address-book.png" >
-          <preferences>
-          </preferences>
-          <vbox>
-               <groupbox>
-                    <caption label="&pref.LocalAddressBook;" />
-                    <listbox id="localContactsFolder" rows="10" onclick="tzprefs.setselect(this.value)" >
-                    </listbox>
-               </groupbox>
-          </vbox>
-     </prefpane>
-     
+              
      <prefpane id="Help" label="&pref.About;" image="chrome://tzpush/skin/cape.png" >
           <button label="Notes and Extra Settings" oncommand="tzprefs.notes();"/>
           <grid flex="1" align="center">

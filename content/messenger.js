@@ -42,7 +42,7 @@ var tzpush = {
             switch (aData) {
                 case "syncstate": //update status bar to inform user
                     let status = document.getElementById("tzstatus");
-                    if (status) status.label = "TzPush is: " + tzcommon.prefs.getCharPref("syncstate");
+                    if (status) status.label = "TzPush is: " + tzcommon.getLocalizedMessage(tzcommon.prefs.getCharPref("syncstate"));
                     break;
                 case "go":
                     switch (tzcommon.prefs.getCharPref("go")) {
@@ -81,13 +81,23 @@ var tzpush = {
 
             let abname = tzcommon.prefs.getCharPref("abname");
             if (aItem instanceof Components.interfaces.nsIAbCard && abname !== "" && aParentDir instanceof Components.interfaces.nsIAbDirectory && aParentDir.URI === abname) {
-                    let deleted = aItem.getProperty("ServerId", "");
-                    if (deleted) tzcommon.addCardToDeleteLog(deleted);
+                let deleted = aItem.getProperty("ServerId", "");
+                if (deleted) tzcommon.addCardToDeleteLog(deleted);
             }
 
-            // if the book we are currently syncing is deleted, remove it from sync
+            // if the book we are currently syncing is deleted, remove it from sync and clean up delete log
             if (aItem instanceof Components.interfaces.nsIAbDirectory && abname !== "" && aItem.URI === tzcommon.prefs.getCharPref("abname")) {
-                    tzcommon.prefs.setCharPref("abname","");
+                tzcommon.prefs.setCharPref("abname","");
+
+                tzcommon.prefs.setCharPref("polkey", "0"); //- these two settings should be valid per account, not per folder, so keep them?
+                tzcommon.prefs.setCharPref("folderID", "");
+                tzcommon.prefs.setCharPref("synckey", ""); 
+                tzcommon.prefs.setCharPref("LastSyncTime", "0");
+
+                /* Cleanup of cards marked for deletion */
+                /*  - the file "DeletedCards" inside the ZPush folder in the users profile folder contains a list of ids of deleted cards, which still need to be deleted from server */
+                /*  - after a reset, no further action should be pending  -> clear that log! */
+                tzcommon.clearDeleteLog();
             }
         },
 

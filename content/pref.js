@@ -3,83 +3,102 @@
 "use strict";
 
 Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
+/*
 
+ To reset a sync (current reset button) the user must delete the connected book/calender
+ Options cannot be changed whenn connected. diaconnecting will delete all synctargets
+ selecting/deselecting books for sync should be possible
+ 
+ */
+ 
 var tzprefs = {
 
-    onopen: function () {
-        //Check, if a new deviceID needs to be generated
-        if (tzcommon.prefs.getCharPref("deviceId") === "") tzcommon.prefs.setCharPref("deviceId", Date.now());
-        this.localAbs();
+    onload: function () {
+        tzcommon.checkDeviceId(); 
+        this.updateTarget();
+        this.updateDeviceId();
     },
 
     onclose: function () {
     },
 
-    localAbs: function () {
-        //clear list of address books
-        let count = -1;
-        while (document.getElementById('localContactsFolder').children.length > 0) {
-            document.getElementById('localContactsFolder').removeChild(document.getElementById('localContactsFolder').firstChild);
-        }
-
-        //fill list of address books - ignore LDAP, Mailinglists and history
-        let selected = -1;
-        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-        let allAddressBooks = abManager.directories;
-        while (allAddressBooks.hasMoreElements()) {
-            let addressBook = allAddressBooks.getNext();
-            if (addressBook instanceof Components.interfaces.nsIAbDirectory && !addressBook.isRemote && !addressBook.isMailList && addressBook.fileName !== 'history.mab') {
-                var ab = document.createElement('listitem');
-                ab.setAttribute('label', addressBook.dirName);
-                ab.setAttribute('value', addressBook.URI);
-                count = count + 1;
-
-                //is this book the selected one?
-                if (tzcommon.prefs.getCharPref('abname') === addressBook.URI) {
-                    selected = count;
-                }
-                document.getElementById('localContactsFolder').appendChild(ab);
-            }
-        }
-
-        if (selected !== -1) document.getElementById('localContactsFolder').selectedIndex = selected;
-    },
-
-    reset: function () {
-        tzcommon.prefs.setCharPref("polkey", "0");
-        tzcommon.prefs.setCharPref("folderID", "");
-        tzcommon.prefs.setCharPref("synckey", "");
-        tzcommon.prefs.setCharPref("deviceId", Date.now());
-        tzcommon.prefs.setIntPref("autosync", 0);
-        tzcommon.prefs.setCharPref("LastSyncTime", "0");
-
-        /* Clear ServerId and LastModDate of all cards in addressbook selected for sync - WHY ??? */
-        let addressBook = tzcommon.getSyncedBook();
-        if (addressBook !== null) {
-            let cards = addressBook.childCards;
-            while (cards.hasMoreElements()) {
-                let card = cards.getNext();
-                if (card instanceof Components.interfaces.nsIAbCard) {
-                    card.setProperty('ServerId', '');
-                    card.setProperty("LastModifiedDate", '');
-                    addressBook.modifyCard(card);
-                }
-            }
-        }
-
-        /* Cleanup of cards marked for deletion */
-        /*  - the file "DeletedCards" inside the ZPush folder in the users profile folder contains a list of ids of deleted cards, which still need to be deleted from server */
-        /*  - after a reset, no further action should be pending  -> clear that log! */
-        tzcommon.clearDeleteLog();
-    },
-
-    softreset: function () {
+    requestReSync: function () {
         tzcommon.prefs.setCharPref("go", "resync");
     },
 
     requestSync: function () {
         tzcommon.prefs.setCharPref("go", "sync");
     },
+
+    updateTarget: function () {
+        let target = tzcommon.getSyncTarget();
+        if (target.name === null) {
+            document.getElementById('abname').value = tzcommon.getLocalizedMessage("not_syncronized");
+        } else {
+            document.getElementById('abname').value = target.name + " (" + target.uri + ")";
+        }
+    },
+
+    updateDeviceId: function () {
+        document.getElementById('deviceId').value = tzcommon.prefs.getCharPref("deviceId");
+    },
+
+    // if syncTargets books are renamed/deleted in the addressbook while this pref window open, we need to update it
+    prefObserver : {
+
+        register: function () {
+            tzcommon.prefs.addObserver("", this, false);
+        },
+
+        unregister: function () {
+            tzcommon.prefs.removeObserver("", this);
+        },
+
+        observe: function (aSubject, aTopic, aData) {
+            switch (aData) {
+                case "abname": //update name of addressbook sync target
+                    tzprefs.updateTarget();
+                    break;
+                case "deviceId": //update deviceId
+                    tzprefs.updateDeviceId();
+                    break;
+            }
+        }
+    },
+
+    // the only purpose of this listener is to be able to update the name of the synced addressbook, if it is changed in the address book, while the settings dialog is open
+    addressbookListener : {
+
+        onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
+            if (aItem instanceof Components.interfaces.nsIAbDirectory) {
+                tzprefs.updateTarget();
+            }
+         },
+
+         add: function addressbookListener_add () {
+            if (Components.classes["@mozilla.org/abmanager;1"]) { // Thunderbird 3
+                Components.classes["@mozilla.org/abmanager;1"]
+                    .getService(Components.interfaces.nsIAbManager)
+                    .addAddressBookListener(tzprefs.addressbookListener, Components.interfaces.nsIAbListener.all);
+            } else { // Thunderbird 2
+                Components.classes["@mozilla.org/addressbook/services/session;1"]
+                    .getService(Components.interfaces.nsIAddrBookSession)
+                    .addAddressBookListener(tzprefs.addressbookListener, Components.interfaces.nsIAbListener.all);
+            }
+        },
+
+        remove: function addressbookListener_remove () {
+            if (Components.classes["@mozilla.org/abmanager;1"]) // Thunderbird 3
+                Components.classes["@mozilla.org/abmanager;1"]
+                .getService(Components.interfaces.nsIAbManager)
+                .removeAddressBookListener(tzpush.addressbookListener);
+            else // Thunderbird 2
+                Components.classes["@mozilla.org/addressbook/services/session;1"]
+                .getService(Components.interfaces.nsIAddrBookSession)
+                .removeAddressBookListener(tzpush.addressbookListener);
+        }
+    },
+
     
     cape: function () {
         function openTBtab(tempURL) {
@@ -121,8 +140,7 @@ var tzprefs = {
         openTBtab("chrome://tzpush/content/notes.html");
     },
 
-    setselect: function (value) {
-        tzcommon.prefs.setCharPref('abname', value);
-    }
-
 };
+
+tzprefs.prefObserver.register();
+tzprefs.addressbookListener.add();
