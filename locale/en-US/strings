@@ -10,3 +10,4 @@ sending=Sending
 receiving=Receiving
 
 not_syncronized=not syncronized
+resync_from_scratch=Resync from scratch

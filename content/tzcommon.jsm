@@ -309,12 +309,15 @@ var tzcommon = {
         }
     },
 
-    //TODO, check if book exists
     removeBook: function (uri) { 
         // get all address books
         if (Components.classes["@mozilla.org/abmanager;1"]) { // TB 3
             let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-            abManager.deleteAddressBook(uri);
+            try {
+                if (abManager.getDirectory(uri) instanceof Components.interfaces.nsIAbDirectory) {
+                    abManager.deleteAddressBook(uri);
+                }
+            } catch (e) {}
         } else { // TB 2
             // obtain the main directory through the RDF service
             let dir = Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService).GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);

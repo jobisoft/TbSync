@@ -28,7 +28,7 @@
 <!ENTITY pref.ResyncText "Get new sync key and resync folders. Use if sync state information is lost.">
 
 <!ENTITY pref.About "Notes Etc.">
-<!ENTITY pref.ResetStatus "Cancel sync">
+<!ENTITY pref.ResetStatus "Cancel current sync">
 
 <!ENTITY pref.BusinessFaxNumber "Work Fax:">
 <!ENTITY pref.Business2PhoneNumber "Work Phone 2:">
