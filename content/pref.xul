@@ -6,6 +6,7 @@
      xmlns:html="http://www.w3.org/1999/xhtml"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+     buttons="accept"
      width="600"
      height="500"
      onload="tzprefs.onload()"
@@ -16,17 +17,16 @@
 
      <prefpane id="settings" label="&pref.SettingDialog;" image="chrome://tzpush/skin/settings.png" >
           <preferences>
-               <!-- TODO: Since all prefs are instantApply, the CANCEL button does not work -->
-               <preference id="accountname" name="extensions.tzpush.accountname" type="string" />
-               <preference id="asversion" name="extensions.tzpush.asversion" type="string" />
-               <preference id="host" name="extensions.tzpush.host" type="string" />
-               <preference id="https" name="extensions.tzpush.https" type="bool" />
-               <preference id="user" name="extensions.tzpush.user" type="string" />
-               <preference id="prov" name="extensions.tzpush.prov" type="bool" />
-               <preference id="birthday" name="extensions.tzpush.birthday" type="bool" />
-               <preference id="seperator" name="extensions.tzpush.seperator" type="string" />
-               <preference id="displayoverride" name="extensions.tzpush.displayoverride" type="bool" />
-               <preference id="autosync" name="extensions.tzpush.autosync" type="int" />
+               <preference id="accountname" name="extensions.tzpush.accountname" type="string" instantApply="true" />
+               <preference id="asversion" name="extensions.tzpush.asversion" type="string" instantApply="true" />
+               <preference id="host" name="extensions.tzpush.host" type="string" instantApply="true" />
+               <preference id="https" name="extensions.tzpush.https" type="bool" instantApply="true" />
+               <preference id="user" name="extensions.tzpush.user" type="string" instantApply="true" />
+               <preference id="prov" name="extensions.tzpush.prov" type="bool" instantApply="true" />
+               <preference id="birthday" name="extensions.tzpush.birthday" type="bool" instantApply="true" />
+               <preference id="seperator" name="extensions.tzpush.seperator" type="string" instantApply="true" />
+               <preference id="displayoverride" name="extensions.tzpush.displayoverride" type="bool" instantApply="true" />
+               <preference id="autosync" name="extensions.tzpush.autosync" type="int" instantApply="true" />
           </preferences>
 
           <grid flex="1" align="center" >
@@ -89,14 +89,10 @@
                          <label control="autosync" value="&pref.autotime;" tooltiptext="&pref.never;" />
                          <textbox preference="autosync" id="autosync" tooltiptext="&pref.never;"/>
                     </row>
-                    <row>
+                    <!--row>
                          <label />
                          <button label="&pref.Sync;" onclick="tzprefs.requestSync();" />
-                    </row>
-                    <row>
-                         <label />
-                         <button label="&pref.Resync;" onclick="tzprefs.requestReSync();" tooltiptext="&pref.ResyncText;" />
-                    </row>
+                    </row-->
                     <row>
                          <label value="&pref.SyncedAB;" />
                          <label value="" disabled="true" id="abname" />
@@ -104,6 +100,10 @@
                     <row>
                          <label value="&pref.DeviceId;" />
                          <label value="" disabled="true" id="deviceId" />
+                    </row>
+                    <row>
+                         <label />
+                         <button label="&pref.Resync;" id="tzpref.resyncbtn" onclick="tzprefs.requestReSync();" tooltiptext="&pref.ResyncText;" />
                     </row>
                </rows>
           </grid>
