@@ -91,7 +91,7 @@ var tzpush = {
             }
         },
 
-        // If a card is added to a book, but not to the one we are syncing, and that card has a ServerId, remove that ServerId from the first card found in that book
+        // If a card is added to a book, but not to the one we are syncing, and that card has a ServerId, remove that ServerId from the first card found in that book - Why not directly from the card? TODO
         // This should clean up cards, that get moved from an EAS book to a standard book
         onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {
             if (aParentDir instanceof Components.interfaces.nsIAbDirectory) {

@@ -1,7 +1,5 @@
 "use strict";
 
-Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
-
 var tzpassword = {
     
     onload: function () {
