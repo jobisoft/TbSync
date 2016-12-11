@@ -10,7 +10,6 @@ pref("extensions.tzpush.polkey","0");
 pref("extensions.tzpush.prov",false);
 pref("extensions.tzpush.folderSynckey","");
 pref("extensions.tzpush.autosync",0);
-pref("extensions.tzpush.go","0");
 pref("extensions.tzpush.birthday",false);
 pref("extensions.tzpush.debugwbxml","0");
 pref("extensions.tzpush.seperator",", ");

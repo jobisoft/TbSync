@@ -9,6 +9,41 @@ var tzcommon = {
     prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
     bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/strings"),
 
+    /**
+        * manage sync via observer - since this is the only place where new requests end up, we could also implement some sort of queuing
+        */
+    requestSync: function () {
+        if (tzcommon.prefs.getCharPref("syncstate") === "alldone") {
+            tzcommon.prefs.setCharPref("syncstate","syncrequest");
+        }
+    },
+
+    requestReSync: function () {
+        if (tzcommon.prefs.getCharPref("syncstate") === "alldone") {
+            tzcommon.prefs.setCharPref("syncstate","resyncrequest");
+        }
+    },
+
+    resetSync: function (force = false) {
+        if (force) {
+            tzcommon.prefs.setCharPref("syncstate", "forcereset");
+            tzcommon.prefs.setCharPref("syncstate", "alldone");
+        } else if (tzcommon.prefs.getCharPref("syncstate") !== "alldone") {
+            tzcommon.prefs.setCharPref("syncstate", "alldone");
+        }
+    },
+   
+    finishSync: function () {
+        if (tzcommon.prefs.getCharPref("syncstate") !== "alldone") {
+            tzcommon.prefs.setCharPref("LastSyncTime", Date.now());
+            tzcommon.prefs.setCharPref("syncstate", "alldone");
+        }
+    },
+
+    
+    
+    
+    
     
     /* tools */
     decode_utf8: function (s) {

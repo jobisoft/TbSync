@@ -11,23 +11,12 @@ var tzpush = {
         window.open("chrome://tzpush/content/pref.xul", "", "chrome,centerscreen,resizable,toolbar", null, null);
     },
 
-    
-    
-    requestSync: function () {
-        if (tzcommon.prefs.getCharPref("syncstate") === "alldone")
-            tzsync.go(window);
-    },
-    
-    
-    
-    // If there has been an error during sync and TZPush is not returning to "alldone", one can enforce it
-    resetStatus: function () {
-        tzcommon.prefs.setCharPref("syncstate", "alldone");
-    },
-   
-    
-    
-    // Everytime a preference is changed, this observer is called.
+    // XUL does not know about tzcommon, so here are some simple wrapper
+    requestSync: function () { return tzcommon.requestSync(); },
+    requestReSync: function () { return tzcommon.requestReSync(); },
+    resetSync: function () { return tzcommon.resetSync(); },
+
+    // Everytime a preference is changed, this observer is called. It is used to manage sync processes.
     prefObserver : {
 
         register: function () {
@@ -43,26 +32,14 @@ var tzpush = {
                 case "syncstate": //update status bar to inform user
                     let status = document.getElementById("tzstatus");
                     if (status) status.label = "TzPush is: " + tzcommon.getLocalizedMessage(tzcommon.prefs.getCharPref("syncstate"));
-                    break;
-                case "go":
-                    switch (tzcommon.prefs.getCharPref("go")) {
-                        case "sync":
-                            tzpush.requestSync();
+                    tzcommon.dump("status", tzcommon.getLocalizedMessage(tzcommon.prefs.getCharPref("syncstate")));
+
+                    switch (tzcommon.prefs.getCharPref("syncstate")) {
+                        case "syncrequest":
+                            tzsync.sync(window);
                             break;
-                        case "resync":
-                            tzcommon.prefs.setCharPref("polkey", "0");
-                            tzcommon.prefs.setCharPref("folderID", "");
-                            tzcommon.prefs.setCharPref("synckey", "");
-                            tzcommon.prefs.setCharPref("LastSyncTime", "0");
-                            if (tzcommon.prefs.getCharPref("syncstate") === "alldone") { // if firstsync is something special, it should not be optional
-                                tzcommon.prefs.setCharPref("go", "firstsync");
-                            }
-                            break;
-                        case "firstsync": //Get rid of firstsync and just call requestSync in "resync"
-                            tzsync.go();  //need to get rid of firstsync in tzsync.jsm
-                            break;
-                        case "alldone":
-                            tzcommon.prefs.setCharPref("LastSyncTime", Date.now());
+                        case "resyncrequest":
+                            tzsync.resync(window);
                             break;
                     }
             }
@@ -89,7 +66,7 @@ var tzpush = {
             if (aItem instanceof Components.interfaces.nsIAbDirectory && abname !== "" && aItem.URI === tzcommon.prefs.getCharPref("abname")) {
                 tzcommon.prefs.setCharPref("abname","");
 
-                tzcommon.prefs.setCharPref("polkey", "0"); //- these two settings should be valid per account, not per folder, so keep them?
+                tzcommon.prefs.setCharPref("polkey", "0"); //- this is identical to tzsync.resync() without the actual sync
                 tzcommon.prefs.setCharPref("folderID", "");
                 tzcommon.prefs.setCharPref("synckey", ""); 
                 tzcommon.prefs.setCharPref("LastSyncTime", "0");
@@ -148,8 +125,6 @@ var tzpush = {
 
         start: function () {
             this.timer.cancel();
-            tzcommon.prefs.setCharPref("syncstate", "alldone");
-            tzcommon.prefs.setCharPref("LastSyncTime", "0");
             this.timer.initWithCallback(this.event, 10000, 3); //run timer every 10s
         },
 
@@ -170,3 +145,4 @@ var tzpush = {
 tzpush.syncTimer.start();
 tzpush.prefObserver.register();
 tzpush.addressbookListener.add();
+tzcommon.resetSync(true);

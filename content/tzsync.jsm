@@ -8,11 +8,11 @@ var tzsync = {
 
     w: null,
 
-    go: function(window) {
-        tzsync.w = window;
+    sync: function (window = null) {
 
         if (!tzcommon.getAccountSetting("connected")) {
             tzcommon.dump("sync", "Aborting Sync, because account is not connected.");
+            tzcommon.resetSync();
             return;
         }
 
@@ -20,9 +20,11 @@ var tzsync = {
         tzcommon.checkDeviceId(); 
         if (!tzcommon.checkSyncTarget()) {
             tzcommon.dump("sync", "Aborting Sync, because sync targets could not be created.");
+            tzcommon.resetSync();
             return;
         }
     
+        if (window !== null) tzsync.w = window;
         tzcommon.prefs.setCharPref("syncstate", "syncing");
         this.time = tzcommon.prefs.getCharPref("LastSyncTime") / 1000;  //TODO: Drop this here
         this.time2 = (Date.now() / 1000) - 1;
@@ -38,6 +40,15 @@ var tzsync = {
         }
     },
 
+    resync: function (window = null) {
+        tzcommon.prefs.setCharPref("polkey", "0");
+        tzcommon.prefs.setCharPref("folderID", "");
+        tzcommon.prefs.setCharPref("synckey", "");
+        tzcommon.prefs.setCharPref("LastSyncTime", "0");
+        //there is a resync-flag inside of fromtzpush, we could pass it as an argument if it is realy needed
+        tzsync.sync (window);
+    },
+    
 
     ToContacts: ({
         //0x89:'Anniversary',
@@ -255,12 +266,10 @@ var tzsync = {
 
                 if (wbxmlstatus === '3' || wbxmlstatus === '12') {
                     tzcommon.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-                    tzcommon.prefs.setCharPref("syncstate", "alldone");
-                    tzcommon.prefs.setCharPref("go", "resync");
+                    tzsync.resync();
                 } else if (wbxmlstatus !== '1') {
                     tzcommon.dump("wbxml status", "server error? " + wbxmlstatus);
-                    tzcommon.prefs.setCharPref("syncstate", "alldone");
-                    tzcommon.prefs.setCharPref("go", "alldone");
+                    tzcommon.resetSync();
                 } else {
                     synckey = this.FindKey(wbxml);
                     tzcommon.prefs.setCharPref("synckey", synckey);
@@ -376,18 +385,22 @@ var tzsync = {
                                     card.setProperty("PhotoURI", filePath);
                                     photo = '';
                                 }
-                                if (tzcommon.prefs.getCharPref("go", "") === "firstsync") {
+                                if (/*tzcommon.prefs.getCharPref("go", "") === "firstsync" */ true) {
+                                    //during resync, we need to check, if the "new" card we are currenty receiving, is really new, or already exists
+                                    //TEMPHACK - we can always do this and drop firstsync, is it just slower, because new cards during incremental sync will be checked againts the book
                                     let tempsid;
                                     try {
                                         tempsid = card.getProperty("ServerId", "");
                                     } catch (e) {}
 
                                     if (!addressBook.getCardFromProperty("ServerId", tempsid, false)) {
+                                        //card DOES NOT exists, do the displayoverride and add the card
                                         if (tzcommon.prefs.getBoolPref("displayoverride")) {
                                             card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
                                         }
                                         /* newCard = */ addressBook.addCard(card);
                                     } else {
+                                        //card DOES exists, get the local card and replace all properties with those received from server - why not simply loop over all properties of the new card?
                                         ServerId = card.getProperty("ServerId", "");
                                         modcard = addressBook.getCardFromProperty("ServerId", ServerId, false);
                                         for (y in this.Contacts2) {
@@ -423,6 +436,7 @@ var tzsync = {
                                     }
 
                                 } else {
+                                    //this is not a resync and thus a new card, add it
                                     if (tzcommon.prefs.getBoolPref("displayoverride")) {
                                         card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
                                     }
@@ -506,9 +520,7 @@ var tzsync = {
                         wbxml = wbxml.replace('Id2Replace', folderID);
                         this.Send(wbxml, callback.bind(this), "Sync");
                     } else if (tzcommon.prefs.getBoolPref("downloadonly")) {
-                        tzcommon.prefs.setCharPref("LastSyncTime", Date.now());
-                        tzcommon.prefs.setCharPref("syncstate", "alldone");
-                        tzcommon.prefs.setCharPref("go", "alldone");
+                        tzcommon.finishSync();
                     } else {
                         this.tozpush();
                     }
@@ -838,13 +850,10 @@ var tzsync = {
 
             if (wbxmlstatus === '3' || wbxmlstatus === '12') {
                 tzcommon.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-                tzcommon.prefs.setCharPref("syncstate", "alldone");
-                tzcommon.prefs.setCharPref("go", "resync");
-
+                tzsync.resync();
             } else if (wbxmlstatus !== '1') {
                 tzcommon.dump("wbxml status", "server error? " + wbxmlstatus);
-                tzcommon.prefs.setCharPref("syncstate", "alldone");
-                tzcommon.prefs.setCharPref("go", "alldone");
+                tzcommon.resetSync();
             } else {
                 tzcommon.prefs.setCharPref("syncstate", "serverid");
 
@@ -944,9 +953,7 @@ var tzsync = {
             // Send will send a request to the server, a responce will trigger callback, which will call senddel again.
             this.Send(wbxml, this.senddelCallback.bind(this), "Sync", cardstodelete);
         } else {
-            tzcommon.prefs.setCharPref("LastSyncTime", Date.now());     //TODO: Is senddel really allowed to do this? Is this the final step of go()?
-            tzcommon.prefs.setCharPref("syncstate", "alldone");
-            tzcommon.prefs.setCharPref("go", "alldone");
+            tzcommon.finishSync();
         }
     },
 
@@ -962,12 +969,10 @@ var tzsync = {
 
         if (wbxmlstatus === '3' || wbxmlstatus === '12') {
             tzcommon.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-            tzcommon.prefs.setCharPref("syncstate", "alldone");
-            tzcommon.prefs.setCharPref("go", "resync");
+            tzsync.resync();
         } else if (wbxmlstatus !== '1') {
             tzcommon.dump("wbxml status", "server error? " + wbxmlstatus);
-            tzcommon.prefs.setCharPref("syncstate", "alldone");
-            tzcommon.prefs.setCharPref("go", "alldone");
+            tzcommon.resetSync();
         } else {
             let synckey = this.FindKey(responseWbxml);
             tzcommon.prefs.setCharPref("synckey", synckey);
@@ -1085,15 +1090,15 @@ var tzsync = {
                         tzsync.w.openDialog("chrome://tzpush/content/password.xul", "passwordprompt", "modal,centerscreen,chrome,resizable=no", retVals, "Password for ActiveSync");
                         if (retVals.password !== "") {
                             tzcommon.setPassword(retVals.password);
-                            //enforce rerun TODO
+                            tzsync.resync();
                         }
                         break;
                     
                     case 449: // Request for new provision
                         if (prefs.getBoolPref("prov")) {
-                            prefs.setCharPref("go", "resync");
+                            tzsync.resync();
                         } else {
-                            tzcommon.dump("request status", "449 -- Insufficient information - retry with provisioning");
+                            tzcommon.dump("request status", "449 -- Insufficient information - retry with enabled provisioning");
                         }
                         break;
                 
@@ -1143,7 +1148,9 @@ var tzsync = {
                     default:
                         tzcommon.dump("request status", "reported -- " + req.status);
                 }
-                prefs.setCharPref("syncstate", "alldone"); // Maybe inform user about errors?
+                //Sync stoped due to error - maybe inform user about errors?
+                tzcommon.resetSync();
+
             }
 
         }.bind(this);

@@ -3,13 +3,6 @@
 "use strict";
 
 Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
-/*
-
- To reset a sync (current reset button) the user must delete the connected book/calender
- Options cannot be changed whenn connected. diaconnecting will delete all synctargets
- selecting/deselecting books for sync should be possible
- 
- */
  
 var tzprefs = {
 
@@ -20,17 +13,12 @@ var tzprefs = {
         this.updateConnectionState(false);
     },
 
-    onclose: function () {
-    },
+    onclose: function () {},
 
-    requestReSync: function () {
-        tzcommon.prefs.setCharPref("go", "resync");
-    },
-
-    requestSync: function () {
-        tzcommon.dump("request sync", tzcommon.prefs.getCharPref("go"));
-        tzcommon.prefs.setCharPref("go", "sync");
-    },
+    // XUL does not know about tzcommon, so here are some simple wrapper
+    requestSync: function () { return tzcommon.requestSync(); },
+    requestReSync: function () { return tzcommon.requestReSync(); },
+    resetSync: function () { return tzcommon.resetSync(); },
 
     updateTarget: function () {
         let target = tzcommon.getSyncTarget();
@@ -56,8 +44,7 @@ var tzprefs = {
                 tzcommon.removeBook(tzcommon.getSyncTarget().uri);
             } else {
                 //if we just connected, init sync
-                tzcommon.dump("request sync", tzcommon.prefs.getCharPref("go"));
-                tzcommon.prefs.setCharPref("go", "sync");
+                tzprefs.requestSync();
             }
         }
         
