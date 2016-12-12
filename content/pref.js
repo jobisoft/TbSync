@@ -149,8 +149,8 @@ var tzprefs = {
 
 
     /* * *
-    * Address book listener to catch changing names of the synced address books (user
-    * changed the name inside the TB address book), while the settings dialog is open.
+    * Address book listener to catch if the synced address book (sync target) has been renamed,
+    * created or deleted, so the corresponding labels can be updated.
     */
     addressbookListener: {
 

@@ -11,8 +11,13 @@ var tzpush = {
         window.open("chrome://tzpush/content/pref.xul", "", "chrome,centerscreen,resizable,toolbar", null, null);
     },
 
-    // Everytime a preference is changed, this observer is called. It is used to manage sync processes.
-    prefObserver : {
+
+    /* * *
+     * This preference observer is used to watch the syncstate and to update the status bar
+     * and to actually trigger the sync. The two values "syncrequest" and "resyncrequest" will
+     * be set by tzcommon.requestSync/requestResync() only if the current syncstate id idle
+     */
+    prefObserver: {
 
         register: function () {
             tzcommon.prefs.addObserver("", this, false);
@@ -40,24 +45,29 @@ var tzpush = {
             }
         }
     },
-
     
 
-    addressbookListener : {
+    addressbookListener: {
 
-        // If a card is removed from the addressbook we are syncing, keep track of the deletions and log them to a file in the profile folder
         onItemRemoved: function addressbookListener_onItemRemoved (aParentDir, aItem) {
             if (aParentDir instanceof Components.interfaces.nsIAbDirectory) {
                 aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
             }
 
+            /* * *
+             * If a card is removed from the addressbook we are syncing, keep track of the
+             * deletions and log them to a file in the profile folder
+             */
             let abname = tzcommon.getSetting("abname");
             if (aItem instanceof Components.interfaces.nsIAbCard && abname !== "" && aParentDir instanceof Components.interfaces.nsIAbDirectory && aParentDir.URI === abname) {
                 let deleted = aItem.getProperty("ServerId", "");
                 if (deleted) tzcommon.addCardToDeleteLog(deleted);
             }
 
-            // if the book we are currently syncing is deleted, remove it from sync and clean up delete log
+            /* * *
+             * If the entire book we are currently syncing is deleted, remove it from sync and
+             * clean up delete log
+             */
             if (aItem instanceof Components.interfaces.nsIAbDirectory && abname !== "" && aItem.URI === tzcommon.getSetting("abname")) {
                 tzcommon.setSetting("abname","");
 
@@ -66,20 +76,21 @@ var tzpush = {
                 tzcommon.setSetting("synckey", ""); 
                 tzcommon.setSetting("LastSyncTime", "0");
 
-                /* Cleanup of cards marked for deletion */
-                /*  - the file "DeletedCards" inside the ZPush folder in the users profile folder contains a list of ids of deleted cards, which still need to be deleted from server */
-                /*  - after a reset, no further action should be pending  -> clear that log! */
                 tzcommon.clearDeleteLog();
             }
         },
 
-        // If a card is added to a book, but not to the one we are syncing, and that card has a ServerId, remove that ServerId from the first card found in that book - Why not directly from the card? TODO
-        // This should clean up cards, that get moved from an EAS book to a standard book
         onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {
             if (aParentDir instanceof Components.interfaces.nsIAbDirectory) {
                 aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
             }
 
+            /* * *
+             * If a card is added to a book, but not to the one we are syncing, and that card has a
+             * ServerId, remove that ServerId from the first card found in that book
+             * (Why not directly from the card? TODO)
+             * This cleans up cards, that get moved from an EAS book to a standard book.
+             */
             if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && aParentDir.URI !== tzcommon.getSetting("abname")) {
                 let ServerId = aItem.getProperty("ServerId", "");
                 if (ServerId !== "") tzcommon.removeSId(aParentDir, ServerId);
@@ -115,7 +126,7 @@ var tzpush = {
 
     
 
-    syncTimer : {
+    syncTimer: {
         timer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
         start: function () {
