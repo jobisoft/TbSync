@@ -12,7 +12,7 @@
     <script type="application/x-javascript" src="chrome://tzpush/content/messenger.js" />
 
     <statusbar id="status-bar">
-        <statusbarpanel id="tzstatus" label="Tz Push" context="statusmenu" />
+        <statusbarpanel id="tzstatus" label="TzPush" context="statusmenu" />
         <popupset>
             <menupopup id="statusmenu">
                 <menuitem label="&pref.Sync;" onclick="tzpush.requestSync();" />

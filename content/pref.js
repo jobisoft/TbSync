@@ -30,15 +30,15 @@ var tzprefs = {
     },
 
     updateDeviceId: function () {
-        document.getElementById('deviceId').value = tzcommon.prefs.getCharPref("deviceId");
+        document.getElementById('deviceId').value = tzcommon.getSetting("deviceId");
     },
 
     
     updateConnectionState: function (toggle) {
-        let connected = tzcommon.prefs.getBoolPref("connected");
+        let connected = tzcommon.getSetting("connected");
         if (toggle) {
             connected = !connected;
-            tzcommon.prefs.setBoolPref("connected", connected);
+            tzcommon.setSetting("connected", connected);
             if (!connected) {
                 //if we are no longer connected, delete all sync targets
                 tzcommon.removeBook(tzcommon.getSyncTarget().uri);

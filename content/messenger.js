@@ -31,7 +31,7 @@ var tzpush = {
             switch (aData) {
                 case "syncstate": //update status bar to inform user
                     let status = document.getElementById("tzstatus");
-                    if (status) status.label = "TzPush is: " + tzcommon.getLocalizedMessage(tzcommon.prefs.getCharPref("syncstate"));
+                    if (status) status.label = "TzPush: " + tzcommon.getLocalizedMessage(tzcommon.prefs.getCharPref("syncstate"));
                     tzcommon.dump("status", tzcommon.getLocalizedMessage(tzcommon.prefs.getCharPref("syncstate")));
 
                     switch (tzcommon.prefs.getCharPref("syncstate")) {
@@ -56,20 +56,20 @@ var tzpush = {
                 aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
             }
 
-            let abname = tzcommon.prefs.getCharPref("abname");
+            let abname = tzcommon.getSetting("abname");
             if (aItem instanceof Components.interfaces.nsIAbCard && abname !== "" && aParentDir instanceof Components.interfaces.nsIAbDirectory && aParentDir.URI === abname) {
                 let deleted = aItem.getProperty("ServerId", "");
                 if (deleted) tzcommon.addCardToDeleteLog(deleted);
             }
 
             // if the book we are currently syncing is deleted, remove it from sync and clean up delete log
-            if (aItem instanceof Components.interfaces.nsIAbDirectory && abname !== "" && aItem.URI === tzcommon.prefs.getCharPref("abname")) {
-                tzcommon.prefs.setCharPref("abname","");
+            if (aItem instanceof Components.interfaces.nsIAbDirectory && abname !== "" && aItem.URI === tzcommon.getSetting("abname")) {
+                tzcommon.setSetting("abname","");
 
-                tzcommon.prefs.setCharPref("polkey", "0"); //- this is identical to tzsync.resync() without the actual sync
-                tzcommon.prefs.setCharPref("folderID", "");
-                tzcommon.prefs.setCharPref("synckey", ""); 
-                tzcommon.prefs.setCharPref("LastSyncTime", "0");
+                tzcommon.setSetting("polkey", "0"); //- this is identical to tzsync.resync() without the actual sync
+                tzcommon.setSetting("folderID", "");
+                tzcommon.setSetting("synckey", ""); 
+                tzcommon.setSetting("LastSyncTime", "0");
 
                 /* Cleanup of cards marked for deletion */
                 /*  - the file "DeletedCards" inside the ZPush folder in the users profile folder contains a list of ids of deleted cards, which still need to be deleted from server */
@@ -85,7 +85,7 @@ var tzpush = {
                 aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
             }
 
-            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && aParentDir.URI !== tzcommon.prefs.getCharPref("abname")) {
+            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && aParentDir.URI !== tzcommon.getSetting("abname")) {
                 let ServerId = aItem.getProperty("ServerId", "");
                 if (ServerId !== "") tzcommon.removeSId(aParentDir, ServerId);
             }    
@@ -132,9 +132,9 @@ var tzpush = {
             notify: function (timer) {
                 let prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush.");
                 //prepared for multi account mode, simply ask every account
-                let syncInterval = tzcommon.prefs.getIntPref("autosync") * 60 * 1000;
+                let syncInterval = tzcommon.getSetting("autosync") * 60 * 1000;
 
-                if ((syncInterval > 0) && ((Date.now() - prefs.getCharPref("LastSyncTime")) > syncInterval)) {
+                if ((syncInterval > 0) && ((Date.now() - getSetting("LastSyncTime")) > syncInterval)) {
                     tzpush.requestSync();
                 }
             }

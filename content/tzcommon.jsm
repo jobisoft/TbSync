@@ -9,6 +9,11 @@ var tzcommon = {
     prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
     bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/strings"),
 
+    // Settings not listed here are assumed to be a stringSettings - hidephones & showanniversary are currently unused
+    boolSettings : ["https", "prov", "birthday", "displayoverride", "connected", "downloadonly" /*, "hidephones", "showanniversary" */],
+    intSettings : ["autosync"],
+
+    
     /**
         * manage sync via observer - since this is the only place where new requests end up, we could also implement some sort of queuing
         */
@@ -35,7 +40,7 @@ var tzcommon = {
    
     finishSync: function () {
         if (tzcommon.prefs.getCharPref("syncstate") !== "alldone") {
-            tzcommon.prefs.setCharPref("LastSyncTime", Date.now());
+            tzcommon.setSetting("LastSyncTime", Date.now());
             tzcommon.prefs.setCharPref("syncstate", "alldone");
         }
     },
@@ -195,16 +200,29 @@ var tzcommon = {
     /* Account settings related functions */
     getConnection: function() {
         let connection = {
-            protocol: (tzcommon.prefs.getBoolPref("https")) ? "https://" : "http://",
-            set host(newHost) { tzcommon.prefs.setCharPref("host", newHost); },
-            get host() { return this.protocol + tzcommon.prefs.getCharPref("host"); },
+            protocol: (tzcommon.getSetting("https")) ? "https://" : "http://",
+            set host(newHost) { tzcommon.setSetting("host", newHost); },
+            get host() { return this.protocol + tzcommon.getSetting("host"); },
             get url() { return this.host + "/Microsoft-Server-ActiveSync"; },
-            user: tzcommon.prefs.getCharPref("user"),
+            user: tzcommon.getSetting("user"),
         };
         return connection;
     },
     
-    
+    // wrap get functions, to be able to switch storage backend
+    getSetting: function(field) {
+        if (this.intSettings.indexOf(field) != -1) return tzcommon.prefs.getIntPref(field);
+        else if (this.boolSettings.indexOf(field) != -1) return tzcommon.prefs.getBoolPref(field);
+        else return tzcommon.prefs.getCharPref(field);
+    },
+
+    // wrap set functions, to be able to switch storage backend
+    setSetting: function(field, value) {
+        if (this.intSettings.indexOf(field) != -1) tzcommon.prefs.setIntPref(field, value);
+        else if (this.boolSettings.indexOf(field) != -1) tzcommon.prefs.setBoolPref(field, value);
+        else tzcommon.prefs.setCharPref(field, value);
+    },
+        
     getPassword: function (connection) {
         let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
         let logins = myLoginManager.findLogins({}, connection.host, connection.url, null);
@@ -246,8 +264,8 @@ var tzcommon = {
 
 
     checkDeviceId: function () {
-        if (tzcommon.prefs.getCharPref("deviceId", "") === "") tzcommon.prefs.setCharPref("deviceId", Date.now());
-        return  tzcommon.prefs.getCharPref("deviceId");
+        if (tzcommon.getSetting("deviceId", "") === "") tzcommon.setSetting("deviceId", Date.now());
+        return  tzcommon.getSetting("deviceId");
     },
 
 
@@ -256,7 +274,7 @@ var tzcommon = {
         if (addressBook instanceof Components.interfaces.nsIAbDirectory) return true;
         
         // Get unique Name for new address book
-        let testname = tzcommon.prefs.getCharPref("accountname");
+        let testname = tzcommon.getSetting("accountname");
         let newname = testname;
         let count = 1;
         let unique = false;
@@ -284,7 +302,7 @@ var tzcommon = {
         while (booksIter.hasMoreElements()) {
             let data = booksIter.getNext();
             if (data instanceof Components.interfaces.nsIAbDirectory && data.dirPrefId == dirPrefId) {
-                tzcommon.prefs.setCharPref("abname", data.URI); 
+                tzcommon.setSetting("abname", data.URI); 
                 return true;
             }
         }
@@ -308,7 +326,7 @@ var tzcommon = {
             },
             
             get uri() { 
-                return tzcommon.prefs.getCharPref("abname"); 
+                return tzcommon.getSetting("abname"); 
             },
             
             get obj() { 
@@ -359,15 +377,6 @@ var tzcommon = {
             // setup the "properties" of the new address book
             //TODO
         }
-    },
-    
-    // wrap get/set functions, to be able to switch storage backend
-    getAccountSetting: function(field) {
-        let boolFields = ["https", "prov", "birthday", "displayoverride", "showanniversary", "connected"];
-        let intFields = ["autosync"];
-        if (intFields.indexOf(field) != -1) return tzcommon.prefs.getIntPref(field);
-        else if (boolFields.indexOf(field) != -1) return tzcommon.prefs.getBoolPref(field);
-        else return tzcommon.prefs.getCharPref(field);
     }
-    
+        
 };
