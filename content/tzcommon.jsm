@@ -9,10 +9,9 @@ var tzcommon = {
     prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
     bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/strings"),
 
-    // Settings not listed here are assumed to be a stringSettings - hidephones & showanniversary are currently unused
     boolSettings : ["https", "prov", "birthday", "displayoverride", "connected", "downloadonly" /*, "hidephones", "showanniversary" */],
     intSettings : ["autosync"],
-
+    charSettings : ["abname", "deviceId", "asversion", "host", "user", "seperator", "accountname", "polkey", "folderID", "synckey", "LastSyncTime", "folderSynckey" ],
     
     /**
         * manage sync via observer - since this is the only place where new requests end up, we could also implement some sort of queuing
@@ -29,11 +28,8 @@ var tzcommon = {
         }
     },
 
-    resetSync: function (force = false) {
-        if (force) {
-            tzcommon.prefs.setCharPref("syncstate", "forcereset");
-            tzcommon.prefs.setCharPref("syncstate", "alldone");
-        } else if (tzcommon.prefs.getCharPref("syncstate") !== "alldone") {
+    resetSync: function () {
+        if (tzcommon.prefs.getCharPref("syncstate") !== "alldone") {
             tzcommon.prefs.setCharPref("syncstate", "alldone");
         }
     },
@@ -42,6 +38,8 @@ var tzcommon = {
         if (tzcommon.prefs.getCharPref("syncstate") !== "alldone") {
             tzcommon.setSetting("LastSyncTime", Date.now());
             tzcommon.prefs.setCharPref("syncstate", "alldone");
+            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+            observerService.notifyObservers(null, "tzpush.syncstatus", "updateSettingsDialogLabels");
         }
     },
 
@@ -213,16 +211,18 @@ var tzcommon = {
     getSetting: function(field) {
         if (this.intSettings.indexOf(field) != -1) return tzcommon.prefs.getIntPref(field);
         else if (this.boolSettings.indexOf(field) != -1) return tzcommon.prefs.getBoolPref(field);
-        else return tzcommon.prefs.getCharPref(field);
+        else if (this.charSettings.indexOf(field) != -1) return tzcommon.prefs.getCharPref(field);
+        else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.getSetting(" + field + ")";
     },
 
     // wrap set functions, to be able to switch storage backend
     setSetting: function(field, value) {
         if (this.intSettings.indexOf(field) != -1) tzcommon.prefs.setIntPref(field, value);
         else if (this.boolSettings.indexOf(field) != -1) tzcommon.prefs.setBoolPref(field, value);
-        else tzcommon.prefs.setCharPref(field, value);
+        else if (this.charSettings.indexOf(field) != -1) tzcommon.prefs.setCharPref(field, value);
+        else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.setSetting(" + field + ")";
     },
-        
+
     getPassword: function (connection) {
         let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
         let logins = myLoginManager.findLogins({}, connection.host, connection.url, null);

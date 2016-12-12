@@ -11,11 +11,6 @@ var tzpush = {
         window.open("chrome://tzpush/content/pref.xul", "", "chrome,centerscreen,resizable,toolbar", null, null);
     },
 
-    // XUL does not know about tzcommon, so here are some simple wrapper
-    requestSync: function () { return tzcommon.requestSync(); },
-    requestReSync: function () { return tzcommon.requestReSync(); },
-    resetSync: function () { return tzcommon.resetSync(); },
-
     // Everytime a preference is changed, this observer is called. It is used to manage sync processes.
     prefObserver : {
 
@@ -135,7 +130,7 @@ var tzpush = {
                 let syncInterval = tzcommon.getSetting("autosync") * 60 * 1000;
 
                 if ((syncInterval > 0) && ((Date.now() - getSetting("LastSyncTime")) > syncInterval)) {
-                    tzpush.requestSync();
+                    tzcommon.requestSync();
                 }
             }
         }
@@ -145,4 +140,4 @@ var tzpush = {
 tzpush.syncTimer.start();
 tzpush.prefObserver.register();
 tzpush.addressbookListener.add();
-tzcommon.resetSync(true);
+tzcommon.resetSync();

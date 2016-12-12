@@ -15,8 +15,10 @@
 <!ENTITY pref.never "0 for never">
 <!ENTITY pref.Sync "Sync latest changes">
 <!ENTITY pref.Resync "Resync from scratch">
+<!ENTITY pref.Close "Close">
 
 <!ENTITY pref.SyncedAB "Synced Addressbook">
+<!ENTITY pref.LastSyncTime "Last successful syncronisation">
 
 <!ENTITY pref.seperator "Seperator">
 <!ENTITY pref.seperator.comma "Comma">
