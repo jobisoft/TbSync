@@ -64,6 +64,16 @@ var tzprefs = {
 
 
     /* * *
+    * Some fields are not protected and can be changed even if the account is connected. Since we
+    * do not have (want) another save button for these, they are saved upon change.
+    */
+    instantSaveSetting: function (field) {
+        let setting = field.id.replace("tzprefs.","");
+        tzcommon.setSetting(setting, field.value);
+    },
+
+
+    /* * *
     * The settings dialog has some static info labels, which needs to be updated
     * from time to time.
     */
@@ -117,7 +127,7 @@ var tzprefs = {
             document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("connect_account");
         }
         
-        let protectedFields = ["asversion", "host", "https", "user", "prov", "birthday", "seperator", "displayoverride"];
+        let protectedFields = ["accountname", "asversion", "host", "https", "user", "prov", "birthday", "seperator", "displayoverride"];
         for (let i=0; i<protectedFields.length;i++) {
             document.getElementById("tzprefs." + protectedFields[i]).disabled = connected;
         }

@@ -71,12 +71,12 @@
                          <checkbox id="tzprefs.displayoverride" tooltiptext="&pref.displayoverridetooltip;" label=' "First Name Second Name"' disabled="true" />
                     </row>
                     <row>
-                         <label />
-                         <button label="" id="tzprefs.connectbtn" onclick="tzprefs.updateConnectionState(true);" />
+                         <label control="tzprefs.autosync" value="&pref.autotime;" tooltiptext="&pref.never;" />
+                         <textbox id="tzprefs.autosync" tooltiptext="&pref.never;" onblur="tzprefs.instantSaveSetting(this);" />
                     </row>
                     <row>
-                         <label control="tzprefs.autosync" value="&pref.autotime;" tooltiptext="&pref.never;" />
-                         <textbox id="tzprefs.autosync" tooltiptext="&pref.never;"/>
+                         <label />
+                         <button label="" id="tzprefs.connectbtn" onclick="tzprefs.updateConnectionState(true);" />
                     </row>
                     <row>
                          <label value="&pref.SyncedAB;" />
