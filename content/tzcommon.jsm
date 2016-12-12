@@ -3,6 +3,7 @@
 var EXPORTED_SYMBOLS = ["tzcommon"];
 
 Components.utils.import("resource://gre/modules/FileUtils.jsm");
+Components.utils.import("chrome://tzpush/content/tzdb.jsm");
 
 var tzcommon = {
 
@@ -209,6 +210,8 @@ var tzcommon = {
     
     // wrap get functions, to be able to switch storage backend
     getSetting: function(field) {
+        tzdb.getSetting(field);
+
         if (this.intSettings.indexOf(field) != -1) return tzcommon.prefs.getIntPref(field);
         else if (this.boolSettings.indexOf(field) != -1) return tzcommon.prefs.getBoolPref(field);
         else if (this.charSettings.indexOf(field) != -1) return tzcommon.prefs.getCharPref(field);
@@ -217,6 +220,8 @@ var tzcommon = {
 
     // wrap set functions, to be able to switch storage backend
     setSetting: function(field, value) {
+        tzdb.setSetting(field, value);
+
         if (this.intSettings.indexOf(field) != -1) tzcommon.prefs.setIntPref(field, value);
         else if (this.boolSettings.indexOf(field) != -1) tzcommon.prefs.setBoolPref(field, value);
         else if (this.charSettings.indexOf(field) != -1) tzcommon.prefs.setCharPref(field, value);
