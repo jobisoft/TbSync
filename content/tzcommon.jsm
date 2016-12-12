@@ -39,7 +39,7 @@ var tzcommon = {
             tzcommon.setSetting("LastSyncTime", Date.now());
             tzcommon.prefs.setCharPref("syncstate", "alldone");
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tzpush.syncstatus", "updateSettingsDialogLabels");
+            observerService.notifyObservers(null, "tzpush.syncstatus", "done");
         }
     },
 

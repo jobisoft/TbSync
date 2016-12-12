@@ -130,8 +130,13 @@ var tzprefs = {
     syncStatusObserver: {
         observe: function (aSubject, aTopic, aData) {
             switch (aData) {
-                case "updateSettingsDialogLabels":
+                case "done":
                     tzprefs.updateLabels();
+                    break;
+
+                case "syncing":
+                    //use one of the labels to print sync status
+                    document.getElementById('abname').value = tzcommon.getLocalizedMessage(tzcommon.prefs.getCharPref("syncstate"));
                     break;
 
 /*               case "syncstate": //update button to inform user

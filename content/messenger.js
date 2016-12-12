@@ -34,6 +34,10 @@ var tzpush = {
                     if (status) status.label = "TzPush: " + tzcommon.getLocalizedMessage(tzcommon.prefs.getCharPref("syncstate"));
                     tzcommon.dump("status", tzcommon.getLocalizedMessage(tzcommon.prefs.getCharPref("syncstate")));
 
+                    //also notify any other observer
+                    let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+                    observerService.notifyObservers(null, "tzpush.syncstatus", "syncing");
+
                     switch (tzcommon.prefs.getCharPref("syncstate")) {
                         case "syncrequest":
                             tzsync.sync(window);
