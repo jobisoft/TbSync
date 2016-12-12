@@ -6,117 +6,82 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 /* * *
- * Taken from:
+ * Inspired by:
  * https://developer.mozilla.org/en-US/Add-ons/Thunderbird/HowTos/Common_Thunderbird_Extension_Techniques/Use_SQLite
  */
 
 var tzdb = {
 
-  onLoad: function() {
-    // initialization code
-    this.initialized = true;
-    this.dbInit();
-  },
+    conn: null,
+    defaultAccount: null,
 
-  conn: null,
+    onLoad: function() {
+        // initialization code
+        this.initialized = true;
+        this.dbInit();
+        this.defaultAccount = this.getDefaultAccount();
+    },
 
-  dbSchema: {
-     tables: {
-       settings:"id           INTEGER PRIMARY KEY, \
-                 name         TEXT \
-                 value        TEXT NOT NULL"
-    }
-  },
 
-  dbInit: function () {
-    var dirService = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
+    dbInit: function () {
+        let dirService = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
+        let dbFile = dirService.get("ProfD", Ci.nsIFile);
+        dbFile.append("ZPush");
+        dbFile.append("db.sqlite");
 
-    var dbFile = dirService.get("ProfD", Ci.nsIFile);
-    dbFile.append("ZPush");
-    dbFile.append("db.sqlite");
-
-    var dbService = Cc["@mozilla.org/storage/service;1"].getService(Ci.mozIStorageService);
-
-    var conn;
-
-    if (!dbFile.exists())
-      conn = this._dbCreate(dbService, dbFile);
-    else {
-      conn = dbService.openDatabase(dbFile);
-    }
-    this.conn = conn;
-  },
-
-  _dbCreate: function (aDBService, aDBFile) {
-    var conn = aDBService.openDatabase(aDBFile);
-    this._dbCreateTables(conn);
-    return conn;
-  },
-
-  _dbCreateTables: function (aDBConnection) {
-    for(var name in this.dbSchema.tables)
-      aDBConnection.createTable(name, this.dbSchema.tables[name]);
-  },
-  
-  
-  
-  
-  
-  
-  getSetting: function (name) {
-    let statement = null;
-    let value = null;
-    
-    try {
-//        statement = this.conn.createStatement("SELECT * FROM settings;");
-        statement = this.conn.createStatement("SELECT * FROM settings;");
-//        statement.params.name = name;
-        if (statement.executeStep()) {
-            value = statement.row.value;
+        let dbService = Cc["@mozilla.org/storage/service;1"].getService(Ci.mozIStorageService);
+        if (!dbFile.exists()) {
+            this.conn = dbService.openDatabase(dbFile);
+            this.conn.executeSimpleSQL("CREATE TABLE accounts(account INTEGER PRIMARY KEY AUTOINCREMENT, accountname TEXT);");
+            this.conn.executeSimpleSQL("CREATE TABLE settings(id INTEGER PRIMARY KEY AUTOINCREMENT, account INTEGER, name TEXT, value TEXT);");
+            this.conn.executeSimpleSQL("INSERT INTO accounts(accountname) VALUES('Default');");
+        } else {
+            this.conn = dbService.openDatabase(dbFile);
         }
-    } catch (e) {
-        var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
-        consoleService.logStringMessage("[SQLite] Error ("+name+"): " + e);    
-    }
-                        
+    },
 
-    var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
-    consoleService.logStringMessage("[SQLite] " + name + " : " + value);    
-    return value;
-  },
-  
-  getIdOfSetting: function (name) {
-    let statement = this.conn.createStatement("SELECT id FROM settings WHERE name = :name");
-    statement.params.name = name;
-    
-    let id = null;
-    if (statement.executeStep()) {
-        id = statement.row.id;
-    }   
-    return id;
-  },
-  
-  setSetting: function (name, value) {
-    //first get id of setting
-    let id = this.getIdOfSetting(name);
-    
-    let statement;
-    if (id) {
-        //UPDATE
-        statement = this.conn.createStatement("UPDATE settings SET value = :value WHERE id = :id");
-        statement.params.id = id;
-        statement.params.value = value;
-    } else {
-        //INSERT
-        statement = this.conn.createStatement("INSERT INTO settings (name, value) VALUES (:name, :value)");
-        statement.params.name = name;
-        statement.params.value = value;
+
+    getDefaultAccount: function () {
+        //dummy, return the id of the default account
+        let statement = this.conn.createStatement("SELECT account FROM accounts;");
+        if (statement.executeStep()) {
+            return statement.row.account;
+        } else {
+            return null;
+        }
+    },
+
+
+    getIdOfSetting: function (account, name) {
+        let statement = this.conn.createStatement("SELECT id FROM settings WHERE account='" + account + "' AND name='" + name +"';");
+        if (statement.executeStep()) {
+            return statement.row.id;
+        } else {
+            return null
+        }
+    },
+
+
+    setAccountSetting: function (account , name, value) {
+        //first get id of setting
+        let id = this.getIdOfSetting(account, name);
+        if (id) { //UPDATE
+            this.conn.executeSimpleSQL("UPDATE settings SET value='"+value+"' WHERE account='" + account + "' AND id=" + id + ";");
+        } else { //INSERT
+            this.conn.executeSimpleSQL("INSERT INTO settings(account,name,value) VALUES('"+account+"','"+name+"','" +value+ "');");
+        }
+    },
+
+
+    getAccountSetting: function (account, name) {
+        let statement = this.conn.createStatement("SELECT value FROM settings WHERE account='" + account + "' AND name='" + name + "';");
+        if (statement.executeStep()) {
+            return statement.row.value;
+        } else {
+            return "";
+        }
     }
-    
-    statement.executeStep();
-  }
-  
-  
+
 };
 
 tzdb.onLoad();

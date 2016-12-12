@@ -210,22 +210,23 @@ var tzcommon = {
     
     // wrap get functions, to be able to switch storage backend
     getSetting: function(field) {
-        tzdb.getSetting(field);
+        let value = tzdb.getAccountSetting(tzdb.defaultAccount, field);
 
+        if (this.intSettings.indexOf(field) != -1) return parseInt(value);
+        else if (this.boolSettings.indexOf(field) != -1) return (value === "true");
+        else if (this.charSettings.indexOf(field) != -1) return value;
+        else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.getSetting(" + field + ")";
+
+        /* if db empty, try to load from prefs as fallback - how to test if db is empty? TODO
         if (this.intSettings.indexOf(field) != -1) return tzcommon.prefs.getIntPref(field);
         else if (this.boolSettings.indexOf(field) != -1) return tzcommon.prefs.getBoolPref(field);
         else if (this.charSettings.indexOf(field) != -1) return tzcommon.prefs.getCharPref(field);
-        else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.getSetting(" + field + ")";
+        else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.getSetting(" + field + ")";*/
     },
 
     // wrap set functions, to be able to switch storage backend
     setSetting: function(field, value) {
-        tzdb.setSetting(field, value);
-
-        if (this.intSettings.indexOf(field) != -1) tzcommon.prefs.setIntPref(field, value);
-        else if (this.boolSettings.indexOf(field) != -1) tzcommon.prefs.setBoolPref(field, value);
-        else if (this.charSettings.indexOf(field) != -1) tzcommon.prefs.setCharPref(field, value);
-        else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.setSetting(" + field + ")";
+        tzdb.setAccountSetting(tzdb.defaultAccount, field, value);
     },
 
     getPassword: function (connection) {
