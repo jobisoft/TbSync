@@ -89,13 +89,13 @@ var tzprefs = {
         //DeviceId
         document.getElementById('deviceId').value = tzcommon.getSetting("deviceId");
 
-        //LastSyncTime
-        let LastSyncTime = tzcommon.getSetting("LastSyncTime");
-        if (LastSyncTime !== "0") {
+        //LastSyncTime is stored as string for historic reasons
+        let LastSyncTime = parseInt(tzcommon.getSetting("LastSyncTime"));
+        if (isNaN(LastSyncTime) || LastSyncTime == 0) {
+            document.getElementById('LastSyncTime').value = "-";
+        } else {
             let d = new Date(parseInt(LastSyncTime));
             document.getElementById('LastSyncTime').value = d.toString();
-        } else {
-            document.getElementById('LastSyncTime').value = "-";
         }
     },
 
