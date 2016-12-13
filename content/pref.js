@@ -133,7 +133,7 @@ var tzprefs = {
             document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("connect_account");
         }
         
-        let protectedFields = ["accountname", "asversion", "host", "https", "user", "prov", "birthday", "seperator", "displayoverride"];
+        let protectedFields = ["accountname", "asversion", "host", "https", "user", "prov", "birthday", "seperator", "displayoverride", "downloadonly"];
         for (let i=0; i<protectedFields.length;i++) {
             document.getElementById("tzprefs." + protectedFields[i]).disabled = connected;
         }

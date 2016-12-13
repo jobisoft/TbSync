@@ -13,7 +13,8 @@ var tzpush = {
 
 
     /* * *
-    * Observer to catch syncsRequests.
+    * Observer to catch syncsRequests. The two values "sync" and "resync" will be send by
+    * tzcommon.requestSync/requestResync() only if the current syncstate is alldone
     */
     syncRequestObserver: {
         observe: function (aSubject, aTopic, aData) {
@@ -30,9 +31,7 @@ var tzpush = {
 
 
     /* * *
-     * This preference observer is used to watch the syncstate and to update the status bar
-     * and to actually trigger the sync. The two values "syncrequest" and "resyncrequest" will
-     * be set by tzcommon.requestSync/requestResync() only if the current syncstate is alldone
+     * Preference observer to watch the syncstate and to update the status bar.
      */
     prefObserver: {
 

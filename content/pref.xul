@@ -72,6 +72,10 @@
                          <label value="" />
                          <checkbox id="tzprefs.displayoverride" label="&pref.displayoverride;" disabled="true" />
                     </row>
+                    <row>
+                         <label value="" />
+                         <checkbox id="tzprefs.downloadonly" label="&pref.downloadonly;" disabled="true" />
+                    </row>
 
                     <row>
                          <label />
