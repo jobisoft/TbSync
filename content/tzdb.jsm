@@ -14,6 +14,7 @@ var tzdb = {
 
     conn: null,
     defaultAccount: null,
+    accountColumns: ["accountname","LastSyncTime"],
 
     onLoad: function() {
         // initialization code
@@ -32,9 +33,14 @@ var tzdb = {
         let dbService = Cc["@mozilla.org/storage/service;1"].getService(Ci.mozIStorageService);
         if (!dbFile.exists()) {
             this.conn = dbService.openDatabase(dbFile);
-            this.conn.executeSimpleSQL("CREATE TABLE accounts(account INTEGER PRIMARY KEY AUTOINCREMENT, accountname TEXT);");
-            this.conn.executeSimpleSQL("CREATE TABLE settings(id INTEGER PRIMARY KEY AUTOINCREMENT, account INTEGER, name TEXT, value TEXT);");
+
+            //Create accounts table with accountColumns
+            let sql = ""; for (let i=0; i<this.accountColumns.length; i++) sql = sql + ", " + this.accountColumns[i] + " TEXT";
+            this.conn.executeSimpleSQL("CREATE TABLE accounts(account INTEGER PRIMARY KEY AUTOINCREMENT " + sql + ");");
             this.conn.executeSimpleSQL("INSERT INTO accounts(accountname) VALUES('Default');");
+
+            //Create settings table
+            this.conn.executeSimpleSQL("CREATE TABLE settings(id INTEGER PRIMARY KEY AUTOINCREMENT, account INTEGER, name TEXT, value TEXT);");
         } else {
             this.conn = dbService.openDatabase(dbFile);
         }
@@ -63,20 +69,37 @@ var tzdb = {
 
 
     setAccountSetting: function (account , name, value) {
-        //first get id of setting
-        let id = this.getIdOfSetting(account, name);
-        if (id) { //UPDATE
-            this.conn.executeSimpleSQL("UPDATE settings SET value='"+value+"' WHERE account='" + account + "' AND id=" + id + ";");
-        } else { //INSERT
-            this.conn.executeSimpleSQL("INSERT INTO settings(account,name,value) VALUES('"+account+"','"+name+"','" +value+ "');");
+        if (this.accountColumns.indexOf(name) != -1) {
+            //this field is part of the accounts table with its own column
+            this.conn.executeSimpleSQL("UPDATE accounts SET "+name+"='"+value+"' WHERE account='" + account + "';");
+        } else {
+            //this field is part of the generic settings table
+            //first get id of setting
+            let id = this.getIdOfSetting(account, name);
+            if (id) { //UPDATE
+                this.conn.executeSimpleSQL("UPDATE settings SET value='"+value+"' WHERE account='" + account + "' AND id=" + id + ";");
+            } else { //INSERT
+                this.conn.executeSimpleSQL("INSERT INTO settings(account,name,value) VALUES('"+account+"','"+name+"','" +value+ "');");
+            }
         }
     },
 
 
     getAccountSetting: function (account, name) {
-        let statement = this.conn.createStatement("SELECT value FROM settings WHERE account='" + account + "' AND name='" + name + "';");
+        let col;
+        let statement;
+        if (this.accountColumns.indexOf(name) != -1) {
+            //this field is part of the accounts table with its own column
+            statement = this.conn.createStatement("SELECT "+name+" FROM accounts WHERE account='" + account + "';");
+            col = name;
+        } else {
+            //this field is part of the generic settings table
+            statement = this.conn.createStatement("SELECT value FROM settings WHERE account='" + account + "' AND name='" + name + "';");
+            col = "value";
+        }
+
         if (statement.executeStep()) {
-            return statement.row.value;
+            return statement.row[col];
         } else {
             return "";
         }

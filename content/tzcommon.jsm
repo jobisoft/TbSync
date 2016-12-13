@@ -212,10 +212,14 @@ var tzcommon = {
     getSetting: function(field) {
         let value = tzdb.getAccountSetting(tzdb.defaultAccount, field);
 
-        if (this.intSettings.indexOf(field) != -1) return parseInt(value);
-        else if (this.boolSettings.indexOf(field) != -1) return (value === "true");
-        else if (this.charSettings.indexOf(field) != -1) return value;
-        else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.getSetting(" + field + ")";
+        if (this.intSettings.indexOf(field) != -1) {
+            if (value === "" || value === "null") return 0;
+            else return parseInt(value);
+        } else if (this.boolSettings.indexOf(field) != -1) {
+            return (value === "true");
+        } else if (this.charSettings.indexOf(field) != -1) {
+            return value;
+        } else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.getSetting(" + field + ")";
 
         /* if db empty, try to load from prefs as fallback - how to test if db is empty? TODO
         if (this.intSettings.indexOf(field) != -1) return tzcommon.prefs.getIntPref(field);
