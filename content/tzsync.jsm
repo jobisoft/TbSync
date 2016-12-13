@@ -11,21 +11,19 @@ var tzsync = {
     sync: function (window = null) {
 
         if (!tzcommon.getSetting("connected")) {
-            tzcommon.dump("sync", "Aborting Sync, because account is not connected.");
-            tzcommon.resetSync();
+            tzcommon.resetSync("notconnected");
             return;
         }
 
         // Check if connection has deviceId and target address book
         tzcommon.checkDeviceId(); 
         if (!tzcommon.checkSyncTarget()) {
-            tzcommon.dump("sync", "Aborting Sync, because sync targets could not be created.");
-            tzcommon.resetSync();
+            tzcommon.resetSync("notargets");
             return;
         }
     
         if (window !== null) tzsync.w = window;
-        tzcommon.prefs.setCharPref("syncstate", "syncing");
+        tzcommon.setSyncState("syncing");
         this.time = tzcommon.getSetting("LastSyncTime") / 1000;  //TODO: Drop this here
         this.time2 = (Date.now() / 1000) - 1;
 
@@ -230,7 +228,7 @@ var tzsync = {
     
     
     fromzpush: function() {
-        tzcommon.prefs.setCharPref("syncstate", "requestingchanges");
+        tzcommon.setSyncState("requestingchanges");
         var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
         var moreavilable = 1;
         var folderID = tzcommon.getSetting("folderID");
@@ -250,7 +248,7 @@ var tzsync = {
             if (returnedwbxml.length === 0) {
                 this.tozpush();
             } else {
-                tzcommon.prefs.setCharPref("syncstate", "recievingchanges");
+                tzcommon.setSyncState("recievingchanges");
                 wbxml = returnedwbxml;
                 var firstcmd = wbxml.indexOf(String.fromCharCode(0x56));
 
@@ -269,7 +267,7 @@ var tzsync = {
                     tzsync.resync();
                 } else if (wbxmlstatus !== '1') {
                     tzcommon.dump("wbxml status", "server error? " + wbxmlstatus);
-                    tzcommon.resetSync();
+                    tzcommon.resetSync("wbxmlservererror");
                 } else {
                     synckey = this.FindKey(wbxml);
                     tzcommon.setSetting("synckey", synckey);
@@ -531,7 +529,7 @@ var tzsync = {
     },
 
     tozpush: function() {
-        tzcommon.prefs.setCharPref("syncstate", "sendingchanges");
+        tzcommon.setSyncState("sendingchanges");
         var folderID = tzcommon.getSetting("folderID");
         var synckey = tzcommon.getSetting("synckey");
 
@@ -853,9 +851,9 @@ var tzsync = {
                 tzsync.resync();
             } else if (wbxmlstatus !== '1') {
                 tzcommon.dump("wbxml status", "server error? " + wbxmlstatus);
-                tzcommon.resetSync();
+                tzcommon.resetSync("wbxmlservererror");
             } else {
-                tzcommon.prefs.setCharPref("syncstate", "serverid");
+                tzcommon.setSyncState("serverid");
 
                 var count = 0;
                 synckey = this.FindKey(wbxml);
@@ -930,7 +928,7 @@ var tzsync = {
     },
 
     senddel: function() {
-        tzcommon.prefs.setCharPref("syncstate", "sendingdeleted");
+        tzcommon.setSyncState("sendingdeleted");
         let folderID = tzcommon.getSetting("folderID");
         let synckey = tzcommon.getSetting("synckey");
 
@@ -972,12 +970,12 @@ var tzsync = {
             tzsync.resync();
         } else if (wbxmlstatus !== '1') {
             tzcommon.dump("wbxml status", "server error? " + wbxmlstatus);
-            tzcommon.resetSync();
+            tzcommon.resetSync("wbxmlservererror");
         } else {
             let synckey = this.FindKey(responseWbxml);
             tzcommon.setSetting("synckey", synckey);
             for (let count in cardstodelete) {
-                tzcommon.prefs.setCharPref("syncstate", "cleaningdeleted");
+                tzcommon.setSyncState("cleaningdeleted");
                 tzcommon.removeCardFromDeleteLog(cardstodelete[count]);
             }
             // The selected cards have been deleted from the server and from the deletelog -> rerun senddel to look for more cards to delete
@@ -1080,12 +1078,10 @@ var tzsync = {
             } else if (req.readyState === 4) {
 
                 switch(req.status) {
-                    case 0:
-                        tzcommon.dump("request status", "0 -- No connection - check server address");
+                    case 0: // ConnectError
                         break;
                     
                     case 401: // AuthError
-                        tzcommon.dump("request status", "401 -- Auth error - check username and password");
                         var retVals = { password: "" };
                         tzsync.w.openDialog("chrome://tzpush/content/password.xul", "passwordprompt", "modal,centerscreen,chrome,resizable=no", retVals, "Password for ActiveSync");
                         if (retVals.password !== "") {
@@ -1097,8 +1093,6 @@ var tzsync = {
                     case 449: // Request for new provision
                         if (tzcommon.getSetting("prov")) {
                             tzsync.resync();
-                        } else {
-                            tzcommon.dump("request status", "449 -- Insufficient information - retry with enabled provisioning");
                         }
                         break;
                 
@@ -1134,6 +1128,7 @@ var tzsync = {
                         }
 
                         //Now rerun sync - this is unsafe, because there is still a callback pending and the current sync process is not finished... also this is redundant TODO - ErrorCode-Handling should be done AFTER all syncstuff has been finished
+                        //Also TODO - we could end up in a redirect loop - stop here and ask user to resync?
                         if (tzcommon.getSetting("prov")) {
                             this.Polkey();
                         } else {
@@ -1148,8 +1143,8 @@ var tzsync = {
                     default:
                         tzcommon.dump("request status", "reported -- " + req.status);
                 }
-                //Sync stoped due to error - maybe inform user about errors?
-                tzcommon.resetSync();
+                //Sync stopped due to error - inform user about errors!
+                tzcommon.resetSync(req.status);
 
             }
 

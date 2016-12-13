@@ -139,23 +139,32 @@ var tzprefs = {
     */
     syncStatusObserver: {
         observe: function (aSubject, aTopic, aData) {
-            switch (aData) {
-                case "done":
-                    tzprefs.updateLabels();
+            //aData is of the following type
+            // <accountId>.syncing.<syncstate>
+            // <accountId>.error.<errorcode>
+            let data = aData.split(".");
+
+            switch (data[1]) {
+                case "syncing":
+                    if (data[2] == "alldone") tzprefs.updateLabels();
+                    else {
+                        //use one of the labels to print sync status
+                        document.getElementById('abname').value = tzcommon.getLocalizedMessage(data[2]);
+                    }
                     break;
 
-                case "syncing":
+                case "error":
                     //use one of the labels to print sync status
-                    document.getElementById('abname').value = tzcommon.getLocalizedMessage(tzcommon.prefs.getCharPref("syncstate"));
+                    document.getElementById('abname').value = tzcommon.getLocalizedMessage("error." + data[2]);
                     break;
 
 /*               case "syncstate": //update button to inform user
-                    if (tzcommon.prefs.getCharPref("syncstate") == "alldone") {
+                    if (tzcommon.getSyncState() == "alldone") {
                         document.getElementById("tzprefs.resyncbtn").disabled = false;
                         document.getElementById("tzprefs.resyncbtn").label = tzcommon.getLocalizedMessage("resync_from_scratch");
                     } else {
                         document.getElementById("tzprefs.resyncbtn").disabled = true;
-                        document.getElementById("tzprefs.resyncbtn").label = "Busy: " + tzcommon.getLocalizedMessage(tzcommon.prefs.getCharPref("syncstate"));
+                        document.getElementById("tzprefs.resyncbtn").label = "Busy: " + tzcommon.getLocalizedMessage(tzcommon.getSyncState());
                     } */
 
             }

@@ -15,7 +15,7 @@ var tzpush = {
     /* * *
      * This preference observer is used to watch the syncstate and to update the status bar
      * and to actually trigger the sync. The two values "syncrequest" and "resyncrequest" will
-     * be set by tzcommon.requestSync/requestResync() only if the current syncstate id idle
+     * be set by tzcommon.requestSync/requestResync() only if the current syncstate is alldone
      */
     prefObserver: {
 
@@ -31,14 +31,10 @@ var tzpush = {
             switch (aData) {
                 case "syncstate": //update status bar to inform user
                     let status = document.getElementById("tzstatus");
-                    if (status) status.label = "TzPush: " + tzcommon.getLocalizedMessage(tzcommon.prefs.getCharPref("syncstate"));
-                    tzcommon.dump("status", tzcommon.getLocalizedMessage(tzcommon.prefs.getCharPref("syncstate")));
+                    if (status) status.label = "TzPush: " + tzcommon.getLocalizedMessage(tzcommon.getSyncState());
+                    tzcommon.dump("new status", tzcommon.getLocalizedMessage(tzcommon.getSyncState()));
 
-                    //also notify any other observer
-                    let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                    observerService.notifyObservers(null, "tzpush.syncstatus", "syncing");
-
-                    switch (tzcommon.prefs.getCharPref("syncstate")) {
+                    switch (tzcommon.getSyncState()) {
                         case "syncrequest":
                             tzsync.sync(window);
                             break;

@@ -5,13 +5,13 @@
 
 <!ENTITY pref.SettingDialog "Setting Dialog">
 <!ENTITY pref.AccountName "Account Name">
-<!ENTITY pref.Server "Server">
-<!ENTITY pref.usehttps "Use https://">
+<!ENTITY pref.Server "Server Name">
+<!ENTITY pref.usehttps "Use secure connection (connect via https)">
 <!ENTITY pref.UserName "User Name">
 <!ENTITY pref.DeviceId "Device Id">
-<!ENTITY pref.UseProvisioning "Use Provisioning">
-<!ENTITY pref.birthday "Send Birthday Information">
-<!ENTITY pref.autotime "Auto Sync time in minutes">
+<!ENTITY pref.UseProvisioning "Use provisioning">
+<!ENTITY pref.birthday "Send birthday information">
+<!ENTITY pref.autotime "AutoSync time in minutes">
 <!ENTITY pref.never "0 for never">
 <!ENTITY pref.Sync "Sync latest changes">
 <!ENTITY pref.Resync "Resync from scratch">
@@ -20,12 +20,11 @@
 <!ENTITY pref.SyncedAB "Synced Addressbook">
 <!ENTITY pref.LastSyncTime "Last successful syncronisation">
 
-<!ENTITY pref.seperator "Seperator">
-<!ENTITY pref.seperator.comma "Comma">
-<!ENTITY pref.seperator.linebreak "Line break">
+<!ENTITY pref.seperator "Server Type">
+<!ENTITY pref.seperator.comma "comma as seperator">
+<!ENTITY pref.seperator.linebreak "line break as seperator">
 
-<!ENTITY pref.displayoverride "Overide Display">
-<!ENTITY pref.displayoverridetooltip "Display as First Name then Second Name">
+<!ENTITY pref.displayoverride "Overide Display Name with 'First Name' + 'Second Name'">
 
 <!ENTITY pref.ResyncText "Get new sync key and resync folders. Use if sync state information is lost.">
 

@@ -18,37 +18,50 @@ var tzcommon = {
         * manage sync via observer - since this is the only place where new requests end up, we could also implement some sort of queuing
         */
     requestSync: function () {
-        if (tzcommon.prefs.getCharPref("syncstate") === "alldone") {
-            tzcommon.prefs.setCharPref("syncstate","syncrequest");
+        if (tzcommon.getSyncState() === "alldone") {
+            tzcommon.setSyncState("syncrequest");
         }
     },
 
     requestReSync: function () {
-        if (tzcommon.prefs.getCharPref("syncstate") === "alldone") {
-            tzcommon.prefs.setCharPref("syncstate","resyncrequest");
+        if (tzcommon.getSyncState() === "alldone") {
+            tzcommon.setSyncState("resyncrequest");
         }
     },
 
-    resetSync: function () {
-        if (tzcommon.prefs.getCharPref("syncstate") !== "alldone") {
-            tzcommon.prefs.setCharPref("syncstate", "alldone");
+    resetSync: function (errorcode = null) {
+        if (tzcommon.getSyncState() !== "alldone") {
+            tzcommon.setSyncState("alldone", errorcode);
         }
     },
    
     finishSync: function () {
-        if (tzcommon.prefs.getCharPref("syncstate") !== "alldone") {
+        if (tzcommon.getSyncState() !== "alldone") {
             tzcommon.setSetting("LastSyncTime", Date.now());
-            tzcommon.prefs.setCharPref("syncstate", "alldone");
-            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tzpush.syncstatus", "done");
+            tzcommon.setSyncState("alldone");
         }
     },
 
+    // wrappers for set/get syncstate
+    getSyncState: function () {
+        return tzcommon.prefs.getCharPref("syncstate");
+    },
     
-    
-    
-    
-    
+    setSyncState: function (syncstate, errorcode = null) {
+        tzcommon.prefs.setCharPref("syncstate",syncstate);
+
+        //errocode handling only if syncstate == alldone
+        let msg = "1.syncing." + syncstate;
+        if (errorcode !== null && syncstate == "alldone") msg = "1.error." + errorcode;
+
+        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+        observerService.notifyObservers(null, "tzpush.syncstatus", msg);
+    },
+
+
+
+
+
     /* tools */
     decode_utf8: function (s) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;
@@ -91,7 +104,11 @@ var tzcommon = {
 
 
     getLocalizedMessage: function (msg) {
-        return tzcommon.bundle.GetStringFromName(msg);
+        let localized = msg;
+        try {
+            localized = tzcommon.bundle.GetStringFromName(msg);
+        } catch (e) {}
+        return localized;
     },
 
 

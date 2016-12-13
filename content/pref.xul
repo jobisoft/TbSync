@@ -29,6 +29,15 @@
                          <textbox id="tzprefs.accountname" />
                     </row>
                     <row>
+                         <label control="tzprefs.user" value="&pref.UserName;" />
+                         <textbox id="tzprefs.user" disabled="true" />
+                    </row>
+                    <row>
+                         <label control="tzprefs.host" value="&pref.Server;" />
+                         <textbox id="tzprefs.host" disabled="true" />
+                    </row>
+
+                    <row>
                          <label control="tzprefs.asversion" value="ActiveSync Version" />
                          <menulist id="tzprefs.asversion" disabled="true" >
                               <menupopup id = "as" >
@@ -38,65 +47,63 @@
                          </menulist>
                     </row> 
                     <row>
-                         <label control="tzprefs.host" value="&pref.Server;" />
-                         <textbox id="tzprefs.host" disabled="true" />
-                    </row>
-                    <row>
-                         <label control="tzprefs.https" value="&pref.usehttps;" />
-                         <checkbox id="tzprefs.https" label="" disabled="true" />
-                    </row>
-                    <row>
-                         <label control="tzprefs.user" value="&pref.UserName;" />
-                         <textbox id="tzprefs.user" disabled="true" />
-                    </row>
-                    <row>
-                         <label control="tzprefs.prov" value="&pref.UseProvisioning;" />
-                         <checkbox  id="tzprefs.prov" disabled="true" />
-                    </row>
-                    <row>
-                         <label control="tzprefs.birthday" value="&pref.birthday;" />
-                         <checkbox id="tzprefs.birthday" disabled="true" />
-                    </row>
-                    <row>
                          <label control="tzprefs.seperator" value="&pref.seperator;" />
                          <menulist id="tzprefs.seperator" disabled="true" >
                               <menupopup>
-                                   <menuitem label="&pref.seperator.comma; (Horde)" value=", " />
-                                   <menuitem label="&pref.seperator.linebreak; (Zarafa, Zentyal, Kopano)" value="&#10;" />
+                                   <menuitem label="Horde (&pref.seperator.comma;)" value=", " />
+                                   <menuitem label="Zarafa, Zentyal, Kopano (&pref.seperator.linebreak;)" value="&#10;" />
                               </menupopup>
                          </menulist>
                     </row>
+
                     <row>
-                         <label control="tzprefs.displayoverride" value="&pref.displayoverride;" tooltiptext="&pref.displayoverridetooltip;"/>
-                         <checkbox id="tzprefs.displayoverride" tooltiptext="&pref.displayoverridetooltip;" label=' "First Name Second Name"' disabled="true" />
+                         <label value="" />
+                         <checkbox id="tzprefs.https" label="&pref.usehttps;" disabled="true" />
                     </row>
                     <row>
-                         <label control="tzprefs.autosync" value="&pref.autotime;" tooltiptext="&pref.never;" />
-                         <textbox id="tzprefs.autosync" tooltiptext="&pref.never;" onblur="tzprefs.instantSaveSetting(this);" />
+                         <label value="" />
+                         <checkbox  id="tzprefs.prov" label="&pref.UseProvisioning;" disabled="true" />
                     </row>
+                    <row>
+                         <label value="" />
+                         <checkbox id="tzprefs.birthday" label="&pref.birthday;" disabled="true" />
+                    </row>
+                    <row>
+                         <label value="" />
+                         <checkbox id="tzprefs.displayoverride" label="&pref.displayoverride;" disabled="true" />
+                    </row>
+
                     <row>
                          <label />
                          <button label="" id="tzprefs.connectbtn" onclick="tzprefs.updateConnectionState(true);" />
+                    </row>
+
+                    <row style="margin-top:1em;">
+                         <label value="&pref.DeviceId;" />
+                         <label value="" disabled="true" id="deviceId" />
                     </row>
                     <row>
                          <label value="&pref.SyncedAB;" />
                          <label value="" disabled="true" id="abname" />
                     </row>
                     <row>
-                         <label value="&pref.DeviceId;" />
-                         <label value="" disabled="true" id="deviceId" />
-                    </row>
-                    <row>
                          <label value="&pref.LastSyncTime;" />
                          <label value="" disabled="true" id="LastSyncTime" />
                     </row>
-                    <row>
-                         <label />
-                         <button label="&pref.Sync;" onclick="tzcommon.requestSync();" />
+
+
+                    <row style="margin-top:1em;">
+                         <label control="tzprefs.autosync" value="&pref.autotime;" tooltiptext="&pref.never;" />
+                         <textbox id="tzprefs.autosync" tooltiptext="&pref.never;" onblur="tzprefs.instantSaveSetting(this);" />
                     </row>
+
+
                     <row>
                          <label />
-                         <button label="&pref.Resync;" id="tzprefs.resyncbtn" onclick="tzcommon.requestReSync();" tooltiptext="&pref.ResyncText;" />
+                         <hbox flex="1">
+                             <button flex="1" label="&pref.Sync;" onclick="tzcommon.requestSync();" />
+                             <button flex="1" label="&pref.Resync;" id="tzprefs.resyncbtn" onclick="tzcommon.requestReSync();" tooltiptext="&pref.ResyncText;" />
+                         </hbox>
                     </row>
                </rows>
           </grid>
