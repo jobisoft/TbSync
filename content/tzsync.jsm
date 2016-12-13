@@ -1079,6 +1079,7 @@ var tzsync = {
 
                 switch(req.status) {
                     case 0: // ConnectError
+                        tzcommon.resetSync(req.status);
                         break;
                     
                     case 401: // AuthError
@@ -1087,12 +1088,16 @@ var tzsync = {
                         if (retVals.password !== "") {
                             tzcommon.setPassword(retVals.password);
                             tzsync.resync();
+                        } else {
+                            tzcommon.resetSync(req.status);
                         }
                         break;
                     
                     case 449: // Request for new provision
                         if (tzcommon.getSetting("prov")) {
                             tzsync.resync();
+                        } else {
+                            tzcommon.resetSync(req.status);
                         }
                         break;
                 
@@ -1120,32 +1125,21 @@ var tzsync = {
                             try {
                                 myLoginManager.addLogin(newLoginInfo);
                             } catch (e) {
-                                tzcommon.dump("redirect (451) Error", e);
+                                tzcommon.resetSync("Redirect (451) Error ("+e+")");
                             }
                         } else {
                             //just update host
                             connection.host = newHost;
                         }
 
-                        //Now rerun sync - this is unsafe, because there is still a callback pending and the current sync process is not finished... also this is redundant TODO - ErrorCode-Handling should be done AFTER all syncstuff has been finished
-                        //Also TODO - we could end up in a redirect loop - stop here and ask user to resync?
-                        if (tzcommon.getSetting("prov")) {
-                            this.Polkey();
-                        } else {
-                            if (tzcommon.getSetting("synckey") === '') {
-                                this.GetFolderId();
-                            } else {
-                                this.fromzpush();
-                            }
-                        }
+                        //TODO: We could end up in a redirect loop - stop here and ask user to manually resync?
+                        tzsync.sync();
                         break;
                         
                     default:
                         tzcommon.dump("request status", "reported -- " + req.status);
+                        tzcommon.resetSync(req.status);
                 }
-                //Sync stopped due to error - inform user about errors!
-                tzcommon.resetSync(req.status);
-
             }
 
         }.bind(this);
