@@ -13,13 +13,13 @@ var tzprefs = {
         this.updateConnectionState(false);
         this.addressbookListener.add();
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(this.syncStatusObserver, "tzpush.syncstatus", false);
+        observerService.addObserver(this.syncStatusObserver, "tzpush.syncStatus", false);
     },
 
     onunload: function () {
         this.addressbookListener.remove();
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.removeObserver(this.syncStatusObserver, "tzpush.syncstatus");
+        observerService.removeObserver(this.syncStatusObserver, "tzpush.syncStatus");
     },
 
 
@@ -78,12 +78,18 @@ var tzprefs = {
     * from time to time.
     */
     updateLabels: function () {
-        //SyncTarget
+        //SyncTarget (print last error, if present)
+        let lastError = tzcommon.getSetting("lastError");
         let target = tzcommon.getSyncTarget();
-        if (target.name === null) {
-            document.getElementById('abname').value = tzcommon.getLocalizedMessage("not_syncronized");
+
+        if (lastError === "") {
+            if (target.name === null) {
+                document.getElementById('abname').value = tzcommon.getLocalizedMessage("not_syncronized");
+            } else {
+                document.getElementById('abname').value = target.name + " (" + target.uri + ")";
+            }
         } else {
-            document.getElementById('abname').value = target.name + " (" + target.uri + ")";
+            document.getElementById('abname').value = tzcommon.getLocalizedMessage("error." + lastError);
         }
 
         //DeviceId
@@ -140,23 +146,25 @@ var tzprefs = {
     syncStatusObserver: {
         observe: function (aSubject, aTopic, aData) {
             //aData is of the following type
-            // <accountId>.syncing.<syncstate>
-            // <accountId>.error.<errorcode>
+            // <accountId>.<syncstate>
             let data = aData.split(".");
+            let account = data[0];
+            let state = data[1];
 
-            switch (data[1]) {
-                case "syncing":
-                    if (data[2] == "alldone") tzprefs.updateLabels();
-                    else {
-                        //use one of the labels to print sync status
-                        document.getElementById('abname').value = tzcommon.getLocalizedMessage(data[2]);
-                    }
+            switch (state) {
+
+                case "error": // = alldone with error
+                    //Disconnect on error TODO: Only on initial connection, not due to temp server errors
+                    if (tzcommon.getSetting("connected")) tzprefs.updateConnectionState(true);
+                case "alldone":
+                    tzprefs.updateLabels();
                     break;
 
-                case "error":
+                default:
                     //use one of the labels to print sync status
-                    document.getElementById('abname').value = tzcommon.getLocalizedMessage("error." + data[2]);
+                    document.getElementById('abname').value = tzcommon.getLocalizedMessage("syncstate." + state);
                     break;
+
 
 /*               case "syncstate": //update button to inform user
                     if (tzcommon.getSyncState() == "alldone") {
@@ -166,7 +174,6 @@ var tzprefs = {
                         document.getElementById("tzprefs.resyncbtn").disabled = true;
                         document.getElementById("tzprefs.resyncbtn").label = "Busy: " + tzcommon.getLocalizedMessage(tzcommon.getSyncState());
                     } */
-
             }
         }
     },

@@ -13,6 +13,23 @@ var tzpush = {
 
 
     /* * *
+    * Observer to catch syncsRequests.
+    */
+    syncRequestObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            switch (aData) {
+                case "sync":
+                    tzsync.sync(window);
+                    break;
+                case "resync":
+                    tzsync.resync(window);
+                    break;
+            }
+        }
+    },
+
+
+    /* * *
      * This preference observer is used to watch the syncstate and to update the status bar
      * and to actually trigger the sync. The two values "syncrequest" and "resyncrequest" will
      * be set by tzcommon.requestSync/requestResync() only if the current syncstate is alldone
@@ -31,17 +48,8 @@ var tzpush = {
             switch (aData) {
                 case "syncstate": //update status bar to inform user
                     let status = document.getElementById("tzstatus");
-                    if (status) status.label = "TzPush: " + tzcommon.getLocalizedMessage(tzcommon.getSyncState());
-                    tzcommon.dump("new status", tzcommon.getLocalizedMessage(tzcommon.getSyncState()));
-
-                    switch (tzcommon.getSyncState()) {
-                        case "syncrequest":
-                            tzsync.sync(window);
-                            break;
-                        case "resyncrequest":
-                            tzsync.resync(window);
-                            break;
-                    }
+                    if (status) status.label = "TzPush: " + tzcommon.getLocalizedMessage("syncstate." + tzcommon.getSyncState());
+                    tzcommon.dump("syncstate", tzcommon.getLocalizedMessage("syncstate." + tzcommon.getSyncState()));
             }
         }
     },
@@ -150,5 +158,9 @@ var tzpush = {
 
 tzpush.syncTimer.start();
 tzpush.prefObserver.register();
+
+let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+observerService.addObserver(tzpush.syncRequestObserver, "tzpush.syncRequest", false);
+
 tzpush.addressbookListener.add();
 tzcommon.resetSync();

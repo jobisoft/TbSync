@@ -12,27 +12,27 @@ var tzcommon = {
 
     boolSettings : ["https", "prov", "birthday", "displayoverride", "connected", "downloadonly" /*, "hidephones", "showanniversary" */],
     intSettings : ["autosync"],
-    charSettings : ["abname", "deviceId", "asversion", "host", "user", "seperator", "accountname", "polkey", "folderID", "synckey", "LastSyncTime", "folderSynckey" ],
+    charSettings : ["abname", "deviceId", "asversion", "host", "user", "seperator", "accountname", "polkey", "folderID", "synckey", "LastSyncTime", "folderSynckey", "lastError" ],
     
     /**
         * manage sync via observer - since this is the only place where new requests end up, we could also implement some sort of queuing
         */
     requestSync: function () {
         if (tzcommon.getSyncState() === "alldone") {
-            tzcommon.setSyncState("syncrequest");
+            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+            observerService.notifyObservers(null, "tzpush.syncRequest", "sync");
         }
     },
 
     requestReSync: function () {
         if (tzcommon.getSyncState() === "alldone") {
-            tzcommon.setSyncState("resyncrequest");
+            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+            observerService.notifyObservers(null, "tzpush.syncRequest", "resync");
         }
     },
 
     resetSync: function (errorcode = null) {
-        if (tzcommon.getSyncState() !== "alldone") {
-            tzcommon.setSyncState("alldone", errorcode);
-        }
+        tzcommon.setSyncState("alldone", errorcode);
     },
    
     finishSync: function () {
@@ -49,13 +49,22 @@ var tzcommon = {
     
     setSyncState: function (syncstate, errorcode = null) {
         tzcommon.prefs.setCharPref("syncstate",syncstate);
+        let account = tzdb.defaultAccount;
+        let msg = account + "." + syncstate;
 
-        //errocode handling only if syncstate == alldone
-        let msg = "1.syncing." + syncstate;
-        if (errorcode !== null && syncstate == "alldone") msg = "1.error." + errorcode;
+        //errocode reporting only if syncstate == alldone
+        if (syncstate == "alldone") {
+            if (errorcode !== null) {
+                msg = account + ".error";
+                tzcommon.dump("Error @ Account #" + account, tzcommon.getLocalizedMessage("error." + errorcode));
+                tzcommon.setSetting("lastError", errorcode);
+            } else {
+                tzcommon.setSetting("lastError", "");
+            }
+        }
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tzpush.syncstatus", msg);
+        observerService.notifyObservers(null, "tzpush.syncStatus", msg);
     },
 
 
