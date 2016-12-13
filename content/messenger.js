@@ -147,7 +147,7 @@ var tzpush = {
                 //prepared for multi account mode, simply ask every account
                 let syncInterval = tzcommon.getSetting("autosync") * 60 * 1000;
 
-                if ((syncInterval > 0) && ((Date.now() - getSetting("LastSyncTime")) > syncInterval)) {
+                if ((syncInterval > 0) && ((Date.now() - tzcommon.getSetting("LastSyncTime")) > syncInterval)) {
                     tzcommon.requestSync();
                 }
             }
