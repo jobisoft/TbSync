@@ -16,6 +16,7 @@ var tzdb = {
     defaultAccount: null,
     accountColumns: ["accountname","LastSyncTime"],
 
+
     onLoad: function() {
         // initialization code
         this.initialized = true;
@@ -47,11 +48,21 @@ var tzdb = {
     },
 
 
-    getDefaultAccount: function () {
-        //dummy, return the id of the default account
-        let statement = this.conn.createStatement("SELECT account FROM accounts;");
+    getAccounts: function () {
+        let accounts = {};
+        let statement = this.conn.createStatement("SELECT account, accountname FROM accounts;");
+        while (statement.executeStep()) {
+            accounts[statement.row.account] = statement.row.accountname;
+        }
+        return accounts;
+    },
+
+
+    addAccount: function (accountname) {
+        this.conn.executeSimpleSQL("INSERT INTO accounts(accountname) VALUES('"+accountname+"');");
+        let statement = this.conn.createStatement("SELECT seq FROM sqlite_sequence where name='accounts';");
         if (statement.executeStep()) {
-            return statement.row.account;
+            return statement.row.seq;
         } else {
             return null;
         }

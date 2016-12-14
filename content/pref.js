@@ -6,7 +6,13 @@ Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 
 var tzprefs = {
 
+    selectedAccount: null,
+
     onload: function () {
+        //get the selected account from tzprefManager
+        this.selectedAccount = parent.tzprefManager.selectedAccount;
+        tzcommon.dump("debug", tzcommon.getAccountSetting(this.selectedAccount, "accountname"));
+
         tzcommon.checkDeviceId(); 
         this.loadSettings();
         this.updateLabels();
@@ -30,13 +36,13 @@ var tzprefs = {
     loadSettings: function () {
         let settings = tzcommon.charSettings.concat(tzcommon.intSettings);
         for (let i=0; i<settings.length;i++) {
-            if (document.getElementById("tzprefs." + settings[i])) document.getElementById("tzprefs." + settings[i]).value = tzcommon.getSetting(settings[i]);
+            if (document.getElementById("tzprefs." + settings[i])) document.getElementById("tzprefs." + settings[i]).value = tzcommon.getAccountSetting(this.selectedAccount, settings[i]);
         }
 
         settings = tzcommon.boolSettings;
         for (let i=0; i<settings.length;i++) {
             if (document.getElementById("tzprefs." + settings[i])) {
-                if(tzcommon.getSetting(settings[i])) document.getElementById("tzprefs." + settings[i]).checked = true;
+                if(tzcommon.getAccountSetting(this.selectedAccount, settings[i])) document.getElementById("tzprefs." + settings[i]).checked = true;
                 else document.getElementById("tzprefs." + settings[i]).checked = false;
             }
         }
@@ -50,14 +56,14 @@ var tzprefs = {
     saveSettings: function () {
         let settings = tzcommon.charSettings.concat(tzcommon.intSettings);
         for (let i=0; i<settings.length;i++) {
-            if (document.getElementById("tzprefs." + settings[i])) tzcommon.setSetting(settings[i], document.getElementById("tzprefs." + settings[i]).value);
+            if (document.getElementById("tzprefs." + settings[i])) tzcommon.setAccountSetting(this.selectedAccount, settings[i], document.getElementById("tzprefs." + settings[i]).value);
         }
 
         settings = tzcommon.boolSettings;
         for (let i=0; i<settings.length;i++) {
             if (document.getElementById("tzprefs." + settings[i])) {
-                if (document.getElementById("tzprefs." + settings[i]).checked) tzcommon.setSetting(settings[i],true);
-                else tzcommon.setSetting(settings[i],false);
+                if (document.getElementById("tzprefs." + settings[i]).checked) tzcommon.setAccountSetting(this.selectedAccount, settings[i],true);
+                else tzcommon.setAccountSetting(this.selectedAccount, settings[i],false);
             }
         }
     },
@@ -69,7 +75,7 @@ var tzprefs = {
     */
     instantSaveSetting: function (field) {
         let setting = field.id.replace("tzprefs.","");
-        tzcommon.setSetting(setting, field.value);
+        tzcommon.setAccountSetting(this.selectedAccount, setting, field.value);
     },
 
 
@@ -79,8 +85,8 @@ var tzprefs = {
     */
     updateLabels: function () {
         //SyncTarget (print last error, if present)
-        let lastError = tzcommon.getSetting("lastError");
-        let target = tzcommon.getSyncTarget();
+        let lastError = tzcommon.getAccountSetting(this.selectedAccount, "lastError");
+        let target = tzcommon.getSyncTarget(this.selectedAccount);
 
         if (lastError === "") {
             if (target.name === null) {
@@ -93,10 +99,10 @@ var tzprefs = {
         }
 
         //DeviceId
-        document.getElementById('deviceId').value = tzcommon.getSetting("deviceId");
+        document.getElementById('deviceId').value = tzcommon.getAccountSetting(this.selectedAccount, "deviceId");
 
         //LastSyncTime is stored as string for historic reasons
-        let LastSyncTime = parseInt(tzcommon.getSetting("LastSyncTime"));
+        let LastSyncTime = parseInt(tzcommon.getAccountSetting(this.selectedAccount, "LastSyncTime"));
         if (isNaN(LastSyncTime) || LastSyncTime == 0) {
             document.getElementById('LastSyncTime').value = "-";
         } else {
@@ -113,17 +119,17 @@ var tzprefs = {
     * This function can also be used to initialize the locked state of settings (toggle = false).
     */
     updateConnectionState: function (toggle) {
-        let connected = tzcommon.getSetting("connected");
+        let connected = tzcommon.getAccountSetting(this.selectedAccount, "connected");
         if (toggle) {
             connected = !connected;
-            tzcommon.setSetting("connected", connected);
+            tzcommon.setAccountSetting(this.selectedAccount, "connected", connected);
             if (!connected) {
                 //we are no longer connected, delete all sync targets
                 tzcommon.removeBook(tzcommon.getSyncTarget().uri);
             } else {
                 //we just connected, so save settings and init sync
                 tzprefs.saveSettings();
-                tzcommon.requestSync();
+                tzcommon.requestSync(this.selectedAccount);
             }
         }
         
@@ -155,7 +161,7 @@ var tzprefs = {
 
                 case "error": // = alldone with error
                     //Disconnect on error TODO: Only on initial connection, not due to temp server errors
-                    if (tzcommon.getSetting("connected")) tzprefs.updateConnectionState(true);
+                    if (tzcommon.getAccountSetting(account, "connected")) tzprefs.updateConnectionState(true);
                 case "alldone":
                     tzprefs.updateLabels();
                     break;
@@ -225,47 +231,6 @@ var tzprefs = {
                 .getService(Components.interfaces.nsIAddrBookSession)
                 .removeAddressBookListener(tzprefs.addressbookListener);
         }
-    },
-
-    
-    cape: function () {
-        function openTBtab(tempURL) {
-            var tabmail = null;
-            var mail3PaneWindow =
-                Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                .getService(Components.interfaces.nsIWindowMediator)
-                .getMostRecentWindow("mail:3pane");
-            if (mail3PaneWindow) {
-                tabmail = mail3PaneWindow.document.getElementById("tabmail");
-                mail3PaneWindow.focus();
-                tabmail.openTab("contentTab", {
-                    contentPage: tempURL
-                });
-            }
-            return (tabmail != null);
-        }
-
-        openTBtab("http://www.c-a-p-e.co.uk");
-    },
-
-    notes: function () {
-        function openTBtab(tempURL) {
-            var tabmail = null;
-            var mail3PaneWindow =
-                Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                .getService(Components.interfaces.nsIWindowMediator)
-                .getMostRecentWindow("mail:3pane");
-            if (mail3PaneWindow) {
-                tabmail = mail3PaneWindow.document.getElementById("tabmail");
-                mail3PaneWindow.focus();
-                tabmail.openTab("contentTab", {
-                    contentPage: tempURL
-                });
-            }
-            return (tabmail != null);
-        }
-
-        openTBtab("chrome://tzpush/content/notes.html");
-    },
+    }
 
 };

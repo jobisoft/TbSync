@@ -8,7 +8,7 @@ Components.utils.import("chrome://tzpush/content/tzsync.jsm");
 var tzpush = {
 
     openPrefs: function () {
-        window.open("chrome://tzpush/content/pref.xul", "", "chrome,centerscreen,resizable,toolbar", null, null);
+        window.open("chrome://tzpush/content/prefManager.xul", "", "chrome,centerscreen,toolbar", null, null);
     },
 
 

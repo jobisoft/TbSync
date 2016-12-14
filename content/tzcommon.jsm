@@ -13,32 +13,32 @@ var tzcommon = {
     boolSettings : ["https", "prov", "birthday", "displayoverride", "connected", "downloadonly" /*, "hidephones", "showanniversary" */],
     intSettings : ["autosync"],
     charSettings : ["abname", "deviceId", "asversion", "host", "user", "seperator", "accountname", "polkey", "folderID", "synckey", "LastSyncTime", "folderSynckey", "lastError" ],
-    
+
     /**
         * manage sync via observer - since this is the only place where new requests end up, we could also implement some sort of queuing
         */
-    requestSync: function () {
+    requestSync: function (account) {
         if (tzcommon.getSyncState() === "alldone") {
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tzpush.syncRequest", "sync");
+            observerService.notifyObservers(null, "tzpush.syncRequest", "sync." + account);
         }
     },
 
-    requestReSync: function () {
+    requestReSync: function (account) {
         if (tzcommon.getSyncState() === "alldone") {
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tzpush.syncRequest", "resync");
+            observerService.notifyObservers(null, "tzpush.syncRequest", "resync." + account);
         }
     },
 
-    resetSync: function (errorcode = null) {
-        tzcommon.setSyncState("alldone", errorcode);
+    resetSync: function (account, errorcode = null) {
+        tzcommon.setSyncState(account, "alldone", errorcode);
     },
    
-    finishSync: function () {
+    finishSync: function (account) {
         if (tzcommon.getSyncState() !== "alldone") {
-            tzcommon.setSetting("LastSyncTime", Date.now());
-            tzcommon.setSyncState("alldone");
+            tzcommon.setAccountSetting(account, "LastSyncTime", Date.now());
+            tzcommon.setSyncState(account, "alldone");
         }
     },
 
@@ -47,9 +47,9 @@ var tzcommon = {
         return tzcommon.prefs.getCharPref("syncstate");
     },
     
-    setSyncState: function (syncstate, errorcode = null) {
+    setSyncState: function (account, syncstate, errorcode = null) {
         tzcommon.prefs.setCharPref("syncstate",syncstate);
-        let account = tzdb.defaultAccount;
+//        let account = tzdb.defaultAccount;
         let msg = account + "." + syncstate;
 
         //errocode reporting only if syncstate == alldone
@@ -57,9 +57,9 @@ var tzcommon = {
             if (errorcode !== null) {
                 msg = account + ".error";
                 tzcommon.dump("Error @ Account #" + account, tzcommon.getLocalizedMessage("error." + errorcode));
-                tzcommon.setSetting("lastError", errorcode);
+                tzcommon.setAccountSetting(account, "lastError", errorcode);
             } else {
-                tzcommon.setSetting("lastError", "");
+                tzcommon.setAccountSetting(account, "lastError", "");
             }
         }
 
@@ -222,21 +222,28 @@ var tzcommon = {
 
 
 
-    /* Account settings related functions */
-    getConnection: function() {
-        let connection = {
-            protocol: (tzcommon.getSetting("https")) ? "https://" : "http://",
-            set host(newHost) { tzcommon.setSetting("host", newHost); },
-            get host() { return this.protocol + tzcommon.getSetting("host"); },
-            get url() { return this.host + "/Microsoft-Server-ActiveSync"; },
-            user: tzcommon.getSetting("user"),
-        };
-        return connection;
+    /* Account settings related functions - some of them are wrapper functions, to be able to switch the storage backend*/
+    addAccount: function() {
+        let accountID = tzdb.addAccount("Test");
+        tzcommon.dump("SQLID", accountID);
+
+        //set some defaults
+        this.setAccountSetting(accountID, "prov", true);
+        this.setAccountSetting(accountID, "asversion", "14.0");
+        this.setAccountSetting(accountID, "seperator", "&#10;");
+        //deviceId
+        return accountID;
     },
-    
+
+
+    getAccounts: function() {
+        return tzdb.getAccounts();
+    },
+
+
     // wrap get functions, to be able to switch storage backend
-    getSetting: function(field) {
-        let value = tzdb.getAccountSetting(tzdb.defaultAccount, field);
+    getAccountSetting: function(account, field) {
+        let value = tzdb.getAccountSetting(account, field);
 
         if (this.intSettings.indexOf(field) != -1) {
             if (value === "" || value === "null") return 0;
@@ -245,7 +252,7 @@ var tzcommon = {
             return (value === "true");
         } else if (this.charSettings.indexOf(field) != -1) {
             return value;
-        } else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.getSetting(" + field + ")";
+        } else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.getAccountSetting("+account+", " + field + ")";
 
         /* if db empty, try to load from prefs as fallback - how to test if db is empty? TODO
         if (this.intSettings.indexOf(field) != -1) return tzcommon.prefs.getIntPref(field);
@@ -254,10 +261,24 @@ var tzcommon = {
         else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.getSetting(" + field + ")";*/
     },
 
+
     // wrap set functions, to be able to switch storage backend
-    setSetting: function(field, value) {
-        tzdb.setAccountSetting(tzdb.defaultAccount, field, value);
+    setAccountSetting: function(account,field, value) {
+        tzdb.setAccountSetting(account, field, value);
     },
+
+
+    getConnection: function(account) {
+        let connection = {
+            protocol: (tzcommon.getAccountSetting(account, "https")) ? "https://" : "http://",
+            set host(newHost) { tzcommon.setAccountSetting(account, "host", newHost); },
+            get host() { return this.protocol + tzcommon.getAccountSetting(account, "host"); },
+            get url() { return this.host + "/Microsoft-Server-ActiveSync"; },
+            user: tzcommon.getAccountSetting(account, "user"),
+        };
+        return connection;
+    },
+
 
     getPassword: function (connection) {
         let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
@@ -272,10 +293,10 @@ var tzcommon = {
     },
 
 
-    setPassword: function (newPassword) {
+    setPassword: function (connection, newPassword) {
         let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
         let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
-        let connection = this.getConnection();
+        //let connection = this.getConnection(account);
         let curPassword = this.getPassword(connection);
         
         //Is there a loginInfo for this connection?
@@ -299,18 +320,18 @@ var tzcommon = {
     } ,
 
 
-    checkDeviceId: function () {
-        if (tzcommon.getSetting("deviceId", "") === "") tzcommon.setSetting("deviceId", Date.now());
-        return  tzcommon.getSetting("deviceId");
+    checkDeviceId: function (account) {
+        if (tzcommon.getAccountSetting(account, "deviceId", "") === "") tzcommon.setAccountSetting(account, "deviceId", Date.now());
+        return  tzcommon.getAccountSetting(account, "deviceId");
     },
 
 
-    checkSyncTarget: function () {
-        let addressBook = this.getSyncTarget().obj;
+    checkSyncTarget: function (account) {
+        let addressBook = this.getSyncTarget(account).obj;
         if (addressBook instanceof Components.interfaces.nsIAbDirectory) return true;
         
         // Get unique Name for new address book
-        let testname = tzcommon.getSetting("accountname");
+        let testname = tzcommon.getAccountSetting(account, "accountname");
         let newname = testname;
         let count = 1;
         let unique = false;
@@ -338,7 +359,7 @@ var tzcommon = {
         while (booksIter.hasMoreElements()) {
             let data = booksIter.getNext();
             if (data instanceof Components.interfaces.nsIAbDirectory && data.dirPrefId == dirPrefId) {
-                tzcommon.setSetting("abname", data.URI); 
+                tzcommon.setAccountSetting(account, "abname", data.URI); 
                 return true;
             }
         }
@@ -347,7 +368,7 @@ var tzcommon = {
     },
 
 
-    getSyncTarget: function () { //account,type
+    getSyncTarget: function (account) { //account,type
         let target = {
             get name() {
                 let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
@@ -362,7 +383,7 @@ var tzcommon = {
             },
             
             get uri() { 
-                return tzcommon.getSetting("abname"); 
+                return tzcommon.getAccountSetting(account, "abname"); 
             },
             
             get obj() { 
