@@ -281,7 +281,7 @@ var tzsync = {
 
                 if (wbxmlstatus === '3' || wbxmlstatus === '12') {
                     tzcommon.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-                    tzsync.reSync(tzsync.account);
+                    tzsync.resync(tzsync.account);
                 } else if (wbxmlstatus !== '1') {
                     tzcommon.dump("wbxml status", "server error? " + wbxmlstatus);
                     tzcommon.resetSync(tzsync.account, "wbxmlservererror");
@@ -865,7 +865,7 @@ var tzsync = {
 
             if (wbxmlstatus === '3' || wbxmlstatus === '12') {
                 tzcommon.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-                tzsync.reSync(tzsync.account);
+                tzsync.resync(tzsync.account);
             } else if (wbxmlstatus !== '1') {
                 tzcommon.dump("wbxml status", "server error? " + wbxmlstatus);
                 tzcommon.resetSync(tzsync.account, "wbxmlservererror");
@@ -984,7 +984,7 @@ var tzsync = {
 
         if (wbxmlstatus === '3' || wbxmlstatus === '12') {
             tzcommon.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-            tzsync.reSync(tzsync.account);
+            tzsync.resync(tzsync.account);
         } else if (wbxmlstatus !== '1') {
             tzcommon.dump("wbxml status", "server error? " + wbxmlstatus);
             tzcommon.resetSync(tzsync.account, "wbxmlservererror");
@@ -1104,7 +1104,7 @@ var tzsync = {
                         tzsync.w.openDialog("chrome://tzpush/content/password.xul", "passwordprompt", "modal,centerscreen,chrome,resizable=no", retVals, "Password for ActiveSync");
                         if (retVals.password !== "") {
                             tzcommon.setPassword(tzsync.account, retVals.password);
-                            tzsync.reSync(tzsync.account);
+                            tzsync.resync(tzsync.account);
                         } else {
                             tzcommon.resetSync(tzsync.account, req.status);
                         }
@@ -1112,7 +1112,7 @@ var tzsync = {
                     
                     case 449: // Request for new provision
                         if (tzcommon.getAccountSetting(tzsync.account, "prov")) {
-                            tzsync.reSync(tzsync.account);
+                            tzsync.resync(tzsync.account);
                         } else {
                             tzcommon.resetSync(tzsync.account, req.status);
                         }

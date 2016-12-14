@@ -90,6 +90,10 @@
                  <label value="&pref.LastSyncTime;" />
                  <label value="" disabled="true" id="LastSyncTime" />
             </row>
+            <row>
+                 <label value="&pref.LastError;" />
+                 <label value="" disabled="true" id="lastError" />
+            </row>
 
 
             <row style="margin-top:1em;">

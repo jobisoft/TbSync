@@ -15,10 +15,6 @@ var tzprefManager = {
     },
 
 
-    onunload: function () {
-    },
-
-
     addAccount: function () {
         //create a new account and pass its id to updateAccountsList, which wil select it
         //the onSelect event of the List will load the selected account
@@ -26,43 +22,34 @@ var tzprefManager = {
     },
 
 
-    updateAccountsList: function (itemToSelect) {
-        this.accounts = tzcommon.getAccounts();
-        //accounts array is without order, extract keys (ids) and get the first one
-        let accountIDs = Object.keys(this.accounts).sort();
-
-        // if no itemToSelect is given, select the first one
-        if (!itemToSelect && accountIDs.length > 0) itemToSelect = accountIDs[0];
-        
-        //clear accounts list
+    updateAccountsList: function (accountToSelect = -1) {
+        //clear current accounts list
         let accountsList = document.getElementById("tzprefManager.accounts");
         accountsList.clearSelection();
         for (let i=accountsList.getRowCount(); i>0; i--) {
             accountsList.removeItemAt(i-1);
         }
-        //add all found accounts
-        for (let i = 0; i < accountIDs.length; i++) {
-            let newListItem = document.createElement("listitem");
-            newListItem.setAttribute("id", "account." +accountIDs[i]);
-            if (itemToSelect && itemToSelect == accountIDs[i]) {
-                //newListItem.setAttribute("selected", "true");
-            }
 
-            let accountName = document.createElement("listcell");
-            accountName.setAttribute("label", this.accounts[accountIDs[i]]);
-            newListItem.appendChild(accountName);
-      
-            accountsList.appendChild(newListItem);
+        this.accounts = tzcommon.getAccounts();
+        //accounts array is without order, extract keys (ids) and loop over keys
+        let accountIDs = Object.keys(this.accounts).sort();
+        
+        //add all found accounts and select the one identified by accountToSelect (if given)
+        let selIdx = 0;
+        for (let i = 0; i < accountIDs.length; i++) {
+            accountsList.appendItem(this.accounts[accountIDs[i]], accountIDs[i]);
+            if (accountToSelect == accountIDs[i]) selIdx = i;
         }
+        accountsList.selectedIndex = selIdx;
     },
 
 
-    //load the pref page for the currently selected account
+    //load the pref page for the currently selected account (triggered by onSelect)
     loadSelectedAccount: function () {
         let accountsList = document.getElementById("tzprefManager.accounts");
-        if (accountsList.selectedIndex != -1) {
-            //get id of selected account from id of selectedItem
-            this.selectedAccount = accountsList.selectedItem.id.split(".")[1];
+        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
+            //get id of selected account from value of selectedItem
+            this.selectedAccount = accountsList.selectedItem.value;
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
             document.getElementById("contentFrame").webNavigation.loadURI("chrome://tzpush/content/pref.xul", LOAD_FLAGS_NONE, null, null, null);
         }
@@ -90,24 +77,5 @@ var tzprefManager = {
         openTBtab("http://www.c-a-p-e.co.uk");
     },
 
-
-    notes: function () {
-        function openTBtab(tempURL) {
-            var tabmail = null;
-            var mail3PaneWindow =
-                Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                .getService(Components.interfaces.nsIWindowMediator)
-                .getMostRecentWindow("mail:3pane");
-            if (mail3PaneWindow) {
-                tabmail = mail3PaneWindow.document.getElementById("tabmail");
-                mail3PaneWindow.focus();
-                tabmail.openTab("contentTab", {
-                    contentPage: tempURL
-                });
-            }
-            return (tabmail != null);
-        }
-        openTBtab("chrome://tzpush/content/notes.html");
-    }
 
 };

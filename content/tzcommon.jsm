@@ -19,7 +19,7 @@ var tzcommon = {
         * TODO implement some sort of sync request queuing
         */
     requestSync: function (account) {
-        if (tzcommon.getSyncState() === "alldone") {
+        if (tzcommon.getSyncState() == "alldone") {
             tzcommon.setSyncState(account, "syncing");
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
             observerService.notifyObservers(null, "tzpush.syncRequest", account + ".sync");
@@ -27,7 +27,7 @@ var tzcommon = {
     },
 
     requestReSync: function (account) {
-        if (tzcommon.getSyncState() === "alldone") {
+        if (tzcommon.getSyncState() == "alldone") {
             tzcommon.setSyncState(account, "syncing");
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
             observerService.notifyObservers(null, "tzpush.syncRequest", account + ".resync");
@@ -51,7 +51,7 @@ var tzcommon = {
     },
     
     setSyncState: function (account, syncstate, errorcode = null) {
-        tzcommon.prefs.setCharPref("syncstate",syncstate);
+        tzcommon.prefs.setCharPref("syncstate", syncstate);
         let msg = account + "." + syncstate;
 
         //errocode reporting only if syncstate == alldone
@@ -251,10 +251,10 @@ var tzcommon = {
         let value = tzdb.getAccountSetting(account, field);
 
         if (this.intSettings.indexOf(field) != -1) {
-            if (value === "" || value === "null") return 0;
+            if (value == "" || value == "null") return 0;
             else return parseInt(value);
         } else if (this.boolSettings.indexOf(field) != -1) {
-            return (value === "true");
+            return (value == "true");
         } else if (this.charSettings.indexOf(field) != -1) {
             return value;
         } else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.getAccountSetting("+account+", " + field + ")";
@@ -289,7 +289,7 @@ var tzcommon = {
         let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
         let logins = myLoginManager.findLogins({}, connection.host, connection.url, null);
         for (let i = 0; i < logins.length; i++) {
-            if (logins[i].username === connection.user) {
+            if (logins[i].username == connection.user) {
                 return logins[i].password;
             }
         }
@@ -326,7 +326,7 @@ var tzcommon = {
 
 
     checkDeviceId: function (account) {
-        if (tzcommon.getAccountSetting(account, "deviceId", "") === "") tzcommon.setAccountSetting(account, "deviceId", Date.now());
+        if (tzcommon.getAccountSetting(account, "deviceId", "") == "") tzcommon.setAccountSetting(account, "deviceId", Date.now());
         return  tzcommon.getAccountSetting(account, "deviceId");
     },
 
@@ -382,7 +382,7 @@ var tzcommon = {
                 let allAddressBooks = abManager.directories;
                 while (allAddressBooks.hasMoreElements()) {
                     let addressBook = allAddressBooks.getNext();
-                    if (addressBook instanceof Components.interfaces.nsIAbDirectory && addressBook.URI === this.uri) {
+                    if (addressBook instanceof Components.interfaces.nsIAbDirectory && addressBook.URI == this.uri) {
                         return addressBook.dirName;
                     }
                 }
