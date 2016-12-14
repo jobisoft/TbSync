@@ -75,7 +75,7 @@
 
             <row>
                  <label />
-                 <button label="" id="tzprefs.connectbtn" onclick="tzprefs.updateConnectionState(true);" />
+                 <button label="" id="tzprefs.connectbtn" onclick="tzprefs.toggleConnectionState();" />
             </row>
 
             <row style="margin-top:1em;">
@@ -101,8 +101,8 @@
             <row>
                  <label />
                  <hbox flex="1">
-                     <button flex="1" label="&pref.Sync;" onclick="tzcommon.requestSync();" />
-                     <button flex="1" label="&pref.Resync;" id="tzprefs.resyncbtn" onclick="tzcommon.requestReSync();" tooltiptext="&pref.ResyncText;" />
+                     <button flex="1" label="&pref.Sync;" onclick="tzcommon.requestSync(tzprefs.selectedAccount);" />
+                     <button flex="1" label="&pref.Resync;" id="tzprefs.resyncbtn" onclick="tzcommon.requestReSync(tzprefs.selectedAccount);" tooltiptext="&pref.ResyncText;" />
                  </hbox>
             </row>
        </rows>

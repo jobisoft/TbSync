@@ -11,12 +11,11 @@ var tzprefs = {
     onload: function () {
         //get the selected account from tzprefManager
         this.selectedAccount = parent.tzprefManager.selectedAccount;
-        tzcommon.dump("debug", tzcommon.getAccountSetting(this.selectedAccount, "accountname"));
 
-        tzcommon.checkDeviceId(); 
+        tzcommon.checkDeviceId(this.selectedAccount); 
         this.loadSettings();
         this.updateLabels();
-        this.updateConnectionState(false);
+        this.updateGui();
         this.addressbookListener.add();
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(this.syncStatusObserver, "tzpush.syncStatus", false);
@@ -118,27 +117,14 @@ var tzprefs = {
     * stored and a new sync is initiated.
     * This function can also be used to initialize the locked state of settings (toggle = false).
     */
-    updateConnectionState: function (toggle) {
+    updateGui: function (override = "") {
         let connected = tzcommon.getAccountSetting(this.selectedAccount, "connected");
-        if (toggle) {
-            connected = !connected;
-            tzcommon.setAccountSetting(this.selectedAccount, "connected", connected);
-            if (!connected) {
-                //we are no longer connected, delete all sync targets
-                tzcommon.removeBook(tzcommon.getSyncTarget().uri);
-            } else {
-                //we just connected, so save settings and init sync
-                tzprefs.saveSettings();
-                tzcommon.requestSync(this.selectedAccount);
-            }
-        }
-        
-        if (connected) {
-            document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("disconnect_account"); //we are connected and the option is to disconnect
-        } else {
-            document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("connect_account");
-        }
-        
+
+        if (override === "") {
+            if (connected) document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("disconnect_account"); //we are connected and the option is to disconnect
+            else document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("connect_account");
+        } else document.getElementById('tzprefs.connectbtn').label = override;
+
         let protectedFields = ["accountname", "asversion", "host", "https", "user", "prov", "birthday", "seperator", "displayoverride", "downloadonly"];
         for (let i=0; i<protectedFields.length;i++) {
             document.getElementById("tzprefs." + protectedFields[i]).disabled = connected;
@@ -146,6 +132,26 @@ var tzprefs = {
     },
     
     
+    toggleConnectionState: function () {
+        let connected = tzcommon.getAccountSetting(this.selectedAccount, "connected");
+
+        connected = !connected;
+        tzcommon.setAccountSetting(this.selectedAccount, "connected", connected);
+
+        if (!connected) {
+            //we are no longer connected, delete all sync targets
+            tzcommon.removeBook(tzcommon.getSyncTarget(this.selectedAccount).uri);
+            tzprefs.updateGui();
+            tzprefs.updateLabels();
+        } else {
+            //we just connected, so save settings and init sync
+            tzprefs.saveSettings();
+            tzprefs.updateGui(tzcommon.getLocalizedMessage("connecting"));
+            tzcommon.requestSync(this.selectedAccount);
+        }
+    },
+
+
     /* * *
     * Observer to catch syncs and to update the info labels.
     */
@@ -161,9 +167,10 @@ var tzprefs = {
 
                 case "error": // = alldone with error
                     //Disconnect on error TODO: Only on initial connection, not due to temp server errors
-                    if (tzcommon.getAccountSetting(account, "connected")) tzprefs.updateConnectionState(true);
+                    if (tzcommon.getAccountSetting(account, "connected")) tzprefs.toggleConnectionState();
                 case "alldone":
                     tzprefs.updateLabels();
+                    tzprefs.updateGui();
                     break;
 
                 default:
@@ -193,19 +200,15 @@ var tzprefs = {
 
         onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                tzprefs.updateLabels();
+                let owner = tzcommon.findAccountsWithSetting("abname", aItem.URI);
+                if (owner.length>0 && owner[0] === this.selectedAccount) tzprefs.updateLabels();
             }
         },
 
         onItemRemoved: function addressbookListener_onItemRemoved (aParentDir, aItem) {
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                tzprefs.updateLabels();
-            }
-        },
-
-        onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {
-            if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                tzprefs.updateLabels();
+                let owner = tzcommon.findAccountsWithSetting("abname", aItem.URI);
+                if (owner.length>0 && owner[0] === this.selectedAccount) tzprefs.updateLabels();
             }
         },
 

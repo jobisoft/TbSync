@@ -11,11 +11,15 @@ syncstate.receiving=Receiving
 
 not_syncronized=not syncronized
 resync_from_scratch=Resync from scratch
+
 disconnect_account=Disconnect
 connect_account=Save settings and connect
+connecting=Connecting ...
 
 error.notconnected=Aborting Sync, because account is not connected.
 error.notargets=Aborting Sync, because sync targets could not be created.
+error.notargetsstrange=THIS SHOULD NOT HAPPEN! Even though checkSyncTarget did not fail, the sync target is null.
+error.nouserhost=Missing USER and/or HOST. Please provide those values
 error.wbxmlservererror=Unknown server error, more info in log.
 error.0=Could not connect to server, check server address.
 error.401=Could not authenticate, check username and password.

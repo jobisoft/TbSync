@@ -13,7 +13,6 @@ const Ci = Components.interfaces;
 var tzdb = {
 
     conn: null,
-    defaultAccount: null,
     accountColumns: ["accountname","LastSyncTime"],
 
 
@@ -21,7 +20,6 @@ var tzdb = {
         // initialization code
         this.initialized = true;
         this.dbInit();
-        this.defaultAccount = this.getDefaultAccount();
     },
 
 
@@ -114,6 +112,15 @@ var tzdb = {
         } else {
             return "";
         }
+    },
+
+    findAccountsWithSetting: function (name, value) {
+        let statement = this.conn.createStatement("SELECT account FROM settings WHERE name='"+name+"' AND value='"+value+"';");
+        let results = [];
+        while (statement.executeStep()) {
+            results.push(statement.row.account);
+        }
+        return results;
     }
 
 };

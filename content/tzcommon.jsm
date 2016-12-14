@@ -15,19 +15,22 @@ var tzcommon = {
     charSettings : ["abname", "deviceId", "asversion", "host", "user", "seperator", "accountname", "polkey", "folderID", "synckey", "LastSyncTime", "folderSynckey", "lastError" ],
 
     /**
-        * manage sync via observer - since this is the only place where new requests end up, we could also implement some sort of queuing
+        * manage sync via observer
+        * TODO implement some sort of sync request queuing
         */
     requestSync: function (account) {
         if (tzcommon.getSyncState() === "alldone") {
+            tzcommon.setSyncState(account, "syncing");
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tzpush.syncRequest", "sync." + account);
+            observerService.notifyObservers(null, "tzpush.syncRequest", account + ".sync");
         }
     },
 
     requestReSync: function (account) {
         if (tzcommon.getSyncState() === "alldone") {
+            tzcommon.setSyncState(account, "syncing");
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tzpush.syncRequest", "resync." + account);
+            observerService.notifyObservers(null, "tzpush.syncRequest", account + ".resync");
         }
     },
 
@@ -49,7 +52,6 @@ var tzcommon = {
     
     setSyncState: function (account, syncstate, errorcode = null) {
         tzcommon.prefs.setCharPref("syncstate",syncstate);
-//        let account = tzdb.defaultAccount;
         let msg = account + "." + syncstate;
 
         //errocode reporting only if syncstate == alldone
@@ -225,19 +227,22 @@ var tzcommon = {
     /* Account settings related functions - some of them are wrapper functions, to be able to switch the storage backend*/
     addAccount: function() {
         let accountID = tzdb.addAccount("Test");
-        tzcommon.dump("SQLID", accountID);
-
         //set some defaults
         this.setAccountSetting(accountID, "prov", true);
         this.setAccountSetting(accountID, "asversion", "14.0");
         this.setAccountSetting(accountID, "seperator", "&#10;");
-        //deviceId
         return accountID;
     },
 
 
     getAccounts: function() {
         return tzdb.getAccounts();
+    },
+
+
+    //return all accounts, which have a given setting
+    findAccountsWithSetting: function (name, value) {
+        return tzdb.findAccountsWithSetting(name, value);
     },
 
 
@@ -293,10 +298,10 @@ var tzcommon = {
     },
 
 
-    setPassword: function (connection, newPassword) {
+    setPassword: function (account, newPassword) {
         let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
         let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
-        //let connection = this.getConnection(account);
+        let connection = this.getConnection(account);
         let curPassword = this.getPassword(connection);
         
         //Is there a loginInfo for this connection?
@@ -327,9 +332,10 @@ var tzcommon = {
 
 
     checkSyncTarget: function (account) {
-        let addressBook = this.getSyncTarget(account).obj;
-        if (addressBook instanceof Components.interfaces.nsIAbDirectory) return true;
-        
+        let target = this.getSyncTarget(account);
+        let addressBook = target.obj;
+        if (addressBook !== null && addressBook instanceof Components.interfaces.nsIAbDirectory) return true;
+
         // Get unique Name for new address book
         let testname = tzcommon.getAccountSetting(account, "accountname");
         let newname = testname;
@@ -360,6 +366,7 @@ var tzcommon = {
             let data = booksIter.getNext();
             if (data instanceof Components.interfaces.nsIAbDirectory && data.dirPrefId == dirPrefId) {
                 tzcommon.setAccountSetting(account, "abname", data.URI); 
+                tzcommon.dump("checkSyncTarget("+account+")", "Creating new sync target (" + newname + ", " + data.URI + ")");
                 return true;
             }
         }
@@ -383,7 +390,7 @@ var tzcommon = {
             },
             
             get uri() { 
-                return tzcommon.getAccountSetting(account, "abname"); 
+                return tzcommon.getAccountSetting(account, "abname");
             },
             
             get obj() { 
@@ -391,7 +398,9 @@ var tzcommon = {
                     let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
                     try {
                         let addressBook = abManager.getDirectory(this.uri);
-                        if (addressBook instanceof Components.interfaces.nsIAbDirectory) return addressBook;
+                        if (addressBook instanceof Components.interfaces.nsIAbDirectory) {
+                            return addressBook;
+                        }
                     } catch (e) {}
                 }
                 return null;
@@ -418,6 +427,7 @@ var tzcommon = {
             else return dir.createNewDirectory(properties);
         }
     },
+
 
     removeBook: function (uri) { 
         // get all address books
