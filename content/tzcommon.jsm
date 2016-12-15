@@ -10,9 +10,9 @@ var tzcommon = {
     prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
     bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/strings"),
 
-    boolSettings : ["https", "prov", "birthday", "displayoverride", "connected", "downloadonly" /*, "hidephones", "showanniversary" */],
+    boolSettings : ["https", "prov", "birthday", "displayoverride", "downloadonly" /*, "hidephones", "showanniversary" */],
     intSettings : ["autosync"],
-    charSettings : ["abname", "deviceId", "asversion", "host", "user", "seperator", "accountname", "polkey", "folderID", "synckey", "LastSyncTime", "folderSynckey", "lastError" ],
+    charSettings : ["abname", "deviceId", "asversion", "host", "user", "seperator", "accountname", "polkey", "folderID", "synckey", "LastSyncTime", "folderSynckey", "lastError", "connected" ],
 
     /**
         * manage sync via observer
@@ -35,11 +35,17 @@ var tzcommon = {
     },
 
     resetSync: function (account, errorcode = null) {
+        //Disconnect on error during INIT
+        if (tzcommon.getAccountSetting(account, "connected") == "INIT") {
+            tzcommon.disconnectAccount(account);
+            tzcommon.setAccountSetting(account, "connected", "NO");
+        }
         tzcommon.setSyncState(account, "alldone", errorcode);
     },
-   
+    
     finishSync: function (account) {
         if (tzcommon.getSyncState() !== "alldone") {
+            tzcommon.setAccountSetting(account, "connected", "YES");
             tzcommon.setAccountSetting(account, "LastSyncTime", Date.now());
             tzcommon.setSyncState(account, "alldone");
         }
@@ -203,6 +209,10 @@ var tzcommon = {
 
 
     /* Account settings related functions - some of them are wrapper functions, to be able to switch the storage backend*/
+    disconnectAccount: function (account) {
+        tzcommon.removeBook(tzcommon.getSyncTarget(account).uri);
+    },
+
     addAccount: function() {
         let accountID = tzdb.addAccount("Test");
         //set some defaults

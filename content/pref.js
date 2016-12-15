@@ -110,18 +110,20 @@ var tzprefs = {
     },
 
     
-    updateGui: function (connecting = false) {
+    updateGui: function () {
         let connected = tzcommon.getAccountSetting(tzprefs.selectedAccount, "connected");
 
-        if (!connecting) {
-            if (connected) document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("disconnect_account"); //we are connected and the option is to disconnect
-            else document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("connect_account");
-        } else document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("connecting");
-        document.getElementById('tzprefs.connectbtn').disabled = connecting;
+        if (connected == "YES") document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("disconnect_account"); //we are fully connected and the option is to disconnect
+        else if (connected == "INIT")  document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("connecting");
+        else document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("connect_account"); //we are not connected and the option is to connect
 
+        //disable connect/disconnect btn during INIT
+        document.getElementById('tzprefs.connectbtn').disabled = (connected == "INIT");
+
+        //disable all seetings field, if INIT or connected
         let protectedFields = ["accountname", "asversion", "host", "https", "user", "prov", "birthday", "seperator", "displayoverride", "downloadonly"];
         for (let i=0; i<protectedFields.length;i++) {
-            document.getElementById("tzprefs." + protectedFields[i]).disabled = connected;
+            document.getElementById("tzprefs." + protectedFields[i]).disabled = (connected == "YES" || connected == "INIT");
         }
     },
     
@@ -135,17 +137,18 @@ var tzprefs = {
         if (document.getElementById('tzprefs.connectbtn').disabled) return;
 
         let connected = tzcommon.getAccountSetting(tzprefs.selectedAccount, "connected");
-        connected = !connected;
+        //toogle
+        if (connected == "YES" || connected == "INIT") connected = "NOT"; else connected = "INIT";
         tzcommon.setAccountSetting(tzprefs.selectedAccount, "connected", connected);
 
-        if (!connected) {
-            //we are no longer connected, delete all sync targets
-            tzcommon.removeBook(tzcommon.getSyncTarget(tzprefs.selectedAccount).uri);
+        if (connected == "NOT") {
+            //we are no longer connected = disconnect = delete all sync targets
+            tzcommon.disconnectAccount(tzprefs.selectedAccount);
             tzprefs.updateGui();
             tzprefs.updateLabels();
-        } else {
+        } else if (connected == "INIT") {
             //we just connected, so save settings and init sync
-            tzprefs.updateGui(true);
+            tzprefs.updateGui();
             tzprefs.saveSettings();
             tzcommon.requestSync(tzprefs.selectedAccount);
         }
@@ -163,11 +166,10 @@ var tzprefs = {
             let account = data[0];
             let state = data[1];
 
-            switch (state) {
+            //Only observe actions for the active account
+            if (account == tzprefs.selectedAccount) switch (state) {
 
                 case "error": // = alldone with error
-                    //Disconnect on error TODO: Only on initial connection, not due to temp server errors
-                    if (tzcommon.getAccountSetting(account, "connected")) tzprefs.toggleConnectionState();
                     //Alert error
                     let lastError = tzcommon.getAccountSetting(tzprefs.selectedAccount, "lastError");
                     alert(tzcommon.getLocalizedMessage("error." + lastError));
