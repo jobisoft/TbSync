@@ -472,7 +472,7 @@ var tzsync = {
                                         addressBook.deleteCards(cardsToDelete);
                                     } catch (e) {}
                                     card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-                                    tzcommon.removeCardFromDeleteLog(data);
+                                    tzcommon.removeCardFromDeleteLog(addressBook.URI, data);
                                 } else {
                                     card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
                                 }
@@ -948,9 +948,10 @@ var tzsync = {
         tzcommon.setSyncState(tzsync.account, "sendingdeleted");
         let folderID = tzcommon.getAccountSetting(tzsync.account, "folderID");
         let synckey = tzcommon.getAccountSetting(tzsync.account, "synckey");
-
+        let addressbook = tzcommon.getSyncTarget(tzsync.account).uri;
+        
         // cardstodelete will not contain more cards than max
-        let cardstodelete = tzcommon.getCardsFromDeleteLog(parseInt(tzcommon.prefs.getCharPref("maxnumbertosend")));
+        let cardstodelete = tzcommon.getCardsFromDeleteLog(addressbook, parseInt(tzcommon.prefs.getCharPref("maxnumbertosend")));
         let wbxmlinner = "";
         for (let i = 0; i < cardstodelete.length; i++) {
             wbxmlinner = wbxmlinner + String.fromCharCode(0x49, 0x4D, 0x03) + cardstodelete[i] + String.fromCharCode(0x00, 0x01, 0x01);
@@ -966,7 +967,7 @@ var tzsync = {
             wbxml = wbxml.replace('SyncKeyReplace', synckey);
             wbxml = wbxml.replace('Id2Replace', folderID);
             // Send will send a request to the server, a responce will trigger callback, which will call senddel again.
-            this.Send(wbxml, this.senddelCallback.bind(this), "Sync", cardstodelete);
+            this.Send(wbxml, this.senddelCallback.bind(this), "Sync", cardstodelete); //TODO: add addressbook directly to callback for multifolder support
         } else {
             tzcommon.finishSync(tzsync.account);
         }
@@ -974,6 +975,7 @@ var tzsync = {
 
     senddelCallback: function (responseWbxml, cardstodelete) {
         let firstcmd = responseWbxml.indexOf(String.fromCharCode(0x01, 0x46));
+        let addressbook = tzcommon.getSyncTarget(tzsync.account).uri;
 
         let truncwbxml = responseWbxml;
         if (firstcmd !== -1) truncwbxml = responseWbxml.substring(0, firstcmd);
@@ -993,7 +995,7 @@ var tzsync = {
             tzcommon.setAccountSetting(tzsync.account, "synckey", synckey);
             for (let count in cardstodelete) {
                 tzcommon.setSyncState(tzsync.account, "cleaningdeleted");
-                tzcommon.removeCardFromDeleteLog(cardstodelete[count]);
+                tzcommon.removeCardFromDeleteLog(addressbook, cardstodelete[count]);
             }
             // The selected cards have been deleted from the server and from the deletelog -> rerun senddel to look for more cards to delete
             this.senddel();

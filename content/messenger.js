@@ -56,7 +56,7 @@ var tzpush = {
     },
     
 
-    addressbookListener: { //TODO: Multiaccount!
+    addressbookListener: {
 
         onItemRemoved: function addressbookListener_onItemRemoved (aParentDir, aItem) {
             if (aParentDir instanceof Components.interfaces.nsIAbDirectory) {
@@ -70,8 +70,8 @@ var tzpush = {
             if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory) {
                 let owner = tzcommon.findAccountsWithSetting("abname", aParentDir.URI);
                 if (owner.length > 0) {
-                    let deleted = aItem.getProperty("ServerId", "");
-                    if (deleted) tzcommon.addCardToDeleteLog(deleted);
+                    let cardId = aItem.getProperty("ServerId", "");
+                    if (cardId) tzcommon.addCardToDeleteLog(aParentDir.URI, cardId);
                 }
             }
 
@@ -81,7 +81,7 @@ var tzpush = {
              */
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
                 let owner = tzcommon.findAccountsWithSetting("abname", aItem.URI);
-                //At the moment we do not care, if the book is linked to two accounts (which should never happen), just take the first account found
+                //At the moment we do not care, if the book is linked to two accounts (which should never happen), just take the first account found - TODO
                 if (owner.length > 0) {
                     tzcommon.setAccountSetting(owner[0], "abname","");
                     tzcommon.setAccountSetting(owner[0], "polkey", "0"); //- this is identical to tzsync.resync() without the actual sync
@@ -89,7 +89,7 @@ var tzpush = {
                     tzcommon.setAccountSetting(owner[0], "synckey", "");
                     tzcommon.setAccountSetting(owner[0], "LastSyncTime", "0");
 
-                    tzcommon.clearDeleteLog(); //TODO
+                    tzcommon.clearDeleteLog(aItem.URI);
                 }
             }
         },

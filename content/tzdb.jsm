@@ -35,17 +35,43 @@ var tzdb = {
 
             //Create accounts table with accountColumns
             let sql = ""; for (let i=0; i<this.accountColumns.length; i++) sql = sql + ", " + this.accountColumns[i] + " TEXT";
-            this.conn.executeSimpleSQL("CREATE TABLE accounts(account INTEGER PRIMARY KEY AUTOINCREMENT " + sql + ");");
-            this.conn.executeSimpleSQL("INSERT INTO accounts(accountname) VALUES('Default');");
-
+            this.conn.executeSimpleSQL("CREATE TABLE accounts (account INTEGER PRIMARY KEY AUTOINCREMENT " + sql + ");");
             //Create settings table
-            this.conn.executeSimpleSQL("CREATE TABLE settings(id INTEGER PRIMARY KEY AUTOINCREMENT, account INTEGER, name TEXT, value TEXT);");
+            this.conn.executeSimpleSQL("CREATE TABLE settings (id INTEGER PRIMARY KEY AUTOINCREMENT, account INTEGER, name TEXT, value TEXT);");
+            //Create deletelog table
+            this.conn.executeSimpleSQL("CREATE TABLE deletelog (id INTEGER PRIMARY KEY AUTOINCREMENT, book TEXT, cardid TEXT);");
         } else {
             this.conn = dbService.openDatabase(dbFile);
         }
     },
 
 
+    //Deletelog stuff
+    addCardToDeleteLog: function (book, cardid) {
+        this.conn.executeSimpleSQL("INSERT INTO deletelog (book, cardid) VALUES ('"+book+"', '"+cardid+"');");
+    },
+
+    removeCardFromDeleteLog: function (book, cardid) {
+        this.conn.executeSimpleSQL("DELETE FROM deletelog WHERE book='"+book+"' AND cardid='"+cardid+"';");
+    },
+    
+    // Remove all cards of a book from DeleteLog
+    clearDeleteLog: function (book) {
+        this.conn.executeSimpleSQL("DELETE FROM deletelog WHERE book='"+book+"';");
+    },
+
+
+    getCardsFromDeleteLog: function (book, maxnumbertosend) {
+        let deletelog = [];
+        let statement = this.conn.createStatement("SELECT cardid FROM deletelog WHERE book='"+book+"' LIMIT "+ maxnumbertosend +";");
+        while (statement.executeStep()) {
+            deletelog.push(statement.row.cardid);
+        }
+        return deletelog;
+    },
+    
+
+    //Account stuff
     getAccounts: function () {
         let accounts = {};
         let statement = this.conn.createStatement("SELECT account, accountname FROM accounts;");
@@ -57,7 +83,7 @@ var tzdb = {
 
 
     addAccount: function (accountname) {
-        this.conn.executeSimpleSQL("INSERT INTO accounts(accountname) VALUES('"+accountname+"');");
+        this.conn.executeSimpleSQL("INSERT INTO accounts (accountname) VALUES ('"+accountname+"');");
         let statement = this.conn.createStatement("SELECT seq FROM sqlite_sequence where name='accounts';");
         if (statement.executeStep()) {
             return statement.row.seq;
@@ -88,7 +114,7 @@ var tzdb = {
             if (id) { //UPDATE
                 this.conn.executeSimpleSQL("UPDATE settings SET value='"+value+"' WHERE account='" + account + "' AND id=" + id + ";");
             } else { //INSERT
-                this.conn.executeSimpleSQL("INSERT INTO settings(account,name,value) VALUES('"+account+"','"+name+"','" +value+ "');");
+                this.conn.executeSimpleSQL("INSERT INTO settings (account,name,value) VALUES ('"+account+"','"+name+"','" +value+ "');");
             }
         }
     },

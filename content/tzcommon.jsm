@@ -175,49 +175,27 @@ var tzcommon = {
     },
 
 
+    //DeleteLog Wrappers
     // For each deleted card, create a "log" file, to be able to delete it during sync from the server as well.
-    addCardToDeleteLog: function (cardId) { 
-        // Get fileobject of <UserProfileFolder>/ZPush/DeletedCards/cardId
-        let file = FileUtils.getFile("ProfD", ["ZPush","DeletedCards",cardId.replace(":", "COLON")], true);
-        try {
-            file.create(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, FileUtils.PERMS_FILE);
-        } catch (e) {
-            this.dump("Error @ addCardToDeleteLog()", e);
-        }
+    addCardToDeleteLog: function (book, cardId) { 
+        return tzdb.addCardToDeleteLog(book, cardId);
     },
 
 
     // Remove selected card from DeleteLog
-    removeCardFromDeleteLog: function (cardId) {
-        let file = FileUtils.getFile("ProfD", ["ZPush","DeletedCards",cardId.replace(":", "COLON")], true);
-        try {
-            file.remove("true");
-        } catch (e) {
-            this.dump("Error @ removeCardFromDelete()", e);
-        }
+    removeCardFromDeleteLog: function (book, cardId) {
+        return tzdb.removeCardFromDeleteLog(book, cardId);
     },
 
 
     // Remove all cards from DeleteLog
-    clearDeleteLog: function () {
-        let dir = FileUtils.getDir("ProfD", ["ZPush","DeletedCards"], true);
-        let entries = dir.directoryEntries;
-        while (entries.hasMoreElements()) {
-            let entry = entries.getNext().QueryInterface(Components.interfaces.nsIFile);
-            entry.remove("true");
-        }
+    clearDeleteLog: function (book) {
+        return tzdb.clearDeleteLog(book);
     },
 
 
-    getCardsFromDeleteLog: function (maxnumbertosend) {
-        let dir = FileUtils.getDir("ProfD", ["ZPush","DeletedCards"], true);
-        let entries = dir.directoryEntries;
-        let deletelog = [];
-        while (entries.hasMoreElements() && deletelog.length < maxnumbertosend) {
-            let entry = entries.getNext().QueryInterface(Components.interfaces.nsIFile);
-            deletelog.push(entry.leafName.replace("COLON", ":"));
-        }
-        return deletelog;
+    getCardsFromDeleteLog: function (book, maxnumbertosend) {
+        return tzdb.getCardsFromDeleteLog(book, maxnumbertosend);
     },
 
 
