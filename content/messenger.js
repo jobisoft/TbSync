@@ -11,6 +11,7 @@ var tzpush = {
         window.open("chrome://tzpush/content/prefManager.xul", "", "chrome,centerscreen,toolbar", null, null);
     },
 
+    //TODO: Passwort prompt asyncron and not fixed to main thunderbird window
 
     /* * *
     * Observer to catch syncsRequests. The two values "sync" and "resync" will be send by

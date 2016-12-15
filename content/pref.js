@@ -65,6 +65,8 @@ var tzprefs = {
                 else tzcommon.setAccountSetting(tzprefs.selectedAccount, settings[i],false);
             }
         }
+        
+        parent.tzprefManager.updateAccountsList(tzprefs.selectedAccount);
     },
 
 
