@@ -16,7 +16,7 @@
         <popupset>
             <menupopup id="statusmenu">
                 <!--menuitem label="&pref.Sync;" onclick="tzcommon.requestSync();" /-->
-                <menuitem label="&overlay.TZ-Settings;" onclick="tzpush.openPrefs(event);" />
+                <menuitem label="&overlay.tz-settings;" onclick="tzpush.openPrefs(event);" />
                 <menuitem label="&pref.ResetStatus;" onclick="tzcommon.resetSync();" />
             </menupopup>
         </popupset>
@@ -26,7 +26,7 @@
         <menu id="tzpushmain"  label="&overlay.tzpush;" >
             <menupopup>
                 <!--menuitem label="&pref.Sync;" oncommand="tzcommon.requestSync();" /-->
-                <menuitem label="&overlay.TZ-Settings;" oncommand="tzpush.openPrefs(event);" />
+                <menuitem label="&overlay.tz-settings;" oncommand="tzpush.openPrefs(event);" />
                 <menuitem label="&pref.ResetStatus;" onclick="tzcommon.resetSync();" />
             </menupopup>
         </menu>

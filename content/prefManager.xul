@@ -11,7 +11,7 @@
     onload="tzprefManager.onload();"
     width="750"
     height="550"
-    title="TZ Settings" >
+    title="&overlay.tz-settings;" >
 
     <script type="text/javascript" src="chrome://tzpush/content/prefManager.js" /> 
 

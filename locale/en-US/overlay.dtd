@@ -1,6 +1,6 @@
 <!ENTITY overlay.tzpush "TzPush">
-<!ENTITY overlay.TZ-Settings "TzPush Settings">
-<!ENTITY overlay.tz-sync "TzSync">
+<!ENTITY overlay.tz-settings "TzPush Settings">
+<!ENTITY overlay.tz-sync "TzPush Sync">
 
 
 <!ENTITY pref.SettingDialog "Account Settings">
