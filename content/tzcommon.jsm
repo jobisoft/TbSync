@@ -69,7 +69,8 @@ var tzcommon = {
     getSyncState: function () {
         return tzcommon.prefs.getCharPref("syncstate");
     },
-    
+
+
     setSyncState: function (account, syncstate, errorcode = null) {
         tzcommon.prefs.setCharPref("syncstate", syncstate);
         let msg = account + "." + syncstate;

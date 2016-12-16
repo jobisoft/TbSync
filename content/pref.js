@@ -171,17 +171,18 @@ var tzprefs = {
             let data = aData.split(".");
             let account = data[0];
             let state = data[1];
+            tzcommon.dump("syncstate observe", aData);
 
             //Only observe actions for the active account
-            if (account == tzprefs.selectedAccount) switch (state) {
+            if (account == tzprefs.selectedAccount || account == -1) switch (state) {
 
                 case "error": // = alldone with error
                     //Alert error
                     tzprefs.updateLabels();
                     tzprefs.updateGui();
-                    let lastError = tzcommon.getAccountSetting(tzprefs.selectedAccount, "lastError");
 
                     //error handling
+                    let lastError = tzcommon.getAccountSetting(tzprefs.selectedAccount, "lastError");
                     switch (lastError) {
                         case "401":
                             window.openDialog("chrome://tzpush/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", "Set password for TzPush account " + account, account);
