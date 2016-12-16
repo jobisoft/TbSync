@@ -369,8 +369,7 @@ var tzcommon = {
 
     checkSyncTarget: function (account) {
         let target = this.getSyncTarget(account);
-        let addressBook = target.obj;
-        if (addressBook !== null && addressBook instanceof Components.interfaces.nsIAbDirectory) return true;
+        if (target.name != null && target.obj !== null && target.obj instanceof Components.interfaces.nsIAbDirectory) return true;
 
         // Get unique Name for new address book
         let testname = tzcommon.getAccountSetting(account, "accountname");

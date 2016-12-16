@@ -25,12 +25,6 @@ var tzsync = {
             return;
         }
 
-        // Double check to make sure (I once saw something strange, which I could not reproduce)
-        if (tzcommon.getSyncTarget(tzsync.account).obj === null) {
-            tzcommon.resetSync(tzsync.account, "notargetsstrange");
-            return;
-        }
-
         //Check if connection has data
         let connection = tzcommon.getConnection(tzsync.account);
         if (connection.host == "" || connection.user == "") {

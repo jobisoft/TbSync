@@ -11,8 +11,6 @@ var tzpush = {
         window.open("chrome://tzpush/content/prefManager.xul", "", "chrome,centerscreen,toolbar", null, null);
     },
 
-    //TODO: Passwort prompt asyncron and not fixed to main thunderbird window
-
     /* * *
     * Observer to catch syncsRequests. The two values "sync" and "resync" will be send by
     * tzcommon.requestSync/requestResync() only if the current syncstate was alldone
@@ -42,7 +40,6 @@ var tzpush = {
             let dot = aData.indexOf(".");
             let account = aData.substring(0,dot);
             let newpassword = aData.substring(dot+1);
-            tzcommon.dump("PASS", "["+account+"] ["+newpassword+"]");
             tzcommon.setPassword(account, newpassword);
             tzcommon.connectAccount(account);
             tzcommon.requestReSync(account);

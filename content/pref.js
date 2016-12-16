@@ -171,7 +171,6 @@ var tzprefs = {
             let data = aData.split(".");
             let account = data[0];
             let state = data[1];
-            tzcommon.dump("syncstate observe", aData);
 
             //Only observe actions for the active account
             if (account == tzprefs.selectedAccount || account == -1) switch (state) {
