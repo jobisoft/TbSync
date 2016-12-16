@@ -259,7 +259,7 @@ var tzcommon = {
         if (accounts === null) {
             //DB is empty, import values from preferences
             let account = tzcommon.addAccount();
-            let accountname = "Imported Account (TzPush v1)";
+            let accountname = "TzPush";
             
             for (let i=0; i<this.intSettings.length; i++) try {
                 this.setAccountSetting(account, this.intSettings[i], tzcommon.prefs.getIntPref(this.intSettings[i]));
