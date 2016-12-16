@@ -42,10 +42,9 @@ var tzprefManager = {
         }
 
         this.accounts = tzcommon.getAccounts();
-        //accounts array is without order, extract keys (ids) and loop over keys
-        let accountIDs = Object.keys(this.accounts).sort();
-        
-        if (accountIDs.length > 0) {
+        if (this.accounts !== null) {
+            //accounts array is without order, extract keys (ids) and loop over keys
+            let accountIDs = Object.keys(this.accounts).sort();
             //add all found accounts and select the one identified by accountToSelect (if given)
             let selIdx = 0;
             for (let i = 0; i < accountIDs.length; i++) {

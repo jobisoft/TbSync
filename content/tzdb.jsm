@@ -75,10 +75,14 @@ var tzdb = {
     getAccounts: function () {
         let accounts = {};
         let statement = this.conn.createStatement("SELECT account, accountname FROM accounts;");
+        let entries = 0;
         while (statement.executeStep()) {
             accounts[statement.row.account] = statement.row.accountname;
+        entries++;
         }
-        return accounts;
+
+        if (entries>0) return accounts;
+        else return null;
     },
 
 

@@ -220,7 +220,7 @@ var tzcommon = {
     },
     
     addAccount: function() {
-        let accountID = tzdb.addAccount("Test");
+        let accountID = tzdb.addAccount("New Account");
         //set some defaults
         this.setAccountSetting(accountID, "prov", true);
         this.setAccountSetting(accountID, "asversion", "14.0");
@@ -231,7 +231,29 @@ var tzcommon = {
 
 
     getAccounts: function() {
-        return tzdb.getAccounts();
+        let accounts = tzdb.getAccounts();
+        if (accounts === null) {
+            //DB is empty, import values from preferences
+            let account = tzcommon.addAccount();
+            let accountname = "Imported Account (TzPush v1)";
+            
+            for (let i=0; i<this.intSettings.length; i++) try {
+                this.setAccountSetting(account, this.intSettings[i], tzcommon.prefs.getIntPref(this.intSettings[i]));
+            } catch (e) {}
+
+            for (let i=0; i<this.boolSettings.length; i++) try {
+                this.setAccountSetting(account, this.boolSettings[i], tzcommon.prefs.getBoolPref(this.boolSettings[i]));
+            } catch (e) {}
+
+            for (let i=0; i<this.charSettings.length; i++) try {
+                this.setAccountSetting(account, this.charSettings[i], tzcommon.prefs.getCharPref(this.charSettings[i]));
+            } catch (e) {}
+
+            this.setAccountSetting(account, "accountname", accountname);
+            this.setAccountSetting(account, "connected", false);
+            accounts = tzdb.getAccounts();
+        }
+        return accounts;
     },
 
 
@@ -253,12 +275,6 @@ var tzcommon = {
         } else if (this.charSettings.indexOf(field) != -1) {
             return value;
         } else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.getAccountSetting("+account+", " + field + ")";
-
-        /* if db empty, try to load from prefs as fallback - how to test if db is empty? TODO
-        if (this.intSettings.indexOf(field) != -1) return tzcommon.prefs.getIntPref(field);
-        else if (this.boolSettings.indexOf(field) != -1) return tzcommon.prefs.getBoolPref(field);
-        else if (this.charSettings.indexOf(field) != -1) return tzcommon.prefs.getCharPref(field);
-        else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.getSetting(" + field + ")";*/
     },
 
 
