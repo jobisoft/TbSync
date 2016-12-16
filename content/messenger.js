@@ -45,8 +45,8 @@ var tzpush = {
             let account = data[0];
             let state = data[1];
 
-            //dump into log
-            if (isNaN(account)) tzcommon.dump("syncstate", tzcommon.getLocalizedMessage("syncstate." + state));
+            //dump into log (account -1 if initial reset)
+            if (account == -1) tzcommon.dump("syncstate", tzcommon.getLocalizedMessage("syncstate." + state));
             else tzcommon.dump("syncstate set by account #"+account, tzcommon.getLocalizedMessage("syncstate." + state));
 
             //update status bar to inform user - for now we do not want errors reported in statusbar

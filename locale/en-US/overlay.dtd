@@ -17,10 +17,10 @@
 <!ENTITY pref.Sync "Sync latest changes">
 <!ENTITY pref.Resync "Resync from scratch">
 <!ENTITY pref.Close "Close">
+<!ENTITY pref.DeleteAccount "Delete account">
 
 <!ENTITY pref.SyncedAB "Synced Addressbook">
 <!ENTITY pref.LastSyncTime "Last successful syncronisation">
-<!ENTITY pref.LastError "Last reported status">
 
 <!ENTITY pref.seperator "Server Type">
 <!ENTITY pref.seperator.comma "comma as seperator">

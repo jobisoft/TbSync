@@ -22,6 +22,17 @@ var tzprefManager = {
     },
 
 
+    deleteAccount: function () {
+        let accountsList = document.getElementById("tzprefManager.accounts");
+        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
+            if (confirm(tzcommon.getLocalizedMessage("promptDeleteAccount").replace("##accountName##",accountsList.selectedItem.label))) {
+                tzcommon.removeAccount(accountsList.selectedItem.value);
+                this.updateAccountsList();
+            };
+        }
+    },
+
+
     updateAccountsList: function (accountToSelect = -1) {
         //clear current accounts list
         let accountsList = document.getElementById("tzprefManager.accounts");
@@ -34,16 +45,34 @@ var tzprefManager = {
         //accounts array is without order, extract keys (ids) and loop over keys
         let accountIDs = Object.keys(this.accounts).sort();
         
-        //add all found accounts and select the one identified by accountToSelect (if given)
-        let selIdx = 0;
-        for (let i = 0; i < accountIDs.length; i++) {
-            accountsList.appendItem(this.accounts[accountIDs[i]], accountIDs[i]);
-            if (accountToSelect == accountIDs[i]) selIdx = i;
+        if (accountIDs.length > 0) {
+            //add all found accounts and select the one identified by accountToSelect (if given)
+            let selIdx = 0;
+            for (let i = 0; i < accountIDs.length; i++) {
+                accountsList.appendItem(this.accounts[accountIDs[i]], accountIDs[i]);
+                if (accountToSelect == accountIDs[i]) selIdx = i;
+            }
+            accountsList.selectedIndex = selIdx;
+            accountsList.ensureIndexIsVisible(selIdx);
+        } else {
+            //No defined accounts, load dummy
+            const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
+            document.getElementById("contentFrame").webNavigation.loadURI("chrome://tzpush/content/help.html", LOAD_FLAGS_NONE, null, null, null);            
         }
-        accountsList.selectedIndex = selIdx;
     },
 
 
+    updateAccountName: function (id, name) {
+        let accountsList = document.getElementById("tzprefManager.accounts");
+        for (let i=0; i<accountsList.getRowCount(); i++) {
+            if (accountsList.getItemAtIndex(i).value == id) {
+                accountsList.getItemAtIndex(i).label = name;
+                break;
+            }
+        }
+    },
+    
+    
     //load the pref page for the currently selected account (triggered by onSelect)
     loadSelectedAccount: function () {
         let accountsList = document.getElementById("tzprefManager.accounts");

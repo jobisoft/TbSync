@@ -7,6 +7,7 @@ Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 var tzprefs = {
 
     selectedAccount: null,
+    init: false,
 
     onload: function () {
         //get the selected account from tzprefManager
@@ -19,12 +20,13 @@ var tzprefs = {
         tzprefs.addressbookListener.add();
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tzprefs.syncStatusObserver, "tzpush.syncStatus", false);
+        tzprefs.init = true;
     },
 
     onunload: function () {
         tzprefs.addressbookListener.remove();
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.removeObserver(tzprefs.syncStatusObserver, "tzpush.syncStatus");
+        if (tzprefs.init) observerService.removeObserver(tzprefs.syncStatusObserver, "tzpush.syncStatus");
     },
 
 
@@ -66,7 +68,7 @@ var tzprefs = {
             }
         }
         
-        parent.tzprefManager.updateAccountsList(tzprefs.selectedAccount);
+        parent.tzprefManager.updateAccountName(tzprefs.selectedAccount, tzcommon.getAccountSetting(tzprefs.selectedAccount,"accountname"));
     },
 
 
@@ -85,6 +87,9 @@ var tzprefs = {
     * from time to time.
     */
     updateLabels: function () {
+        //DeviceId
+        document.getElementById('deviceId').value = tzcommon.getAccountSetting(tzprefs.selectedAccount, "deviceId");
+
         //SyncTarget
         let target = tzcommon.getSyncTarget(tzprefs.selectedAccount);
         if (target.name === null) {
@@ -93,39 +98,42 @@ var tzprefs = {
             document.getElementById('abname').value = target.name + " (" + target.uri + ")";
         }
 
-        //LastError
-        let lastError = tzcommon.getAccountSetting(tzprefs.selectedAccount, "lastError");
-        if (lastError) document.getElementById('lastError').value = tzcommon.getLocalizedMessage("error." + lastError);
-        else document.getElementById('lastError').value = "-";
-
-        //DeviceId
-        document.getElementById('deviceId').value = tzcommon.getAccountSetting(tzprefs.selectedAccount, "deviceId");
-
         //LastSyncTime is stored as string for historic reasons
+        let lastError = tzcommon.getAccountSetting(tzprefs.selectedAccount, "lastError");
         let LastSyncTime = parseInt(tzcommon.getAccountSetting(tzprefs.selectedAccount, "LastSyncTime"));
-        if (isNaN(LastSyncTime) || LastSyncTime == 0) {
-            document.getElementById('LastSyncTime').value = "-";
-        } else {
-            let d = new Date(parseInt(LastSyncTime));
-            document.getElementById('LastSyncTime').value = d.toString();
+        if (lastError) document.getElementById('LastSyncTime').value = tzcommon.getLocalizedMessage("error." + lastError);
+        else {
+            if (isNaN(LastSyncTime) || LastSyncTime == 0) {
+                document.getElementById('LastSyncTime').value = "-";
+            } else {
+                let d = new Date(parseInt(LastSyncTime));
+                document.getElementById('LastSyncTime').value = d.toString();
+            }
         }
     },
 
     
     updateGui: function () {
         let connected = tzcommon.getAccountSetting(tzprefs.selectedAccount, "connected");
-
-        if (connected == "YES") document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("disconnect_account"); //we are fully connected and the option is to disconnect
-        else if (connected == "INIT")  document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("connecting");
-        else document.getElementById('tzprefs.connectbtn').label = tzcommon.getLocalizedMessage("connect_account"); //we are not connected and the option is to connect
+        let lstzero = (tzcommon.getAccountSetting(tzprefs.selectedAccount, "LastSyncTime") == "0");
+        let conBtn = document.getElementById('tzprefs.connectbtn');
+        
+        if (connected) {
+            //connected, initial connect or steady connection
+            if (lstzero) {
+                conBtn.label = tzcommon.getLocalizedMessage("connecting");
+            } else {
+                conBtn.label = tzcommon.getLocalizedMessage("disconnect_account"); //we are fully connected and the option is to disconnect
+            }
+        } else conBtn.label = tzcommon.getLocalizedMessage("connect_account"); //we are not connected and the option is to connect
 
         //disable connect/disconnect btn during INIT
-        document.getElementById('tzprefs.connectbtn').disabled = (connected == "INIT");
+        document.getElementById('tzprefs.connectbtn').disabled = (lstzero && connected);
 
-        //disable all seetings field, if INIT or connected
+        //disable all seetings field, if connected
         let protectedFields = ["accountname", "asversion", "host", "https", "user", "prov", "birthday", "seperator", "displayoverride", "downloadonly"];
         for (let i=0; i<protectedFields.length;i++) {
-            document.getElementById("tzprefs." + protectedFields[i]).disabled = (connected == "YES" || connected == "INIT");
+            document.getElementById("tzprefs." + protectedFields[i]).disabled = connected;
         }
     },
     
@@ -138,18 +146,15 @@ var tzprefs = {
     toggleConnectionState: function () {
         if (document.getElementById('tzprefs.connectbtn').disabled) return;
 
-        let connected = tzcommon.getAccountSetting(tzprefs.selectedAccount, "connected");
-        //toogle
-        if (connected == "YES" || connected == "INIT") connected = "NOT"; else connected = "INIT";
-        tzcommon.setAccountSetting(tzprefs.selectedAccount, "connected", connected);
-
-        if (connected == "NOT") {
-            //we are no longer connected = disconnect = delete all sync targets
+        if (tzcommon.getAccountSetting(tzprefs.selectedAccount, "connected")) {
+            //we are connected and want to disconnect
             tzcommon.disconnectAccount(tzprefs.selectedAccount);
             tzprefs.updateGui();
             tzprefs.updateLabels();
-        } else if (connected == "INIT") {
-            //we just connected, so save settings and init sync
+        } else {
+            //we are disconnected and want to connected
+            tzcommon.setAccountSetting(tzprefs.selectedAccount, "lastError", "");
+            tzcommon.setAccountSetting(tzprefs.selectedAccount, "connected", true)
             tzprefs.updateGui();
             tzprefs.saveSettings();
             tzcommon.requestSync(tzprefs.selectedAccount);
@@ -173,8 +178,11 @@ var tzprefs = {
 
                 case "error": // = alldone with error
                     //Alert error
+                    tzprefs.updateLabels();
+                    tzprefs.updateGui();
                     let lastError = tzcommon.getAccountSetting(tzprefs.selectedAccount, "lastError");
                     alert(tzcommon.getLocalizedMessage("error." + lastError));
+                    break;
                 case "alldone":
                     tzprefs.updateLabels();
                     tzprefs.updateGui();
@@ -182,7 +190,7 @@ var tzprefs = {
 
                 default:
                     //use one of the labels to print sync status
-                    document.getElementById('lastError').value = tzcommon.getLocalizedMessage("syncstate." + state);
+                    document.getElementById('LastSyncTime').value = tzcommon.getLocalizedMessage("syncstate." + state);
                     break;
 
 

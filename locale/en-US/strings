@@ -25,3 +25,5 @@ error.wbxmlservererror=Unknown server error, more info in log.
 error.0=Could not connect to server, check server address.
 error.401=Could not authenticate, check username and password.
 error.449=Server requests provisioning.
+
+promptDeleteAccount=Delete account ##accountName## for sure?

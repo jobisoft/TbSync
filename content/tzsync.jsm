@@ -14,7 +14,7 @@ var tzsync = {
         //set the account for this sync process
         tzsync.account = account;
 
-        if (tzcommon.getAccountSetting(tzsync.account, "connected") != "INIT" && tzcommon.getAccountSetting(tzsync.account, "connected") != "YES") {
+        if (!tzcommon.getAccountSetting(tzsync.account, "connected")) {
             tzcommon.resetSync(tzsync.account, "notconnected");
             return;
         }

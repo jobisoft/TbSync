@@ -10,9 +10,9 @@ var tzcommon = {
     prefs: Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush."),
     bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/strings"),
 
-    boolSettings : ["https", "prov", "birthday", "displayoverride", "downloadonly" /*, "hidephones", "showanniversary" */],
+    boolSettings : ["https", "prov", "birthday", "displayoverride", "downloadonly", "connected"],
     intSettings : ["autosync"],
-    charSettings : ["abname", "deviceId", "asversion", "host", "user", "seperator", "accountname", "polkey", "folderID", "synckey", "LastSyncTime", "folderSynckey", "lastError", "connected" ],
+    charSettings : ["abname", "deviceId", "asversion", "host", "user", "seperator", "accountname", "polkey", "folderID", "synckey", "LastSyncTime", "folderSynckey", "lastError" ],
 
     /**
         * manage sync via observer
@@ -34,18 +34,15 @@ var tzcommon = {
         }
     },
 
-    resetSync: function (account, errorcode = null) {
-        //Disconnect on error during INIT
-        if (tzcommon.getAccountSetting(account, "connected") == "INIT") {
+    resetSync: function (account = -1, errorcode = null) {
+        if (tzcommon.getAccountSetting(account, "LastSyncTime") == "0") {
             tzcommon.disconnectAccount(account);
-            tzcommon.setAccountSetting(account, "connected", "NO");
         }
         tzcommon.setSyncState(account, "alldone", errorcode);
     },
     
     finishSync: function (account) {
         if (tzcommon.getSyncState() !== "alldone") {
-            tzcommon.setAccountSetting(account, "connected", "YES");
             tzcommon.setAccountSetting(account, "LastSyncTime", Date.now());
             tzcommon.setSyncState(account, "alldone");
         }
@@ -210,15 +207,25 @@ var tzcommon = {
 
     /* Account settings related functions - some of them are wrapper functions, to be able to switch the storage backend*/
     disconnectAccount: function (account) {
+        tzcommon.setAccountSetting(account, "LastSyncTime", "0");
+        tzcommon.setAccountSetting(account, "connected", false);
         tzcommon.removeBook(tzcommon.getSyncTarget(account).uri);
     },
 
+    removeAccount: function (account) {
+        //disconnect (removes ab, triggers deletelog cleanup) 
+        tzcommon.disconnectAccount(account);
+        //delete account from db
+        tzdb.removeAccount(account);
+    },
+    
     addAccount: function() {
         let accountID = tzdb.addAccount("Test");
         //set some defaults
         this.setAccountSetting(accountID, "prov", true);
         this.setAccountSetting(accountID, "asversion", "14.0");
         this.setAccountSetting(accountID, "seperator", "&#10;");
+        this.setAccountSetting(accountID, "LastSyncTime", "0");
         return accountID;
     },
 
@@ -256,8 +263,9 @@ var tzcommon = {
 
 
     // wrap set functions, to be able to switch storage backend
-    setAccountSetting: function(account,field, value) {
-        tzdb.setAccountSetting(account, field, value);
+    setAccountSetting: function(account, field, value) {
+        //account -1 is only used durring initial reset of the addon
+        if (account != -1) tzdb.setAccountSetting(account, field, value);
     },
 
 

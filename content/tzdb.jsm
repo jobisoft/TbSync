@@ -91,7 +91,13 @@ var tzdb = {
             return null;
         }
     },
+    
 
+    removeAccount: function (account) {
+        this.conn.executeSimpleSQL("DELETE FROM accounts WHERE account='"+account+"';");
+        this.conn.executeSimpleSQL("DELETE FROM settings WHERE account='"+account+"';");
+    },
+    
 
     getIdOfSetting: function (account, name) {
         let statement = this.conn.createStatement("SELECT id FROM settings WHERE account='" + account + "' AND name='" + name +"';");
