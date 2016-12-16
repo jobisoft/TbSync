@@ -28,7 +28,7 @@ var tzprefManager = {
             if (confirm(tzcommon.getLocalizedMessage("promptDeleteAccount").replace("##accountName##",accountsList.selectedItem.label))) {
                 tzcommon.removeAccount(accountsList.selectedItem.value);
                 this.updateAccountsList();
-            };
+            }
         }
     },
 
@@ -100,7 +100,7 @@ var tzprefManager = {
                     contentPage: tempURL
                 });
             }
-            return (tabmail != null);
+            return (tabmail !== null);
         }
         openTBtab("http://www.c-a-p-e.co.uk");
     },

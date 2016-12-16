@@ -45,7 +45,7 @@ var tzcommon = {
             let allAccounts = tzcommon.getAccounts();
             if (allAccounts !== null) resetAccounts =Object.keys(allAccounts).sort();
         } else {
-            resetAccount.push(account);
+            resetAccounts.push(account);
         }
         
         for (let i=0; i<resetAccounts.length; i++) {
@@ -369,7 +369,7 @@ var tzcommon = {
 
     checkSyncTarget: function (account) {
         let target = this.getSyncTarget(account);
-        if (target.name != null && target.obj !== null && target.obj instanceof Components.interfaces.nsIAbDirectory) return true;
+        if (target.name !== null && target.obj !== null && target.obj instanceof Components.interfaces.nsIAbDirectory) return true;
 
         // Get unique Name for new address book
         let testname = tzcommon.getAccountSetting(account, "accountname");

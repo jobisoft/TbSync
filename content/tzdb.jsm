@@ -108,7 +108,7 @@ var tzdb = {
         if (statement.executeStep()) {
             return statement.row.id;
         } else {
-            return null
+            return null;
         }
     },
 

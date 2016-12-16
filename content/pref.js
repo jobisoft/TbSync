@@ -173,42 +173,34 @@ var tzprefs = {
             let state = data[1];
 
             //Only observe actions for the active account
-            if (account == tzprefs.selectedAccount || account == -1) switch (state) {
+            if (account == tzprefs.selectedAccount || account == -1) {
+                let lastError = tzcommon.getAccountSetting(tzprefs.selectedAccount, "lastError");
+                switch (state) {
+                    case "error": // = alldone with error
+                        //Alert error
+                        tzprefs.updateLabels();
+                        tzprefs.updateGui();
 
-                case "error": // = alldone with error
-                    //Alert error
-                    tzprefs.updateLabels();
-                    tzprefs.updateGui();
+                        //error handling
+                        switch (lastError) {
+                            case "401":
+                                window.openDialog("chrome://tzpush/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", "Set password for TzPush account " + account, account);
+                                break;
+                            default:
+                                alert(tzcommon.getLocalizedMessage("error." + lastError));
+                        }
+                        break;
 
-                    //error handling
-                    let lastError = tzcommon.getAccountSetting(tzprefs.selectedAccount, "lastError");
-                    switch (lastError) {
-                        case "401":
-                            window.openDialog("chrome://tzpush/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", "Set password for TzPush account " + account, account);
-                            break;
-                        default:
-                            alert(tzcommon.getLocalizedMessage("error." + lastError));
-                    }
-                    break;
-                case "alldone":
-                    tzprefs.updateLabels();
-                    tzprefs.updateGui();
-                    break;
+                    case "alldone":
+                        tzprefs.updateLabels();
+                        tzprefs.updateGui();
+                        break;
 
-                default:
-                    //use one of the labels to print sync status
-                    document.getElementById('LastSyncTime').value = tzcommon.getLocalizedMessage("syncstate." + state);
-                    break;
-
-
-/*               case "syncstate": //update button to inform user
-                    if (tzcommon.getSyncState() == "alldone") {
-                        document.getElementById("tzprefs.resyncbtn").disabled = false;
-                        document.getElementById("tzprefs.resyncbtn").label = tzcommon.getLocalizedMessage("resync_from_scratch");
-                    } else {
-                        document.getElementById("tzprefs.resyncbtn").disabled = true;
-                        document.getElementById("tzprefs.resyncbtn").label = "Busy: " + tzcommon.getLocalizedMessage(tzcommon.getSyncState());
-                    } */
+                    default:
+                        //use one of the labels to print sync status
+                        document.getElementById('LastSyncTime').value = tzcommon.getLocalizedMessage("syncstate." + state);
+                        break;
+                }
             }
         }
     },

@@ -164,7 +164,6 @@ var tzpush = {
 
         event: {
             notify: function (timer) {
-                let prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush.");
                 //get all accounts and check, which one needs sync (accounts array is without order, extract keys (ids) and loop over them)
                 let accounts = tzcommon.getAccounts();
                 let accountIDs = Object.keys(accounts).sort();
