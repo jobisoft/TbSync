@@ -153,8 +153,7 @@ var tzprefs = {
             tzprefs.updateLabels();
         } else {
             //we are disconnected and want to connected
-            tzcommon.setAccountSetting(tzprefs.selectedAccount, "lastError", "");
-            tzcommon.setAccountSetting(tzprefs.selectedAccount, "connected", true)
+            tzcommon.connectAccount(tzprefs.selectedAccount);
             tzprefs.updateGui();
             tzprefs.saveSettings();
             tzcommon.requestSync(tzprefs.selectedAccount);
@@ -181,7 +180,15 @@ var tzprefs = {
                     tzprefs.updateLabels();
                     tzprefs.updateGui();
                     let lastError = tzcommon.getAccountSetting(tzprefs.selectedAccount, "lastError");
-                    alert(tzcommon.getLocalizedMessage("error." + lastError));
+
+                    //error handling
+                    switch (lastError) {
+                        case "401":
+                            window.openDialog("chrome://tzpush/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", "Set password for TzPush account " + account, account);
+                            break;
+                        default:
+                            alert(tzcommon.getLocalizedMessage("error." + lastError));
+                    }
                     break;
                 case "alldone":
                     tzprefs.updateLabels();

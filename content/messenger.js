@@ -24,12 +24,28 @@ var tzpush = {
             let command = data[1];
             switch (command) {
                 case "sync":
-                    tzsync.sync(account, window);
+                    tzsync.sync(account);
                     break;
                 case "resync":
-                    tzsync.resync(account, window);
+                    tzsync.resync(account);
                     break;
             }
+        }
+    },
+
+
+    /* * *
+    * Observer to catch setPassword requests
+    */
+    setPasswordObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            let dot = aData.indexOf(".");
+            let account = aData.substring(0,dot);
+            let newpassword = aData.substring(dot+1);
+            tzcommon.dump("PASS", "["+account+"] ["+newpassword+"]");
+            tzcommon.setPassword(account, newpassword);
+            tzcommon.connectAccount(account);
+            tzcommon.requestReSync(account);
         }
     },
 
@@ -173,6 +189,7 @@ tzpush.syncTimer.start();
 let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
 observerService.addObserver(tzpush.syncRequestObserver, "tzpush.syncRequest", false);
 observerService.addObserver(tzpush.syncStatusObserver, "tzpush.syncStatus", false);
+observerService.addObserver(tzpush.setPasswordObserver, "tzpush.setPassword", false);
 
 tzpush.addressbookListener.add();
 tzcommon.resetSync();

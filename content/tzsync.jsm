@@ -6,10 +6,9 @@ Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 
 var tzsync = {
 
-    w: null,
     account: null,
 
-    sync: function (account, window = null) {
+    sync: function (account) {
 
         //set the account for this sync process
         tzsync.account = account;
@@ -39,8 +38,6 @@ var tzsync = {
             return;
         }
 
-        if (window !== null) tzsync.w = window;
-
         this.time = tzcommon.getAccountSetting(tzsync.account, "LastSyncTime") / 1000;  //TODO: Drop this here
         this.time2 = (Date.now() / 1000) - 1;
 
@@ -55,13 +52,13 @@ var tzsync = {
         }
     },
 
-    resync: function (account, window = null) {
+    resync: function (account) {
         tzcommon.setAccountSetting(account, "polkey", "0");
         tzcommon.setAccountSetting(account, "folderID", "");
         tzcommon.setAccountSetting(account, "synckey", "");
         tzcommon.setAccountSetting(account, "LastSyncTime", "0");
         //there is a resync-flag inside of fromtzpush, we could pass it as an argument if it is realy needed
-        tzsync.sync (account, window);
+        tzsync.sync (account);
     },
     
 
@@ -1102,14 +1099,7 @@ var tzsync = {
                         break;
                     
                     case 401: // AuthError
-                        var retVals = { password: "" };
-                        tzsync.w.openDialog("chrome://tzpush/content/password.xul", "passwordprompt", "modal,centerscreen,chrome,resizable=no", retVals, "Password for ActiveSync");
-                        if (retVals.password !== "") {
-                            tzcommon.setPassword(tzsync.account, retVals.password);
-                            tzsync.resync(tzsync.account);
-                        } else {
-                            tzcommon.resetSync(tzsync.account, req.status);
-                        }
+                        tzcommon.resetSync(tzsync.account, req.status);
                         break;
                     
                     case 449: // Request for new provision

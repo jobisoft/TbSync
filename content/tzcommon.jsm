@@ -27,6 +27,7 @@ var tzcommon = {
         }
     },
 
+
     requestReSync: function (account) {
         if (tzcommon.getSyncState() == "alldone") {
             tzcommon.setSyncState(account, "syncing");
@@ -222,6 +223,12 @@ var tzcommon = {
 
 
     /* Account settings related functions - some of them are wrapper functions, to be able to switch the storage backend*/
+    connectAccount: function (account) {
+            tzcommon.setAccountSetting(account, "lastError", "");
+            tzcommon.setAccountSetting(account, "connected", true)
+    },
+
+
     disconnectAccount: function (account) {
         tzcommon.setAccountSetting(account, "LastSyncTime", "0");
         tzcommon.setAccountSetting(account, "connected", false);
