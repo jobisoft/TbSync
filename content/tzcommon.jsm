@@ -14,6 +14,7 @@ var tzcommon = {
     intSettings : ["autosync"],
     charSettings : ["abname", "deviceId", "asversion", "host", "user", "seperator", "accountname", "polkey", "folderID", "synckey", "LastSyncTime", "folderSynckey", "lastError" ],
 
+
     /**
         * manage sync via observer
         * TODO implement some sort of sync request queuing
@@ -34,19 +35,34 @@ var tzcommon = {
         }
     },
 
+
     resetSync: function (account = -1, errorcode = null) {
-        if (tzcommon.getAccountSetting(account, "LastSyncTime") == "0") {
-            tzcommon.disconnectAccount(account);
+        let resetAccounts = [];
+        
+        //account == -1 -> loop over all present accounts
+        if (account == -1) {
+            let allAccounts = tzcommon.getAccounts();
+            if (allAccounts !== null) resetAccounts =Object.keys(allAccounts).sort();
+        } else {
+            resetAccount.push(account);
+        }
+        
+        for (let i=0; i<resetAccounts.length; i++) {
+            if (tzcommon.getAccountSetting(resetAccounts[i], "LastSyncTime") == "0") {
+                tzcommon.disconnectAccount(resetAccounts[i]);
+            }
         }
         tzcommon.setSyncState(account, "alldone", errorcode);
     },
-    
+
+
     finishSync: function (account) {
         if (tzcommon.getSyncState() !== "alldone") {
             tzcommon.setAccountSetting(account, "LastSyncTime", Date.now());
             tzcommon.setSyncState(account, "alldone");
         }
     },
+
 
     // wrappers for set/get syncstate
     getSyncState: function () {
