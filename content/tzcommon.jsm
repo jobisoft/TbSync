@@ -223,8 +223,8 @@ var tzcommon = {
 
 
     /* Get Serversettings */
-    getServerSetting: function (account, setting) {
-        let servertype =  tzcommon.getAccountSetting(tzsync.account, "servertype");
+    getServerSetting: function (account, field) {
+        let servertype =  tzcommon.getAccountSetting(account, "servertype");
         let settings = {};
         
         switch (servertype) {
@@ -237,8 +237,7 @@ var tzcommon = {
                 break;
         }
         
-        if (serverSettings.indexOf(setting) != -1) return settings[setting];
-        else throw "Unknown TzPush server setting!" + "\nThrown by tzcommon.getServerSetting("+account+", " + setting + ")";
+        return settings[field];
     },
 
 
@@ -315,23 +314,35 @@ var tzcommon = {
 
     // wrap get functions, to be able to switch storage backend
     getAccountSetting: function(account, field) {
-        let value = tzdb.getAccountSetting(account, field);
+        if (this.serverSettings.indexOf(field) != -1) {
+            //read-only server setting
+            return this.getServerSetting(account, field);
+        } else {
+            let value = tzdb.getAccountSetting(account, field);
 
-        if (this.intSettings.indexOf(field) != -1) {
-            if (value == "" || value == "null") return 0;
-            else return parseInt(value);
-        } else if (this.boolSettings.indexOf(field) != -1) {
-            return (value == "true");
-        } else if (this.charSettings.indexOf(field) != -1) {
-            return value;
-        } else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.getAccountSetting("+account+", " + field + ")";
+            if (this.intSettings.indexOf(field) != -1) {
+                if (value == "" || value == "null") return 0;
+                else return parseInt(value);
+            } else if (this.boolSettings.indexOf(field) != -1) {
+                return (value == "true");
+            } else if (this.charSettings.indexOf(field) != -1) {
+                return value;
+            } else throw "Unknown TzPush setting!" + "\nThrown by tzcommon.getAccountSetting("+account+", " + field + ")";
+        }
     },
 
 
     // wrap set functions, to be able to switch storage backend
     setAccountSetting: function(account, field, value) {
         //account -1 is only used durring initial reset of the addon
-        if (account != -1) tzdb.setAccountSetting(account, field, value);
+        if (account != -1) {
+            //server settings are read-only
+            if (this.serverSettings.indexOf(field) != -1) {
+                throw "Server settings are read-only!" + "\nThrown by tzcommon.setAccountSetting("+account+", " + field + ")";
+            } else {
+                tzdb.setAccountSetting(account, field, value);
+            }
+        }
     },
 
 
