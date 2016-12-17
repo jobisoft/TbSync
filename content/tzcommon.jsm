@@ -12,7 +12,9 @@ var tzcommon = {
 
     boolSettings : ["https", "prov", "birthday", "displayoverride", "downloadonly", "connected"],
     intSettings : ["autosync"],
-    charSettings : ["abname", "deviceId", "asversion", "host", "user", "seperator", "accountname", "polkey", "folderID", "synckey", "LastSyncTime", "folderSynckey", "lastError" ],
+    charSettings : ["abname", "deviceId", "asversion", "host", "user", "servertype", "accountname", "polkey", "folderID", "synckey", "LastSyncTime", "folderSynckey", "lastError" ],
+    serverSettings : ["seperator" ],
+	
 
 
     /**
@@ -220,7 +222,24 @@ var tzcommon = {
     },
 
 
-
+    /* Get Serversettings */
+    getServerSetting: function (account, setting) {
+        let servertype =  tzcommon.getAccountSetting(tzsync.account, "servertype");
+        let settings = {};
+        
+        switch (servertype) {
+            case "zarafa":
+                settings["seperator"] = "\n";
+                break;
+            
+            case "horde":
+                settings["seperator"] = ", ";
+                break;
+        }
+        
+        if (serverSettings.indexOf(setting) != -1) return settings[setting];
+        else throw "Unknown TzPush server setting!" + "\nThrown by tzcommon.getServerSetting("+account+", " + setting + ")";
+    },
 
 
     /* Account settings related functions - some of them are wrapper functions, to be able to switch the storage backend*/
@@ -248,7 +267,7 @@ var tzcommon = {
         //set some defaults
         this.setAccountSetting(accountID, "prov", true);
         this.setAccountSetting(accountID, "asversion", "14.0");
-        this.setAccountSetting(accountID, "seperator", "&#10;");
+        this.setAccountSetting(accountID, "servertype", "zarafa");
         this.setAccountSetting(accountID, "LastSyncTime", "0");
         return accountID;
     },
@@ -275,6 +294,13 @@ var tzcommon = {
 
             this.setAccountSetting(account, "accountname", accountname);
             this.setAccountSetting(account, "connected", false);
+            
+            //migrate seperator
+            try {
+                if (tzcommon.prefs.getCharPref("seperator") == ", ") this.setAccountSetting(account, "servertype", "horde");
+                else this.setAccountSetting(account, "servertype", "zarafa");
+            } catch(e) {}
+
             accounts = tzdb.getAccounts();
         }
         return accounts;

@@ -307,7 +307,7 @@ var tzsync = {
                     var modcard;
                     var ServerId;
                     var cardsToDelete;
-                    var seperator = tzcommon.getAccountSetting(tzsync.account, "seperator");
+                    var seperator = tzcommon.getServerSetting(tzsync.account, "seperator");
 
                     while (num < wbxml.length) {
                         token = wbxml.substr(num, 1);
@@ -575,7 +575,7 @@ var tzsync = {
         var card;
         var maxnumbertosend = parseInt(tzcommon.prefs.getCharPref("maxnumbertosend"));
         var morecards = false;
-        var seperator = tzcommon.getAccountSetting(tzsync.account, "seperator"); // default is " ," can be changed to "/n"
+        var seperator = tzcommon.getServerSetting(tzsync.account, "seperator"); // default is " ," can be changed to "/n"
         var cards = addressBook.childCards;
 
         while (cards.hasMoreElements()) {

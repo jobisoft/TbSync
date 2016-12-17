@@ -22,7 +22,7 @@
 <!ENTITY pref.SyncedAB "Synced Addressbook">
 <!ENTITY pref.LastSyncTime "Last successful syncronisation">
 
-<!ENTITY pref.seperator "Server Type">
+<!ENTITY pref.servertype "Server Type">
 <!ENTITY pref.seperator.comma "comma as seperator">
 <!ENTITY pref.seperator.linebreak "line break as seperator">
 <!ENTITY pref.displayoverride "Overide Display Name with 'First Name' + 'Second Name'">

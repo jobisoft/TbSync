@@ -34,11 +34,11 @@
             </row>
 
             <row>
-                 <label control="tzprefs.seperator" value="&pref.seperator;" />
-                 <menulist id="tzprefs.seperator" disabled="true" >
+                 <label control="tzprefs.servertype" value="&pref.servertype;" />
+                 <menulist id="tzprefs.servertype" disabled="true" >
                       <menupopup>
-                           <menuitem label="Horde (&pref.seperator.comma;)" value=", " />
-                           <menuitem label="Zarafa, Zentyal, Kopano (&pref.seperator.linebreak;)" value="&#10;" />
+                           <menuitem label="Horde (&pref.seperator.comma;)" value="horde" />
+                           <menuitem label="Zarafa, Zentyal, Kopano (&pref.seperator.linebreak;)" value="zarafa" />
                       </menupopup>
                  </menulist>
             </row>

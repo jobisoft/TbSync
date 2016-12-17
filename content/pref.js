@@ -131,7 +131,7 @@ var tzprefs = {
         document.getElementById('tzprefs.connectbtn').disabled = (lstzero && connected);
 
         //disable all seetings field, if connected
-        let protectedFields = ["accountname", "asversion", "host", "https", "user", "prov", "birthday", "seperator", "displayoverride", "downloadonly"];
+        let protectedFields = ["accountname", "asversion", "host", "https", "user", "prov", "birthday", "servertype", "displayoverride", "downloadonly"];
         for (let i=0; i<protectedFields.length;i++) {
             document.getElementById("tzprefs." + protectedFields[i]).disabled = connected;
         }
