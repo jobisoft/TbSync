@@ -171,7 +171,7 @@ var tzpush = {
                 for (let i=0; i<accountIDs.length; i++) {
                     let syncInterval = tzcommon.getAccountSetting(accountIDs[i], "autosync") * 60 * 1000;
 
-                    if ((syncInterval > 0) && ((Date.now() - tzcommon.getAccountSetting(accountIDs[i], "LastSyncTime")) > syncInterval)) {
+                    if (tzcommon.getAccountSetting(accountIDs[i], "connected") && (syncInterval > 0) && ((Date.now() - tzcommon.getAccountSetting(accountIDs[i], "LastSyncTime")) > syncInterval)) {
                         tzcommon.requestSync(accountIDs[i]);
                     }
                 }
