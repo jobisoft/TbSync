@@ -12,6 +12,8 @@ const Ci = Components.interfaces;
  * https://developer.mozilla.org/en-US/Add-ons/Thunderbird/HowTos/Common_Thunderbird_Extension_Techniques/Use_SQLite
  */
 
+// TODO: Cache
+
 var tzdb = {
 
     conn: null,

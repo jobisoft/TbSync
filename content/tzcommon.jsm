@@ -222,25 +222,6 @@ var tzcommon = {
     },
 
 
-    /* Get Serversettings */
-    getServerSetting: function (account, field) {
-        let servertype =  tzcommon.getAccountSetting(account, "servertype");
-        let settings = {};
-        
-        switch (servertype) {
-            case "zarafa":
-                settings["seperator"] = "\n";
-                break;
-            
-            case "horde":
-                settings["seperator"] = ", ";
-                break;
-        }
-        
-        return settings[field];
-    },
-
-
     /* Account settings related functions - some of them are wrapper functions, to be able to switch the storage backend*/
     connectAccount: function (account) {
             tzcommon.setAccountSetting(account, "lastError", "");
@@ -316,7 +297,19 @@ var tzcommon = {
     getAccountSetting: function(account, field) {
         if (this.serverSettings.indexOf(field) != -1) {
             //read-only server setting
-            return this.getServerSetting(account, field);
+            let servertype =  tzcommon.getAccountSetting(account, "servertype");
+            let settings = {};
+
+            switch (servertype) {
+                case "zarafa":
+                    settings["seperator"] = "\n";
+                    break;
+                
+                case "horde":
+                    settings["seperator"] = ", ";
+                    break;
+            }
+            return settings[field];
         } else {
             let value = tzdb.getAccountSetting(account, field);
 
