@@ -112,7 +112,10 @@ var tzprefs = {
         }
     },
 
-    
+
+    /* * *
+    * Disable/Enable input fields and buttons according to the current connection state
+    */
     updateGui: function () {
         let connected = tzcommon.getAccountSetting(tzprefs.selectedAccount, "connected");
         let lstzero = (tzcommon.getAccountSetting(tzprefs.selectedAccount, "LastSyncTime") == "0");
@@ -136,14 +139,15 @@ var tzprefs = {
             document.getElementById("tzprefs." + protectedFields[i]).disabled = connected;
         }
     },
-    
-    
+
+
     /* * *
     * This function is executed, when the user hits the connect/disconnet button. On disconnect, all
     * sync targets are deleted and the settings can be changed again. On connect, the settings are
     * stored and a new sync is initiated.
     */
     toggleConnectionState: function () {
+        //ignore cancel request, if button is disabled
         if (document.getElementById('tzprefs.connectbtn').disabled) return;
 
         if (tzcommon.getAccountSetting(tzprefs.selectedAccount, "connected")) {
@@ -177,7 +181,6 @@ var tzprefs = {
                 let lastError = tzcommon.getAccountSetting(tzprefs.selectedAccount, "lastError");
                 switch (state) {
                     case "error": // = alldone with error
-                        //Alert error
                         tzprefs.updateLabels();
                         tzprefs.updateGui();
 
@@ -207,8 +210,9 @@ var tzprefs = {
 
 
     /* * *
-    * Address book listener to catch if the synced address book (sync target) has been renamed,
-    * created or deleted, so the corresponding labels can be updated.
+    * Address book listener to catch if the synced address book (sync target) has been renamed
+    * or deleted, so the corresponding labels can be updated. For simplicity, we do not check,
+    * if the modified book belongs to the current account - we update on any change.
     */
     addressbookListener: {
 

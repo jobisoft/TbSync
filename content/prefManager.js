@@ -1,7 +1,9 @@
 "use strict";
 
 Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
-
+//todo: upon delete, move to the next account, not the first
+//if the first account is deleted, also delete the prefs account or find some other way to not reload from prefs if that account has been deleted
+//empty page on no account
 var tzprefManager = {
 
     selectedAccount: null,
