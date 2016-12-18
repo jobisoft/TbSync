@@ -2,6 +2,8 @@
 
 var EXPORTED_SYMBOLS = ["tzdb"];
 
+Components.utils.import("resource://gre/modules/FileUtils.jsm");
+
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
@@ -24,11 +26,7 @@ var tzdb = {
 
 
     dbInit: function () {
-        let dirService = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties);
-        let dbFile = dirService.get("ProfD", Ci.nsIFile);
-        dbFile.append("ZPush");
-        dbFile.append("db.sqlite");
-
+        let dbFile = FileUtils.getFile("ProfD", ["ZPush", "db.sqlite"]);
         let dbService = Cc["@mozilla.org/storage/service;1"].getService(Ci.mozIStorageService);
         if (!dbFile.exists()) {
             this.conn = dbService.openDatabase(dbFile);
