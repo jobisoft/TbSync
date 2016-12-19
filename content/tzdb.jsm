@@ -12,13 +12,11 @@ const Ci = Components.interfaces;
  * https://developer.mozilla.org/en-US/Add-ons/Thunderbird/HowTos/Common_Thunderbird_Extension_Techniques/Use_SQLite
  */
 
-// TODO: Cache
-
 var tzdb = {
 
     conn: null,
     accountColumns: ["accountname","LastSyncTime"],
-
+    cache: {}, 
 
     onLoad: function() {
         // initialization code
@@ -100,6 +98,8 @@ var tzdb = {
     removeAccount: function (account) {
         this.conn.executeSimpleSQL("DELETE FROM accounts WHERE account='"+account+"';");
         this.conn.executeSimpleSQL("DELETE FROM settings WHERE account='"+account+"';");
+        //remove cache
+        if (tzdb.cache.hasOwnProperty(account)) delete tzdb.cache[account];
     },
     
 
@@ -127,12 +127,25 @@ var tzdb = {
                 this.conn.executeSimpleSQL("INSERT INTO settings (account,name,value) VALUES ('"+account+"','"+name+"','" +value+ "');");
             }
         }
+
+        //also update cache
+        if (!tzdb.cache.hasOwnProperty(account)) tzdb.cache[account] = {};
+        tzdb.cache[account][name] = value.toString();
+
     },
 
 
     getAccountSetting: function (account, name) {
         let col;
         let statement;
+
+        //query cache
+        if (tzdb.cache.hasOwnProperty(account) && tzdb.cache[account].hasOwnProperty(name)) {
+            var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
+            consoleService.logStringMessage("[TzPush] get cached value ("+name+") : " + tzdb.cache[account][name]);
+            return tzdb.cache[account][name];
+        }
+
         if (this.accountColumns.indexOf(name) != -1) {
             //this field is part of the accounts table with its own column
             statement = this.conn.createStatement("SELECT "+name+" FROM accounts WHERE account='" + account + "';");
@@ -143,11 +156,16 @@ var tzdb = {
             col = "value";
         }
 
+        let value = "";
         if (statement.executeStep()) {
-            return statement.row[col];
-        } else {
-            return "";
+            value = statement.row[col];
         }
+        
+        //update cache
+        if (!tzdb.cache.hasOwnProperty(account)) tzdb.cache[account] = {};
+        tzdb.cache[account][name] = value;
+            
+        return value;
     },
 
     findAccountsWithSetting: function (name, value) {
