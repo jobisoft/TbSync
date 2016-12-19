@@ -166,6 +166,8 @@ var tzpush = {
             notify: function (timer) {
                 //get all accounts and check, which one needs sync (accounts array is without order, extract keys (ids) and loop over them)
                 let accounts = tzcommon.getAccounts();
+                if (accounts === null) return;
+
                 let accountIDs = Object.keys(accounts).sort();
 
                 for (let i=0; i<accountIDs.length; i++) {
