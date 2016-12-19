@@ -140,11 +140,7 @@ var tzdb = {
         let statement;
 
         //query cache
-        if (tzdb.cache.hasOwnProperty(account) && tzdb.cache[account].hasOwnProperty(name)) {
-            var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
-            consoleService.logStringMessage("[TzPush] get cached value ("+name+") : " + tzdb.cache[account][name]);
-            return tzdb.cache[account][name];
-        }
+        if (tzdb.cache.hasOwnProperty(account) && tzdb.cache[account].hasOwnProperty(name)) return tzdb.cache[account][name];
 
         if (this.accountColumns.indexOf(name) != -1) {
             //this field is part of the accounts table with its own column
