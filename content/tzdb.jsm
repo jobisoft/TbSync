@@ -15,6 +15,7 @@ const Ci = Components.interfaces;
 var tzdb = {
 
     conn: null,
+    migrate: null,
     accountColumns: ["accountname","LastSyncTime"],
     cache: {}, 
 
@@ -38,8 +39,10 @@ var tzdb = {
             this.conn.executeSimpleSQL("CREATE TABLE settings (id INTEGER PRIMARY KEY AUTOINCREMENT, account INTEGER, name TEXT, value TEXT);");
             //Create deletelog table
             this.conn.executeSimpleSQL("CREATE TABLE deletelog (id INTEGER PRIMARY KEY AUTOINCREMENT, book TEXT, cardid TEXT);");
+            this.migrate = true;
         } else {
             this.conn = dbService.openDatabase(dbFile);
+            this.migrate = false;
         }
     },
 

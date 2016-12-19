@@ -45,7 +45,7 @@ var tzcommon = {
         //account == -1 -> loop over all present accounts
         if (account == -1) {
             let allAccounts = tzcommon.getAccounts();
-            if (allAccounts !== null) resetAccounts =Object.keys(allAccounts).sort();
+            if (allAccounts !== null) resetAccounts = Object.keys(allAccounts).sort();
         } else {
             resetAccounts.push(account);
         }
@@ -243,7 +243,7 @@ var tzcommon = {
     },
     
     addAccount: function() {
-        let accountID = tzdb.addAccount("New Account");
+        let accountID = tzdb.addAccount(tzcommon.getLocalizedMessage("new_account"));
         //set some defaults
         this.setAccountSetting(accountID, "prov", true);
         this.setAccountSetting(accountID, "asversion", "14.0");
@@ -253,10 +253,10 @@ var tzcommon = {
     },
 
 
-    getAccounts: function() {
+    getAccounts: function () {
         let accounts = tzdb.getAccounts();
-        if (accounts === null) {
-            //DB is empty, import values from preferences
+        if (accounts === null && tzdb.migrate) {
+            //DB has just been created and we should try to import old account data from preferences
             let account = tzcommon.addAccount();
             let accountname = "TzPush";
             
@@ -275,12 +275,15 @@ var tzcommon = {
             this.setAccountSetting(account, "accountname", accountname);
             this.setAccountSetting(account, "connected", false);
             
-            //migrate seperator
+            //migrate seperator into server setting
             try {
                 if (tzcommon.prefs.getCharPref("seperator") == ", ") this.setAccountSetting(account, "servertype", "horde");
                 else this.setAccountSetting(account, "servertype", "zarafa");
             } catch(e) {}
-
+            
+            //do not try to auto migrate again
+            tzdb.migrate = false;
+                
             accounts = tzdb.getAccounts();
         }
         return accounts;

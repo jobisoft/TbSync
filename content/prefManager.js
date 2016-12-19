@@ -58,7 +58,7 @@ var tzprefManager = {
         } else {
             //No defined accounts, load dummy
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-            document.getElementById("contentFrame").webNavigation.loadURI("chrome://tzpush/content/help.html", LOAD_FLAGS_NONE, null, null, null);            
+            document.getElementById("tzprefManager.contentFrame").webNavigation.loadURI("chrome://tzpush/content/noaccounts.html", LOAD_FLAGS_NONE, null, null, null);
         }
     },
 
@@ -81,7 +81,7 @@ var tzprefManager = {
             //get id of selected account from value of selectedItem
             this.selectedAccount = accountsList.selectedItem.value;
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-            document.getElementById("contentFrame").webNavigation.loadURI("chrome://tzpush/content/pref.xul", LOAD_FLAGS_NONE, null, null, null);
+            document.getElementById("tzprefManager.contentFrame").webNavigation.loadURI("chrome://tzpush/content/pref.xul", LOAD_FLAGS_NONE, null, null, null);
         }
     },
 

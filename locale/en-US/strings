@@ -16,6 +16,7 @@ resync_from_scratch=Resync from scratch
 disconnect_account=Disconnect
 connect_account=Save settings and connect
 connecting=Connecting ...
+new_account=New Account
 
 error.notconnected=Aborting Sync, because account is not connected.
 error.notargets=Aborting Sync, because sync targets could not be created.
