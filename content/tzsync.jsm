@@ -15,7 +15,7 @@ var tzsync = {
         tzsync.account = account;
 
         //set the resync flag for this sync process
-        tzdb.fResync = resyncflag;
+        tzsync.fResync = resyncflag;
 
 
         if (!tzcommon.getAccountSetting(tzsync.account, "connected")) {
@@ -398,7 +398,7 @@ var tzsync = {
                                     card.setProperty("PhotoURI", filePath);
                                     photo = '';
                                 }
-                                if (tzdb.fResync) {
+                                if (tzsync.fResync) {
                                     //during resync, we need to check, if the "new" card we are currenty receiving, is really new, or already exists
                                     let tempsid;
                                     try {
