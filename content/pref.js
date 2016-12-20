@@ -238,6 +238,7 @@ var tzprefs = {
             Components.classes["@mozilla.org/abmanager;1"]
                 .getService(Components.interfaces.nsIAbManager)
                 .removeAddressBookListener(tzprefs.addressbookListener);
+        }
     }
 
 };

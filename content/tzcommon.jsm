@@ -421,11 +421,13 @@ var tzcommon = {
         }
         
         //create loginInfo with new password
-        let newLoginInfo = new nsLoginInfo(connection.host, connection.url, null, connection.user, newPassword, "USER", "PASSWORD");
-        try {
-            myLoginManager.addLogin(newLoginInfo);
-        } catch (e) {
-            tzcommon.dump("Error adding loginInfo", e);
+        if (newPassword != "") {
+            let newLoginInfo = new nsLoginInfo(connection.host, connection.url, null, connection.user, newPassword, "USER", "PASSWORD");
+            try {
+                myLoginManager.addLogin(newLoginInfo);
+            } catch (e) {
+                tzcommon.dump("Error adding loginInfo", e);
+            }
         }
     } ,
 
