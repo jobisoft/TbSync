@@ -400,11 +400,8 @@ var tzsync = {
                                     } catch (e) {}
 
                                     if (!addressBook.getCardFromProperty("ServerId", tempsid, false)) {
-                                        //card DOES NOT exists, do the displayoverride and add the card
-                                        if (tzcommon.getAccountSetting(tzsync.account, "displayoverride")) {
-                                            card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
-                                        }
-                                        /* newCard = */ addressBook.addCard(card);
+                                        //card DOES NOT exists, add new card from server to the addressbook
+                                        tzcommon.addNewCardFromServer(card, addressBook, tzsync.account);
                                     } else {
                                         //card DOES exists, get the local card and replace all properties with those received from server - why not simply loop over all properties of the new card?
                                         ServerId = card.getProperty("ServerId", "");
@@ -443,10 +440,7 @@ var tzsync = {
 
                                 } else {
                                     //this is not a resync and thus a new card, add it
-                                    if (tzcommon.getAccountSetting(tzsync.account, "displayoverride")) {
-                                        card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
-                                    }
-                                    /* newCard = */ addressBook.addCard(card);
+                                    tzcommon.addNewCardFromServer(card, addressBook, tzsync.account);
                                 }
 
                                 card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);

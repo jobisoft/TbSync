@@ -14,7 +14,6 @@ var tzcommon = {
     intSettings : ["autosync"],
     charSettings : ["abname", "deviceId", "asversion", "host", "user", "servertype", "accountname", "polkey", "folderID", "synckey", "LastSyncTime", "folderSynckey", "lastError" ],
     serverSettings : ["seperator" ],
-	
 
 
     /**
@@ -152,18 +151,19 @@ var tzcommon = {
     },
 
 
-
-
-
-    /* Address book functions */
-    removeSId: function (aParentDir, ServerId) {
-        let acard = aParentDir.getCardFromProperty("ServerId", ServerId, false);
-        if (acard instanceof Components.interfaces.nsIAbCard) {
-            acard.setProperty("ServerId", "");
-            aParentDir.modifyCard(acard);
+    addCardFromServer: function (card, addressBook, account) {
+        if (tzcommon.getAccountSetting(account, "displayoverride")) {
+            card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
         }
-    },
-
+        
+        //Remove the ServerID from the card, add the card without serverId and modify the added card later on - otherwise the ServerId will be removed by the onAddItem-listener
+        let curID = card.getProperty("ServerId", "");
+        card.setProperty("ServerId", "");
+        
+        let addedCard = addressBook.addCard(card);
+        addedCard.setProperty("ServerId", curID);
+        addressBook.modifyCard(addedCard);
+    }
 
 
 

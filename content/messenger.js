@@ -114,16 +114,18 @@ var tzpush = {
             }
 
             /* * *
-             * If a card is added to a book, but not to the to one we are syncing, and that card
-             * has a ServerId, remove that ServerId from the first card found in that book
-             * (Why not directly from the card? TODO)
-             * This cleans up cards, that get moved from an EAS book to a standard book. - IS THIS STILL WORKING WITH MULTI ACCOUNT MODE - DISABLE FOR NOW
-             */
-//            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && aParentDir.URI !== tzcommon.getSetting("abname")) {
-//                let ServerId = aItem.getProperty("ServerId", "");
-//                if (ServerId !== "") tzcommon.removeSId(aParentDir, ServerId);
-//            }
-                
+             * If cards get moved between books or if the user imports new cards, we always have to strip the serverID (if present). The only valid option
+             * to introduce a new card with a serverID is during sync, when the server pushes a new card. To catch this, the sync code is adjusted to 
+             * actually add the new card without serverID and modifies it right after addition, so this addressbookListener can safely strip any serverID 
+             * off added cards, because they are introduced by user actions (move, copy, import) and not by a sync. */
+            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory) {
+                let ServerId = aItem.getProperty("ServerId", "");
+                if (ServerId != "") {
+                    aItem.setProperty("ServerId", "");
+                    aParentDir.modifyCard(aItem);
+                }
+            }
+
         },
 
         add: function addressbookListener_add () {
