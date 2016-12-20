@@ -151,7 +151,7 @@ var tzcommon = {
     },
 
 
-    addCardFromServer: function (card, addressBook, account) {
+    addNewCardFromServer: function (card, addressBook, account) {
         if (tzcommon.getAccountSetting(account, "displayoverride")) {
             card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
         }
@@ -163,7 +163,7 @@ var tzcommon = {
         let addedCard = addressBook.addCard(card);
         addedCard.setProperty("ServerId", curID);
         addressBook.modifyCard(addedCard);
-    }
+    },
 
 
 
