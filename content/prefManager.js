@@ -1,9 +1,8 @@
 "use strict";
 
 Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
-//todo: upon delete, move to the next account, not the first
-//if the first account is deleted, also delete the prefs account or find some other way to not reload from prefs if that account has been deleted
-//empty page on no account
+//TODO (for production): after migration, delete the data stored in prefs, the user might get confused at a later time, if that old account data is remigrated again, if the db was deleted
+//TODO: empty page on no account should be locale
 var tzprefManager = {
 
     selectedAccount: null,
@@ -27,9 +26,12 @@ var tzprefManager = {
     deleteAccount: function () {
         let accountsList = document.getElementById("tzprefManager.accounts");
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
+            let nextAccount =  -1;
+            if (accountsList.selectedIndex > 0) nextAccount = accountsList.getItemAtIndex(accountsList.selectedIndex - 1).value;
+            
             if (confirm(tzcommon.getLocalizedMessage("promptDeleteAccount").replace("##accountName##",accountsList.selectedItem.label))) {
                 tzcommon.removeAccount(accountsList.selectedItem.value);
-                this.updateAccountsList();
+                this.updateAccountsList(nextAccount);
             }
         }
     },
