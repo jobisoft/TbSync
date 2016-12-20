@@ -5,6 +5,8 @@
 Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 Components.utils.import("chrome://tzpush/content/tzsync.jsm");
 
+//TODO: on double click open prefs and jump to log
+
 var tzpush = {
 
     openPrefs: function () {
@@ -75,12 +77,9 @@ var tzpush = {
             let account = data[0];
             let state = data[1];
 
-            //dump into log (account -1 if initial reset)
-            if (account == -1) tzcommon.dump("syncstate", tzcommon.getLocalizedMessage("syncstate." + state));
-            else tzcommon.dump("syncstate set by account #"+account, tzcommon.getLocalizedMessage("syncstate." + state));
+            //dump into log
+            tzcommon.dump("syncstate set by account #"+account, tzcommon.getLocalizedMessage("syncstate." + state));
 
-            //update status bar to inform user - for now we do not want errors reported in statusbar
-            if (state == "error") state = "alldone";
             let status = document.getElementById("tzstatus");
             if (status) status.label = "TzPush: " + tzcommon.getLocalizedMessage("syncstate." + state);
         }
@@ -117,7 +116,7 @@ var tzpush = {
         let newItem = document.createElement("menuitem");
         newItem.setAttribute("label", "sync all accounts");
         newItem.setAttribute("value", -1);
-        newItem.addEventListener("click", function () {tzcommon.requestSync(-1);}, false);
+        newItem.addEventListener("click", function () {tzcommon.requestSync();}, false);
         popup.appendChild(newItem);
     },*/
 

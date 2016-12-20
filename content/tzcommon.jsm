@@ -15,27 +15,56 @@ var tzcommon = {
     charSettings : ["abname", "deviceId", "asversion", "host", "user", "servertype", "accountname", "polkey", "folderID", "synckey", "LastSyncTime", "folderSynckey", "lastError" ],
     serverSettings : ["seperator" ],
 
+    syncQueue : [],
 
     /**
-        * manage sync via observer
-        * TODO implement some sort of sync request queuing
+        * manage sync via observer and queue
         */
-    requestSync: function (account) { // account = -1 will put all connected accounts on the queue
-        if (tzcommon.getSyncState() == "alldone") {
-            tzcommon.setSyncState(account, "syncing");
-            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tzpush.syncRequest", account + ".sync");
-        }
+    requestSync: function (account) {
+        tzcommon.addJobToSyncQueue("sync", account);
     },
-
 
     requestReSync: function (account) {
-        if (tzcommon.getSyncState() == "alldone") {
-            tzcommon.setSyncState(account, "syncing");
-            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tzpush.syncRequest", account + ".resync");
+        tzcommon.addJobToSyncQueue("resync", account);
+    },
+
+    addJobToSyncQueue: function (job, account = -1) {
+        if (account == -1) {
+            //add all connected accounts to the queue
+            let accounts = tzcommon.getAccounts();
+            if (accounts === null) return;
+
+            let accountIDs = Object.keys(accounts).sort();
+            for (let i=0; i<accountIDs.length; i++) {
+                if (tzcommon.getAccountSetting(accountIDs[i], "connected")) tzcommon.syncQueue.push(accountIDs[i] + "." + job);
+            }
+        } else tzcommon.syncQueue.push(account + "." + job);
+
+        //after jobs have been aded to the queue, try to start working on the queue
+        if (tzcommon.getSyncState() == "alldone") tzcommon.workSyncQueue();
+    },
+
+    workSyncQueue: function () {
+        //workSyncQueue assumes, that it is allowed to start a new sync job
+        //if no more jobs in queue, do nothing
+        if (tzcommon.syncQueue.length == 0) return;
+
+        let job = tzcommon.syncQueue.shift().split(".");
+        let account = job[0];
+        let jobdescription = job[1];
+        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+
+        switch (jobdescription) {
+            case "sync":
+            case "resync":
+                tzcommon.setSyncState(account, "syncing");
+                observerService.notifyObservers(null, "tzpush.syncRequest", account + "." + jobdescription);
+                break;
+            default:
+                tzcommon.dump("Unknow job description for sync queue", jobdescription);
         }
     },
+
 
 
     resetSync: function (account = -1, errorcode = null) {
@@ -53,8 +82,8 @@ var tzcommon = {
             if (tzcommon.getAccountSetting(resetAccounts[i], "LastSyncTime") == "0") {
                 tzcommon.disconnectAccount(resetAccounts[i]);
             }
+            tzcommon.setSyncState(resetAccounts[i], "alldone", errorcode);
         }
-        tzcommon.setSyncState(account, "alldone", errorcode);
     },
 
 
@@ -73,8 +102,8 @@ var tzcommon = {
 
 
     setSyncState: function (account, syncstate, errorcode = null) {
-        tzcommon.prefs.setCharPref("syncstate", syncstate);
         let msg = account + "." + syncstate;
+        let workTheQueue = false;
 
         //errocode reporting only if syncstate == alldone
         if (syncstate == "alldone") {
@@ -85,10 +114,17 @@ var tzcommon = {
             } else {
                 tzcommon.setAccountSetting(account, "lastError", "");
             }
+
+            //this is the very end of a sync process - check the queue for more
+            workTheQueue = true;
         }
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.notifyObservers(null, "tzpush.syncStatus", msg);
+
+        //if there is a request to work the queue (syncstate switch to alldone) and there are more jobs, work the queue
+        if (workTheQueue && tzcommon.syncQueue.length > 0) tzcommon.workSyncQueue();
+        else tzcommon.prefs.setCharPref("syncstate", syncstate);
     },
 
 

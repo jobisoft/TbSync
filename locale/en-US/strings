@@ -6,7 +6,7 @@ syncstate.recievingchanges=Recieving changes from server
 syncstate.requestingchanges=Requesting changes from server
 syncstate.syncing=Initialize synchronisation
 syncstate.alldone=Idle
-syncstate.error=Idle (but there was an error during synchronisation)
+syncstate.error=Idle but error(s)
 syncstate.sending=Sending
 syncstate.receiving=Receiving
 
