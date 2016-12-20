@@ -7,11 +7,16 @@ Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 var tzsync = {
 
     account: null,
+    fResync: false,
 
-    sync: function (account) {
+    sync: function (account, resyncflag = false) {
 
         //set the account for this sync process
         tzsync.account = account;
+
+        //set the resync flag for this sync process
+        tzdb.fResync = resyncflag;
+
 
         if (!tzcommon.getAccountSetting(tzsync.account, "connected")) {
             tzcommon.resetSync(tzsync.account, "notconnected");
@@ -51,8 +56,8 @@ var tzsync = {
         tzcommon.setAccountSetting(account, "folderID", "");
         tzcommon.setAccountSetting(account, "synckey", "");
         tzcommon.setAccountSetting(account, "LastSyncTime", "0");
-        //there is a resync-flag inside of fromtzpush, we could pass it as an argument if it is realy needed
-        tzsync.sync (account);
+        //this is a resync, so enforce the resync flag for this sync process
+        tzsync.sync (account, true);
     },
     
 
@@ -391,9 +396,8 @@ var tzsync = {
                                     card.setProperty("PhotoURI", filePath);
                                     photo = '';
                                 }
-                                if (/*tzcommon.prefs.getCharPref("go", "") === "firstsync" */ true) {
+                                if (tzdb.fResync) {
                                     //during resync, we need to check, if the "new" card we are currenty receiving, is really new, or already exists
-                                    //TEMPHACK - we can always do this and drop firstsync, is it just slower, because new cards during incremental sync will be checked againts the book
                                     let tempsid;
                                     try {
                                         tempsid = card.getProperty("ServerId", "");
