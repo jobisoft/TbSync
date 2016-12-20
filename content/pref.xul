@@ -28,7 +28,7 @@
             </row>
             <row>
                  <label control="tzprefs.host" value="&pref.Server;" />
-                 <textbox id="tzprefs.host" disabled="true" />
+                 <textbox id="tzprefs.host" onblur="tzprefs.stripHost();" disabled="true" />
             </row>
 
             <row>

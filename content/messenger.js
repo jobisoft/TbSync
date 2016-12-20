@@ -6,7 +6,6 @@ Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 Components.utils.import("chrome://tzpush/content/tzsync.jsm");
 
 //TODO: on double click open prefs and jump to log
-//TODO: remove slash and http(s):// from server (if https, enable https if not done)
 //TODO: loop over all properties when card copy
 //TODO: maybe disable sync buttons, if not connected (in settings)
 //TODO: In status bar extend idle to show good/bad syncs
@@ -151,7 +150,7 @@ var tzpush = {
              */
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
                 let owner = tzcommon.findAccountsWithSetting("abname", aItem.URI);
-                //At the moment we do not care, if the book is linked to two accounts (which should never happen), just take the first account found - TODO
+                //It should not be possible to link a book to two different accounts, so we just take the first account found
                 if (owner.length > 0) {
                     tzcommon.setAccountSetting(owner[0], "abname","");
                     tzcommon.setAccountSetting(owner[0], "polkey", "0"); //- this is identical to tzsync.resync() without the actual sync

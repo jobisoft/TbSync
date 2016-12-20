@@ -82,6 +82,19 @@ var tzprefs = {
     },
 
 
+    stripHost: function () {
+        let host = document.getElementById('tzprefs.host').value;
+        if (host.indexOf("https://") == 0) {
+            host = host.replace("https://","");
+            document.getElementById('tzprefs.https').checked = true;
+        } else if (host.indexOf("http://") == 0) {
+            host = host.replace("http://","");
+            document.getElementById('tzprefs.https').checked = false;
+        }
+        document.getElementById('tzprefs.host').value = host.replace("/","");
+    },
+
+    
     /* * *
     * The settings dialog has some static info labels, which needs to be updated
     * from time to time.
