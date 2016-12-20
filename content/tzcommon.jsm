@@ -20,7 +20,7 @@ var tzcommon = {
         * manage sync via observer
         * TODO implement some sort of sync request queuing
         */
-    requestSync: function (account) {
+    requestSync: function (account) { // account = -1 will put all connected accounts on the queue
         if (tzcommon.getSyncState() == "alldone") {
             tzcommon.setSyncState(account, "syncing");
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);

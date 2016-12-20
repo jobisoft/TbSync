@@ -11,6 +11,23 @@ var tzpush = {
         window.open("chrome://tzpush/content/prefManager.xul", "", "chrome,centerscreen,toolbar", null, null);
     },
 
+
+    onload: function () {
+        tzpush.syncTimer.start();
+
+        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+        observerService.addObserver(tzpush.syncRequestObserver, "tzpush.syncRequest", false);
+        observerService.addObserver(tzpush.syncStatusObserver, "tzpush.syncStatus", false);
+        observerService.addObserver(tzpush.setPasswordObserver, "tzpush.setPassword", false);
+
+        tzpush.addressbookListener.add();
+        tzcommon.resetSync();
+
+        //document.getElementById("tzpushStatusMenuSyncPopup").addEventListener("popupshowing", tzpush.updateSyncMenu, false);
+        //document.getElementById("tzpushMainMenuSyncPopup").addEventListener("popupshowing", tzpush.updateSyncMenu, false);
+    },
+
+
     /* * *
     * Observer to catch syncsRequests. The two values "sync" and "resync" will be send by
     * tzcommon.requestSync/requestResync() only if the current syncstate was alldone
@@ -69,6 +86,41 @@ var tzpush = {
         }
     },
     
+
+    //this is probably too much, user usually just wants to sync all possible accounts
+    //no need to allow to sync individually here (it is possible in settings gui)
+    /*
+    updateSyncMenu : function (e) {
+        //window.alert( e.target.id );
+        let popup = e.target;
+        //empty menu
+        while (popup.lastChild) {
+            popup.removeChild(popup.lastChild);
+        }
+
+        let accounts = tzcommon.getAccounts();
+        if (accounts !== null) {
+            //accounts is unordered, loop over keys
+            let accountIDs = Object.keys(accounts).sort();
+
+            for (let i=0; i<accountIDs.length; i++) {
+                let newItem = document.createElement("menuitem");
+                newItem.setAttribute("label", accounts[accountIDs[i]]);
+                newItem.setAttribute("value", accountIDs[i]);
+                newItem.setAttribute("disabled", tzcommon.getAccountSetting(accountIDs[i], "connected") == false);
+                newItem.addEventListener("click", function () {tzcommon.requestSync(accountIDs[i]);}, false);
+                popup.appendChild(newItem);
+            }
+            let newItem = document.createElement("menuseparator");
+            popup.appendChild(newItem);
+        }
+        let newItem = document.createElement("menuitem");
+        newItem.setAttribute("label", "sync all accounts");
+        newItem.setAttribute("value", -1);
+        newItem.addEventListener("click", function () {tzcommon.requestSync(-1);}, false);
+        popup.appendChild(newItem);
+    },*/
+
 
     addressbookListener: {
 
@@ -184,12 +236,4 @@ var tzpush = {
     }
 };
 
-tzpush.syncTimer.start();
-
-let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-observerService.addObserver(tzpush.syncRequestObserver, "tzpush.syncRequest", false);
-observerService.addObserver(tzpush.syncStatusObserver, "tzpush.syncStatus", false);
-observerService.addObserver(tzpush.setPasswordObserver, "tzpush.setPassword", false);
-
-tzpush.addressbookListener.add();
-tzcommon.resetSync();
+window.addEventListener("load", tzpush.onload, false);

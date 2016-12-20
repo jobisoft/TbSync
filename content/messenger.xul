@@ -15,7 +15,11 @@
         <statusbarpanel id="tzstatus" label="TzPush" context="statusmenu" />
         <popupset>
             <menupopup id="statusmenu">
-                <!--menuitem label="&pref.Sync;" onclick="tzcommon.requestSync();" /-->
+                <!--menu label="&pref.Sync;" >
+                    <menupopup id="tzpushStatusMenuSyncPopup">
+                    </menupopup>
+                </menu-->
+                <menuitem label="&pref.Sync;" oncommand="tzcommon.requestSync(-1);" />
                 <menuitem label="&overlay.tz-settings;" onclick="tzpush.openPrefs(event);" />
                 <menuitem label="&pref.ResetStatus;" onclick="tzcommon.resetSync();" />
             </menupopup>
@@ -25,7 +29,11 @@
     <menubar id="taskPopup">
         <menu id="tzpushmain"  label="&overlay.tzpush;" >
             <menupopup>
-                <!--menuitem label="&pref.Sync;" oncommand="tzcommon.requestSync();" /-->
+                <!--menu label="&pref.Sync;" >
+                    <menupopup id="tzpushMainMenuSyncPopup">
+                    </menupopup>
+                </menu-->
+                <menuitem label="&pref.Sync;" oncommand="tzcommon.requestSync(-1);" />
                 <menuitem label="&overlay.tz-settings;" oncommand="tzpush.openPrefs(event);" />
                 <menuitem label="&pref.ResetStatus;" onclick="tzcommon.resetSync();" />
             </menupopup>
@@ -38,7 +46,7 @@
             class="toolbarbutton"
             label="tz-sync" 
             tooltiptext="sync address book button"
-            oncommand="alert('tzcommon.requestSync(); TODO')"/>
+            oncommand="alert('tzcommon.requestSync(-1);')"/>
     </toolbarpalette>
  
 </overlay>
