@@ -411,7 +411,7 @@ var tzcommon = {
         let unique = false;
         do {
             unique = true;
-            let booksIter = this.addBookOrGetItter();
+            let booksIter = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).directories;
             while (booksIter.hasMoreElements()) {
                 let data = booksIter.getNext();
                 if (data instanceof Components.interfaces.nsIAbDirectory && data.dirName == newname) {
@@ -426,10 +426,10 @@ var tzcommon = {
         } while (!unique);
         
         //Create the new book with the unique name
-        let dirPrefId = this.addBookOrGetItter(newname);
+        let dirPrefId = this.addBook(newname);
         
         //find uri of new book and store in prefs
-        let booksIter = this.addBookOrGetItter();
+        let booksIter = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).directories;
         while (booksIter.hasMoreElements()) {
             let data = booksIter.getNext();
             if (data instanceof Components.interfaces.nsIAbDirectory && data.dirPrefId == dirPrefId) {
@@ -478,40 +478,20 @@ var tzcommon = {
     },
 
 
-    addBookOrGetItter: function (name = null) { //if name === null, returns iter, otherwise adds book with given name
-        // get all address books
-        if (Components.classes["@mozilla.org/abmanager;1"]) { // TB 3
-            let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-            if (name === null) return abManager.directories;
-            else return abManager.newAddressBook(name, "", 2); //kPABDirectory - return abManager.newAddressBook(name, "moz-abmdbdirectory://", 2);
-        } else { // TB 2
-            // obtain the main directory through the RDF service
-            let dir = Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService).GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
-            // setup the "properties" of the new address book
-            let properties = Components.classes["@mozilla.org/addressbook/properties;1"].createInstance(Components.interfaces.nsIAbDirectoryProperties);
-            properties.description = name;
-            properties.dirType = 2; // address book
-            if (name === null) return dir.childNodes;
-            else return dir.createNewDirectory(properties);
-        }
+    addBook: function (name) {
+        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+        return abManager.newAddressBook(name, "", 2); /* kPABDirectory - return abManager.newAddressBook(name, "moz-abmdbdirectory://", 2); */
     },
 
 
     removeBook: function (uri) { 
         // get all address books
-        if (Components.classes["@mozilla.org/abmanager;1"]) { // TB 3
-            let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-            try {
-                if (abManager.getDirectory(uri) instanceof Components.interfaces.nsIAbDirectory) {
-                    abManager.deleteAddressBook(uri);
-                }
-            } catch (e) {}
-        } else { // TB 2
-            // obtain the main directory through the RDF service
-            let dir = Components.classes["@mozilla.org/rdf/rdf-service;1"].getService(Components.interfaces.nsIRDFService).GetResource("moz-abdirectory://").QueryInterface(Components.interfaces.nsIAbDirectory);
-            // setup the "properties" of the new address book
-            //TODO
-        }
+        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+        try {
+            if (abManager.getDirectory(uri) instanceof Components.interfaces.nsIAbDirectory) {
+                abManager.deleteAddressBook(uri);
+            }
+        } catch (e) {}
     }
         
 };
