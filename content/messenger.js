@@ -184,27 +184,15 @@ var tzpush = {
         },
 
         add: function addressbookListener_add () {
-            if (Components.classes["@mozilla.org/abmanager;1"]) { // Thunderbird 3
-                let flags = Components.interfaces.nsIAbListener;
-                Components.classes["@mozilla.org/abmanager;1"]
-                    .getService(Components.interfaces.nsIAbManager)
-                    .addAddressBookListener(tzpush.addressbookListener, flags.directoryItemRemoved | flags.itemAdded | flags.directoryRemoved);
-            } else { // Thunderbird 2
-                let flags = Components.interfaces.nsIAddrBookSession;
-                Components.classes["@mozilla.org/addressbook/services/session;1"]
-                    .getService(Components.interfaces.nsIAddrBookSession)
-                    .addAddressBookListener(tzpush.addressbookListener, flags.directoryItemRemoved | flags.itemAdded | flags.directoryRemoved);
-            }
+            let flags = Components.interfaces.nsIAbListener;
+            Components.classes["@mozilla.org/abmanager;1"]
+                .getService(Components.interfaces.nsIAbManager)
+                .addAddressBookListener(tzpush.addressbookListener, flags.directoryItemRemoved | flags.itemAdded | flags.directoryRemoved);
         },
 
         remove: function addressbookListener_remove () {
-            if (Components.classes["@mozilla.org/abmanager;1"]) // Thunderbird 3
-                Components.classes["@mozilla.org/abmanager;1"]
+            Components.classes["@mozilla.org/abmanager;1"]
                 .getService(Components.interfaces.nsIAbManager)
-                .removeAddressBookListener(tzpush.addressbookListener);
-            else // Thunderbird 2
-                Components.classes["@mozilla.org/addressbook/services/session;1"]
-                .getService(Components.interfaces.nsIAddrBookSession)
                 .removeAddressBookListener(tzpush.addressbookListener);
         }
     },

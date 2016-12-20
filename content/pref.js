@@ -229,27 +229,15 @@ var tzprefs = {
         },
 
         add: function addressbookListener_add () {
-            if (Components.classes["@mozilla.org/abmanager;1"]) { // Thunderbird 3
-                Components.classes["@mozilla.org/abmanager;1"]
-                    .getService(Components.interfaces.nsIAbManager)
-                    .addAddressBookListener(tzprefs.addressbookListener, Components.interfaces.nsIAbListener.all);
-            } else { // Thunderbird 2
-                Components.classes["@mozilla.org/addressbook/services/session;1"]
-                    .getService(Components.interfaces.nsIAddrBookSession)
-                    .addAddressBookListener(tzprefs.addressbookListener, Components.interfaces.nsIAbListener.all);
-            }
+            Components.classes["@mozilla.org/abmanager;1"]
+                .getService(Components.interfaces.nsIAbManager)
+                .addAddressBookListener(tzprefs.addressbookListener, Components.interfaces.nsIAbListener.all);
         },
 
         remove: function addressbookListener_remove () {
-            if (Components.classes["@mozilla.org/abmanager;1"]) // Thunderbird 3
-                Components.classes["@mozilla.org/abmanager;1"]
+            Components.classes["@mozilla.org/abmanager;1"]
                 .getService(Components.interfaces.nsIAbManager)
                 .removeAddressBookListener(tzprefs.addressbookListener);
-            else // Thunderbird 2
-                Components.classes["@mozilla.org/addressbook/services/session;1"]
-                .getService(Components.interfaces.nsIAddrBookSession)
-                .removeAddressBookListener(tzprefs.addressbookListener);
-        }
     }
 
 };
