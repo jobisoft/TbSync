@@ -17,7 +17,8 @@ var tzdb = {
     conn: null,
     migrate: null,
     accountColumns: ["accountname","LastSyncTime"],
-    cache: {}, 
+    settingsCache: {}, 
+    accountCache: "",   //to distinguish from null = cached value of "no accounts"
 
     onLoad: function() {
         // initialization code
@@ -74,20 +75,30 @@ var tzdb = {
 
     //Account stuff
     getAccounts: function () {
+        //query accountCache
+        if (tzdb.accountCache !== "") return tzdb.accountCache;
+
         let accounts = {};
         let statement = this.conn.createStatement("SELECT account, accountname FROM accounts;");
         let entries = 0;
         while (statement.executeStep()) {
             accounts[statement.row.account] = statement.row.accountname;
-        entries++;
+            entries++;
         }
 
-        if (entries>0) return accounts;
-        else return null;
+        let value = null;
+        if (entries>0) value = accounts;
+        
+        //update accountCache
+        tzdb.accountCache = value;
+        return value;
     },
 
 
     addAccount: function (accountname) {
+        //reset accountCache
+        tzdb.accountCache = "";
+        
         this.conn.executeSimpleSQL("INSERT INTO accounts (accountname) VALUES ('"+accountname+"');");
         let statement = this.conn.createStatement("SELECT seq FROM sqlite_sequence where name='accounts';");
         if (statement.executeStep()) {
@@ -101,8 +112,10 @@ var tzdb = {
     removeAccount: function (account) {
         this.conn.executeSimpleSQL("DELETE FROM accounts WHERE account='"+account+"';");
         this.conn.executeSimpleSQL("DELETE FROM settings WHERE account='"+account+"';");
-        //remove cache
-        if (tzdb.cache.hasOwnProperty(account)) delete tzdb.cache[account];
+
+        //remove settingsCache and reset accountCache
+        if (tzdb.settingsCache.hasOwnProperty(account)) delete tzdb.settingsCache[account];
+        tzdb.accountCache = "";
     },
     
 
@@ -131,9 +144,9 @@ var tzdb = {
             }
         }
 
-        //also update cache
-        if (!tzdb.cache.hasOwnProperty(account)) tzdb.cache[account] = {};
-        tzdb.cache[account][name] = value.toString();
+        //also update settingsCache
+        if (!tzdb.settingsCache.hasOwnProperty(account)) tzdb.settingsCache[account] = {};
+        tzdb.settingsCache[account][name] = value.toString();
 
     },
 
@@ -142,8 +155,8 @@ var tzdb = {
         let col;
         let statement;
 
-        //query cache
-        if (tzdb.cache.hasOwnProperty(account) && tzdb.cache[account].hasOwnProperty(name)) return tzdb.cache[account][name];
+        //query settingsCache
+        if (tzdb.settingsCache.hasOwnProperty(account) && tzdb.settingsCache[account].hasOwnProperty(name)) return tzdb.settingsCache[account][name];
 
         if (this.accountColumns.indexOf(name) != -1) {
             //this field is part of the accounts table with its own column
@@ -160,9 +173,9 @@ var tzdb = {
             value = statement.row[col];
         }
         
-        //update cache
-        if (!tzdb.cache.hasOwnProperty(account)) tzdb.cache[account] = {};
-        tzdb.cache[account][name] = value;
+        //update settingsCache
+        if (!tzdb.settingsCache.hasOwnProperty(account)) tzdb.settingsCache[account] = {};
+        tzdb.settingsCache[account][name] = value;
             
         return value;
     },
