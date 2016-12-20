@@ -6,6 +6,10 @@ Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 Components.utils.import("chrome://tzpush/content/tzsync.jsm");
 
 //TODO: on double click open prefs and jump to log
+//TODO: remove slash and http(s):// from server (if https, enable https if not done
+//TODO: check bug with empty passwords on login manager if CANCEL pressed
+//TODO: loop over all properties when card copy
+//TODO: maybe disable sync buttons, if not connected (in settings)
 
 var tzpush = {
 
