@@ -19,6 +19,9 @@
 <!ENTITY pref.Close "Close">
 <!ENTITY pref.DeleteAccount "Delete account">
 
+<!ENTITY pref.noaccounts "There have not yet been defined any accounts.">
+
+
 <!ENTITY pref.SyncedAB "Synced Addressbook">
 <!ENTITY pref.LastSyncTime "Last successful syncronisation">
 

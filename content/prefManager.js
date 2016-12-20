@@ -2,7 +2,6 @@
 
 Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 //TODO (for production): after migration, delete the data stored in prefs, the user might get confused at a later time, if that old account data is remigrated again, if the db was deleted
-//TODO: empty page on no account should be locale
 var tzprefManager = {
 
     selectedAccount: null,
@@ -60,7 +59,7 @@ var tzprefManager = {
         } else {
             //No defined accounts, load dummy
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-            document.getElementById("tzprefManager.contentFrame").webNavigation.loadURI("chrome://tzpush/content/noaccounts.html", LOAD_FLAGS_NONE, null, null, null);
+            document.getElementById("tzprefManager.contentFrame").webNavigation.loadURI("chrome://tzpush/content/noaccounts.xul", LOAD_FLAGS_NONE, null, null, null);
         }
     },
 

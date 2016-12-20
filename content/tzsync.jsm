@@ -186,8 +186,10 @@ var tzsync = {
         //next == 1 and 2 = resende - next ==3 = GetFolderId() - WHY DO WE REQUEST 3 POLICYKEYS????
         if (next < 3) {
             let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x49, 0x03, 0x50, 0x6F, 0x6C, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x4B, 0x03, 0x31, 0x00, 0x01, 0x01, 0x01, 0x01);
-            //TODO: We should also do the following replacement. don't we?
-            //wbxml = wbxml.replace("MS-WAP-Provisioning-XML", "MS-EAS-Provisioning-WBXML");
+            //TODO: We should also do the following replacement as in Polkey(). don't we?
+            /* if (tzcommon.getAccountSetting(tzsync.account, "asversion") !== "2.5") {
+                wbxml = wbxml.replace("MS-WAP-Provisioning-XML", "MS-EAS-Provisioning-WBXML");
+            } */
             wbxml = wbxml.replace('PolKeyReplace', polkey);
             this.Send(wbxml, this.polkeyCallback.bind(this), "Provision", next + 1);
         } else {
@@ -1161,7 +1163,7 @@ var tzsync = {
                 for (let nIdx = 0; nIdx < nBytes; nIdx++) {
                     ui8Data[nIdx] = wbxml.charCodeAt(nIdx) & 0xff;
                 }
-                //tzcommon.dump("ui8Data",this.toxml(wbxml))	
+                //tzcommon.dump("ui8Data",this.toxml(wbxml))
                 req.send(ui8Data);
             }
         } catch (e) {

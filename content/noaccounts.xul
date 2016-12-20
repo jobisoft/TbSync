@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://tzpush/locale/overlay.dtd">
+
+<window id="tzprefs" 
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    title="TzPush Account Settings" >
+
+
+    <hbox flex="1" pack="center">
+        <vbox pack="center">
+             <html:p style="font-size:10pt;">&pref.noaccounts;</html:p>
+        </vbox>
+    </hbox>
+    
+    
+</window>
