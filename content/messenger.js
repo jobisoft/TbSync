@@ -105,7 +105,7 @@ var tzpush = {
         let accounts = tzcommon.getAccounts();
         if (accounts !== null) {
             //accounts is unordered, loop over keys
-            let accountIDs = Object.keys(accounts).sort();
+            let accountIDs = Object.keys(accounts).sort((a, b) => a - b);
 
             for (let i=0; i<accountIDs.length; i++) {
                 let newItem = document.createElement("menuitem");
@@ -214,7 +214,7 @@ var tzpush = {
                 let accounts = tzcommon.getAccounts();
                 if (accounts === null) return;
 
-                let accountIDs = Object.keys(accounts).sort();
+                let accountIDs = Object.keys(accounts).sort((a, b) => a - b);
 
                 for (let i=0; i<accountIDs.length; i++) {
                     let syncInterval = tzcommon.getAccountSetting(accountIDs[i], "autosync") * 60 * 1000;
