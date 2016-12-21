@@ -5,7 +5,6 @@
 Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 Components.utils.import("chrome://tzpush/content/tzsync.jsm");
 
-//TODO: on double click open prefs and jump to log
 //TODO: loop over all properties when card copy
 //TODO: maybe disable sync buttons, if not connected (in settings)
 //TODO: In status bar extend idle to show good/bad syncs

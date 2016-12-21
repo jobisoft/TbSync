@@ -12,7 +12,7 @@
     <script type="application/x-javascript" src="chrome://tzpush/content/messenger.js" />
 
     <statusbar id="status-bar">
-        <statusbarpanel id="tzstatus" label="TzPush" context="statusmenu" />
+        <statusbarpanel id="tzstatus" label="TzPush" context="statusmenu" ondblclick="tzpush.openPrefs(event);" />
         <popupset>
             <menupopup id="statusmenu">
                 <!--menu label="&pref.Sync;" >
