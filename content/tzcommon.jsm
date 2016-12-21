@@ -283,8 +283,9 @@ var tzcommon = {
     },
     
     addAccount: function() {
-        let accountID = tzdb.addAccount(tzcommon.getLocalizedMessage("new_account"));
+        let accountID = tzdb.addAccount("new_account");
         //set some defaults
+        this.setAccountSetting(accountID, "accountname", tzcommon.getLocalizedMessage("new_account") + " #" + accountID);
         this.setAccountSetting(accountID, "prov", true);
         this.setAccountSetting(accountID, "asversion", "14.0");
         this.setAccountSetting(accountID, "servertype", "zarafa");
