@@ -11,7 +11,6 @@ Components.utils.import("chrome://tzpush/content/tzsync.jsm");
 //TODO: In status bar extend idle to show good/bad syncs
 //TODO: Sometimes account gets disconnect on error, which should not happen
 //TODO: Fix conceptional error, which does not allow fields to be cleared, because empty props are ignored
-//TODO: More complex device id
 
 var tzpush = {
 

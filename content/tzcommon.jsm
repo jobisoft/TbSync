@@ -436,9 +436,19 @@ var tzcommon = {
         }
     } ,
 
+    getNewDeviceId: function () {
+        //taken from https://jsfiddle.net/briguy37/2MVFd/
+        let d = new Date().getTime();
+        let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            let r = (d + Math.random()*16)%16 | 0;
+            d = Math.floor(d/16);
+            return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+        });
+        return uuid;
+    },
 
     checkDeviceId: function (account) {
-        if (tzcommon.getAccountSetting(account, "deviceId", "") == "") tzcommon.setAccountSetting(account, "deviceId", Date.now());
+        if (tzcommon.getAccountSetting(account, "deviceId", "") == "") tzcommon.setAccountSetting(account, "deviceId", tzcommon.getNewDeviceId());
         return  tzcommon.getAccountSetting(account, "deviceId");
     },
 
