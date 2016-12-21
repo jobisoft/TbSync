@@ -47,10 +47,6 @@
 
     </prefpane>
 
-    <prefpane id="Help" label="&pref.Help;" image="chrome://tzpush/skin/help.png" >
-        <iframe flex="1" src="chrome://tzpush/content/help.html" />
-    </prefpane>
-
     <prefpane id="Cape" label="&pref.Cape;" image="chrome://tzpush/skin/cape.png" >
         <hbox flex="1" >
             <vbox flex="0" style="padding: 0 2em;" >
@@ -80,5 +76,8 @@
          </hbox>
     </prefpane>
 
+    <prefpane id="Help" label="&pref.Help;" image="chrome://tzpush/skin/help.png" >
+        <iframe flex="1" src="chrome://tzpush/content/help.html" />
+    </prefpane>
 
 </prefwindow>
