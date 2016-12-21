@@ -85,7 +85,7 @@ var tzsync = {
         0x52: 'BusinessFaxNumber',
         0x53: 'WorkPhone',
         0x54: 'CarPhoneNumber',
-        //0x55:'<Categories>',
+        0x55: 'Categories',
         0x56: 'Category',
         0x57: 'Children',
         0x58: 'Child',
@@ -232,16 +232,24 @@ var tzsync = {
         this.fromzpush();
     },
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+    //these functions handle categories compatible to the Category Manger Add-On, which is compatible to lots of other sync tools (sogo, carddav-sync, roundcube)
+    getCategoriesFromString: function (catString) {
+        let catsArray = [];
+        if (catString.trim().length>0) catsArray = catString.trim().split("\u001A").filter(String);
+        return catsArray;
+    },
+
+    mergeCategories: function (oldCats, data) {
+        let catsArray = tzsync.getCategoriesFromString(oldCats);
+        let newCat = data.trim();
+        if (newCat != "" && catsArray.indexOf(newCat) == -1) catsArray.push(newCat);
+        return catsArray.join("\u001A");
+    },
+
     fromzpush: function() {
         tzcommon.setSyncState(tzsync.account, "requestingchanges");
         var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
@@ -365,6 +373,10 @@ var tzsync = {
                                 if (lines[1] !== undefined) {
                                     card.setProperty("HomeAddress2", lines[1]);
                                 }
+                            } else if (x === 0x01 && temptoken === 0x56) { //Zarafa sends Categories as Category 
+                                // sogo-connector and other sync tools use the Categories field for categories
+                                // add the new category to the existing one
+                                card.setProperty("Categories", tzsync.mergeCategories(card.getProperty("Categories", ""),data));
                             } else if (x === 0x01 && temptoken === 0x51) {
                                 let lines = data.split(seperator);
 
@@ -578,6 +590,7 @@ var tzsync = {
         var seperator = tzcommon.getAccountSetting(tzsync.account, "seperator"); // default is " ," can be changed to "/n"
         var cards = addressBook.childCards;
 
+        // this while loops over all cards but only works on new cards without serverid
         while (cards.hasMoreElements()) {
             card = cards.getNext();
 
@@ -630,7 +643,7 @@ var tzsync = {
                                     break;
                             }
 
-                        } else if (card.getProperty(x, "") !== '') {
+                        } else if (card.getProperty(x, "") !== '') { // This means, we do not process empty properties of new cards being pushed to the server
 
                             if (x === 'BirthYear' || x === 'BirthMonth' || x === 'BirthDay') {
 
@@ -670,10 +683,14 @@ var tzsync = {
                                         wbxml = wbxml + String.fromCharCode(0x45) + String.fromCharCode(0x03) + annymd + String.fromCharCode(0x00, 0x01);
                                     }
                                 }
-                            } else if (x === 'Category') {
+                            } else if (x === 'Categories') { //Send Categories as Category to Zarafa
                                 let cat = String.fromCharCode(0x55, 0x56, 0x3, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x0, 0x1, 0x1);
-                                cat = cat.replace("replaceme", tzcommon.encode_utf8(card.getProperty(x, '')));
-                                wbxml = wbxml + cat;
+                                let catsArray = tzsync.getCategoriesFromString(card.getProperty("Categories", ""));
+                                tzcommon.dump("init cats", card.getProperty("Categories", "") + " ("+catsArray.length+")");
+                                for (let i=0; i < catsArray.length; i++) {
+                                    tzcommon.dump("send cats", catsArray[i]);
+                                    wbxml = wbxml + cat.replace("replaceme", tzcommon.encode_utf8(catsArray[i]));
+                                }
                             } else if (x === 'Notes') {
                                 if (tzcommon.getAccountSetting(tzsync.account, "asversion") === "2.5") {
                                     wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
@@ -703,6 +720,7 @@ var tzsync = {
 
         cards = addressBook.childCards;
 
+        // this while loops over all cards but only works on old cards already having a serverid
         while (cards.hasMoreElements()) {
 
             if (numofcards === maxnumbertosend) {
@@ -759,7 +777,7 @@ var tzsync = {
                                         break;
                                 }
 
-                            } else if (card.getProperty(x, "") !== '') {
+                            } else if (card.getProperty(x, "") !== '') { //TODO: Does this mean, we can only update but do not "clear" a field?
                                 if (x === 'BirthYear' || x === 'BirthMonth' || x === 'BirthDay') {
 
                                     if (x === 'BirthYear') {
@@ -799,10 +817,14 @@ var tzsync = {
                                             wbxml = wbxml + String.fromCharCode(0x45) + String.fromCharCode(0x03) + annymd + String.fromCharCode(0x00, 0x01);
                                         }
                                     }
-                                } else if (x === 'Category') {
+                                } else if (x === 'Categories') { //send categories as category to zarafa
                                     let cat = String.fromCharCode(0x55, 0x56, 0x3, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x0, 0x1, 0x1);
-                                    cat = cat.replace("replaceme", tzcommon.encode_utf8(card.getProperty(x, '')));
-                                    wbxml = wbxml + cat;
+                                    let catsArray = tzsync.getCategoriesFromString(card.getProperty("Categories", ""));
+                                    tzcommon.dump("init cats", card.getProperty("Categories", "") + " ("+catsArray.length+")");
+                                    for (let i=0; i < catsArray.length; i++) {
+                                        tzcommon.dump("update cats", catsArray[i]);
+                                        wbxml = wbxml + cat.replace("replaceme", tzcommon.encode_utf8(catsArray[i]));
+                                    }
                                 } else if (x === 'Notes') {
                                     if (tzcommon.getAccountSetting(tzsync.account, "asversion") === "2.5") {
                                         wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
@@ -1022,7 +1044,7 @@ var tzsync = {
         return folderID;
     },
 
-    //TODO: What in the lords name is this?
+    //Create a reversed map of ToContacts
     InitContact2: function() {
         this.Contacts2 = [];
         for (let x in this.ToContacts) {

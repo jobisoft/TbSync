@@ -8,6 +8,6 @@ This is work in progress. Roadmap:
  * [x] simplify configuration (server profiles)
  * [x] support multiple ActiveSync accounts on same or different servers
  * [ ] allow to sync more than one address book per account
- * [ ] sync categories
+ * [x] sync categories (compatible to Category Manager Add-On)
  * [ ] sync calendar
  * [ ] sync global adress book

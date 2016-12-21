@@ -20,6 +20,7 @@
 <!ENTITY pref.DeleteAccount "Delete account">
 
 <!ENTITY pref.noaccounts "There have not yet been defined any accounts.">
+<!ENTITY pref.catman "Category Manager">
 
 
 <!ENTITY pref.SyncedAB "Synced Addressbook">
