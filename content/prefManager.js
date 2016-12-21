@@ -5,7 +5,6 @@ Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 var tzprefManager = {
 
     selectedAccount: null,
-    accounts: null,
 
 
     onload: function () {
@@ -51,50 +50,57 @@ var tzprefManager = {
 
     updateAccountsList: function (accountToSelect = -1) {
         let accountsList = document.getElementById("tzprefManager.accounts");
-        this.accounts = tzcommon.getAccounts();
+        let accounts = tzcommon.getAccounts();
 
-        if (this.accounts !== null) {
+        if (accounts !== null) {
 
             //get current accounts in list and remove entries of accounts no longer there
             let listedAccounts = [];
             for (let i=accountsList.getRowCount()-1; i>=0; i--) {
                 listedAccounts.push(accountsList.getItemAtIndex (i).value);
-                if (!this.accounts.hasOwnProperty(accountsList.getItemAtIndex(i).value)) {
+                if (!accounts.hasOwnProperty(accountsList.getItemAtIndex(i).value)) {
                     accountsList.removeItemAt(i);
                 }
             }
 
-            //add all missing accounts (always to the end of the list)
             //accounts array is without order, extract keys (ids) and loop over keys
-            let accountIDs = Object.keys(this.accounts).sort((a, b) => a - b);
-            for (let i = 0; i < accountIDs.length; i++) if (listedAccounts.indexOf(accountIDs[i]) == -1) {
-                
-                let newListItem = document.createElement("richlistitem");
-                newListItem.setAttribute("value", accountIDs[i]);
+            let accountIDs = Object.keys(accounts).sort((a, b) => a - b);
+            for (let i = 0; i < accountIDs.length; i++) {
 
-                //add account name
-                let itemLabelCell = document.createElement("listcell");
-                itemLabelCell.setAttribute("class", "label");
-                itemLabelCell.setAttribute("flex", "1");
-                let itemLabel = document.createElement("label");
-                itemLabel.setAttribute("value", this.accounts[accountIDs[i]]);
-                itemLabelCell.appendChild(itemLabel);
-                newListItem.appendChild(itemLabelCell);
+                if (listedAccounts.indexOf(accountIDs[i]) == -1) {
+                    //add all missing accounts (always to the end of the list)
+                    let newListItem = document.createElement("richlistitem");
+                    newListItem.setAttribute("id", "tzprefManager.accounts." + accountIDs[i]);
+                    newListItem.setAttribute("value", accountIDs[i]);
 
-                //add account status
-                let itemStatusCell = document.createElement("listcell");
-                itemStatusCell.setAttribute("class", "img");
-                itemStatusCell.setAttribute("width", "34");
-                itemStatusCell.setAttribute("height", "34");
-                let itemStatus = document.createElement("image");
-                itemStatus.setAttribute("src", this.getStatusImage(accountIDs[i]));
-                itemStatus.setAttribute("style", "margin:2px;");
-                itemStatusCell.appendChild(itemStatus);
+                    //add account name
+                    let itemLabelCell = document.createElement("listcell");
+                    itemLabelCell.setAttribute("class", "label");
+                    itemLabelCell.setAttribute("flex", "1");
+                    let itemLabel = document.createElement("label");
+                    itemLabel.setAttribute("value", accounts[accountIDs[i]]);
+                    itemLabelCell.appendChild(itemLabel);
+                    newListItem.appendChild(itemLabelCell);
 
-                newListItem.appendChild(itemStatusCell);
-                accountsList.appendChild(newListItem);
+                    //add account status
+                    let itemStatusCell = document.createElement("listcell");
+                    itemStatusCell.setAttribute("class", "img");
+                    itemStatusCell.setAttribute("width", "34");
+                    itemStatusCell.setAttribute("height", "34");
+                    let itemStatus = document.createElement("image");
+                    itemStatus.setAttribute("src", this.getStatusImage(accountIDs[i]));
+                    itemStatus.setAttribute("style", "margin:2px;");
+                    itemStatusCell.appendChild(itemStatus);
+
+                    newListItem.appendChild(itemStatusCell);
+                    accountsList.appendChild(newListItem);
+                } else {
+                    //update existing entries in list
+                    this.updateAccountName(accountIDs[i], accounts[accountIDs[i]]);
+                    this.updateAccountStatus(accountIDs[i]);
+                }
             }
-
+            
             //find selected item
             for (let i=0; i<accountsList.getRowCount(); i++) {
                 if (accountToSelect == accountsList.getItemAtIndex(i).value || accountToSelect == -1) {
@@ -117,23 +123,13 @@ var tzprefManager = {
 
 
     updateAccountName: function (id, name) {
-        let accountsList = document.getElementById("tzprefManager.accounts");
-        for (let i=0; i<accountsList.getRowCount(); i++) {
-            if (accountsList.getItemAtIndex(i).value == id) {
-                accountsList.getItemAtIndex(i).firstChild.firstChild.value = name;
-                break;
-            }
-        }
+        let listItem = document.getElementById("tzprefManager.accounts." + id);
+        if (listItem.childNodes[0].firstChild.value != name) listItem.childNodes[0].firstChild.value = name;
     },
     
     updateAccountStatus: function (id) {
-        let accountsList = document.getElementById("tzprefManager.accounts");
-        for (let i=0; i<accountsList.getRowCount(); i++) {
-            if (accountsList.getItemAtIndex(i).value == id) {
-                accountsList.getItemAtIndex(i).childNodes[1].firstChild.src = this.getStatusImage(id);
-                break;
-            }
-        }
+        let listItem = document.getElementById("tzprefManager.accounts." + id);
+        if (listItem.childNodes[1].firstChild.src != this.getStatusImage(id)) listItem.childNodes[1].firstChild.src = this.getStatusImage(id);
     },
     
     //load the pref page for the currently selected account (triggered by onSelect)
