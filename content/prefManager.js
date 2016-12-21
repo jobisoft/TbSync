@@ -26,9 +26,13 @@ var tzprefManager = {
         let accountsList = document.getElementById("tzprefManager.accounts");
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
             let nextAccount =  -1;
-            if (accountsList.selectedIndex > 0) nextAccount = accountsList.getItemAtIndex(accountsList.selectedIndex - 1).value;
+            if (accountsList.selectedIndex > 0) {
+                //first try to select the item after this one, otherwise take the one before
+                if (accountsList.selectedIndex + 1 < accountsList.getRowCount()) nextAccount = accountsList.getItemAtIndex(accountsList.selectedIndex + 1).value;
+                else nextAccount = accountsList.getItemAtIndex(accountsList.selectedIndex - 1).value;
+            }
             
-            if (confirm(tzcommon.getLocalizedMessage("promptDeleteAccount").replace("##accountName##",accountsList.selectedItem.label))) {
+            if (confirm(tzcommon.getLocalizedMessage("promptDeleteAccount").replace("##accountName##", accountsList.selectedItem.label))) {
                 tzcommon.removeAccount(accountsList.selectedItem.value);
                 this.updateAccountsList(nextAccount);
             }
