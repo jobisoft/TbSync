@@ -8,7 +8,6 @@ Components.utils.import("chrome://tzpush/content/tzsync.jsm");
 //TODO: loop over all properties when card copy
 //TODO: maybe disable sync buttons, if not connected (in settings)
 //TODO: maybe include connect / disconnect image on button
-//TODO: In status bar extend idle to show good/bad syncs
 //TODO: Sometimes account gets disconnect on error, which should not happen
 //TODO: Fix conceptional error, which does not allow fields to be cleared, because empty props are ignored
 
@@ -29,6 +28,7 @@ var tzpush = {
 
         tzpush.addressbookListener.add();
         tzcommon.resetSync();
+        tzcommon.requestSync();
 
         //document.getElementById("tzpushStatusMenuSyncPopup").addEventListener("popupshowing", tzpush.updateSyncMenu, false);
         //document.getElementById("tzpushMainMenuSyncPopup").addEventListener("popupshowing", tzpush.updateSyncMenu, false);
