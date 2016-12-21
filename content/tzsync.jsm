@@ -236,7 +236,7 @@ var tzsync = {
 
 
 
-    //these functions handle categories compatible to the Category Manger Add-On, which is compatible to lots of other sync tools (sogo, carddav-sync, roundcube)
+    //these functions handle categories compatible to the Category Manager Add-On, which is compatible to lots of other sync tools (sogo, carddav-sync, roundcube)
     getCategoriesFromString: function (catString) {
         let catsArray = [];
         if (catString.trim().length>0) catsArray = catString.trim().split("\u001A").filter(String);
