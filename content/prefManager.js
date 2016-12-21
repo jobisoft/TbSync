@@ -39,11 +39,11 @@ var tzprefManager = {
     },
 
     getStatusImage: function (account) {
-        let imagesrc = "disconnected.png";
-        //if not connected show discon, otherwise check for error
+        let imagesrc = "info16.png";
+        //if not connected show info-icon, otherwise check for error
         if (tzcommon.getAccountSetting(account, "connected")) {
-            if (tzcommon.getAccountSetting(account, "lastError") != "") imagesrc = "error.png"
-            else imagesrc = "ok.png";
+            if (tzcommon.getAccountSetting(account, "lastError") != "") imagesrc = "error16.png"
+            else imagesrc = "tick16.png";
         }
         return "chrome://tzpush/skin/" + imagesrc;
     },
@@ -85,8 +85,8 @@ var tzprefManager = {
                     //add account status
                     let itemStatusCell = document.createElement("listcell");
                     itemStatusCell.setAttribute("class", "img");
-                    itemStatusCell.setAttribute("width", "34");
-                    itemStatusCell.setAttribute("height", "34");
+                    itemStatusCell.setAttribute("width", "30");
+                    itemStatusCell.setAttribute("height", "30");
                     let itemStatus = document.createElement("image");
                     itemStatus.setAttribute("src", this.getStatusImage(accountIDs[i]));
                     itemStatus.setAttribute("style", "margin:2px;");
