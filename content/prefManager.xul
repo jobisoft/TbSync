@@ -52,29 +52,23 @@
     </prefpane>
 
     <prefpane id="Cape" label="&pref.Cape;" image="chrome://tzpush/skin/cape.png" >
-          <grid flex="1" align="center">
-               <columns>
-                    <column flex="0"/>
-                    <column flex="1"/>
-               </columns>
-               <rows>
-                    <row>
-                         <image src="chrome://tzpush/skin/cape.png" width='100' height='70' style='padding:10px;' align='center' onclick="tzprefManager.cape() "  onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
-                         <html:h4> Cape is an established registered charity offering a dynamic and flexible outreach and day service for people who experience severe and enduring mental health difficulties. <html:br/><html:br/>
-TzPush is free software, but feel free to donate to good cause, like CAPE or<html:br/><html:a href="https://addons.mozilla.org/en-US/thunderbird/addon/tzpush/developers?src=api" style="color:blue;text-decoration: underline">
-Buy me a cup of tea and a slice of cake.</html:a> <html:br/><html:br/>Thankyou,<html:br/>Mark.</html:h4> 
-                    </row>
-                    <row>
-                         <label
-                         value="www.capeproject.org.uk"
-                         style="color: blue; text-decoration: underline"
-                         onmouseover="this.style.cursor='pointer'" 
-                         onmouseout="this.style.cursor='default'" 
-                         align="center"
-                         onclick="cape()" /> 
-                    </row>
-               </rows>
-          </grid>
+        <hbox flex="1" >
+            <vbox flex="0" style="padding: 0 2em;" >
+                <image src="chrome://tzpush/skin/cape.png" width='100' style='padding:10px;' align='center' onclick="tzprefManager.openTBtab('http://www.capeproject.org.uk');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
+                <label
+                    value="www.capeproject.org.uk"
+                    style="color: blue; text-decoration: underline"
+                    onmouseover="this.style.cursor='pointer'"
+                    onmouseout="this.style.cursor='default'"
+                    onclick="tzprefManager.openTBtab('http://www.capeproject.org.uk');"
+                    align="center" />
+            </vbox>
+            <vbox flex="1"  style="padding: 0 2em 0 0;" >
+                 <html:p> Cape is an established registered charity offering a dynamic and flexible outreach and day service for people who experience severe and enduring mental health difficulties. </html:p>
+                 <html:p> TzPush is free software, but feel free to donate to good cause, like CAPE or <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tzprefManager.openTBtab('https://addons.mozilla.org/en-US/thunderbird/addon/tzpush/developers?src=api');" style="color:blue;text-decoration: underline">buy me a cup of tea and a slice of cake.</html:span></html:p>
+                 <html:p>Thank you,<html:br/>Mark.</html:p> 
+            </vbox>
+        </hbox>
     </prefpane>
 
 </prefwindow>
