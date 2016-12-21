@@ -82,11 +82,19 @@ var tzpush = {
             let account = data[0];
             let state = data[1];
 
+            let accounts = tzcommon.getAccounts();
+            let name = "[account #" + account + "]";
+            if (accounts !== null && accounts.hasOwnProperty(account)) name = "[" + accounts[account] + "]";
+
             //dump into log
-            tzcommon.dump("syncstate set by account #"+account, tzcommon.getLocalizedMessage("syncstate." + state));
+            tzcommon.dump("syncstate set by "+name, tzcommon.getLocalizedMessage("syncstate." + state));
 
             let status = document.getElementById("tzstatus");
-            if (status) status.label = "TzPush: " + tzcommon.getLocalizedMessage("syncstate." + state);
+            let msg = "TzPush: " + tzcommon.getLocalizedMessage("syncstate." + state);
+
+            //append account name to status
+            if (state != "error" && state != "alldone") msg = msg + " " + name;
+            if (status) status.label = msg;
         }
     },
     
