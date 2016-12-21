@@ -67,7 +67,7 @@ var tzcommon = {
 
 
 
-    resetSync: function (account = -1, errorcode = null) {
+    resetSync: function (account = -1, errorcode = 999) {
         let resetAccounts = [];
         
         //account == -1 -> loop over all present accounts
@@ -101,18 +101,22 @@ var tzcommon = {
     },
 
 
-    setSyncState: function (account, syncstate, errorcode = null) {
+    setSyncState: function (account, syncstate, errorcode = 200) {
         let msg = account + "." + syncstate;
         let workTheQueue = false;
 
         //errocode reporting only if syncstate == alldone
         if (syncstate == "alldone") {
-            if (errorcode !== null) {
-                msg = account + ".error";
-                tzcommon.dump("Error @ Account #" + account, tzcommon.getLocalizedMessage("error." + errorcode));
-                tzcommon.setAccountSetting(account, "lastError", errorcode);
-            } else {
-                tzcommon.setAccountSetting(account, "lastError", "");
+            switch (errorcode) {
+                case 200: //success, clear last error
+                    tzcommon.setAccountSetting(account, "lastError", "");
+                    break;
+                case 999: //reset without errorcode, do nothing
+                    break;
+                default:
+                    msg = account + ".error";
+                    tzcommon.dump("Error @ Account #" + account, tzcommon.getLocalizedMessage("error." + errorcode));
+                    tzcommon.setAccountSetting(account, "lastError", errorcode);
             }
 
             //this is the very end of a sync process - check the queue for more
