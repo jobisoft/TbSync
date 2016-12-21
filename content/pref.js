@@ -168,6 +168,7 @@ var tzprefs = {
             tzcommon.disconnectAccount(tzprefs.selectedAccount);
             tzprefs.updateGui();
             tzprefs.updateLabels();
+            parent.tzprefManager.updateAccountStatus(tzprefs.selectedAccount);
         } else {
             //we are disconnected and want to connected
             tzcommon.connectAccount(tzprefs.selectedAccount);
@@ -196,6 +197,7 @@ var tzprefs = {
                     case "error": // = alldone with error
                         tzprefs.updateLabels();
                         tzprefs.updateGui();
+                        parent.tzprefManager.updateAccountStatus(tzprefs.selectedAccount);
 
                         //error handling
                         switch (lastError) {
@@ -210,6 +212,7 @@ var tzprefs = {
                     case "alldone":
                         tzprefs.updateLabels();
                         tzprefs.updateGui();
+                        parent.tzprefManager.updateAccountStatus(tzprefs.selectedAccount);
                         break;
 
                     default:

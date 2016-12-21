@@ -25,16 +25,18 @@
 
         <hbox flex="1">
             <vbox style="width:200px;">
-                    <listbox 
-                    id="tzprefManager.accounts"
-                    flex="1"
-                    seltype="single"
-                    context="tzprefManagerContextMenu"
-                    onkeypress="if (event.keyCode == 46) {tzprefManager.deleteAccount();}"
-                    onselect="tzprefManager.loadSelectedAccount();">
-                        <listhead><listheader style="font-weight:bold;" label="Accounts" flex="1" /></listhead>
-                        <listcols><listcol flex="1"/></listcols>
-                    </listbox>
+                    <richlistbox 
+                        id="tzprefManager.accounts"
+                        flex="1"
+                        seltype="single"
+                        context="tzprefManagerContextMenu"
+                        onkeypress="if (event.keyCode == 46) {tzprefManager.deleteAccount();}"
+                        onselect="tzprefManager.loadSelectedAccount();">
+                        <listhead style="border-bottom: 1px solid lightgrey;">
+                            <listheader style="font-weight:bold;" label="Accounts" flex="3" />
+                            <listheader style="font-weight:bold;text-align:right;" label="Status" flex="1" />
+                        </listhead>
+                    </richlistbox>
                     <hbox pack="end">
                         <button 
                         style="width: 2em; min-width: 2em;"
