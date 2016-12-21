@@ -39,11 +39,11 @@ var tzprefManager = {
     },
 
     getStatusImage: function (account) {
-        let imagesrc = "info16.png";
-        //if not connected show info-icon, otherwise check for error
-        if (tzcommon.getAccountSetting(account, "connected")) {
-            if (tzcommon.getAccountSetting(account, "lastError") != "") imagesrc = "error16.png"
-            else imagesrc = "tick16.png";
+        let imagesrc = "error16.png";
+        //if error show error-icon, otherwise check if connected
+        if (tzcommon.getAccountSetting(account, "lastError") == "") {
+            if (tzcommon.getAccountSetting(account, "connected")) imagesrc = "tick16.png"
+            else imagesrc = "info16.png";
         }
         return "chrome://tzpush/skin/" + imagesrc;
     },
