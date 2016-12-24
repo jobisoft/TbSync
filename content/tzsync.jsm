@@ -777,7 +777,7 @@ var tzsync = {
                                         break;
                                 }
 
-                            } else if (card.getProperty(x, "") !== '') { //TODO: Does this mean, we can only update but do not "clear" a field?
+                            } else if (card.getProperty(x, null) !== null) { //Proposed Fix to "not sending blanks": Include empty properties (so we can clear a field), but still skip non-existing ones
                                 if (x === 'BirthYear' || x === 'BirthMonth' || x === 'BirthDay') {
 
                                     if (x === 'BirthYear') {
