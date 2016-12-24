@@ -38,14 +38,25 @@ var tzprefManager = {
         }
     },
 
-    getStatusImage: function (account) {
-        let imagesrc = "error16.png";
+
+    getStatusData: function (account) {
+        let src = "error16.png";
+        let tooltiptext = tzcommon.getLocalizedMessage("error." + tzcommon.getAccountSetting(account, "lastError"));
+
         //if error show error-icon, otherwise check if connected
         if (tzcommon.getAccountSetting(account, "lastError") == "") {
-            if (tzcommon.getAccountSetting(account, "connected")) imagesrc = "tick16.png"
-            else imagesrc = "info16.png";
+            if (tzcommon.getAccountSetting(account, "connected")) {
+                src = "tick16.png"; 
+                let LastSyncTime = tzcommon.getAccountSetting(account, "LastSyncTime");
+                let d = new Date(parseInt(LastSyncTime));
+                tooltiptext = tzcommon.getLocalizedMessage("last_successful_syncronisation") + "\n" + d.toString();
+            } else {src = "info16.png"; tooltiptext = tzcommon.getLocalizedMessage("not_syncronized");}
         }
-        return "chrome://tzpush/skin/" + imagesrc;
+        
+        let data = {};
+        data.src = "chrome://tzpush/skin/" + src;
+        data.tooltiptext = tooltiptext;
+        return data;
     },
 
     updateAccountsList: function (accountToSelect = -1) {
@@ -88,7 +99,9 @@ var tzprefManager = {
                     itemStatusCell.setAttribute("width", "30");
                     itemStatusCell.setAttribute("height", "30");
                     let itemStatus = document.createElement("image");
-                    itemStatus.setAttribute("src", this.getStatusImage(accountIDs[i]));
+                    let statusdata = this.getStatusData(accountIDs[i]);
+                    itemStatus.setAttribute("src", statusdata.src);
+                    itemStatus.setAttribute("tooltiptext", statusdata.tooltiptext);
                     itemStatus.setAttribute("style", "margin:2px;");
                     itemStatusCell.appendChild(itemStatus);
 
@@ -129,7 +142,11 @@ var tzprefManager = {
     
     updateAccountStatus: function (id) {
         let listItem = document.getElementById("tzprefManager.accounts." + id);
-        if (listItem.childNodes[1].firstChild.src != this.getStatusImage(id)) listItem.childNodes[1].firstChild.src = this.getStatusImage(id);
+        let statusdata = this.getStatusData(id);
+        if (listItem.childNodes[1].firstChild.src != statusdata.src) {
+            listItem.childNodes[1].firstChild.src = statusdata.src;
+            listItem.childNodes[1].firstChild.tooltiptext = statusdata.tooltiptext;
+        }
     },
     
     //load the pref page for the currently selected account (triggered by onSelect)

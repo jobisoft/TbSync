@@ -18,6 +18,8 @@ connect_account=Save settings and connect
 connecting=Connecting ...
 new_account=New Account
 
+last_successful_syncronisation=Last successful syncronisation
+
 error.notconnected=Aborting Sync, because account is not connected.
 error.notargets=Aborting Sync, because sync targets could not be created.
 error.nouserhost=Missing USER and/or HOST. Please provide those values.
