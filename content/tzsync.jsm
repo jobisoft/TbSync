@@ -846,7 +846,7 @@ var tzsync = {
 
                         }
                         for (x in this.Contacts22) {
-                            if (card.getProperty(x, "") !== '') {
+                            if (card.getProperty(x, null) !== null) { //Same correction as in line 785
                                 wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.Contacts22[x]) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
                             }
                         }
