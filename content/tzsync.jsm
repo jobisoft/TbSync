@@ -183,7 +183,10 @@ var tzsync = {
         let polkey = this.FindPolkey(responseWbxml);
         tzcommon.dump("polkeyCallback("+next+")", polkey);
         tzcommon.setAccountSetting(tzsync.account, "polkey", polkey);
-        //next == 1 and 2 = resende - next ==3 = GetFolderId() - WHY DO WE REQUEST 3 POLICYKEYS????
+        //next == 1 and 2 = resend - next ==3 = GetFolderId() - 
+        // - the protocol requests us to first send zero as polkey and get a temp polkey in return,
+        // - the we need to resend this tempkey and get the final one 
+        // - then we need to resend the final one and check, if we get that one back - THIS CHECK IS MISSING (TODO)
         if (next < 3) {
             let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x49, 0x03, 0x50, 0x6F, 0x6C, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x4B, 0x03, 0x31, 0x00, 0x01, 0x01, 0x01, 0x01);
             //Proposed Fix: Also change the WAP string, if asversion !== 2.5 - as done in the main Polkey() function.
