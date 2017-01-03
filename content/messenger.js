@@ -2,8 +2,8 @@
    See the file LICENSE.txt for licensing information. */  
 "use strict";
 
-Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 Components.utils.import("chrome://tzpush/content/tzsync.jsm");
+Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
 
 //TODO: loop over all properties when card copy
 //TODO: maybe disable sync buttons, if not connected (in settings)
@@ -11,7 +11,19 @@ Components.utils.import("chrome://tzpush/content/tzsync.jsm");
 //TODO: Sometimes account gets disconnect on error, which should not happen
 //TODO: Fix conceptional error, which does not allow fields to be cleared, because empty props are ignored
 
-var tzpush = {
+/* 
+ - explizitly use if (error !== "") not if (error) - fails on "0"
+ - check "resync account folder" - maybe rework it
+
+ - create tzpush.contactsync
+ - create tzpush.calendersync
+ 
+ - do not use PENDING 
+- further empty tzcommon
+ 
+*/
+
+var tzMessenger = {
 
     openPrefs: function () {
         window.open("chrome://tzpush/content/prefManager.xul", "", "chrome,centerscreen,toolbar", null, null);
@@ -19,41 +31,30 @@ var tzpush = {
 
 
     onload: function () {
-        tzpush.syncTimer.start();
+        tzMessenger.syncTimer.start();
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(tzpush.syncRequestObserver, "tzpush.syncRequest", false);
-        observerService.addObserver(tzpush.syncStatusObserver, "tzpush.syncStatus", false);
-        observerService.addObserver(tzpush.setPasswordObserver, "tzpush.setPassword", false);
+        observerService.addObserver(tzMessenger.syncRequestObserver, "tzpush.syncRequest", false);
+        observerService.addObserver(tzMessenger.setStatusBarObserver, "tzpush.setStatusBar", false);
+        observerService.addObserver(tzMessenger.setPasswordObserver, "tzpush.setPassword", false);
 
-        tzpush.addressbookListener.add();
-        tzcommon.resetSync();
-        tzcommon.requestSync();
-
-        //document.getElementById("tzpushStatusMenuSyncPopup").addEventListener("popupshowing", tzpush.updateSyncMenu, false);
-        //document.getElementById("tzpushMainMenuSyncPopup").addEventListener("popupshowing", tzpush.updateSyncMenu, false);
+        tzMessenger.addressbookListener.add();
+        tzSync.resetSync();
     },
 
 
+
     /* * *
-    * Observer to catch syncsRequests. The two values "sync" and "resync" will be send by
-    * tzcommon.requestSync/requestResync() only if the current syncstate was alldone
+    * Observer to catch syncRequests. The job requests will be send by
+    * tzpref.requestSync and tzpref.requestResync()
     */
     syncRequestObserver: {
         observe: function (aSubject, aTopic, aData) {
             let data = aData.split(".");
-            let account = data[0];
-            let command = data[1];
-            switch (command) {
-                case "sync":
-                    tzsync.sync(account);
-                    break;
-                case "resync":
-                    tzsync.resync(account);
-                    break;
-            }
+            tzSync.addAccountToSyncQueue(data[0], data[1]);
         }
     },
+
 
 
     /* * *
@@ -65,73 +66,26 @@ var tzpush = {
             let account = aData.substring(0,dot);
             let newpassword = aData.substring(dot+1);
             tzcommon.setPassword(account, newpassword);
-            tzcommon.connectAccount(account);
-            tzcommon.requestReSync(account);
+            tzSync.addAccountToSyncQueue("resync", account);
         }
     },
 
 
+
     /* * *
-    * Observer to watch the syncstate and to update the status bar.
+    * Observer to catch changing syncstate and to update the status bar.
     */
-    syncStatusObserver: {
+    setStatusBarObserver: {
         observe: function (aSubject, aTopic, aData) {
-            //aData is of the following type
-            // <accountId>.<syncstate>
-            let data = aData.split(".");
-            let account = data[0];
-            let state = data[1];
-
-            let accounts = tzcommon.getAccounts();
-            let name = "[account #" + account + "]";
-            if (accounts !== null && accounts.hasOwnProperty(account)) name = "[" + accounts[account] + "]";
-
-            //dump into log
-            tzcommon.dump("syncstate set by "+name, tzcommon.getLocalizedMessage("syncstate." + state));
-
+            //update status bar
             let status = document.getElementById("tzstatus");
-            let msg = "TzPush: " + tzcommon.getLocalizedMessage("syncstate." + state);
-
-            //append account name to status
-            if (state != "error" && state != "alldone") msg = msg + " " + name;
-            if (status) status.label = msg;
+            if (status) status.label = "TzPush: " + aData;
+            
+            //TODO check if error and print in status
         }
     },
     
 
-    //this is probably too much, user usually just wants to sync all possible accounts
-    //no need to allow to sync individually here (it is possible in settings gui)
-    /*
-    updateSyncMenu : function (e) {
-        //window.alert( e.target.id );
-        let popup = e.target;
-        //empty menu
-        while (popup.lastChild) {
-            popup.removeChild(popup.lastChild);
-        }
-
-        let accounts = tzcommon.getAccounts();
-        if (accounts !== null) {
-            //accounts is unordered, loop over keys
-            let accountIDs = Object.keys(accounts).sort((a, b) => a - b);
-
-            for (let i=0; i<accountIDs.length; i++) {
-                let newItem = document.createElement("menuitem");
-                newItem.setAttribute("label", accounts[accountIDs[i]]);
-                newItem.setAttribute("value", accountIDs[i]);
-                newItem.setAttribute("disabled", tzcommon.getAccountSetting(accountIDs[i], "connected") == false);
-                newItem.addEventListener("click", function () {tzcommon.requestSync(accountIDs[i]);}, false);
-                popup.appendChild(newItem);
-            }
-            let newItem = document.createElement("menuseparator");
-            popup.appendChild(newItem);
-        }
-        let newItem = document.createElement("menuitem");
-        newItem.setAttribute("label", "sync all accounts");
-        newItem.setAttribute("value", -1);
-        newItem.addEventListener("click", function () {tzcommon.requestSync();}, false);
-        popup.appendChild(newItem);
-    },*/
 
 
     addressbookListener: {
@@ -146,10 +100,10 @@ var tzpush = {
              * deletions and log them to a file in the profile folder
              */
             if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory) {
-                let owner = tzcommon.findAccountsWithSetting("abname", aParentDir.URI);
-                if (owner.length > 0) {
+                let folders = tzcommon.db.findFoldersWithSetting("target", aParentDir.URI);
+                if (folders.length > 0) {
                     let cardId = aItem.getProperty("ServerId", "");
-                    if (cardId) tzcommon.addCardToDeleteLog(aParentDir.URI, cardId);
+                    if (cardId) tzcommon.db.addCardToDeleteLog(aParentDir.URI, cardId);
                 }
             }
 
@@ -158,16 +112,17 @@ var tzpush = {
              * clean up delete log
              */
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                let owner = tzcommon.findAccountsWithSetting("abname", aItem.URI);
-                //It should not be possible to link a book to two different accounts, so we just take the first account found
-                if (owner.length > 0) {
-                    tzcommon.setAccountSetting(owner[0], "abname","");
-                    tzcommon.setAccountSetting(owner[0], "polkey", "0"); //- this is identical to tzsync.resync() without the actual sync
-                    tzcommon.setAccountSetting(owner[0], "folderID", "");
-                    tzcommon.setAccountSetting(owner[0], "synckey", "");
-                    tzcommon.setAccountSetting(owner[0], "LastSyncTime", "0");
+                let folders =  tzcommon.db.findFoldersWithSetting("target", aItem.URI);
+                //It should not be possible to link a book to two different accounts, so we just take the first target found
+                if (folders.length > 0) {
+                    folders[0].target="";
+                    folders[0].synckey="";
+                    folders[0].lastsynctime= "";
+                    folders[0].status= "";
+                    tzcommon.db.setFolder(folders[0]);
+                    //not needed - tzcommon.db.setAccountSetting(owner[0], "policykey", ""); //- this is identical to tzSync.resync() without the actual sync
 
-                    tzcommon.clearDeleteLog(aItem.URI);
+                    tzcommon.db.clearDeleteLog(aItem.URI);
                 }
             }
         },
@@ -196,17 +151,17 @@ var tzpush = {
             let flags = Components.interfaces.nsIAbListener;
             Components.classes["@mozilla.org/abmanager;1"]
                 .getService(Components.interfaces.nsIAbManager)
-                .addAddressBookListener(tzpush.addressbookListener, flags.directoryItemRemoved | flags.itemAdded | flags.directoryRemoved);
+                .addAddressBookListener(tzMessenger.addressbookListener, flags.directoryItemRemoved | flags.itemAdded | flags.directoryRemoved);
         },
 
         remove: function addressbookListener_remove () {
             Components.classes["@mozilla.org/abmanager;1"]
                 .getService(Components.interfaces.nsIAbManager)
-                .removeAddressBookListener(tzpush.addressbookListener);
+                .removeAddressBookListener(tzMessenger.addressbookListener);
         }
     },
 
-    
+
 
     syncTimer: {
         timer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
@@ -219,16 +174,12 @@ var tzpush = {
         event: {
             notify: function (timer) {
                 //get all accounts and check, which one needs sync (accounts array is without order, extract keys (ids) and loop over them)
-                let accounts = tzcommon.getAccounts();
-                if (accounts === null) return;
+                let accounts = tzcommon.db.getAccounts();
+                for (let i=0; i<accounts.IDs.length; i++) {
+                    let syncInterval = accounts.data[accounts.IDs[i]].autosync * 60 * 1000;
 
-                let accountIDs = Object.keys(accounts).sort((a, b) => a - b);
-
-                for (let i=0; i<accountIDs.length; i++) {
-                    let syncInterval = tzcommon.getAccountSetting(accountIDs[i], "autosync") * 60 * 1000;
-
-                    if (tzcommon.getAccountSetting(accountIDs[i], "connected") && (syncInterval > 0) && ((Date.now() - tzcommon.getAccountSetting(accountIDs[i], "LastSyncTime")) > syncInterval)) {
-                        tzcommon.requestSync(accountIDs[i]);
+                    if (accounts.data[accounts.IDs[i]].state == "connected" && (syncInterval > 0)  && ((Date.now() - accounts.data[accounts.IDs[i]].LastSyncTime) > syncInterval) ) {
+                        tzSync.addAccountToSyncQueue("sync",accounts.IDs[i]);
                     }
                 }
             }
@@ -236,4 +187,4 @@ var tzpush = {
     }
 };
 
-window.addEventListener("load", tzpush.onload, false);
+window.addEventListener("load", tzMessenger.onload, false);

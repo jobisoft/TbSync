@@ -1,7 +1,8 @@
-
 content  tzpush  content/
 skin     tzpush  classic/1.0 skin/
+
 locale   tzpush  en-US locale/en-US/
+
 overlay  chrome://messenger/content/messenger.xul  chrome://tzpush/content/messenger.xul
 style    chrome://global/content/customizeToolbar.xul  chrome://tzpush/skin/browserOverlay.css
 

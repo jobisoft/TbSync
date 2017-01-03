@@ -4,7 +4,6 @@
 <!DOCTYPE overlay SYSTEM "chrome://tzpush/locale/overlay.dtd">
 
 <overlay
-    id="tzpush.tzpush_extensionOverlay"
     xmlns:html="http://www.w3.org/1999/xhtml"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
@@ -12,16 +11,16 @@
     <script type="application/x-javascript" src="chrome://tzpush/content/messenger.js" />
 
     <statusbar id="status-bar">
-        <statusbarpanel id="tzstatus" label="TzPush" context="statusmenu" ondblclick="tzpush.openPrefs(event);" />
+        <statusbarpanel id="tzstatus" label="TzPush" context="statusmenu" ondblclick="tzMessenger.openPrefs(event);" />
         <popupset>
             <menupopup id="statusmenu">
                 <!--menu label="&pref.Sync;" >
                     <menupopup id="tzpushStatusMenuSyncPopup">
                     </menupopup>
                 </menu-->
-                <menuitem label="&pref.Sync;" oncommand="tzcommon.requestSync();" />
-                <menuitem label="&overlay.tz-settings;" onclick="tzpush.openPrefs(event);" />
-                <menuitem label="&pref.ResetStatus;" onclick="tzcommon.resetSync();" />
+                <menuitem label="&pref.Sync;" oncommand="tzSync.addAccountToSyncQueue('sync');" />
+                <menuitem label="&overlay.tz-settings;" onclick="tzMessenger.openPrefs(event);" />
+                <menuitem label="&pref.ResetStatus;" onclick="tzSync.resetSync();" />
             </menupopup>
         </popupset>
     </statusbar>
@@ -33,9 +32,9 @@
                     <menupopup id="tzpushMainMenuSyncPopup">
                     </menupopup>
                 </menu-->
-                <menuitem label="&pref.Sync;" oncommand="tzcommon.requestSync();" />
-                <menuitem label="&overlay.tz-settings;" oncommand="tzpush.openPrefs(event);" />
-                <menuitem label="&pref.ResetStatus;" onclick="tzcommon.resetSync();" />
+                <menuitem label="&pref.Sync;" oncommand="tzSync.addAccountToSyncQueue('sync');" />
+                <menuitem label="&overlay.tz-settings;" oncommand="tzMessenger.openPrefs(event);" />
+                <menuitem label="&pref.ResetStatus;" onclick="tzSync.resetSync();" />
             </menupopup>
         </menu>
     </menubar>
@@ -46,7 +45,7 @@
             class="toolbarbutton"
             label="tz-sync" 
             tooltiptext="sync address book button"
-            oncommand="tzcommon.requestSync();"/>
+            oncommand="tzSync.addAccountToSyncQueue('sync');"/>
     </toolbarpalette>
  
 </overlay>

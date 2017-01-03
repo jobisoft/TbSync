@@ -23,9 +23,7 @@
 <!ENTITY pref.catman "Category Manager">
 
 
-<!ENTITY pref.SyncedAB "Synced Addressbook">
-<!ENTITY pref.LastSyncTime "Last successful syncronisation">
-
+<!ENTITY pref.syncstate "SyncStatus">
 <!ENTITY pref.servertype "Server Type">
 <!ENTITY pref.seperator.comma "comma as seperator">
 <!ENTITY pref.seperator.linebreak "line break as seperator">

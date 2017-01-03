@@ -1,11 +1,10 @@
 "use strict";
 
 Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
-//TODO (for production): after migration, delete the data stored in prefs, the user might get confused at a later time, if that old account data is remigrated again, if the db was deleted
+
 var tzprefManager = {
 
     selectedAccount: null,
-
 
     onload: function () {
         //scan accounts, update list and select first entry (because no id is passed to updateAccountList)
@@ -17,7 +16,7 @@ var tzprefManager = {
     addAccount: function () {
         //create a new account and pass its id to updateAccountsList, which wil select it
         //the onSelect event of the List will load the selected account
-        this.updateAccountsList(tzcommon.addAccount());
+        this.updateAccountsList(tzcommon.db.addAccount(tzcommon.getLocalizedMessage("new_account"), true));
     },
 
 
@@ -32,64 +31,66 @@ var tzprefManager = {
             }
             
             if (confirm(tzcommon.getLocalizedMessage("promptDeleteAccount").replace("##accountName##", accountsList.selectedItem.label))) {
-                tzcommon.removeAccount(accountsList.selectedItem.value);
+                //disconnect (removes ab, triggers deletelog cleanup) 
+                tzcommon.disconnectAccount(accountsList.selectedItem.value);
+                //delete account from db
+                tzcommon.db.removeAccount(accountsList.selectedItem.value);
+
                 this.updateAccountsList(nextAccount);
             }
         }
     },
 
 
-    getStatusData: function (account) {
-        let src = "error16.png";
-        let tooltiptext = tzcommon.getLocalizedMessage("error." + tzcommon.getAccountSetting(account, "lastError"));
+    getStatusImage: function (account) {
+        let src = "";
 
         //if error show error-icon, otherwise check if connected
-        if (tzcommon.getAccountSetting(account, "lastError") == "") {
-            if (tzcommon.getAccountSetting(account, "connected")) {
-                src = "tick16.png"; 
-                let LastSyncTime = tzcommon.getAccountSetting(account, "LastSyncTime");
-                let d = new Date(parseInt(LastSyncTime));
-                tooltiptext = tzcommon.getLocalizedMessage("last_successful_syncronisation") + "\n" + d.toString();
-            } else {src = "info16.png"; tooltiptext = tzcommon.getLocalizedMessage("not_syncronized");}
+        switch (tzcommon.db.getAccountSetting(account, "status")) { //error status
+            case "OK":
+                src = "tick16.png";
+                if (tzcommon.db.getAccountSetting(account, "state") == "connected") break;
+            
+            case "notconnected":
+                src = "info16.png";
+                break;
+
+            default:
+                src = "error16.png";
         }
-        
-        let data = {};
-        data.src = "chrome://tzpush/skin/" + src;
-        data.tooltiptext = tooltiptext;
-        return data;
+        return "chrome://tzpush/skin/" + src;
     },
 
     updateAccountsList: function (accountToSelect = -1) {
         let accountsList = document.getElementById("tzprefManager.accounts");
-        let accounts = tzcommon.getAccounts();
+        let accounts = tzcommon.db.getAccounts();
 
-        if (accounts !== null) {
+        if (accounts.IDs.length > null) {
 
             //get current accounts in list and remove entries of accounts no longer there
             let listedAccounts = [];
             for (let i=accountsList.getRowCount()-1; i>=0; i--) {
                 listedAccounts.push(accountsList.getItemAtIndex (i).value);
-                if (!accounts.hasOwnProperty(accountsList.getItemAtIndex(i).value)) {
+                if (accounts.IDs.indexOf(accountsList.getItemAtIndex(i).value) == -1) {
                     accountsList.removeItemAt(i);
                 }
             }
 
             //accounts array is without order, extract keys (ids) and loop over keys
-            let accountIDs = Object.keys(accounts).sort((a, b) => a - b);
-            for (let i = 0; i < accountIDs.length; i++) {
+            for (let i = 0; i < accounts.IDs.length; i++) {
 
-                if (listedAccounts.indexOf(accountIDs[i]) == -1) {
+                if (listedAccounts.indexOf(accounts.IDs[i]) == -1) {
                     //add all missing accounts (always to the end of the list)
                     let newListItem = document.createElement("richlistitem");
-                    newListItem.setAttribute("id", "tzprefManager.accounts." + accountIDs[i]);
-                    newListItem.setAttribute("value", accountIDs[i]);
+                    newListItem.setAttribute("id", "tzprefManager.accounts." + accounts.IDs[i]);
+                    newListItem.setAttribute("value", accounts.IDs[i]);
 
                     //add account name
                     let itemLabelCell = document.createElement("listcell");
                     itemLabelCell.setAttribute("class", "label");
                     itemLabelCell.setAttribute("flex", "1");
                     let itemLabel = document.createElement("label");
-                    itemLabel.setAttribute("value", accounts[accountIDs[i]]);
+                    itemLabel.setAttribute("value", accounts.data[accounts.IDs[i]].accountname);
                     itemLabelCell.appendChild(itemLabel);
                     newListItem.appendChild(itemLabelCell);
 
@@ -99,9 +100,7 @@ var tzprefManager = {
                     itemStatusCell.setAttribute("width", "30");
                     itemStatusCell.setAttribute("height", "30");
                     let itemStatus = document.createElement("image");
-                    let statusdata = this.getStatusData(accountIDs[i]);
-                    itemStatus.setAttribute("src", statusdata.src);
-                    itemStatus.setAttribute("tooltiptext", statusdata.tooltiptext);
+                    itemStatus.setAttribute("src", this.getStatusImage(accounts.IDs[i]));
                     itemStatus.setAttribute("style", "margin:2px;");
                     itemStatusCell.appendChild(itemStatus);
 
@@ -109,8 +108,8 @@ var tzprefManager = {
                     accountsList.appendChild(newListItem);
                 } else {
                     //update existing entries in list
-                    this.updateAccountName(accountIDs[i], accounts[accountIDs[i]]);
-                    this.updateAccountStatus(accountIDs[i]);
+                    this.updateAccountName(accounts.IDs[i], accounts.data[accounts.IDs[i]].accountname);
+                    this.updateAccountStatus(accounts.IDs[i]);
                 }
             }
             
@@ -142,10 +141,9 @@ var tzprefManager = {
     
     updateAccountStatus: function (id) {
         let listItem = document.getElementById("tzprefManager.accounts." + id);
-        let statusdata = this.getStatusData(id);
-        if (listItem.childNodes[1].firstChild.src != statusdata.src) {
-            listItem.childNodes[1].firstChild.src = statusdata.src;
-            listItem.childNodes[1].firstChild.tooltiptext = statusdata.tooltiptext;
+        let statusimage = this.getStatusImage(id);
+        if (listItem.childNodes[1].firstChild.src != statusimage) {
+            listItem.childNodes[1].firstChild.src = statusimage;
         }
     },
     

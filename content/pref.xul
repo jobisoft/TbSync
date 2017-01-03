@@ -56,7 +56,7 @@
             </row>
             <row>
                  <label value="" />
-                 <checkbox  id="tzprefs.prov" label="&pref.UseProvisioning;" disabled="true" />
+                 <checkbox  id="tzprefs.provision" label="&pref.UseProvisioning;" disabled="true" />
             </row>
             <row>
                  <label value="" />
@@ -81,12 +81,8 @@
                  <label value="" disabled="true" id="deviceId" />
             </row>
             <row>
-                 <label value="&pref.SyncedAB;" />
-                 <label value="" disabled="true" id="abname" />
-            </row>
-            <row>
-                 <label value="&pref.LastSyncTime;" />
-                 <label value="" disabled="true" id="LastSyncTime" />
+                 <label value="&pref.syncstate;" />
+                 <label value="" disabled="true" id="syncstate" />
             </row>
 
 
@@ -99,8 +95,8 @@
             <row>
                  <label />
                  <hbox flex="1">
-                     <button flex="1" label="&pref.Sync;" onclick="tzcommon.requestSync(tzprefs.selectedAccount);" />
-                     <button flex="1" label="&pref.Resync;" id="tzprefs.resyncbtn" onclick="tzcommon.requestReSync(tzprefs.selectedAccount);" tooltiptext="&pref.ResyncText;" />
+                     <button flex="1" label="&pref.Sync;" onclick="tzprefs.requestSync(tzprefs.selectedAccount);" />
+                     <button flex="1" label="&pref.Resync;" id="tzprefs.resyncbtn" onclick="tzprefs.requestResync(tzprefs.selectedAccount);" tooltiptext="&pref.ResyncText;" />
                  </hbox>
             </row>
        </rows>
