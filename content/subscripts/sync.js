@@ -230,7 +230,7 @@ var sync = {
         let num = parseInt(wbxml.substring(numst + 3, numsp));
 
         // get currently stored folder data from db and clear db
-        // the last parameter must not be false, because we need
+        // the last parameter MUST BE TRUE, because we need
         // a COPY of the cache: deleteAllFolders will clear the cache,
         // which would render a reference useless!
         let folders = tzPush.db.getFolders(syncdata.account, true); 
@@ -394,7 +394,7 @@ var sync = {
 
 
     checkSyncTarget: function (account, folderID) { //TODO: based on type contact/calendar
-        let folder = tzPush.db.getFolder(account, folderID, false); //get read-only-reference
+        let folder = tzPush.db.getFolder(account, folderID);
         let targetName = tzPush.getAddressBookName(folder.target);
         let targetObject = tzPush.getAddressBookObject(folder.target);
         

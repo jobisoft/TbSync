@@ -20,7 +20,6 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
  - do not use PENDING but a second queue
  - do not use prefs for syncstate
  - if account gets synced, update image in prefmanager
- - use proxy to prevent access to _accountCache ???
  - check if queue access from prefs is working as expected
  
 */

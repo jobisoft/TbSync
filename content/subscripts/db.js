@@ -63,7 +63,7 @@ var db = {
 
         this.accountColumns = this.getTableFields("accounts");
         this.folderColumns = this.getTableFields("folders");
-        
+
         if (!dbFile.exists()) {
             this.conn = dbService.openDatabase(dbFile);
 
@@ -310,11 +310,11 @@ var db = {
 
         //return proxy-read-only reference or a deep copy
         if (copy) {
-            let proxyFolders = {};        
+            let proxyFolders = {};
             for (let f in this._folderCache[account]) proxyFolders[f] = this.getProxyFolder(account, f);
             return proxyFolders;
         } else {
-            let copiedFolders = {};        
+            let copiedFolders = {};
             for (let f in this._folderCache[account]) {
                 copiedFolders[f] = {};
                 for (let s in this._folderCache[account][f]) copiedFolders[f][s] = this._folderCache[account][f][s];
@@ -453,7 +453,7 @@ var db = {
             return settings[field];
         } else {
             throw "Unknown server setting!" + "\nThrown by db.getServerSetting("+account+", " + field + ")";
-        }        
+        }
     }
 
 };
