@@ -18,9 +18,9 @@
                     <menupopup id="tzpushStatusMenuSyncPopup">
                     </menupopup>
                 </menu-->
-                <menuitem label="&pref.Sync;" oncommand="tzSync.addAccountToSyncQueue('sync');" />
+                <menuitem label="&pref.Sync;" oncommand="tzPush.sync.addAccountToSyncQueue('sync');" />
                 <menuitem label="&overlay.tz-settings;" onclick="tzMessenger.openPrefs(event);" />
-                <menuitem label="&pref.ResetStatus;" onclick="tzSync.resetSync();" />
+                <menuitem label="&pref.ResetStatus;" onclick="tzPush.sync.resetSync();" />
             </menupopup>
         </popupset>
     </statusbar>
@@ -32,9 +32,9 @@
                     <menupopup id="tzpushMainMenuSyncPopup">
                     </menupopup>
                 </menu-->
-                <menuitem label="&pref.Sync;" oncommand="tzSync.addAccountToSyncQueue('sync');" />
+                <menuitem label="&pref.Sync;" oncommand="tzPush.sync.addAccountToSyncQueue('sync');" />
                 <menuitem label="&overlay.tz-settings;" oncommand="tzMessenger.openPrefs(event);" />
-                <menuitem label="&pref.ResetStatus;" onclick="tzSync.resetSync();" />
+                <menuitem label="&pref.ResetStatus;" onclick="tzPush.sync.resetSync();" />
             </menupopup>
         </menu>
     </menubar>
@@ -45,7 +45,7 @@
             class="toolbarbutton"
             label="tz-sync" 
             tooltiptext="sync address book button"
-            oncommand="tzSync.addAccountToSyncQueue('sync');"/>
+            oncommand="tzPush.sync.addAccountToSyncQueue('sync');"/>
     </toolbarpalette>
  
 </overlay>

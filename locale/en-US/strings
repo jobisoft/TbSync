@@ -16,7 +16,7 @@ state.disconnected=Not Connected (Click to save settings and connect)
 state.connected=Connected (Click to disconnect account)
 state.connecting=Connecting account ...
 
-error.notconnected=Info: Account is not connected, skipped during sync.
+error.notconnected=Info: Account is not connected, synchronisation is disabled.
 error.notargets=Error: Aborting Sync, because sync targets could not be created.
 error.nouserhost=Error: Missing username and/or server. Please provide those values.
 error.wbxmlservererror=Error: Unknown server error, more info in log.

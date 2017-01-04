@@ -1,6 +1,6 @@
 "use strict";
 
-Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
+Components.utils.import("chrome://tzpush/content/tzpush.jsm");
 
 var tzprefManager = {
 
@@ -16,7 +16,7 @@ var tzprefManager = {
     addAccount: function () {
         //create a new account and pass its id to updateAccountsList, which wil select it
         //the onSelect event of the List will load the selected account
-        this.updateAccountsList(tzcommon.db.addAccount(tzcommon.getLocalizedMessage("new_account"), true));
+        this.updateAccountsList(tzPush.db.addAccount(tzPush.getLocalizedMessage("new_account"), true));
     },
 
 
@@ -30,11 +30,11 @@ var tzprefManager = {
                 else nextAccount = accountsList.getItemAtIndex(accountsList.selectedIndex - 1).value;
             }
             
-            if (confirm(tzcommon.getLocalizedMessage("promptDeleteAccount").replace("##accountName##", accountsList.selectedItem.label))) {
+            if (confirm(tzPush.getLocalizedMessage("promptDeleteAccount").replace("##accountName##", accountsList.selectedItem.label))) {
                 //disconnect (removes ab, triggers deletelog cleanup) 
-                tzcommon.disconnectAccount(accountsList.selectedItem.value);
+                tzPush.disconnectAccount(accountsList.selectedItem.value);
                 //delete account from db
-                tzcommon.db.removeAccount(accountsList.selectedItem.value);
+                tzPush.db.removeAccount(accountsList.selectedItem.value);
 
                 this.updateAccountsList(nextAccount);
             }
@@ -46,10 +46,10 @@ var tzprefManager = {
         let src = "";
 
         //if error show error-icon, otherwise check if connected
-        switch (tzcommon.db.getAccountSetting(account, "status")) { //error status
+        switch (tzPush.db.getAccountSetting(account, "status")) { //error status
             case "OK":
                 src = "tick16.png";
-                if (tzcommon.db.getAccountSetting(account, "state") == "connected") break;
+                if (tzPush.db.getAccountSetting(account, "state") == "connected") break;
             
             case "notconnected":
                 src = "info16.png";
@@ -63,7 +63,7 @@ var tzprefManager = {
 
     updateAccountsList: function (accountToSelect = -1) {
         let accountsList = document.getElementById("tzprefManager.accounts");
-        let accounts = tzcommon.db.getAccounts();
+        let accounts = tzPush.db.getAccounts();
 
         if (accounts.IDs.length > null) {
 

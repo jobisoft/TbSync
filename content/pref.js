@@ -2,7 +2,7 @@
 See the file LICENSE.txt for licensing information. */
 "use strict";
 
-Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
+Components.utils.import("chrome://tzpush/content/tzpush.jsm");
 
 var tzprefs = {
 
@@ -10,7 +10,8 @@ var tzprefs = {
     init: false,
     boolSettings: ["https", "provision", "birthday", "displayoverride", "downloadonly"],
     protectedSettings: ["accountname", "asversion", "host", "https", "user", "provision", "birthday", "servertype", "displayoverride", "downloadonly"],
-
+    protectedButtons: ["syncbtn", "resyncbtn"],
+        
     onload: function () {
         //get the selected account from tzprefManager
         tzprefs.selectedAccount = parent.tzprefManager.selectedAccount;
@@ -24,10 +25,7 @@ var tzprefs = {
         observerService.addObserver(tzprefs.accountSyncFinishedObserver, "tzpush.accountSyncFinished", false);
         observerService.addObserver(tzprefs.setPrefInfoObserver, "tzpush.setPrefInfo", false);
 
-/*        //get latest error
-        let error = tzcommon.db.getAccountSetting(tzprefs.selectedAccount, "status");
-        document.getElementById('syncstate').value = tzcommon.getLocalizedMessage("error." + error);
-    */    tzprefs.init = true;
+        tzprefs.init = true;
     },
 
     onunload: function () {
@@ -40,40 +38,36 @@ var tzprefs = {
         }
     },
 
-    // manage sync via observer and queue
-    requestSync: function (account = "") {
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tzpush.syncRequest", "sync." + account );
+    // manage sync via queue
+    requestSync: function (job, account, disabled = false) {
+        if (disabled == false && tzPush.sync.syncingNow != account) tzPush.sync.addAccountToSyncQueue(job, account);
+
     },
 
-    requestResync: function (account = "") {
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tzpush.syncRequest", "resync." + account );
-    },
 
     /* * *
     * Run through all defined TzPush settings and if there is a corresponding
     * field in the settings dialog, fill it with the stored value.
     */
     loadSettings: function () {
-        let settings = tzcommon.db.getTableFields("accounts");
+        let settings = tzPush.db.getTableFields("accounts");
         
         for (let i=0; i<settings.length;i++) {
             if (document.getElementById("tzprefs." + settings[i])) {
                 //bool fields need special treatment
                 if (this.boolSettings.indexOf(settings[i]) == -1) {
                     //Not BOOL
-                    document.getElementById("tzprefs." + settings[i]).value = tzcommon.db.getAccountSetting(tzprefs.selectedAccount, settings[i]);
+                    document.getElementById("tzprefs." + settings[i]).value = tzPush.db.getAccountSetting(tzprefs.selectedAccount, settings[i]);
                 } else {
                     //BOOL
-                    if (tzcommon.db.getAccountSetting(tzprefs.selectedAccount, settings[i])  == "1") document.getElementById("tzprefs." + settings[i]).checked = true;
+                    if (tzPush.db.getAccountSetting(tzprefs.selectedAccount, settings[i])  == "1") document.getElementById("tzprefs." + settings[i]).checked = true;
                     else document.getElementById("tzprefs." + settings[i]).checked = false;
                 }
             }
         }
 
         //Also load DeviceId
-        document.getElementById('deviceId').value = tzcommon.db.getAccountSetting(tzprefs.selectedAccount, "deviceId");
+        document.getElementById('deviceId').value = tzPush.db.getAccountSetting(tzprefs.selectedAccount, "deviceId");
     },
 
 
@@ -82,9 +76,9 @@ var tzprefs = {
     * field in the settings dialog, store its current value.
     */
     saveSettings: function () {
-        let settings = tzcommon.db.getTableFields("accounts");
+        let settings = tzPush.db.getTableFields("accounts");
 
-        let data = tzcommon.db.getAccount(tzprefs.selectedAccount);
+        let data = tzPush.db.getAccount(tzprefs.selectedAccount, true); //get a copy of the cache, which can be modified
         for (let i=0; i<settings.length;i++) {
             if (document.getElementById("tzprefs." + settings[i])) {
                 //bool fields need special treatment
@@ -99,7 +93,7 @@ var tzprefs = {
             }
         }
         
-        tzcommon.db.setAccount(data);
+        tzPush.db.setAccount(data);
         parent.tzprefManager.updateAccountName(tzprefs.selectedAccount, data.accountname);
     },
 
@@ -110,7 +104,7 @@ var tzprefs = {
     */
     instantSaveSetting: function (field) {
         let setting = field.id.replace("tzprefs.","");
-        tzcommon.db.setAccountSetting(tzprefs.selectedAccount, setting, field.value);
+        tzPush.db.setAccountSetting(tzprefs.selectedAccount, setting, field.value);
     },
 
 
@@ -134,17 +128,17 @@ var tzprefs = {
     updateFolderList: function () {
 /* disable during transition
         //SyncTarget
-        let target = tzcommon.getSyncTarget(tzprefs.selectedAccount);
+        let target = tzPush.getSyncTarget(tzprefs.selectedAccount);
         if (target.name === null) {
-            document.getElementById('abname').value = tzcommon.getLocalizedMessage("not_syncronized");
+            document.getElementById('abname').value = tzPush.getLocalizedMessage("not_syncronized");
         } else {
             document.getElementById('abname').value = target.name + " (" + target.uri + ")";
         }
 
         //LastSyncTime is stored as string for historic reasons
-        let lastError = tzcommon.db.getAccountSetting(tzprefs.selectedAccount, "lastError");
-        let LastSyncTime = parseInt(tzcommon.db.getAccountSetting(tzprefs.selectedAccount, "LastSyncTime"));
-        if (lastError) document.getElementById('LastSyncTime').value = tzcommon.getLocalizedMessage("error." + lastError);
+        let lastError = tzPush.db.getAccountSetting(tzprefs.selectedAccount, "lastError");
+        let LastSyncTime = parseInt(tzPush.db.getAccountSetting(tzprefs.selectedAccount, "LastSyncTime"));
+        if (lastError) document.getElementById('LastSyncTime').value = tzPush.getLocalizedMessage("error." + lastError);
         else {
             if (isNaN(LastSyncTime) || LastSyncTime == 0) {
                 document.getElementById('LastSyncTime').value = "-";
@@ -160,9 +154,9 @@ var tzprefs = {
     * Disable/Enable input fields and buttons according to the current connection state
     */
     updateGui: function () {
-        let state = tzcommon.db.getAccountSetting(tzprefs.selectedAccount, "state"); //connecting, connected, disconnected
+        let state = tzPush.db.getAccountSetting(tzprefs.selectedAccount, "state"); //connecting, connected, disconnected
         let conBtn = document.getElementById('tzprefs.connectbtn');
-        conBtn.label = tzcommon.getLocalizedMessage("state."+state); 
+        conBtn.label = tzPush.getLocalizedMessage("state."+state); 
         
         //disable connect/disconnect btn during state toggle
         document.getElementById('tzprefs.connectbtn').disabled = (state == "connecting");
@@ -171,10 +165,15 @@ var tzprefs = {
         for (let i=0; i<this.protectedSettings.length;i++) {
             document.getElementById("tzprefs." + this.protectedSettings[i]).disabled = (state != "disconnected");
         }
+
+        //disable all protected buttons, if not connected
+        for (let i=0; i<this.protectedButtons.length;i++) {
+            document.getElementById("tzprefs." + this.protectedButtons[i]).disabled = (state != "connected");
+        }
         
         //get latest error
-        let error = tzcommon.db.getAccountSetting(tzprefs.selectedAccount, "status");
-        document.getElementById('syncstate').value = tzcommon.getLocalizedMessage("error." + error);
+        let error = tzPush.db.getAccountSetting(tzprefs.selectedAccount, "status");
+        document.getElementById('syncstate').value = tzPush.getLocalizedMessage("error." + error);
 
     },
 
@@ -188,19 +187,19 @@ var tzprefs = {
         //ignore cancel request, if button is disabled
         if (document.getElementById('tzprefs.connectbtn').disabled) return;
 
-        let state = tzcommon.db.getAccountSetting(tzprefs.selectedAccount, "state"); //connecting, connected, disconnected
+        let state = tzPush.db.getAccountSetting(tzprefs.selectedAccount, "state"); //connecting, connected, disconnected
         if (state == "connected") {
             //we are connected and want to disconnect
-            tzcommon.disconnectAccount(tzprefs.selectedAccount);
+            tzPush.disconnectAccount(tzprefs.selectedAccount);
             tzprefs.updateGui();
             //tzprefs.updateFolderList();
             parent.tzprefManager.updateAccountStatus(tzprefs.selectedAccount);
         } else if (state == "disconnected") {
             //we are disconnected and want to connected
-            tzcommon.connectAccount(tzprefs.selectedAccount);
+            tzPush.connectAccount(tzprefs.selectedAccount);
             tzprefs.updateGui();
             tzprefs.saveSettings();
-            tzprefs.requestSync(tzprefs.selectedAccount);
+            tzprefs.requestSync("sync", tzprefs.selectedAccount);
         }
     },
 
@@ -251,7 +250,6 @@ var tzprefs = {
             //Only observe actions for the active account
             if (account == tzprefs.selectedAccount) {
 
-                //document.getElementById('syncstate').value = tzcommon.getLocalizedMessage("error." + status);
                 switch (status) {
                     case "401":
                         window.openDialog("chrome://tzpush/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", "Set password for TzPush account " + account, account);
@@ -259,7 +257,7 @@ var tzprefs = {
                     case "OK":
                         break;
                     default:
-                        alert(tzcommon.getLocalizedMessage("error." + status));
+                        alert(tzPush.getLocalizedMessage("error." + status));
                 }
                 //tzprefs.updateFolderList();
                 tzprefs.updateGui();

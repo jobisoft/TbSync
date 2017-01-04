@@ -11,9 +11,15 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
+// These two are not exported, thus not accessable from outside - but they are global to to the module
+// The cache is only available from the outside as a copy or as a read-only-reference.
+var accountCache = null;
+var folderCache = {};
+
+
 var db = {
 
-    prefs: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tzpush."),
+    prefSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tzpush."),
     conn: null,
 
     tables: { 
@@ -58,8 +64,6 @@ var db = {
         
     },
 
-    accountCache: null,
-    folderCache: {},
     accountColumns: null,
     folderColumns: null,
 
@@ -87,24 +91,24 @@ var db = {
             }
 
             //DB has just been created and we should try to import old TzPush 1.9 account data from preferences
-            let account = this.getAccount(this.addAccount("TzPush"));
+            let account = this.getAccount(this.addAccount("TzPush"), true); //get a copy of the cache, which can be modified
             
-            try { account.deviceId = this.prefs.getCharPref("deviceId") } catch(e) {};
-            try { account.asversion = this.prefs.getCharPref("asversion") } catch(e) {};
-            try { account.host = this.prefs.getCharPref("host") } catch(e) {};
-            try { account.user = this.prefs.getCharPref("user") } catch(e) {};
-            try { account.autosync = this.prefs.getIntPref("autosync") } catch(e) {};
+            try { account.deviceId = this.prefSettings.getCharPref("deviceId") } catch(e) {};
+            try { account.asversion = this.prefSettings.getCharPref("asversion") } catch(e) {};
+            try { account.host = this.prefSettings.getCharPref("host") } catch(e) {};
+            try { account.user = this.prefSettings.getCharPref("user") } catch(e) {};
+            try { account.autosync = this.prefSettings.getIntPref("autosync") } catch(e) {};
 
             //BOOL fields - to not have to mess with different field types, everything is stored as TEXT in the DB
-            try { account.https = (this.prefs.getBoolPref("https") ? "1" : "0") } catch(e) {};
-            try { account.provision = (this.prefs.getBoolPref("prov") ? "1" : "0") } catch(e) {};
-            try { account.birthday = (this.prefs.getBoolPref("birthday") ? "1" : "0") } catch(e) {};
-            try { account.displayoverride = (this.prefs.getBoolPref("displayoverride") ? "1" : "0") } catch(e) {};
-            try { account.downloadonly = (this.prefs.getBoolPref("downloadonly") ? "1" : "0") } catch(e) {};
+            try { account.https = (this.prefSettings.getBoolPref("https") ? "1" : "0") } catch(e) {};
+            try { account.provision = (this.prefSettings.getBoolPref("prov") ? "1" : "0") } catch(e) {};
+            try { account.birthday = (this.prefSettings.getBoolPref("birthday") ? "1" : "0") } catch(e) {};
+            try { account.displayoverride = (this.prefSettings.getBoolPref("displayoverride") ? "1" : "0") } catch(e) {};
+            try { account.downloadonly = (this.prefSettings.getBoolPref("downloadonly") ? "1" : "0") } catch(e) {};
             
             //migrate seperator into server setting
             try {
-                if (this.prefs.getCharPref("seperator") == ", ") account.servertype = "horde";
+                if (this.prefSettings.getCharPref("seperator") == ", ") account.servertype = "horde";
                 else account.servertype = "zarafa";
             } catch(e) {}
             
@@ -164,33 +168,53 @@ var db = {
         });
         return uuid;
     },
-
-
+    
+    // Get a proxied version of the cached account, which cannot be modified
+    getProxyAccount: function(account) {
+        let handler = {
+            get (target, key) { return target[key]; },
+            set (target, key, value) { throw "[TzPush] Trying to write to a readonly reference of the accountCache!"; return false; }
+        };
+        return new Proxy(accountCache[account], handler);
+    },
+    
     // The first request to get any account data will retrieve all data and store it in cache
+    // This function returns a proxied read-only-reference to the account cache.
     getAccounts: function (forceupdate = false) {
         //update accountCache
-        if (this.accountCache === null || forceupdate) {
-            this.accountCache = {};
+        if (accountCache === null || forceupdate) {
+            accountCache = {};
             let statement = this.conn.createStatement("SELECT * FROM accounts;");
             while (statement.executeStep()) {
                 let data = {};
                 for (let x=0; x<this.accountColumns.length; x++) data[this.accountColumns[x]] = statement.row[this.accountColumns[x]];
-                this.accountCache[statement.row.account] = data;
+                accountCache[statement.row.account] = data;
             }
         }
         
-        let accounts = {};
-        accounts.IDs = Object.keys(this.accountCache).sort((a, b) => a - b);
-        accounts.data = this.accountCache;
-        return accounts;
+        let proxyAccounts = {};        
+        proxyAccounts.IDs = Object.keys(accountCache).sort((a, b) => a - b);
+        proxyAccounts.data = {};
+        for (let a in accountCache) proxyAccounts.data[a] = this.getProxyAccount(a);
+        return proxyAccounts;
     },
 
-    getAccount: function (account) {
+    // This function can either return a read-only-reference or a copy of the cached account data. The default is to get a reference,
+    getAccount: function (account, copy = false) {
         let data = this.getAccounts().data;
         
         //check if account is known
-        if (data.hasOwnProperty(account)) return data[account];
-        else throw "Unknown account!" + "\nThrown by db.getAccount("+account+ ")";
+        if (data.hasOwnProperty(account) == false ) throw "Unknown account!" + "\nThrown by db.getAccount("+account+ ")";
+        else {
+            // return a reference or a copy?
+            if (copy) {
+                let copy = {};
+                for(let p in data[account]) copy[p] = data[account][p];               
+                return copy;
+            } else {
+                return data[account];
+            }
+        }
     }, 
     
     getAccountSetting: function (account, name) {
@@ -220,7 +244,7 @@ var db = {
         this.conn.executeSimpleSQL("DELETE FROM accounts WHERE account='"+account+"';");
 
         // remove Account from Cache
-        delete(this.accountCache[account]);
+        delete(accountCache[account]);
 
         // also remove all folders of that account
         this.deleteAllFolders(account);
@@ -234,7 +258,7 @@ var db = {
         for (let p in data) {
             // update account cache if allowed
             if (settings.hasOwnProperty(p)) {
-                this.accountCache[data.account][p] = data[p].toString(); //TODO setter?
+                accountCache[data.account][p] = data[p].toString();
                 if (sql.length > 0) sql = sql + ", ";
                 sql = sql + p + " = '" + data[p] + "'";
             }
@@ -252,7 +276,7 @@ var db = {
         //check if field is allowed
         if (settings.hasOwnProperty(name)) {
             //update accountCache
-            this.accountCache[account][name] = value.toString(); //TODO setter?
+            accountCache[account][name] = value.toString();
             //update DB
             this.conn.executeSimpleSQL("UPDATE accounts SET "+name+"='" + value + "' WHERE account='" + account + "';");
         } else {
@@ -266,30 +290,63 @@ var db = {
 
     // FOLDER FUNCTIONS
 
-    getFolders: function (account) { //get all folders of a given account
-        //query folderCache
-        if (this.folderCache.hasOwnProperty(account)) return this.folderCache[account];
+    // Get a proxied version of the cached folder, which cannot be modified
+    getProxyFolder: function(account, folder) {
+        let handler = {
+            get (target, key) { return target[key]; },
+            set (target, key, value) { throw "[TzPush] Trying to write to a readonly reference of the folderCache!"; return false; }
+        };
+        return new Proxy(folderCache[account][folder], handler);
+    },
 
-        let folders = {};
-        let statement = this.conn.createStatement("SELECT * FROM folders WHERE account = '"+account+"';");
-        let entries = 0;
-        while (statement.executeStep()) {
-            let data = {};
-            for (let x=0; x<this.folderColumns.length; x++) data[this.folderColumns[x]] = statement.row[this.folderColumns[x]];
-            folders[statement.row.folderID] = data;
-            entries++;
+    // Get all folders of a given account.
+    // This function returns either a proxied read-only-reference to the folder cache, or a deep copy. Reference is default.
+    getFolders: function (account, copy = false) {
+        //query folderCache
+        if (folderCache.hasOwnProperty(account) == false) {
+
+            let folders = {};
+            let statement = this.conn.createStatement("SELECT * FROM folders WHERE account = '"+account+"';");
+            let entries = 0;
+            while (statement.executeStep()) {
+                let data = {};
+                for (let x=0; x<this.folderColumns.length; x++) data[this.folderColumns[x]] = statement.row[this.folderColumns[x]];
+                folders[statement.row.folderID] = data;
+                entries++;
+            }
+
+            //update folderCache (array of array!)
+            folderCache[account] = folders;
         }
 
-        //update folderCache
-        this.folderCache[account] = folders;
-        return folders;
+        //return proxy-read-only reference or a deep copy
+        if (copy) {
+            let proxyFolders = {};        
+            for (let f in folderCache[account]) proxyFolders[f] = this.getProxyFolder(account, f);
+            return proxyFolders;
+        } else {
+            let copiedFolders = {};        
+            for (let f in folderCache[account]) {
+                copiedFolders[f] = {};
+                for (let s in folderCache[account][f]) copiedFolders[f][s] = folderCache[account][f][s];
+            }
+            return copiedFolders;
+        }
     },
     
-    getFolder: function(account, folderID) {
+    getFolder: function(account, folderID, copy = false) {
         let folders = this.getFolders(account);
         
         //does the folder exist?
-        if (folders.hasOwnProperty(folderID)) return folders[folderID];
+        if (folders.hasOwnProperty(folderID)) {
+            if (copy) {
+                let copiedFolder = {};        
+                for (let s in folders[folderID]) copiedFolder[s] = folders[folderID][s];
+                return copiedFolder;
+            } else {
+                return folders[folderID];
+            }
+        }
         else throw "Unknown folderID!" + "\nThrown by db.getFolder("+account+", " + folderID + ")";
     },
 
@@ -326,9 +383,9 @@ var db = {
         for (let p in data) {
             //update folder cache if allowed
             if (folder.hasOwnProperty(p)) {
-                this.folderCache[data.account][data.folderID][p] = data[p].toString();
+                folderCache[data.account][data.folderID][p] = data[p].toString();
                 if (sql.length > 0) sql = sql + ", ";
-                sql = sql + p + " = '" + folder[p] + "'";
+                sql = sql + p + " = '" + data[p] + "'";
             }
             else throw "Unknown folder setting <" + p + ">!" + "\nThrown by db.setFolder("+data.account+")";
         }
@@ -344,7 +401,7 @@ var db = {
 
         // update cache of all requested folders
         for (let fID in folders) {
-            if (folders[fID].hasOwnProperty(field)) this.folderCache[account][fID][field] = value.toString();
+            if (folders[fID].hasOwnProperty(field)) folderCache[account][fID][field] = value.toString();
             else throw "Unknown folder field!" + "\nThrown by db.setFolderSetting("+account+", " + folderID + ", " + field + ", " + value + ")";
         }
 
@@ -370,25 +427,25 @@ var db = {
         this.conn.executeSimpleSQL("INSERT INTO folders (" + fields + ") VALUES ("+values+");");
 
         //update folderCache
-        if (!this.folderCache.hasOwnProperty(data.account)) this.folderCache[data.account] = {};
-        this.folderCache[data.account][data.folderID] = addedData;
+        if (!folderCache.hasOwnProperty(data.account)) folderCache[data.account] = {};
+        folderCache[data.account][data.folderID] = addedData;
     },
 
     deleteAllFolders: function(account) {
         this.conn.executeSimpleSQL("DELETE FROM folders WHERE account='"+account+"';");
-        delete (this.folderCache[account]);
+        delete (folderCache[account]);
     },
 
     deleteFolder: function(account, folderID) {
         this.conn.executeSimpleSQL("DELETE FROM folders WHERE account='"+account+"' AND folderID = '"+folderID+"';");
-        delete (this.folderCache[account][folderID]);
+        delete (folderCache[account][folderID]);
     },
 
 
 
 
 
-    // SERVER SETTINGS 
+    // OTHER SETTINGS 
     
     getServerSetting: function(account, field) {
         let settings = {};
@@ -409,8 +466,7 @@ var db = {
             return settings[field];
         } else {
             throw "Unknown server setting!" + "\nThrown by db.getServerSetting("+account+", " + field + ")";
-        }
-        
+        }        
     }
 
 };

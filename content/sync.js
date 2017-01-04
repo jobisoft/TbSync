@@ -2,84 +2,83 @@
    See the file LICENSE.txt for licensing information. */
 "use strict";
 
-var EXPORTED_SYMBOLS = ["tzSync"];
 
-Components.utils.import("chrome://tzpush/content/tzcommon.jsm");
-
-var tzSync = {
+var sync = {
 
     // SYNC QUEUE MANAGEMENT
     
     syncQueue : [],
+    syncState : "idle", //replace pref with this var?
+    syncingNow : "",
 
     addAccountToSyncQueue: function (job, account = "") {
         if (account == "") {
             //Add all connected accounts to the queue - at this point we do not know anything about folders, they are handled by the sync process
-            let accounts = tzcommon.db.getAccounts().IDs;
+            let accounts = tzPush.db.getAccounts().IDs;
             for (let i=0; i<accounts.length; i++) {
-                tzSync.syncQueue.push( job + "." + accounts[i] );
+                sync.syncQueue.push( job + "." + accounts[i] );
             }
         } else {
             //Add specified account to the queue
-            tzSync.syncQueue.push( job + "." + account );
+            sync.syncQueue.push( job + "." + account );
         }
 
         //after jobs have been aded to the queue, try to start working on the queue
-        if (tzcommon.db.prefs.getCharPref("syncstate") == "idle") tzSync.workSyncQueue();
+        if (tzPush.db.prefSettings.getCharPref("syncstate") == "idle") sync.workSyncQueue();
     },
     
     workSyncQueue: function () {
         //workSyncQueue assumes, that it is allowed to start a new sync job
         //if no more jobs in queue, do nothing
-        if (tzSync.syncQueue.length == 0) return;
+        if (sync.syncQueue.length == 0) return;
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
 
-        let syncrequest = tzSync.syncQueue.shift().split(".");
+        let syncrequest = sync.syncQueue.shift().split(".");
         let job = syncrequest[0];
         let account = syncrequest[1];
 
         switch (job) {
             case "sync":
             case "resync":
-                tzSync.init(job, account);
+                sync.init(job, account);
                 break;
             default:
-                tzcommon.dump("workSyncQueue()", "Unknow job for sync queue ("+ job + ")");
+                tzPush.dump("workSyncQueue()", "Unknow job for sync queue ("+ job + ")");
         }
     },
 
     finishAccountSync: function (syncdata) {
-        let state = tzcommon.db.getAccountSetting(syncdata.account, "state");
+        let state = tzPush.db.getAccountSetting(syncdata.account, "state");
         
         if (state == "connecting") {
             if (syncdata.status == "OK") {
-                tzcommon.db.setAccountSetting(syncdata.account, "state", "connected");
+                tzPush.db.setAccountSetting(syncdata.account, "state", "connected");
             } else {
-                tzcommon.disconnectAccount(syncdata.account);
-                tzcommon.db.setAccountSetting(syncdata.account, "state", "disconnected");
+                tzPush.disconnectAccount(syncdata.account);
+                tzPush.db.setAccountSetting(syncdata.account, "state", "disconnected");
             }
         }
 
         //update account
-        tzcommon.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
-        tzcommon.db.setAccountSetting(syncdata.account, "status", syncdata.status);
+        tzPush.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
+        tzPush.db.setAccountSetting(syncdata.account, "status", syncdata.status);
         
         //update of settings window
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.notifyObservers(null, "tzpush.accountSyncFinished", syncdata.account + "." + syncdata.status);
         
         //work on the queue
-        if (tzSync.syncQueue.length > 0) tzSync.workSyncQueue();
-        else tzSync.setSyncState("idle"); 
+        if (sync.syncQueue.length > 0) sync.workSyncQueue();
+        else sync.setSyncState("idle"); 
     },
 
 
     resetSync: function () {
         //set state to idle
-        tzSync.setSyncState("idle"); 
+        sync.setSyncState("idle"); 
         //flush the queue
-        tzSync.syncQueue = [];
+        sync.syncQueue = [];
     },
 
     init: function (job, account,  folderID = "") {
@@ -90,22 +89,22 @@ var tzSync = {
         syncdata.folderID = folderID;
         syncdata.fResync = false;
         syncdata.status = "OK";
-        tzSync.setSyncState("syncing", syncdata);
+        sync.setSyncState("syncing", syncdata);
 
-        //notify settings gui about fresh sync (only for full account syncs)
-        if (folderID == "") {
-            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tzpush.accountSyncStarted", syncdata.account);
-        }
+//        //notify settings gui about fresh sync (only for full account syncs)
+//        if (folderID == "") {
+//            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+//            observerService.notifyObservers(null, "tzpush.accountSyncStarted", syncdata.account);
+//        }
 
         //Check if connected
-        if (tzcommon.db.getAccountSetting(account, "state") == "disconnected") { //allow connected and connecting
+        if (tzPush.db.getAccountSetting(account, "state") == "disconnected") { //allow connected and connecting
             this.finishSync(syncdata, "notconnected");
             return;
         }
 
         //Check if connection has data
-        let connection = tzcommon.getConnection(account);
+        let connection = tzPush.getConnection(account);
         if (connection.server == "" || connection.user == "") {
             this.finishSync(syncdata, "nouserhost");
             return;
@@ -114,18 +113,18 @@ var tzSync = {
         switch (job) {
             case "resync":
                 syncdata.fResync = true;
-                tzcommon.db.setAccountSetting(account, "policykey", "");
+                tzPush.db.setAccountSetting(account, "policykey", "");
 
                 //if folderID present, resync only that one folder, otherwise all folders
                 if (folderID !== "") {
-                    tzcommon.db.setFolderSetting(account, folderID, "synckey", "");
+                    tzPush.db.setFolderSetting(account, folderID, "synckey", "");
                 } else {
-                    tzcommon.db.setAccountSetting(account, "foldersynckey", "");
-                    tzcommon.db.setFolderSetting(account, "", "synckey", "");
+                    tzPush.db.setAccountSetting(account, "foldersynckey", "");
+                    tzPush.db.setFolderSetting(account, "", "synckey", "");
                 }
                 
             case "sync":
-                if (tzcommon.db.getAccountSetting(account, "provision") == "1" && tzcommon.db.getAccountSetting(account, "policykey") == "") {
+                if (tzPush.db.getAccountSetting(account, "provision") == "1" && tzPush.db.getAccountSetting(account, "policykey") == "") {
                     this.getPolicykey(syncdata);
                 } else {
                     this.getFolderIds(syncdata);
@@ -146,7 +145,7 @@ var tzSync = {
 
     getPolicykey: function(syncdata) {
         let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x01, 0x01, 0x01);
-        if (tzcommon.db.getAccountSetting(syncdata.account, "asversion") !== "2.5") {
+        if (tzPush.db.getAccountSetting(syncdata.account, "asversion") !== "2.5") {
             wbxml = wbxml.replace("MS-WAP-Provisioning-XML", "MS-EAS-Provisioning-WBXML");
         }
         syncdata.next = 1;
@@ -155,8 +154,8 @@ var tzSync = {
     
     getPolicykeyCallback: function (responseWbxml, syncdata) {
         let policykey = this.FindPolicykey(responseWbxml);
-        tzcommon.dump("policykeyCallback("+syncdata.next+")", policykey);
-        tzcommon.db.setAccountSetting(syncdata.account, "policykey", policykey);
+        tzPush.dump("policykeyCallback("+syncdata.next+")", policykey);
+        tzPush.db.setAccountSetting(syncdata.account, "policykey", policykey);
         //next == 1 and 2 = resend - next ==3 = GetFolderIds() - 
         // - the protocol requests us to first send zero as policykey and get a temp policykey in return,
         // - the we need to resend this tempkey and get the final one 
@@ -164,7 +163,7 @@ var tzSync = {
         if (syncdata.next < 3) {
             let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x49, 0x03, 0x50, 0x6F, 0x6C, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x4B, 0x03, 0x31, 0x00, 0x01, 0x01, 0x01, 0x01);
             //Proposed Fix: Also change the WAP string, if asversion !== 2.5 - as done in the main Policykey() function.
-            if (tzcommon.db.getAccountSetting(syncdata.account, "asversion") !== "2.5") {
+            if (tzPush.db.getAccountSetting(syncdata.account, "asversion") !== "2.5") {
                 wbxml = wbxml.replace("MS-WAP-Provisioning-XML", "MS-EAS-Provisioning-WBXML");
             }
             wbxml = wbxml.replace('PolKeyReplace', policykey);
@@ -172,7 +171,7 @@ var tzSync = {
             this.Send(wbxml, this.getPolicykeyCallback.bind(this), "Provision", syncdata);
         } else {
             let policykey = this.FindPolicykey(responseWbxml);
-            tzcommon.dump("final returned policykey", policykey);
+            tzPush.dump("final returned policykey", policykey);
             this.getFolderIds(syncdata);
         }
     },
@@ -188,7 +187,7 @@ var tzSync = {
     getFolderIds: function(syncdata) {
         //if syncdata already contains a folderID, it is a specific folder sync - otherwise we scan all folders and sync all folders
         if (syncdata.folderID != "") {
-            tzcommon.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", "PENDING");
+            tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", "PENDING");
             this.syncNextFolder(syncdata);
         } else {
             let wbxml = String.fromCharCode(0x03, 0x01, 0x6a, 0x00, 0x00, 0x07, 0x56, 0x52, 0x03, 0x30, 0x00, 0x01, 0x01);
@@ -198,16 +197,20 @@ var tzSync = {
 
     getFolderIdsCallback: function (wbxml, syncdata) { //ActiveSync Commands taken from TzPush 2.5.4
         let foldersynckey = this.FindKey(wbxml);
-        tzcommon.db.setAccountSetting(syncdata.account, "foldersynckey", foldersynckey); //not used ???
+        tzPush.db.setAccountSetting(syncdata.account, "foldersynckey", foldersynckey); //not used ???
 
         let start = 0;
         let numst = wbxml.indexOf(String.fromCharCode(0x4E, 0x57));
         let numsp = wbxml.indexOf(String.fromCharCode(0x00), numst);
         let num = parseInt(wbxml.substring(numst + 3, numsp));
 
-        //get currently stored folder data from db and clear db
-        let folders = tzcommon.db.getFolders(syncdata.account);
-        tzcommon.db.deleteAllFolders(syncdata.account);
+        // get currently stored folder data from db and clear db
+        // the last parameter must not be false, because we need
+        // a COPY of the cache: deleteAllFolders will clear the cache,
+        // which would render a reference useless!
+        let folders = tzPush.db.getFolders(syncdata.account, true); 
+        // clear DB (and cache!)
+        tzPush.db.deleteAllFolders(syncdata.account);
                 
         for (let x = 0; x < num; x++) {
             start = wbxml.indexOf(String.fromCharCode(0x4F), start);
@@ -248,7 +251,7 @@ var tzSync = {
 
             //Set status of each selected folder to PENDING
             if (newData.selected == "true") newData.status="PENDING";
-            tzcommon.db.addFolder(newData);
+            tzPush.db.addFolder(newData);
             
         }
         this.syncNextFolder(syncdata);
@@ -257,17 +260,17 @@ var tzSync = {
 
     //Process all folders with PENDING status
     syncNextFolder: function (syncdata) {
-        let folders = tzcommon.db.findFoldersWithSetting("status", "PENDING", syncdata.account);
+        let folders = tzPush.db.findFoldersWithSetting("status", "PENDING", syncdata.account);
         if (folders.length == 0 || syncdata.status != "OK") {
             //all folders of this account have been synced
-            tzSync.finishAccountSync(syncdata);
+            sync.finishAccountSync(syncdata);
         } else {
             syncdata.synckey = folders[0].synckey;
             syncdata.folderID = folders[0].folderID;
             
             if (syncdata.synckey == "") {
                 let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x30, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x01, 0x01);
-                if (tzcommon.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+                if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
                     wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x30, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x01, 0x01);
                 }
                 wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
@@ -281,24 +284,24 @@ var tzSync = {
 
     getSynckey: function (responseWbxml, syncdata) {
         syncdata.synckey = this.FindKey(responseWbxml);
-        tzcommon.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
+        tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
         this.startSync(syncdata); 
     },
 
 
     startSync: function (syncdata) {
-        syncdata.type = tzcommon.db.getFolderSetting(syncdata.account, syncdata.folderID, "type");
+        syncdata.type = tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "type");
         switch (syncdata.type) {
             case "9": 
             case "14": 
                 this.fromzpush(syncdata);
                 break;
             case "8":
-                tzcommon.dump("startSync()", "CalenderSync has not yet been implemented.");
+                tzPush.dump("startSync()", "CalenderSync has not yet been implemented.");
                 this.finishSync(syncdata);
                 break;
             default:
-                tzcommon.dump("startSync()", "Skipping unknown folder type <"+syncdata.type+">");
+                tzPush.dump("startSync()", "Skipping unknown folder type <"+syncdata.type+">");
                 this.finishSync(syncdata);
         }
     },
@@ -309,28 +312,28 @@ var tzSync = {
         let time = Date.now();
         let status = "OK";
         if (error !== "") {
-            tzcommon.dump("finishSync(): Error @ Account #" + syncdata.account, tzcommon.getLocalizedMessage("error." + error));
+            tzPush.dump("finishSync(): Error @ Account #" + syncdata.account, tzPush.getLocalizedMessage("error." + error));
             syncdata.status = error; //store latest error
             status = error;
             time = "";
         }
 
         if (syncdata.folderID) {
-            tzcommon.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", status);
-            tzcommon.db.setFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime", time);
+            tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", status);
+            tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime", time);
         }
 
-        tzSync.setSyncState("done", syncdata);
+        sync.setSyncState("done", syncdata);
         this.syncNextFolder(syncdata);
     },
 
 
     setSyncState: function(syncstate, syncdata = null) {
         //set new syncstate
-        tzcommon.db.prefs.setCharPref("syncstate", syncstate);
+        tzPush.db.prefSettings.setCharPref("syncstate", syncstate);
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        let msg = tzcommon.getLocalizedMessage("syncstate." + syncstate);
+        let msg = tzPush.getLocalizedMessage("syncstate." + syncstate);
         let accountname = "";
         let foldername = "";
         let prefTarget = "";
@@ -338,12 +341,15 @@ var tzSync = {
 
         //generate notifies to update gui with new syncstate
         if (syncdata !== null) {
+            //also keep track of the current sync
+            sync.syncingNow = syncdata.account;
+            
             accountname = "#" + syncdata.account;
             
-            let accounts = tzcommon.db.getAccounts().data;
+            let accounts = tzPush.db.getAccounts().data;
             if (accounts.hasOwnProperty(syncdata.account)) {
                 accountname = accounts[syncdata.account].accountname;
-                if (syncdata.folderID !== "") foldername = tzcommon.db.getFolderSetting(syncdata.account, syncdata.folderID, "name");
+                if (syncdata.folderID !== "") foldername = tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "name");
             }
             
             if (foldername != "") { 
@@ -355,6 +361,8 @@ var tzSync = {
                 }
             }
             observerService.notifyObservers(null, "tzpush.setPrefInfo", syncdata.account + "." + msg + prefTarget);
+        } else {
+            sync.syncingNow = "";
         }
         
         observerService.notifyObservers(null, "tzpush.setStatusBar", msg + statusTarget);
@@ -362,14 +370,14 @@ var tzSync = {
 
 
     checkSyncTarget: function (account, folderID) { //TODO: based on type contact/calendar
-        let folder = tzcommon.db.getFolder(account, folderID);
-        let targetName = tzcommon.getAddressBookName(folder.target);
-        let targetObject = tzcommon.getAddressBookObject(folder.target);
+        let folder = tzPush.db.getFolder(account, folderID, false); //get read-only-reference
+        let targetName = tzPush.getAddressBookName(folder.target);
+        let targetObject = tzPush.getAddressBookObject(folder.target);
         
         if (targetName !== null && targetObject !== null && targetObject instanceof Components.interfaces.nsIAbDirectory) return true;
         
         // Get unique Name for new address book
-        let testname = tzcommon.db.getAccountSetting(account, "accountname") + "." + folder.name;
+        let testname = tzPush.db.getAccountSetting(account, "accountname") + "." + folder.name;
         let newname = testname;
         let count = 1;
         let unique = false;
@@ -390,15 +398,15 @@ var tzSync = {
         } while (!unique);
         
         //Create the new book with the unique name
-        let dirPrefId = tzcommon.addBook(newname);
+        let dirPrefId = tzPush.addBook(newname);
         
-        //find uri of new book and store in prefs
+        //find uri of new book and store in DB
         let booksIter = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).directories;
         while (booksIter.hasMoreElements()) {
             let data = booksIter.getNext();
             if (data instanceof Components.interfaces.nsIAbDirectory && data.dirPrefId == dirPrefId) {
-                tzcommon.db.setFolderSetting(account, folderID, "target", data.URI); 
-                tzcommon.dump("checkSyncTarget("+account+", "+folderID+")", "Creating new sync target (" + newname + ", " + data.URI + ")");
+                tzPush.db.setFolderSetting(account, folderID, "target", data.URI); 
+                tzPush.dump("checkSyncTarget("+account+", "+folderID+")", "Creating new sync target (" + newname + ", " + data.URI + ")");
                 return true;
             }
         }
@@ -409,54 +417,53 @@ var tzSync = {
 
     Send: function (wbxml, callback, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
-        let prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService).getBranch("extensions.tzpush.");
         
-        if (prefs.getCharPref("debugwbxml") === "1") {
-            tzcommon.dump("sending", decodeURIComponent(escape(this.toxml(wbxml).split('><').join('>\n<'))));
-            tzcommon.appendToFile("wbxml-debug.log", wbxml);
+        if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) {
+            tzPush.dump("sending", decodeURIComponent(escape(this.toxml(wbxml).split('><').join('>\n<'))));
+            tzPush.appendToFile("wbxml-debug.log", wbxml);
         }
 
-        let connection = tzcommon.getConnection(syncdata.account);
-        let password = tzcommon.getPassword(connection);
+        let connection = tzPush.getConnection(syncdata.account);
+        let password = tzPush.getPassword(connection);
 
         let deviceType = 'Thunderbird';
-        let deviceId = tzcommon.db.getAccountSetting(syncdata.account, "deviceId");
+        let deviceId = tzPush.db.getAccountSetting(syncdata.account, "deviceId");
         
         // Create request handler
         let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
         req.mozBackgroundRequest = true;
-        if (prefs.getCharPref("debugwbxml") === "1") {
-            tzcommon.dump("sending", "POST " + connection.url + '?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
+        if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) {
+            tzPush.dump("sending", "POST " + connection.url + '?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
         }
         req.open("POST", connection.url + '?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
         req.overrideMimeType("text/plain");
         req.setRequestHeader("User-Agent", deviceType + ' ActiveSync');
         req.setRequestHeader("Content-Type", "application/vnd.ms-sync.wbxml");
         req.setRequestHeader("Authorization", 'Basic ' + btoa(connection.user + ':' + password));
-        if (tzcommon.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+        if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
             req.setRequestHeader("MS-ASProtocolVersion", "2.5");
         } else {
             req.setRequestHeader("MS-ASProtocolVersion", "14.0");
         }
         req.setRequestHeader("Content-Length", wbxml.length);
-        if (tzcommon.db.getAccountSetting(syncdata.account, "provision") == "1") {
-            req.setRequestHeader("X-MS-PolicyKey", tzcommon.db.getAccountSetting(syncdata.account, "policykey"));
+        if (tzPush.db.getAccountSetting(syncdata.account, "provision") == "1") {
+            req.setRequestHeader("X-MS-PolicyKey", tzPush.db.getAccountSetting(syncdata.account, "policykey"));
         }
 
         // Define response handler for our request
         req.onreadystatechange = function() { 
-            //tzcommon.dump("header",req.getAllResponseHeaders().toLowerCase())
+            //tzPush.dump("header",req.getAllResponseHeaders().toLowerCase())
             if (req.readyState === 4 && req.status === 200) {
 
                 wbxml = req.responseText;
-                if (prefs.getCharPref("debugwbxml") === "1") {
-                    tzcommon.dump("recieved", tzcommon.decode_utf8(this.toxml(wbxml).split('><').join('>\n<')));
-                    tzcommon.appendToFile("wbxml-debug.log", wbxml);
-                    //tzcommon.dump("header",req.getAllResponseHeaders().toLowerCase())
+                if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) {
+                    tzPush.dump("recieved", tzPush.decode_utf8(this.toxml(wbxml).split('><').join('>\n<')));
+                    tzPush.appendToFile("wbxml-debug.log", wbxml);
+                    //tzPush.dump("header",req.getAllResponseHeaders().toLowerCase())
                 }
                 if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
                     if (wbxml.length !== 0) {
-                        tzcommon.dump("recieved", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
+                        tzPush.dump("recieved", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
                     }
                 }
                 callback(req.responseText, syncdata);
@@ -472,8 +479,8 @@ var tzSync = {
                         break;
                     
                     case 449: // Request for new provision
-                        if (tzcommon.db.getAccountSetting(syncdata.account, "provision") == "1") {
-                            tzSync.init("resync", syncdata.account, syncdata.folderID);
+                        if (tzPush.db.getAccountSetting(syncdata.account, "provision") == "1") {
+                            sync.init("resync", syncdata.account, syncdata.folderID);
                         } else {
                             this.finishSync(syncdata, req.status);
                         }
@@ -482,14 +489,14 @@ var tzSync = {
                     case 451: // Redirect - update host and login manager 
                         let header = req.getResponseHeader("X-MS-Location");
                         let newHost = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
-                        let connection = tzcommon.getConnection(syncdata.account);
-                        let password = tzcommon.getPassword(connection);
+                        let connection = tzPush.getConnection(syncdata.account);
+                        let password = tzPush.getPassword(connection);
 
-                        tzcommon.dump("redirect (451)", "header: " + header + ", oldHost: " + connection.host + ", newHost: " + newHost);
+                        tzPush.dump("redirect (451)", "header: " + header + ", oldHost: " + connection.host + ", newHost: " + newHost);
                         
                         //If the current connection has a LoginInfo (password stored !== null), try to update it
                         if (password !== null) {
-                            tzcommon.dump("redirect (451)", "updating loginInfo");
+                            tzPush.dump("redirect (451)", "updating loginInfo");
                             let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
                             let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
                             
@@ -511,11 +518,11 @@ var tzSync = {
                         }
 
                         //TODO: We could end up in a redirect loop - stop here and ask user to manually resync?
-                        tzSync.init("resync", syncdata.account); //resync everything
+                        sync.init("resync", syncdata.account); //resync everything
                         break;
                         
                     default:
-                        tzcommon.dump("request status", "reported -- " + req.status);
+                        tzPush.dump("request status", "reported -- " + req.status);
                         this.finishSync(syncdata, req.status);
                 }
             }
@@ -538,11 +545,11 @@ var tzSync = {
                 for (let nIdx = 0; nIdx < nBytes; nIdx++) {
                     ui8Data[nIdx] = wbxml.charCodeAt(nIdx) & 0xff;
                 }
-                //tzcommon.dump("ui8Data",this.toxml(wbxml))
+                //tzPush.dump("ui8Data",this.toxml(wbxml))
                 req.send(ui8Data);
             }
         } catch (e) {
-            tzcommon.dump("unknown error", e);
+            tzPush.dump("unknown error", e);
         }
 
         return true;
@@ -1043,7 +1050,7 @@ var tzSync = {
     },
 
     mergeCategories: function (oldCats, data) {
-        let catsArray = tzSync.getCategoriesFromString(oldCats);
+        let catsArray = sync.getCategoriesFromString(oldCats);
         let newCat = data.trim();
         if (newCat != "" && catsArray.indexOf(newCat) == -1) catsArray.push(newCat);
         return catsArray.join("\u001A");
@@ -1052,17 +1059,17 @@ var tzSync = {
     fromzpush: function(syncdata) {
 
         //Check SyncTarget
-        if (!tzSync.checkSyncTarget(syncdata.account, syncdata.folderID)) {
+        if (!sync.checkSyncTarget(syncdata.account, syncdata.folderID)) {
             this.finishSync(syncdata, "notargets");
             return;
         }
 
-        tzSync.setSyncState("requestingchanges", syncdata);
+        sync.setSyncState("requestingchanges", syncdata);
         var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
         var moreavilable = 1;
 
         var wbxmlsend = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x1E, 0x13, 0x55, 0x03, 0x31, 0x30, 0x30, 0x00, 0x01, 0x57, 0x00, 0x11, 0x45, 0x46, 0x03, 0x31, 0x00, 0x01, 0x47, 0x03, 0x32, 0x30, 0x30, 0x30, 0x30, 0x30, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01);
-        if (tzcommon.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+        if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
             wbxmlsend = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x1E, 0x13, 0x55, 0x03, 0x31, 0x30, 0x30, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01);
         }
 
@@ -1075,7 +1082,7 @@ var tzSync = {
             if (returnedwbxml.length === 0) {
                 this.tozpush(syncdata);
             } else {
-                tzSync.setSyncState("recievingchanges", syncdata);
+                sync.setSyncState("recievingchanges", syncdata);
                 wbxml = returnedwbxml;
                 var firstcmd = wbxml.indexOf(String.fromCharCode(0x56));
 
@@ -1090,16 +1097,16 @@ var tzSync = {
                 var wbxmlstatus = truncwbxml.substring(n + 2, n1);
 
                 if (wbxmlstatus === '3' || wbxmlstatus === '12') {
-                    tzcommon.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-                    tzSync.init("resync", syncdata.account, syncdata.folderID);
+                    tzPush.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
+                    sync.init("resync", syncdata.account, syncdata.folderID);
                 } else if (wbxmlstatus !== '1') {
-                    tzcommon.dump("wbxml status", "server error? " + wbxmlstatus);
+                    tzPush.dump("wbxml status", "server error? " + wbxmlstatus);
                     this.finishSync(syncdata, "wbxmlservererror");
                 } else {
                     syncdata.synckey = this.FindKey(wbxml);
-                    tzcommon.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
+                    tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
                     //this is contact sync, so we can simply request the target object
-                    var addressBook = tzcommon.getAddressBookObject(tzcommon.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
+                    var addressBook = tzPush.getAddressBookObject(tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
                     
                     var stack = [];
                     var num = 4;
@@ -1124,7 +1131,7 @@ var tzSync = {
                     var modcard;
                     var ServerId;
                     var cardsToDelete;
-                    var seperator = tzcommon.db.getServerSetting(syncdata.account, "seperator");
+                    var seperator = tzPush.db.getServerSetting(syncdata.account, "seperator");
 
                     while (num < wbxml.length) {
                         token = wbxml.substr(num, 1);
@@ -1139,7 +1146,7 @@ var tzSync = {
                             num = wbxml.indexOf(String.fromCharCode(0x00), num);
 
                             if (x === 0x01 && temptoken === 0x7C) {
-                                filePath = tzcommon.addphoto(card, data);
+                                filePath = tzPush.addphoto(card, data);
                                 photo = card.getProperty("ServerId", "") + '.jpg';
                             } else if (x === 0x01 && temptoken === 0x48) {
                                 card.setProperty("Birthday", data);
@@ -1178,7 +1185,7 @@ var tzSync = {
                             } else if (x === 0x01 && temptoken === 0x56) { //Zarafa sends Categories as Category 
                                 // sogo-connector and other sync tools use the Categories field for categories
                                 // add the new category to the existing one
-                                card.setProperty("Categories", tzSync.mergeCategories(card.getProperty("Categories", ""),data));
+                                card.setProperty("Categories", sync.mergeCategories(card.getProperty("Categories", ""),data));
                             } else if (x === 0x01 && temptoken === 0x51) {
                                 let lines = data.split(seperator);
 
@@ -1221,7 +1228,7 @@ var tzSync = {
 
                                     if (!addressBook.getCardFromProperty("ServerId", tempsid, false)) {
                                         //card DOES NOT exists, add new card from server to the addressbook
-                                        tzcommon.addNewCardFromServer(card, addressBook, syncdata.account);
+                                        tzPush.addNewCardFromServer(card, addressBook, syncdata.account);
                                     } else {
                                         //card DOES exists, get the local card and replace all properties with those received from server - why not simply loop over all properties of the new card?
                                         ServerId = card.getProperty("ServerId", "");
@@ -1250,7 +1257,7 @@ var tzSync = {
                                             modcard.setProperty("PhotoURI", filePath);
                                             photo = '';
                                         }
-                                        if (tzcommon.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
+                                        if (tzPush.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
                                             modcard.setProperty("DisplayName", modcard.getProperty("FirstName", "") + " " + modcard.getProperty("LastName", ""));
                                         }
 
@@ -1260,7 +1267,7 @@ var tzSync = {
 
                                 } else {
                                     //this is not a resync and thus a new card, add it
-                                    tzcommon.addNewCardFromServer(card, addressBook, syncdata.account);
+                                    tzPush.addNewCardFromServer(card, addressBook, syncdata.account);
                                 }
 
                                 card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
@@ -1277,7 +1284,7 @@ var tzSync = {
                                         addressBook.deleteCards(cardsToDelete);
                                     } catch (e) {}
                                     card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-                                    tzcommon.db.removeCardFromDeleteLog(addressBook.URI, data);
+                                    tzPush.db.removeCardFromDeleteLog(addressBook.URI, data);
                                 } else {
                                     card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
                                 }
@@ -1312,7 +1319,7 @@ var tzSync = {
                                     modcard.setProperty("PhotoURI", filePath);
                                     photo = '';
                                 }
-                                if (tzcommon.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
+                                if (tzPush.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
                                     modcard.setProperty("DisplayName", modcard.getProperty("FirstName", "") + " " + modcard.getProperty("LastName", ""));
                                 }
                                 /* newCard = */ addressBook.modifyCard(modcard);
@@ -1339,7 +1346,7 @@ var tzSync = {
                         wbxml = wbxmlsend.replace('SyncKeyReplace', syncdata.synckey);
                         wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
                         this.Send(wbxml, callback.bind(this), "Sync", syncdata);
-                    } else if (tzcommon.db.getAccountSetting(syncdata.account, "downloadonly") == "1") {
+                    } else if (tzPush.db.getAccountSetting(syncdata.account, "downloadonly") == "1") {
                         this.finishSync(syncdata);
                     } else {
                         this.tozpush(syncdata);
@@ -1351,15 +1358,15 @@ var tzSync = {
     },
 
     tozpush: function(syncdata) {
-        tzSync.setSyncState("sendingchanges", syncdata);
+        sync.setSyncState("sendingchanges", syncdata);
 
         var wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
-        if (tzcommon.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+        if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
             wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
         }
 
         var wbxml = '';
-        var addressBook = tzcommon.getAddressBookObject(tzcommon.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
+        var addressBook = tzPush.getAddressBookObject(tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
 
         var x;
         var birthd;
@@ -1383,9 +1390,9 @@ var tzSync = {
         var ambd = 0;
         var wbxmlinner;
         var card;
-        var maxnumbertosend = parseInt(tzcommon.db.prefs.getCharPref("maxnumbertosend"));
+        var maxnumbertosend = tzPush.db.prefSettings.getIntPref("maxnumbertosend");
         var morecards = false;
-        var seperator = tzcommon.db.getServerSetting(syncdata.account, "seperator"); // default is " ," can be changed to "/n"
+        var seperator = tzPush.db.getServerSetting(syncdata.account, "seperator"); // default is " ," can be changed to "/n"
         var cards = addressBook.childCards;
 
         // this while loops over all cards but only works on new cards without serverid
@@ -1421,7 +1428,7 @@ var tzSync = {
                                     }
 
                                     if (haddressline.length !== 0) { //if address is empty do not send
-                                        wbxml = wbxml + String.fromCharCode(0x65) + String.fromCharCode(0x03) + tzcommon.encode_utf8(haddressline) + String.fromCharCode(0x00, 0x01);
+                                        wbxml = wbxml + String.fromCharCode(0x65) + String.fromCharCode(0x03) + tzPush.encode_utf8(haddressline) + String.fromCharCode(0x00, 0x01);
                                     }
                                     break;
 
@@ -1436,7 +1443,7 @@ var tzSync = {
                                         waddressline = waddressline1 + seperator + waddressline2;
                                     }
                                     if (waddressline.length !== 0) { //if address is empty do not send
-                                        wbxml = wbxml + String.fromCharCode(0x51) + String.fromCharCode(0x03) + tzcommon.encode_utf8(waddressline) + String.fromCharCode(0x00, 0x01);
+                                        wbxml = wbxml + String.fromCharCode(0x51) + String.fromCharCode(0x03) + tzPush.encode_utf8(waddressline) + String.fromCharCode(0x00, 0x01);
                                     }
                                     break;
                             }
@@ -1458,7 +1465,7 @@ var tzSync = {
                                 if (mbd === 3) {
                                     birthymd = birthy + "-" + birthm + "-" + birthd + "T00:00:00.000Z";
                                     mbd = 0;
-                                    if (tzcommon.db.getAccountSetting(syncdata.account, "birthday") == "1") {
+                                    if (tzPush.db.getAccountSetting(syncdata.account, "birthday") == "1") {
                                         wbxml = wbxml + String.fromCharCode(0x48) + String.fromCharCode(0x03) + birthymd + String.fromCharCode(0x00, 0x01);
                                     }
                                 }
@@ -1477,27 +1484,27 @@ var tzSync = {
                                 if (ambd === 3) {
                                     annymd = anny + "-" + annm + "-" + annd + "T00:00:00.000Z";
                                     ambd = 0;
-                                    if (tzcommon.db.getAccountSetting(syncdata.account, "birthday") == "1") {
+                                    if (tzPush.db.getAccountSetting(syncdata.account, "birthday") == "1") {
                                         wbxml = wbxml + String.fromCharCode(0x45) + String.fromCharCode(0x03) + annymd + String.fromCharCode(0x00, 0x01);
                                     }
                                 }
                             } else if (x === 'Categories') { //Send Categories as Category to Zarafa
                                 let cat = String.fromCharCode(0x55, 0x56, 0x3, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x0, 0x1, 0x1);
-                                let catsArray = tzSync.getCategoriesFromString(card.getProperty("Categories", ""));
+                                let catsArray = sync.getCategoriesFromString(card.getProperty("Categories", ""));
                                 for (let i=0; i < catsArray.length; i++) {
-                                    wbxml = wbxml + cat.replace("replaceme", tzcommon.encode_utf8(catsArray[i]));
+                                    wbxml = wbxml + cat.replace("replaceme", tzPush.encode_utf8(catsArray[i]));
                                 }
                             } else if (x === 'Notes') {
-                                if (tzcommon.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
-                                    wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
+                                if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+                                    wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + tzPush.encode_utf8(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
                                 } else {
                                     let body = String.fromCharCode(0x00, 0x11, 0x4a, 0x46, 0x03, 0x31, 0x00, 0x01, 0x4c, 0x03, 0x37, 0x00, 0x01, 0x4b, 0x03, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x00, 0x01);
-                                    body = body.replace("replace", tzcommon.encode_utf8(card.getProperty(x, '')));
+                                    body = body.replace("replace", tzPush.encode_utf8(card.getProperty(x, '')));
                                     body = body.replace("7", card.getProperty(x, '').length);
                                     wbxml = wbxml + body;
                                 }
                             } else {
-                                wbxml = wbxml + String.fromCharCode(this.FromContacts[x]) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
+                                wbxml = wbxml + String.fromCharCode(this.FromContacts[x]) + String.fromCharCode(0x03) + tzPush.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
                             }
                         }
                     }
@@ -1505,7 +1512,7 @@ var tzSync = {
                     cardArr.push(card);
                     for (x in this.FromContacts2) {
                         if (card.getProperty(x, "") !== '') {
-                            wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.FromContacts2[x]) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
+                            wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.FromContacts2[x]) + String.fromCharCode(0x03) + tzPush.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
                         }
                     }
                     wbxml = wbxml + String.fromCharCode(0x01, 0x01, 0x00, 0x00);
@@ -1515,7 +1522,7 @@ var tzSync = {
         }
 
         cards = addressBook.childCards;
-        let time = tzcommon.db.getFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime") / 1000;
+        let time = tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime") / 1000;
         let time2 = (Date.now() / 1000) - 1;
 
         // this while loops over all cards but only works on old cards already having a serverid
@@ -1554,7 +1561,7 @@ var tzSync = {
                                             haddressline = haddressline1 + seperator + haddressline2;
                                         }
                                         if (haddressline.length !== 0) { //if address is empty do not send
-                                            wbxml = wbxml + String.fromCharCode(0x65) + String.fromCharCode(0x03) + tzcommon.encode_utf8(haddressline) + String.fromCharCode(0x00, 0x01);
+                                            wbxml = wbxml + String.fromCharCode(0x65) + String.fromCharCode(0x03) + tzPush.encode_utf8(haddressline) + String.fromCharCode(0x00, 0x01);
                                         }
                                         break;
 
@@ -1569,7 +1576,7 @@ var tzSync = {
                                             waddressline = waddressline1 + seperator + waddressline2;
                                         }
                                         if (waddressline.length !== 0) { //if address is empty do not send
-                                            wbxml = wbxml + String.fromCharCode(0x51) + String.fromCharCode(0x03) + tzcommon.encode_utf8(waddressline) + String.fromCharCode(0x00, 0x01);
+                                            wbxml = wbxml + String.fromCharCode(0x51) + String.fromCharCode(0x03) + tzPush.encode_utf8(waddressline) + String.fromCharCode(0x00, 0x01);
                                         }
                                         break;
                                 }
@@ -1590,7 +1597,7 @@ var tzSync = {
                                     if (mbd === 3) {
                                         birthymd = birthy + "-" + birthm + "-" + birthd + "T00:00:00.000Z";
                                         mbd = 0;
-                                        if (tzcommon.db.getAccountSetting(syncdata.account, "birthday") == "1") {
+                                        if (tzPush.db.getAccountSetting(syncdata.account, "birthday") == "1") {
                                             wbxml = wbxml + String.fromCharCode(0x48) + String.fromCharCode(0x03) + birthymd + String.fromCharCode(0x00, 0x01);
                                         }
                                     }
@@ -1610,34 +1617,34 @@ var tzSync = {
                                         annymd = anny + "-" + annm + "-" + annd + "T00:00:00.000Z";
                                         ambd = 0;
 
-                                        if (tzcommon.db.getAccountSetting(syncdata.account, "birthday") == "1") {
+                                        if (tzPush.db.getAccountSetting(syncdata.account, "birthday") == "1") {
                                             wbxml = wbxml + String.fromCharCode(0x45) + String.fromCharCode(0x03) + annymd + String.fromCharCode(0x00, 0x01);
                                         }
                                     }
                                 } else if (x === 'Categories') { //send categories as category to zarafa
                                     let cat = String.fromCharCode(0x55, 0x56, 0x3, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x0, 0x1, 0x1);
-                                    let catsArray = tzSync.getCategoriesFromString(card.getProperty("Categories", ""));
+                                    let catsArray = sync.getCategoriesFromString(card.getProperty("Categories", ""));
                                     for (let i=0; i < catsArray.length; i++) {
-                                        wbxml = wbxml + cat.replace("replaceme", tzcommon.encode_utf8(catsArray[i]));
+                                        wbxml = wbxml + cat.replace("replaceme", tzPush.encode_utf8(catsArray[i]));
                                     }
                                 } else if (x === 'Notes') {
-                                    if (tzcommon.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
-                                        wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
+                                    if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+                                        wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + tzPush.encode_utf8(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
                                     } else {
                                         let body = String.fromCharCode(0x00, 0x11, 0x4a, 0x46, 0x03, 0x31, 0x00, 0x01, 0x4c, 0x03, 0x37, 0x00, 0x01, 0x4b, 0x03, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x00, 0x01);
-                                        body = body.replace("replace", tzcommon.encode_utf8(card.getProperty(x, '')));
+                                        body = body.replace("replace", tzPush.encode_utf8(card.getProperty(x, '')));
                                         body = body.replace("7", card.getProperty(x, '').length);
                                         wbxml = wbxml + body;
                                     }
                                 } else {
-                                    wbxml = wbxml + String.fromCharCode(this.FromContacts[x]) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
+                                    wbxml = wbxml + String.fromCharCode(this.FromContacts[x]) + String.fromCharCode(0x03) + tzPush.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
                                 }
                             }
 
                         }
                         for (x in this.FromContacts2) {
                             if (card.getProperty(x, null) !== null) { //Same correction as in line 785
-                                wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.FromContacts2[x]) + String.fromCharCode(0x03) + tzcommon.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
+                                wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.FromContacts2[x]) + String.fromCharCode(0x03) + tzPush.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
                             }
                         }
                         wbxml = wbxml + String.fromCharCode(0x01, 0x01, 0x00, 0x00);
@@ -1672,20 +1679,20 @@ var tzSync = {
             var wbxmlstatus = truncwbxml.substring(n + 2, n1);
 
             if (wbxmlstatus === '3' || wbxmlstatus === '12') {
-                tzcommon.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-                tzSync.init("resync", syncdata.account, syncdata.folderID);
+                tzPush.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
+                sync.init("resync", syncdata.account, syncdata.folderID);
             } else if (wbxmlstatus !== '1') {
-                tzcommon.dump("wbxml status", "server error? " + wbxmlstatus);
+                tzPush.dump("wbxml status", "server error? " + wbxmlstatus);
                 this.finishSync(syncdata, "wbxmlservererror");
             } else {
-                tzSync.setSyncState("serverid", syncdata);
+                sync.setSyncState("serverid", syncdata);
 
                 syncdata.synckey = this.FindKey(wbxml);
-                tzcommon.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
+                tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
 
                 var oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
                 var oDOM = oParser.parseFromString(this.toxml(wbxml), "text/xml");
-                var addressBook = tzcommon.getAddressBookObject(tzcommon.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
+                var addressBook = tzPush.getAddressBookObject(tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
 
 
                 var add = oDOM.getElementsByTagName("Add");
@@ -1705,7 +1712,7 @@ var tzSync = {
                             addserverid.setProperty('ServerId', ServerId);
                             /* var newCard = */ addressBook.modifyCard(addserverid);
                         } catch (e) {
-                            tzcommon.dump("unknown error", e);
+                            tzPush.dump("unknown error", e);
                         }
                     }
                 }
@@ -1731,7 +1738,7 @@ var tzSync = {
                                 /* newCard = */ addressBook.modifyCard(addserverid);
                                 morecards = true;
                             } catch (e) {
-                                tzcommon.dump("unknown error", e);
+                                tzPush.dump("unknown error", e);
                             }
                         }
                     }
@@ -1747,11 +1754,11 @@ var tzSync = {
     },
 
     senddel: function(syncdata) {
-        tzSync.setSyncState("sendingdeleted", syncdata);
-        let addressbook = tzcommon.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
+        sync.setSyncState("sendingdeleted", syncdata);
+        let addressbook = tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
         
         // cardstodelete will not contain more cards than max
-        let cardstodelete = tzcommon.db.getCardsFromDeleteLog(addressbook, parseInt(tzcommon.db.prefs.getCharPref("maxnumbertosend")));
+        let cardstodelete = tzPush.db.getCardsFromDeleteLog(addressbook, tzPush.db.prefSettings.getIntPref("maxnumbertosend"));
         let wbxmlinner = "";
         for (let i = 0; i < cardstodelete.length; i++) {
             wbxmlinner = wbxmlinner + String.fromCharCode(0x49, 0x4D, 0x03) + cardstodelete[i] + String.fromCharCode(0x00, 0x01, 0x01);
@@ -1760,7 +1767,7 @@ var tzSync = {
         if (cardstodelete.length > 0) {
             // wbxml contains placholder Id2Replace, replacehere and SyncKeyReplace
             let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
-            if (tzcommon.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+            if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
                 wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
             }
             wbxml = wbxml.replace('replacehere', wbxmlinner);
@@ -1776,7 +1783,7 @@ var tzSync = {
 
     senddelCallback: function (responseWbxml, syncdata) {
         let firstcmd = responseWbxml.indexOf(String.fromCharCode(0x01, 0x46));
-        let addressbook = tzcommon.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
+        let addressbook = tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
 
         let truncwbxml = responseWbxml;
         if (firstcmd !== -1) truncwbxml = responseWbxml.substring(0, firstcmd);
@@ -1786,17 +1793,17 @@ var tzSync = {
         let wbxmlstatus = truncwbxml.substring(n + 2, n1);
 
         if (wbxmlstatus === '3' || wbxmlstatus === '12') {
-            tzcommon.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-            tzSync.init("resync", syncdata.account, syncdata.folderID);
+            tzPush.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
+            sync.init("resync", syncdata.account, syncdata.folderID);
         } else if (wbxmlstatus !== '1') {
-            tzcommon.dump("wbxml status", "server error? " + wbxmlstatus);
+            tzPush.dump("wbxml status", "server error? " + wbxmlstatus);
             this.finishSync(syncdata, "wbxmlservererror");
         } else {
             syncdata.synckey = this.FindKey(responseWbxml);
-            tzcommon.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
+            tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
             for (let count in syncdata.cardstodelete) {
-                tzSync.setSyncState("cleaningdeleted", syncdata);
-                tzcommon.db.removeCardFromDeleteLog(addressbook, syncdata.cardstodelete[count]);
+                sync.setSyncState("cleaningdeleted", syncdata);
+                tzPush.db.removeCardFromDeleteLog(addressbook, syncdata.cardstodelete[count]);
             }
             // The selected cards have been deleted from the server and from the deletelog -> rerun senddel to look for more cards to delete
             this.senddel(syncdata);
@@ -1834,6 +1841,7 @@ var tzSync = {
 
     //Create a reversed map of ToContacts
     initFromContactsArray: function() {
+        tzPush.dump("initFromContactsArray","");
         this.FromContacts = [];
         for (let x in this.ToContacts) {
             this.FromContacts[this.ToContacts[x]] = x;
@@ -1842,4 +1850,4 @@ var tzSync = {
     
 };
 
-tzSync.initFromContactsArray();
+sync.initFromContactsArray();

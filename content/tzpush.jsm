@@ -1,8 +1,8 @@
 "use strict";
 
-var EXPORTED_SYMBOLS = ["tzcommon"];
+var EXPORTED_SYMBOLS = ["tzPush"];
 
-var tzcommon = {
+var tzPush = {
 
     // TOOLS
 
@@ -98,7 +98,7 @@ var tzcommon = {
     // PrefManager FUNCTIONS
 
     connectAccount: function (account) {
-        this.db.setAccountSetting(account, "state", "connecting")
+        this.db.setAccountSetting(account, "state", "connecting");
         this.db.setAccountSetting(account, "policykey", "");
         this.db.setAccountSetting(account, "foldersynckey", "");
     },
@@ -124,12 +124,12 @@ var tzcommon = {
 
     getConnection: function(account) {
         let connection = {
-            protocol: (tzcommon.db.getAccountSetting(account, "https") == "1") ? "https://" : "http://",
-            set host(newHost) { tzcommon.db.setAccountSetting(account, "host", newHost); },
-            get server() { return tzcommon.db.getAccountSetting(account, "host"); },
-            get host() { return this.protocol + tzcommon.db.getAccountSetting(account, "host"); },
+            protocol: (tzPush.db.getAccountSetting(account, "https") == "1") ? "https://" : "http://",
+            set host(newHost) { tzPush.db.setAccountSetting(account, "host", newHost); },
+            get server() { return tzPush.db.getAccountSetting(account, "host"); },
+            get host() { return this.protocol + tzPush.db.getAccountSetting(account, "host"); },
             get url() { return this.host + "/Microsoft-Server-ActiveSync"; },
-            user: tzcommon.db.getAccountSetting(account, "user"),
+            user: tzPush.db.getAccountSetting(account, "user"),
         };
         return connection;
     },
@@ -234,5 +234,8 @@ var tzcommon = {
 };
 
 Components.utils.import("resource://gre/modules/FileUtils.jsm");
-Components.utils.import("chrome://tzpush/content/db.jsm", tzcommon);
+Components.utils.import("chrome://tzpush/content/db.jsm", tzPush);
+
+let loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
+loader.loadSubScript("chrome://tzpush/content/sync.js", tzPush);
 

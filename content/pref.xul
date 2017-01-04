@@ -95,8 +95,8 @@
             <row>
                  <label />
                  <hbox flex="1">
-                     <button flex="1" label="&pref.Sync;" onclick="tzprefs.requestSync(tzprefs.selectedAccount);" />
-                     <button flex="1" label="&pref.Resync;" id="tzprefs.resyncbtn" onclick="tzprefs.requestResync(tzprefs.selectedAccount);" tooltiptext="&pref.ResyncText;" />
+                     <button flex="1" label="&pref.Sync;" id="tzprefs.syncbtn" onclick="tzprefs.requestSync('sync', tzprefs.selectedAccount, this.disabled);" />
+                     <button flex="1" label="&pref.Resync;" id="tzprefs.resyncbtn" onclick="tzprefs.requestSync('resync', tzprefs.selectedAccount, this.disabled);" tooltiptext="&pref.ResyncText;" />
                  </hbox>
             </row>
        </rows>
