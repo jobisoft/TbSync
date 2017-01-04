@@ -4,22 +4,6 @@
 
 Components.utils.import("chrome://tzpush/content/tzpush.jsm");
 
-//TODO: loop over all properties when card copy
-//TODO: maybe include connect / disconnect image on button
-//TODO: Fix conceptional error, which does not allow fields to be cleared, because empty props are ignored
-
-/* 
- - explizitly use if (error !== "") not if (error) - fails on "0"
- - check "resync account folder" - maybe rework it
-
- - create tzpush.contactsync
- - create tzpush.calendersync
- 
- - do not use PENDING 
- - further empty tzcommon
- 
-*/
-
 var tzMessenger = {
 
     openPrefs: function () {
@@ -105,9 +89,14 @@ var tzMessenger = {
                     folders[0].lastsynctime= "";
                     folders[0].status= "";
                     tzPush.db.setFolder(folders[0]);
+                    tzPush.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
                     //not needed - tzPush.db.setAccountSetting(owner[0], "policykey", ""); //- this is identical to tzPush.sync.resync() without the actual sync
 
                     tzPush.db.clearDeleteLog(aItem.URI);
+
+                    //update settings window, if open
+                    let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+                    observerService.notifyObservers(null, "tzpush.accountSyncFinished", folders[0].account + ".notsyncronized");
                 }
             }
         },

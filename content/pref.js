@@ -9,7 +9,7 @@ var tzprefs = {
     selectedAccount: null,
     init: false,
     boolSettings: ["https", "provision", "birthday", "displayoverride", "downloadonly"],
-    protectedSettings: ["accountname", "asversion", "host", "https", "user", "provision", "birthday", "servertype", "displayoverride", "downloadonly"],
+    protectedSettings: ["asversion", "host", "https", "user", "provision", "birthday", "servertype", "displayoverride", "downloadonly"],
     protectedButtons: ["syncbtn", "resyncbtn"],
         
     onload: function () {
@@ -105,6 +105,7 @@ var tzprefs = {
     instantSaveSetting: function (field) {
         let setting = field.id.replace("tzprefs.","");
         tzPush.db.setAccountSetting(tzprefs.selectedAccount, setting, field.value);
+        if (setting == "accountname") parent.tzprefManager.updateAccountName(tzprefs.selectedAccount, field.value);
     },
 
 
@@ -173,7 +174,7 @@ var tzprefs = {
         
         //get latest error
         let error = tzPush.db.getAccountSetting(tzprefs.selectedAccount, "status");
-        document.getElementById('syncstate').value = tzPush.getLocalizedMessage("error." + error);
+        document.getElementById('syncstate').value = tzPush.getLocalizedMessage("status." + error);
 
     },
 
@@ -190,13 +191,13 @@ var tzprefs = {
         let state = tzPush.db.getAccountSetting(tzprefs.selectedAccount, "state"); //connecting, connected, disconnected
         if (state == "connected") {
             //we are connected and want to disconnect
-            tzPush.disconnectAccount(tzprefs.selectedAccount);
+            tzPush.sync.disconnectAccount(tzprefs.selectedAccount);
             tzprefs.updateGui();
             //tzprefs.updateFolderList();
             parent.tzprefManager.updateAccountStatus(tzprefs.selectedAccount);
         } else if (state == "disconnected") {
             //we are disconnected and want to connected
-            tzPush.connectAccount(tzprefs.selectedAccount);
+            tzPush.sync.connectAccount(tzprefs.selectedAccount);
             tzprefs.updateGui();
             tzprefs.saveSettings();
             tzprefs.requestSync("sync", tzprefs.selectedAccount);
@@ -255,9 +256,10 @@ var tzprefs = {
                         window.openDialog("chrome://tzpush/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", "Set password for TzPush account " + account, account);
                         break;
                     case "OK":
+                    case "notsyncronized":
                         break;
                     default:
-                        alert(tzPush.getLocalizedMessage("error." + status));
+                        alert(tzPush.getLocalizedMessage("status." + status));
                 }
                 //tzprefs.updateFolderList();
                 tzprefs.updateGui();

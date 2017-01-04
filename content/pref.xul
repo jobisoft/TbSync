@@ -20,7 +20,7 @@
        <rows>
             <row>
                  <label control="tzprefs.accountname" value="&pref.AccountName;" />
-                 <textbox id="tzprefs.accountname" />
+                 <textbox id="tzprefs.accountname" onblur="tzprefs.instantSaveSetting(this);" />
             </row>
             <row>
                  <label control="tzprefs.user" value="&pref.UserName;" />

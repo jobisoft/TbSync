@@ -1,26 +1,15 @@
 "use strict";
 
-var EXPORTED_SYMBOLS = ["db"];
-
 //TODO (for production)
 // - after migration, delete the data stored in prefs, the user might get confused at a later time, if that old account data is remigrated again, if the db was deleted
 // - check database fields if add-on updates added/removed fields
-
-Components.utils.import("resource://gre/modules/FileUtils.jsm");
-
-const Cc = Components.classes;
-const Ci = Components.interfaces;
-
-// These two are not exported, thus not accessable from outside - but they are global to to the module
-// The cache is only available from the outside as a copy or as a read-only-reference.
-var accountCache = null;
-var folderCache = {};
-
 
 var db = {
 
     prefSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tzpush."),
     conn: null,
+    _accountCache: null,
+    _folderCache: {},
 
     tables: { 
         accounts: {
@@ -173,29 +162,29 @@ var db = {
     getProxyAccount: function(account) {
         let handler = {
             get (target, key) { return target[key]; },
-            set (target, key, value) { throw "[TzPush] Trying to write to a readonly reference of the accountCache!"; return false; }
+            set (target, key, value) { throw "[TzPush] Trying to write to a readonly reference of the this._accountCache!"; return false; }
         };
-        return new Proxy(accountCache[account], handler);
+        return new Proxy(this._accountCache[account], handler);
     },
     
     // The first request to get any account data will retrieve all data and store it in cache
     // This function returns a proxied read-only-reference to the account cache.
     getAccounts: function (forceupdate = false) {
-        //update accountCache
-        if (accountCache === null || forceupdate) {
-            accountCache = {};
+        //update this._accountCache
+        if (this._accountCache === null || forceupdate) {
+            this._accountCache = {};
             let statement = this.conn.createStatement("SELECT * FROM accounts;");
             while (statement.executeStep()) {
                 let data = {};
                 for (let x=0; x<this.accountColumns.length; x++) data[this.accountColumns[x]] = statement.row[this.accountColumns[x]];
-                accountCache[statement.row.account] = data;
+                this._accountCache[statement.row.account] = data;
             }
         }
         
-        let proxyAccounts = {};        
-        proxyAccounts.IDs = Object.keys(accountCache).sort((a, b) => a - b);
+        let proxyAccounts = {};
+        proxyAccounts.IDs = Object.keys(this._accountCache).sort((a, b) => a - b);
         proxyAccounts.data = {};
-        for (let a in accountCache) proxyAccounts.data[a] = this.getProxyAccount(a);
+        for (let a in this._accountCache) proxyAccounts.data[a] = this.getProxyAccount(a);
         return proxyAccounts;
     },
 
@@ -227,7 +216,7 @@ var db = {
 
     addAccount: function (accountname, appendID = false) {
         this.conn.executeSimpleSQL("INSERT INTO accounts (accountname, deviceId) VALUES ('" + accountname + "', '" + this.getNewDeviceId() + "');");
-        this.getAccounts(true); //force update of accountCache
+        this.getAccounts(true); //force update of this._accountCache
         
         let statement = this.conn.createStatement("SELECT seq FROM sqlite_sequence where name='accounts';");
         if (statement.executeStep()) {
@@ -244,7 +233,7 @@ var db = {
         this.conn.executeSimpleSQL("DELETE FROM accounts WHERE account='"+account+"';");
 
         // remove Account from Cache
-        delete(accountCache[account]);
+        delete(this._accountCache[account]);
 
         // also remove all folders of that account
         this.deleteAllFolders(account);
@@ -258,7 +247,7 @@ var db = {
         for (let p in data) {
             // update account cache if allowed
             if (settings.hasOwnProperty(p)) {
-                accountCache[data.account][p] = data[p].toString();
+                this._accountCache[data.account][p] = data[p].toString();
                 if (sql.length > 0) sql = sql + ", ";
                 sql = sql + p + " = '" + data[p] + "'";
             }
@@ -275,8 +264,8 @@ var db = {
 
         //check if field is allowed
         if (settings.hasOwnProperty(name)) {
-            //update accountCache
-            accountCache[account][name] = value.toString();
+            //update this._accountCache
+            this._accountCache[account][name] = value.toString();
             //update DB
             this.conn.executeSimpleSQL("UPDATE accounts SET "+name+"='" + value + "' WHERE account='" + account + "';");
         } else {
@@ -294,16 +283,16 @@ var db = {
     getProxyFolder: function(account, folder) {
         let handler = {
             get (target, key) { return target[key]; },
-            set (target, key, value) { throw "[TzPush] Trying to write to a readonly reference of the folderCache!"; return false; }
+            set (target, key, value) { throw "[TzPush] Trying to write to a readonly reference of the this._folderCache!"; return false; }
         };
-        return new Proxy(folderCache[account][folder], handler);
+        return new Proxy(this._folderCache[account][folder], handler);
     },
 
     // Get all folders of a given account.
     // This function returns either a proxied read-only-reference to the folder cache, or a deep copy. Reference is default.
     getFolders: function (account, copy = false) {
-        //query folderCache
-        if (folderCache.hasOwnProperty(account) == false) {
+        //query this._folderCache
+        if (this._folderCache.hasOwnProperty(account) == false) {
 
             let folders = {};
             let statement = this.conn.createStatement("SELECT * FROM folders WHERE account = '"+account+"';");
@@ -315,20 +304,20 @@ var db = {
                 entries++;
             }
 
-            //update folderCache (array of array!)
-            folderCache[account] = folders;
+            //update this._folderCache (array of array!)
+            this._folderCache[account] = folders;
         }
 
         //return proxy-read-only reference or a deep copy
         if (copy) {
             let proxyFolders = {};        
-            for (let f in folderCache[account]) proxyFolders[f] = this.getProxyFolder(account, f);
+            for (let f in this._folderCache[account]) proxyFolders[f] = this.getProxyFolder(account, f);
             return proxyFolders;
         } else {
             let copiedFolders = {};        
-            for (let f in folderCache[account]) {
+            for (let f in this._folderCache[account]) {
                 copiedFolders[f] = {};
-                for (let s in folderCache[account][f]) copiedFolders[f][s] = folderCache[account][f][s];
+                for (let s in this._folderCache[account][f]) copiedFolders[f][s] = this._folderCache[account][f][s];
             }
             return copiedFolders;
         }
@@ -374,16 +363,15 @@ var db = {
         return data;
     },
 
-    
     setFolder: function(data) {
-        //update folderCache from DB, if not yet done so or a reload has been requested
+        //update this._folderCache from DB, if not yet done so or a reload has been requested
         let folder = this.getFolder(data.account, data.folderID); 
 
         let sql = "";
         for (let p in data) {
             //update folder cache if allowed
             if (folder.hasOwnProperty(p)) {
-                folderCache[data.account][data.folderID][p] = data[p].toString();
+                this._folderCache[data.account][data.folderID][p] = data[p].toString();
                 if (sql.length > 0) sql = sql + ", ";
                 sql = sql + p + " = '" + data[p] + "'";
             }
@@ -401,7 +389,7 @@ var db = {
 
         // update cache of all requested folders
         for (let fID in folders) {
-            if (folders[fID].hasOwnProperty(field)) folderCache[account][fID][field] = value.toString();
+            if (folders[fID].hasOwnProperty(field)) this._folderCache[account][fID][field] = value.toString();
             else throw "Unknown folder field!" + "\nThrown by db.setFolderSetting("+account+", " + folderID + ", " + field + ", " + value + ")";
         }
 
@@ -411,7 +399,6 @@ var db = {
         this.conn.executeSimpleSQL("UPDATE folders "+ sql +";");
     },
 
-    
     addFolder: function(data) {
         let fields = "";
         let values ="";
@@ -426,26 +413,26 @@ var db = {
         }
         this.conn.executeSimpleSQL("INSERT INTO folders (" + fields + ") VALUES ("+values+");");
 
-        //update folderCache
-        if (!folderCache.hasOwnProperty(data.account)) folderCache[data.account] = {};
-        folderCache[data.account][data.folderID] = addedData;
+        //update this._folderCache
+        if (!this._folderCache.hasOwnProperty(data.account)) this._folderCache[data.account] = {};
+        this._folderCache[data.account][data.folderID] = addedData;
     },
 
     deleteAllFolders: function(account) {
         this.conn.executeSimpleSQL("DELETE FROM folders WHERE account='"+account+"';");
-        delete (folderCache[account]);
+        delete (this._folderCache[account]);
     },
 
     deleteFolder: function(account, folderID) {
         this.conn.executeSimpleSQL("DELETE FROM folders WHERE account='"+account+"' AND folderID = '"+folderID+"';");
-        delete (folderCache[account][folderID]);
+        delete (this._folderCache[account][folderID]);
     },
 
 
 
 
 
-    // OTHER SETTINGS 
+    // SERVER SETTINGS 
     
     getServerSetting: function(account, field) {
         let settings = {};

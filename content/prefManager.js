@@ -32,7 +32,7 @@ var tzprefManager = {
             
             if (confirm(tzPush.getLocalizedMessage("promptDeleteAccount").replace("##accountName##", accountsList.selectedItem.label))) {
                 //disconnect (removes ab, triggers deletelog cleanup) 
-                tzPush.disconnectAccount(accountsList.selectedItem.value);
+                tzPush.sync.disconnectAccount(accountsList.selectedItem.value);
                 //delete account from db
                 tzPush.db.removeAccount(accountsList.selectedItem.value);
 
@@ -49,9 +49,10 @@ var tzprefManager = {
         switch (tzPush.db.getAccountSetting(account, "status")) { //error status
             case "OK":
                 src = "tick16.png";
-                if (tzPush.db.getAccountSetting(account, "state") == "connected") break;
+                if (tzPush.db.getAccountSetting(account, "state") == "connected") break; //if still connecting, fall back to info16.png
             
             case "notconnected":
+            case "notsyncronized":
                 src = "info16.png";
                 break;
 

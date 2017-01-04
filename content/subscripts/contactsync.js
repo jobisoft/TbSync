@@ -2,946 +2,7 @@
    See the file LICENSE.txt for licensing information. */
 "use strict";
 
-
-var sync = {
-
-    // SYNC QUEUE MANAGEMENT
-    
-    syncQueue : [],
-    syncState : "idle", //replace pref with this var?
-    syncingNow : "",
-
-    addAccountToSyncQueue: function (job, account = "") {
-        if (account == "") {
-            //Add all connected accounts to the queue - at this point we do not know anything about folders, they are handled by the sync process
-            let accounts = tzPush.db.getAccounts().IDs;
-            for (let i=0; i<accounts.length; i++) {
-                sync.syncQueue.push( job + "." + accounts[i] );
-            }
-        } else {
-            //Add specified account to the queue
-            sync.syncQueue.push( job + "." + account );
-        }
-
-        //after jobs have been aded to the queue, try to start working on the queue
-        if (tzPush.db.prefSettings.getCharPref("syncstate") == "idle") sync.workSyncQueue();
-    },
-    
-    workSyncQueue: function () {
-        //workSyncQueue assumes, that it is allowed to start a new sync job
-        //if no more jobs in queue, do nothing
-        if (sync.syncQueue.length == 0) return;
-
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-
-        let syncrequest = sync.syncQueue.shift().split(".");
-        let job = syncrequest[0];
-        let account = syncrequest[1];
-
-        switch (job) {
-            case "sync":
-            case "resync":
-                sync.init(job, account);
-                break;
-            default:
-                tzPush.dump("workSyncQueue()", "Unknow job for sync queue ("+ job + ")");
-        }
-    },
-
-    finishAccountSync: function (syncdata) {
-        let state = tzPush.db.getAccountSetting(syncdata.account, "state");
-        
-        if (state == "connecting") {
-            if (syncdata.status == "OK") {
-                tzPush.db.setAccountSetting(syncdata.account, "state", "connected");
-            } else {
-                tzPush.disconnectAccount(syncdata.account);
-                tzPush.db.setAccountSetting(syncdata.account, "state", "disconnected");
-            }
-        }
-
-        //update account
-        tzPush.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
-        tzPush.db.setAccountSetting(syncdata.account, "status", syncdata.status);
-        
-        //update of settings window
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tzpush.accountSyncFinished", syncdata.account + "." + syncdata.status);
-        
-        //work on the queue
-        if (sync.syncQueue.length > 0) sync.workSyncQueue();
-        else sync.setSyncState("idle"); 
-    },
-
-
-    resetSync: function () {
-        //set state to idle
-        sync.setSyncState("idle"); 
-        //flush the queue
-        sync.syncQueue = [];
-    },
-
-    init: function (job, account,  folderID = "") {
-
-        //set syncdata for this sync process
-        let syncdata = {};
-        syncdata.account = account;
-        syncdata.folderID = folderID;
-        syncdata.fResync = false;
-        syncdata.status = "OK";
-        sync.setSyncState("syncing", syncdata);
-
-//        //notify settings gui about fresh sync (only for full account syncs)
-//        if (folderID == "") {
-//            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-//            observerService.notifyObservers(null, "tzpush.accountSyncStarted", syncdata.account);
-//        }
-
-        //Check if connected
-        if (tzPush.db.getAccountSetting(account, "state") == "disconnected") { //allow connected and connecting
-            this.finishSync(syncdata, "notconnected");
-            return;
-        }
-
-        //Check if connection has data
-        let connection = tzPush.getConnection(account);
-        if (connection.server == "" || connection.user == "") {
-            this.finishSync(syncdata, "nouserhost");
-            return;
-        }
-
-        switch (job) {
-            case "resync":
-                syncdata.fResync = true;
-                tzPush.db.setAccountSetting(account, "policykey", "");
-
-                //if folderID present, resync only that one folder, otherwise all folders
-                if (folderID !== "") {
-                    tzPush.db.setFolderSetting(account, folderID, "synckey", "");
-                } else {
-                    tzPush.db.setAccountSetting(account, "foldersynckey", "");
-                    tzPush.db.setFolderSetting(account, "", "synckey", "");
-                }
-                
-            case "sync":
-                if (tzPush.db.getAccountSetting(account, "provision") == "1" && tzPush.db.getAccountSetting(account, "policykey") == "") {
-                    this.getPolicykey(syncdata);
-                } else {
-                    this.getFolderIds(syncdata);
-                }
-                break;
-        }
-    },
-
-
-
-
-
-
-
-
-
-    // GLOBAL SYNC FUNCTIONS
-
-    getPolicykey: function(syncdata) {
-        let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x01, 0x01, 0x01);
-        if (tzPush.db.getAccountSetting(syncdata.account, "asversion") !== "2.5") {
-            wbxml = wbxml.replace("MS-WAP-Provisioning-XML", "MS-EAS-Provisioning-WBXML");
-        }
-        syncdata.next = 1;
-        wbxml = this.Send(wbxml, this.getPolicykeyCallback.bind(this), "Provision", syncdata);
-    },
-    
-    getPolicykeyCallback: function (responseWbxml, syncdata) {
-        let policykey = this.FindPolicykey(responseWbxml);
-        tzPush.dump("policykeyCallback("+syncdata.next+")", policykey);
-        tzPush.db.setAccountSetting(syncdata.account, "policykey", policykey);
-        //next == 1 and 2 = resend - next ==3 = GetFolderIds() - 
-        // - the protocol requests us to first send zero as policykey and get a temp policykey in return,
-        // - the we need to resend this tempkey and get the final one 
-        // - then we need to resend the final one and check, if we get that one back - THIS CHECK IS MISSING (TODO)
-        if (syncdata.next < 3) {
-            let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x49, 0x03, 0x50, 0x6F, 0x6C, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x4B, 0x03, 0x31, 0x00, 0x01, 0x01, 0x01, 0x01);
-            //Proposed Fix: Also change the WAP string, if asversion !== 2.5 - as done in the main Policykey() function.
-            if (tzPush.db.getAccountSetting(syncdata.account, "asversion") !== "2.5") {
-                wbxml = wbxml.replace("MS-WAP-Provisioning-XML", "MS-EAS-Provisioning-WBXML");
-            }
-            wbxml = wbxml.replace('PolKeyReplace', policykey);
-            syncdata.next++;
-            this.Send(wbxml, this.getPolicykeyCallback.bind(this), "Provision", syncdata);
-        } else {
-            let policykey = this.FindPolicykey(responseWbxml);
-            tzPush.dump("final returned policykey", policykey);
-            this.getFolderIds(syncdata);
-        }
-    },
-
-    FindPolicykey: function (wbxml) {
-        let x = String.fromCharCode(0x49, 0x03); //<PolicyKey> Code Page 14
-        let start = wbxml.indexOf(x) + 2;
-        let end = wbxml.indexOf(String.fromCharCode(0x00), start);
-        return wbxml.substring(start, end);
-    },
-
-
-    getFolderIds: function(syncdata) {
-        //if syncdata already contains a folderID, it is a specific folder sync - otherwise we scan all folders and sync all folders
-        if (syncdata.folderID != "") {
-            tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", "PENDING");
-            this.syncNextFolder(syncdata);
-        } else {
-            let wbxml = String.fromCharCode(0x03, 0x01, 0x6a, 0x00, 0x00, 0x07, 0x56, 0x52, 0x03, 0x30, 0x00, 0x01, 0x01);
-            this.Send(wbxml, this.getFolderIdsCallback.bind(this), "FolderSync", syncdata);
-        }
-    },
-
-    getFolderIdsCallback: function (wbxml, syncdata) { //ActiveSync Commands taken from TzPush 2.5.4
-        let foldersynckey = this.FindKey(wbxml);
-        tzPush.db.setAccountSetting(syncdata.account, "foldersynckey", foldersynckey); //not used ???
-
-        let start = 0;
-        let numst = wbxml.indexOf(String.fromCharCode(0x4E, 0x57));
-        let numsp = wbxml.indexOf(String.fromCharCode(0x00), numst);
-        let num = parseInt(wbxml.substring(numst + 3, numsp));
-
-        // get currently stored folder data from db and clear db
-        // the last parameter must not be false, because we need
-        // a COPY of the cache: deleteAllFolders will clear the cache,
-        // which would render a reference useless!
-        let folders = tzPush.db.getFolders(syncdata.account, true); 
-        // clear DB (and cache!)
-        tzPush.db.deleteAllFolders(syncdata.account);
-                
-        for (let x = 0; x < num; x++) {
-            start = wbxml.indexOf(String.fromCharCode(0x4F), start);
-            let dict = {};
-            for (let y = 0; y < 4; y++) {
-                start = wbxml.indexOf(String.fromCharCode(0x03), start) + 1;
-                let end = wbxml.indexOf(String.fromCharCode(0x00), start);
-                dict[y] = wbxml.substring(start, end);
-                start = end;
-            }
-            
-            let newData ={};
-            newData.account = syncdata.account;
-            newData.folderID = dict[0];
-            newData.name = dict[2];
-            newData.type = dict[3];
-            newData.synckey = "";
-            newData.target = "";
-            newData.selected = "";
-            newData.lastsynctime = "";
-            newData.status = "";
-                
-                
-            if (folders !== null && folders.hasOwnProperty(newData.folderID)) {
-                //this folder is known, if type did not change, use current settings
-                let curData = folders[newData.folderID];
-                if (curData.type == newData.type) {
-                    newData.synckey = curData.synckey;
-                    newData.target = curData.target;
-                    newData.selected = curData.selected;
-                }
-            } else {
-                //new folder, check if it is a default contact folder and auto select it - TODO: Calendar
-                if (newData.type == "9" || newData.type == "14" || newData.type == "8") { 
-                    newData.selected = "true"; 
-                }
-            }
-
-            //Set status of each selected folder to PENDING
-            if (newData.selected == "true") newData.status="PENDING";
-            tzPush.db.addFolder(newData);
-            
-        }
-        this.syncNextFolder(syncdata);
-    },
-
-
-    //Process all folders with PENDING status
-    syncNextFolder: function (syncdata) {
-        let folders = tzPush.db.findFoldersWithSetting("status", "PENDING", syncdata.account);
-        if (folders.length == 0 || syncdata.status != "OK") {
-            //all folders of this account have been synced
-            sync.finishAccountSync(syncdata);
-        } else {
-            syncdata.synckey = folders[0].synckey;
-            syncdata.folderID = folders[0].folderID;
-            
-            if (syncdata.synckey == "") {
-                let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x30, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x01, 0x01);
-                if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
-                    wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x30, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x01, 0x01);
-                }
-                wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
-                this.Send(wbxml, this.getSynckey.bind(this), "Sync", syncdata);
-            } else {
-                this.startSync(syncdata); 
-            }
-        }
-    },
-
-
-    getSynckey: function (responseWbxml, syncdata) {
-        syncdata.synckey = this.FindKey(responseWbxml);
-        tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
-        this.startSync(syncdata); 
-    },
-
-
-    startSync: function (syncdata) {
-        syncdata.type = tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "type");
-        switch (syncdata.type) {
-            case "9": 
-            case "14": 
-                this.fromzpush(syncdata);
-                break;
-            case "8":
-                tzPush.dump("startSync()", "CalenderSync has not yet been implemented.");
-                this.finishSync(syncdata);
-                break;
-            default:
-                tzPush.dump("startSync()", "Skipping unknown folder type <"+syncdata.type+">");
-                this.finishSync(syncdata);
-        }
-    },
-
-
-    finishSync: function (syncdata, error = "") {
-        //a folder has been finished, process next one
-        let time = Date.now();
-        let status = "OK";
-        if (error !== "") {
-            tzPush.dump("finishSync(): Error @ Account #" + syncdata.account, tzPush.getLocalizedMessage("error." + error));
-            syncdata.status = error; //store latest error
-            status = error;
-            time = "";
-        }
-
-        if (syncdata.folderID) {
-            tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", status);
-            tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime", time);
-        }
-
-        sync.setSyncState("done", syncdata);
-        this.syncNextFolder(syncdata);
-    },
-
-
-    setSyncState: function(syncstate, syncdata = null) {
-        //set new syncstate
-        tzPush.db.prefSettings.setCharPref("syncstate", syncstate);
-
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        let msg = tzPush.getLocalizedMessage("syncstate." + syncstate);
-        let accountname = "";
-        let foldername = "";
-        let prefTarget = "";
-        let statusTarget = "";
-
-        //generate notifies to update gui with new syncstate
-        if (syncdata !== null) {
-            //also keep track of the current sync
-            sync.syncingNow = syncdata.account;
-            
-            accountname = "#" + syncdata.account;
-            
-            let accounts = tzPush.db.getAccounts().data;
-            if (accounts.hasOwnProperty(syncdata.account)) {
-                accountname = accounts[syncdata.account].accountname;
-                if (syncdata.folderID !== "") foldername = tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "name");
-            }
-            
-            if (foldername != "") { 
-                if (syncstate == "done") { //Done without folder info in pref window and status bar
-                    statusTarget = " [" + accountname + "]";
-                } else {
-                    prefTarget = " [" + foldername + "]"; 
-                    statusTarget = " [" + accountname + "/" + foldername + "]";
-                }
-            }
-            observerService.notifyObservers(null, "tzpush.setPrefInfo", syncdata.account + "." + msg + prefTarget);
-        } else {
-            sync.syncingNow = "";
-        }
-        
-        observerService.notifyObservers(null, "tzpush.setStatusBar", msg + statusTarget);
-    },
-
-
-    checkSyncTarget: function (account, folderID) { //TODO: based on type contact/calendar
-        let folder = tzPush.db.getFolder(account, folderID, false); //get read-only-reference
-        let targetName = tzPush.getAddressBookName(folder.target);
-        let targetObject = tzPush.getAddressBookObject(folder.target);
-        
-        if (targetName !== null && targetObject !== null && targetObject instanceof Components.interfaces.nsIAbDirectory) return true;
-        
-        // Get unique Name for new address book
-        let testname = tzPush.db.getAccountSetting(account, "accountname") + "." + folder.name;
-        let newname = testname;
-        let count = 1;
-        let unique = false;
-        do {
-            unique = true;
-            let booksIter = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).directories;
-            while (booksIter.hasMoreElements()) {
-                let data = booksIter.getNext();
-                if (data instanceof Components.interfaces.nsIAbDirectory && data.dirName == newname) {
-                    unique = false;
-                    break;
-                }
-            }
-            if (!unique) {
-                newname = testname + "." + count;
-                count = count + 1;
-            }
-        } while (!unique);
-        
-        //Create the new book with the unique name
-        let dirPrefId = tzPush.addBook(newname);
-        
-        //find uri of new book and store in DB
-        let booksIter = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).directories;
-        while (booksIter.hasMoreElements()) {
-            let data = booksIter.getNext();
-            if (data instanceof Components.interfaces.nsIAbDirectory && data.dirPrefId == dirPrefId) {
-                tzPush.db.setFolderSetting(account, folderID, "target", data.URI); 
-                tzPush.dump("checkSyncTarget("+account+", "+folderID+")", "Creating new sync target (" + newname + ", " + data.URI + ")");
-                return true;
-            }
-        }
-        
-        return false;
-    },
-
-
-    Send: function (wbxml, callback, command, syncdata) {
-        let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
-        
-        if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) {
-            tzPush.dump("sending", decodeURIComponent(escape(this.toxml(wbxml).split('><').join('>\n<'))));
-            tzPush.appendToFile("wbxml-debug.log", wbxml);
-        }
-
-        let connection = tzPush.getConnection(syncdata.account);
-        let password = tzPush.getPassword(connection);
-
-        let deviceType = 'Thunderbird';
-        let deviceId = tzPush.db.getAccountSetting(syncdata.account, "deviceId");
-        
-        // Create request handler
-        let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-        req.mozBackgroundRequest = true;
-        if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) {
-            tzPush.dump("sending", "POST " + connection.url + '?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
-        }
-        req.open("POST", connection.url + '?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
-        req.overrideMimeType("text/plain");
-        req.setRequestHeader("User-Agent", deviceType + ' ActiveSync');
-        req.setRequestHeader("Content-Type", "application/vnd.ms-sync.wbxml");
-        req.setRequestHeader("Authorization", 'Basic ' + btoa(connection.user + ':' + password));
-        if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
-            req.setRequestHeader("MS-ASProtocolVersion", "2.5");
-        } else {
-            req.setRequestHeader("MS-ASProtocolVersion", "14.0");
-        }
-        req.setRequestHeader("Content-Length", wbxml.length);
-        if (tzPush.db.getAccountSetting(syncdata.account, "provision") == "1") {
-            req.setRequestHeader("X-MS-PolicyKey", tzPush.db.getAccountSetting(syncdata.account, "policykey"));
-        }
-
-        // Define response handler for our request
-        req.onreadystatechange = function() { 
-            //tzPush.dump("header",req.getAllResponseHeaders().toLowerCase())
-            if (req.readyState === 4 && req.status === 200) {
-
-                wbxml = req.responseText;
-                if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) {
-                    tzPush.dump("recieved", tzPush.decode_utf8(this.toxml(wbxml).split('><').join('>\n<')));
-                    tzPush.appendToFile("wbxml-debug.log", wbxml);
-                    //tzPush.dump("header",req.getAllResponseHeaders().toLowerCase())
-                }
-                if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
-                    if (wbxml.length !== 0) {
-                        tzPush.dump("recieved", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
-                    }
-                }
-                callback(req.responseText, syncdata);
-            } else if (req.readyState === 4) {
-
-                switch(req.status) {
-                    case 0: // ConnectError
-                        this.finishSync(syncdata, req.status);
-                        break;
-                    
-                    case 401: // AuthError
-                        this.finishSync(syncdata, req.status);
-                        break;
-                    
-                    case 449: // Request for new provision
-                        if (tzPush.db.getAccountSetting(syncdata.account, "provision") == "1") {
-                            sync.init("resync", syncdata.account, syncdata.folderID);
-                        } else {
-                            this.finishSync(syncdata, req.status);
-                        }
-                        break;
-                
-                    case 451: // Redirect - update host and login manager 
-                        let header = req.getResponseHeader("X-MS-Location");
-                        let newHost = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
-                        let connection = tzPush.getConnection(syncdata.account);
-                        let password = tzPush.getPassword(connection);
-
-                        tzPush.dump("redirect (451)", "header: " + header + ", oldHost: " + connection.host + ", newHost: " + newHost);
-                        
-                        //If the current connection has a LoginInfo (password stored !== null), try to update it
-                        if (password !== null) {
-                            tzPush.dump("redirect (451)", "updating loginInfo");
-                            let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-                            let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
-                            
-                            //remove current login info
-                            let currentLoginInfo = new nsLoginInfo(connection.host, connection.url, null, connection.user, password, "USER", "PASSWORD");
-                            myLoginManager.removeLogin(currentLoginInfo);
-
-                            //update host and add new login info
-                            connection.host = newHost;
-                            let newLoginInfo = new nsLoginInfo(connection.host, connection.url, null, connection.user, password, "USER", "PASSWORD");
-                            try {
-                                myLoginManager.addLogin(newLoginInfo);
-                            } catch (e) {
-                                this.finishSync(syncdata, req.status);
-                            }
-                        } else {
-                            //just update host
-                            connection.host = newHost;
-                        }
-
-                        //TODO: We could end up in a redirect loop - stop here and ask user to manually resync?
-                        sync.init("resync", syncdata.account); //resync everything
-                        break;
-                        
-                    default:
-                        tzPush.dump("request status", "reported -- " + req.status);
-                        this.finishSync(syncdata, req.status);
-                }
-            }
-
-        }.bind(this);
-
-
-        try {        
-            if (platformVer >= 50) {
-                /*nBytes = wbxml.length;
-                ui8Data = new Uint8Array(nBytes);
-                for (let nIdx = 0; nIdx < nBytes; nIdx++) {
-                    ui8Data[nIdx] = wbxml.charCodeAt(nIdx) & 0xff;
-                }*/
-
-                req.send(wbxml);
-            } else {
-                let nBytes = wbxml.length;
-                let ui8Data = new Uint8Array(nBytes);
-                for (let nIdx = 0; nIdx < nBytes; nIdx++) {
-                    ui8Data[nIdx] = wbxml.charCodeAt(nIdx) & 0xff;
-                }
-                //tzPush.dump("ui8Data",this.toxml(wbxml))
-                req.send(ui8Data);
-            }
-        } catch (e) {
-            tzPush.dump("unknown error", e);
-        }
-
-        return true;
-    },
-
-
-
-
-
-
-
-
-
-
-    // CONVERT a WAP Binary XML to plain XML
-    
-    toxml: function (wbxml) {
-        let AirSyncBase = ({
-            0x05: '<BodyPreference>',
-            0x06: '<Type>',
-            0x07: '<TruncationSize>',
-            0x08: '<AllOrNone>',
-            0x0A: '<Body>',
-            0x0B: '<Data>',
-            0x0C: '<EstimatedDataSize>',
-            0x0D: '<Truncated>',
-            0x0E: '<Attachments>',
-            0x0F: '<Attachment>',
-            0x10: '<DisplayName>',
-            0x11: '<FileReference>',
-            0x12: '<Method>',
-            0x13: '<ContentId>',
-            0x14: '<ContentLocation>',
-            0x15: '<IsInline>',
-            0x16: '<NativeBodyType>',
-            0x17: '<ContentType>',
-            0x18: '<Preview>',
-            0x19: '<BodyPartPreference>',
-            0x1A: '<BodyPart>',
-            0x1B: '<Status>'
-        });
-
-        let AirSync = ({
-            0x05: '<Sync>',
-            0x06: '<Responses>',
-            0x07: '<Add>',
-            0x08: '<Change>',
-            0x09: '<Delete>',
-            0x0A: '<Fetch>',
-            0x0B: '<SyncKey>',
-            0x0C: '<ClientId>',
-            0x0D: '<ServerId>',
-            0x0E: '<Status>',
-            0x0F: '<Collection>',
-            0x10: '<Class>',
-            0x12: '<CollectionId>',
-            0x13: '<GetChanges>',
-            0x14: '<MoreAvailable>',
-            0x15: '<WindowSize>',
-            0x16: '<Commands>',
-            0x17: '<Options>',
-            0x18: '<FilterType>',
-            0x1B: '<Conflict>',
-            0x1C: '<Collections>',
-            0x1D: '<ApplicationData>',
-            0x1E: '<DeletesAsMoves>',
-            0x20: '<Supported>',
-            0x21: '<SoftDelete>',
-            0x22: '<MIMESupport>',
-            0x23: '<MIMETruncation>',
-            0x24: '<Wait>',
-            0x25: '<Limit>',
-            0x26: '<Partial>',
-            0x27: '<ConversationMode>',
-            0x28: '<MaxItems>',
-            0x29: '<HeartbeatInterval>'
-        });
-
-        let Contacts = ({
-            0x05: '<Anniversary>',
-            0x06: '<AssistantName>',
-            0x07: '<AssistantPhoneNumber>',
-            0x08: '<Birthday>',
-            0x09: '<body>',
-            0x0A: '<BodySize>',
-            0x0B: '<BodyTruncated>',
-            0x0C: '<Business2PhoneNumber>',
-            0x0D: '<BusinessAddressCity>',
-            0x0E: '<BusinessAddressCountry>',
-            0x0F: '<BusinessAddressPostalCode>',
-            0x10: '<BusinessAddressState>',
-            0x11: '<BusinessAddressStreet>',
-            0x12: '<BusinessFaxNumber>',
-            0x13: '<BusinessPhoneNumber>',
-            0x14: '<CarPhoneNumber>',
-            0x15: '<Categories>',
-            0x16: '<Category>',
-            0x17: '<Children>',
-            0x18: '<Child>',
-            0x19: '<CompanyName>',
-            0x1A: '<Department>',
-            0x1B: '<Email1Address>',
-            0x1C: '<Email2Address>',
-            0x1D: '<Email3Address>',
-            0x1E: '<FileAs>',
-            0x1F: '<FirstName>',
-            0x20: '<Home2PhoneNumber>',
-            0x21: '<HomeAddressCity>',
-            0x22: '<HomeAddressCountry>',
-            0x23: '<HomeAddressPostalCode>',
-            0x24: '<HomeAddressState>',
-            0x25: '<HomeAddressStreet>',
-            0x26: '<HomeFaxNumber>',
-            0x27: '<HomePhoneNumber>',
-            0x28: '<JobTitle>',
-            0x29: '<LastName>',
-            0x2A: '<MiddleName>',
-            0x2B: '<MobilePhoneNumber>',
-            0x2C: '<OfficeLocation>',
-            0x2D: '<OtherAddressCity>',
-            0x2E: '<OtherAddressCountry>',
-            0x2F: '<OtherAddressPostalCode>',
-            0x30: '<OtherAddressState>',
-            0x31: '<OtherAddressStreet>',
-            0x32: '<PagerNumber>',
-            0x33: '<RadioPhoneNumber>',
-            0x34: '<Spouse>',
-            0x35: '<Suffix>',
-            0x36: '<Title>',
-            0x37: '<WebPage>',
-            0x38: '<YomiCompanyName>',
-            0x39: '<YomiFirstName>',
-            0x3A: '<YomiLastName>',
-            0x3C: '<Picture>',
-            0x3D: '<Alias>',
-            0x3E: '<WeightedRank>',
-        });
-
-        let Settings = ({
-            0x05: '<Settings>',
-            0x06: '<Status>',
-            0x07: '<Get>',
-            0x08: '<Set>',
-            0x09: '<Oof>',
-            0x0A: '<OofState>',
-            0x0B: '<StartTime>',
-            0x0C: '<EndTime>',
-            0x0D: '<OofMessage>',
-            0x0E: '<AppliesToInternal>',
-            0x0F: '<AppliesToExternalKnown>',
-            0x10: '<AppliesToExternalUnknown>',
-            0x11: '<Enabled>',
-            0x12: '<ReplyMessage>',
-            0x13: '<BodyType>',
-            0x14: '<DevicePassword>',
-            0x15: '<Password>',
-            0x16: '<DeviceInformation>',
-            0x17: '<Model>',
-            0x18: '<IMEI>',
-            0x19: '<FriendlyName>',
-            0x1A: '<OS>',
-            0x1B: '<OSLanguage>',
-            0x1C: '<PhoneNumber>',
-            0x1D: '<UserInformation>',
-            0x1E: '<EmailAddresses>',
-            0x1F: '<SMTPAddress>',
-            0x20: '<UserAgent>',
-            0x21: '<EnableOutboundSMS>',
-            0x22: '<MobileOperator>',
-            0x23: '<PrimarySmtpAddress>',
-            0x24: '<Accounts>',
-            0x25: '<Account>',
-            0x26: '<AccountId>',
-            0x27: '<AccountName>',
-            0x28: '<UserDisplayName>',
-            0x29: '<SendDisabled>',
-            0x2B: '<RightsManagementInformation>'
-        });
-
-        let Provision = ({
-            0x05: '<Provision>',
-            0x06: '<Policies>',
-            0x07: '<Policy>',
-            0x08: '<PolicyType>',
-            0x09: '<PolicyKey>',
-            0x0A: '<Data>',
-            0x0B: '<Status>',
-            0x0C: '<RemoteWipe>',
-            0x0D: '<EASProvisionDoc>',
-            0x0E: '<DevicePasswordEnabled>',
-            0x0F: '<AlphanumericDevicePasswordRequired>',
-            0x10: '<DeviceEncryptionEnabled>',
-            // 0x10:'<RequireStorageCardEncryption>',
-            0x11: '<PasswordRecoveryEnabled>',
-            0x13: '<AttachmentsEnabled>',
-            0x14: '<MinDevicePasswordLength>',
-            0x15: '<MaxInactivityTimeDeviceLock>',
-            0x16: '<MaxDevicePasswordFailedAttempts>',
-            0x17: '<MaxAttachmentSize>',
-            0x18: '<AllowSimpleDevicePassword>',
-            0x19: '<DevicePasswordExpiration>',
-            0x1A: '<DevicePasswordHistory>',
-            0x1B: '<AllowStorageCard>',
-            0x1C: '<AllowCamera>',
-            0x1D: '<RequireDeviceEncryption>',
-            0x1E: '<AllowUnsignedApplications>',
-            0x1F: '<AllowUnsignedInstallationPackages>',
-            0x20: '<MinDevicePasswordComplexCharacters>',
-            0x21: '<AllowWiFi>',
-            0x22: '<AllowTextMessaging>',
-            0x23: '<AllowPOPIMAPEmail>',
-            0x24: '<AllowBluetooth>',
-            0x25: '<AllowIrDA>',
-            0x26: '<RequireManualSyncWhenRoaming>',
-            0x27: '<AllowDesktopSync>',
-            0x28: '<MaxCalendarAgeFilter>',
-            0x29: '<AllowHTMLEmail>',
-            0x2A: '<MaxEmailAgeFilter>',
-            0x2B: '<MaxEmailBodyTruncationSize>',
-            0x2C: '<MaxEmailHTMLBodyTruncationSize>',
-            0x2D: '<RequireSignedSMIMEMessages>',
-            0x2E: '<RequireEncryptedSMIMEMessages>',
-            0x2F: '<RequireSignedSMIMEAlgorithm>',
-            0x30: '<RequireEncryptionSMIMEAlgorithm>',
-            0x31: '<AllowSMIMEEncryptionAlgorithmNegotiation>',
-            0x32: '<AllowSMIMESoftCerts>',
-            0x33: '<AllowBrowser>',
-            0x34: '<AllowConsumerEmail>',
-            0x35: '<AllowRemoteDesktop>',
-            0x36: '<AllowInternetSharing>',
-            0x37: '<UnapprovedInROMApplicationList>',
-            0x38: '<ApplicationName>',
-            0x39: '<ApprovedApplicationList>',
-            0x3A: '<Hash>',
-        });
-
-        let FolderHierarchy = ({
-            0x07: '<DisplayName>',
-            0x08: '<ServerId>',
-            0x09: '<ParentId>',
-            0x0A: '<Type>',
-            0x0C: '<Status>',
-            0x0E: '<Changes>',
-            0x0F: '<Add>',
-            0x10: '<Delete>',
-            0x11: '<Update>',
-            0x12: '<SyncKey>',
-            0x13: '<FolderCreate>',
-            0x14: '<FolderDelete>',
-            0x15: '<FolderUpdate>',
-            0x16: '<FolderSync>',
-            0x17: '<Count>'
-        });
-
-        let Contacts2 = ({
-            0x05: '<CustomerId>',
-            0x06: '<GovernmentId>',
-            0x07: '<IMAddress>',
-            0x08: '<IMAddress2>',
-            0x09: '<IMAddress3>',
-            0x0A: '<ManagerName>',
-            0x0B: '<CompanyMainPhone>',
-            0x0C: '<AccountName>',
-            0x0D: '<NickName>',
-            0x0E: '<MMS>'
-        });
-
-        let Search = ({
-            0x05: '<Search>',
-            0x07: '<Store>',
-            0x08: '<Name>',
-            0x09: '<Query>',
-            0x0A: '<Options>',
-            0x0B: '<Range>',
-            0x0C: '<Status>',
-            0x0D: '<Response>',
-            0x0E: '<Result>',
-            0x0F: '<Properties>',
-            0x10: '<Total>',
-            0x11: '<EqualTo>',
-            0x12: '<Value>',
-            0x13: '<And>',
-            0x14: '<Or>',
-            0x15: '<FreeText>',
-            0x17: '<DeepTraversal>',
-            0x18: '<LongId>',
-            0x19: '<RebuildResults>',
-            0x1A: '<LessThan>',
-            0x1B: '<GreaterThan>',
-            0x1E: '<UserName>',
-            0x1F: '<Password>',
-            0x20: '<ConversationId>',
-            0x21: '<Picture>',
-            0x22: '<MaxSize>',
-            0x23: '<MaxPictures>'
-        });
-
-        let GAL = ({
-            0x05: '<DisplayName>',
-            0x06: '<Phone>',
-            0x07: '<Office>',
-            0x08: '<Title>',
-            0x09: '<Company>',
-            0x0A: '<Alias>',
-            0x0B: '<FirstName>',
-            0x0C: '<LastName>',
-            0x0D: '<HomePhone>',
-            0x0E: '<MobilePhone>',
-            0x0F: '<EmailAddress>',
-            0x10: '<Picture>',
-            0x11: '<Status>',
-            0x12: '<Data>'
-        });
-
-        let Code = ({
-            0x07: FolderHierarchy,
-            0x01: Contacts,
-            0x00: AirSync,
-            0x0E: Provision,
-            0x11: AirSyncBase,
-            0x12: Settings,
-            0x0C: Contacts2,
-            0x0F: Search,
-            0x10: GAL
-        });
-        
-        let Codestring = ({
-            0x07: "FolderHierarchy",
-            0x01: "Contacts",
-            0x00: "AirSync",
-            0x0E: "Provision",
-            0x11: "AirSyncBase",
-            0x12: "Settings",
-            0x0C: "Contacts2",
-            0x0F: "Search",
-            0x10: "GAL"
-        });
-
-        let CodePage = Code[0];
-        let stack = [];
-        let num = 4;
-        let xml = '<?xml version="1.0"?>';
-        let x = '0';
-        let firstxmlns = true;
-        let firstx = '0';
-        
-        while (num < wbxml.length) {
-            let token = wbxml.substr(num, 1);
-            let tokencontent = token.charCodeAt(0) & 0xbf;
-            if (token || tokencontent in Code) {
-                if (token == String.fromCharCode(0x00)) {
-                    num = num + 1;
-                    x = (wbxml.substr(num, 1)).charCodeAt(0);
-                    CodePage = Code[x];
-                    if (firstxmlns) {
-                        firstx = x;
-                    }
-                } else if (token == String.fromCharCode(0x03)) {
-                    xml = xml + (wbxml.substring(num + 1, wbxml.indexOf(String.fromCharCode(0x00, 0x01), num)));
-                    num = wbxml.indexOf(String.fromCharCode(0x00, 0x01), num);
-                } else if (token == String.fromCharCode(0x01)) {
-                    xml = xml + (stack.pop());
-                } else if (token.charCodeAt(0) in CodePage) {
-                    xml = xml + (CodePage[token.charCodeAt(0)]).replace('>', '/>');
-                } else if (tokencontent in CodePage) {
-                    if (firstxmlns || x !== firstx) {
-                        xml = xml + (CodePage[tokencontent].replace('>', ' xmlns="' + Codestring[x] + ':">'));
-                        firstxmlns = false;
-                    } else {
-                        xml = xml + (CodePage[tokencontent]);
-                    }
-
-                    stack.push((CodePage[tokencontent]).replace('<', '</'));
-                } else {
-
-                }
-            }
-
-            num = num + 1;
-        }
-        
-        return xml;
-    },
-
-
-
-
-
-
-
-
-
+var contactsync = {
 
     // CONTACT SYNC
     
@@ -1050,7 +111,7 @@ var sync = {
     },
 
     mergeCategories: function (oldCats, data) {
-        let catsArray = sync.getCategoriesFromString(oldCats);
+        let catsArray = this.getCategoriesFromString(oldCats);
         let newCat = data.trim();
         if (newCat != "" && catsArray.indexOf(newCat) == -1) catsArray.push(newCat);
         return catsArray.join("\u001A");
@@ -1060,7 +121,7 @@ var sync = {
 
         //Check SyncTarget
         if (!sync.checkSyncTarget(syncdata.account, syncdata.folderID)) {
-            this.finishSync(syncdata, "notargets");
+            sync.finishSync(syncdata, "notargets");
             return;
         }
 
@@ -1076,7 +137,7 @@ var sync = {
         var wbxml = wbxmlsend.replace('SyncKeyReplace', syncdata.synckey);
         wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
 
-        this.Send(wbxml, callback.bind(this), "Sync", syncdata);
+        sync.Send(wbxml, callback.bind(this), "Sync", syncdata);
 
         function callback(returnedwbxml, syncdata) {
             if (returnedwbxml.length === 0) {
@@ -1101,9 +162,9 @@ var sync = {
                     sync.init("resync", syncdata.account, syncdata.folderID);
                 } else if (wbxmlstatus !== '1') {
                     tzPush.dump("wbxml status", "server error? " + wbxmlstatus);
-                    this.finishSync(syncdata, "wbxmlservererror");
+                    sync.finishSync(syncdata, "wbxmlservererror");
                 } else {
-                    syncdata.synckey = this.FindKey(wbxml);
+                    syncdata.synckey = sync.FindKey(wbxml);
                     tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
                     //this is contact sync, so we can simply request the target object
                     var addressBook = tzPush.getAddressBookObject(tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
@@ -1185,7 +246,7 @@ var sync = {
                             } else if (x === 0x01 && temptoken === 0x56) { //Zarafa sends Categories as Category 
                                 // sogo-connector and other sync tools use the Categories field for categories
                                 // add the new category to the existing one
-                                card.setProperty("Categories", sync.mergeCategories(card.getProperty("Categories", ""),data));
+                                card.setProperty("Categories", this.mergeCategories(card.getProperty("Categories", ""),data));
                             } else if (x === 0x01 && temptoken === 0x51) {
                                 let lines = data.split(seperator);
 
@@ -1345,9 +406,9 @@ var sync = {
                     if (moreavilable === 1) {
                         wbxml = wbxmlsend.replace('SyncKeyReplace', syncdata.synckey);
                         wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
-                        this.Send(wbxml, callback.bind(this), "Sync", syncdata);
+                        sync.Send(wbxml, callback.bind(this), "Sync", syncdata);
                     } else if (tzPush.db.getAccountSetting(syncdata.account, "downloadonly") == "1") {
-                        this.finishSync(syncdata);
+                        sync.finishSync(syncdata);
                     } else {
                         this.tozpush(syncdata);
                     }
@@ -1490,7 +551,7 @@ var sync = {
                                 }
                             } else if (x === 'Categories') { //Send Categories as Category to Zarafa
                                 let cat = String.fromCharCode(0x55, 0x56, 0x3, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x0, 0x1, 0x1);
-                                let catsArray = sync.getCategoriesFromString(card.getProperty("Categories", ""));
+                                let catsArray = this.getCategoriesFromString(card.getProperty("Categories", ""));
                                 for (let i=0; i < catsArray.length; i++) {
                                     wbxml = wbxml + cat.replace("replaceme", tzPush.encode_utf8(catsArray[i]));
                                 }
@@ -1623,7 +684,7 @@ var sync = {
                                     }
                                 } else if (x === 'Categories') { //send categories as category to zarafa
                                     let cat = String.fromCharCode(0x55, 0x56, 0x3, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x0, 0x1, 0x1);
-                                    let catsArray = sync.getCategoriesFromString(card.getProperty("Categories", ""));
+                                    let catsArray = this.getCategoriesFromString(card.getProperty("Categories", ""));
                                     for (let i=0; i < catsArray.length; i++) {
                                         wbxml = wbxml + cat.replace("replaceme", tzPush.encode_utf8(catsArray[i]));
                                     }
@@ -1658,7 +719,7 @@ var sync = {
             wbxml = wbxmlouter.replace('replacehere', wbxmlinner);
             wbxml = wbxml.replace('SyncKeyReplace', syncdata.synckey);
             wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
-            wbxml = this.Send(wbxml, callback.bind(this), "Sync", syncdata);
+            wbxml = sync.Send(wbxml, callback.bind(this), "Sync", syncdata);
         } else {
             this.senddel(syncdata);
         }
@@ -1683,15 +744,15 @@ var sync = {
                 sync.init("resync", syncdata.account, syncdata.folderID);
             } else if (wbxmlstatus !== '1') {
                 tzPush.dump("wbxml status", "server error? " + wbxmlstatus);
-                this.finishSync(syncdata, "wbxmlservererror");
+                sync.finishSync(syncdata, "wbxmlservererror");
             } else {
                 sync.setSyncState("serverid", syncdata);
 
-                syncdata.synckey = this.FindKey(wbxml);
+                syncdata.synckey = sync.FindKey(wbxml);
                 tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
 
                 var oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
-                var oDOM = oParser.parseFromString(this.toxml(wbxml), "text/xml");
+                var oDOM = oParser.parseFromString(wbxml2xml.convert(wbxml), "text/xml");
                 var addressBook = tzPush.getAddressBookObject(tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
 
 
@@ -1775,9 +836,9 @@ var sync = {
             wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
             // Send will send a request to the server, a responce will trigger callback, which will call senddel again.
             syncdata.cardstodelete = cardstodelete;
-            this.Send(wbxml, this.senddelCallback.bind(this), "Sync", syncdata);
+            sync.Send(wbxml, this.senddelCallback.bind(this), "Sync", syncdata);
         } else {
-            this.finishSync(syncdata);
+            sync.finishSync(syncdata);
         }
     },
 
@@ -1797,9 +858,9 @@ var sync = {
             sync.init("resync", syncdata.account, syncdata.folderID);
         } else if (wbxmlstatus !== '1') {
             tzPush.dump("wbxml status", "server error? " + wbxmlstatus);
-            this.finishSync(syncdata, "wbxmlservererror");
+            sync.finishSync(syncdata, "wbxmlservererror");
         } else {
-            syncdata.synckey = this.FindKey(responseWbxml);
+            syncdata.synckey = sync.FindKey(responseWbxml);
             tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
             for (let count in syncdata.cardstodelete) {
                 sync.setSyncState("cleaningdeleted", syncdata);
@@ -1810,38 +871,8 @@ var sync = {
         }
     },
 
-
-    FindKey: function (wbxml) {
-        let x = String.fromCharCode(0x4b, 0x03); //<SyncKey> Code Page 0
-        if (wbxml.substr(5, 1) === String.fromCharCode(0x07)) {
-            x = String.fromCharCode(0x52, 0x03); //<SyncKey> Code Page 7
-        }
-
-        let start = wbxml.indexOf(x) + 2;
-        let end = wbxml.indexOf(String.fromCharCode(0x00), start);
-        return wbxml.substring(start, end);
-    },
-
-/*    FindFolder: function (wbxml, type) {
-        let start = 0;
-        let end;
-        let folderID;
-        let Scontact = String.fromCharCode(0x4A, 0x03) + type + String.fromCharCode(0x00, 0x01);
-        let contact = wbxml.indexOf(Scontact);
-        while (wbxml.indexOf(String.fromCharCode(0x48, 0x03), start) < contact) {
-            start = wbxml.indexOf(String.fromCharCode(0x48, 0x03), start) + 2;
-            end = wbxml.indexOf(String.fromCharCode(0x00), start);
-            if (start === 1) {
-                break;
-            }
-            folderID = wbxml.substring(start, end); //we should be able to end the loop with return.
-        }
-        return folderID;
-    }, */
-
     //Create a reversed map of ToContacts
     initFromContactsArray: function() {
-        tzPush.dump("initFromContactsArray","");
         this.FromContacts = [];
         for (let x in this.ToContacts) {
             this.FromContacts[this.ToContacts[x]] = x;
@@ -1850,4 +881,4 @@ var sync = {
     
 };
 
-sync.initFromContactsArray();
+contactsync.initFromContactsArray();

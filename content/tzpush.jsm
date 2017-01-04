@@ -2,6 +2,29 @@
 
 var EXPORTED_SYMBOLS = ["tzPush"];
 
+//global objects (not exported, not available outside this module)
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+var bundle = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/strings");
+
+Components.utils.import("resource://gre/modules/FileUtils.jsm");
+
+//TODO: loop over all properties when card copy
+//TODO: maybe include connect / disconnect image on button
+//TODO: Fix conceptional error, which does not allow fields to be cleared, because empty props are ignored
+
+/* 
+ - explizitly use if (error !== "") not if (error) - fails on "0"
+ - check "resync account folder" - maybe rework it
+ 
+ - do not use PENDING but a second queue
+ - do not use prefs for syncstate
+ - if account gets synced, update image in prefmanager
+ - use proxy to prevent access to _accountCache ???
+ - check if queue access from prefs is working as expected
+ 
+*/
+
 var tzPush = {
 
     // TOOLS
@@ -46,8 +69,6 @@ var tzPush = {
 
     getLocalizedMessage: function (msg) {
         let localized = msg;
-        let bundle = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/strings");
-
         try {
             localized = bundle.GetStringFromName(msg);
         } catch (e) {}
@@ -58,6 +79,7 @@ var tzPush = {
         var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
         consoleService.logStringMessage("[TzPush] " + what + " : " + aMessage);
     },
+
 
 
 
@@ -92,30 +114,6 @@ var tzPush = {
         return filePath;
     },
 
-
-
-
-    // PrefManager FUNCTIONS
-
-    connectAccount: function (account) {
-        this.db.setAccountSetting(account, "state", "connecting");
-        this.db.setAccountSetting(account, "policykey", "");
-        this.db.setAccountSetting(account, "foldersynckey", "");
-    },
-
-    disconnectAccount: function (account) {
-        this.db.setAccountSetting(account, "state", "disconnected");
-        this.db.setAccountSetting(account, "status", "notconnected");
-        this.db.setAccountSetting(account, "policykey", "");
-        this.db.setAccountSetting(account, "foldersynckey", "");
-
-        //Delete all targets - TODO: based on type
-        let folders = this.db.findFoldersWithSetting("selected", "true", account);
-        for (let i = 0; i<folders.length; i++) {
-            this.removeBook(folders[i].target);
-        }
-        this.db.deleteAllFolders(account);
-    },
 
 
 
@@ -177,6 +175,7 @@ var tzPush = {
 
 
 
+
     // ADDRESS BOOK FUNCTIONS
 
     addBook: function (name) {
@@ -233,9 +232,12 @@ var tzPush = {
     
 };
 
-Components.utils.import("resource://gre/modules/FileUtils.jsm");
-Components.utils.import("chrome://tzpush/content/db.jsm", tzPush);
-
+// load all subscripts into tzPush
+//- each subscript will be able to access functions/members of other subscripts
+//- loading order does not matter
 let loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
-loader.loadSubScript("chrome://tzpush/content/sync.js", tzPush);
-
+loader.loadSubScript("chrome://tzpush/content/subscripts/db.js", tzPush);
+loader.loadSubScript("chrome://tzpush/content/subscripts/sync.js", tzPush);
+loader.loadSubScript("chrome://tzpush/content/subscripts/contactsync.js", tzPush);
+loader.loadSubScript("chrome://tzpush/content/subscripts/calendarsync.js", tzPush);
+loader.loadSubScript("chrome://tzpush/content/subscripts/wbxml2xml.js", tzPush);

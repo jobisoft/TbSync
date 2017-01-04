@@ -16,18 +16,18 @@ state.disconnected=Not Connected (Click to save settings and connect)
 state.connected=Connected (Click to disconnect account)
 state.connecting=Connecting account ...
 
-error.notconnected=Info: Account is not connected, synchronisation is disabled.
-error.notargets=Error: Aborting Sync, because sync targets could not be created.
-error.nouserhost=Error: Missing username and/or server. Please provide those values.
-error.wbxmlservererror=Error: Unknown server error, more info in log.
-error.0=Error: Could not connect to server, check server address.
-error.401=Error: Could not authenticate, check username and password.
-error.449=Error: Server requests provisioning.
-error.500=Unknown server error.
-error.OK=OK.
+status.notsyncronized=Info: Account needs to be syncronized (a target has been deleted).
+status.notconnected=Info: Account is not connected, synchronisation is disabled.
+status.notargets=Error: Aborting Sync, because sync targets could not be created.
+status.nouserhost=Error: Missing username and/or server. Please provide those values.
+status.wbxmlservererror=Error: Unknown server error, more info in log.
+status.0=Error: Could not connect to server, check server address.
+status.401=Error: Could not authenticate, check username and password.
+status.449=Error: Server requests provisioning.
+status.500=Unknown server error.
+status.OK=OK.
 
 promptDeleteAccount=Delete account ##accountName## for sure?
-not_syncronized=not syncronized
 resync_from_scratch=Resync from scratch
 new_account=New Account
-last_successful_syncronisation=Last successful syncronisation
+
