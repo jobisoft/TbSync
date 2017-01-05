@@ -7,8 +7,7 @@ var sync = {
     // SYNC QUEUE MANAGEMENT
     
     syncQueue : [],
-    syncState : "idle", //replace pref with this var?
-    syncingNow : "",
+    currentProzess : {},
 
     addAccountToSyncQueue: function (job, account = "") {
         if (account == "") {
@@ -23,7 +22,7 @@ var sync = {
         }
 
         //after jobs have been aded to the queue, try to start working on the queue
-        if (tzPush.db.prefSettings.getCharPref("syncstate") == "idle") sync.workSyncQueue();
+        if (sync.currentProzess.state == "idle") sync.workSyncQueue();
     },
     
     workSyncQueue: function () {
@@ -58,14 +57,23 @@ var sync = {
                 tzPush.db.setAccountSetting(syncdata.account, "state", "disconnected");
             }
         }
+        
+        if (syncdata.status != "OK") {
+            // set each folder with PENDING status to ABORTED
+            let folders = tzPush.db.findFoldersWithSetting("status", "PENDING", syncdata.account);
+            for (let i=0; i < folders.length; i++) {
+                tzPush.db.setFolderSetting(syncdata.account, folders[i].folderID, "status", "ABORTED");
+            }
+        }
 
         //update account
         tzPush.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
         tzPush.db.setAccountSetting(syncdata.account, "status", syncdata.status);
         
-        //update of settings window
+        //update of settings window (error handling)
+        sync.setSyncState("accountdone"); 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tzpush.accountSyncFinished", syncdata.account + "." + syncdata.status);
+        observerService.notifyObservers(null, "tzpush.accountSyncFinished", syncdata.account);
         
         //work on the queue
         if (sync.syncQueue.length > 0) sync.workSyncQueue();
@@ -84,6 +92,13 @@ var sync = {
         for (let i=0; i<accounts.IDs.length; i++) {
             if (accounts.data[accounts.IDs[i]].state == "connecting") this.disconnectAccount(accounts.IDs[i]);
         }
+        
+        // set each folder with PENDING status to ABORTED
+        let folders = tzPush.db.findFoldersWithSetting("status", "PENDING");
+        for (let i=0; i < folders.length; i++) {
+            tzPush.db.setFolderSetting(folders[i].account, folders[i].folderID, "status", "ABORTED");
+        }
+
     },
 
     init: function (job, account,  folderID = "") {
@@ -96,11 +111,11 @@ var sync = {
         syncdata.status = "OK";
         sync.setSyncState("syncing", syncdata);
 
-//        //notify settings gui about fresh sync (only for full account syncs)
-//        if (folderID == "") {
-//            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-//            observerService.notifyObservers(null, "tzpush.accountSyncStarted", syncdata.account);
-//        }
+        //notify settings gui about fresh sync (only for full account syncs)
+        if (folderID == "") {
+            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+            observerService.notifyObservers(null, "tzpush.accountSyncStarted", syncdata.account);
+        }
 
         //Check if connected
         if (tzPush.db.getAccountSetting(account, "state") == "disconnected") { //allow connected and connecting
@@ -145,17 +160,18 @@ var sync = {
     },
 
     disconnectAccount: function (account) {
-        db.setAccountSetting(account, "state", "disconnected");
-        db.setAccountSetting(account, "status", "notconnected");
+        db.setAccountSetting(account, "state", "disconnected"); //connected, connecting or disconnected
         db.setAccountSetting(account, "policykey", "");
         db.setAccountSetting(account, "foldersynckey", "");
 
         //Delete all targets - TODO: based on type
-        let folders = db.findFoldersWithSetting("selected", "true", account);
+        let folders = db.findFoldersWithSetting("selected", "1", account);
         for (let i = 0; i<folders.length; i++) {
             tzPush.removeBook(folders[i].target);
         }
         db.deleteAllFolders(account);
+
+        db.setAccountSetting(account, "status", "notconnected");         
     },
 
 
@@ -178,7 +194,7 @@ var sync = {
     },
     
     getPolicykeyCallback: function (responseWbxml, syncdata) {
-        let policykey = this.FindPolicykey(responseWbxml);
+        let policykey = wbxmltools.FindPolicykey(responseWbxml);
         tzPush.dump("policykeyCallback("+syncdata.next+")", policykey);
         tzPush.db.setAccountSetting(syncdata.account, "policykey", policykey);
         //next == 1 and 2 = resend - next ==3 = GetFolderIds() - 
@@ -195,19 +211,11 @@ var sync = {
             syncdata.next++;
             this.Send(wbxml, this.getPolicykeyCallback.bind(this), "Provision", syncdata);
         } else {
-            let policykey = this.FindPolicykey(responseWbxml);
+            let policykey = wbxmltools.FindPolicykey(responseWbxml);
             tzPush.dump("final returned policykey", policykey);
             this.getFolderIds(syncdata);
         }
     },
-
-    FindPolicykey: function (wbxml) {
-        let x = String.fromCharCode(0x49, 0x03); //<PolicyKey> Code Page 14
-        let start = wbxml.indexOf(x) + 2;
-        let end = wbxml.indexOf(String.fromCharCode(0x00), start);
-        return wbxml.substring(start, end);
-    },
-
 
     getFolderIds: function(syncdata) {
         //if syncdata already contains a folderID, it is a specific folder sync - otherwise we scan all folders and sync all folders
@@ -221,7 +229,7 @@ var sync = {
     },
 
     getFolderIdsCallback: function (wbxml, syncdata) { //ActiveSync Commands taken from TzPush 2.5.4
-        let foldersynckey = this.FindKey(wbxml);
+        let foldersynckey = wbxmltools.FindKey(wbxml);
         tzPush.db.setAccountSetting(syncdata.account, "foldersynckey", foldersynckey); //not used ???
 
         let start = 0;
@@ -254,7 +262,7 @@ var sync = {
             newData.type = dict[3];
             newData.synckey = "";
             newData.target = "";
-            newData.selected = "";
+            newData.selected = "0";
             newData.lastsynctime = "";
             newData.status = "";
                 
@@ -268,14 +276,14 @@ var sync = {
                     newData.selected = curData.selected;
                 }
             } else {
-                //new folder, check if it is a default contact folder and auto select it - TODO: Calendar
-                if (newData.type == "9" || newData.type == "14" || newData.type == "8") { 
-                    newData.selected = "true"; 
+                //new folder, check if it is a default contact folder or a default calendar folder and auto select it
+                if (newData.type == "9" || newData.type == "8") { 
+                    newData.selected = "1"; 
                 }
             }
 
             //Set status of each selected folder to PENDING
-            if (newData.selected == "true") newData.status="PENDING";
+            if (newData.selected == "1") newData.status="PENDING";
             tzPush.db.addFolder(newData);
             
         }
@@ -308,7 +316,7 @@ var sync = {
 
 
     getSynckey: function (responseWbxml, syncdata) {
-        syncdata.synckey = this.FindKey(responseWbxml);
+        syncdata.synckey = wbxmltools.FindKey(responseWbxml);
         tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
         this.startSync(syncdata); 
     },
@@ -322,6 +330,7 @@ var sync = {
                 contactsync.fromzpush(syncdata);
                 break;
             case "8":
+            case "13":
                 calendarsync.fromzpush(syncdata);
                 break;
             default:
@@ -352,48 +361,23 @@ var sync = {
     },
 
 
-    setSyncState: function(syncstate, syncdata = null) {
-        //set new syncstate
-        tzPush.db.prefSettings.setCharPref("syncstate", syncstate);
+    setSyncState: function(state, syncdata = null) {
+        //set new state
+        sync.currentProzess.state = state;
+        if (syncdata !== null) {
+            sync.currentProzess.account = syncdata.account;
+            sync.currentProzess.folderID = syncdata.folderID;
+        } else {
+            sync.currentProzess.account = "";
+            sync.currentProzess.folderID = "";
+        }
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        let msg = tzPush.getLocalizedMessage("syncstate." + syncstate);
-        let accountname = "";
-        let foldername = "";
-        let prefTarget = "";
-        let statusTarget = "";
-
-        //generate notifies to update gui with new syncstate
-        if (syncdata !== null) {
-            //also keep track of the current sync
-            sync.syncingNow = syncdata.account;
-            
-            accountname = "#" + syncdata.account;
-            
-            let accounts = tzPush.db.getAccounts().data;
-            if (accounts.hasOwnProperty(syncdata.account)) {
-                accountname = accounts[syncdata.account].accountname;
-                if (syncdata.folderID !== "") foldername = tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "name");
-            }
-            
-            if (foldername != "") { 
-                if (syncstate == "done") { //Done without folder info in pref window and status bar
-                    statusTarget = " [" + accountname + "]";
-                } else {
-                    prefTarget = " [" + foldername + "]"; 
-                    statusTarget = " [" + accountname + "/" + foldername + "]";
-                }
-            }
-            observerService.notifyObservers(null, "tzpush.setPrefInfo", syncdata.account + "." + msg + prefTarget);
-        } else {
-            sync.syncingNow = "";
-        }
-        
-        observerService.notifyObservers(null, "tzpush.setStatusBar", msg + statusTarget);
+        observerService.notifyObservers(null, "tzpush.updateSyncstate", "");
     },
 
 
-    checkSyncTarget: function (account, folderID) { //TODO: based on type contact/calendar
+    checkSyncTarget: function (account, folderID) { //TODO: based on type: contact(9,14) or calendar(8,13)
         let folder = tzPush.db.getFolder(account, folderID);
         let targetName = tzPush.getAddressBookName(folder.target);
         let targetObject = tzPush.getAddressBookObject(folder.target);
@@ -443,7 +427,7 @@ var sync = {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
         
         if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) {
-            tzPush.dump("sending", decodeURIComponent(escape(wbxml2xml.convert(wbxml).split('><').join('>\n<'))));
+            tzPush.dump("sending", decodeURIComponent(escape(wbxmltools.convert2xml(wbxml).split('><').join('>\n<'))));
             tzPush.appendToFile("wbxml-debug.log", wbxml);
         }
 
@@ -481,7 +465,7 @@ var sync = {
 
                 wbxml = req.responseText;
                 if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) {
-                    tzPush.dump("recieved", tzPush.decode_utf8(wbxml2xml.convert(wbxml).split('><').join('>\n<')));
+                    tzPush.dump("recieved", tzPush.decode_utf8(wbxmltools.convert2xml(wbxml).split('><').join('>\n<')));
                     tzPush.appendToFile("wbxml-debug.log", wbxml);
                     //tzPush.dump("header",req.getAllResponseHeaders().toLowerCase())
                 }
@@ -569,7 +553,7 @@ var sync = {
                 for (let nIdx = 0; nIdx < nBytes; nIdx++) {
                     ui8Data[nIdx] = wbxml.charCodeAt(nIdx) & 0xff;
                 }
-                //tzPush.dump("ui8Data",wbxml2xml.convert(wbxml))
+                //tzPush.dump("ui8Data",wbxmltools.convert2xml(wbxml))
                 req.send(ui8Data);
             }
         } catch (e) {
@@ -577,40 +561,6 @@ var sync = {
         }
 
         return true;
-    },
-
-
-
-
-
-    // WBXML TOOLS
-
-    FindKey: function (wbxml) {
-        let x = String.fromCharCode(0x4b, 0x03); //<SyncKey> Code Page 0
-        if (wbxml.substr(5, 1) === String.fromCharCode(0x07)) {
-            x = String.fromCharCode(0x52, 0x03); //<SyncKey> Code Page 7
-        }
-
-        let start = wbxml.indexOf(x) + 2;
-        let end = wbxml.indexOf(String.fromCharCode(0x00), start);
-        return wbxml.substring(start, end);
     }
-
-/*    FindFolder: function (wbxml, type) {
-        let start = 0;
-        let end;
-        let folderID;
-        let Scontact = String.fromCharCode(0x4A, 0x03) + type + String.fromCharCode(0x00, 0x01);
-        let contact = wbxml.indexOf(Scontact);
-        while (wbxml.indexOf(String.fromCharCode(0x48, 0x03), start) < contact) {
-            start = wbxml.indexOf(String.fromCharCode(0x48, 0x03), start) + 2;
-            end = wbxml.indexOf(String.fromCharCode(0x00), start);
-            if (start === 1) {
-                break;
-            }
-            folderID = wbxml.substring(start, end); //we should be able to end the loop with return.
-        }
-        return folderID;
-    }, */
 
 };

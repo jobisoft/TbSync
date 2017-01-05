@@ -11,11 +11,11 @@
     title="TzPush Account Settings" >
 
     <script type="application/x-javascript" src="chrome://tzpush/content/pref.js" /> 
-
-    <grid flex="1" align="center" style="overflow:auto; padding:1ex;">
+   
+    <grid flex="1" align="center" style="padding:0ex;">
        <columns>
+            <column width="150" />
             <column flex="1" />
-            <column flex="2" />
        </columns>
        <rows>
             <row>
@@ -31,7 +31,7 @@
                  <textbox id="tzprefs.host" onblur="tzprefs.stripHost();" disabled="true" />
             </row>
 
-            <row>
+            <row id="tzprefs.options.1">
                  <label control="tzprefs.servertype" value="&pref.servertype;" />
                  <menulist id="tzprefs.servertype" disabled="true" >
                       <menupopup>
@@ -40,7 +40,7 @@
                       </menupopup>
                  </menulist>
             </row>
-            <row>
+            <row id="tzprefs.options.2">
                  <label control="tzprefs.asversion" value="ActiveSync Version" />
                  <menulist id="tzprefs.asversion" disabled="true" >
                       <menupopup id = "as" >
@@ -49,28 +49,34 @@
                       </menupopup>
                  </menulist>
             </row> 
-
-            <row>
-                 <label value="" />
-                 <checkbox id="tzprefs.https" label="&pref.usehttps;" disabled="true" />
+            <row id="tzprefs.options.3">
+                <label value="" />
+                <vbox>
+                    <checkbox id="tzprefs.https" label="&pref.usehttps;" disabled="true" />
+                    <checkbox  id="tzprefs.provision" label="&pref.UseProvisioning;" disabled="true" />
+                    <checkbox id="tzprefs.birthday" label="&pref.birthday;" disabled="true" />
+                    <checkbox id="tzprefs.displayoverride" label="&pref.displayoverride;" disabled="true" />
+                    <checkbox id="tzprefs.downloadonly" label="&pref.downloadonly;" disabled="true" />                    
+                </vbox>
             </row>
-            <row>
-                 <label value="" />
-                 <checkbox  id="tzprefs.provision" label="&pref.UseProvisioning;" disabled="true" />
-            </row>
-            <row>
-                 <label value="" />
-                 <checkbox id="tzprefs.birthday" label="&pref.birthday;" disabled="true" />
-            </row>
-            <row>
-                 <label value="" />
-                 <checkbox id="tzprefs.displayoverride" label="&pref.displayoverride;" disabled="true" />
-            </row>
-            <row>
-                 <label value="" />
-                 <checkbox id="tzprefs.downloadonly" label="&pref.downloadonly;" disabled="true" />
-            </row>
-
+            <row id="tzprefs.folders">
+                <label value="" />
+                <vbox style="padding:6px 3px 3px 3px">
+                    <richlistbox 
+                        id="tzprefs.folderlist"
+                        flex="1"
+                        height="169"
+                        seltype="single"
+                        onselect="tzprefs.toggleFolder();">
+                        <listhead style="border-bottom: 1px solid lightgrey;">
+                            <listheader style="font-weight:bold;" label="" width="20" />
+                            <listheader style="font-weight:bold;" label="&pref.foldername;" flex="2" />
+                            <listheader style="font-weight:bold;" label="&pref.targetname;" flex="2" />
+                            <listheader style="font-weight:bold;text-align:right;" label="&pref.status;" flex="1" />
+                        </listhead>
+                    </richlistbox>
+                </vbox>
+            </row> 
             <row>
                  <label />
                  <button label="" id="tzprefs.connectbtn" onclick="tzprefs.toggleConnectionState();" />
@@ -82,7 +88,7 @@
             </row>
             <row>
                  <label value="&pref.syncstate;" />
-                 <label value="" disabled="true" id="syncstate" />
+                 <label disabled="true" id="syncstate" style="height: 4ex;"></label>
             </row>
 
 

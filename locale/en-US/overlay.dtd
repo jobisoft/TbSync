@@ -43,3 +43,10 @@
 <!ENTITY pref.Email3Address "Additional Email2:">
 <!ENTITY pref.Home2PhoneNumber "Home Phone 2:">
 <!ENTITY pref.CompanyMainPhone "Work Main Phone:">
+
+<!ENTITY prefManager.accounts "Accounts">
+<!ENTITY prefManager.status "Status">
+
+<!ENTITY pref.foldername "Folder">
+<!ENTITY pref.targetname "SyncTarget">
+<!ENTITY pref.status "Status">

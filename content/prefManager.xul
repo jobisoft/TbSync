@@ -9,6 +9,7 @@
     buttons="accept"
     buttonlabelaccept="&pref.Close;"
     onload="tzprefManager.onload();"
+    onunload="tzprefManager.onunload()"
     width="750"
     height="550"
     title="&overlay.tz-settings;" >
@@ -33,8 +34,8 @@
                         onkeypress="if (event.keyCode == 46) {tzprefManager.deleteAccount();}"
                         onselect="tzprefManager.loadSelectedAccount();">
                         <listhead style="border-bottom: 1px solid lightgrey;">
-                            <listheader style="font-weight:bold;" label="Accounts" flex="3" />
-                            <listheader style="font-weight:bold;text-align:right;" label="Status" flex="1" />
+                            <listheader style="font-weight:bold;" label="&prefManager.accounts;" flex="3" />
+                            <listheader style="font-weight:bold;text-align:right;" label="&prefManager.status;" flex="1" />
                         </listhead>
                     </richlistbox>
                     <hbox pack="end">

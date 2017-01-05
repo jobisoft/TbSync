@@ -2,11 +2,48 @@
    See the file LICENSE.txt for licensing information. */
 "use strict";
 
-var wbxml2xml = {
+var wbxmltools = {
 
-    // CONVERT a WAP Binary XML to plain XML
+    // extract policy key from wbxml
+    FindPolicykey: function (wbxml) {
+        let x = String.fromCharCode(0x49, 0x03); //<PolicyKey> Code Page 14
+        let start = wbxml.indexOf(x) + 2;
+        let end = wbxml.indexOf(String.fromCharCode(0x00), start);
+        return wbxml.substring(start, end);
+    },
+
+    // extract sync key from wbxml
+    FindKey: function (wbxml) {
+        let x = String.fromCharCode(0x4b, 0x03); //<SyncKey> Code Page 0
+        if (wbxml.substr(5, 1) === String.fromCharCode(0x07)) {
+            x = String.fromCharCode(0x52, 0x03); //<SyncKey> Code Page 7
+        }
+
+        let start = wbxml.indexOf(x) + 2;
+        let end = wbxml.indexOf(String.fromCharCode(0x00), start);
+        return wbxml.substring(start, end);
+    },
     
-    convert: function (wbxml) {
+    //extract first folderID of a given type from wbxml
+/*    FindFolder: function (wbxml, type) {
+        let start = 0;
+        let end;
+        let folderID;
+        let Scontact = String.fromCharCode(0x4A, 0x03) + type + String.fromCharCode(0x00, 0x01);
+        let contact = wbxml.indexOf(Scontact);
+        while (wbxml.indexOf(String.fromCharCode(0x48, 0x03), start) < contact) {
+            start = wbxml.indexOf(String.fromCharCode(0x48, 0x03), start) + 2;
+            end = wbxml.indexOf(String.fromCharCode(0x00), start);
+            if (start === 1) {
+                break;
+            }
+            folderID = wbxml.substring(start, end); //we should be able to end the loop with return.
+        }
+        return folderID;
+    }, */
+
+    // convert a WAP Binary XML to plain XML
+    convert2xml: function (wbxml) {
         let AirSyncBase = ({
             0x05: '<BodyPreference>',
             0x06: '<Type>',

@@ -164,7 +164,7 @@ var contactsync = {
                     tzPush.dump("wbxml status", "server error? " + wbxmlstatus);
                     sync.finishSync(syncdata, "wbxmlservererror");
                 } else {
-                    syncdata.synckey = sync.FindKey(wbxml);
+                    syncdata.synckey = wbxmltools.FindKey(wbxml);
                     tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
                     //this is contact sync, so we can simply request the target object
                     var addressBook = tzPush.getAddressBookObject(tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
@@ -748,11 +748,11 @@ var contactsync = {
             } else {
                 sync.setSyncState("serverid", syncdata);
 
-                syncdata.synckey = sync.FindKey(wbxml);
+                syncdata.synckey = wbxmltools.FindKey(wbxml);
                 tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
 
                 var oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
-                var oDOM = oParser.parseFromString(wbxml2xml.convert(wbxml), "text/xml");
+                var oDOM = oParser.parseFromString(wbxmltools.convert2xml(wbxml), "text/xml");
                 var addressBook = tzPush.getAddressBookObject(tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
 
 
@@ -860,7 +860,7 @@ var contactsync = {
             tzPush.dump("wbxml status", "server error? " + wbxmlstatus);
             sync.finishSync(syncdata, "wbxmlservererror");
         } else {
-            syncdata.synckey = sync.FindKey(responseWbxml);
+            syncdata.synckey = wbxmltools.FindKey(responseWbxml);
             tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
             for (let count in syncdata.cardstodelete) {
                 sync.setSyncState("cleaningdeleted", syncdata);

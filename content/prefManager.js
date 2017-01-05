@@ -10,8 +10,27 @@ var tzprefManager = {
         //scan accounts, update list and select first entry (because no id is passed to updateAccountList)
         //the onSelect event of the List will load the selected account
         this.updateAccountsList(); 
+        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+        observerService.addObserver(tzprefManager.updateAccountStatusObserver, "tzpush.accountSyncStarted", false);
+        observerService.addObserver(tzprefManager.updateAccountStatusObserver, "tzpush.accountSyncFinished", false);       
     },
 
+    onunload: function () {
+        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+        observerService.removeObserver(tzprefManager.updateAccountStatusObserver, "tzpush.accountSyncStarted");
+        observerService.removeObserver(tzprefManager.updateAccountStatusObserver, "tzpush.accountSyncFinished");
+    },
+
+    /* * *
+    * Observer to catch a started/finished sync job and to update account icons
+    */
+    updateAccountStatusObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            //aData contains the account, which has been finished
+            tzprefManager.updateAccountStatus(aData);
+        }
+    },
+    
 
     addAccount: function () {
         //create a new account and pass its id to updateAccountsList, which wil select it
@@ -43,21 +62,24 @@ var tzprefManager = {
 
 
     getStatusImage: function (account) {
-        let src = "";
+        let src = "";        
+        if (tzPush.sync.currentProzess.account == account) { //syncing
+            src = "sync16.png";
+        } else {
+            //if error show error-icon, otherwise check if connected
+            switch (tzPush.db.getAccountSetting(account, "status")) { //error status
+                case "OK":
+                    src = "tick16.png";
+                    if (tzPush.db.getAccountSetting(account, "state") == "connected") break; //if still connecting, fall back to info16.png
+                
+                case "notconnected":
+                case "notsyncronized":
+                    src = "info16.png";
+                    break;
 
-        //if error show error-icon, otherwise check if connected
-        switch (tzPush.db.getAccountSetting(account, "status")) { //error status
-            case "OK":
-                src = "tick16.png";
-                if (tzPush.db.getAccountSetting(account, "state") == "connected") break; //if still connecting, fall back to info16.png
-            
-            case "notconnected":
-            case "notsyncronized":
-                src = "info16.png";
-                break;
-
-            default:
-                src = "error16.png";
+                default:
+                    src = "error16.png";
+            }
         }
         return "chrome://tzpush/skin/" + src;
     },

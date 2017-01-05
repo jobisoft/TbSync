@@ -16,12 +16,7 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
 /* 
  - explizitly use if (error !== "") not if (error) - fails on "0"
  - check "resync account folder" - maybe rework it
- 
- - do not use PENDING but a second queue
- - do not use prefs for syncstate
- - if account gets synced, update image in prefmanager
- - check if queue access from prefs is working as expected
- 
+ - drop syncdata and use currentProcess only ???
 */
 
 var tzPush = {
@@ -239,4 +234,4 @@ loader.loadSubScript("chrome://tzpush/content/subscripts/db.js", tzPush);
 loader.loadSubScript("chrome://tzpush/content/subscripts/sync.js", tzPush);
 loader.loadSubScript("chrome://tzpush/content/subscripts/contactsync.js", tzPush);
 loader.loadSubScript("chrome://tzpush/content/subscripts/calendarsync.js", tzPush);
-loader.loadSubScript("chrome://tzpush/content/subscripts/wbxml2xml.js", tzPush);
+loader.loadSubScript("chrome://tzpush/content/subscripts/wbxmltools.js", tzPush);

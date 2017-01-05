@@ -17,13 +17,12 @@ var tzprefs = {
         tzprefs.selectedAccount = parent.tzprefManager.selectedAccount;
 
         tzprefs.loadSettings();
-        //tzprefs.updateFolderList();
         tzprefs.updateGui();
+        tzprefs.updateFolderList();
         tzprefs.addressbookListener.add();
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(tzprefs.accountSyncStartedObserver, "tzpush.accountSyncStarted", false);
         observerService.addObserver(tzprefs.accountSyncFinishedObserver, "tzpush.accountSyncFinished", false);
-        observerService.addObserver(tzprefs.setPrefInfoObserver, "tzpush.setPrefInfo", false);
+        observerService.addObserver(tzprefs.updateSyncstateObserver, "tzpush.updateSyncstate", false);
 
         tzprefs.init = true;
     },
@@ -32,15 +31,14 @@ var tzprefs = {
         tzprefs.addressbookListener.remove();
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         if (tzprefs.init) {
-            observerService.removeObserver(tzprefs.accountSyncStartedObserver, "tzpush.accountSyncStarted");
             observerService.removeObserver(tzprefs.accountSyncFinishedObserver, "tzpush.accountSyncFinished");
-            observerService.removeObserver(tzprefs.setPrefInfoObserver, "tzpush.setPrefInfo");
+            observerService.removeObserver(tzprefs.updateSyncstateObserver, "tzpush.updateSyncstate");
         }
     },
 
     // manage sync via queue
     requestSync: function (job, account, disabled = false) {
-        if (disabled == false && tzPush.sync.syncingNow != account) tzPush.sync.addAccountToSyncQueue(job, account);
+        if (disabled == false && tzPush.sync.currentProzess.account != account) tzPush.sync.addAccountToSyncQueue(job, account);
 
     },
 
@@ -122,38 +120,28 @@ var tzprefs = {
     },
 
     
-    /* * *
-    * The settings dialog has some static info labels, which needs to be updated
-    * from time to time.
-    */
-    updateFolderList: function () {
-/* disable during transition
-        //SyncTarget
-        let target = tzPush.getSyncTarget(tzprefs.selectedAccount);
-        if (target.name === null) {
-            document.getElementById('abname').value = tzPush.getLocalizedMessage("not_syncronized");
-        } else {
-            document.getElementById('abname').value = target.name + " (" + target.uri + ")";
-        }
-
-        //LastSyncTime is stored as string for historic reasons
-        let lastError = tzPush.db.getAccountSetting(tzprefs.selectedAccount, "lastError");
-        let LastSyncTime = parseInt(tzPush.db.getAccountSetting(tzprefs.selectedAccount, "LastSyncTime"));
-        if (lastError) document.getElementById('LastSyncTime').value = tzPush.getLocalizedMessage("error." + lastError);
-        else {
-            if (isNaN(LastSyncTime) || LastSyncTime == 0) {
-                document.getElementById('LastSyncTime').value = "-";
-            } else {
-                let d = new Date(parseInt(LastSyncTime));
-                document.getElementById('LastSyncTime').value = d.toString();
-            }
-        } */
-    },
-
 
     /* * *
     * Disable/Enable input fields and buttons according to the current connection state
     */
+    
+    updateSyncstate: function () {
+        let data = tzPush.sync.currentProzess;
+        
+        // if this account is beeing synced, display syncstate, otherwise print status
+        if (tzPush.sync.currentProzess.account == tzprefs.selectedAccount) {        
+            let target = "";
+            let accounts = tzPush.db.getAccounts().data;
+            if (accounts.hasOwnProperty(data.account) && data.folderID !== "" && data.state != "done") { //if "Done" do not print folder info syncstate
+                target = " [" + tzPush.db.getFolderSetting(data.account, data.folderID, "name") + "]";
+            }
+            document.getElementById('syncstate').textContent = tzPush.getLocalizedMessage("syncstate." + data.state) + target;
+        } else {
+            let status = tzPush.db.getAccountSetting(tzprefs.selectedAccount, "status");
+            document.getElementById('syncstate').textContent = tzPush.getLocalizedMessage("status." + status);
+        }            
+    },
+    
     updateGui: function () {
         let state = tzPush.db.getAccountSetting(tzprefs.selectedAccount, "state"); //connecting, connected, disconnected
         let conBtn = document.getElementById('tzprefs.connectbtn');
@@ -161,8 +149,13 @@ var tzprefs = {
         
         //disable connect/disconnect btn during state toggle
         document.getElementById('tzprefs.connectbtn').disabled = (state == "connecting");
+        
+        document.getElementById("tzprefs.options.1").hidden = (state == "connected"); 
+        document.getElementById("tzprefs.options.2").hidden = (state == "connected"); 
+        document.getElementById("tzprefs.options.3").hidden = (state == "connected"); 
+        document.getElementById("tzprefs.folders").hidden = (state != "connected"); 
 
-        //disable all seetings field, if connected
+        //disable all seetings field, if connected or connecting
         for (let i=0; i<this.protectedSettings.length;i++) {
             document.getElementById("tzprefs." + this.protectedSettings[i]).disabled = (state != "disconnected");
         }
@@ -172,13 +165,98 @@ var tzprefs = {
             document.getElementById("tzprefs." + this.protectedButtons[i]).disabled = (state != "connected");
         }
         
-        //get latest error
-        let error = tzPush.db.getAccountSetting(tzprefs.selectedAccount, "status");
-        document.getElementById('syncstate').value = tzPush.getLocalizedMessage("status." + error);
-
+        this.updateSyncstate();
     },
 
+    toggleFolder: function () {
+    },
 
+    getTypeImage: function (type) {
+        let src = "";        
+        switch (type) {
+            case "8":
+            case "13":
+                src = "calendar16.png";
+                break;
+            case "9":
+            case "14":
+                src = "contacts16.png";
+                break;
+        }
+        return "chrome://tzpush/skin/" + src;
+    },
+    
+    updateFolderList: function () {
+        let folderList = document.getElementById("tzprefs.folderlist");
+        let folders = tzPush.db.getFolders(tzprefs.selectedAccount);
+        let folderIDs = Object.keys(folders).sort((a, b) => a - b);
+
+        //clear list
+        for (let i=folderList.getRowCount()-1; i>=0; i--) {
+            folderList.removeItemAt(i);
+        }
+
+        // add allowed folder based on type (check https://msdn.microsoft.com/en-us/library/gg650877(v=exchg.80).aspx)
+        for (let i = 0; i < folderIDs.length; i++) {
+            if (["8","9","13","14"].indexOf(folders[folderIDs[i]].type) != -1) { 
+                let newListItem = document.createElement("richlistitem");
+                newListItem.setAttribute("id", "zprefs.folder." + folderIDs[i]);
+                newListItem.setAttribute("value", folderIDs[i]);
+
+                let selected = (folders[folderIDs[i]].selected == "1");
+                let type = folders[folderIDs[i]].type;
+                let target = "";
+                if (selected) {
+                    if (type == "9" || type == "14") target = tzPush.getAddressBookName(folders[folderIDs[i]].target);
+                }
+
+                //add folder type/img
+                let itemTypeCell = document.createElement("listcell");
+                itemTypeCell.setAttribute("class", "img");
+                itemTypeCell.setAttribute("width", "24");
+                itemTypeCell.setAttribute("height", "24");
+                let itemType = document.createElement("image");
+                itemType.setAttribute("src", this.getTypeImage(type));
+                itemType.setAttribute("style", "margin: 4px;");
+                itemTypeCell.appendChild(itemType);
+                newListItem.appendChild(itemTypeCell);
+
+                //add folder name
+                let itemLabelCell = document.createElement("listcell");
+                itemLabelCell.setAttribute("class", "label");
+                itemLabelCell.setAttribute("flex", "1");
+                let itemLabel = document.createElement("label");
+                itemLabel.setAttribute("value", folders[folderIDs[i]].name);
+                itemLabel.setAttribute("disabled", !selected);
+                itemLabelCell.appendChild(itemLabel);
+                newListItem.appendChild(itemLabelCell);
+
+                //add target name
+                let itemTargetCell = document.createElement("listcell");
+                itemTargetCell.setAttribute("class", "label");
+                itemTargetCell.setAttribute("flex", "1");
+                let itemTarget = document.createElement("label");
+                itemTarget.setAttribute("value", target);
+                itemTarget.setAttribute("disabled", !selected);
+                itemTargetCell.appendChild(itemTarget);
+                newListItem.appendChild(itemTargetCell);
+                
+                //add folder status
+                let itemStatusCell = document.createElement("listcell");
+                itemStatusCell.setAttribute("class", "label");
+                itemStatusCell.setAttribute("flex", "1");
+                let itemStatus = document.createElement("label");
+                itemStatus.setAttribute("value", folders[folderIDs[i]].status);
+                itemStatus.setAttribute("disabled", !selected);
+                itemStatus.setAttribute("style", "text-align:right;");
+                itemStatusCell.appendChild(itemStatus);
+                newListItem.appendChild(itemStatusCell);                
+                
+                folderList.appendChild(newListItem);
+            }
+        }            
+    },    
+    
     /* * *
     * This function is executed, when the user hits the connect/disconnet button. On disconnect, all
     * sync targets are deleted and the settings can be changed again. On connect, the settings are
@@ -193,7 +271,6 @@ var tzprefs = {
             //we are connected and want to disconnect
             tzPush.sync.disconnectAccount(tzprefs.selectedAccount);
             tzprefs.updateGui();
-            //tzprefs.updateFolderList();
             parent.tzprefManager.updateAccountStatus(tzprefs.selectedAccount);
         } else if (state == "disconnected") {
             //we are disconnected and want to connected
@@ -208,31 +285,10 @@ var tzprefs = {
     /* * *
     * Observer to catch changing syncstate and to update the status info.
     */
-    setPrefInfoObserver: {
+    updateSyncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
-            //aData is <accountID>.<human readable msg>
-            let data = aData.split(".");
-            let account = data.shift();
-            let msg = data.join(".");
-            
-            if (account == tzprefs.selectedAccount) {
-                //update syncstate field
-                document.getElementById('syncstate').value = msg;
-            }
-        }
-    },
-
-
-
-    /* * *
-    * Observer to catch a started sync job
-    */
-    accountSyncStartedObserver: {
-        observe: function (aSubject, aTopic, aData) {
-            //Only observe actions for the active account
-            if (aData == tzprefs.selectedAccount) {
-                // Not used at the moment
-            }
+            tzprefs.updateSyncstate();
+            if (tzPush.sync.currentProzess.state == "done") tzprefs.updateFolderList();
         }
     },
 
@@ -242,28 +298,24 @@ var tzprefs = {
     */
     accountSyncFinishedObserver: {
         observe: function (aSubject, aTopic, aData) {
-            //aData is of the following type
-            //[<accountID>,<status>]
-            let data = aData.split(".");
-            let account = data[0];
-            let status = data[1];
+            //aData contains the account, which has been finished
+            let status = tzPush.db.getAccountSetting(aData, "status");
 
             //Only observe actions for the active account
-            if (account == tzprefs.selectedAccount) {
+            if (aData == tzprefs.selectedAccount) {
 
                 switch (status) {
                     case "401":
-                        window.openDialog("chrome://tzpush/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", "Set password for TzPush account " + account, account);
+                        window.openDialog("chrome://tzpush/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", "Set password for TzPush account <" + tzPush.db.getAccountSetting(aData, "accountname") + ">", aData);
                         break;
                     case "OK":
                     case "notsyncronized":
+                        //do not pop alert box for these
                         break;
                     default:
                         alert(tzPush.getLocalizedMessage("status." + status));
                 }
-                //tzprefs.updateFolderList();
                 tzprefs.updateGui();
-                parent.tzprefManager.updateAccountStatus(tzprefs.selectedAccount);
             }
         }
     },
@@ -278,13 +330,13 @@ var tzprefs = {
 
         onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                //tzprefs.updateFolderList();
+                tzprefs.updateFolderList();
             }
         },
 
         onItemRemoved: function addressbookListener_onItemRemoved (aParentDir, aItem) {
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                //tzprefs.updateFolderList();
+                tzprefs.updateFolderList();
             }
         },
 

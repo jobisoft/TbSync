@@ -15,7 +15,7 @@ var tzMessenger = {
         tzMessenger.syncTimer.start();
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(tzMessenger.setStatusBarObserver, "tzpush.setStatusBar", false);
+        observerService.addObserver(tzMessenger.updateSyncstateObserver, "tzpush.updateSyncstate", false);
         observerService.addObserver(tzMessenger.setPasswordObserver, "tzpush.setPassword", false);
 
         tzMessenger.addressbookListener.add();
@@ -44,13 +44,30 @@ var tzMessenger = {
     /* * *
     * Observer to catch changing syncstate and to update the status bar.
     */
-    setStatusBarObserver: {
+    updateSyncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
             //update status bar
             let status = document.getElementById("tzstatus");
-            if (status) status.label = "TzPush: " + aData;
-            
-            //TODO check if error and print in status
+            if (status) {
+                
+                let data = tzPush.sync.currentProzess;                
+                let target = "";
+                let accounts = tzPush.db.getAccounts().data;
+
+                if (accounts.hasOwnProperty(data.account)) {
+                    target = accounts[data.account].accountname
+                    
+                    if (data.folderID !== "" && data.state != "done") { //if "Done" do not print folder info in status bar
+                        target = target + "/" + tzPush.db.getFolderSetting(data.account, data.folderID, "name");
+                    }
+                    
+                    target = " [" + target + "]";
+                }
+                    
+                status.label = "TzPush: " + tzPush.getLocalizedMessage("syncstate." + data.state) + target;
+                
+                //TODO check if error and print in status
+            }
         }
     },
     
@@ -96,7 +113,7 @@ var tzMessenger = {
 
                     //update settings window, if open
                     let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                    observerService.notifyObservers(null, "tzpush.accountSyncFinished", folders[0].account + ".notsyncronized");
+                    observerService.notifyObservers(null, "tzpush.accountSyncFinished", folders[0].account);
                 }
             }
         },
