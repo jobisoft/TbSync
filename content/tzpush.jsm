@@ -17,6 +17,14 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
  - explizitly use if (error !== "") not if (error) - fails on "0"
  - check "resync account folder" - maybe rework it
  - drop syncdata and use currentProcess only ???
+
+- update list, do not clear and rebuild
+ - other icon for account "out of sync" - info means not connected at the moment
+   x - warning error
+   ! - not connected
+   i - out of sync
+
+ - order sync items (9,14,8,13)
 */
 
 var tzPush = {
@@ -222,7 +230,24 @@ var tzPush = {
             }
         }
         return null;
-    }
+    },
+    
+
+
+    getUriFromPrefId : function(id) {
+        return this._prefIDs[id];
+    },
+        
+    scanPrefIdsOfAddressBooks : function () {
+        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);        
+        let allAddressBooks = abManager.directories;
+        this._prefIDs = {};
+        while (allAddressBooks.hasMoreElements()) {
+            let addressBook = allAddressBooks.getNext().QueryInterface(Components.interfaces.nsIAbDirectory);
+            if (addressBook.isRemote) continue;
+            this._prefIDs[addressBook.dirPrefId] = addressBook.URI;
+        }
+    },
     
 };
 
@@ -235,3 +260,5 @@ loader.loadSubScript("chrome://tzpush/content/subscripts/sync.js", tzPush);
 loader.loadSubScript("chrome://tzpush/content/subscripts/contactsync.js", tzPush);
 loader.loadSubScript("chrome://tzpush/content/subscripts/calendarsync.js", tzPush);
 loader.loadSubScript("chrome://tzpush/content/subscripts/wbxmltools.js", tzPush);
+
+tzPush.scanPrefIdsOfAddressBooks();

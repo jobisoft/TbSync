@@ -15,13 +15,12 @@ var tzMessenger = {
         tzMessenger.syncTimer.start();
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(tzMessenger.updateSyncstateObserver, "tzpush.updateSyncstate", false);
+        observerService.addObserver(tzMessenger.syncstateObserver, "tzpush.changedSyncstate", false);
         observerService.addObserver(tzMessenger.setPasswordObserver, "tzpush.setPassword", false);
 
         tzMessenger.addressbookListener.add();
         tzPush.sync.resetSync();
-    },
-
+    },    
 
 
 
@@ -44,13 +43,13 @@ var tzMessenger = {
     /* * *
     * Observer to catch changing syncstate and to update the status bar.
     */
-    updateSyncstateObserver: {
+    syncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
             //update status bar
             let status = document.getElementById("tzstatus");
-            if (status) {
+            if (status && aData == "") { //only observe true notifications from setSyncState()
                 
-                let data = tzPush.sync.currentProzess;                
+                let data = tzPush.sync.currentProzess;
                 let target = "";
                 let accounts = tzPush.db.getAccounts().data;
 
@@ -72,9 +71,28 @@ var tzMessenger = {
     },
     
 
+    setBookModified : function (folder) {
+        if (folder.status == "OK") {
+            tzPush.db.setAccountSetting(folder.account, "status", "notsyncronized");
+            tzPush.db.setFolderSetting(folder.account, folder.folderID, "status", "modified");
+            //notify settings gui to update status
+            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+            tzPush.dump("setBookModified",folder.account);
+            observerService.notifyObservers(null, "tzpush.changedSyncstate", folder.account);
+        }
+    },
 
 
     addressbookListener: {
+
+        //if a contact in one of the synced books is modified, update status of target and account
+        onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
+            if (aItem instanceof Components.interfaces.nsIAbCard) {
+                let aParentDirURI = tzPush.getUriFromPrefId(aItem.directoryId.split("&")[0]);
+                let folders = tzPush.db.findFoldersWithSetting("target", aParentDirURI);
+                if (folders.length > 0) tzMessenger.setBookModified(folders[0]);
+            }
+        },
 
         onItemRemoved: function addressbookListener_onItemRemoved (aParentDir, aItem) {
             if (aParentDir instanceof Components.interfaces.nsIAbDirectory) {
@@ -90,6 +108,7 @@ var tzMessenger = {
                 if (folders.length > 0) {
                     let cardId = aItem.getProperty("ServerId", "");
                     if (cardId) tzPush.db.addCardToDeleteLog(aParentDir.URI, cardId);
+                    tzMessenger.setBookModified(folders[0]);
                 }
             }
 
@@ -113,12 +132,17 @@ var tzMessenger = {
 
                     //update settings window, if open
                     let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                    observerService.notifyObservers(null, "tzpush.accountSyncFinished", folders[0].account);
+                    observerService.notifyObservers(null, "tzpush.changedSyncstate", folders[0].account);
                 }
             }
         },
 
         onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {
+            //if a new book is added, get its prefId (which we need to get the parentDir of a modified card)
+            if (aItem instanceof Components.interfaces.nsIAbDirectory) {
+                tzPush.scanPrefIdsOfAddressBooks();
+            }
+            
             if (aParentDir instanceof Components.interfaces.nsIAbDirectory) {
                 aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
             }
@@ -134,6 +158,9 @@ var tzMessenger = {
                     aItem.setProperty("ServerId", "");
                     aParentDir.modifyCard(aItem);
                 }
+                //also update target status
+                let folders = tzPush.db.findFoldersWithSetting("target", aParentDir.URI);
+                if (folders.length > 0) tzMessenger.setBookModified(folders[0]);                
             }
 
         },
@@ -142,7 +169,7 @@ var tzMessenger = {
             let flags = Components.interfaces.nsIAbListener;
             Components.classes["@mozilla.org/abmanager;1"]
                 .getService(Components.interfaces.nsIAbManager)
-                .addAddressBookListener(tzMessenger.addressbookListener, flags.directoryItemRemoved | flags.itemAdded | flags.directoryRemoved);
+                .addAddressBookListener(tzMessenger.addressbookListener, flags.all);
         },
 
         remove: function addressbookListener_remove () {

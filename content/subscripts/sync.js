@@ -46,41 +46,6 @@ var sync = {
         }
     },
 
-    finishAccountSync: function (syncdata) {
-        let state = tzPush.db.getAccountSetting(syncdata.account, "state");
-        
-        if (state == "connecting") {
-            if (syncdata.status == "OK") {
-                tzPush.db.setAccountSetting(syncdata.account, "state", "connected");
-            } else {
-                this.disconnectAccount(syncdata.account);
-                tzPush.db.setAccountSetting(syncdata.account, "state", "disconnected");
-            }
-        }
-        
-        if (syncdata.status != "OK") {
-            // set each folder with PENDING status to ABORTED
-            let folders = tzPush.db.findFoldersWithSetting("status", "PENDING", syncdata.account);
-            for (let i=0; i < folders.length; i++) {
-                tzPush.db.setFolderSetting(syncdata.account, folders[i].folderID, "status", "ABORTED");
-            }
-        }
-
-        //update account
-        tzPush.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
-        tzPush.db.setAccountSetting(syncdata.account, "status", syncdata.status);
-        
-        //update of settings window (error handling)
-        sync.setSyncState("accountdone"); 
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tzpush.accountSyncFinished", syncdata.account);
-        
-        //work on the queue
-        if (sync.syncQueue.length > 0) sync.workSyncQueue();
-        else sync.setSyncState("idle"); 
-    },
-
-
     resetSync: function () {
         //set state to idle
         sync.setSyncState("idle"); 
@@ -94,9 +59,9 @@ var sync = {
         }
         
         // set each folder with PENDING status to ABORTED
-        let folders = tzPush.db.findFoldersWithSetting("status", "PENDING");
+        let folders = tzPush.db.findFoldersWithSetting("status", "pending");
         for (let i=0; i < folders.length; i++) {
-            tzPush.db.setFolderSetting(folders[i].account, folders[i].folderID, "status", "ABORTED");
+            tzPush.db.setFolderSetting(folders[i].account, folders[i].folderID, "status", "aborted");
         }
 
     },
@@ -109,21 +74,18 @@ var sync = {
         syncdata.folderID = folderID;
         syncdata.fResync = false;
         syncdata.status = "OK";
+
+        // set status to syncing (so settingswindow will display syncstates instead of status) and set initial syncstate
+        tzPush.db.setAccountSetting(syncdata.account, "status", "syncing");
         sync.setSyncState("syncing", syncdata);
 
-        //notify settings gui about fresh sync (only for full account syncs)
-        if (folderID == "") {
-            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tzpush.accountSyncStarted", syncdata.account);
-        }
-
-        //Check if connected
+        // check if connected
         if (tzPush.db.getAccountSetting(account, "state") == "disconnected") { //allow connected and connecting
             this.finishSync(syncdata, "notconnected");
             return;
         }
 
-        //Check if connection has data
+        // check if connection has data
         let connection = tzPush.getConnection(account);
         if (connection.server == "" || connection.user == "") {
             this.finishSync(syncdata, "nouserhost");
@@ -185,6 +147,7 @@ var sync = {
     // GLOBAL SYNC FUNCTIONS
 
     getPolicykey: function(syncdata) {
+        sync.setSyncState("requestingprovision", syncdata); 
         let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x01, 0x01, 0x01);
         if (tzPush.db.getAccountSetting(syncdata.account, "asversion") !== "2.5") {
             wbxml = wbxml.replace("MS-WAP-Provisioning-XML", "MS-EAS-Provisioning-WBXML");
@@ -220,9 +183,10 @@ var sync = {
     getFolderIds: function(syncdata) {
         //if syncdata already contains a folderID, it is a specific folder sync - otherwise we scan all folders and sync all folders
         if (syncdata.folderID != "") {
-            tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", "PENDING");
+            tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", "pending");
             this.syncNextFolder(syncdata);
         } else {
+            sync.setSyncState("requestingfolders", syncdata); 
             let wbxml = String.fromCharCode(0x03, 0x01, 0x6a, 0x00, 0x00, 0x07, 0x56, 0x52, 0x03, 0x30, 0x00, 0x01, 0x01);
             this.Send(wbxml, this.getFolderIdsCallback.bind(this), "FolderSync", syncdata);
         }
@@ -277,13 +241,13 @@ var sync = {
                 }
             } else {
                 //new folder, check if it is a default contact folder or a default calendar folder and auto select it
-                if (newData.type == "9" || newData.type == "8") { 
+                if (newData.type == "9" || newData.type == "8" ) { 
                     newData.selected = "1"; 
                 }
             }
 
             //Set status of each selected folder to PENDING
-            if (newData.selected == "1") newData.status="PENDING";
+            if (newData.selected == "1") newData.status="pending";
             tzPush.db.addFolder(newData);
             
         }
@@ -293,7 +257,7 @@ var sync = {
 
     //Process all folders with PENDING status
     syncNextFolder: function (syncdata) {
-        let folders = tzPush.db.findFoldersWithSetting("status", "PENDING", syncdata.account);
+        let folders = tzPush.db.findFoldersWithSetting("status", "pending", syncdata.account);
         if (folders.length == 0 || syncdata.status != "OK") {
             //all folders of this account have been synced
             sync.finishAccountSync(syncdata);
@@ -360,6 +324,37 @@ var sync = {
         this.syncNextFolder(syncdata);
     },
 
+    
+    finishAccountSync: function (syncdata) {
+        let state = tzPush.db.getAccountSetting(syncdata.account, "state");
+        
+        if (state == "connecting") {
+            if (syncdata.status == "OK") {
+                tzPush.db.setAccountSetting(syncdata.account, "state", "connected");
+            } else {
+                this.disconnectAccount(syncdata.account);
+                tzPush.db.setAccountSetting(syncdata.account, "state", "disconnected");
+            }
+        }
+        
+        if (syncdata.status != "OK") {
+            // set each folder with PENDING status to ABORTED
+            let folders = tzPush.db.findFoldersWithSetting("status", "pending", syncdata.account);
+            for (let i=0; i < folders.length; i++) {
+                tzPush.db.setFolderSetting(syncdata.account, folders[i].folderID, "status", "aborted");
+            }
+        }
+
+        //update account status
+        tzPush.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
+        tzPush.db.setAccountSetting(syncdata.account, "status", syncdata.status);
+        sync.setSyncState("accountdone", syncdata); 
+                
+        //work on the queue
+        if (sync.syncQueue.length > 0) sync.workSyncQueue();
+        else sync.setSyncState("idle"); 
+    },
+
 
     setSyncState: function(state, syncdata = null) {
         //set new state
@@ -373,7 +368,7 @@ var sync = {
         }
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tzpush.updateSyncstate", "");
+        observerService.notifyObservers(null, "tzpush.changedSyncstate", "");
     },
 
 

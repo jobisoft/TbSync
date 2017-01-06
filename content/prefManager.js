@@ -11,26 +11,14 @@ var tzprefManager = {
         //the onSelect event of the List will load the selected account
         this.updateAccountsList(); 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(tzprefManager.updateAccountStatusObserver, "tzpush.accountSyncStarted", false);
-        observerService.addObserver(tzprefManager.updateAccountStatusObserver, "tzpush.accountSyncFinished", false);       
+        observerService.addObserver(tzprefManager.updateAccountStatusObserver, "tzpush.changedSyncstate", false);
     },
 
     onunload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.removeObserver(tzprefManager.updateAccountStatusObserver, "tzpush.accountSyncStarted");
-        observerService.removeObserver(tzprefManager.updateAccountStatusObserver, "tzpush.accountSyncFinished");
+        observerService.removeObserver(tzprefManager.updateAccountStatusObserver, "tzpush.changedSyncstate");
     },
 
-    /* * *
-    * Observer to catch a started/finished sync job and to update account icons
-    */
-    updateAccountStatusObserver: {
-        observe: function (aSubject, aTopic, aData) {
-            //aData contains the account, which has been finished
-            tzprefManager.updateAccountStatus(aData);
-        }
-    },
-    
 
     addAccount: function () {
         //create a new account and pass its id to updateAccountsList, which wil select it
@@ -61,29 +49,60 @@ var tzprefManager = {
     },
 
 
-    getStatusImage: function (account) {
-        let src = "";        
-        if (tzPush.sync.currentProzess.account == account) { //syncing
-            src = "sync16.png";
-        } else {
-            //if error show error-icon, otherwise check if connected
-            switch (tzPush.db.getAccountSetting(account, "status")) { //error status
-                case "OK":
-                    src = "tick16.png";
-                    if (tzPush.db.getAccountSetting(account, "state") == "connected") break; //if still connecting, fall back to info16.png
-                
-                case "notconnected":
-                case "notsyncronized":
-                    src = "info16.png";
-                    break;
+    /* * *
+    * Observer to catch synstate changes and to update account icons
+    */
+    updateAccountStatusObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            //limit execution to a couple of states, not all
+            let state = tzPush.sync.currentProzess.state;
+            
+            //react on true syncstate changes send by setSyncState()
+            if (aData == "" && (state == "syncing" || state == "accountdone")) tzprefManager.updateAccountStatus(tzPush.sync.currentProzess.account );
 
-                default:
-                    src = "error16.png";
-            }
+            //react on manual notifications send by tzmessenger
+            if (aData != "" && (state == "idle")) tzprefManager.updateAccountStatus(aData);
         }
+    },
+
+    getStatusImage: function (account) {
+        let src = "";   
+
+        switch (tzPush.db.getAccountSetting(account, "status")) {
+            case "OK":
+                src = "tick16.png";
+                break;
+            
+            case "notconnected":
+            case "notsyncronized":
+                src = "info16.png";
+                break;
+
+            case "syncing":
+                src = "sync16.png";
+                break;
+
+            default:
+                src = "error16.png";
+        }
+
         return "chrome://tzpush/skin/" + src;
     },
 
+
+    updateAccountStatus: function (id) {
+        let listItem = document.getElementById("tzprefManager.accounts." + id);
+        let statusimage = this.getStatusImage(id);
+        if (listItem.childNodes[1].firstChild.src != statusimage) {
+            listItem.childNodes[1].firstChild.src = statusimage;
+        }
+    },
+
+    updateAccountName: function (id, name) {
+        let listItem = document.getElementById("tzprefManager.accounts." + id);
+        if (listItem.firstChild.value != name) listItem.firstChild.value = name;
+    },
+    
     updateAccountsList: function (accountToSelect = -1) {
         let accountsList = document.getElementById("tzprefManager.accounts");
         let accounts = tzPush.db.getAccounts();
@@ -112,9 +131,7 @@ var tzprefManager = {
                     let itemLabelCell = document.createElement("listcell");
                     itemLabelCell.setAttribute("class", "label");
                     itemLabelCell.setAttribute("flex", "1");
-                    let itemLabel = document.createElement("label");
-                    itemLabel.setAttribute("value", accounts.data[accounts.IDs[i]].accountname);
-                    itemLabelCell.appendChild(itemLabel);
+                    itemLabelCell.setAttribute("label", accounts.data[accounts.IDs[i]].accountname);
                     newListItem.appendChild(itemLabelCell);
 
                     //add account status
@@ -157,19 +174,6 @@ var tzprefManager = {
     },
 
 
-    updateAccountName: function (id, name) {
-        let listItem = document.getElementById("tzprefManager.accounts." + id);
-        if (listItem.childNodes[0].firstChild.value != name) listItem.childNodes[0].firstChild.value = name;
-    },
-    
-    updateAccountStatus: function (id) {
-        let listItem = document.getElementById("tzprefManager.accounts." + id);
-        let statusimage = this.getStatusImage(id);
-        if (listItem.childNodes[1].firstChild.src != statusimage) {
-            listItem.childNodes[1].firstChild.src = statusimage;
-        }
-    },
-    
     //load the pref page for the currently selected account (triggered by onSelect)
     loadSelectedAccount: function () {
         let accountsList = document.getElementById("tzprefManager.accounts");

@@ -14,7 +14,7 @@
 <!ENTITY pref.downloadonly "One-way sync (do not send local changes to the server)">
 <!ENTITY pref.autotime "AutoSync time in minutes">
 <!ENTITY pref.never "0 for never">
-<!ENTITY pref.Sync "Sync latest changes">
+<!ENTITY pref.Sync "Synchronize now!">
 <!ENTITY pref.Resync "Resync from scratch">
 <!ENTITY pref.Close "Close">
 <!ENTITY pref.DeleteAccount "Delete account">

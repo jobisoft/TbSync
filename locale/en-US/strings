@@ -1,21 +1,20 @@
+syncstate.syncing=Initialize synchronisation
+syncstate.done=Preparing next item for synchronisation
+syncstate.accountdone=Finished account
+syncstate.idle=Idle
+syncstate.requestingfolders=Retrieving folders for syncronization
+syncstate.requestingprovision=Requesting provision
+
 syncstate.serverid=Adding new serverid
 syncstate.cleaningdeleted=Cleaning up deleted items
 syncstate.sendingdeleted=Sending items to delete
 syncstate.sendingchanges=Sending changes to server
 syncstate.recievingchanges=Recieving changes from server
 syncstate.requestingchanges=Requesting changes from server
-syncstate.requestingfolders=Requesting folders
-syncstate.requestingprovision=Requesting provision
-syncstate.syncing=Initialize synchronisation
-syncstate.done=Preparing next item for synchronisation
-syncstate.accountdone=Finished account
-syncstate.idle=Idle
-syncstate.sending=Sending
-syncstate.receiving=Receiving
 
-state.disconnected=Not Connected (Click to save settings and connect)
-state.connected=Connected (Click to disconnect account)
-state.connecting=Connecting account ...
+state.disconnected=Save settings & connected account
+state.connected=Disconnect account
+state.connecting=Connecting ...
 
 status.notsyncronized=Info: Account needs to be syncronized, at least one item is out of sync.
 status.notconnected=Info: Account is not connected, synchronisation is disabled.
@@ -26,9 +25,16 @@ status.0=Error: Could not connect to server.
 status.401=Error: Could not authenticate, check username and password.
 status.449=Error: Server requests provisioning.
 status.500=Unknown server error.
-status.OK=OK
+status.OK=Synchronized
+
+status.syncing=Synchronizing ...
+status.skipped=Not yet supported, skippped
+status.aborted=Not synchronized
+status.pending=Waiting to be synchronized
+status.modified=Local modifications
 
 promptDeleteAccount=Delete account ##accountName## for sure?
+promptDisconnect=Are you sure you want to disconnect this account? All local modifications, which have not been synced yet, will be lost!
 resync_from_scratch=Resync from scratch
 new_account=New Account
 
