@@ -26,6 +26,5 @@
            </Description>
 
         </em:targetApplication>
-        <em:optionsURL>javascript:opener.openDialog("chrome://tzpush/content/prefManager.xul", "", "chrome,centerscreen,toolbar", null, null);window.close();</em:optionsURL>
     </Description>
 </RDF>

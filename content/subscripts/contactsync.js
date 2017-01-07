@@ -642,7 +642,7 @@ var contactsync = {
                                         break;
                                 }
 
-                            } else if (card.getProperty(x, null) !== null) { //Proposed Fix to "not sending blanks": Include empty properties (so we can clear a field), but still skip non-existing ones
+                            } else if (card.getProperty(x, "") !== "") {
                                 if (x === 'BirthYear' || x === 'BirthMonth' || x === 'BirthDay') {
 
                                     if (x === 'BirthYear') {
@@ -704,8 +704,10 @@ var contactsync = {
 
                         }
                         for (x in this.FromContacts2) {
-                            if (card.getProperty(x, null) !== null) { //Same correction as in line 785
+                            if (card.getProperty(x, "") !== "") {
                                 wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.FromContacts2[x]) + String.fromCharCode(0x03) + tzPush.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
+                            } else {
+                                wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.FromContacts2[x] - 0x40) + String.fromCharCode(0x00, 0x01);
                             }
                         }
                         wbxml = wbxml + String.fromCharCode(0x01, 0x01, 0x00, 0x00);

@@ -9,25 +9,19 @@ var bundle = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(C
 
 Components.utils.import("resource://gre/modules/FileUtils.jsm");
 
-//TODO: loop over all properties when card copy
-//TODO: maybe include connect / disconnect image on button
-//TODO: Fix conceptional error, which does not allow fields to be cleared, because empty props are ignored
-
-/* 
+/* TODO
  - explizitly use if (error !== "") not if (error) - fails on "0"
+ - loop over all properties when card copy
  - check "resync account folder" - maybe rework it
  - drop syncdata and use currentProcess only ???
 
-- update list, do not clear and rebuild
- - other icon for account "out of sync" - info means not connected at the moment
-   x - warning error
-   ! - not connected
-   i - out of sync
+ - fix blanks bug also for contacts group (not only for contacts2)
 
- - order sync items (9,14,8,13)
 */
 
 var tzPush = {
+
+    prefWindowObj: null,
 
     // TOOLS
 

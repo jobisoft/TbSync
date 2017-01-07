@@ -104,8 +104,8 @@
                      <label />
                      <hbox flex="1" >
                          <!--button flex="1" label="&pref.Resync;" id="tzprefs.resyncbtn" onclick="tzprefs.requestSync('resync', tzprefs.selectedAccount, this.disabled);" tooltiptext="&pref.ResyncText;" /-->
-                         <button flex="2" label="" id="tzprefs.connectbtn" onclick="tzprefs.toggleConnectionState();" />
-                        <button flex="1" label="&pref.Sync;" id="tzprefs.syncbtn" onclick="tzprefs.requestSync('sync', tzprefs.selectedAccount, this.disabled);" />
+                         <button flex="1" label="" id="tzprefs.connectbtn" onclick="tzprefs.toggleConnectionState();" />
+                        <button flex="4" label="&pref.Sync;" id="tzprefs.syncbtn" onclick="tzprefs.requestSync('sync', tzprefs.selectedAccount, this.disabled);" />
                      </hbox>
                 </row>
 

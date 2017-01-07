@@ -6,11 +6,6 @@ Components.utils.import("chrome://tzpush/content/tzpush.jsm");
 
 var tzMessenger = {
 
-    openPrefs: function () {
-        window.open("chrome://tzpush/content/prefManager.xul", "", "chrome,centerscreen,toolbar", null, null);
-    },
-
-
     onload: function () {
         tzMessenger.syncTimer.start();
 
@@ -22,6 +17,11 @@ var tzMessenger = {
         tzPush.sync.resetSync();
     },    
 
+    openPrefs: function () {
+        // check, if a window is already open and just put it in focus
+        if (tzPush.prefWindowObj === null) tzPush.prefWindowObj = window.open("chrome://tzpush/content/prefManager.xul", "TzPushPrefWindow", "chrome,centerscreen,toolbar");
+        tzPush.prefWindowObj.focus();
+    },
 
 
     /* * *
@@ -77,7 +77,6 @@ var tzMessenger = {
             tzPush.db.setFolderSetting(folder.account, folder.folderID, "status", "modified");
             //notify settings gui to update status
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            tzPush.dump("setBookModified",folder.account);
             observerService.notifyObservers(null, "tzpush.changedSyncstate", folder.account);
         }
     },

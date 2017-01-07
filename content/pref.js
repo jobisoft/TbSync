@@ -154,10 +154,11 @@ var tzprefs = {
             document.getElementById('syncstate').textContent = tzPush.getLocalizedMessage("status." + status);
         }
 
-        //disable connect/disconnect btn and folderlist during sync, also disable sync button, if syncingor disconnected
+        //disable connect/disconnect btn, sync btn and folderlist during sync, also hide sync button if disconnected
         document.getElementById('tzprefs.connectbtn').disabled = (status == "syncing");
         document.getElementById('tzprefs.folderlist').disabled = (status == "syncing");
-        document.getElementById('tzprefs.syncbtn').disabled = (status == "syncing" || state == "disconnected");
+        document.getElementById('tzprefs.syncbtn').disabled = (status == "syncing");
+        document.getElementById('tzprefs.syncbtn').hidden = (state == "disconnected");
         
         
     },
@@ -165,24 +166,26 @@ var tzprefs = {
 
     toggleFolder: function () {
         let folderList = document.getElementById("tzprefs.folderlist");
-        if (folderList.selectedItem !== null) {
-            let fID = folderList.getItemAtIndex(folderList.selectedIndex).value;
+        if (folderList.selectedItem !== null && !folderList.disabled) {
+            let fID =  folderList.selectedItem.value;
             let folder = tzPush.db.getFolder(tzprefs.selectedAccount, fID, true);
 
             if (folder.selected == "1") {
-                //get copy of the current target, before resetting it
-                let target = folder.target;
+                if (window.confirm(tzPush.getLocalizedMessage("promptUnsubscribe"))) {
+                    //get copy of the current target, before resetting it
+                    let target = folder.target;
 
-                //deselect and clean up
-                folder.selected = "0";
-                folder.target = "";
-                folder.synckey = "";
-                folder.lastsynctime = "";
-                folder.status = "";
-                tzPush.db.setFolder(folder);
-                tzPush.db.clearDeleteLog(target);
-                                
-                if (target != "") tzPush.removeBook(target); //we must remove the target AFTER cleaning up the DB, otherwise the addressbookListener in messenger will interfere
+                    //deselect and clean up
+                    folder.selected = "0";
+                    folder.target = "";
+                    folder.synckey = "";
+                    folder.lastsynctime = "";
+                    folder.status = "";
+                    tzPush.db.setFolder(folder);
+                    tzPush.db.clearDeleteLog(target);
+
+                    if (target != "") tzPush.removeBook(target); //we must remove the target AFTER cleaning up the DB, otherwise the addressbookListener in messenger will interfere
+                }
             } else {
                 //select and update status
                 tzPush.db.setFolderSetting(tzprefs.selectedAccount, fID, "selected", "1");
@@ -218,23 +221,44 @@ var tzprefs = {
         
         let folderList = document.getElementById("tzprefs.folderlist");
         let folders = tzPush.db.getFolders(tzprefs.selectedAccount);
-        let folderIDs = Object.keys(folders).sort((a, b) => a - b);
+        
+        //sorting as 8,13,9,14 (any value 12+ is custom) 
+        // 8 -> 8*2 = 16
+        // 13 -> (13-5)*2 + 1 = 17
+        // 9 -> 9*2 = 18
+        // 14 -> (14-5) * 2 + 1 = 19
+        let folderIDs = Object.keys(folders).sort((a, b) => (((folders[a].type < 12) ? folders[a].type * 2: 1+ (folders[a].type-5) * 2) - ((folders[b].type < 12) ? folders[b].type * 2: 1+ (folders[b].type-5) * 2)));
 
-        //clear list - todo UPDATE list
+        //get current accounts in list and remove entries of accounts no longer there
+        let listedfolders = [];
         for (let i=folderList.getRowCount()-1; i>=0; i--) {
-            folderList.removeItemAt(i);
+            listedfolders.push(folderList.getItemAtIndex (i).value); 
+            if (folderIDs.indexOf(folderList.getItemAtIndex(i).value) == -1) {
+                folderList.removeItemAt(i);
+            }
         }
 
-        // add allowed folder based on type (check https://msdn.microsoft.com/en-us/library/gg650877(v=exchg.80).aspx)
-        for (let i = 0; i < folderIDs.length; i++) {
+        //listedFolders contains the folderIDs, in the current list (aa,bb,cc,dd)
+        //folderIDs contains a list of folderIDs with potential new items (aa,ab,bb,cc,cd,dd, de) - the existing ones must be updated - the new ones must be added at their desired location 
+        //walking backwards! after each item update lastCheckdEntry (null at the beginning)
+        // - de? add via append (because lastChecked is null)
+        // - dd? update
+        // - cd? insert before lastChecked (dd)
+        // - cc? update
+        // - bb? update
+        // - ab? insert before lastChecked (bb)
+        // - aa? update
+        
+        // add/update allowed folder based on type (check https://msdn.microsoft.com/en-us/library/gg650877(v=exchg.80).aspx)
+        // walk backwards, so adding items does not mess up index
+        let lastCheckedEntry = null;
+        
+        for (let i = folderIDs.length-1; i >= 0; i--) {
             if (["8","9","13","14"].indexOf(folders[folderIDs[i]].type) != -1) { 
-                let newListItem = document.createElement("richlistitem");
-                newListItem.setAttribute("id", "zprefs.folder." + folderIDs[i]);
-                newListItem.setAttribute("value", folderIDs[i]);
-
                 let selected = (folders[folderIDs[i]].selected == "1");
                 let type = folders[folderIDs[i]].type;
                 let status = (selected) ? folders[folderIDs[i]].status : "";
+                let name = folders[folderIDs[i]].name;
 
                 //if status OK, print target
                 if (selected) {
@@ -250,47 +274,78 @@ var tzprefs = {
                             status = tzPush.getLocalizedMessage("status." + status);
                     }
                 }
+                
+                if (listedfolders.indexOf(folderIDs[i]) == -1) {
 
-                //add folder type/img
-                let itemTypeCell = document.createElement("listcell");
-                itemTypeCell.setAttribute("class", "img");
-                itemTypeCell.setAttribute("width", "24");
-                itemTypeCell.setAttribute("height", "24");
-                    let itemType = document.createElement("image");
-                    itemType.setAttribute("src", this.getTypeImage(type));
-                    itemType.setAttribute("style", "margin: 4px;");
-                itemTypeCell.appendChild(itemType);
-                newListItem.appendChild(itemTypeCell);
+                    //add new entry
+                    let newListItem = document.createElement("richlistitem");
+                    newListItem.setAttribute("id", "zprefs.folder." + folderIDs[i]);
+                    newListItem.setAttribute("value", folderIDs[i]);
 
-                //add folder name
-                let itemLabelCell = document.createElement("listcell");
-                itemLabelCell.setAttribute("class", "label");
-                itemLabelCell.setAttribute("width", "145");
-                itemLabelCell.setAttribute("crop", "end");
-                itemLabelCell.setAttribute("label", folders[folderIDs[i]].name);
-                itemLabelCell.setAttribute("tooltiptext", folders[folderIDs[i]].name);
-                if (!selected) itemLabelCell.setAttribute("style", "font-style:italic;");
-                itemLabelCell.setAttribute("disabled", !selected);
-                newListItem.appendChild(itemLabelCell);
+                    //add folder type/img
+                    let itemTypeCell = document.createElement("listcell");
+                    itemTypeCell.setAttribute("class", "img");
+                    itemTypeCell.setAttribute("width", "24");
+                    itemTypeCell.setAttribute("height", "24");
+                        let itemType = document.createElement("image");
+                        itemType.setAttribute("src", this.getTypeImage(type));
+                        itemType.setAttribute("style", "margin: 4px;");
+                    itemTypeCell.appendChild(itemType);
+                    newListItem.appendChild(itemTypeCell);
 
-               
-                //add folder status
-                let itemStatusCell = document.createElement("listcell");
-                itemStatusCell.setAttribute("class", "label");
-                itemStatusCell.setAttribute("flex", "1");
-                itemStatusCell.setAttribute("crop", "end");
-                //itemStatusCell.setAttribute("style", "text-align:right;padding-right:10px;");
-                itemStatusCell.setAttribute("label", status);
-                itemStatusCell.setAttribute("tooltiptext", status);
-                itemStatusCell.setAttribute("disabled", !selected);
-                newListItem.appendChild(itemStatusCell);
+                    //add folder name
+                    let itemLabelCell = document.createElement("listcell");
+                    itemLabelCell.setAttribute("class", "label");
+                    itemLabelCell.setAttribute("width", "145");
+                    itemLabelCell.setAttribute("crop", "end");
+                    itemLabelCell.setAttribute("label", name);
+                    itemLabelCell.setAttribute("tooltiptext", name);
+                    itemLabelCell.setAttribute("disabled", !selected);
+                    if (!selected) itemLabelCell.setAttribute("style", "font-style:italic;");
+                    newListItem.appendChild(itemLabelCell);
 
-                //ensureElementIsVisible also forces internal update of rowCount, which sometimes is not updated automatically upon appendChild
-                folderList.ensureElementIsVisible(folderList.appendChild(newListItem));
+                    //add folder status
+                    let itemStatusCell = document.createElement("listcell");
+                    itemStatusCell.setAttribute("class", "label");
+                    itemStatusCell.setAttribute("flex", "1");
+                    itemStatusCell.setAttribute("crop", "end");
+                    itemStatusCell.setAttribute("label", status);
+                    itemStatusCell.setAttribute("tooltiptext", status);
+                    newListItem.appendChild(itemStatusCell);
+
+                    //ensureElementIsVisible also forces internal update of rowCount, which sometimes is not updated automatically upon appendChild
+                    //we have to now, if appendChild at end or insertBefore
+                    if (lastCheckedEntry === null) folderList.ensureElementIsVisible(folderList.appendChild(newListItem));
+                    else folderList.ensureElementIsVisible(folderList.insertBefore(newListItem,document.getElementById(lastCheckedEntry)));
+
+                } else {
+
+                    //update entry
+                    let item = document.getElementById("zprefs.folder." + folderIDs[i]);
+                    
+                    this.updateCell(item.childNodes[1], ["label","tooltiptext"], name);
+                    this.updateCell(item.childNodes[2], ["label","tooltiptext"], status);
+                    if (selected) {
+                        this.updateCell(item.childNodes[1], ["style"], "font-style:normal;");
+                        this.updateCell(item.childNodes[1], ["disabled"], "false");
+                    } else {
+                        this.updateCell(item.childNodes[1], ["style"], "font-style:italic;");
+                        this.updateCell(item.childNodes[1], ["disabled"], "true");
+                    }
+
+                }
+                lastCheckedEntry = "zprefs.folder." + folderIDs[i];
             }
         }
     },
 
+    updateCell: function (e, attribs, value) {
+        if (e.getAttribute(attribs[0]) != value) {
+            for (let i=0; i<attribs.length; i++) {
+                e.setAttribute(attribs[i],value);
+            }
+        }
+    },
 
     /* * *
     * This function is executed, when the user hits the connect/disconnet button. On disconnect, all
@@ -333,6 +388,7 @@ var tzprefs = {
                 
                 if (aData == "" && tzPush.sync.currentProzess.state == "accountdone") {
 
+                        //this syncstate change notification was send by setSyncState
                         let status = tzPush.db.getAccountSetting(tzPush.sync.currentProzess.account, "status");
                         switch (status) {
                             case "401":
@@ -349,6 +405,8 @@ var tzprefs = {
                         
                 } else { 
                     
+                        //this syncstate change notification could have been send setSyncState (aData = "") for the currentProcess or by manual notifications from tzmessenger
+                        //in either case, the notification is for THIS account
                         tzprefs.updateSyncstate();
                         tzprefs.updateFolderList();
                     

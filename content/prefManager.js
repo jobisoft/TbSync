@@ -17,6 +17,7 @@ var tzprefManager = {
     onunload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.removeObserver(tzprefManager.updateAccountStatusObserver, "tzpush.changedSyncstate");
+        tzPush.prefWindowObj = null;
     },
 
 
@@ -61,7 +62,7 @@ var tzprefManager = {
             if (aData == "" && (state == "syncing" || state == "accountdone")) tzprefManager.updateAccountStatus(tzPush.sync.currentProzess.account );
 
             //react on manual notifications send by tzmessenger
-            if (aData != "" && (state == "idle")) tzprefManager.updateAccountStatus(aData);
+            if (aData != "") tzprefManager.updateAccountStatus(aData);
         }
     },
 
@@ -74,8 +75,11 @@ var tzprefManager = {
                 break;
             
             case "notconnected":
+                src = "discon.png";
+                break;
+            
             case "notsyncronized":
-                src = "info16.png";
+                src = "warning16.png";
                 break;
 
             case "syncing":
@@ -100,7 +104,7 @@ var tzprefManager = {
 
     updateAccountName: function (id, name) {
         let listItem = document.getElementById("tzprefManager.accounts." + id);
-        if (listItem.firstChild.value != name) listItem.firstChild.value = name;
+        if (listItem.firstChild.getAttribute("label") != name) listItem.firstChild.setAttribute("label", name);
     },
     
     updateAccountsList: function (accountToSelect = -1) {

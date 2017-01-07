@@ -11,7 +11,7 @@
     <script type="application/x-javascript" src="chrome://tzpush/content/messenger.js" />
 
     <statusbar id="status-bar">
-        <statusbarpanel id="tzstatus" label="TzPush" context="statusmenu" ondblclick="tzMessenger.openPrefs(event);" />
+        <statusbarpanel id="tzstatus" label="TzPush" context="statusmenu" ondblclick="tzMessenger.openPrefs();" />
         <popupset>
             <menupopup id="statusmenu">
                 <!--menu label="&pref.Sync;" >
@@ -19,7 +19,7 @@
                     </menupopup>
                 </menu-->
                 <menuitem label="&pref.Sync;" oncommand="tzPush.sync.addAccountToSyncQueue('sync');" />
-                <menuitem label="&overlay.tz-settings;" onclick="tzMessenger.openPrefs(event);" />
+                <menuitem label="&overlay.tz-settings;" onclick="tzMessenger.openPrefs();" />
                 <menuitem label="&pref.ResetStatus;" onclick="tzPush.sync.resetSync();" />
             </menupopup>
         </popupset>
@@ -33,7 +33,7 @@
                     </menupopup>
                 </menu-->
                 <menuitem label="&pref.Sync;" oncommand="tzPush.sync.addAccountToSyncQueue('sync');" />
-                <menuitem label="&overlay.tz-settings;" oncommand="tzMessenger.openPrefs(event);" />
+                <menuitem label="&overlay.tz-settings;" oncommand="tzMessenger.openPrefs();" />
                 <menuitem label="&pref.ResetStatus;" onclick="tzPush.sync.resetSync();" />
             </menupopup>
         </menu>
