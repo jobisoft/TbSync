@@ -174,6 +174,7 @@ var tzprefs = {
                 if (window.confirm(tzPush.getLocalizedMessage("promptUnsubscribe"))) {
                     //get copy of the current target, before resetting it
                     let target = folder.target;
+                    let type = folder.type;
 
                     //deselect and clean up
                     folder.selected = "0";
@@ -184,7 +185,7 @@ var tzprefs = {
                     tzPush.db.setFolder(folder);
                     tzPush.db.clearDeleteLog(target);
 
-                    if (target != "") tzPush.removeBook(target); //we must remove the target AFTER cleaning up the DB, otherwise the addressbookListener in messenger will interfere
+                    if (target != "") tzPush.removeTarget(target, type); //we must remove the target AFTER cleaning up the DB, otherwise the addressbookListener in messenger will interfere
                 }
             } else {
                 //select and update status
@@ -265,7 +266,7 @@ var tzprefs = {
                     switch (status) {
                         case "OK":
                         case "modified":
-                            if (type == "8" || type == "13") status = tzPush.getLocalizedMessage("status.skipped"); //TODO
+                            if (type == "8" || type == "13")  status = "sync skipped - " + tzPush.getLocalizedMessage("status." + status) + " ["+ tzPush.getCalendarName(folders[folderIDs[i]].target) + "]";
                             if (type == "9" || type == "14") status = tzPush.getLocalizedMessage("status." + status) + " ["+ tzPush.getAddressBookName(folders[folderIDs[i]].target) + "]";
                             break;
                         case "pending":

@@ -120,7 +120,7 @@ var contactsync = {
     fromzpush: function(syncdata) {
 
         //Check SyncTarget
-        if (!sync.checkSyncTarget(syncdata.account, syncdata.folderID)) {
+        if (!tzPush.checkAddressbook(syncdata.account, syncdata.folderID)) {
             sync.finishSync(syncdata, "notargets");
             return;
         }
@@ -345,7 +345,7 @@ var contactsync = {
                                         addressBook.deleteCards(cardsToDelete);
                                     } catch (e) {}
                                     card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-                                    tzPush.db.removeCardFromDeleteLog(addressBook.URI, data);
+                                    tzPush.db.removeItemFromDeleteLog(addressBook.URI, data);
                                 } else {
                                     card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
                                 }
@@ -821,7 +821,7 @@ var contactsync = {
         let addressbook = tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
         
         // cardstodelete will not contain more cards than max
-        let cardstodelete = tzPush.db.getCardsFromDeleteLog(addressbook, tzPush.db.prefSettings.getIntPref("maxnumbertosend"));
+        let cardstodelete = tzPush.db.getItemsFromDeleteLog(addressbook, tzPush.db.prefSettings.getIntPref("maxnumbertosend"));
         let wbxmlinner = "";
         for (let i = 0; i < cardstodelete.length; i++) {
             wbxmlinner = wbxmlinner + String.fromCharCode(0x49, 0x4D, 0x03) + cardstodelete[i] + String.fromCharCode(0x00, 0x01, 0x01);
@@ -866,7 +866,7 @@ var contactsync = {
             tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
             for (let count in syncdata.cardstodelete) {
                 sync.setSyncState("cleaningdeleted", syncdata);
-                tzPush.db.removeCardFromDeleteLog(addressbook, syncdata.cardstodelete[count]);
+                tzPush.db.removeItemFromDeleteLog(addressbook, syncdata.cardstodelete[count]);
             }
             // The selected cards have been deleted from the server and from the deletelog -> rerun senddel to look for more cards to delete
             this.senddel(syncdata);

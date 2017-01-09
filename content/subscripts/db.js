@@ -47,8 +47,8 @@ var db = {
 
         deletelog: {
             id : "INTEGER PRIMARY KEY AUTOINCREMENT",
-            book : "TEXT NOT NULL DEFAULT ''",
-            cardid : "TEXT NOT NULL DEFAULT ''"
+            parentId : "TEXT NOT NULL DEFAULT ''",
+            itemId : "TEXT NOT NULL DEFAULT ''"
         },
         
     },
@@ -119,24 +119,24 @@ var db = {
 
     // DELETELOG FUNCTIONS
 
-    addCardToDeleteLog: function (book, cardid) {
-        this.conn.executeSimpleSQL("INSERT INTO deletelog (book, cardid) VALUES ('"+book+"', '"+cardid+"');");
+    addItemToDeleteLog: function (parentId, itemId) {
+        this.conn.executeSimpleSQL("INSERT INTO deletelog (parentId, itemId) VALUES ('"+parentId+"', '"+itemId+"');");
     },
 
-    removeCardFromDeleteLog: function (book, cardid) {
-        this.conn.executeSimpleSQL("DELETE FROM deletelog WHERE book='"+book+"' AND cardid='"+cardid+"';");
+    removeItemFromDeleteLog: function (parentId, itemId) {
+        this.conn.executeSimpleSQL("DELETE FROM deletelog WHERE parentId='"+parentId+"' AND itemId='"+itemId+"';");
     },
     
-    // Remove all cards of a book from DeleteLog
-    clearDeleteLog: function (book) {
-        this.conn.executeSimpleSQL("DELETE FROM deletelog WHERE book='"+book+"';");
+    // Remove all cards of a parentId from DeleteLog
+    clearDeleteLog: function (parentId) {
+        this.conn.executeSimpleSQL("DELETE FROM deletelog WHERE parentId='"+parentId+"';");
     },
 
-    getCardsFromDeleteLog: function (book, maxnumbertosend) {
+    getItemsFromDeleteLog: function (parentId, maxnumbertosend) {
         let deletelog = [];
-        let statement = this.conn.createStatement("SELECT cardid FROM deletelog WHERE book='"+book+"' LIMIT "+ maxnumbertosend +";");
+        let statement = this.conn.createStatement("SELECT itemId FROM deletelog WHERE parentId='"+parentId+"' LIMIT "+ maxnumbertosend +";");
         while (statement.executeStep()) {
-            deletelog.push(statement.row.cardid);
+            deletelog.push(statement.row.itemId);
         }
         return deletelog;
     },

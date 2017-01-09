@@ -126,14 +126,14 @@ var sync = {
         db.setAccountSetting(account, "policykey", "");
         db.setAccountSetting(account, "foldersynckey", "");
 
-        //Delete all targets - TODO: based on type
+        //Delete all targets
         let folders = db.findFoldersWithSetting("selected", "1", account);
         for (let i = 0; i<folders.length; i++) {
-            tzPush.removeBook(folders[i].target);
+            tzPush.removeTarget(folders[i].target, folders[i].type);
         }
         db.deleteAllFolders(account);
 
-        db.setAccountSetting(account, "status", "notconnected");         
+        db.setAccountSetting(account, "status", "notconnected");
     },
 
 
@@ -369,52 +369,6 @@ var sync = {
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.notifyObservers(null, "tzpush.changedSyncstate", "");
-    },
-
-
-    checkSyncTarget: function (account, folderID) { //TODO: based on type: contact(9,14) or calendar(8,13)
-        let folder = tzPush.db.getFolder(account, folderID);
-        let targetName = tzPush.getAddressBookName(folder.target);
-        let targetObject = tzPush.getAddressBookObject(folder.target);
-        
-        if (targetName !== null && targetObject !== null && targetObject instanceof Components.interfaces.nsIAbDirectory) return true;
-        
-        // Get unique Name for new address book
-        let testname = tzPush.db.getAccountSetting(account, "accountname") + "." + folder.name;
-        let newname = testname;
-        let count = 1;
-        let unique = false;
-        do {
-            unique = true;
-            let booksIter = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).directories;
-            while (booksIter.hasMoreElements()) {
-                let data = booksIter.getNext();
-                if (data instanceof Components.interfaces.nsIAbDirectory && data.dirName == newname) {
-                    unique = false;
-                    break;
-                }
-            }
-            if (!unique) {
-                newname = testname + "." + count;
-                count = count + 1;
-            }
-        } while (!unique);
-        
-        //Create the new book with the unique name
-        let dirPrefId = tzPush.addBook(newname);
-        
-        //find uri of new book and store in DB
-        let booksIter = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).directories;
-        while (booksIter.hasMoreElements()) {
-            let data = booksIter.getNext();
-            if (data instanceof Components.interfaces.nsIAbDirectory && data.dirPrefId == dirPrefId) {
-                tzPush.db.setFolderSetting(account, folderID, "target", data.URI); 
-                tzPush.dump("checkSyncTarget("+account+", "+folderID+")", "Creating new sync target (" + newname + ", " + data.URI + ")");
-                return true;
-            }
-        }
-        
-        return false;
     },
 
 
