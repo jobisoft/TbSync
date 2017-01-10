@@ -418,10 +418,18 @@ var sync = {
 
                 wbxml = req.responseText;
                 if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) {
-                    tzPush.dump("recieved", tzPush.decode_utf8(wbxmltools.convert2xml(wbxml).split('><').join('>\n<')));
-                    tzPush.appendToFile("wbxml-debug.log", wbxml);
+                    let charcodes = [];
+                    for (let i=0; i< wbxml.length; i++) charcodes.push(wbxml.charCodeAt(i).toString(16));
+                    let bytestring = charcodes.join(" ");
+                    let xml = tzPush.decode_utf8(wbxmltools.convert2xml(wbxml).split('><').join('>\n<'));
+
+                    tzPush.dump("recieved (xml)", xml);
+                    tzPush.dump("recieved (bytes)", bytestring);
+                    tzPush.appendToFile("wbxml-received.log", xml);
+                    tzPush.appendToFile("wbxml-received.log", bytestring);
                     //tzPush.dump("header",req.getAllResponseHeaders().toLowerCase())
                 }
+
                 if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
                     if (wbxml.length !== 0) {
                         tzPush.dump("recieved", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
