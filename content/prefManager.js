@@ -79,6 +79,7 @@ var tzprefManager = {
                 break;
             
             case "notsyncronized":
+            case "nolightning":
                 src = "warning16.png";
                 break;
 

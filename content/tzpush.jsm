@@ -16,7 +16,6 @@ if ("calICalendar" in Components.interfaces) {
 Components.utils.import("resource://gre/modules/FileUtils.jsm");
 
 
-
 /* TODO
  - explizitly use if (error !== "") not if (error) - fails on "0"
  - loop over all properties when card copy
@@ -42,6 +41,7 @@ var tzPush = {
         if ("calICalendar" in Components.interfaces) {
             //adding a global observer, or one for each "known" book?
             cal.getCalendarManager().addCalendarObserver(tzPush.calendarObserver);
+            cal.getCalendarManager().addObserver(tzPush.calendarManagerObserver)
         }
 
         //init stuff for sync process
@@ -268,7 +268,7 @@ var tzPush = {
                     folders[0].target="";
                     folders[0].synckey="";
                     folders[0].lastsynctime= "";
-                    folders[0].status= "";
+                    folders[0].status= "aborted";
                     tzPush.db.setFolder(folders[0]);
                     tzPush.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
                     //not needed - tzPush.db.setAccountSetting(owner[0], "policykey", ""); //- this is identical to tzPush.sync.resync() without the actual sync
@@ -475,14 +475,60 @@ var tzPush = {
         onError : function (aCalendar, aErrNo, aMessage) { tzPush.dump("calendarObserver::onError","<" + aCalendar.name + "> had error #"+aErrNo+"("+aMessage+")."); },
 
         //Properties of the calendar itself (name, color etc.)
-        onPropertyChanged : function (aCalendar, aName, aValue, aOldValue) { tzPush.dump("calendarObserver::onPropertyChanged","<" + aName + "> changed from <"+aOldValue+"> to <"+aValue+">"); },
-        onPropertyDeleting : function (aCalendar, aName) { tzPush.dump("calendarObserver::onPropertyDeleting","<" + aName + "> was deleted"); }
+        onPropertyChanged : function (aCalendar, aName, aValue, aOldValue) {
+            tzPush.dump("calendarObserver::onPropertyChanged","<" + aName + "> changed from <"+aOldValue+"> to <"+aValue+">");
+            switch (aName) {
+                case "name":
+                    let folders = tzPush.db.findFoldersWithSetting("target", aCalendar.id);
+                    if (folders.length > 0) {
+                        //update settings window, if open
+                        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+                        observerService.notifyObservers(null, "tzpush.changedSyncstate", folders[0].account);
+                    }
+                    break;
+            }
+        },
+
+        onPropertyDeleting : function (aCalendar, aName) {
+            tzPush.dump("calendarObserver::onPropertyDeleting","<" + aName + "> was deleted");
+            switch (aName) {
+                case "name":
+                    let folders = tzPush.db.findFoldersWithSetting("target", aCalendar.id);
+                    if (folders.length > 0) {
+                        //update settings window, if open
+                        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+                        observerService.notifyObservers(null, "tzpush.changedSyncstate", folders[0].account);
+                    }
+                    break;
+            }
+        }
     },
 
+    calendarManagerObserver : {
+        onCalendarRegistered : function (aCalendar) { tzPush.dump("calendarManagerObserver::onCalendarRegistered","<" + aCalendar.name + "> was registered."); },
+        onCalendarUnregistering : function (aCalendar) { tzPush.dump("calendarManagerObserver::onCalendarUnregistering","<" + aCalendar.name + "> was unregisterd."); },
+        onCalendarDeleting : function (aCalendar) {
+            let folders =  tzPush.db.findFoldersWithSetting("target", aCalendar.id);
+            //It should not be possible to link a calendar to two different accounts, so we just take the first target found
+            if (folders.length > 0) {
+                folders[0].target="";
+                folders[0].synckey="";
+                folders[0].lastsynctime= "";
+                folders[0].status= "aborted";
+                tzPush.db.setFolder(folders[0]);
+                tzPush.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
+
+                tzPush.db.clearDeleteLog(aCalendar.id);
+
+                //update settings window, if open
+                let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+                observerService.notifyObservers(null, "tzpush.changedSyncstate", folders[0].account);
+            }
+        },
+    },
 
     calendarOperationObserver : { 
         onOperationComplete : function (aOperationType, aId, aDetail) {
-            tzPush.dump("calendarOperationObserver::onOperationComplete",aOperationType);
         },
         
         onGetResult (aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
@@ -495,13 +541,22 @@ var tzPush = {
     },
 
     getCalendarName: function (id) {
-        let targetCal = cal.getCalendarManager().getCalendarById(id);
-        return targetCal.name;
+        if ("calICalendar" in Components.interfaces) {
+            let targetCal = cal.getCalendarManager().getCalendarById(id);
+            if (targetCal !== null) return targetCal.name;
+            else return "";
+        } else {
+            return "";
+        }
     },
     
     removeCalendar: function(id) {
-        let targetCal = cal.getCalendarManager().getCalendarById(id);
-        cal.getCalendarManager().removeCalendar(targetCal);
+        try {
+            let targetCal = cal.getCalendarManager().getCalendarById(id);
+            if (targetCal !== null) {
+                cal.getCalendarManager().removeCalendar(targetCal);
+            }
+        } catch (e) {}
     },
     
     checkCalender: function (account, folderID) {

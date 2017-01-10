@@ -266,7 +266,10 @@ var tzprefs = {
                     switch (status) {
                         case "OK":
                         case "modified":
-                            if (type == "8" || type == "13")  status = "sync skipped - " + tzPush.getLocalizedMessage("status." + status) + " ["+ tzPush.getCalendarName(folders[folderIDs[i]].target) + "]";
+                            if (type == "8" || type == "13") {
+                                if ("calICalendar" in Components.interfaces) status = tzPush.getLocalizedMessage("status." + status) + " ["+ tzPush.getCalendarName(folders[folderIDs[i]].target) + "]";
+                                else status = tzPush.getLocalizedMessage("status.nolightning");
+                            }
                             if (type == "9" || type == "14") status = tzPush.getLocalizedMessage("status." + status) + " ["+ tzPush.getAddressBookName(folders[folderIDs[i]].target) + "]";
                             break;
                         case "pending":

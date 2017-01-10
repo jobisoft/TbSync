@@ -26,6 +26,7 @@ status.401=Could not authenticate, check username and password.
 status.449=Server requests provisioning.
 status.500=Unknown server error.
 status.OK=Ok
+status.nolightning=Lightning Add-On not installed, calendars are not supported.
 
 status.syncing=Synchronizing ...
 status.skipped=Not yet supported, skippped

@@ -5,6 +5,10 @@ var calendarsync = {
     // CALENDAR SYNC
 
     fromzpush: function(syncdata) {
+        if ("calICalendar" in Components.interfaces == false) {
+            sync.finishSync(syncdata, "nolightning");
+            return
+        }
 
         //Check SyncTarget
         if (!tzPush.checkCalender(syncdata.account, syncdata.folderID)) {

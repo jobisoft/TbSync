@@ -57,7 +57,11 @@ var sync = {
         for (let i=0; i<accounts.IDs.length; i++) {
             if (accounts.data[accounts.IDs[i]].state == "connecting") this.disconnectAccount(accounts.IDs[i]);
         }
-        
+
+        for (let i=0; i<accounts.IDs.length; i++) {
+            if (accounts.data[accounts.IDs[i]].status == "syncing") tzPush.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
+        }
+
         // set each folder with PENDING status to ABORTED
         let folders = tzPush.db.findFoldersWithSetting("status", "pending");
         for (let i=0; i < folders.length; i++) {
