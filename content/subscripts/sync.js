@@ -223,68 +223,63 @@ var sync = {
     },
 
     getFolderIdsCallback: function (wbxml, syncdata) {
-        let foldersynckey = wbxmltools.FindKey(wbxml);
-        tzPush.db.setAccountSetting(syncdata.account, "foldersynckey", foldersynckey);
 
-        var oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
-        var oDOM = oParser.parseFromString(wbxmltools.convert2xml(wbxml), "text/xml");
+        let wbxmlData = tzPush.wbxmltools.createWBXML(wbxml).getData();
+        tzPush.db.setAccountSetting(syncdata.account, "foldersynckey", wbxmlData.FolderSync.SyncKey);
 
-        //looking for additions
-        var add = oDOM.getElementsByTagName("Add");
-        for (let count = 0; count < add.length; count++) {
-            let data = tzPush.getDataFromXML(add[count]);
+        if (wbxmlData.FolderSync.Changes) {
+            //looking for additions
+            let add = wbxmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Add);
+            for (let count = 0; count < add.length; count++) {
+                //check if we have a folder with that folderID (=data[ServerId])
+                if (tzPush.db.getFolder(syncdata.account, add[count].ServerId) === null) {
+                    //add folder
+                    let newData ={};
+                    newData.account = syncdata.account;
+                    newData.folderID = add[count].ServerId;
+                    newData.name = add[count].DisplayName;
+                    newData.type = add[count].Type;
+                    newData.synckey = "";
+                    newData.target = "";
+                    newData.selected = (newData.type == "9" || newData.type == "8" ) ? "1" : "0";
+                    newData.status = "";
+                    newData.lastsynctime = "";
+                    tzPush.db.addFolder(newData);
+                } else {
+                    //TODO? - cannot add an existing folder - resync!
+                }
+            }
+            
+            //looking for updates if a folder gets moved to trash, its parentId is no longer zero! TODO
+            let update = wbxmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Update);
+            for (let count = 0; count < update.length; count++) {
+                //get a copy of the folder, so we can update it
+                let folder = tzPush.db.getFolder(syncdata.account, update[count]["ServerId"], true);
+                if (folder !== null) {
+                    //update folder
+                    folder.name = update[count]["DisplayName"];
+                    folder.type = update[count]["Type"];
+                    tzPush.db.setFolder(folder);
+                } else {
+                    //TODO? - cannot update an non-existing folder - resync!
+                }
+            }
 
-            //check if we have a folder with that folderID (=data[ServerId])
-            if (tzPush.db.getFolder(syncdata.account, data["ServerId"]) === null) {
-                //add folder
-                let newData ={};
-                newData.account = syncdata.account;
-                newData.folderID = data["ServerId"];
-                newData.name = data["DisplayName"];
-                newData.type = data["Type"];
-                newData.synckey = "";
-                newData.target = "";
-                newData.selected = (newData.type == "9" || newData.type == "8" ) ? "1" : "0";
-                newData.status = "";
-                newData.lastsynctime = "";
-                tzPush.db.addFolder(newData);
-            } else {
-                //TODO? - cannot add an existing folder - resync!
+            //looking for deletes
+            let del = wbxmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Delete);
+            for (let count = 0; count < del.length; count++) {
+
+                //get a copy of the folder, so we can del it
+                let folder = tzPush.db.getFolder(syncdata.account, del[count]["ServerId"]);
+                if (folder !== null) {
+                    //del folder - we do not touch target (?)
+                    tzPush.db.deleteFolder(syncdata.account, del[count]["ServerId"]);
+                } else {
+                    //TODO? - cannot del an non-existing folder - resync!
+                }
             }
         }
-
-        //looking for updates if a folder gets moved to trash, its parentId is no longer zero! TODO
-        var update = oDOM.getElementsByTagName("Update");
-        for (let count = 0; count < update.length; count++) {
-            let data = tzPush.getDataFromXML(update[count]);
-
-            //get a copy of the folder, so we can update it
-            let folder = tzPush.db.getFolder(syncdata.account, data["ServerId"], true);
-            if (folder !== null) {
-                //update folder
-                folder.name = data["DisplayName"];
-                folder.type = data["Type"];
-                tzPush.db.setFolder(folder);
-            } else {
-                //TODO? - cannot update an non-existing folder - resync!
-            }
-        }
-                
-        //looking for deletes
-        var del = oDOM.getElementsByTagName("Delete");
-        for (let count = 0; count < del.length; count++) {
-            let data = tzPush.getDataFromXML(del[count]);
-
-            //get a copy of the folder, so we can del it
-            let folder = tzPush.db.getFolder(syncdata.account, data["ServerId"]);
-            if (folder !== null) {
-                //del folder - we do not touch target (?)
-                tzPush.db.deleteFolder(syncdata.account, data["ServerId"]);
-            } else {
-                //TODO? - cannot del an non-existing folder - resync!
-            }
-        }
-
+        
         //set selected folders to pending, so they get synced
         let folders = tzPush.db.getFolders(syncdata.account);
         for (let f in folders) {

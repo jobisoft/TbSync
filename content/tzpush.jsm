@@ -120,27 +120,7 @@ var tzPush = {
         tzPush.appendToFile("wbxml-debug.log", xml);
     },
 
-    //will only return only one dataset per tagname (tagname is membername)
-    getDataFromXML : function (node) {
-        // Create the return object
-        var obj = {};
-     
-        if (node.childNodes.length == 1) {
-            //only one element means text
-            return node.childNodes[0].nodeValue;
-        } else {
-            //dive into each element node
-            for (var i = 0; i < node.childNodes.length; i++) {
-                var item = node.childNodes.item(i);
-                if (item.nodeType == 1) {
-                    obj[item.nodeName] = this.getDataFromXML(item);
-                }
-            }
-            return obj;
-        }
-    },
     
-
 
 
 
@@ -593,7 +573,7 @@ var tzPush = {
             }
         } catch (e) {}
     },
-    
+
     checkCalender: function (account, folderID) {
         let folder = tzPush.db.getFolder(account, folderID);
         let calManager = cal.getCalendarManager();
@@ -635,8 +615,7 @@ var tzPush = {
         //store id of calendar as target in DB
         tzPush.db.setFolderSetting(account, folderID, "target", newCalendar.id); 
         return true;
-        
-        
+
 /*
             // - https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIEvent.idl
             // - https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIItemBase.idl
@@ -653,8 +632,67 @@ var tzPush = {
                              null,
                              calendarsync.calendarOperationObserver);
 */
+    },
+    
+    setEvent: function (item, data) {
 
+        item.title = data.Subject;
+        item.setProperty("location", data.Location);
+        item.setProperty("description", data.Body.Data);
+        //item.setProperty("categories","juhu,haha");
+        item.setProperty("syncId", data.UID);
+                
+        //set up datetimes
+        item.startDate = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
+        item.startDate.timezone = cal.floating();
+        item.startDate.icalString = data.StartTime;
+
+        item.endDate = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
+        item.endDate.timezone = cal.floating();
+        item.endDate.icalString = data.EndTime;
+
+        if (data.AllDayEvent == "1") {
+            item.startDate.isDate = true;
+            item.startDate.hour = 0;
+            item.startDate.minute = 0;
+            item.startDate.second = 0;
+            
+            item.endDate.isDate = true;
+            item.endDate.hour = 0;
+            item.endDate.minute = 0;
+            item.endDate.second = 0;
+
+            if (item.startDate.compare(item.endDate) == 0) {
+                // For a one day all day event, the end date must be 00:00:00 of
+                // the next day.
+                item.endDate.day++;
+            }
+        }
+
+        //timezone
+        //aItem.entryDate = start;
+        //aItem.dueDate = aEndDate.clone();
+        //due.addDuration(dueOffset);
+        
+            /*
+            <DtStamp xmlns='Calendar'>20161220T213937Z</DtStamp>
+            <OrganizerName xmlns='Calendar'>John Bieling</OrganizerName>
+            <OrganizerEmail xmlns='Calendar'>john.bieling@uni-bonn.de</OrganizerEmail>
+
+            <Recurrence xmlns='Calendar'>
+            <Type xmlns='Calendar'>5</Type>
+            <Interval xmlns='Calendar'>1</Interval>
+            <DayOfMonth xmlns='Calendar'>15</DayOfMonth>
+            <MonthOfYear xmlns='Calendar'>11</MonthOfYear>
+            </Recurrence>
+            <BusyStatus xmlns='Calendar'>0</BusyStatus>
+            <Reminder xmlns='Calendar'>1080</Reminder>
+            <MeetingStatus xmlns='Calendar'>0</MeetingStatus>
+            <NativeBodyType xmlns='AirSyncBase'>1</NativeBodyType>
+            */
     }
+
+    
 };
 
 
