@@ -152,31 +152,48 @@ var sync = {
 
     getPolicykey: function(syncdata) {
         sync.setSyncState("requestingprovision", syncdata); 
-        let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x01, 0x01, 0x01);
-        if (tzPush.db.getAccountSetting(syncdata.account, "asversion") !== "2.5") {
-            wbxml = wbxml.replace("MS-WAP-Provisioning-XML", "MS-EAS-Provisioning-WBXML");
-        }
+
+        //request provision
+        let wbxml = wbxmltools.createWBXML();
+        wbxml.switchpage("Provision");
+        wbxml.otag("Provision");
+            wbxml.otag("Policies");
+                wbxml.otag("Policy");
+                    wbxml.atag("PolicyType",(tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") ? "MS-WAP-Provisioning-XML" : "MS-EAS-Provisioning-WBXML" );
+                wbxml.ctag();
+            wbxml.ctag();
+        wbxml.ctag();
+
         syncdata.next = 1;
-        wbxml = this.Send(wbxml, this.getPolicykeyCallback.bind(this), "Provision", syncdata);
+        wbxml = this.Send(wbxml.getBytes(), this.getPolicykeyCallback.bind(this), "Provision", syncdata);
     },
     
     getPolicykeyCallback: function (responseWbxml, syncdata) {
         let policykey = wbxmltools.FindPolicykey(responseWbxml);
         tzPush.dump("policykeyCallback("+syncdata.next+")", policykey);
         tzPush.db.setAccountSetting(syncdata.account, "policykey", policykey);
+
         //next == 1 and 2 = resend - next ==3 = GetFolderIds() - 
         // - the protocol requests us to first send zero as policykey and get a temp policykey in return,
         // - the we need to resend this tempkey and get the final one 
         // - then we need to resend the final one and check, if we get that one back - THIS CHECK IS MISSING (TODO)
         if (syncdata.next < 3) {
-            let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x00, 0x0E, 0x45, 0x46, 0x47, 0x48, 0x03, 0x4D, 0x53, 0x2D, 0x57, 0x41, 0x50, 0x2D, 0x50, 0x72, 0x6F, 0x76, 0x69, 0x73, 0x69, 0x6F, 0x6E, 0x69, 0x6E, 0x67, 0x2D, 0x58, 0x4D, 0x4C, 0x00, 0x01, 0x49, 0x03, 0x50, 0x6F, 0x6C, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x4B, 0x03, 0x31, 0x00, 0x01, 0x01, 0x01, 0x01);
-            //Proposed Fix: Also change the WAP string, if asversion !== 2.5 - as done in the main Policykey() function.
-            if (tzPush.db.getAccountSetting(syncdata.account, "asversion") !== "2.5") {
-                wbxml = wbxml.replace("MS-WAP-Provisioning-XML", "MS-EAS-Provisioning-WBXML");
-            }
-            wbxml = wbxml.replace('PolKeyReplace', policykey);
+
+            //re-request provision
+            let wbxml = wbxmltools.createWBXML();
+            wbxml.switchpage("Provision");
+            wbxml.otag("Provision");
+                wbxml.otag("Policies");
+                    wbxml.otag("Policy");
+                        wbxml.atag("PolicyType",(tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") ? "MS-WAP-Provisioning-XML" : "MS-EAS-Provisioning-WBXML" );
+                        wbxml.atag("PolicyKey", policykey);
+                        wbxml.atag("Status", "1");
+                    wbxml.ctag();
+                wbxml.ctag();
+            wbxml.ctag();
+
             syncdata.next++;
-            this.Send(wbxml, this.getPolicykeyCallback.bind(this), "Provision", syncdata);
+            this.Send(wbxml.getBytes(), this.getPolicykeyCallback.bind(this), "Provision", syncdata);
         } else {
             let policykey = wbxmltools.FindPolicykey(responseWbxml);
             tzPush.dump("final returned policykey", policykey);
@@ -191,70 +208,91 @@ var sync = {
             this.syncNextFolder(syncdata);
         } else {
             sync.setSyncState("requestingfolders", syncdata); 
-            let wbxml = String.fromCharCode(0x03, 0x01, 0x6a, 0x00, 0x00, 0x07, 0x56, 0x52, 0x03, 0x30, 0x00, 0x01, 0x01);
-            this.Send(wbxml, this.getFolderIdsCallback.bind(this), "FolderSync", syncdata);
+            let foldersynckey = tzPush.db.getAccountSetting(syncdata.account, "foldersynckey");
+            if (foldersynckey == "") foldersynckey = "0";
+
+            //request foldersync
+            let wbxml = wbxmltools.createWBXML();
+            wbxml.switchpage("FolderHierarchy");
+            wbxml.otag("FolderSync");
+                wbxml.atag("SyncKey",foldersynckey);
+            wbxml.ctag();
+
+            this.Send(wbxml.getBytes(), this.getFolderIdsCallback.bind(this), "FolderSync", syncdata);
         }
     },
 
-    getFolderIdsCallback: function (wbxml, syncdata) { //ActiveSync Commands taken from TzPush 2.5.4
+    getFolderIdsCallback: function (wbxml, syncdata) {
         let foldersynckey = wbxmltools.FindKey(wbxml);
-        tzPush.db.setAccountSetting(syncdata.account, "foldersynckey", foldersynckey); //not used ???
+        tzPush.db.setAccountSetting(syncdata.account, "foldersynckey", foldersynckey);
 
-        let start = 0;
-        let numst = wbxml.indexOf(String.fromCharCode(0x4E, 0x57));
-        let numsp = wbxml.indexOf(String.fromCharCode(0x00), numst);
-        let num = parseInt(wbxml.substring(numst + 3, numsp));
+        var oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
+        var oDOM = oParser.parseFromString(wbxmltools.convert2xml(wbxml), "text/xml");
 
-        // get currently stored folder data from db and clear db
-        // the last parameter MUST BE TRUE, because we need
-        // a COPY of the cache: deleteAllFolders will clear the cache,
-        // which would render a reference useless!
-        let folders = tzPush.db.getFolders(syncdata.account, true); 
-        // clear DB (and cache!)
-        tzPush.db.deleteAllFolders(syncdata.account);
-                
-        for (let x = 0; x < num; x++) {
-            start = wbxml.indexOf(String.fromCharCode(0x4F), start);
-            let dict = {};
-            for (let y = 0; y < 4; y++) {
-                start = wbxml.indexOf(String.fromCharCode(0x03), start) + 1;
-                let end = wbxml.indexOf(String.fromCharCode(0x00), start);
-                dict[y] = wbxml.substring(start, end);
-                start = end;
-            }
-            
-            let newData ={};
-            newData.account = syncdata.account;
-            newData.folderID = dict[0];
-            newData.name = dict[2];
-            newData.type = dict[3];
-            newData.synckey = "";
-            newData.target = "";
-            newData.selected = "0";
-            newData.lastsynctime = "";
-            newData.status = "";
-                
-                
-            if (folders !== null && folders.hasOwnProperty(newData.folderID)) {
-                //this folder is known, if type did not change, use current settings
-                let curData = folders[newData.folderID];
-                if (curData.type == newData.type) {
-                    newData.synckey = curData.synckey;
-                    newData.target = curData.target;
-                    newData.selected = curData.selected;
-                }
+        //looking for additions
+        var add = oDOM.getElementsByTagName("Add");
+        for (let count = 0; count < add.length; count++) {
+            let data = tzPush.getDataFromXML(add[count]);
+
+            //check if we have a folder with that folderID (=data[ServerId])
+            if (tzPush.db.getFolder(syncdata.account, data["ServerId"]) === null) {
+                //add folder
+                let newData ={};
+                newData.account = syncdata.account;
+                newData.folderID = data["ServerId"];
+                newData.name = data["DisplayName"];
+                newData.type = data["Type"];
+                newData.synckey = "";
+                newData.target = "";
+                newData.selected = (newData.type == "9" || newData.type == "8" ) ? "1" : "0";
+                newData.status = "";
+                newData.lastsynctime = "";
+                tzPush.db.addFolder(newData);
             } else {
-                //new folder, check if it is a default contact folder or a default calendar folder and auto select it
-                if (newData.type == "9" || newData.type == "8" ) { 
-                    newData.selected = "1"; 
-                }
+                //TODO? - cannot add an existing folder - resync!
             }
-
-            //Set status of each selected folder to PENDING
-            if (newData.selected == "1") newData.status="pending";
-            tzPush.db.addFolder(newData);
-            
         }
+
+        //looking for updates if a folder gets moved to trash, its parentId is no longer zero! TODO
+        var update = oDOM.getElementsByTagName("Update");
+        for (let count = 0; count < update.length; count++) {
+            let data = tzPush.getDataFromXML(update[count]);
+
+            //get a copy of the folder, so we can update it
+            let folder = tzPush.db.getFolder(syncdata.account, data["ServerId"], true);
+            if (folder !== null) {
+                //update folder
+                folder.name = data["DisplayName"];
+                folder.type = data["Type"];
+                tzPush.db.setFolder(folder);
+            } else {
+                //TODO? - cannot update an non-existing folder - resync!
+            }
+        }
+                
+        //looking for deletes
+        var del = oDOM.getElementsByTagName("Delete");
+        for (let count = 0; count < del.length; count++) {
+            let data = tzPush.getDataFromXML(del[count]);
+
+            //get a copy of the folder, so we can del it
+            let folder = tzPush.db.getFolder(syncdata.account, data["ServerId"]);
+            if (folder !== null) {
+                //del folder - we do not touch target (?)
+                tzPush.db.deleteFolder(syncdata.account, data["ServerId"]);
+            } else {
+                //TODO? - cannot del an non-existing folder - resync!
+            }
+        }
+
+        //set selected folders to pending, so they get synced
+        let folders = tzPush.db.getFolders(syncdata.account);
+        for (let f in folders) {
+            if (folders[f].selected == "1") {
+                tzPush.db.setFolderSetting(folders[f].account, folders[f].folderID, "status", "pending");
+            }
+        }
+
         this.syncNextFolder(syncdata);
     },
 
@@ -268,14 +306,22 @@ var sync = {
         } else {
             syncdata.synckey = folders[0].synckey;
             syncdata.folderID = folders[0].folderID;
-            
+
             if (syncdata.synckey == "") {
-                let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x30, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x01, 0x01);
-                if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
-                    wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x30, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x01, 0x01);
-                }
-                wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
-                this.Send(wbxml, this.getSynckey.bind(this), "Sync", syncdata);
+
+                //request a new syncKey
+                let wbxml = tzPush.wbxmltools.createWBXML();
+                wbxml.otag("Sync");
+                    wbxml.otag("Collections");
+                        wbxml.otag("Collection");
+                            if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class","Contacts"); //TODO for calendar???
+                            wbxml.atag("SyncKey","0");
+                            wbxml.atag("CollectionId",syncdata.folderID);
+                        wbxml.ctag();
+                    wbxml.ctag();
+                wbxml.ctag();
+
+                this.Send(wbxml.getBytes(), this.getSynckey.bind(this), "Sync", syncdata);
             } else {
                 this.startSync(syncdata); 
             }
@@ -379,10 +425,7 @@ var sync = {
     Send: function (wbxml, callback, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
         
-        if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) {
-            tzPush.dump("sending", decodeURIComponent(escape(wbxmltools.convert2xml(wbxml).split('><').join('>\n<'))));
-            tzPush.appendToFile("wbxml-debug.log", wbxml);
-        }
+        if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) tzPush.debuglog(wbxml, "sending");
 
         let connection = tzPush.getConnection(syncdata.account);
         let password = tzPush.getPassword(connection);
@@ -417,18 +460,7 @@ var sync = {
             if (req.readyState === 4 && req.status === 200) {
 
                 wbxml = req.responseText;
-                if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) {
-                    let charcodes = [];
-                    for (let i=0; i< wbxml.length; i++) charcodes.push(wbxml.charCodeAt(i).toString(16));
-                    let bytestring = charcodes.join(" ");
-                    let xml = tzPush.decode_utf8(wbxmltools.convert2xml(wbxml).split('><').join('>\n<'));
-
-                    tzPush.dump("recieved (xml)", xml);
-                    tzPush.dump("recieved (bytes)", bytestring);
-                    tzPush.appendToFile("wbxml-received.log", xml);
-                    tzPush.appendToFile("wbxml-received.log", bytestring);
-                    //tzPush.dump("header",req.getAllResponseHeaders().toLowerCase())
-                }
+                if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) tzPush.debuglog(wbxml,"receiving");
 
                 if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
                     if (wbxml.length !== 0) {
