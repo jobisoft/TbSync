@@ -105,6 +105,41 @@ var tzPush = {
         consoleService.logStringMessage("[TzPush] " + what + " : " + aMessage);
     },
 
+    debuglog : function (wbxml, aMessage) {
+        let charcodes = [];
+        for (let i=0; i< wbxml.length; i++) charcodes.push(wbxml.charCodeAt(i).toString(16));
+        let bytestring = charcodes.join(" ");
+        //let xml = decodeURIComponent(escape(wbxmltools.convert2xml(wbxml).split('><').join('>\n<')));
+        let xml = tzPush.decode_utf8(tzPush.wbxmltools.convert2xml(wbxml).split('><').join('>\n<'));
+
+        tzPush.dump(aMessage + " (bytes)", bytestring);
+        tzPush.dump(aMessage + " (xml)", xml);
+        tzPush.appendToFile("wbxml-debug.log", aMessage + " (bytes)\n");
+        tzPush.appendToFile("wbxml-debug.log", bytestring);
+        tzPush.appendToFile("wbxml-debug.log", aMessage + " (xml)\n");
+        tzPush.appendToFile("wbxml-debug.log", xml);
+    },
+
+    //will only return only one dataset per tagname (tagname is membername)
+    getDataFromXML : function (node) {
+        // Create the return object
+        var obj = {};
+     
+        if (node.childNodes.length == 1) {
+            //only one element means text
+            return node.childNodes[0].nodeValue;
+        } else {
+            //dive into each element node
+            for (var i = 0; i < node.childNodes.length; i++) {
+                var item = node.childNodes.item(i);
+                if (item.nodeType == 1) {
+                    obj[item.nodeName] = this.getDataFromXML(item);
+                }
+            }
+            return obj;
+        }
+    },
+    
 
 
 

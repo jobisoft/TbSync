@@ -336,7 +336,7 @@ var db = {
                 return folders[folderID];
             }
         }
-        else throw "Unknown folderID!" + "\nThrown by db.getFolder("+account+", " + folderID + ")";
+        else return null;
     },
 
     getFolderSetting: function(account, folderID, field) {

@@ -44,8 +44,7 @@ var wbxmltools = {
 
 
 
-
-    // convert a WAP Binary XML to plain XML
+    // Convert a WBXML (WAP Binary XML) to plain XML
     convert2xml: function (wbxml) {
 
         let num = 4; //skip the 4 first bytes which are mostly 0x03 (WBXML Version 1.3), 0x01 (unknown public identifier), 0x6A (utf-8), 0x00 (Length of string table)
@@ -124,6 +123,82 @@ var wbxmltools = {
         }
         return xml;
     },
+
+
+
+
+
+    // A true XML to WBXML ((WAP Binary XML) converter is not needed, to build up the WBXML
+    // This returns a wbxml object, which allows to add tags (using names), switch codepages, or open and close tags
+    createWBXML: function() {
+        let wbxml = {
+            _codepage : 0,
+            _wbxml : String.fromCharCode(0x03, 0x01, 0x6A, 0x00), // WBXML Version 1.3, unknown public identifier, UTF-8, Length of string table
+
+            // adding a string content tag as <tagname>contentstring</tagname>
+            atag : function (tokenname, content = "") {
+                //check if tokenname is in current codepage
+                if ((this._codepage in wbxmltools.codepages2) == false) throw "[wbxmltools] Unknown codepage <"+this._codepage+">";
+                if ((tokenname in wbxmltools.codepages2[this._codepage]) == false) throw "[wbxmltools] Unknown tokenname <"+tokenname+"> for codepage <"+wbxmltools.namespaces[this._codepage]+">";  
+
+                if (content == "") {
+                    //empty, just add token
+                    this._wbxml += String.fromCharCode(wbxmltools.codepages2[this._codepage][tokenname]);
+                } else {
+                    //not empty,add token with enabled content bit and also add inlinestringidentifier
+                    this._wbxml += String.fromCharCode(wbxmltools.codepages2[this._codepage][tokenname] | 0x40, 0x03);
+                    //add content
+                    for (let i=0; i< content.length; i++) this._wbxml += String.fromCharCode(content.charCodeAt(i));
+                    //add string termination and tag close
+                    this._wbxml += String.fromCharCode(0x00, 0x01);
+                }
+            },
+
+            switchpage : function (name) {
+                let codepage = wbxmltools.namespaces.indexOf(name);
+                if (codepage == -1) throw "[wbxmltools] Unknown codepage <"+ name +">";
+                this._codepage = codepage;
+                this._wbxml += String.fromCharCode(0x00, codepage);
+            },
+
+            ctag : function () {
+                this._wbxml += String.fromCharCode(0x01);
+            },
+
+            //opentag is assumed to add a token with content, otherwise use addtag
+            otag : function (tokenname) {
+                this._wbxml += String.fromCharCode(wbxmltools.codepages2[this._codepage][tokenname] | 0x40);
+            },
+
+            getCharCodes : function () {
+                let value = "";
+                for (let i=0; i<this._wbxml.length; i++) value += ("00" + this._wbxml.charCodeAt(i).toString(16)).substr(-2) + " ";
+                return value;
+            },
+
+            getBytes : function () {
+                return this._wbxml;
+            }
+        };
+        return wbxml;
+    },
+
+
+
+
+
+    codepages2 : [],
+
+    buildCodepages2 : function () {
+        for (let i=0; i<this.codepages.length; i++) {
+            let inverted = {};
+            for (let token in this.codepages[i]) {
+                inverted[this.codepages[i][token]] = token;
+            }
+            this.codepages2.push(inverted);
+        }
+    },
+
 
 
 
@@ -810,3 +885,5 @@ var wbxmltools = {
     ]
     
 };
+
+wbxmltools.buildCodepages2();

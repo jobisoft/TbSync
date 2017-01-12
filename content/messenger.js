@@ -17,7 +17,7 @@ var tzMessenger = {
 
     openPrefs: function () {
         // check, if a window is already open and just put it in focus
-        if (tzPush.prefWindowObj === null) tzPush.prefWindowObj = window.open("chrome://tzpush/content/prefManager.xul", "TzPushPrefWindow", "chrome,centerscreen,resizable");
+        if (tzPush.prefWindowObj === null) tzPush.prefWindowObj = window.open("chrome://tzpush/content/prefManager.xul", "TzPushPrefWindow", "chrome,centerscreen,toolbar,resizable");
         tzPush.prefWindowObj.focus();
     },
 
