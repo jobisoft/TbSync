@@ -139,13 +139,15 @@ var wbxmltools = {
 
     //debug function
     printWbxmlData : function (data, lvl = 0) {
-        for (let d in data) {
-            if (typeof(data[d]) == "object") {
-                tzPush.dump("DATA", " ".repeat(lvl) + d + " => ");
-                this.printWbxmlData(data[d], lvl+1);                
-                tzPush.dump("DATA", " ".repeat(lvl) + d + " <= ");
-            } else {
-                tzPush.dump("DATA"," ".repeat(lvl) + d + " = [" + data[d] + "]");
+        if (tzPush.db.prefSettings.getBoolPref("debugdata")) {
+            for (let d in data) {
+                if (typeof(data[d]) == "object") {
+                    tzPush.dump("DATA", " ".repeat(lvl) + d + " => ");
+                    this.printWbxmlData(data[d], lvl+1);                
+                    tzPush.dump("DATA", " ".repeat(lvl) + d + " <= ");
+                } else {
+                    tzPush.dump("DATA"," ".repeat(lvl) + d + " = [" + data[d] + "]");
+                }
             }
         }
     },    

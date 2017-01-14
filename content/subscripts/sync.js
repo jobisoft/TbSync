@@ -416,6 +416,26 @@ var sync = {
         observerService.notifyObservers(null, "tzpush.changedSyncstate", "");
     },
 
+    statusIsBad : function (status, syncdata) {
+        switch (status) {
+            case "1":
+                //all fine, not bad
+                return false;
+            case "3": 
+                tzPush.dump("wbxml status", "Server reports <invalid synchronization key> (" + status + "), resyncing.");
+                sync.init("resync", syncdata.account, syncdata.folderID);
+                break;
+            case "12": 
+                tzPush.dump("wbxml status", "Server reports <folder hierarchy changed> (" + status + "), resyncing");
+                sync.init("resync", syncdata.account, syncdata.folderID);
+                break;
+            default:
+                tzPush.dump("wbxml status", "Server reports status <"+status+">. Error? Aborting Sync.");
+                sync.finishSync(syncdata, "wbxmlservererror");
+                break;
+        }        
+        return true;
+    },
 
     Send: function (wbxml, callback, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   

@@ -469,12 +469,16 @@ var tzPush = {
 
         onModifyItem : function (aNewItem, aOldItem) {
             //if an event in one of the synced calendars is modified, update status of target and account
-            let newFolders = tzPush.db.findFoldersWithSetting("target", aNewItem.calendar.id);
-            if (newFolders.length > 0) tzPush.setTargetModified(newFolders[0]);
-            
-            if (aNewItem.calendar.id != aOldItem.calendar.id) {
-                let oldFolders = tzPush.db.findFoldersWithSetting("target", aOldItem.calendar.id);
-                if (oldFolders.length > 0) tzPush.setTargetModified(oldFolders[0]);
+            try {
+                let newFolders = tzPush.db.findFoldersWithSetting("target", aNewItem.calendar.id);
+                if (newFolders.length > 0) tzPush.setTargetModified(newFolders[0]);
+                
+                if (aNewItem.calendar.id != aOldItem.calendar.id) {
+                    let oldFolders = tzPush.db.findFoldersWithSetting("target", aOldItem.calendar.id);
+                    if (oldFolders.length > 0) tzPush.setTargetModified(oldFolders[0]);
+                }
+            } catch (e) {
+                tzPush.dump("onModifyItem","skipped");
             }
         },
 
@@ -544,6 +548,7 @@ var tzPush = {
 
     calendarOperationObserver : { 
         onOperationComplete : function (aOperationType, aId, aDetail) {
+            tzPush.dump("onOperationComplete",[aOperationType, aId, aDetail].join("|"));
         },
         
         onGetResult (aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
@@ -640,7 +645,8 @@ var tzPush = {
         item.setProperty("location", data.Location);
         item.setProperty("description", data.Body.Data);
         //item.setProperty("categories","juhu,haha");
-        item.setProperty("syncId", data.UID);
+//        item.setProperty("syncId", data.UID);
+        item.setProperty("UID", data.UID);
                 
         //set up datetimes
         item.startDate = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
@@ -692,7 +698,6 @@ var tzPush = {
             */
     }
 
-    
 };
 
 

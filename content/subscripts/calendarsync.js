@@ -36,15 +36,54 @@ var calendarsync = {
 
         sync.Send(wbxml.getBytes(), this.processRemoteChanges.bind(this), "Sync", syncdata);
     },
-
-
+    
     
     processRemoteChanges: function (wbxml, syncdata) {
         sync.setSyncState("recievingchanges", syncdata);
+
+        //inline listener objects for ADD jobs, DELETE jobs and UPDATE jobs
+        let itemData = null;
+
+        let itemListenerAdd = {
+            onGetResult (aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
+                //we could loop over aItems and check each aItems UID if it matches an entry itemData, but no 
+                //we tried to get ONE item, if we are here, we found ONE item, so adding that item (again) is not possible, 
+                //clear itemData (which contains this one item) so onOperationComplete has nothing to do
+                itemData = null;
+            },
+            onOperationComplete : function (aOperationType, aId, aDetail) {
+                //add item stored in addItemData
+                if (itemData === null) return;
+                let newItem = cal.createEvent();
+                tzPush.setEvent(newItem, itemData);
+                calendar.addItem(newItem, tzPush.calendarOperationObserver);
+            }
+        };
+
+        let itemListenerUpdate = {
+            onGetResult (aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
+                //if we are here, we found that one item we want to update
+                let newItem = cal.createEvent();
+                tzPush.setEvent(newItem, itemData);
+                calendar.modifyItem(newItem, aItems[0], tzPush.calendarOperationObserver);
+            },
+            onOperationComplete : function (aOperationType, aId, aDetail) {}
+        };
+
+        let itemListenerDelete = { 
+            onGetResult (aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
+                calendar.deleteItem(aItems[0], tzPush.calendarOperationObserver);
+            },
+            onOperationComplete : function (aOperationType, aId, aDetail) {}
+        };
+
+
+        
         
         // get data from wbxml response
         let wbxmlData = tzPush.wbxmltools.createWBXML(wbxml).getData();
 
+        // check for empty response
         if (wbxml.length === 0 || wbxmlData === null) {
             this.tozpush(syncdata);
             return;
@@ -53,12 +92,14 @@ var calendarsync = {
         //debug
         wbxmltools.printWbxmlData(wbxmlData);
 
+        //check status
+        if (sync.statusIsBad(wbxmlData.Sync.Collections.Collection.Status, syncdata)) {
+            return;
+        }
+
         //update synckey
         syncdata.synckey = wbxmlData.Sync.Collections.Collection.SyncKey;
         db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
-
-        //care about status and truncation
-        // ...
         
         //get sync target of this calendar
         let calendar = cal.getCalendarManager().getCalendarById(tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
@@ -69,17 +110,22 @@ var calendarsync = {
             //looking for additions
             let add = wbxmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Add);
             for (let count = 0; count < add.length; count++) {
-                //check if we already have an item with that id ???
-                let event = cal.createEvent();
-                tzPush.setEvent(event, add[count].ApplicationData);
-                calendar.addItem(event, tzPush.calendarOperationObserver);
+                itemData = add[count].ApplicationData;
+                calendar.getItem(itemData.UID, itemListenerAdd); //do NOT add, if an item with that UID was found - handled by listener
             }
             
             //looking for changes
-            // ...
+            let upd = wbxmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Change);
+            for (let count = 0; count < upd.length; count++) {
+                itemData = upd[count].ApplicationData;
+                calendar.getItem(itemData.UID, itemListenerUpdate); //Only update, if an item with that UID was found - handled by listener
+            }
             
-            //loking for deletes
-            // ...
+            //looking for deletes
+            let del = wbxmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Delete);
+            for (let count = 0; count < del.length; count++) {
+                calendar.getItem(del[count].ServerId, itemListenerDelete); //delete items with that UID (there is no ApplicationData in delete commands, so we need to use ServerId
+            }
             
         }
 
