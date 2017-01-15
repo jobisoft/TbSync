@@ -183,7 +183,7 @@ var tzprefs = {
                     folder.lastsynctime = "";
                     folder.status = "";
                     tzPush.db.setFolder(folder);
-                    tzPush.db.clearDeleteLog(target);
+                    tzPush.db.clearChangeLog(target);
 
                     if (target != "") tzPush.removeTarget(target, type); //we must remove the target AFTER cleaning up the DB, otherwise the addressbookListener in messenger will interfere
                 }

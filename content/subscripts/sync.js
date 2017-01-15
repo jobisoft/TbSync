@@ -440,7 +440,7 @@ var sync = {
     Send: function (wbxml, callback, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
         
-        if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) tzPush.debuglog(wbxml, "sending");
+        if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) tzPush.debuglog(wbxml, "["+sync.currentProzess.state+"] sending:");
 
         let connection = tzPush.getConnection(syncdata.account);
         let password = tzPush.getPassword(connection);

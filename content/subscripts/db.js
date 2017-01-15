@@ -45,10 +45,12 @@ var db = {
             status : "TEXT NOT NULL DEFAULT ''"
         },
 
-        deletelog: {
+        changelog: {
             id : "INTEGER PRIMARY KEY AUTOINCREMENT",
             parentId : "TEXT NOT NULL DEFAULT ''",
-            itemId : "TEXT NOT NULL DEFAULT ''"
+            itemId : "TEXT NOT NULL DEFAULT ''",
+            changeType : "TEXT NOT NULL DEFAULT ''",
+            data : "TEXT NOT NULL DEFAULT ''"
         },
         
     },
@@ -117,28 +119,28 @@ var db = {
 
 
 
-    // DELETELOG FUNCTIONS
+    // CHANGELOG FUNCTIONS
 
-    addItemToDeleteLog: function (parentId, itemId) {
-        this.conn.executeSimpleSQL("INSERT INTO deletelog (parentId, itemId) VALUES ('"+parentId+"', '"+itemId+"');");
+    addItemToChangeLog: function (parentId, itemId, changeType, data = "") {
+        this.conn.executeSimpleSQL("INSERT INTO changelog (parentId, itemId, changeType, data) VALUES ('"+parentId+"', '"+itemId+"', '"+changeType+"', '"+data+"');");
     },
 
-    removeItemFromDeleteLog: function (parentId, itemId) {
-        this.conn.executeSimpleSQL("DELETE FROM deletelog WHERE parentId='"+parentId+"' AND itemId='"+itemId+"';");
+    removeItemFromChangeLog: function (parentId, itemId, changeType) {
+        this.conn.executeSimpleSQL("DELETE FROM changelog WHERE changeType = '"+changeType+"' AND parentId='"+parentId+"' AND itemId='"+itemId+"';");
     },
     
-    // Remove all cards of a parentId from DeleteLog
-    clearDeleteLog: function (parentId) {
-        this.conn.executeSimpleSQL("DELETE FROM deletelog WHERE parentId='"+parentId+"';");
+    // Remove all cards of a parentId from ChangeLog
+    clearChangeLog: function (parentId) {
+        this.conn.executeSimpleSQL("DELETE FROM changelog WHERE parentId='"+parentId+"';");
     },
 
-    getItemsFromDeleteLog: function (parentId, maxnumbertosend) {
-        let deletelog = [];
-        let statement = this.conn.createStatement("SELECT itemId FROM deletelog WHERE parentId='"+parentId+"' LIMIT "+ maxnumbertosend +";");
+    getItemsFromChangeLog: function (parentId, maxnumbertosend, changeType) {
+        let changelog = [];
+        let statement = this.conn.createStatement("SELECT itemId FROM changelog WHERE changeType = '"+changeType+"' AND parentId='"+parentId+"' LIMIT "+ maxnumbertosend +";");
         while (statement.executeStep()) {
-            deletelog.push(statement.row.itemId);
+            changelog.push(statement.row.itemId);
         }
-        return deletelog;
+        return changelog;
     },
 
 

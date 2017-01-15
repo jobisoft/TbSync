@@ -114,9 +114,9 @@ var tzPush = {
 
         tzPush.dump(aMessage + " (bytes)", bytestring);
         tzPush.dump(aMessage + " (xml)", xml);
-        tzPush.appendToFile("wbxml-debug.log", aMessage + " (bytes)\n");
+        tzPush.appendToFile("wbxml-debug.log", "\n\n" + aMessage + " (bytes)\n");
         tzPush.appendToFile("wbxml-debug.log", bytestring);
-        tzPush.appendToFile("wbxml-debug.log", aMessage + " (xml)\n");
+        tzPush.appendToFile("wbxml-debug.log", "\n\n" + aMessage + " (xml)\n");
         tzPush.appendToFile("wbxml-debug.log", xml);
     },
 
@@ -267,7 +267,7 @@ var tzPush = {
                 let folders = tzPush.db.findFoldersWithSetting("target", aParentDir.URI);
                 if (folders.length > 0) {
                     let cardId = aItem.getProperty("ServerId", "");
-                    if (cardId) tzPush.db.addItemToDeleteLog(aParentDir.URI, cardId);
+                    if (cardId) tzPush.db.addItemToChangeLog(aParentDir.URI, cardId, "delete");
                     tzPush.setTargetModified(folders[0]);
                 }
             }
@@ -288,7 +288,7 @@ var tzPush = {
                     tzPush.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
                     //not needed - tzPush.db.setAccountSetting(owner[0], "policykey", ""); //- this is identical to tzPush.sync.resync() without the actual sync
 
-                    tzPush.db.clearDeleteLog(aItem.URI);
+                    tzPush.db.clearChangeLog(aItem.URI);
 
                     //update settings window, if open
                     let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
@@ -464,7 +464,10 @@ var tzPush = {
         onAddItem : function (aItem) { 
             //if an event in one of the synced calendars is added, update status of target and account
             let folders = tzPush.db.findFoldersWithSetting("target", aItem.calendar.id);
-            if (folders.length > 0) tzPush.setTargetModified(folders[0]);
+            if (folders.length > 0) {
+                tzPush.setTargetModified(folders[0]);
+                tzPush.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "add");
+            }
         },
 
         onModifyItem : function (aNewItem, aOldItem) {
@@ -472,10 +475,13 @@ var tzPush = {
             try {
                 let newFolders = tzPush.db.findFoldersWithSetting("target", aNewItem.calendar.id);
                 if (newFolders.length > 0) tzPush.setTargetModified(newFolders[0]);
-                
+
                 if (aNewItem.calendar.id != aOldItem.calendar.id) {
                     let oldFolders = tzPush.db.findFoldersWithSetting("target", aOldItem.calendar.id);
                     if (oldFolders.length > 0) tzPush.setTargetModified(oldFolders[0]);
+                } else {
+                    //it is a pure modification (moves are adds and deletes and are captured by the other listeners)
+                    tzPush.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "change");
                 }
             } catch (e) {
                 tzPush.dump("onModifyItem","skipped");
@@ -486,8 +492,8 @@ var tzPush = {
             //if an event in one of the synced calendars is modified, update status of target and account
             let folders = tzPush.db.findFoldersWithSetting("target", aDeletedItem.calendar.id);
             if (folders.length > 0) {
-                tzPush.db.addItemToDeleteLog(aDeletedItem.calendar.id, aDeletedItem.id);
                 tzPush.setTargetModified(folders[0]);
+                tzPush.db.addItemToChangeLog(aDeletedItem.calendar.id, aDeletedItem.id, "delete");
             }
         },
             
@@ -537,7 +543,7 @@ var tzPush = {
                 tzPush.db.setFolder(folders[0]);
                 tzPush.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
 
-                tzPush.db.clearDeleteLog(aCalendar.id);
+                tzPush.db.clearChangeLog(aCalendar.id);
 
                 //update settings window, if open
                 let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);

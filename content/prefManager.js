@@ -39,7 +39,7 @@ var tzprefManager = {
             }
             
             if (confirm(tzPush.getLocalizedMessage("promptDeleteAccount").replace("##accountName##", accountsList.selectedItem.label))) {
-                //disconnect (removes ab, triggers deletelog cleanup) 
+                //disconnect (removes ab, triggers changelog cleanup) 
                 tzPush.sync.disconnectAccount(accountsList.selectedItem.value);
                 //delete account from db
                 tzPush.db.removeAccount(accountsList.selectedItem.value);
