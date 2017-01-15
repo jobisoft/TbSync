@@ -206,14 +206,17 @@ var wbxmltools = {
     },
 
 
-    // A true XML to WBXML ((WAP Binary XML) converter is not needed, to build up the WBXML
-    // This returns a wbxml object, which allows to add tags (using names), switch codepages, or open and close tags
+    // This returns a wbxml object, which allows to add tags (using names), switch codepages, or open and close tags, it is also possible to append pure (binary) wbxml
     // If no wbxmlstring is present, default to the "init" string ( WBXML Version 1.3, unknown public identifier, UTF-8, Length of string table)
     createWBXML: function (wbxmlstring = String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
         let wbxml = {
             _codepage : 0,
             _wbxml : wbxmlstring, 
 
+            append : function (wbxmlstring) {
+                this._wbxml = this._wbxml + wbxmlstring;
+            },
+            
             // adding a string content tag as <tagname>contentstring</tagname>
             atag : function (tokenname, content = "") {
                 //check if tokenname is in current codepage
