@@ -465,26 +465,31 @@ var tzPush = {
             //if an event in one of the synced calendars is added, update status of target and account
             let folders = tzPush.db.findFoldersWithSetting("target", aItem.calendar.id);
             if (folders.length > 0) {
-                tzPush.setTargetModified(folders[0]);
-                tzPush.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "add");
+                if (aItem.calendar.getMetaData(aItem.id) == "added_by_server") {
+                    aItem.calendar.deleteMetaData(aItem.id);
+                } else {
+                    tzPush.setTargetModified(folders[0]);
+                    tzPush.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "add");
+                    //aItem.calendar.setMetaData(aItem.id, "added_by_user");
+                }
             }
         },
 
         onModifyItem : function (aNewItem, aOldItem) {
-            //if an event in one of the synced calendars is modified, update status of target and account
-            try {
+            //check, if it is a pure modification within the same calendar
+            if (aNewItem.calendar.id == aOldItem.calendar.id) { // aNewItem.calendar could be null ??? throw up on server pushed deletes as well ??? TODO
+                //check, if it is an event in one of the synced calendars
                 let newFolders = tzPush.db.findFoldersWithSetting("target", aNewItem.calendar.id);
-                if (newFolders.length > 0) tzPush.setTargetModified(newFolders[0]);
-
-                if (aNewItem.calendar.id != aOldItem.calendar.id) {
-                    let oldFolders = tzPush.db.findFoldersWithSetting("target", aOldItem.calendar.id);
-                    if (oldFolders.length > 0) tzPush.setTargetModified(oldFolders[0]);
-                } else {
-                    //it is a pure modification (moves are adds and deletes and are captured by the other listeners)
-                    tzPush.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "change");
+                if (newFolders.length > 0) {
+                    if (aNewItem.calendar.getMetaData(aNewItem.id) == "modified_by_server") {
+                        aNewItem.calendar.deleteMetaData(aNewItem.id);
+                    } else {
+                        //update status of target and account
+                        tzPush.setTargetModified(newFolders[0]);
+                        tzPush.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "change");
+                        //aNewItem.calendar.setMetaData(aNewItem.id, "modified_by_user");
+                    }
                 }
-            } catch (e) {
-                tzPush.dump("onModifyItem","skipped");
             }
         },
 
@@ -492,8 +497,13 @@ var tzPush = {
             //if an event in one of the synced calendars is modified, update status of target and account
             let folders = tzPush.db.findFoldersWithSetting("target", aDeletedItem.calendar.id);
             if (folders.length > 0) {
-                tzPush.setTargetModified(folders[0]);
-                tzPush.db.addItemToChangeLog(aDeletedItem.calendar.id, aDeletedItem.id, "delete");
+                if (aDeletedItem.calendar.getMetaData(aDeletedItem.id) == "deleted_by_server") {
+                    aDeletedItem.calendar.deleteMetaData(aDeletedItem.id);
+                } else {
+                    tzPush.setTargetModified(folders[0]);
+                    tzPush.db.addItemToChangeLog(aDeletedItem.calendar.id, aDeletedItem.id, "delete");
+                    //aDeletedItem.calendar.setMetaData(aDeletedItem.id, "deleted_by_user");
+                }
             }
         },
             
@@ -643,65 +653,6 @@ var tzPush = {
                              null,
                              calendarsync.calendarOperationObserver);
 */
-    },
-    
-    setEvent: function (item, data) {
-
-        item.title = data.Subject;
-        item.setProperty("location", data.Location);
-        item.setProperty("description", data.Body.Data);
-        //item.setProperty("categories","juhu,haha");
-//        item.setProperty("syncId", data.UID);
-        item.setProperty("UID", data.UID);
-                
-        //set up datetimes
-        item.startDate = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
-        item.startDate.timezone = cal.floating();
-        item.startDate.icalString = data.StartTime;
-
-        item.endDate = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
-        item.endDate.timezone = cal.floating();
-        item.endDate.icalString = data.EndTime;
-
-        if (data.AllDayEvent == "1") {
-            item.startDate.isDate = true;
-            item.startDate.hour = 0;
-            item.startDate.minute = 0;
-            item.startDate.second = 0;
-            
-            item.endDate.isDate = true;
-            item.endDate.hour = 0;
-            item.endDate.minute = 0;
-            item.endDate.second = 0;
-
-            if (item.startDate.compare(item.endDate) == 0) {
-                // For a one day all day event, the end date must be 00:00:00 of
-                // the next day.
-                item.endDate.day++;
-            }
-        }
-
-        //timezone
-        //aItem.entryDate = start;
-        //aItem.dueDate = aEndDate.clone();
-        //due.addDuration(dueOffset);
-        
-            /*
-            <DtStamp xmlns='Calendar'>20161220T213937Z</DtStamp>
-            <OrganizerName xmlns='Calendar'>John Bieling</OrganizerName>
-            <OrganizerEmail xmlns='Calendar'>john.bieling@uni-bonn.de</OrganizerEmail>
-
-            <Recurrence xmlns='Calendar'>
-            <Type xmlns='Calendar'>5</Type>
-            <Interval xmlns='Calendar'>1</Interval>
-            <DayOfMonth xmlns='Calendar'>15</DayOfMonth>
-            <MonthOfYear xmlns='Calendar'>11</MonthOfYear>
-            </Recurrence>
-            <BusyStatus xmlns='Calendar'>0</BusyStatus>
-            <Reminder xmlns='Calendar'>1080</Reminder>
-            <MeetingStatus xmlns='Calendar'>0</MeetingStatus>
-            <NativeBodyType xmlns='AirSyncBase'>1</NativeBodyType>
-            */
     }
 
 };

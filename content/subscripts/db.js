@@ -125,8 +125,8 @@ var db = {
         this.conn.executeSimpleSQL("INSERT INTO changelog (parentId, itemId, changeType, data) VALUES ('"+parentId+"', '"+itemId+"', '"+changeType+"', '"+data+"');");
     },
 
-    removeItemFromChangeLog: function (parentId, itemId, changeType) {
-        this.conn.executeSimpleSQL("DELETE FROM changelog WHERE changeType = '"+changeType+"' AND parentId='"+parentId+"' AND itemId='"+itemId+"';");
+    removeItemFromChangeLog: function (parentId, itemId) {
+        this.conn.executeSimpleSQL("DELETE FROM changelog WHERE parentId='"+parentId+"' AND itemId='"+itemId+"';");
     },
     
     // Remove all cards of a parentId from ChangeLog

@@ -345,7 +345,7 @@ var contactsync = {
                                         addressBook.deleteCards(cardsToDelete);
                                     } catch (e) {}
                                     card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-                                    tzPush.db.removeItemFromChangeLog(addressBook.URI, data, "delete");
+                                    tzPush.db.removeItemFromChangeLog(addressBook.URI, data);
                                 } else {
                                     card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
                                 }
@@ -866,7 +866,7 @@ var contactsync = {
             tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
             for (let count in syncdata.cardstodelete) {
                 sync.setSyncState("cleaningdeleted", syncdata);
-                tzPush.db.removeItemFromChangeLog(addressbook, syncdata.cardstodelete[count], "delete");
+                tzPush.db.removeItemFromChangeLog(addressbook, syncdata.cardstodelete[count]);
             }
             // The selected cards have been deleted from the server and from the changelog -> rerun senddel to look for more cards to delete
             this.senddel(syncdata);

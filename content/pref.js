@@ -185,7 +185,7 @@ var tzprefs = {
                     tzPush.db.setFolder(folder);
                     tzPush.db.clearChangeLog(target);
 
-                    if (target != "") tzPush.removeTarget(target, type); //we must remove the target AFTER cleaning up the DB, otherwise the addressbookListener in messenger will interfere
+                    if (target != "") tzPush.removeTarget(target, type); //we must remove the target AFTER cleaning up the DB, otherwise the addressbookListener in tzPush.jsm will interfere
                 }
             } else {
                 //select and update status
