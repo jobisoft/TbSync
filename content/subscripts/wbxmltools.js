@@ -171,7 +171,7 @@ var wbxmltools = {
         
         // nodelist contains all childs, if two childs have the same name, we cannot add the chils as an object, but as an array of objects
         for (let node of nodeList) { 
-            if (node.nodeType == 1) {
+            if (node.nodeType == 1 || node.nodeType == 3) {
                 if (!multiplicity.hasOwnProperty(node.nodeName)) multiplicity[node.nodeName] = 0;
                 multiplicity[node.nodeName]++;
                 //if this nodeName has multiplicity > 1, prepare obj  (but only once)
@@ -190,14 +190,15 @@ var wbxmltools = {
                     //element node
                     if (node.hasChildNodes) {
                         //if this is an element with only one text child, do not dive, but get text childs value
+                        let o;
                         if (node.childNodes.length == 1 && node.childNodes.item(0).nodeType==3) {
-                            obj[node.nodeName] = node.childNodes.item(0).nodeValue;
+                            o = node.childNodes.item(0).nodeValue;
                         } else {
-                            let o = this.getDataFromXML(node.childNodes);
-                            //check, if we can add the object directly, or if we have to push it into an array
-                            if (multiplicity[node.nodeName]>1) obj[node.nodeName].push(o)
-                            else obj[node.nodeName] = o; 
+                            o = this.getDataFromXML(node.childNodes);
                         }
+                        //check, if we can add the object directly, or if we have to push it into an array
+                        if (multiplicity[node.nodeName]>1) obj[node.nodeName].push(o)
+                        else obj[node.nodeName] = o; 
                     }
                     break;
             }

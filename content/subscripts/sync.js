@@ -340,7 +340,7 @@ var sync = {
                 break;
             case "8":
             case "13":
-                calendarsync.fromzpush(syncdata);
+                calendarsync.start(syncdata);
                 break;
             default:
                 tzPush.dump("startSync()", "Skipping unknown folder type <"+syncdata.type+">");

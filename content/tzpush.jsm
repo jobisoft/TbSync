@@ -469,8 +469,7 @@ var tzPush = {
                     aItem.calendar.deleteMetaData(aItem.id);
                 } else {
                     tzPush.setTargetModified(folders[0]);
-                    tzPush.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "add");
-                    //aItem.calendar.setMetaData(aItem.id, "added_by_user");
+                    aItem.calendar.setMetaData(aItem.id, "added_by_user");
                 }
             }
         },
@@ -483,11 +482,10 @@ var tzPush = {
                 if (newFolders.length > 0) {
                     if (aNewItem.calendar.getMetaData(aNewItem.id) == "modified_by_server") {
                         aNewItem.calendar.deleteMetaData(aNewItem.id);
-                    } else {
+                    } else if (aNewItem.calendar.getMetaData(aNewItem.id) != "added_by_user") { //if it is a local unprocessed add, do not set it to modified
                         //update status of target and account
                         tzPush.setTargetModified(newFolders[0]);
-                        tzPush.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "change");
-                        //aNewItem.calendar.setMetaData(aNewItem.id, "modified_by_user");
+                        aNewItem.calendar.setMetaData(aNewItem.id, "modified_by_user");
                     }
                 }
             }
@@ -497,12 +495,13 @@ var tzPush = {
             //if an event in one of the synced calendars is modified, update status of target and account
             let folders = tzPush.db.findFoldersWithSetting("target", aDeletedItem.calendar.id);
             if (folders.length > 0) {
-                if (aDeletedItem.calendar.getMetaData(aDeletedItem.id) == "deleted_by_server") {
+                if (aDeletedItem.calendar.getMetaData(aDeletedItem.id) == "deleted_by_server" || aDeletedItem.calendar.getMetaData(aDeletedItem.id) == "added_by_user") {
+                    //if it is a delete pushed from the server, simply acknowledge (do nothing) 
+                    //a local add, which has not yet been processed (synced) is deleted -> remove all traces
                     aDeletedItem.calendar.deleteMetaData(aDeletedItem.id);
                 } else {
                     tzPush.setTargetModified(folders[0]);
-                    tzPush.db.addItemToChangeLog(aDeletedItem.calendar.id, aDeletedItem.id, "delete");
-                    //aDeletedItem.calendar.setMetaData(aDeletedItem.id, "deleted_by_user");
+                    aDeletedItem.calendar.setMetaData(aDeletedItem.id, "deleted_by_user");
                 }
             }
         },
