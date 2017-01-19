@@ -1,6 +1,6 @@
 "use strict";
 
-var tzpassword = {
+var tzPushPassword = {
     
     onload: function () {
         document.title = window.arguments[0];

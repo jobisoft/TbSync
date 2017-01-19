@@ -11,40 +11,25 @@
     <script type="application/x-javascript" src="chrome://tzpush/content/messenger.js" />
 
     <statusbar id="status-bar">
-        <statusbarpanel id="tzstatus" label="TzPush" context="statusmenu" ondblclick="tzMessenger.openPrefs();" />
+        <statusbarpanel id="tzpush.status" label="&pref.TzPush;" context="tzpush.statusmenu" ondblclick="tzPushMessenger.openAccountManager();" />
         <popupset>
-            <menupopup id="statusmenu">
-                <!--menu label="&pref.Sync;" >
-                    <menupopup id="tzpushStatusMenuSyncPopup">
-                    </menupopup>
-                </menu-->
-                <menuitem label="&pref.Sync;" oncommand="tzPush.sync.addAccountToSyncQueue('sync');" />
-                <menuitem label="&overlay.tz-settings;" onclick="tzMessenger.openPrefs();" />
-                <menuitem label="&pref.ResetStatus;" onclick="tzPush.sync.resetSync();" />
+            <menupopup id="tzpush.statusmenu">
+                <menuitem label="&popup.sync;" onclick="tzPush.sync.addAccountToSyncQueue('sync');" />
+                <menuitem label="&popup.opensettings;" onclick="tzPushMessenger.openAccountManager();" />
+                <menuitem label="&popup.cancelsync;" onclick="tzPush.sync.resetSync();" />
             </menupopup>
         </popupset>
     </statusbar>
 
-    <menubar id="taskPopup">
-        <menu id="tzpushmain"  label="&overlay.tzpush;" >
-            <menupopup>
-                <!--menu label="&pref.Sync;" >
-                    <menupopup id="tzpushMainMenuSyncPopup">
-                    </menupopup>
-                </menu-->
-                <menuitem label="&pref.Sync;" oncommand="tzPush.sync.addAccountToSyncQueue('sync');" />
-                <menuitem label="&overlay.tz-settings;" oncommand="tzMessenger.openPrefs();" />
-                <menuitem label="&pref.ResetStatus;" onclick="tzPush.sync.resetSync();" />
-            </menupopup>
-        </menu>
-    </menubar>
+    <menupopup id="taskPopup">
+            <menuitem label="&menu.settingslabel;" insertbefore="menu_accountmgr" onclick="tzPushMessenger.openAccountManager();" />
+    </menupopup>
  
     <toolbarpalette id="MailToolbarPalette">
         <toolbarbutton 
-            id="myextension-button" 
             class="toolbarbutton"
-            label="tz-sync" 
-            tooltiptext="sync address book button"
+            label="&toolbar.label;" 
+            tooltiptext="&toolbar.tooltiptext;"
             oncommand="tzPush.sync.addAccountToSyncQueue('sync');"/>
     </toolbarpalette>
  

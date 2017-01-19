@@ -49,7 +49,7 @@ var db = {
             id : "INTEGER PRIMARY KEY AUTOINCREMENT",
             parentId : "TEXT NOT NULL DEFAULT ''",
             itemId : "TEXT NOT NULL DEFAULT ''",
-            changeType : "TEXT NOT NULL DEFAULT ''",
+            status : "TEXT NOT NULL DEFAULT ''",
             data : "TEXT NOT NULL DEFAULT ''"
         },
         
@@ -119,10 +119,19 @@ var db = {
 
 
 
-    // CHANGELOG FUNCTIONS
+    // CHANGELOG FUNCTIONS - needs caching // TODO
 
-    addItemToChangeLog: function (parentId, itemId, changeType, data = "") {
-        this.conn.executeSimpleSQL("INSERT INTO changelog (parentId, itemId, changeType, data) VALUES ('"+parentId+"', '"+itemId+"', '"+changeType+"', '"+data+"');");
+    getItemStatusFromChangeLog: function (parentId, itemId) {
+        let statement = this.conn.createStatement("SELECT status FROM changelog WHERE parentId='"+parentId+"' AND itemId='"+itemId+"';");
+        if (statement.executeStep()) {
+            return statement.row.status;
+        }
+        return null;
+    },
+
+    addItemToChangeLog: function (parentId, itemId, status, data = "") {
+        this.removeItemFromChangeLog(parentId, itemId);
+        this.conn.executeSimpleSQL("INSERT INTO changelog (parentId, itemId, status, data) VALUES ('"+parentId+"', '"+itemId+"', '"+status+"', '"+data+"');");
     },
 
     removeItemFromChangeLog: function (parentId, itemId) {
@@ -134,11 +143,12 @@ var db = {
         this.conn.executeSimpleSQL("DELETE FROM changelog WHERE parentId='"+parentId+"';");
     },
 
-    getItemsFromChangeLog: function (parentId, maxnumbertosend, changeType) {
+    getItemsFromChangeLog: function (parentId, maxnumbertosend, status = null) {
         let changelog = [];
-        let statement = this.conn.createStatement("SELECT itemId FROM changelog WHERE changeType = '"+changeType+"' AND parentId='"+parentId+"' LIMIT "+ maxnumbertosend +";");
+        let statussql = (status === null) ? "" : "status LIKE '%"+status+"%' AND ";
+        let statement = this.conn.createStatement("SELECT itemId, status FROM changelog WHERE " + statussql+ "parentId='"+parentId+"' LIMIT "+ maxnumbertosend +";");
         while (statement.executeStep()) {
-            changelog.push(statement.row.itemId);
+            changelog.push({ "id":statement.row.itemId, "status":statement.row.status });
         }
         return changelog;
     },

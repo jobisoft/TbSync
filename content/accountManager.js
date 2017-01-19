@@ -2,7 +2,7 @@
 
 Components.utils.import("chrome://tzpush/content/tzpush.jsm");
 
-var tzprefManager = {
+var tzPushAccountManager = {
 
     selectedAccount: null,
 
@@ -11,12 +11,12 @@ var tzprefManager = {
         //the onSelect event of the List will load the selected account
         this.updateAccountsList(); 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(tzprefManager.updateAccountStatusObserver, "tzpush.changedSyncstate", false);
+        observerService.addObserver(tzPushAccountManager.updateAccountStatusObserver, "tzpush.changedSyncstate", false);
     },
 
     onunload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.removeObserver(tzprefManager.updateAccountStatusObserver, "tzpush.changedSyncstate");
+        observerService.removeObserver(tzPushAccountManager.updateAccountStatusObserver, "tzpush.changedSyncstate");
         tzPush.prefWindowObj = null;
     },
 
@@ -29,7 +29,7 @@ var tzprefManager = {
 
 
     deleteAccount: function () {
-        let accountsList = document.getElementById("tzprefManager.accounts");
+        let accountsList = document.getElementById("tzPushAccountManager.accounts");
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
             let nextAccount =  -1;
             if (accountsList.selectedIndex > 0) {
@@ -59,10 +59,10 @@ var tzprefManager = {
             let state = tzPush.sync.currentProzess.state;
             
             //react on true syncstate changes send by setSyncState()
-            if (aData == "" && (state == "syncing" || state == "accountdone")) tzprefManager.updateAccountStatus(tzPush.sync.currentProzess.account );
+            if (aData == "" && (state == "syncing" || state == "accountdone")) tzPushAccountManager.updateAccountStatus(tzPush.sync.currentProzess.account );
 
             //react on manual notifications send by tzmessenger
-            if (aData != "") tzprefManager.updateAccountStatus(aData);
+            if (aData != "") tzPushAccountManager.updateAccountStatus(aData);
         }
     },
 
@@ -96,7 +96,7 @@ var tzprefManager = {
 
 
     updateAccountStatus: function (id) {
-        let listItem = document.getElementById("tzprefManager.accounts." + id);
+        let listItem = document.getElementById("tzPushAccountManager.accounts." + id);
         let statusimage = this.getStatusImage(id);
         if (listItem.childNodes[1].firstChild.src != statusimage) {
             listItem.childNodes[1].firstChild.src = statusimage;
@@ -104,12 +104,12 @@ var tzprefManager = {
     },
 
     updateAccountName: function (id, name) {
-        let listItem = document.getElementById("tzprefManager.accounts." + id);
+        let listItem = document.getElementById("tzPushAccountManager.accounts." + id);
         if (listItem.firstChild.getAttribute("label") != name) listItem.firstChild.setAttribute("label", name);
     },
     
     updateAccountsList: function (accountToSelect = -1) {
-        let accountsList = document.getElementById("tzprefManager.accounts");
+        let accountsList = document.getElementById("tzPushAccountManager.accounts");
         let accounts = tzPush.db.getAccounts();
 
         if (accounts.IDs.length > null) {
@@ -129,7 +129,7 @@ var tzprefManager = {
                 if (listedAccounts.indexOf(accounts.IDs[i]) == -1) {
                     //add all missing accounts (always to the end of the list)
                     let newListItem = document.createElement("richlistitem");
-                    newListItem.setAttribute("id", "tzprefManager.accounts." + accounts.IDs[i]);
+                    newListItem.setAttribute("id", "tzPushAccountManager.accounts." + accounts.IDs[i]);
                     newListItem.setAttribute("value", accounts.IDs[i]);
 
                     //add account name
@@ -174,19 +174,19 @@ var tzprefManager = {
             }
             
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-            document.getElementById("tzprefManager.contentFrame").webNavigation.loadURI("chrome://tzpush/content/noaccounts.xul", LOAD_FLAGS_NONE, null, null, null);
+            document.getElementById("tzPushAccountManager.contentFrame").webNavigation.loadURI("chrome://tzpush/content/noaccounts.xul", LOAD_FLAGS_NONE, null, null, null);
         }
     },
 
 
     //load the pref page for the currently selected account (triggered by onSelect)
     loadSelectedAccount: function () {
-        let accountsList = document.getElementById("tzprefManager.accounts");
+        let accountsList = document.getElementById("tzPushAccountManager.accounts");
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
             //get id of selected account from value of selectedItem
             this.selectedAccount = accountsList.selectedItem.value;
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-            document.getElementById("tzprefManager.contentFrame").webNavigation.loadURI("chrome://tzpush/content/pref.xul", LOAD_FLAGS_NONE, null, null, null);
+            document.getElementById("tzPushAccountManager.contentFrame").webNavigation.loadURI("chrome://tzpush/content/accountSettings.xul", LOAD_FLAGS_NONE, null, null, null);
         }
     },
 

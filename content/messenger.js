@@ -1,23 +1,21 @@
-/* Copyright (c) 2012 Mark Nethersole
-   See the file LICENSE.txt for licensing information. */  
 "use strict";
 
 Components.utils.import("chrome://tzpush/content/tzpush.jsm");
 
-var tzMessenger = {
+var tzPushMessenger = {
 
     onload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(tzMessenger.syncstateObserver, "tzpush.changedSyncstate", false);
-        observerService.addObserver(tzMessenger.setPasswordObserver, "tzpush.setPassword", false);
+        observerService.addObserver(tzPushMessenger.syncstateObserver, "tzpush.changedSyncstate", false);
+        observerService.addObserver(tzPushMessenger.setPasswordObserver, "tzpush.setPassword", false);
 
         tzPush.init();
-        tzMessenger.syncTimer.start();
+        tzPushMessenger.syncTimer.start();
     },
 
-    openPrefs: function () {
+    openAccountManager: function () {
         // check, if a window is already open and just put it in focus
-        if (tzPush.prefWindowObj === null) tzPush.prefWindowObj = window.open("chrome://tzpush/content/prefManager.xul", "TzPushPrefWindow", "chrome,centerscreen,toolbar,resizable");
+        if (tzPush.prefWindowObj === null) tzPush.prefWindowObj = window.open("chrome://tzpush/content/accountManager.xul", "TzPushAccountManagerWindow", "chrome,centerscreen,toolbar,resizable");
         tzPush.prefWindowObj.focus();
     },
 
@@ -44,7 +42,7 @@ var tzMessenger = {
     syncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
             //update status bar
-            let status = document.getElementById("tzstatus");
+            let status = document.getElementById("tzpush.status");
             if (status && aData == "") { //only observe true notifications from setSyncState()
                 
                 let data = tzPush.sync.currentProzess;
@@ -95,4 +93,4 @@ var tzMessenger = {
     }
 };
 
-window.addEventListener("load", tzMessenger.onload, false);
+window.addEventListener("load", tzPushMessenger.onload, false);

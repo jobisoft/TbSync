@@ -1,7 +1,17 @@
-<!ENTITY overlay.tzpush "TzPush">
-<!ENTITY overlay.tz-settings "TzPush Settings">
-<!ENTITY overlay.tz-sync "TzPush Sync">
+<!ENTITY popup.cancelsync "Cancel current synchronization">
+<!ENTITY popup.opensettings "Open account manager">
+<!ENTITY popup.sync "Synchronize latest changes">
 
+<!ENTITY menu.settingslabel "Synchronization Settings (TzPush)">
+
+<!ENTITY toolbar.label " Synchronize all accounts (TzPush)">
+<!ENTITY toolbar.tooltiptext "Synchronization latest changes">
+
+<!ENTITY manager.accounts "Accounts">
+<!ENTITY manager.status "Status">
+<!ENTITY manager.title "TzPush account manager">
+
+<!ENTITY pref.TzPush "TzPush">
 
 <!ENTITY pref.SettingDialog "Account Settings">
 <!ENTITY pref.AccountName "Account Name">
@@ -22,7 +32,6 @@
 <!ENTITY pref.noaccounts "There have not yet been defined any accounts.">
 <!ENTITY pref.catman "Category Manager">
 
-
 <!ENTITY pref.syncstate "SyncStatus">
 <!ENTITY pref.servertype "Server Type">
 <!ENTITY pref.seperator.comma "comma as seperator">
@@ -30,22 +39,9 @@
 <!ENTITY pref.displayoverride "Overide Display Name with 'First Name' + 'Second Name'">
 
 <!ENTITY pref.ResyncText "Get new sync key and resync folders. Use if sync state information is lost.">
-<!ENTITY pref.ResetStatus "Cancel current sync">
 
 <!ENTITY pref.Help "Help">
 <!ENTITY pref.Cape "Cape">
-
-<!ENTITY pref.BusinessFaxNumber "Work Fax:">
-<!ENTITY pref.Business2PhoneNumber "Work Phone 2:">
-<!ENTITY pref.AssistantPhoneNumber "Assistant Phone:">
-<!ENTITY pref.CarPhoneNumber "Car Phone:">
-<!ENTITY pref.RadioPhoneNumber "Radio Phone:">
-<!ENTITY pref.Email3Address "Additional Email2:">
-<!ENTITY pref.Home2PhoneNumber "Home Phone 2:">
-<!ENTITY pref.CompanyMainPhone "Work Main Phone:">
-
-<!ENTITY prefManager.accounts "Accounts">
-<!ENTITY prefManager.status "Status">
 
 <!ENTITY pref.foldername "Folder">
 <!ENTITY pref.targetname "SyncTarget">

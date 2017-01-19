@@ -3,9 +3,9 @@
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
     <Description about="urn:mozilla:install-manifest">
         <em:id>tzpush@capeproject.org.uk</em:id>
-        <em:name>tzpush</em:name>
+        <em:name>TzPush (provider for Exchange ActiveSync)</em:name>
         <em:version>2.6</em:version>
-        <em:description>Z-Sync to Thunderbird Addressbook</em:description>
+        <em:description>Synchronize Exchange ActiveSync accounts to Thunderbird Addressbook and Calendar</em:description>
         <em:creator>Mark N.</em:creator>
         <em:homepageURL>http://code.google.com/p/tz-push/</em:homepageURL>
         <em:iconURL>chrome://tzpush/skin/tz-push.png</em:iconURL>

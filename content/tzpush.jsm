@@ -112,10 +112,10 @@ var tzPush = {
         //let xml = decodeURIComponent(escape(wbxmltools.convert2xml(wbxml).split('><').join('>\n<')));
         let xml = tzPush.decode_utf8(tzPush.wbxmltools.convert2xml(wbxml).split('><').join('>\n<'));
 
-        tzPush.dump(aMessage + " (bytes)", bytestring);
+        //tzPush.dump(aMessage + " (bytes)", bytestring);
         tzPush.dump(aMessage + " (xml)", xml);
-        tzPush.appendToFile("wbxml-debug.log", "\n\n" + aMessage + " (bytes)\n");
-        tzPush.appendToFile("wbxml-debug.log", bytestring);
+        //tzPush.appendToFile("wbxml-debug.log", "\n\n" + aMessage + " (bytes)\n");
+        //tzPush.appendToFile("wbxml-debug.log", bytestring);
         tzPush.appendToFile("wbxml-debug.log", "\n\n" + aMessage + " (xml)\n");
         tzPush.appendToFile("wbxml-debug.log", xml);
     },
@@ -354,7 +354,7 @@ var tzPush = {
     },
 
     addNewCardFromServer: function (card, addressBook, account) {
-        if (this.db.getAccountSetting(account, "displayoverride") == "1") {
+        if (tzPush.db.getAccountSetting(account, "displayoverride") == "1") {
             card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
         }
         
@@ -462,14 +462,17 @@ var tzPush = {
         onLoad : function (aCalendar) { tzPush.dump("calendarObserver::onLoad","<" + aCalendar.name + "> was loaded."); },
 
         onAddItem : function (aItem) { 
+            let itemStatus = tzPush.db.getItemStatusFromChangeLog(aItem.calendar.id, aItem.id)
+            tzPush.dump("Item Status", itemStatus);
+
             //if an event in one of the synced calendars is added, update status of target and account
             let folders = tzPush.db.findFoldersWithSetting("target", aItem.calendar.id);
             if (folders.length > 0) {
-                if (aItem.calendar.getMetaData(aItem.id) == "added_by_server") {
-                    aItem.calendar.deleteMetaData(aItem.id);
+                if (itemStatus == "added_by_server") {
+                    tzPush.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);                        
                 } else {
                     tzPush.setTargetModified(folders[0]);
-                    aItem.calendar.setMetaData(aItem.id, "added_by_user");
+                    tzPush.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "added_by_user");
                 }
             }
         },
@@ -477,31 +480,40 @@ var tzPush = {
         onModifyItem : function (aNewItem, aOldItem) {
             //check, if it is a pure modification within the same calendar
             if (aNewItem.calendar.id == aOldItem.calendar.id) { // aNewItem.calendar could be null ??? throw up on server pushed deletes as well ??? TODO
+
+                let itemStatus = tzPush.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
+                tzPush.dump("Item Status", itemStatus);
                 //check, if it is an event in one of the synced calendars
+
                 let newFolders = tzPush.db.findFoldersWithSetting("target", aNewItem.calendar.id);
                 if (newFolders.length > 0) {
-                    if (aNewItem.calendar.getMetaData(aNewItem.id) == "modified_by_server") {
-                        aNewItem.calendar.deleteMetaData(aNewItem.id);
-                    } else if (aNewItem.calendar.getMetaData(aNewItem.id) != "added_by_user") { //if it is a local unprocessed add, do not set it to modified
+                    if (itemStatus == "modified_by_server") {
+                        tzPush.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);                        
+                    } else if (itemStatus != "added_by_user") { //if it is a local unprocessed add, do not set it to modified
                         //update status of target and account
                         tzPush.setTargetModified(newFolders[0]);
-                        aNewItem.calendar.setMetaData(aNewItem.id, "modified_by_user");
+                        tzPush.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "modified_by_user");
+
                     }
                 }
+                
             }
         },
 
         onDeleteItem : function (aDeletedItem) {
+            let itemStatus = tzPush.db.getItemStatusFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id)
+            tzPush.dump("Item Status", itemStatus);
+
             //if an event in one of the synced calendars is modified, update status of target and account
             let folders = tzPush.db.findFoldersWithSetting("target", aDeletedItem.calendar.id);
             if (folders.length > 0) {
-                if (aDeletedItem.calendar.getMetaData(aDeletedItem.id) == "deleted_by_server" || aDeletedItem.calendar.getMetaData(aDeletedItem.id) == "added_by_user") {
+                if (itemStatus == "deleted_by_server" || itemStatus == "added_by_user") {
                     //if it is a delete pushed from the server, simply acknowledge (do nothing) 
                     //a local add, which has not yet been processed (synced) is deleted -> remove all traces
-                    aDeletedItem.calendar.deleteMetaData(aDeletedItem.id);
+                    tzPush.db.removeItemFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id);
                 } else {
                     tzPush.setTargetModified(folders[0]);
-                    aDeletedItem.calendar.setMetaData(aDeletedItem.id, "deleted_by_user");
+                    tzPush.db.addItemToChangeLog(aDeletedItem.calendar.id, aDeletedItem.id, "deleted_by_user");
                 }
             }
         },
@@ -574,7 +586,8 @@ var tzPush = {
             }
         }
     },
-
+ 
+    
     getCalendarName: function (id) {
         if ("calICalendar" in Components.interfaces) {
             let targetCal = cal.getCalendarManager().getCalendarById(id);
