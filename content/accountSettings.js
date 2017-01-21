@@ -19,6 +19,7 @@ var tbSyncAccountSettings = {
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate", false);
+        observerService.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateGui", false);
         tbSyncAccountSettings.init = true;
 	
     },
@@ -28,6 +29,7 @@ var tbSyncAccountSettings = {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         if (tbSyncAccountSettings.init) {
             observerService.removeObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate");
+            observerService.removeObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateGui");
         }
     },
 
@@ -119,6 +121,15 @@ var tbSyncAccountSettings = {
     },
 
 
+
+    updateGuiObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            //only update if request for this account
+            if (aData == tbSyncAccountSettings.selectedAccount) {
+                tbSyncAccountSettings.updateGui();
+            }
+        }
+    },
 
     updateGui: function () {
         let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
@@ -362,7 +373,7 @@ var tbSyncAccountSettings = {
     */
     toggleConnectionState: function () {
         //ignore cancel request, if button is disabled or a sync is ongoing
-        if (document.getElementById('tbsync.accountsettings.connectbtn').disabled || tbSync.sync.currentProzess.account == tbSyncAccountSettings.selectedAccount) return;
+        if (document.getElementById('tbsync.accountsettings.connectbtn').disabled || (tbSync.sync.currentProzess.account == tbSyncAccountSettings.selectedAccount)) return;
 
         let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
         if (state == "connected") {
@@ -401,7 +412,7 @@ var tbSyncAccountSettings = {
                         let status = tbSync.db.getAccountSetting(tbSync.sync.currentProzess.account, "status");
                         switch (status) {
                             case "401":
-                                window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", "Set password for TbSync account <" + tbSync.db.getAccountSetting(account, "accountname") + ">", account);
+                                window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.getLocalizedMessage("account").replace("##accountname##", tbSync.db.getAccountSetting(account, "accountname")), account);
                                 break;
                             case "OK":
                             case "notsyncronized":

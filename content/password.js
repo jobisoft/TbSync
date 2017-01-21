@@ -1,10 +1,13 @@
 "use strict";
 
+Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+
 var tbSyncPassword = {
     
     onload: function () {
         document.title = window.arguments[0];
         this.account = window.arguments[1];
+        document.getElementById("tbsync.password.description").textContent = tbSync.getLocalizedMessage("promptPassword").replace("##user##", tbSync.db.getAccountSetting(this.account, "user"));
     },
 
     doOK: function () {

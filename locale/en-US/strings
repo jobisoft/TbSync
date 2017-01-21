@@ -40,3 +40,5 @@ promptUnsubscribe=Are you sure you want to unsubscribe this item? All local modi
 resync_from_scratch=Resync from scratch
 new_account=New Account
 
+promptPassword=Please enter the password for user ##user##:
+account=TbSync account [##accountname##]
