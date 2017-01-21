@@ -225,7 +225,12 @@ var sync = {
     getFolderIdsCallback: function (wbxml, syncdata) {
 
         let wbxmlData = tzPush.wbxmltools.createWBXML(wbxml).getData();
-        tzPush.db.setAccountSetting(syncdata.account, "foldersynckey", wbxmlData.FolderSync.SyncKey);
+        if (this.statusIsBad(wbxmlData.FolderSync.Status, syncdata)) {
+            return;
+        }
+
+        if (wbxmlData.FolderSync.SyncKey) tzPush.db.setAccountSetting(syncdata.account, "foldersynckey", wbxmlData.FolderSync.SyncKey);
+        else this.finishSync(syncdata, "missingfoldersynckey");
 
         if (wbxmlData.FolderSync.Changes) {
             //looking for additions
@@ -309,7 +314,7 @@ var sync = {
                 wbxml.otag("Sync");
                     wbxml.otag("Collections");
                         wbxml.otag("Collection");
-                            if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class","Contacts"); //TODO for calendar???
+//                            if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class","Contacts"); //TODO for calendar???
                             wbxml.atag("SyncKey","0");
                             wbxml.atag("CollectionId",syncdata.folderID);
                         wbxml.ctag();

@@ -44,7 +44,7 @@
                 <row id="tzpush.accountsettings.options.2">
                      <label control="tzpush.accountsettings.asversion" value="ActiveSync Version" />
                      <menulist id="tzpush.accountsettings.asversion" disabled="true" >
-                          <menupopup id = "as" >
+                          <menupopup>
                                <menuitem label="2.5" value="2.5" />
                                <menuitem label="14.0" value="14.0" />
                           </menupopup>

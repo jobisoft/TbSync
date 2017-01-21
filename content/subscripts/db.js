@@ -210,7 +210,7 @@ var db = {
             // return a reference or a copy?
             if (copy) {
                 let copy = {};
-                for(let p in data[account]) copy[p] = data[account][p];               
+                for(let p in data[account]) copy[p] = data[account][p];
                 return copy;
             } else {
                 return data[account];

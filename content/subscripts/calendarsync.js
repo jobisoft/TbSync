@@ -4,7 +4,106 @@ var calendarsync = {
 
     // CALENDAR SYNC
     // TODO: Link sync to lightning-sync-button using providerId
-    
+    offsets : null,
+
+
+
+
+
+    //EAS TimeZone data structure
+    EASTZ : {
+        buf : new DataView(new ArrayBuffer(172)),
+        
+        /* Buffer structure:
+         @000    utcOffset (4x8bit as 1xLONG)
+        
+        @004     standardName (64x8bit as 32xWCHAR)
+        @068     standardDate (16x8 as 1xSYSTEMTIME)
+        @084     standardBias (4x8bit as 1xLONG)
+        
+        @088     daylightName (64x8bit as 32xWCHAR)
+        @152    daylightDate (16x8 as 1xSTRUCT)
+        @168    daylightBias (4x8bit as 1xLONG)
+        */
+        
+        set base64 (b64) {
+            //clear buffer
+            for (let i=0; i<172; i++) this.buf.setUint8(i, 0);
+            //load content into buffer
+            let content = (b64 == "") ? "" : atob(b64);
+            for (let i=0; i<content.length; i++) this.buf.setUint8(i, content.charCodeAt(i));
+        },
+        
+        get base64 () {
+            let content = "";
+            for (let i=0; i<172; i++) content += String.fromCharCode(this.buf.getUint8(i));
+            return (btoa(content));
+        },
+        
+        getstr : function (byteoffset) {
+            let str = "";
+            //walk thru the buffer in 32 steps of 16bit (wchars)
+            for (let i=0;i<32;i++) {
+                let cc = this.buf.getUint16(byteoffset+i*2, true);
+                if (cc == 0) break;
+                str += String.fromCharCode(cc);
+            }
+            return str;
+        },
+
+        setstr : function (byteoffset, str) {
+            //clear first
+            for (let i=0;i<32;i++) this.buf.setUint16(byteoffset+i*2, 0);
+            //walk thru the buffer in steps of 16bit (wchars)
+            for (let i=0;i<str.length && i<32; i++) this.buf.setUint16(byteoffset+i*2, str.charCodeAt(i), true);
+        },
+        
+        getsystemtime : function (buf, offset) {
+            let systemtime = {
+                get wYear () { return buf.getUint16(offset + 0, true); },
+                get wMonth () { return buf.getUint16(offset + 2, true); },
+                get wDayOfWeek () { return buf.getUint16(offset + 4, true); },
+                get wDay () { return buf.getUint16(offset + 6, true); },
+                get wHour () { return buf.getUint16(offset + 8, true); },
+                get wMinute () { return buf.getUint16(offset + 10, true); },
+                get wSecond () { return buf.getUint16(offset + 12, true); },
+                get wMilliseconds () { return buf.getUint16(offset + 14, true); },
+
+                set wYear (v) { buf.setUint16(offset + 0, v, true); },
+                set wMonth (v) { buf.setUint16(offset + 2, v, true); },
+                set wDayOfWeek (v) { buf.setUint16(offset + 4, v, true); },
+                set wDay (v) { buf.setUint16(offset + 6, v, true); },
+                set wHour (v) { buf.setUint16(offset + 8, v, true); },
+                set wMinute (v) { buf.setUint16(offset + 10, v, true); },
+                set wSecond (v) { buf.setUint16(offset + 12, v, true); },
+                set wMilliseconds (v) { buf.setUint16(offset + 14, v, true); },
+                };
+            return systemtime;
+        },
+        
+        get standardDate () {return this.getsystemtime (this.buf, 68); },
+        get daylightDate () {return this.getsystemtime (this.buf, 152); },
+            
+        get utcOffset () { return this.buf.getInt32(0, true); },
+        set utcOffset (v) { this.buf.setInt32(0, v, true); },
+
+        get standardBias () { return this.buf.getInt32(84, true); },
+        set standardBias (v) { this.buf.setInt32(84, v, true); },
+        get daylightBias () { return this.buf.getInt32(168, true); },
+        set daylightBias (v) { this.buf.setInt32(168, v, true); },
+        
+        get standardName () {return this.getstr(4); },
+        set standardName (v) {return this.setstr(4, v); },
+        get daylightName () {return this.getstr(88); },
+        set daylightName (v) {return this.setstr(88, v); },
+        
+        toString : function () { return "[" + [this.standardName, this.daylightName, this.utcOffset, this.standardBias, this.daylightBias].join("|") + "]"; }
+        
+    },
+
+
+
+
     // wrapper for standard stuff done on each response
     processResponseAndGetData: function (wbxml, syncdata) {
         // get data from wbxml response
@@ -24,9 +123,14 @@ var calendarsync = {
         }
 
         //update synckey
-        syncdata.synckey = wbxmlData.Sync.Collections.Collection.SyncKey;
-        db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
-        return wbxmlData;
+        if (wbxmlData.Sync.Collections.Collection.SyncKey) {
+            syncdata.synckey = wbxmlData.Sync.Collections.Collection.SyncKey;
+            db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
+            return wbxmlData;
+        } else {
+            sync.finishSync(syncdata, "nosynckey");
+            return "nokey";
+        }
     },
 
 
@@ -50,57 +154,69 @@ var calendarsync = {
     },
 
 
-    isValid_UTC_DateTimeString: function (str) {
-        //validate if str is YYYYMMDDTHHMMSSZ
-        if (str && str.length == 16 && str.charAt(8) == "T" && str.charAt(15) =="Z") {
-            if ( isNaN(str.substr(0,4)) ) return false; //year
-            if ( isNaN(str.substr(4,2)) || parseInt(str.substr(4,2)) == 0 || parseInt(str.substr(4,2)) > 12 ) return false; //month
-            if ( isNaN(str.substr(6,2)) || parseInt(str.substr(6,2)) == 0 || parseInt(str.substr(4,2)) > 31 ) return false; //day                    
-            if ( isNaN(str.substr(9,2)) || parseInt(str.substr(9,2)) > 23 ) return false; // hour
-            if ( isNaN(str.substr(11,2)) || parseInt(str.substr(11,2)) > 59 ) return false; // minute
-            if ( isNaN(str.substr(13,2)) || parseInt(str.substr(13,2)) > 59 ) return false; // minute
-            return true;
-        }
-        return false;
-    },
+
+
+
 
     //insert data from wbxml object into a TB event item
-    setEvent: function (item, data, id) {
+    setEvent: function (item, data, id, asversion) {
         item.id = id;
-        
+
         if (data.Subject) item.title = data.Subject;
         if (data.Location) item.setProperty("location", data.Location);
-        if (data.Body && data.Body.Data) item.setProperty("description", data.Body.Data);
         if (data.Categories && data.Categories.Category) item.setCategories(data.Categories.Category.length, data.Categories.Category);
 
-        //set up datetimes
-        if (this.isValid_UTC_DateTimeString(data.StartTime) == false) data.StartTime = "19700101T000000Z";
-        if (this.isValid_UTC_DateTimeString(data.EndTime) == false) data.EndTime = "19700101T000000Z";
+        if (asversion == "2.5") {
+            if (data.Body) item.setProperty("description", data.Body);
+        } else {
+            if (data.Body && data.Body.Data) item.setProperty("description", data.Body.Data);
+        }
 
-        item.startDate = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
-        item.startDate.timezone = cal.floating();
-        item.startDate.icalString = data.StartTime;
-        item.endDate = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
-        item.endDate.timezone = cal.floating();
-        item.endDate.icalString = data.EndTime;
+
+        //get a list of all zones - we only do this once, we do it here to not slow down TB startup time
+        //alternativly use cal.fromRFC3339 - but this is only doing this
+        //https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calProviderUtils.jsm
+        let tzService = cal.getTimezoneService();
+        if (this.offsets === null) {
+            this.offsets = {};
+            let dateTime = cal.createDateTime("20160101T000000Z"); //UTC
+
+            //find timezone based on utcOffset
+            let enumerator = tzService.timezoneIds;
+            while (enumerator.hasMore()) {
+                let id = enumerator.getNext();
+                dateTime.timezone = tzService.getTimezone(id);
+                this.offsets[dateTime.timezoneOffset/-60] = id; //in minutes
+            }
+
+            //also try default timezone
+            dateTime.timezone=cal.calendarDefaultTimezone();
+            this.offsets[dateTime.timezoneOffset/-60] = dateTime.timezone.tzid;
+            //also use a map to map EAS to TB
+        }
+        
+        //timezone
+        let utcOffset = 0;
+        if (data.TimeZone) {
+            //load timezone struct into EAS TimeZone object
+            this.EASTZ.base64 = data.TimeZone;
+            utcOffset = this.EASTZ.utcOffset;
+            tzPush.dump("Recieve TZ",utcOffset + " --- " + this.offsets[utcOffset] + " --- " + this.EASTZ.toString());
+        }
+
+        let utc = cal.createDateTime(data.StartTime); //format "19800101T000000Z" - UTC
+        item.startDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
+
+        utc = cal.createDateTime(data.EndTime); 
+        item.endDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
+
+        //stamp time cannot be set and it is not needed, an updated version is only send to the server, if there was a change, so stamp will be updated
+
 
         //check if alldate and fix values
         if (data.AllDayEvent && data.AllDayEvent == "1") {
             item.startDate.isDate = true;
-            item.startDate.hour = 0;
-            item.startDate.minute = 0;
-            item.startDate.second = 0;
-            
             item.endDate.isDate = true;
-            item.endDate.hour = 0;
-            item.endDate.minute = 0;
-            item.endDate.second = 0;
-
-            if (item.startDate.compare(item.endDate) == 0) {
-                // For a one day all day event, the end date must be 00:00:00 of
-                // the next day.
-                item.endDate.day++;
-            }
         }
 
         //EAS Reminder
@@ -122,83 +238,147 @@ var calendarsync = {
         // 0 = Normal // 1 = Personal // 2 = Private // 3 = Confidential
         let CLASS = { "0":"PUBLIC", "1":"PRIVATE", "2":"PRIVATE", "3":"CONFIDENTIAL"};
         if (data.Sensitivity) item.setProperty("CLASS", CLASS[data.Sensitivity]);
-        
-        //timezone
-        //aItem.entryDate = start;
-        //aItem.dueDate = aEndDate.clone();
-        //due.addDuration(dueOffset);
-        
+                
             /*
-            <DtStamp xmlns='Calendar'>20161220T213937Z</DtStamp>
             <OrganizerName xmlns='Calendar'>John Bieling</OrganizerName>
             <OrganizerEmail xmlns='Calendar'>john.bieling@uni-bonn.de</OrganizerEmail>
 
             <Recurrence xmlns='Calendar'>
-            <Type xmlns='Calendar'>5</Type>
-            <Interval xmlns='Calendar'>1</Interval>
-            <DayOfMonth xmlns='Calendar'>15</DayOfMonth>
-            <MonthOfYear xmlns='Calendar'>11</MonthOfYear>
+                <Type xmlns='Calendar'>5</Type>
+                <Interval xmlns='Calendar'>1</Interval>
+                <DayOfMonth xmlns='Calendar'>15</DayOfMonth>
+                <MonthOfYear xmlns='Calendar'>11</MonthOfYear>
             </Recurrence>
             <MeetingStatus xmlns='Calendar'>0</MeetingStatus>
             */
+
+        //TASK STUFF
+        //aItem.entryDate = start;
+        //aItem.dueDate = aEndDate.clone();
+        //due.addDuration(dueOffset);
     },
 
-    getDateTimeString : function (str) {
-        let dateStr = str;
-        if (this.isValid_UTC_DateTimeString(dateStr) == false) {
-            if (this.isValid_UTC_DateTimeString(dateStr + "Z")) {
-                //valid but not UTC - TODO 
-                dateStr = dateStr + "Z";
-            } else {
-                dateStr = "19700101T000000Z";
-            }
-        }
-        return dateStr;
-    },
-    
+
+
     //read TB event and return its data as WBXML
-    getEventApplicationDataAsWBXML: function (item) {
+    getEventApplicationDataAsWBXML: function (item, asversion) {
         let wbxml = tzPush.wbxmltools.createWBXML(""); //init wbxml with "" and not with precodes
 
-        /*
+        /*	    
          * IMPORTANT:
+         *
          * The TB event item has an item.id which is identical to item.getProperty("UID") (a so called promoted property). This id is used locally
          * to identify a card and is set to the ServerID during download. However, there could be a true UID property stored in the item on
          * the server which we do not need and touch. We MUST NOT send a UID property to the server. We only send ClientID and/or ServerId, 
-         * which are not stored inside ApplicationData. */
+         * 
+         * Protocoll requieres the following fields:
+         *  - BusyStatus
+         *  - DtStamp
+         *  - Sensitivity
+         *  - Start/EndTime
+         *  - Timezone
+         * 
+         *  We do not use ghosting, that means, if we do not include a value in CHANGE, it is removed from the server. 
+         *  OBACHT: Need to include any (empty) container to blank its childs.
+         * 
+         */
 
         wbxml.switchpage("Calendar");
-        wbxml.atag("StartTime", this.getDateTimeString(item.startDate.icalString));
-        wbxml.atag("EndTime", this.getDateTimeString(item.endDate.icalString));
-        wbxml.atag("AllDayEvent", (item.startDate.isDate && item.endDate.isDate) ? "1" : "0");
-
-        if (item.title) wbxml.atag("Subject", item.title);
-        if (item.hasProperty("location")) wbxml.atag("Location", item.getProperty("location"));
         
-        //categories
+        // REQUIRED FIELDS
+        
+/*        item.timezoneOffset();
+         let date_utc = date;
+        equal(date_utc.hour, 15);
+        equal(date_utc.icalString, "20051113T150000Z");
+
+        let utc = cal.createDateTime();
+        equal(utc.timezone.tzid, "UTC");
+        equal(utc.clone().timezone.tzid, "UTC");
+        equal(utc.timezoneOffset, 0); 
+        
+        tzPush.dump("Timezone", item.startDate.timezone);
+        tzPush.dump("Timezone", item.startDate.timezoneOffset);
+
+        let newDate = item.startDate.getInTimezone(cal.calendarDefaultTimezone());
+        tzPush.dump("Timezone", newDate.timezone);
+        tzPush.dump("Timezone", newDate.timezoneOffset);
+        
+        item.timezoneOffset();
+         let date_utc = date.getInTimezone(cal.UTC());
+        equal(date_utc.hour, 15);
+        equal(date_utc.icalString, "20051113T150000Z");
+
+        let utc = cal.createDateTime();
+        equal(utc.timezone.tzid, "UTC");
+        equal(utc.clone().timezone.tzid, "UTC");
+        equal(utc.timezoneOffset, 0);
+
+        equal(cal.createDateTime("20120101T120000").compare(cal.createDateTime("20120101")), 0);
+
+        */
+
+        //clear  EAS TimeZone object and fill it with timezone settings (using startDate) - we need to parse VTIMEZONE
+        this.EASTZ.base64 = "";
+        this.EASTZ.utcOffset = item.startDate.timezoneOffset/-60;
+        this.EASTZ.standardBias = 0;
+        this.EASTZ.daylightBias = 0;
+        this.EASTZ.standardName = item.startDate.timezone.tzid;
+        this.EASTZ.daylightName = item.startDate.timezone.tzid;
+        //this.EASTZ.standardDate
+        //this.EASTZ.daylightDate
+        tzPush.dump("Send TZ",this.EASTZ.toString());
+
+        //TimeZone
+        wbxml.atag("TimeZone", this.EASTZ.base64);
+
+        //StartTime & EndTime in UTC
+        wbxml.atag("StartTime", item.startDate.getInTimezone(cal.UTC()).icalString);
+        wbxml.atag("EndTime", item.endDate.getInTimezone(cal.UTC()).icalString);
+
+        //DtStamp
+        wbxml.atag("DtStamp", item.stampTime.getInTimezone(cal.UTC()).icalString);
+
+        //EAS BusyStatus (TB TRANSP : free = TRANSPARENT, busy = OPAQUE or unset)
+        //0 = Free // 1 = Tentative // 2 = Busy // 3 = Work // 4 = Elsewhere (v16)
+        // we map TB unset to Tentative , Work and Elsewhere are not used
+        if (item.hasProperty("TRANSP")) wbxml.atag("BusyStatus", (item.getProperty("TRANSP") == "TRANSPARENT") ? "0" : "2");
+        else wbxml.atag("BusyStatus", "1");
+
+        //EAS Sensitivity (TB CLASS: PUBLIC, PRIVATE, CONFIDENTIAL or unset)
+        // 0 = Normal // 1 = Personal // 2 = Private // 3 = Confidential
+        let CLASS = { "PUBLIC":"0", "PRIVATE":"2", "CONFIDENTIAL":"3"}
+        if (item.hasProperty("CLASS")) wbxml.atag("Sensitivity", CLASS[item.getProperty("CLASS")]);
+        else wbxml.atag("Sensitivity", "1");
+        
+
+
+        // OPTIONAL FIELDS
+        //for simplicity, we always send a value for AllDayEvent
+        wbxml.atag("AllDayEvent", (item.startDate.isDate && item.endDate.isDate) ? "1" : "0");
+        
+        //obmitting these, should remove them from the server - that does not work reliably, so we send blanks
+        wbxml.atag("Subject", (item.title) ? item.title : "");
+        wbxml.atag("Location", (item.hasProperty("location")) ? item.getProperty("location") : "");
+        
+        //categories, to properly "blank" them, we need to always include the container
         let categories = item.getCategories({});
         if (categories.length > 0) {
             wbxml.otag("Categories");
                 for (let i=0; i<categories.length; i++) wbxml.atag("Category", categories[i]);
             wbxml.ctag();
+        } else {
+            wbxml.atag("Categories");
         }
         
         //TP PRIORIRY (9=LOW, 5=NORMAL, 1=HIGH) not mapable to EAS
         
-        //EAS Reminder (TB getAlarms)
+        //EAS Reminder (TB getAlarms) - at least with zarafa blanking by omitting works
         let alarms = item.getAlarms({});
         if (alarms.length>0) wbxml.atag("Reminder", (0 - alarms[0].offset.inSeconds/60).toString());
         //https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIAlarm.idl
         //tzPush.dump("ALARM ("+i+")", [, alarms[i].related, alarms[i].repeat, alarms[i].repeatOffset, alarms[i].repeatDate, alarms[i].action].join("|"));
 
-        //EAS BusyStatus (TB TRANSP : free = TRANSPARENT, busy = OPAQUE)
-        //0 = Free // 1 = Tentative // 2 = Busy // 3 = Work // 4 = Elsewhere
-        if (item.hasProperty("TRANSP")) wbxml.atag("BusyStatus", (item.getProperty("TRANSP") == "TRANSPARENT") ? "0" : "2");
-
-        //EAS Sensitivity (TB CLASS: PUBLIC, PRIVATE, CONFIDENTIAL)
-        // 0 = Normal // 1 = Personal // 2 = Private // 3 = Confidential
-        let CLASS = { "PUBLIC":"0", "PRIVATE":"2", "CONFIDENTIAL":"3"}
-        if (item.hasProperty("CLASS")) wbxml.atag("Sensitivity", CLASS[item.getProperty("CLASS")]);
         
         //EAS MeetingStatus (TB STATUS: CANCELLED,CONFIRMED,TENTATIVE
         // 0  The event is an appointment, which has no attendees.
@@ -208,7 +388,6 @@ var calendarsync = {
         // 7  The meeting has been canceled. The user was not the meeting organizer; the meeting was received from someone else
 
         //attendees
-        //timezone
         //attachements
         //repeat
 
@@ -222,17 +401,20 @@ var calendarsync = {
             tzPush.dump("PROP", pname + " = " + prop.value);
         }*/
 
-        //should be the last addition, due to page switch
-        if (item.hasProperty("description")) {
+
+        //Description, should be done at the very end (page switch)
+        if (asversion == "2.5") {
+            wbxml.atag("Body", (item.hasProperty("description")) ? item.getProperty("description") : "");
+        } else {
             wbxml.switchpage("AirSyncBase");
+            let description =(item.hasProperty("description")) ? item.getProperty("description") : "";
             wbxml.otag("Body");
-                wbxml.atag("Data", item.getProperty("description"));
-                wbxml.atag("EstimatedDataSize", item.getProperty("description").length);
+                wbxml.atag("Data", description);
+                wbxml.atag("EstimatedDataSize", "" + description.length);
                 wbxml.atag("Type", "1");
             wbxml.ctag();
             wbxml.atag("NativeBodyType", "1");
         }
-
         //return to AirSync
         wbxml.switchpage("AirSync");
         return wbxml.getBytes();
@@ -314,6 +496,7 @@ var calendarsync = {
         switch (wbxmlData) {
                 case "empty" : this.sendLocalChanges(syncdata); return;
                 case "bad_status" : return;
+                case "nokey": return;
         }
 
         //any commands for us to work on?
@@ -329,7 +512,7 @@ var calendarsync = {
                 let oldItem = this.getItem(syncdata.targetObj, ServerId);
                 if (oldItem === null) { //do NOT add, if an item with that ServerId was found
                     let newItem = cal.createEvent();
-                    this.setEvent(newItem, data, ServerId);
+                    this.setEvent(newItem, data, ServerId, tzPush.db.getAccountSetting(syncdata.account, "asversion"));
                     db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "added_by_server");
                     syncdata.targetObj.addItem(newItem, tzPush.calendarOperationObserver);
                 }
@@ -345,7 +528,7 @@ var calendarsync = {
                 let oldItem = this.getItem(syncdata.targetObj, ServerId);
                 if (oldItem !== null) { //only update, if an item with that ServerId was found
                     let newItem = oldItem.clone();
-                    this.setEvent(newItem, data, ServerId);
+                    this.setEvent(newItem, data, ServerId, tzPush.db.getAccountSetting(syncdata.account, "asversion"));
                     db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_server");
                     syncdata.targetObj.modifyItem(newItem, oldItem, tzPush.calendarOperationObserver);
                 }
@@ -395,18 +578,20 @@ var calendarsync = {
         wbxml.otag("Sync");
             wbxml.otag("Collections");
                 wbxml.otag("Collection");
+//optional                    wbxml.atag("Class", "Calendar");
                     wbxml.atag("SyncKey", syncdata.synckey);
                     wbxml.atag("CollectionId", syncdata.folderID);
                     wbxml.otag("Commands");
 
                         for (let i=0; i<changes.length; i++) {
+                            tzPush.dump("CHANGES",(i+1) + "/" + changes.length + " ("+changes[i].status+"," + changes[i].id + ")");
                             switch (changes[i].status) {
 
                                 case "added_by_user":
                                     wbxml.otag("Add");
                                     wbxml.atag("ClientId", changes[i].id); //ClientId is an id generated by Thunderbird, which will get replaced by an id generated by the server
                                         wbxml.otag("ApplicationData");
-                                            wbxml.append(this.getEventApplicationDataAsWBXML(this.getItem(syncdata.targetObj, changes[i].id)));
+                                            wbxml.append(this.getEventApplicationDataAsWBXML(this.getItem(syncdata.targetObj, changes[i].id), tzPush.db.getAccountSetting(syncdata.account, "asversion")));
                                         wbxml.ctag();
                                     wbxml.ctag();
                                     db.removeItemFromChangeLog(syncdata.targetObj.id, changes[i].id);
@@ -417,7 +602,7 @@ var calendarsync = {
                                     wbxml.otag("Change");
                                     wbxml.atag("ServerId", changes[i].id);
                                         wbxml.otag("ApplicationData");
-                                            wbxml.append(this.getEventApplicationDataAsWBXML(this.getItem(syncdata.targetObj, changes[i].id)));
+                                            wbxml.append(this.getEventApplicationDataAsWBXML(this.getItem(syncdata.targetObj, changes[i].id), tzPush.db.getAccountSetting(syncdata.account, "asversion")));
                                         wbxml.ctag();
                                     wbxml.ctag();
                                     db.removeItemFromChangeLog(syncdata.targetObj.id, changes[i].id);
@@ -463,8 +648,9 @@ var calendarsync = {
         switch (wbxmlData) {
                 case "empty" : sync.finishSync(syncdata); return;
                 case "bad_status" : return;
+                case "nokey": return;
         }
-               
+
         //any responses for us to work on?
         if (wbxmlData.Sync.Collections.Collection.Responses) {
 

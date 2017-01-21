@@ -1,5 +1,5 @@
 <!ENTITY popup.cancelsync "Cancel current synchronization">
-<!ENTITY popup.opensettings "Open account manager">
+<!ENTITY popup.opensettings "TzPush account manager">
 <!ENTITY popup.sync "Synchronize latest changes">
 
 <!ENTITY menu.settingslabel "Synchronization Settings (TzPush)">

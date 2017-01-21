@@ -463,13 +463,12 @@ var tzPush = {
 
         onAddItem : function (aItem) { 
             let itemStatus = tzPush.db.getItemStatusFromChangeLog(aItem.calendar.id, aItem.id)
-            tzPush.dump("Item Status", itemStatus);
 
             //if an event in one of the synced calendars is added, update status of target and account
             let folders = tzPush.db.findFoldersWithSetting("target", aItem.calendar.id);
             if (folders.length > 0) {
                 if (itemStatus == "added_by_server") {
-                    tzPush.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);                        
+                    tzPush.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);
                 } else {
                     tzPush.setTargetModified(folders[0]);
                     tzPush.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "added_by_user");
@@ -482,13 +481,12 @@ var tzPush = {
             if (aNewItem.calendar.id == aOldItem.calendar.id) { // aNewItem.calendar could be null ??? throw up on server pushed deletes as well ??? TODO
 
                 let itemStatus = tzPush.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
-                tzPush.dump("Item Status", itemStatus);
                 //check, if it is an event in one of the synced calendars
 
                 let newFolders = tzPush.db.findFoldersWithSetting("target", aNewItem.calendar.id);
                 if (newFolders.length > 0) {
                     if (itemStatus == "modified_by_server") {
-                        tzPush.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);                        
+                        tzPush.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);
                     } else if (itemStatus != "added_by_user") { //if it is a local unprocessed add, do not set it to modified
                         //update status of target and account
                         tzPush.setTargetModified(newFolders[0]);
@@ -502,7 +500,6 @@ var tzPush = {
 
         onDeleteItem : function (aDeletedItem) {
             let itemStatus = tzPush.db.getItemStatusFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id)
-            tzPush.dump("Item Status", itemStatus);
 
             //if an event in one of the synced calendars is modified, update status of target and account
             let folders = tzPush.db.findFoldersWithSetting("target", aDeletedItem.calendar.id);
