@@ -58,15 +58,12 @@ var calendarsync = {
             //add GMT Offset to string
             if (str == "UTC") str = "(GMT+00:00) Coordinated Universal Time";
             else {
-                let offset = this.utcOffset;
-                let GMT = "GMT+";
-                if (offset<0) {
-                    GMT="GMT-";
-                    offset=0-offset;
-                }
+                //offset is just the other way around
+                let GMT = (this.utcOffset<0) ? "GMT+" : "GMT-";
+                let offset = Math.abs(this.utcOffset);
                 
-                let m = this.utcOffset % 60;
-                let h = (this.utcOffset-m)/60;
+                let m = offset % 60;
+                let h = (offset-m)/60;
                 GMT += (h<10 ? "0" :"" ) + h.toString() + ":" + (m<10 ? "0" :"" ) + m.toString();
                 str = "(" + GMT + ") " + str;
             }

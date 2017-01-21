@@ -45,7 +45,7 @@
                         oncommand="tbSyncAccountManager.addAccount();"/>
                     </hbox>
             </vbox>
-            <iframe id="tbSyncAccountManager.contentFrame" flex="1" />
+            <iframe id="tbSyncAccountManager.contentFrame" type="content" flex="1" />
         </hbox>
 
     </prefpane>

@@ -10,8 +10,8 @@ var tbSyncAccountSettings = {
     protectedSettings: ["asversion", "host", "https", "user", "provision", "birthday", "servertype", "displayoverride", "downloadonly"],
         
     onload: function () {
-        //get the selected account from account Manager
-        tbSyncAccountSettings.selectedAccount = parent.tbSyncAccountManager.selectedAccount;
+        //get the selected account from the loaded URI
+        tbSyncAccountSettings.selectedAccount = window.location.toString().split("id=")[1];
 
         tbSyncAccountSettings.loadSettings();
         tbSyncAccountSettings.updateGui();
@@ -20,6 +20,7 @@ var tbSyncAccountSettings = {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate", false);
         tbSyncAccountSettings.init = true;
+	
     },
 
     onunload: function () {
@@ -86,7 +87,8 @@ var tbSyncAccountSettings = {
         }
         
         tbSync.db.setAccount(data);
-        parent.tbSyncAccountManager.updateAccountName(tbSyncAccountSettings.selectedAccount, data.accountname);
+        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+        observerService.notifyObservers(null, "tbsync.changedAccountName", tbSyncAccountSettings.selectedAccount + ":" + data.accountname);
     },
 
 
@@ -97,7 +99,10 @@ var tbSyncAccountSettings = {
     instantSaveSetting: function (field) {
         let setting = field.id.replace("tbsync.accountsettings.","");
         tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, setting, field.value);
-        if (setting == "accountname") parent.tbSyncAccountManager.updateAccountName(tbSyncAccountSettings.selectedAccount, field.value);
+        if (setting == "accountname") {
+            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+            observerService.notifyObservers(null, "tbsync.changedAccountName", tbSyncAccountSettings.selectedAccount + ":" + field.value);
+        }
     },
 
 
@@ -190,7 +195,8 @@ var tbSyncAccountSettings = {
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "selected", "1");
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "status", "aborted");
                 tbSync.db.setAccountSetting(folder.account, "status", "notsyncronized");
-                parent.tbSyncAccountManager.updateAccountStatus(tbSyncAccountSettings.selectedAccount);
+                let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+                observerService.notifyObservers(null, "tbsync.changedAccountStatus", tbSyncAccountSettings.selectedAccount);
                 this.updateSyncstate();
             }
             this.updateFolderList();
@@ -364,7 +370,8 @@ var tbSyncAccountSettings = {
             if (window.confirm(tbSync.getLocalizedMessage("promptDisconnect"))) {
                 tbSync.sync.disconnectAccount(tbSyncAccountSettings.selectedAccount);
                 tbSyncAccountSettings.updateGui();
-                parent.tbSyncAccountManager.updateAccountStatus(tbSyncAccountSettings.selectedAccount);
+                let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+                observerService.notifyObservers(null, "tbsync.changedAccountStatus", tbSyncAccountSettings.selectedAccount);
             }
         } else if (state == "disconnected") {
             //we are disconnected and want to connected

@@ -11,12 +11,16 @@ var tbSyncAccountManager = {
         //the onSelect event of the List will load the selected account
         this.updateAccountsList(); 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(tbSyncAccountManager.updateAccountStatusObserver, "tbsync.changedSyncstate", false);
+        observerService.addObserver(tbSyncAccountManager.updateAccountSyncStateObserver, "tbsync.changedSyncstate", false);
+        observerService.addObserver(tbSyncAccountManager.updateAccountNameObserver, "tbsync.changedAccountName", false);
+        observerService.addObserver(tbSyncAccountManager.updateAccountStatusObserver, "tbsync.changedAccountStatus", false);
     },
 
     onunload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.removeObserver(tbSyncAccountManager.updateAccountStatusObserver, "tbsync.changedSyncstate");
+        observerService.removeObserver(tbSyncAccountManager.updateAccountSyncStateObserver, "tbsync.changedSyncstate");
+        observerService.removeObserver(tbSyncAccountManager.updateAccountNameObserver, "tbsync.changedAccountName");
+        observerService.removeObserver(tbSyncAccountManager.updateAccountStatusObserver, "tbsync.changedAccountStatus");
         tbSync.prefWindowObj = null;
     },
 
@@ -53,7 +57,7 @@ var tbSyncAccountManager = {
     /* * *
     * Observer to catch synstate changes and to update account icons
     */
-    updateAccountStatusObserver: {
+    updateAccountSyncStateObserver: {
         observe: function (aSubject, aTopic, aData) {
             //limit execution to a couple of states, not all
             let state = tbSync.sync.currentProzess.state;
@@ -94,12 +98,26 @@ var tbSyncAccountManager = {
         return "chrome://tbsync/skin/" + src;
     },
 
+    updateAccountStatusObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            tbSyncAccountManager.updateAccountStatus(aData);
+        }
+    },
 
     updateAccountStatus: function (id) {
         let listItem = document.getElementById("tbSyncAccountManager.accounts." + id);
         let statusimage = this.getStatusImage(id);
         if (listItem.childNodes[1].firstChild.src != statusimage) {
             listItem.childNodes[1].firstChild.src = statusimage;
+        }
+    },
+
+    updateAccountNameObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            let pos = aData.indexOf(":");
+            let id = aData.substring(0, pos);
+            let name = aData.substring(pos+1);
+            tbSyncAccountManager.updateAccountName (id, name);
         }
     },
 
@@ -186,7 +204,7 @@ var tbSyncAccountManager = {
             //get id of selected account from value of selectedItem
             this.selectedAccount = accountsList.selectedItem.value;
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-            document.getElementById("tbSyncAccountManager.contentFrame").webNavigation.loadURI("chrome://tbsync/content/accountSettings.xul", LOAD_FLAGS_NONE, null, null, null);
+            document.getElementById("tbSyncAccountManager.contentFrame").webNavigation.loadURI("chrome://tbsync/content/accountSettings.xul?id=" + this.selectedAccount, LOAD_FLAGS_NONE, null, null, null);
         }
     },
 
