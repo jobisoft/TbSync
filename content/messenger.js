@@ -1,22 +1,22 @@
 "use strict";
 
-Components.utils.import("chrome://tzpush/content/tzpush.jsm");
+Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
-var tzPushMessenger = {
+var tbSyncMessenger = {
 
     onload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(tzPushMessenger.syncstateObserver, "tzpush.changedSyncstate", false);
-        observerService.addObserver(tzPushMessenger.setPasswordObserver, "tzpush.setPassword", false);
+        observerService.addObserver(tbSyncMessenger.syncstateObserver, "tbsync.changedSyncstate", false);
+        observerService.addObserver(tbSyncMessenger.setPasswordObserver, "tbsync.setPassword", false);
 
-        tzPush.init();
-        tzPushMessenger.syncTimer.start();
+        tbSync.init();
+        tbSyncMessenger.syncTimer.start();
     },
 
     openAccountManager: function () {
         // check, if a window is already open and just put it in focus
-        if (tzPush.prefWindowObj === null) tzPush.prefWindowObj = window.open("chrome://tzpush/content/accountManager.xul", "TzPushAccountManagerWindow", "chrome,centerscreen,toolbar,resizable");
-        tzPush.prefWindowObj.focus();
+        if (tbSync.prefWindowObj === null) tbSync.prefWindowObj = window.open("chrome://tbsync/content/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen,toolbar,resizable");
+        tbSync.prefWindowObj.focus();
     },
 
 
@@ -28,9 +28,9 @@ var tzPushMessenger = {
             let dot = aData.indexOf(".");
             let account = aData.substring(0,dot);
             let newpassword = aData.substring(dot+1);
-            tzPush.setPassword(account, newpassword);
-            tzPush.db.setAccountSetting(account, "state", "connecting");
-            tzPush.sync.addAccountToSyncQueue("resync", account);
+            tbSync.setPassword(account, newpassword);
+            tbSync.db.setAccountSetting(account, "state", "connecting");
+            tbSync.sync.addAccountToSyncQueue("resync", account);
         }
     },
 
@@ -42,24 +42,24 @@ var tzPushMessenger = {
     syncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
             //update status bar
-            let status = document.getElementById("tzpush.status");
+            let status = document.getElementById("tbsync.status");
             if (status && aData == "") { //only observe true notifications from setSyncState()
                 
-                let data = tzPush.sync.currentProzess;
+                let data = tbSync.sync.currentProzess;
                 let target = "";
-                let accounts = tzPush.db.getAccounts().data;
+                let accounts = tbSync.db.getAccounts().data;
 
                 if (accounts.hasOwnProperty(data.account)) {
                     target = accounts[data.account].accountname
                     
                     if (data.folderID !== "" && data.state != "done") { //if "Done" do not print folder info in status bar
-                        target = target + "/" + tzPush.db.getFolderSetting(data.account, data.folderID, "name");
+                        target = target + "/" + tbSync.db.getFolderSetting(data.account, data.folderID, "name");
                     }
                     
                     target = " [" + target + "]";
                 }
                     
-                status.label = "TzPush: " + tzPush.getLocalizedMessage("syncstate." + data.state) + target;
+                status.label = "TbSync: " + tbSync.getLocalizedMessage("syncstate." + data.state) + target;
                 
                 //TODO check if error and print in status
             }
@@ -79,13 +79,13 @@ var tzPushMessenger = {
         event: {
             notify: function (timer) {
                 //get all accounts and check, which one needs sync (accounts array is without order, extract keys (ids) and loop over them)
-                let accounts = tzPush.db.getAccounts();
+                let accounts = tbSync.db.getAccounts();
                 for (let i=0; i<accounts.IDs.length; i++) {
                     let syncInterval = accounts.data[accounts.IDs[i]].autosync * 60 * 1000;
                     let lastsynctime = accounts.data[accounts.IDs[i]].lastsynctime;
                     
                     if (accounts.data[accounts.IDs[i]].state == "connected" && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval) ) {
-                        tzPush.sync.addAccountToSyncQueue("sync",accounts.IDs[i]);
+                        tbSync.sync.addAccountToSyncQueue("sync",accounts.IDs[i]);
                     }
                 }
             }
@@ -93,4 +93,4 @@ var tzPushMessenger = {
     }
 };
 
-window.addEventListener("load", tzPushMessenger.onload, false);
+window.addEventListener("load", tbSyncMessenger.onload, false);

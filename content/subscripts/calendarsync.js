@@ -124,7 +124,7 @@ var calendarsync = {
     // wrapper for standard stuff done on each response
     processResponseAndGetData: function (wbxml, syncdata) {
         // get data from wbxml response
-        let wbxmlData = tzPush.wbxmltools.createWBXML(wbxml).getData();
+        let wbxmlData = tbSync.wbxmltools.createWBXML(wbxml).getData();
 
         // check for empty response
         if (wbxml.length === 0 || wbxmlData === null) {
@@ -232,12 +232,12 @@ var calendarsync = {
             //load timezone struct into EAS TimeZone object
             this.EASTZ.base64 = data.TimeZone;
             utcOffset = this.EASTZ.utcOffset;
-            tzPush.dump("Recieve TZ","Extracted UTC Offset: " + utcOffset + ", Guessed TimeZone: " + this.offsets[utcOffset] + ", Full Received TZ: " + this.EASTZ.toString());
+            tbSync.dump("Recieve TZ","Extracted UTC Offset: " + utcOffset + ", Guessed TimeZone: " + this.offsets[utcOffset] + ", Full Received TZ: " + this.EASTZ.toString());
         }
 
         let utc = cal.createDateTime(data.StartTime); //format "19800101T000000Z" - UTC
         item.startDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
-        tzPush.dump("TB TZ", item.startDate.timezone);
+        tbSync.dump("TB TZ", item.startDate.timezone);
 
         utc = cal.createDateTime(data.EndTime); 
         item.endDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
@@ -294,7 +294,7 @@ var calendarsync = {
 
     //read TB event and return its data as WBXML
     getEventApplicationDataAsWBXML: function (item, asversion) {
-        let wbxml = tzPush.wbxmltools.createWBXML(""); //init wbxml with "" and not with precodes
+        let wbxml = tbSync.wbxmltools.createWBXML(""); //init wbxml with "" and not with precodes
 
         /*
          *  We do not use ghosting, that means, if we do not include a value in CHANGE, it is removed from the server. 
@@ -324,12 +324,12 @@ var calendarsync = {
         equal(utc.clone().timezone.tzid, "UTC");
         equal(utc.timezoneOffset, 0); 
         
-        tzPush.dump("Timezone", item.startDate.timezone);
-        tzPush.dump("Timezone", item.startDate.timezoneOffset);
+        tbSync.dump("Timezone", item.startDate.timezone);
+        tbSync.dump("Timezone", item.startDate.timezoneOffset);
 
         let newDate = item.startDate.getInTimezone(cal.calendarDefaultTimezone());
-        tzPush.dump("Timezone", newDate.timezone);
-        tzPush.dump("Timezone", newDate.timezoneOffset);
+        tbSync.dump("Timezone", newDate.timezone);
+        tbSync.dump("Timezone", newDate.timezoneOffset);
         
         item.timezoneOffset();
          let date_utc = date.getInTimezone(cal.UTC());
@@ -379,8 +379,8 @@ var calendarsync = {
         this.EASTZ.daylightName = item.startDate.timezone.tzid;
         //this.EASTZ.standardDate
         //this.EASTZ.daylightDate
-        tzPush.dump("Send TZ", this.EASTZ.toString());
-        tzPush.dump("TB TZ", item.startDate.timezone);
+        tbSync.dump("Send TZ", this.EASTZ.toString());
+        tbSync.dump("TB TZ", item.startDate.timezone);
 
         //TimeZone
         wbxml.atag("TimeZone", this.EASTZ.base64);
@@ -430,7 +430,7 @@ var calendarsync = {
         let alarms = item.getAlarms({});
         if (alarms.length>0) wbxml.atag("Reminder", (0 - alarms[0].offset.inSeconds/60).toString());
         //https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIAlarm.idl
-        //tzPush.dump("ALARM ("+i+")", [, alarms[i].related, alarms[i].repeat, alarms[i].repeatOffset, alarms[i].repeatDate, alarms[i].action].join("|"));
+        //tbSync.dump("ALARM ("+i+")", [, alarms[i].related, alarms[i].repeat, alarms[i].repeatOffset, alarms[i].repeatDate, alarms[i].action].join("|"));
 
         
         //EAS MeetingStatus (TB STATUS: CANCELLED,CONFIRMED,TENTATIVE
@@ -451,7 +451,7 @@ var calendarsync = {
         while (propEnum.hasMoreElements()) {
             let prop = propEnum.getNext().QueryInterface(Components.interfaces.nsIProperty);
             let pname = prop.name;
-            tzPush.dump("PROP", pname + " = " + prop.value);
+            tbSync.dump("PROP", pname + " = " + prop.value);
         }*/
 
 
@@ -490,13 +490,13 @@ var calendarsync = {
         }
 
         // check SyncTarget
-        if (!tzPush.checkCalender(syncdata.account, syncdata.folderID)) {
+        if (!tbSync.checkCalender(syncdata.account, syncdata.folderID)) {
             sync.finishSync(syncdata, "notargets");
             return;
         }
         
         //get sync target of this calendar
-        syncdata.targetObj = cal.getCalendarManager().getCalendarById(tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
+        syncdata.targetObj = cal.getCalendarManager().getCalendarById(tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
         syncdata.targetId = syncdata.targetObj.id;
 
         this.requestRemoteChanges (syncdata);
@@ -516,7 +516,7 @@ var calendarsync = {
         sync.setSyncState("requestingchanges", syncdata);
 
         // request changes
-        let wbxml = tzPush.wbxmltools.createWBXML();
+        let wbxml = tbSync.wbxmltools.createWBXML();
         wbxml.otag("Sync");
             wbxml.otag("Collections");
                 wbxml.otag("Collection");
@@ -565,9 +565,9 @@ var calendarsync = {
                 let oldItem = this.getItem(syncdata.targetObj, ServerId);
                 if (oldItem === null) { //do NOT add, if an item with that ServerId was found
                     let newItem = cal.createEvent();
-                    this.setEvent(newItem, data, ServerId, tzPush.db.getAccountSetting(syncdata.account, "asversion"));
+                    this.setEvent(newItem, data, ServerId, tbSync.db.getAccountSetting(syncdata.account, "asversion"));
                     db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "added_by_server");
-                    syncdata.targetObj.addItem(newItem, tzPush.calendarOperationObserver);
+                    syncdata.targetObj.addItem(newItem, tbSync.calendarOperationObserver);
                 }
             }
 
@@ -581,9 +581,9 @@ var calendarsync = {
                 let oldItem = this.getItem(syncdata.targetObj, ServerId);
                 if (oldItem !== null) { //only update, if an item with that ServerId was found
                     let newItem = oldItem.clone();
-                    this.setEvent(newItem, data, ServerId, tzPush.db.getAccountSetting(syncdata.account, "asversion"));
+                    this.setEvent(newItem, data, ServerId, tbSync.db.getAccountSetting(syncdata.account, "asversion"));
                     db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_server");
-                    syncdata.targetObj.modifyItem(newItem, oldItem, tzPush.calendarOperationObserver);
+                    syncdata.targetObj.modifyItem(newItem, oldItem, tbSync.calendarOperationObserver);
                 }
             }
             
@@ -596,7 +596,7 @@ var calendarsync = {
                 let oldItem = this.getItem(syncdata.targetObj, ServerId);
                 if (oldItem !== null) { //delete item with that ServerId
                     db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "deleted_by_server");
-                    syncdata.targetObj.deleteItem(oldItem, tzPush.calendarOperationObserver);
+                    syncdata.targetObj.deleteItem(oldItem, tbSync.calendarOperationObserver);
                 }
             }
             
@@ -622,12 +622,12 @@ var calendarsync = {
         sync.setSyncState("sendingchanges", syncdata);
 
         let c = 0;
-        let maxnumbertosend = tzPush.db.prefSettings.getIntPref("maxnumbertosend");
+        let maxnumbertosend = tbSync.db.prefSettings.getIntPref("maxnumbertosend");
         
         //get changed items from ChangeLog
         let changes = db.getItemsFromChangeLog(syncdata.targetObj.id, maxnumbertosend, "_by_user");
 
-        let wbxml = tzPush.wbxmltools.createWBXML();
+        let wbxml = tbSync.wbxmltools.createWBXML();
         wbxml.otag("Sync");
             wbxml.otag("Collections");
                 wbxml.otag("Collection");
@@ -637,14 +637,14 @@ var calendarsync = {
                     wbxml.otag("Commands");
 
                         for (let i=0; i<changes.length; i++) {
-//                            tzPush.dump("CHANGES",(i+1) + "/" + changes.length + " ("+changes[i].status+"," + changes[i].id + ")");
+//                            tbSync.dump("CHANGES",(i+1) + "/" + changes.length + " ("+changes[i].status+"," + changes[i].id + ")");
                             switch (changes[i].status) {
 
                                 case "added_by_user":
                                     wbxml.otag("Add");
                                     wbxml.atag("ClientId", changes[i].id); //ClientId is an id generated by Thunderbird, which will get replaced by an id generated by the server
                                         wbxml.otag("ApplicationData");
-                                            wbxml.append(this.getEventApplicationDataAsWBXML(this.getItem(syncdata.targetObj, changes[i].id), tzPush.db.getAccountSetting(syncdata.account, "asversion")));
+                                            wbxml.append(this.getEventApplicationDataAsWBXML(this.getItem(syncdata.targetObj, changes[i].id), tbSync.db.getAccountSetting(syncdata.account, "asversion")));
                                         wbxml.ctag();
                                     wbxml.ctag();
                                     db.removeItemFromChangeLog(syncdata.targetObj.id, changes[i].id);
@@ -655,7 +655,7 @@ var calendarsync = {
                                     wbxml.otag("Change");
                                     wbxml.atag("ServerId", changes[i].id);
                                         wbxml.otag("ApplicationData");
-                                            wbxml.append(this.getEventApplicationDataAsWBXML(this.getItem(syncdata.targetObj, changes[i].id), tzPush.db.getAccountSetting(syncdata.account, "asversion")));
+                                            wbxml.append(this.getEventApplicationDataAsWBXML(this.getItem(syncdata.targetObj, changes[i].id), tbSync.db.getAccountSetting(syncdata.account, "asversion")));
                                         wbxml.ctag();
                                     wbxml.ctag();
                                     db.removeItemFromChangeLog(syncdata.targetObj.id, changes[i].id);
@@ -725,7 +725,7 @@ var calendarsync = {
                     
                     newItem.id = add[count].ServerId;
                     db.addItemToChangeLog(syncdata.targetObj.id, newItem.id, "modified_by_server");
-                    syncdata.targetObj.modifyItem(newItem, oldItem, tzPush.calendarOperationObserver);
+                    syncdata.targetObj.modifyItem(newItem, oldItem, tbSync.calendarOperationObserver);
                 }
             }
 

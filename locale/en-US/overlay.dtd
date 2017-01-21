@@ -1,17 +1,17 @@
 <!ENTITY popup.cancelsync "Cancel current synchronization">
-<!ENTITY popup.opensettings "TzPush account manager">
+<!ENTITY popup.opensettings "TbSync account manager">
 <!ENTITY popup.sync "Synchronize latest changes">
 
-<!ENTITY menu.settingslabel "Synchronization Settings (TzPush)">
+<!ENTITY menu.settingslabel "Synchronization Settings (TbSync)">
 
-<!ENTITY toolbar.label " Synchronize all accounts (TzPush)">
+<!ENTITY toolbar.label " Synchronize all accounts (TbSync)">
 <!ENTITY toolbar.tooltiptext "Synchronization latest changes">
 
 <!ENTITY manager.accounts "Accounts">
 <!ENTITY manager.status "Status">
-<!ENTITY manager.title "TzPush account manager">
+<!ENTITY manager.title "TbSync account manager">
 
-<!ENTITY pref.TzPush "TzPush">
+<!ENTITY pref.TbSync "TbSync">
 
 <!ENTITY pref.SettingDialog "Account Settings">
 <!ENTITY pref.AccountName "Account Name">

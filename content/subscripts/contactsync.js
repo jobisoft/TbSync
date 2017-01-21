@@ -120,7 +120,7 @@ var contactsync = {
     fromzpush: function(syncdata) {
 
         //Check SyncTarget
-        if (!tzPush.checkAddressbook(syncdata.account, syncdata.folderID)) {
+        if (!tbSync.checkAddressbook(syncdata.account, syncdata.folderID)) {
             sync.finishSync(syncdata, "notargets");
             return;
         }
@@ -130,7 +130,7 @@ var contactsync = {
         var moreavilable = 1;
 
         var wbxmlsend = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x1E, 0x13, 0x55, 0x03, 0x31, 0x30, 0x30, 0x00, 0x01, 0x57, 0x00, 0x11, 0x45, 0x46, 0x03, 0x31, 0x00, 0x01, 0x47, 0x03, 0x32, 0x30, 0x30, 0x30, 0x30, 0x30, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01);
-        if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+        if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
             wbxmlsend = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x1E, 0x13, 0x55, 0x03, 0x31, 0x30, 0x30, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01);
         }
 
@@ -158,16 +158,16 @@ var contactsync = {
                 var wbxmlstatus = truncwbxml.substring(n + 2, n1);
 
                 if (wbxmlstatus === '3' || wbxmlstatus === '12') {
-                    tzPush.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
+                    tbSync.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
                     sync.init("resync", syncdata.account, syncdata.folderID);
                 } else if (wbxmlstatus !== '1') {
-                    tzPush.dump("wbxml status", "server error? " + wbxmlstatus);
+                    tbSync.dump("wbxml status", "server error? " + wbxmlstatus);
                     sync.finishSync(syncdata, "wbxmlservererror");
                 } else {
                     syncdata.synckey = wbxmltools.FindKey(wbxml);
-                    tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
+                    tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
                     //this is contact sync, so we can simply request the target object
-                    var addressBook = tzPush.getAddressBookObject(tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
+                    var addressBook = tbSync.getAddressBookObject(tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
                     
                     var stack = [];
                     var num = 4;
@@ -192,7 +192,7 @@ var contactsync = {
                     var modcard;
                     var ServerId;
                     var cardsToDelete;
-                    var seperator = tzPush.db.getServerSetting(syncdata.account, "seperator");
+                    var seperator = tbSync.db.getServerSetting(syncdata.account, "seperator");
 
                     while (num < wbxml.length) {
                         token = wbxml.substr(num, 1);
@@ -207,7 +207,7 @@ var contactsync = {
                             num = wbxml.indexOf(String.fromCharCode(0x00), num);
 
                             if (x === 0x01 && temptoken === 0x7C) {
-                                filePath = tzPush.addphoto(card, data);
+                                filePath = tbSync.addphoto(card, data);
                                 photo = card.getProperty("ServerId", "") + '.jpg';
                             } else if (x === 0x01 && temptoken === 0x48) {
                                 card.setProperty("Birthday", data);
@@ -289,7 +289,7 @@ var contactsync = {
 
                                     if (!addressBook.getCardFromProperty("ServerId", tempsid, false)) {
                                         //card DOES NOT exists, add new card from server to the addressbook
-                                        tzPush.addNewCardFromServer(card, addressBook, syncdata.account);
+                                        tbSync.addNewCardFromServer(card, addressBook, syncdata.account);
                                     } else {
                                         //card DOES exists, get the local card and replace all properties with those received from server - why not simply loop over all properties of the new card?
                                         ServerId = card.getProperty("ServerId", "");
@@ -318,7 +318,7 @@ var contactsync = {
                                             modcard.setProperty("PhotoURI", filePath);
                                             photo = '';
                                         }
-                                        if (tzPush.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
+                                        if (tbSync.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
                                             modcard.setProperty("DisplayName", modcard.getProperty("FirstName", "") + " " + modcard.getProperty("LastName", ""));
                                         }
 
@@ -328,7 +328,7 @@ var contactsync = {
 
                                 } else {
                                     //this is not a resync and thus a new card, add it
-                                    tzPush.addNewCardFromServer(card, addressBook, syncdata.account);
+                                    tbSync.addNewCardFromServer(card, addressBook, syncdata.account);
                                 }
 
                                 card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
@@ -345,7 +345,7 @@ var contactsync = {
                                         addressBook.deleteCards(cardsToDelete);
                                     } catch (e) {}
                                     card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-                                    tzPush.db.removeItemFromChangeLog(addressBook.URI, data);
+                                    tbSync.db.removeItemFromChangeLog(addressBook.URI, data);
                                 } else {
                                     card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
                                 }
@@ -380,7 +380,7 @@ var contactsync = {
                                     modcard.setProperty("PhotoURI", filePath);
                                     photo = '';
                                 }
-                                if (tzPush.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
+                                if (tbSync.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
                                     modcard.setProperty("DisplayName", modcard.getProperty("FirstName", "") + " " + modcard.getProperty("LastName", ""));
                                 }
                                 /* newCard = */ addressBook.modifyCard(modcard);
@@ -407,7 +407,7 @@ var contactsync = {
                         wbxml = wbxmlsend.replace('SyncKeyReplace', syncdata.synckey);
                         wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
                         sync.Send(wbxml, callback.bind(this), "Sync", syncdata);
-                    } else if (tzPush.db.getAccountSetting(syncdata.account, "downloadonly") == "1") {
+                    } else if (tbSync.db.getAccountSetting(syncdata.account, "downloadonly") == "1") {
                         sync.finishSync(syncdata);
                     } else {
                         this.tozpush(syncdata);
@@ -422,12 +422,12 @@ var contactsync = {
         sync.setSyncState("sendingchanges", syncdata);
 
         var wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
-        if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+        if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
             wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
         }
 
         var wbxml = '';
-        var addressBook = tzPush.getAddressBookObject(tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
+        var addressBook = tbSync.getAddressBookObject(tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
 
         var x;
         var birthd;
@@ -451,9 +451,9 @@ var contactsync = {
         var ambd = 0;
         var wbxmlinner;
         var card;
-        var maxnumbertosend = tzPush.db.prefSettings.getIntPref("maxnumbertosend");
+        var maxnumbertosend = tbSync.db.prefSettings.getIntPref("maxnumbertosend");
         var morecards = false;
-        var seperator = tzPush.db.getServerSetting(syncdata.account, "seperator"); // default is " ," can be changed to "/n"
+        var seperator = tbSync.db.getServerSetting(syncdata.account, "seperator"); // default is " ," can be changed to "/n"
         var cards = addressBook.childCards;
 
         // this while loops over all cards but only works on new cards without serverid
@@ -489,7 +489,7 @@ var contactsync = {
                                     }
 
                                     if (haddressline.length !== 0) { //if address is empty do not send
-                                        wbxml = wbxml + String.fromCharCode(0x65) + String.fromCharCode(0x03) + tzPush.encode_utf8(haddressline) + String.fromCharCode(0x00, 0x01);
+                                        wbxml = wbxml + String.fromCharCode(0x65) + String.fromCharCode(0x03) + tbSync.encode_utf8(haddressline) + String.fromCharCode(0x00, 0x01);
                                     }
                                     break;
 
@@ -504,7 +504,7 @@ var contactsync = {
                                         waddressline = waddressline1 + seperator + waddressline2;
                                     }
                                     if (waddressline.length !== 0) { //if address is empty do not send
-                                        wbxml = wbxml + String.fromCharCode(0x51) + String.fromCharCode(0x03) + tzPush.encode_utf8(waddressline) + String.fromCharCode(0x00, 0x01);
+                                        wbxml = wbxml + String.fromCharCode(0x51) + String.fromCharCode(0x03) + tbSync.encode_utf8(waddressline) + String.fromCharCode(0x00, 0x01);
                                     }
                                     break;
                             }
@@ -526,7 +526,7 @@ var contactsync = {
                                 if (mbd === 3) {
                                     birthymd = birthy + "-" + birthm + "-" + birthd + "T00:00:00.000Z";
                                     mbd = 0;
-                                    if (tzPush.db.getAccountSetting(syncdata.account, "birthday") == "1") {
+                                    if (tbSync.db.getAccountSetting(syncdata.account, "birthday") == "1") {
                                         wbxml = wbxml + String.fromCharCode(0x48) + String.fromCharCode(0x03) + birthymd + String.fromCharCode(0x00, 0x01);
                                     }
                                 }
@@ -545,7 +545,7 @@ var contactsync = {
                                 if (ambd === 3) {
                                     annymd = anny + "-" + annm + "-" + annd + "T00:00:00.000Z";
                                     ambd = 0;
-                                    if (tzPush.db.getAccountSetting(syncdata.account, "birthday") == "1") {
+                                    if (tbSync.db.getAccountSetting(syncdata.account, "birthday") == "1") {
                                         wbxml = wbxml + String.fromCharCode(0x45) + String.fromCharCode(0x03) + annymd + String.fromCharCode(0x00, 0x01);
                                     }
                                 }
@@ -553,19 +553,19 @@ var contactsync = {
                                 let cat = String.fromCharCode(0x55, 0x56, 0x3, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x0, 0x1, 0x1);
                                 let catsArray = this.getCategoriesFromString(card.getProperty("Categories", ""));
                                 for (let i=0; i < catsArray.length; i++) {
-                                    wbxml = wbxml + cat.replace("replaceme", tzPush.encode_utf8(catsArray[i]));
+                                    wbxml = wbxml + cat.replace("replaceme", tbSync.encode_utf8(catsArray[i]));
                                 }
                             } else if (x === 'Notes') {
-                                if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
-                                    wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + tzPush.encode_utf8(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
+                                if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+                                    wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + tbSync.encode_utf8(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
                                 } else {
                                     let body = String.fromCharCode(0x00, 0x11, 0x4a, 0x46, 0x03, 0x31, 0x00, 0x01, 0x4c, 0x03, 0x37, 0x00, 0x01, 0x4b, 0x03, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x00, 0x01);
-                                    body = body.replace("replace", tzPush.encode_utf8(card.getProperty(x, '')));
+                                    body = body.replace("replace", tbSync.encode_utf8(card.getProperty(x, '')));
                                     body = body.replace("7", card.getProperty(x, '').length);
                                     wbxml = wbxml + body;
                                 }
                             } else {
-                                wbxml = wbxml + String.fromCharCode(this.FromContacts[x]) + String.fromCharCode(0x03) + tzPush.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
+                                wbxml = wbxml + String.fromCharCode(this.FromContacts[x]) + String.fromCharCode(0x03) + tbSync.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
                             }
                         }
                     }
@@ -573,7 +573,7 @@ var contactsync = {
                     cardArr.push(card);
                     for (x in this.FromContacts2) {
                         if (card.getProperty(x, "") !== '') {
-                            wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.FromContacts2[x]) + String.fromCharCode(0x03) + tzPush.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
+                            wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.FromContacts2[x]) + String.fromCharCode(0x03) + tbSync.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
                         }
                     }
                     wbxml = wbxml + String.fromCharCode(0x01, 0x01, 0x00, 0x00);
@@ -583,7 +583,7 @@ var contactsync = {
         }
 
         cards = addressBook.childCards;
-        let time = tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime") / 1000;
+        let time = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime") / 1000;
         let time2 = (Date.now() / 1000) - 1;
 
         // this while loops over all cards but only works on old cards already having a serverid
@@ -622,7 +622,7 @@ var contactsync = {
                                             haddressline = haddressline1 + seperator + haddressline2;
                                         }
                                         if (haddressline.length !== 0) { //if address is empty do not send
-                                            wbxml = wbxml + String.fromCharCode(0x65) + String.fromCharCode(0x03) + tzPush.encode_utf8(haddressline) + String.fromCharCode(0x00, 0x01);
+                                            wbxml = wbxml + String.fromCharCode(0x65) + String.fromCharCode(0x03) + tbSync.encode_utf8(haddressline) + String.fromCharCode(0x00, 0x01);
                                         }
                                         break;
 
@@ -637,7 +637,7 @@ var contactsync = {
                                             waddressline = waddressline1 + seperator + waddressline2;
                                         }
                                         if (waddressline.length !== 0) { //if address is empty do not send
-                                            wbxml = wbxml + String.fromCharCode(0x51) + String.fromCharCode(0x03) + tzPush.encode_utf8(waddressline) + String.fromCharCode(0x00, 0x01);
+                                            wbxml = wbxml + String.fromCharCode(0x51) + String.fromCharCode(0x03) + tbSync.encode_utf8(waddressline) + String.fromCharCode(0x00, 0x01);
                                         }
                                         break;
                                 }
@@ -658,7 +658,7 @@ var contactsync = {
                                     if (mbd === 3) {
                                         birthymd = birthy + "-" + birthm + "-" + birthd + "T00:00:00.000Z";
                                         mbd = 0;
-                                        if (tzPush.db.getAccountSetting(syncdata.account, "birthday") == "1") {
+                                        if (tbSync.db.getAccountSetting(syncdata.account, "birthday") == "1") {
                                             wbxml = wbxml + String.fromCharCode(0x48) + String.fromCharCode(0x03) + birthymd + String.fromCharCode(0x00, 0x01);
                                         }
                                     }
@@ -678,7 +678,7 @@ var contactsync = {
                                         annymd = anny + "-" + annm + "-" + annd + "T00:00:00.000Z";
                                         ambd = 0;
 
-                                        if (tzPush.db.getAccountSetting(syncdata.account, "birthday") == "1") {
+                                        if (tbSync.db.getAccountSetting(syncdata.account, "birthday") == "1") {
                                             wbxml = wbxml + String.fromCharCode(0x45) + String.fromCharCode(0x03) + annymd + String.fromCharCode(0x00, 0x01);
                                         }
                                     }
@@ -686,26 +686,26 @@ var contactsync = {
                                     let cat = String.fromCharCode(0x55, 0x56, 0x3, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x6d, 0x65, 0x0, 0x1, 0x1);
                                     let catsArray = this.getCategoriesFromString(card.getProperty("Categories", ""));
                                     for (let i=0; i < catsArray.length; i++) {
-                                        wbxml = wbxml + cat.replace("replaceme", tzPush.encode_utf8(catsArray[i]));
+                                        wbxml = wbxml + cat.replace("replaceme", tbSync.encode_utf8(catsArray[i]));
                                     }
                                 } else if (x === 'Notes') {
-                                    if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
-                                        wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + tzPush.encode_utf8(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
+                                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+                                        wbxml = wbxml + String.fromCharCode(0x49) + String.fromCharCode(0x03) + tbSync.encode_utf8(card.getProperty(x, "")) + String.fromCharCode(0x00, 0x01, 0x00, 0x01);
                                     } else {
                                         let body = String.fromCharCode(0x00, 0x11, 0x4a, 0x46, 0x03, 0x31, 0x00, 0x01, 0x4c, 0x03, 0x37, 0x00, 0x01, 0x4b, 0x03, 0x72, 0x65, 0x70, 0x6c, 0x61, 0x63, 0x65, 0x00, 0x01, 0x01, 0x00, 0x01);
-                                        body = body.replace("replace", tzPush.encode_utf8(card.getProperty(x, '')));
+                                        body = body.replace("replace", tbSync.encode_utf8(card.getProperty(x, '')));
                                         body = body.replace("7", card.getProperty(x, '').length);
                                         wbxml = wbxml + body;
                                     }
                                 } else {
-                                    wbxml = wbxml + String.fromCharCode(this.FromContacts[x]) + String.fromCharCode(0x03) + tzPush.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
+                                    wbxml = wbxml + String.fromCharCode(this.FromContacts[x]) + String.fromCharCode(0x03) + tbSync.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
                                 }
                             }
 
                         }
                         for (x in this.FromContacts2) {
                             if (card.getProperty(x, "") !== "") {
-                                wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.FromContacts2[x]) + String.fromCharCode(0x03) + tzPush.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
+                                wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.FromContacts2[x]) + String.fromCharCode(0x03) + tbSync.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
                             } else {
                                 wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.FromContacts2[x] - 0x40) + String.fromCharCode(0x00, 0x01);
                             }
@@ -742,20 +742,20 @@ var contactsync = {
             var wbxmlstatus = truncwbxml.substring(n + 2, n1);
 
             if (wbxmlstatus === '3' || wbxmlstatus === '12') {
-                tzPush.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
+                tbSync.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
                 sync.init("resync", syncdata.account, syncdata.folderID);
             } else if (wbxmlstatus !== '1') {
-                tzPush.dump("wbxml status", "server error? " + wbxmlstatus);
+                tbSync.dump("wbxml status", "server error? " + wbxmlstatus);
                 sync.finishSync(syncdata, "wbxmlservererror");
             } else {
                 sync.setSyncState("serverid", syncdata);
 
                 syncdata.synckey = wbxmltools.FindKey(wbxml);
-                tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
+                tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
 
                 var oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
                 var oDOM = oParser.parseFromString(wbxmltools.convert2xml(wbxml), "text/xml");
-                var addressBook = tzPush.getAddressBookObject(tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
+                var addressBook = tbSync.getAddressBookObject(tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
 
 
                 var add = oDOM.getElementsByTagName("Add");
@@ -775,7 +775,7 @@ var contactsync = {
                             addserverid.setProperty('ServerId', ServerId);
                             /* var newCard = */ addressBook.modifyCard(addserverid);
                         } catch (e) {
-                            tzPush.dump("unknown error", e);
+                            tbSync.dump("unknown error", e);
                         }
                     }
                 }
@@ -801,7 +801,7 @@ var contactsync = {
                                 /* newCard = */ addressBook.modifyCard(addserverid);
                                 morecards = true;
                             } catch (e) {
-                                tzPush.dump("unknown error", e);
+                                tbSync.dump("unknown error", e);
                             }
                         }
                     }
@@ -818,10 +818,10 @@ var contactsync = {
 
     senddel: function(syncdata) {
         sync.setSyncState("sendingdeleted", syncdata);
-        let addressbook = tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
+        let addressbook = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
         
         // cardstodelete will not contain more cards than max
-        let cardstodelete = tzPush.db.getItemsFromChangeLog(addressbook, tzPush.db.prefSettings.getIntPref("maxnumbertosend"), "delete");
+        let cardstodelete = tbSync.db.getItemsFromChangeLog(addressbook, tbSync.db.prefSettings.getIntPref("maxnumbertosend"), "delete");
         let wbxmlinner = "";
         for (let i = 0; i < cardstodelete.length; i++) {
             wbxmlinner = wbxmlinner + String.fromCharCode(0x49, 0x4D, 0x03) + cardstodelete[i] + String.fromCharCode(0x00, 0x01, 0x01);
@@ -830,7 +830,7 @@ var contactsync = {
         if (cardstodelete.length > 0) {
             // wbxml contains placholder Id2Replace, replacehere and SyncKeyReplace
             let wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
-            if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+            if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
                 wbxml = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x50, 0x03, 0x43, 0x6F, 0x6E, 0x74, 0x61, 0x63, 0x74, 0x73, 0x00, 0x01, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
             }
             wbxml = wbxml.replace('replacehere', wbxmlinner);
@@ -846,7 +846,7 @@ var contactsync = {
 
     senddelCallback: function (responseWbxml, syncdata) {
         let firstcmd = responseWbxml.indexOf(String.fromCharCode(0x01, 0x46));
-        let addressbook = tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
+        let addressbook = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
 
         let truncwbxml = responseWbxml;
         if (firstcmd !== -1) truncwbxml = responseWbxml.substring(0, firstcmd);
@@ -856,17 +856,17 @@ var contactsync = {
         let wbxmlstatus = truncwbxml.substring(n + 2, n1);
 
         if (wbxmlstatus === '3' || wbxmlstatus === '12') {
-            tzPush.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
+            tbSync.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
             sync.init("resync", syncdata.account, syncdata.folderID);
         } else if (wbxmlstatus !== '1') {
-            tzPush.dump("wbxml status", "server error? " + wbxmlstatus);
+            tbSync.dump("wbxml status", "server error? " + wbxmlstatus);
             sync.finishSync(syncdata, "wbxmlservererror");
         } else {
             syncdata.synckey = wbxmltools.FindKey(responseWbxml);
-            tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
+            tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
             for (let count in syncdata.cardstodelete) {
                 sync.setSyncState("cleaningdeleted", syncdata);
-                tzPush.db.removeItemFromChangeLog(addressbook, syncdata.cardstodelete[count]);
+                tbSync.db.removeItemFromChangeLog(addressbook, syncdata.cardstodelete[count]);
             }
             // The selected cards have been deleted from the server and from the changelog -> rerun senddel to look for more cards to delete
             this.senddel(syncdata);

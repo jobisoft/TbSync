@@ -116,7 +116,7 @@ var wbxmltools = {
                             tagStack.push("</" +this.codepages[codepage][token] + ">");
                         }
                     } else {
-                        tzPush.dump("wbxml", "Unknown token <" + token + "> for codepage <"+codepage+">");
+                        tbSync.dump("wbxml", "Unknown token <" + token + "> for codepage <"+codepage+">");
                     }
             }
             num = num + 1;
@@ -139,14 +139,14 @@ var wbxmltools = {
 
     //debug function
     printWbxmlData : function (data, lvl = 0) {
-        if (tzPush.db.prefSettings.getBoolPref("debugdata")) {
+        if (tbSync.db.prefSettings.getBoolPref("debugdata")) {
             for (let d in data) {
                 if (typeof(data[d]) == "object") {
-                    tzPush.dump("DATA", " ".repeat(lvl) + d + " => ");
+                    tbSync.dump("DATA", " ".repeat(lvl) + d + " => ");
                     this.printWbxmlData(data[d], lvl+1);                
-                    tzPush.dump("DATA", " ".repeat(lvl) + d + " <= ");
+                    tbSync.dump("DATA", " ".repeat(lvl) + d + " <= ");
                 } else {
-                    tzPush.dump("DATA"," ".repeat(lvl) + d + " = [" + data[d] + "]");
+                    tbSync.dump("DATA"," ".repeat(lvl) + d + " = [" + data[d] + "]");
                 }
             }
         }

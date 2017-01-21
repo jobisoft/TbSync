@@ -1,8 +1,8 @@
 "use strict";
 
-Components.utils.import("chrome://tzpush/content/tzpush.jsm");
+Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
-var tzPushAccountManager = {
+var tbSyncAccountManager = {
 
     selectedAccount: null,
 
@@ -11,25 +11,25 @@ var tzPushAccountManager = {
         //the onSelect event of the List will load the selected account
         this.updateAccountsList(); 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(tzPushAccountManager.updateAccountStatusObserver, "tzpush.changedSyncstate", false);
+        observerService.addObserver(tbSyncAccountManager.updateAccountStatusObserver, "tbsync.changedSyncstate", false);
     },
 
     onunload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.removeObserver(tzPushAccountManager.updateAccountStatusObserver, "tzpush.changedSyncstate");
-        tzPush.prefWindowObj = null;
+        observerService.removeObserver(tbSyncAccountManager.updateAccountStatusObserver, "tbsync.changedSyncstate");
+        tbSync.prefWindowObj = null;
     },
 
 
     addAccount: function () {
         //create a new account and pass its id to updateAccountsList, which wil select it
         //the onSelect event of the List will load the selected account
-        this.updateAccountsList(tzPush.db.addAccount(tzPush.getLocalizedMessage("new_account"), true));
+        this.updateAccountsList(tbSync.db.addAccount(tbSync.getLocalizedMessage("new_account"), true));
     },
 
 
     deleteAccount: function () {
-        let accountsList = document.getElementById("tzPushAccountManager.accounts");
+        let accountsList = document.getElementById("tbSyncAccountManager.accounts");
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
             let nextAccount =  -1;
             if (accountsList.selectedIndex > 0) {
@@ -38,11 +38,11 @@ var tzPushAccountManager = {
                 else nextAccount = accountsList.getItemAtIndex(accountsList.selectedIndex - 1).value;
             }
             
-            if (confirm(tzPush.getLocalizedMessage("promptDeleteAccount").replace("##accountName##", accountsList.selectedItem.label))) {
+            if (confirm(tbSync.getLocalizedMessage("promptDeleteAccount").replace("##accountName##", accountsList.selectedItem.label))) {
                 //disconnect (removes ab, triggers changelog cleanup) 
-                tzPush.sync.disconnectAccount(accountsList.selectedItem.value);
+                tbSync.sync.disconnectAccount(accountsList.selectedItem.value);
                 //delete account from db
-                tzPush.db.removeAccount(accountsList.selectedItem.value);
+                tbSync.db.removeAccount(accountsList.selectedItem.value);
 
                 this.updateAccountsList(nextAccount);
             }
@@ -56,20 +56,20 @@ var tzPushAccountManager = {
     updateAccountStatusObserver: {
         observe: function (aSubject, aTopic, aData) {
             //limit execution to a couple of states, not all
-            let state = tzPush.sync.currentProzess.state;
+            let state = tbSync.sync.currentProzess.state;
             
             //react on true syncstate changes send by setSyncState()
-            if (aData == "" && (state == "syncing" || state == "accountdone")) tzPushAccountManager.updateAccountStatus(tzPush.sync.currentProzess.account );
+            if (aData == "" && (state == "syncing" || state == "accountdone")) tbSyncAccountManager.updateAccountStatus(tbSync.sync.currentProzess.account );
 
             //react on manual notifications send by tzmessenger
-            if (aData != "") tzPushAccountManager.updateAccountStatus(aData);
+            if (aData != "") tbSyncAccountManager.updateAccountStatus(aData);
         }
     },
 
     getStatusImage: function (account) {
         let src = "";   
 
-        switch (tzPush.db.getAccountSetting(account, "status")) {
+        switch (tbSync.db.getAccountSetting(account, "status")) {
             case "OK":
                 src = "tick16.png";
                 break;
@@ -91,12 +91,12 @@ var tzPushAccountManager = {
                 src = "error16.png";
         }
 
-        return "chrome://tzpush/skin/" + src;
+        return "chrome://tbsync/skin/" + src;
     },
 
 
     updateAccountStatus: function (id) {
-        let listItem = document.getElementById("tzPushAccountManager.accounts." + id);
+        let listItem = document.getElementById("tbSyncAccountManager.accounts." + id);
         let statusimage = this.getStatusImage(id);
         if (listItem.childNodes[1].firstChild.src != statusimage) {
             listItem.childNodes[1].firstChild.src = statusimage;
@@ -104,13 +104,13 @@ var tzPushAccountManager = {
     },
 
     updateAccountName: function (id, name) {
-        let listItem = document.getElementById("tzPushAccountManager.accounts." + id);
+        let listItem = document.getElementById("tbSyncAccountManager.accounts." + id);
         if (listItem.firstChild.getAttribute("label") != name) listItem.firstChild.setAttribute("label", name);
     },
     
     updateAccountsList: function (accountToSelect = -1) {
-        let accountsList = document.getElementById("tzPushAccountManager.accounts");
-        let accounts = tzPush.db.getAccounts();
+        let accountsList = document.getElementById("tbSyncAccountManager.accounts");
+        let accounts = tbSync.db.getAccounts();
 
         if (accounts.IDs.length > null) {
 
@@ -129,7 +129,7 @@ var tzPushAccountManager = {
                 if (listedAccounts.indexOf(accounts.IDs[i]) == -1) {
                     //add all missing accounts (always to the end of the list)
                     let newListItem = document.createElement("richlistitem");
-                    newListItem.setAttribute("id", "tzPushAccountManager.accounts." + accounts.IDs[i]);
+                    newListItem.setAttribute("id", "tbSyncAccountManager.accounts." + accounts.IDs[i]);
                     newListItem.setAttribute("value", accounts.IDs[i]);
 
                     //add account name
@@ -174,19 +174,19 @@ var tzPushAccountManager = {
             }
             
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-            document.getElementById("tzPushAccountManager.contentFrame").webNavigation.loadURI("chrome://tzpush/content/noaccounts.xul", LOAD_FLAGS_NONE, null, null, null);
+            document.getElementById("tbSyncAccountManager.contentFrame").webNavigation.loadURI("chrome://tbsync/content/noaccounts.xul", LOAD_FLAGS_NONE, null, null, null);
         }
     },
 
 
     //load the pref page for the currently selected account (triggered by onSelect)
     loadSelectedAccount: function () {
-        let accountsList = document.getElementById("tzPushAccountManager.accounts");
+        let accountsList = document.getElementById("tbSyncAccountManager.accounts");
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
             //get id of selected account from value of selectedItem
             this.selectedAccount = accountsList.selectedItem.value;
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-            document.getElementById("tzPushAccountManager.contentFrame").webNavigation.loadURI("chrome://tzpush/content/accountSettings.xul", LOAD_FLAGS_NONE, null, null, null);
+            document.getElementById("tbSyncAccountManager.contentFrame").webNavigation.loadURI("chrome://tbsync/content/accountSettings.xul", LOAD_FLAGS_NONE, null, null, null);
         }
     },
 

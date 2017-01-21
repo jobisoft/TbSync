@@ -12,7 +12,7 @@ var sync = {
     addAccountToSyncQueue: function (job, account = "") {
         if (account == "") {
             //Add all connected accounts to the queue - at this point we do not know anything about folders, they are handled by the sync process
-            let accounts = tzPush.db.getAccounts().IDs;
+            let accounts = tbSync.db.getAccounts().IDs;
             for (let i=0; i<accounts.length; i++) {
                 sync.syncQueue.push( job + "." + accounts[i] );
             }
@@ -42,7 +42,7 @@ var sync = {
                 sync.init(job, account);
                 break;
             default:
-                tzPush.dump("workSyncQueue()", "Unknow job for sync queue ("+ job + ")");
+                tbSync.dump("workSyncQueue()", "Unknow job for sync queue ("+ job + ")");
         }
     },
 
@@ -59,13 +59,13 @@ var sync = {
         }
 
         for (let i=0; i<accounts.IDs.length; i++) {
-            if (accounts.data[accounts.IDs[i]].status == "syncing") tzPush.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
+            if (accounts.data[accounts.IDs[i]].status == "syncing") tbSync.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
         }
 
         // set each folder with PENDING status to ABORTED
-        let folders = tzPush.db.findFoldersWithSetting("status", "pending");
+        let folders = tbSync.db.findFoldersWithSetting("status", "pending");
         for (let i=0; i < folders.length; i++) {
-            tzPush.db.setFolderSetting(folders[i].account, folders[i].folderID, "status", "aborted");
+            tbSync.db.setFolderSetting(folders[i].account, folders[i].folderID, "status", "aborted");
         }
 
     },
@@ -80,17 +80,17 @@ var sync = {
         syncdata.status = "OK";
 
         // set status to syncing (so settingswindow will display syncstates instead of status) and set initial syncstate
-        tzPush.db.setAccountSetting(syncdata.account, "status", "syncing");
+        tbSync.db.setAccountSetting(syncdata.account, "status", "syncing");
         sync.setSyncState("syncing", syncdata);
 
         // check if connected
-        if (tzPush.db.getAccountSetting(account, "state") == "disconnected") { //allow connected and connecting
+        if (tbSync.db.getAccountSetting(account, "state") == "disconnected") { //allow connected and connecting
             this.finishSync(syncdata, "notconnected");
             return;
         }
 
         // check if connection has data
-        let connection = tzPush.getConnection(account);
+        let connection = tbSync.getConnection(account);
         if (connection.server == "" || connection.user == "") {
             this.finishSync(syncdata, "nouserhost");
             return;
@@ -99,18 +99,18 @@ var sync = {
         switch (job) {
             case "resync":
                 syncdata.fResync = true;
-                tzPush.db.setAccountSetting(account, "policykey", "");
+                tbSync.db.setAccountSetting(account, "policykey", "");
 
                 //if folderID present, resync only that one folder, otherwise all folders
                 if (folderID !== "") {
-                    tzPush.db.setFolderSetting(account, folderID, "synckey", "");
+                    tbSync.db.setFolderSetting(account, folderID, "synckey", "");
                 } else {
-                    tzPush.db.setAccountSetting(account, "foldersynckey", "");
-                    tzPush.db.setFolderSetting(account, "", "synckey", "");
+                    tbSync.db.setAccountSetting(account, "foldersynckey", "");
+                    tbSync.db.setFolderSetting(account, "", "synckey", "");
                 }
                 
             case "sync":
-                if (tzPush.db.getAccountSetting(account, "provision") == "1" && tzPush.db.getAccountSetting(account, "policykey") == "") {
+                if (tbSync.db.getAccountSetting(account, "provision") == "1" && tbSync.db.getAccountSetting(account, "policykey") == "") {
                     this.getPolicykey(syncdata);
                 } else {
                     this.getFolderIds(syncdata);
@@ -133,7 +133,7 @@ var sync = {
         //Delete all targets
         let folders = db.findFoldersWithSetting("selected", "1", account);
         for (let i = 0; i<folders.length; i++) {
-            tzPush.removeTarget(folders[i].target, folders[i].type);
+            tbSync.removeTarget(folders[i].target, folders[i].type);
         }
         db.deleteAllFolders(account);
 
@@ -159,7 +159,7 @@ var sync = {
         wbxml.otag("Provision");
             wbxml.otag("Policies");
                 wbxml.otag("Policy");
-                    wbxml.atag("PolicyType",(tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") ? "MS-WAP-Provisioning-XML" : "MS-EAS-Provisioning-WBXML" );
+                    wbxml.atag("PolicyType",(tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") ? "MS-WAP-Provisioning-XML" : "MS-EAS-Provisioning-WBXML" );
                 wbxml.ctag();
             wbxml.ctag();
         wbxml.ctag();
@@ -170,8 +170,8 @@ var sync = {
     
     getPolicykeyCallback: function (responseWbxml, syncdata) {
         let policykey = wbxmltools.FindPolicykey(responseWbxml);
-        tzPush.dump("policykeyCallback("+syncdata.next+")", policykey);
-        tzPush.db.setAccountSetting(syncdata.account, "policykey", policykey);
+        tbSync.dump("policykeyCallback("+syncdata.next+")", policykey);
+        tbSync.db.setAccountSetting(syncdata.account, "policykey", policykey);
 
         //next == 1 and 2 = resend - next ==3 = GetFolderIds() - 
         // - the protocol requests us to first send zero as policykey and get a temp policykey in return,
@@ -185,7 +185,7 @@ var sync = {
             wbxml.otag("Provision");
                 wbxml.otag("Policies");
                     wbxml.otag("Policy");
-                        wbxml.atag("PolicyType",(tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") ? "MS-WAP-Provisioning-XML" : "MS-EAS-Provisioning-WBXML" );
+                        wbxml.atag("PolicyType",(tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") ? "MS-WAP-Provisioning-XML" : "MS-EAS-Provisioning-WBXML" );
                         wbxml.atag("PolicyKey", policykey);
                         wbxml.atag("Status", "1");
                     wbxml.ctag();
@@ -196,7 +196,7 @@ var sync = {
             this.Send(wbxml.getBytes(), this.getPolicykeyCallback.bind(this), "Provision", syncdata);
         } else {
             let policykey = wbxmltools.FindPolicykey(responseWbxml);
-            tzPush.dump("final returned policykey", policykey);
+            tbSync.dump("final returned policykey", policykey);
             this.getFolderIds(syncdata);
         }
     },
@@ -204,11 +204,11 @@ var sync = {
     getFolderIds: function(syncdata) {
         //if syncdata already contains a folderID, it is a specific folder sync - otherwise we scan all folders and sync all folders
         if (syncdata.folderID != "") {
-            tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", "pending");
+            tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", "pending");
             this.syncNextFolder(syncdata);
         } else {
             sync.setSyncState("requestingfolders", syncdata); 
-            let foldersynckey = tzPush.db.getAccountSetting(syncdata.account, "foldersynckey");
+            let foldersynckey = tbSync.db.getAccountSetting(syncdata.account, "foldersynckey");
             if (foldersynckey == "") foldersynckey = "0";
 
             //request foldersync
@@ -224,12 +224,12 @@ var sync = {
 
     getFolderIdsCallback: function (wbxml, syncdata) {
 
-        let wbxmlData = tzPush.wbxmltools.createWBXML(wbxml).getData();
+        let wbxmlData = tbSync.wbxmltools.createWBXML(wbxml).getData();
         if (this.statusIsBad(wbxmlData.FolderSync.Status, syncdata)) {
             return;
         }
 
-        if (wbxmlData.FolderSync.SyncKey) tzPush.db.setAccountSetting(syncdata.account, "foldersynckey", wbxmlData.FolderSync.SyncKey);
+        if (wbxmlData.FolderSync.SyncKey) tbSync.db.setAccountSetting(syncdata.account, "foldersynckey", wbxmlData.FolderSync.SyncKey);
         else this.finishSync(syncdata, "missingfoldersynckey");
 
         if (wbxmlData.FolderSync.Changes) {
@@ -237,7 +237,7 @@ var sync = {
             let add = wbxmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Add);
             for (let count = 0; count < add.length; count++) {
                 //check if we have a folder with that folderID (=data[ServerId])
-                if (tzPush.db.getFolder(syncdata.account, add[count].ServerId) === null) {
+                if (tbSync.db.getFolder(syncdata.account, add[count].ServerId) === null) {
                     //add folder
                     let newData ={};
                     newData.account = syncdata.account;
@@ -249,7 +249,7 @@ var sync = {
                     newData.selected = (newData.type == "9" || newData.type == "8" ) ? "1" : "0";
                     newData.status = "";
                     newData.lastsynctime = "";
-                    tzPush.db.addFolder(newData);
+                    tbSync.db.addFolder(newData);
                 } else {
                     //TODO? - cannot add an existing folder - resync!
                 }
@@ -259,12 +259,12 @@ var sync = {
             let update = wbxmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Update);
             for (let count = 0; count < update.length; count++) {
                 //get a copy of the folder, so we can update it
-                let folder = tzPush.db.getFolder(syncdata.account, update[count]["ServerId"], true);
+                let folder = tbSync.db.getFolder(syncdata.account, update[count]["ServerId"], true);
                 if (folder !== null) {
                     //update folder
                     folder.name = update[count]["DisplayName"];
                     folder.type = update[count]["Type"];
-                    tzPush.db.setFolder(folder);
+                    tbSync.db.setFolder(folder);
                 } else {
                     //TODO? - cannot update an non-existing folder - resync!
                 }
@@ -275,10 +275,10 @@ var sync = {
             for (let count = 0; count < del.length; count++) {
 
                 //get a copy of the folder, so we can del it
-                let folder = tzPush.db.getFolder(syncdata.account, del[count]["ServerId"]);
+                let folder = tbSync.db.getFolder(syncdata.account, del[count]["ServerId"]);
                 if (folder !== null) {
                     //del folder - we do not touch target (?)
-                    tzPush.db.deleteFolder(syncdata.account, del[count]["ServerId"]);
+                    tbSync.db.deleteFolder(syncdata.account, del[count]["ServerId"]);
                 } else {
                     //TODO? - cannot del an non-existing folder - resync!
                 }
@@ -286,10 +286,10 @@ var sync = {
         }
         
         //set selected folders to pending, so they get synced
-        let folders = tzPush.db.getFolders(syncdata.account);
+        let folders = tbSync.db.getFolders(syncdata.account);
         for (let f in folders) {
             if (folders[f].selected == "1") {
-                tzPush.db.setFolderSetting(folders[f].account, folders[f].folderID, "status", "pending");
+                tbSync.db.setFolderSetting(folders[f].account, folders[f].folderID, "status", "pending");
             }
         }
 
@@ -299,7 +299,7 @@ var sync = {
 
     //Process all folders with PENDING status
     syncNextFolder: function (syncdata) {
-        let folders = tzPush.db.findFoldersWithSetting("status", "pending", syncdata.account);
+        let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
         if (folders.length == 0 || syncdata.status != "OK") {
             //all folders of this account have been synced
             sync.finishAccountSync(syncdata);
@@ -310,11 +310,11 @@ var sync = {
             if (syncdata.synckey == "") {
 
                 //request a new syncKey
-                let wbxml = tzPush.wbxmltools.createWBXML();
+                let wbxml = tbSync.wbxmltools.createWBXML();
                 wbxml.otag("Sync");
                     wbxml.otag("Collections");
                         wbxml.otag("Collection");
-//                            if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class","Contacts"); //TODO for calendar???
+//                            if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class","Contacts"); //TODO for calendar???
                             wbxml.atag("SyncKey","0");
                             wbxml.atag("CollectionId",syncdata.folderID);
                         wbxml.ctag();
@@ -331,13 +331,13 @@ var sync = {
 
     getSynckey: function (responseWbxml, syncdata) {
         syncdata.synckey = wbxmltools.FindKey(responseWbxml);
-        tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
+        tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
         this.startSync(syncdata); 
     },
 
 
     startSync: function (syncdata) {
-        syncdata.type = tzPush.db.getFolderSetting(syncdata.account, syncdata.folderID, "type");
+        syncdata.type = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "type");
         switch (syncdata.type) {
             case "9": 
             case "14": 
@@ -348,7 +348,7 @@ var sync = {
                 calendarsync.start(syncdata);
                 break;
             default:
-                tzPush.dump("startSync()", "Skipping unknown folder type <"+syncdata.type+">");
+                tbSync.dump("startSync()", "Skipping unknown folder type <"+syncdata.type+">");
                 this.finishSync(syncdata);
         }
     },
@@ -359,15 +359,15 @@ var sync = {
         let time = Date.now();
         let status = "OK";
         if (error !== "") {
-            tzPush.dump("finishSync(): Error @ Account #" + syncdata.account, tzPush.getLocalizedMessage("status." + error));
+            tbSync.dump("finishSync(): Error @ Account #" + syncdata.account, tbSync.getLocalizedMessage("status." + error));
             syncdata.status = error; //store latest error
             status = error;
             time = "";
         }
 
         if (syncdata.folderID) {
-            tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", status);
-            tzPush.db.setFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime", time);
+            tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", status);
+            tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime", time);
         }
 
         sync.setSyncState("done", syncdata);
@@ -376,28 +376,28 @@ var sync = {
 
     
     finishAccountSync: function (syncdata) {
-        let state = tzPush.db.getAccountSetting(syncdata.account, "state");
+        let state = tbSync.db.getAccountSetting(syncdata.account, "state");
         
         if (state == "connecting") {
             if (syncdata.status == "OK") {
-                tzPush.db.setAccountSetting(syncdata.account, "state", "connected");
+                tbSync.db.setAccountSetting(syncdata.account, "state", "connected");
             } else {
                 this.disconnectAccount(syncdata.account);
-                tzPush.db.setAccountSetting(syncdata.account, "state", "disconnected");
+                tbSync.db.setAccountSetting(syncdata.account, "state", "disconnected");
             }
         }
         
         if (syncdata.status != "OK") {
             // set each folder with PENDING status to ABORTED
-            let folders = tzPush.db.findFoldersWithSetting("status", "pending", syncdata.account);
+            let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
             for (let i=0; i < folders.length; i++) {
-                tzPush.db.setFolderSetting(syncdata.account, folders[i].folderID, "status", "aborted");
+                tbSync.db.setFolderSetting(syncdata.account, folders[i].folderID, "status", "aborted");
             }
         }
 
         //update account status
-        tzPush.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
-        tzPush.db.setAccountSetting(syncdata.account, "status", syncdata.status);
+        tbSync.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
+        tbSync.db.setAccountSetting(syncdata.account, "status", syncdata.status);
         sync.setSyncState("accountdone", syncdata); 
                 
         //work on the queue
@@ -418,7 +418,7 @@ var sync = {
         }
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tzpush.changedSyncstate", "");
+        observerService.notifyObservers(null, "tbsync.changedSyncstate", "");
     },
 
     statusIsBad : function (status, syncdata) {
@@ -427,15 +427,15 @@ var sync = {
                 //all fine, not bad
                 return false;
             case "3": 
-                tzPush.dump("wbxml status", "Server reports <invalid synchronization key> (" + status + "), resyncing.");
+                tbSync.dump("wbxml status", "Server reports <invalid synchronization key> (" + status + "), resyncing.");
                 sync.init("resync", syncdata.account, syncdata.folderID);
                 break;
             case "12": 
-                tzPush.dump("wbxml status", "Server reports <folder hierarchy changed> (" + status + "), resyncing");
+                tbSync.dump("wbxml status", "Server reports <folder hierarchy changed> (" + status + "), resyncing");
                 sync.init("resync", syncdata.account, syncdata.folderID);
                 break;
             default:
-                tzPush.dump("wbxml status", "Server reports status <"+status+">. Error? Aborting Sync.");
+                tbSync.dump("wbxml status", "Server reports status <"+status+">. Error? Aborting Sync.");
                 sync.finishSync(syncdata, "wbxmlservererror");
                 break;
         }        
@@ -445,46 +445,46 @@ var sync = {
     Send: function (wbxml, callback, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
         
-        if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) tzPush.debuglog(wbxml, "["+sync.currentProzess.state+"] sending:");
+        if (tbSync.db.prefSettings.getBoolPref("debugwbxml")) tbSync.debuglog(wbxml, "["+sync.currentProzess.state+"] sending:");
 
-        let connection = tzPush.getConnection(syncdata.account);
-        let password = tzPush.getPassword(connection);
+        let connection = tbSync.getConnection(syncdata.account);
+        let password = tbSync.getPassword(connection);
 
         let deviceType = 'Thunderbird';
-        let deviceId = tzPush.db.getAccountSetting(syncdata.account, "deviceId");
+        let deviceId = tbSync.db.getAccountSetting(syncdata.account, "deviceId");
         
         // Create request handler
         let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
         req.mozBackgroundRequest = true;
-        if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) {
-            tzPush.dump("sending", "POST " + connection.url + '?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
+        if (tbSync.db.prefSettings.getBoolPref("debugwbxml")) {
+            tbSync.dump("sending", "POST " + connection.url + '?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
         }
         req.open("POST", connection.url + '?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
         req.overrideMimeType("text/plain");
         req.setRequestHeader("User-Agent", deviceType + ' ActiveSync');
         req.setRequestHeader("Content-Type", "application/vnd.ms-sync.wbxml");
         req.setRequestHeader("Authorization", 'Basic ' + btoa(connection.user + ':' + password));
-        if (tzPush.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+        if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
             req.setRequestHeader("MS-ASProtocolVersion", "2.5");
         } else {
             req.setRequestHeader("MS-ASProtocolVersion", "14.0");
         }
         req.setRequestHeader("Content-Length", wbxml.length);
-        if (tzPush.db.getAccountSetting(syncdata.account, "provision") == "1") {
-            req.setRequestHeader("X-MS-PolicyKey", tzPush.db.getAccountSetting(syncdata.account, "policykey"));
+        if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1") {
+            req.setRequestHeader("X-MS-PolicyKey", tbSync.db.getAccountSetting(syncdata.account, "policykey"));
         }
 
         // Define response handler for our request
         req.onreadystatechange = function() { 
-            //tzPush.dump("header",req.getAllResponseHeaders().toLowerCase())
+            //tbSync.dump("header",req.getAllResponseHeaders().toLowerCase())
             if (req.readyState === 4 && req.status === 200) {
 
                 wbxml = req.responseText;
-                if (tzPush.db.prefSettings.getBoolPref("debugwbxml")) tzPush.debuglog(wbxml,"receiving");
+                if (tbSync.db.prefSettings.getBoolPref("debugwbxml")) tbSync.debuglog(wbxml,"receiving");
 
                 if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
                     if (wbxml.length !== 0) {
-                        tzPush.dump("recieved", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
+                        tbSync.dump("recieved", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
                     }
                 }
                 callback(req.responseText, syncdata);
@@ -500,7 +500,7 @@ var sync = {
                         break;
                     
                     case 449: // Request for new provision
-                        if (tzPush.db.getAccountSetting(syncdata.account, "provision") == "1") {
+                        if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1") {
                             sync.init("resync", syncdata.account, syncdata.folderID);
                         } else {
                             this.finishSync(syncdata, req.status);
@@ -510,14 +510,14 @@ var sync = {
                     case 451: // Redirect - update host and login manager 
                         let header = req.getResponseHeader("X-MS-Location");
                         let newHost = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
-                        let connection = tzPush.getConnection(syncdata.account);
-                        let password = tzPush.getPassword(connection);
+                        let connection = tbSync.getConnection(syncdata.account);
+                        let password = tbSync.getPassword(connection);
 
-                        tzPush.dump("redirect (451)", "header: " + header + ", oldHost: " + connection.host + ", newHost: " + newHost);
+                        tbSync.dump("redirect (451)", "header: " + header + ", oldHost: " + connection.host + ", newHost: " + newHost);
                         
                         //If the current connection has a LoginInfo (password stored !== null), try to update it
                         if (password !== null) {
-                            tzPush.dump("redirect (451)", "updating loginInfo");
+                            tbSync.dump("redirect (451)", "updating loginInfo");
                             let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
                             let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
                             
@@ -543,7 +543,7 @@ var sync = {
                         break;
                         
                     default:
-                        tzPush.dump("request status", "reported -- " + req.status);
+                        tbSync.dump("request status", "reported -- " + req.status);
                         this.finishSync(syncdata, req.status);
                 }
             }
@@ -566,11 +566,11 @@ var sync = {
                 for (let nIdx = 0; nIdx < nBytes; nIdx++) {
                     ui8Data[nIdx] = wbxml.charCodeAt(nIdx) & 0xff;
                 }
-                //tzPush.dump("ui8Data",wbxmltools.convert2xml(wbxml))
+                //tbSync.dump("ui8Data",wbxmltools.convert2xml(wbxml))
                 req.send(ui8Data);
             }
         } catch (e) {
-            tzPush.dump("unknown error", e);
+            tbSync.dump("unknown error", e);
         }
 
         return true;

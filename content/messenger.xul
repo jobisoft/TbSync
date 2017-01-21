@@ -1,28 +1,28 @@
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/css" href="chrome://global/skin/" ?>
-<?xml-stylesheet type="text/css" href="chrome://tzpush/skin/browserOverlay.css" ?>
-<!DOCTYPE overlay SYSTEM "chrome://tzpush/locale/overlay.dtd">
+<?xml-stylesheet type="text/css" href="chrome://tbsync/skin/browserOverlay.css" ?>
+<!DOCTYPE overlay SYSTEM "chrome://tbsync/locale/overlay.dtd">
 
 <overlay
     xmlns:html="http://www.w3.org/1999/xhtml"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
  
-    <script type="application/x-javascript" src="chrome://tzpush/content/messenger.js" />
+    <script type="application/x-javascript" src="chrome://tbsync/content/messenger.js" />
 
     <statusbar id="status-bar">
-        <statusbarpanel id="tzpush.status" label="&pref.TzPush;" context="tzpush.statusmenu" ondblclick="tzPushMessenger.openAccountManager();" />
+        <statusbarpanel id="tbsync.status" label="&pref.TbSync;" context="tbsync.statusmenu" ondblclick="tbSyncMessenger.openAccountManager();" />
         <popupset>
-            <menupopup id="tzpush.statusmenu">
-                <menuitem label="&popup.sync;" onclick="tzPush.sync.addAccountToSyncQueue('sync');" />
-                <menuitem label="&popup.opensettings;" onclick="tzPushMessenger.openAccountManager();" />
-                <menuitem label="&popup.cancelsync;" onclick="tzPush.sync.resetSync();" />
+            <menupopup id="tbsync.statusmenu">
+                <menuitem label="&popup.sync;" onclick="tbSync.sync.addAccountToSyncQueue('sync');" />
+                <menuitem label="&popup.opensettings;" onclick="tbSyncMessenger.openAccountManager();" />
+                <menuitem label="&popup.cancelsync;" onclick="tbSync.sync.resetSync();" />
             </menupopup>
         </popupset>
     </statusbar>
 
     <menupopup id="taskPopup">
-            <menuitem label="&menu.settingslabel;" insertbefore="menu_accountmgr" onclick="tzPushMessenger.openAccountManager();" />
+            <menuitem label="&menu.settingslabel;" insertbefore="menu_accountmgr" onclick="tbSyncMessenger.openAccountManager();" />
     </menupopup>
  
     <toolbarpalette id="MailToolbarPalette">
@@ -30,7 +30,7 @@
             class="toolbarbutton"
             label="&toolbar.label;" 
             tooltiptext="&toolbar.tooltiptext;"
-            oncommand="tzPush.sync.addAccountToSyncQueue('sync');"/>
+            oncommand="tbSync.sync.addAccountToSyncQueue('sync');"/>
     </toolbarpalette>
  
 </overlay>

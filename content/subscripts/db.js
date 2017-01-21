@@ -6,7 +6,7 @@
 
 var db = {
 
-    prefSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tzpush."),
+    prefSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync."),
     tzpushSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tzpush."),
 
     conn: null,
@@ -185,7 +185,7 @@ var db = {
     getProxyAccount: function(account) {
         let handler = {
             get (target, key) { return target[key]; },
-            set (target, key, value) { Components.utils.reportError("[TzPush] Trying to write to a readonly reference of the this._accountCache!"); throw "Aborting."; return false; }
+            set (target, key, value) { Components.utils.reportError("[TbSync] Trying to write to a readonly reference of the this._accountCache!"); throw "Aborting."; return false; }
         };
         return new Proxy(this._accountCache[account], handler);
     },
@@ -306,7 +306,7 @@ var db = {
     getProxyFolder: function(account, folder) {
         let handler = {
             get (target, key) { return target[key]; },
-            set (target, key, value) { Components.utils.reportError("[TzPush] Trying to write to a readonly reference of the this._folderCache!"); throw "Aborting"; return false; }
+            set (target, key, value) { Components.utils.reportError("[TbSync] Trying to write to a readonly reference of the this._folderCache!"); throw "Aborting"; return false; }
         };
         return new Proxy(this._folderCache[account][folder], handler);
     },

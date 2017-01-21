@@ -1,8 +1,8 @@
 "use strict";
 
-Components.utils.import("chrome://tzpush/content/tzpush.jsm");
+Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
-var tzPushAccountSettings = {
+var tbSyncAccountSettings = {
 
     selectedAccount: null,
     init: false,
@@ -11,82 +11,82 @@ var tzPushAccountSettings = {
         
     onload: function () {
         //get the selected account from account Manager
-        tzPushAccountSettings.selectedAccount = parent.tzPushAccountManager.selectedAccount;
+        tbSyncAccountSettings.selectedAccount = parent.tbSyncAccountManager.selectedAccount;
 
-        tzPushAccountSettings.loadSettings();
-        tzPushAccountSettings.updateGui();
-        tzPushAccountSettings.addressbookListener.add();
+        tbSyncAccountSettings.loadSettings();
+        tbSyncAccountSettings.updateGui();
+        tbSyncAccountSettings.addressbookListener.add();
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(tzPushAccountSettings.syncstateObserver, "tzpush.changedSyncstate", false);
-        tzPushAccountSettings.init = true;
+        observerService.addObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate", false);
+        tbSyncAccountSettings.init = true;
     },
 
     onunload: function () {
-        tzPushAccountSettings.addressbookListener.remove();
+        tbSyncAccountSettings.addressbookListener.remove();
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        if (tzPushAccountSettings.init) {
-            observerService.removeObserver(tzPushAccountSettings.syncstateObserver, "tzpush.changedSyncstate");
+        if (tbSyncAccountSettings.init) {
+            observerService.removeObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate");
         }
     },
 
     // manage sync via queue
     requestSync: function (job, account, btnDisabled = false) {
-        if (btnDisabled == false && tzPush.sync.currentProzess.account != account) tzPush.sync.addAccountToSyncQueue(job, account);
+        if (btnDisabled == false && tbSync.sync.currentProzess.account != account) tbSync.sync.addAccountToSyncQueue(job, account);
 
     },
 
 
     /* * *
-    * Run through all defined TzPush settings and if there is a corresponding
+    * Run through all defined TbSync settings and if there is a corresponding
     * field in the settings dialog, fill it with the stored value.
     */
     loadSettings: function () {
-        let settings = tzPush.db.getTableFields("accounts");
+        let settings = tbSync.db.getTableFields("accounts");
         
         for (let i=0; i<settings.length;i++) {
-            if (document.getElementById("tzpush.accountsettings." + settings[i])) {
+            if (document.getElementById("tbsync.accountsettings." + settings[i])) {
                 //bool fields need special treatment
                 if (this.boolSettings.indexOf(settings[i]) == -1) {
                     //Not BOOL
-                    document.getElementById("tzpush.accountsettings." + settings[i]).value = tzPush.db.getAccountSetting(tzPushAccountSettings.selectedAccount, settings[i]);
+                    document.getElementById("tbsync.accountsettings." + settings[i]).value = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, settings[i]);
                 } else {
                     //BOOL
-                    if (tzPush.db.getAccountSetting(tzPushAccountSettings.selectedAccount, settings[i])  == "1") document.getElementById("tzpush.accountsettings." + settings[i]).checked = true;
-                    else document.getElementById("tzpush.accountsettings." + settings[i]).checked = false;
+                    if (tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, settings[i])  == "1") document.getElementById("tbsync.accountsettings." + settings[i]).checked = true;
+                    else document.getElementById("tbsync.accountsettings." + settings[i]).checked = false;
                 }
             }
         }
 
         //Also load DeviceId
-        document.getElementById('deviceId').value = tzPush.db.getAccountSetting(tzPushAccountSettings.selectedAccount, "deviceId");
+        document.getElementById('deviceId').value = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "deviceId");
     },
 
 
     /* * *
-    * Run through all defined TzPush settings and if there is a corresponding
+    * Run through all defined TbSync settings and if there is a corresponding
     * field in the settings dialog, store its current value.
     */
     saveSettings: function () {
-        let settings = tzPush.db.getTableFields("accounts");
+        let settings = tbSync.db.getTableFields("accounts");
 
-        let data = tzPush.db.getAccount(tzPushAccountSettings.selectedAccount, true); //get a copy of the cache, which can be modified
+        let data = tbSync.db.getAccount(tbSyncAccountSettings.selectedAccount, true); //get a copy of the cache, which can be modified
         for (let i=0; i<settings.length;i++) {
-            if (document.getElementById("tzpush.accountsettings." + settings[i])) {
+            if (document.getElementById("tbsync.accountsettings." + settings[i])) {
                 //bool fields need special treatment
                 if (this.boolSettings.indexOf(settings[i]) == -1) {
                     //Not BOOL
-                    data[settings[i]] = document.getElementById("tzpush.accountsettings." + settings[i]).value;
+                    data[settings[i]] = document.getElementById("tbsync.accountsettings." + settings[i]).value;
                 } else {
                     //BOOL
-                    if (document.getElementById("tzpush.accountsettings." + settings[i]).checked) data[settings[i]] = "1";
+                    if (document.getElementById("tbsync.accountsettings." + settings[i]).checked) data[settings[i]] = "1";
                     else data[settings[i]] = "0";
                 }
             }
         }
         
-        tzPush.db.setAccount(data);
-        parent.tzPushAccountManager.updateAccountName(tzPushAccountSettings.selectedAccount, data.accountname);
+        tbSync.db.setAccount(data);
+        parent.tbSyncAccountManager.updateAccountName(tbSyncAccountSettings.selectedAccount, data.accountname);
     },
 
 
@@ -95,38 +95,38 @@ var tzPushAccountSettings = {
     * do not have (want) another save button for these, they are saved upon change.
     */
     instantSaveSetting: function (field) {
-        let setting = field.id.replace("tzpush.accountsettings.","");
-        tzPush.db.setAccountSetting(tzPushAccountSettings.selectedAccount, setting, field.value);
-        if (setting == "accountname") parent.tzPushAccountManager.updateAccountName(tzPushAccountSettings.selectedAccount, field.value);
+        let setting = field.id.replace("tbsync.accountsettings.","");
+        tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, setting, field.value);
+        if (setting == "accountname") parent.tbSyncAccountManager.updateAccountName(tbSyncAccountSettings.selectedAccount, field.value);
     },
 
 
     stripHost: function () {
-        let host = document.getElementById('tzpush.accountsettings.host').value;
+        let host = document.getElementById('tbsync.accountsettings.host').value;
         if (host.indexOf("https://") == 0) {
             host = host.replace("https://","");
-            document.getElementById('tzpush.accountsettings.https').checked = true;
+            document.getElementById('tbsync.accountsettings.https').checked = true;
         } else if (host.indexOf("http://") == 0) {
             host = host.replace("http://","");
-            document.getElementById('tzpush.accountsettings.https').checked = false;
+            document.getElementById('tbsync.accountsettings.https').checked = false;
         }
-        document.getElementById('tzpush.accountsettings.host').value = host.replace("/","");
+        document.getElementById('tbsync.accountsettings.host').value = host.replace("/","");
     },
 
 
 
     updateGui: function () {
-        let state = tzPush.db.getAccountSetting(tzPushAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
-        document.getElementById('tzpush.accountsettings.connectbtn').label = tzPush.getLocalizedMessage("state."+state); 
+        let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
+        document.getElementById('tbsync.accountsettings.connectbtn').label = tbSync.getLocalizedMessage("state."+state); 
         
-        document.getElementById("tzpush.accountsettings.options.1").hidden = (state != "disconnected"); 
-        document.getElementById("tzpush.accountsettings.options.2").hidden = (state != "disconnected"); 
-        document.getElementById("tzpush.accountsettings.options.3").hidden = (state != "disconnected"); 
-        document.getElementById("tzpush.accountsettings.folders").hidden = (state == "disconnected"); 
+        document.getElementById("tbsync.accountsettings.options.1").hidden = (state != "disconnected"); 
+        document.getElementById("tbsync.accountsettings.options.2").hidden = (state != "disconnected"); 
+        document.getElementById("tbsync.accountsettings.options.3").hidden = (state != "disconnected"); 
+        document.getElementById("tbsync.accountsettings.folders").hidden = (state == "disconnected"); 
 
         //disable all seetings field, if connected or connecting
         for (let i=0; i<this.protectedSettings.length;i++) {
-            document.getElementById("tzpush.accountsettings." + this.protectedSettings[i]).disabled = (state != "disconnected");
+            document.getElementById("tbsync.accountsettings." + this.protectedSettings[i]).disabled = (state != "disconnected");
         }
         
         this.updateSyncstate();
@@ -135,41 +135,41 @@ var tzPushAccountSettings = {
 
 
     updateSyncstate: function () {
-        let data = tzPush.sync.currentProzess;
+        let data = tbSync.sync.currentProzess;
         
         // if this account is beeing synced, display syncstate, otherwise print status
-        let status = tzPush.db.getAccountSetting(tzPushAccountSettings.selectedAccount, "status");
-        let state = tzPush.db.getAccountSetting(tzPushAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
+        let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "status");
+        let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
 
         if (status == "syncing") {
             let target = "";
-            let accounts = tzPush.db.getAccounts().data;
+            let accounts = tbSync.db.getAccounts().data;
             if (accounts.hasOwnProperty(data.account) && data.folderID !== "" && data.state != "done") { //if "Done" do not print folder info syncstate
-                target = " [" + tzPush.db.getFolderSetting(data.account, data.folderID, "name") + "]";
+                target = " [" + tbSync.db.getFolderSetting(data.account, data.folderID, "name") + "]";
             }
-            document.getElementById('syncstate').textContent = tzPush.getLocalizedMessage("syncstate." + data.state) + target;
+            document.getElementById('syncstate').textContent = tbSync.getLocalizedMessage("syncstate." + data.state) + target;
         } else {
-            document.getElementById('syncstate').textContent = tzPush.getLocalizedMessage("status." + status);
+            document.getElementById('syncstate').textContent = tbSync.getLocalizedMessage("status." + status);
         }
 
         //disable connect/disconnect btn, sync btn and folderlist during sync, also hide sync button if disconnected
-        document.getElementById('tzpush.accountsettings.connectbtn').disabled = (status == "syncing");
-        document.getElementById('tzpush.accountsettings.folderlist').disabled = (status == "syncing");
-        document.getElementById('tzpush.accountsettings.syncbtn').disabled = (status == "syncing");
-        document.getElementById('tzpush.accountsettings.syncbtn').hidden = (state == "disconnected");
+        document.getElementById('tbsync.accountsettings.connectbtn').disabled = (status == "syncing");
+        document.getElementById('tbsync.accountsettings.folderlist').disabled = (status == "syncing");
+        document.getElementById('tbsync.accountsettings.syncbtn').disabled = (status == "syncing");
+        document.getElementById('tbsync.accountsettings.syncbtn').hidden = (state == "disconnected");
         
         
     },
 
 
     toggleFolder: function () {
-        let folderList = document.getElementById("tzpush.accountsettings.folderlist");
+        let folderList = document.getElementById("tbsync.accountsettings.folderlist");
         if (folderList.selectedItem !== null && !folderList.disabled) {
             let fID =  folderList.selectedItem.value;
-            let folder = tzPush.db.getFolder(tzPushAccountSettings.selectedAccount, fID, true);
+            let folder = tbSync.db.getFolder(tbSyncAccountSettings.selectedAccount, fID, true);
 
             if (folder.selected == "1") {
-                if (window.confirm(tzPush.getLocalizedMessage("promptUnsubscribe"))) {
+                if (window.confirm(tbSync.getLocalizedMessage("promptUnsubscribe"))) {
                     //get copy of the current target, before resetting it
                     let target = folder.target;
                     let type = folder.type;
@@ -180,17 +180,17 @@ var tzPushAccountSettings = {
                     folder.synckey = "";
                     folder.lastsynctime = "";
                     folder.status = "";
-                    tzPush.db.setFolder(folder);
-                    tzPush.db.clearChangeLog(target);
+                    tbSync.db.setFolder(folder);
+                    tbSync.db.clearChangeLog(target);
 
-                    if (target != "") tzPush.removeTarget(target, type); //we must remove the target AFTER cleaning up the DB, otherwise the addressbookListener in tzPush.jsm will interfere
+                    if (target != "") tbSync.removeTarget(target, type); //we must remove the target AFTER cleaning up the DB, otherwise the addressbookListener in tbSync.jsm will interfere
                 }
             } else {
                 //select and update status
-                tzPush.db.setFolderSetting(tzPushAccountSettings.selectedAccount, fID, "selected", "1");
-                tzPush.db.setFolderSetting(tzPushAccountSettings.selectedAccount, fID, "status", "aborted");
-                tzPush.db.setAccountSetting(folder.account, "status", "notsyncronized");
-                parent.tzPushAccountManager.updateAccountStatus(tzPushAccountSettings.selectedAccount);
+                tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "selected", "1");
+                tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "status", "aborted");
+                tbSync.db.setAccountSetting(folder.account, "status", "notsyncronized");
+                parent.tbSyncAccountManager.updateAccountStatus(tbSyncAccountSettings.selectedAccount);
                 this.updateSyncstate();
             }
             this.updateFolderList();
@@ -210,16 +210,16 @@ var tzPushAccountSettings = {
                 src = "contacts16.png";
                 break;
         }
-        return "chrome://tzpush/skin/" + src;
+        return "chrome://tbsync/skin/" + src;
     },
 
 
     updateFolderList: function () {
         //do not update folder list, if not visible
-        if (document.getElementById("tzpush.accountsettings.folders").hidden) return;
+        if (document.getElementById("tbsync.accountsettings.folders").hidden) return;
         
-        let folderList = document.getElementById("tzpush.accountsettings.folderlist");
-        let folders = tzPush.db.getFolders(tzPushAccountSettings.selectedAccount);
+        let folderList = document.getElementById("tbsync.accountsettings.folderlist");
+        let folders = tbSync.db.getFolders(tbSyncAccountSettings.selectedAccount);
         
         //sorting as 8,13,9,14 (any value 12+ is custom) 
         // 8 -> 8*2 = 16
@@ -265,15 +265,15 @@ var tzPushAccountSettings = {
                         case "OK":
                         case "modified":
                             if (type == "8" || type == "13") {
-                                if ("calICalendar" in Components.interfaces) status = tzPush.getLocalizedMessage("status." + status) + " ["+ tzPush.getCalendarName(folders[folderIDs[i]].target) + "]";
-                                else status = tzPush.getLocalizedMessage("status.nolightning");
+                                if ("calICalendar" in Components.interfaces) status = tbSync.getLocalizedMessage("status." + status) + " ["+ tbSync.getCalendarName(folders[folderIDs[i]].target) + "]";
+                                else status = tbSync.getLocalizedMessage("status.nolightning");
                             }
-                            if (type == "9" || type == "14") status = tzPush.getLocalizedMessage("status." + status) + " ["+ tzPush.getAddressBookName(folders[folderIDs[i]].target) + "]";
+                            if (type == "9" || type == "14") status = tbSync.getLocalizedMessage("status." + status) + " ["+ tbSync.getAddressBookName(folders[folderIDs[i]].target) + "]";
                             break;
                         case "pending":
-                            if (folderIDs[i] == tzPush.sync.currentProzess.folderID) status = "syncing"; 
+                            if (folderIDs[i] == tbSync.sync.currentProzess.folderID) status = "syncing"; 
                         default:
-                            status = tzPush.getLocalizedMessage("status." + status);
+                            status = tbSync.getLocalizedMessage("status." + status);
                     }
                 }
                 
@@ -356,22 +356,22 @@ var tzPushAccountSettings = {
     */
     toggleConnectionState: function () {
         //ignore cancel request, if button is disabled or a sync is ongoing
-        if (document.getElementById('tzpush.accountsettings.connectbtn').disabled || tzPush.sync.currentProzess.account == tzPushAccountSettings.selectedAccount) return;
+        if (document.getElementById('tbsync.accountsettings.connectbtn').disabled || tbSync.sync.currentProzess.account == tbSyncAccountSettings.selectedAccount) return;
 
-        let state = tzPush.db.getAccountSetting(tzPushAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
+        let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
         if (state == "connected") {
             //we are connected and want to disconnect
-            if (window.confirm(tzPush.getLocalizedMessage("promptDisconnect"))) {
-                tzPush.sync.disconnectAccount(tzPushAccountSettings.selectedAccount);
-                tzPushAccountSettings.updateGui();
-                parent.tzPushAccountManager.updateAccountStatus(tzPushAccountSettings.selectedAccount);
+            if (window.confirm(tbSync.getLocalizedMessage("promptDisconnect"))) {
+                tbSync.sync.disconnectAccount(tbSyncAccountSettings.selectedAccount);
+                tbSyncAccountSettings.updateGui();
+                parent.tbSyncAccountManager.updateAccountStatus(tbSyncAccountSettings.selectedAccount);
             }
         } else if (state == "disconnected") {
             //we are disconnected and want to connected
-            tzPush.sync.connectAccount(tzPushAccountSettings.selectedAccount);
-            tzPushAccountSettings.updateGui();
-            tzPushAccountSettings.saveSettings();
-            tzPushAccountSettings.requestSync("sync", tzPushAccountSettings.selectedAccount);
+            tbSync.sync.connectAccount(tbSyncAccountSettings.selectedAccount);
+            tbSyncAccountSettings.updateGui();
+            tbSyncAccountSettings.saveSettings();
+            tbSyncAccountSettings.requestSync("sync", tbSyncAccountSettings.selectedAccount);
         }
     },
 
@@ -383,34 +383,34 @@ var tzPushAccountSettings = {
     syncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
             //the notification could be send by setSyncState (aData = "") or by tzMessenger (aData = account)
-            let account = (aData == "") ? tzPush.sync.currentProzess.account : aData;
+            let account = (aData == "") ? tbSync.sync.currentProzess.account : aData;
 
             //only handle syncstate changes of the active account
-            if (account == tzPushAccountSettings.selectedAccount) {
+            if (account == tbSyncAccountSettings.selectedAccount) {
                 
-                if (aData == "" && tzPush.sync.currentProzess.state == "accountdone") {
+                if (aData == "" && tbSync.sync.currentProzess.state == "accountdone") {
 
                         //this syncstate change notification was send by setSyncState
-                        let status = tzPush.db.getAccountSetting(tzPush.sync.currentProzess.account, "status");
+                        let status = tbSync.db.getAccountSetting(tbSync.sync.currentProzess.account, "status");
                         switch (status) {
                             case "401":
-                                window.openDialog("chrome://tzpush/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", "Set password for TzPush account <" + tzPush.db.getAccountSetting(account, "accountname") + ">", account);
+                                window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", "Set password for TbSync account <" + tbSync.db.getAccountSetting(account, "accountname") + ">", account);
                                 break;
                             case "OK":
                             case "notsyncronized":
                                 //do not pop alert box for these
                                 break;
                             default:
-                                alert(tzPush.getLocalizedMessage("status." + status));
+                                alert(tbSync.getLocalizedMessage("status." + status));
                         }
-                        tzPushAccountSettings.updateGui();
+                        tbSyncAccountSettings.updateGui();
                         
                 } else { 
                     
                         //this syncstate change notification could have been send setSyncState (aData = "") for the currentProcess or by manual notifications from tzmessenger
                         //in either case, the notification is for THIS account
-                        tzPushAccountSettings.updateSyncstate();
-                        tzPushAccountSettings.updateFolderList();
+                        tbSyncAccountSettings.updateSyncstate();
+                        tbSyncAccountSettings.updateFolderList();
                     
                 }
             }
@@ -427,26 +427,26 @@ var tzPushAccountSettings = {
 
         onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                tzPushAccountSettings.updateFolderList();
+                tbSyncAccountSettings.updateFolderList();
             }
         },
 
         onItemRemoved: function addressbookListener_onItemRemoved (aParentDir, aItem) {
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                tzPushAccountSettings.updateFolderList();
+                tbSyncAccountSettings.updateFolderList();
             }
         },
 
         add: function addressbookListener_add () {
             Components.classes["@mozilla.org/abmanager;1"]
                 .getService(Components.interfaces.nsIAbManager)
-                .addAddressBookListener(tzPushAccountSettings.addressbookListener, Components.interfaces.nsIAbListener.all);
+                .addAddressBookListener(tbSyncAccountSettings.addressbookListener, Components.interfaces.nsIAbListener.all);
         },
 
         remove: function addressbookListener_remove () {
             Components.classes["@mozilla.org/abmanager;1"]
                 .getService(Components.interfaces.nsIAbManager)
-                .removeAddressBookListener(tzPushAccountSettings.addressbookListener);
+                .removeAddressBookListener(tbSyncAccountSettings.addressbookListener);
         }
     }
 

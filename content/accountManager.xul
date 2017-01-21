@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
-<!DOCTYPE window SYSTEM "chrome://tzpush/locale/overlay.dtd">
+<!DOCTYPE window SYSTEM "chrome://tbsync/locale/overlay.dtd">
 
-<prefwindow id="tzpush.accountmanger"
+<prefwindow id="tbsync.accountmanger"
     xmlns:html="http://www.w3.org/1999/xhtml"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
     buttons="accept"
     buttonlabelaccept="&pref.Close;"
-    onload="tzPushAccountManager.onload();"
-    onunload="tzPushAccountManager.onunload()"
+    onload="tbSyncAccountManager.onload();"
+    onunload="tbSyncAccountManager.onunload()"
     width="750"
     height="550"
     title="&manager.title;" >
 
-    <script type="text/javascript" src="chrome://tzpush/content/accountManager.js" /> 
+    <script type="text/javascript" src="chrome://tbsync/content/accountManager.js" /> 
 
-    <prefpane id="settings" label="&pref.SettingDialog;" image="chrome://tzpush/skin/settings.png" >
+    <prefpane id="settings" label="&pref.SettingDialog;" image="chrome://tbsync/skin/settings.png" >
 
         <popupset>
-            <menupopup id="tzpush.accountmanger.ContextMenu">
-                <menuitem id="tzpush.accountmanger.ContextMenuDelete" label="&pref.DeleteAccount;" oncommand="tzPushAccountManager.deleteAccount();"/>
+            <menupopup id="tbsync.accountmanger.ContextMenu">
+                <menuitem id="tbsync.accountmanger.ContextMenuDelete" label="&pref.DeleteAccount;" oncommand="tbSyncAccountManager.deleteAccount();"/>
             </menupopup>
         </popupset>
 
         <hbox flex="1">
             <vbox style="width:200px;">
                     <richlistbox 
-                        id="tzPushAccountManager.accounts"
+                        id="tbSyncAccountManager.accounts"
                         flex="1"
                         seltype="single"
-                        context="tzpush.accountmanger.ContextMenu"
-                        onkeypress="if (event.keyCode == 46) {tzPushAccountManager.deleteAccount();}"
-                        onselect="tzPushAccountManager.loadSelectedAccount();">
+                        context="tbsync.accountmanger.ContextMenu"
+                        onkeypress="if (event.keyCode == 46) {tbSyncAccountManager.deleteAccount();}"
+                        onselect="tbSyncAccountManager.loadSelectedAccount();">
                         <listhead style="border-bottom: 1px solid lightgrey;">
                             <listheader style="font-weight:bold;" label="&manager.accounts;" flex="3" />
                             <listheader style="font-weight:bold;text-align:right;" label="&manager.status;" flex="1" />
@@ -42,45 +42,45 @@
                         <button 
                         style="width: 2em; min-width: 2em;"
                         label="+"
-                        oncommand="tzPushAccountManager.addAccount();"/>
+                        oncommand="tbSyncAccountManager.addAccount();"/>
                     </hbox>
             </vbox>
-            <iframe id="tzPushAccountManager.contentFrame" flex="1" />
+            <iframe id="tbSyncAccountManager.contentFrame" flex="1" />
         </hbox>
 
     </prefpane>
 
-    <prefpane id="Cape" label="&pref.Cape;" image="chrome://tzpush/skin/cape.png" >
+    <prefpane id="Cape" label="&pref.Cape;" image="chrome://tbsync/skin/cape.png" >
         <hbox flex="1" >
             <vbox flex="0" style="padding: 0 2em;" >
-                <image src="chrome://tzpush/skin/cape.png" width='100' style='padding:10px;' align='center' onclick="tzPushAccountManager.openTBtab('http://www.capeproject.org.uk');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
+                <image src="chrome://tbsync/skin/cape.png" width='100' style='padding:10px;' align='center' onclick="tbSyncAccountManager.openTBtab('http://www.capeproject.org.uk');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
                 <label
                     value="www.capeproject.org.uk"
                     style="color: blue; text-decoration: underline"
                     onmouseover="this.style.cursor='pointer'"
                     onmouseout="this.style.cursor='default'"
-                    onclick="tzPushAccountManager.openTBtab('http://www.capeproject.org.uk');"
+                    onclick="tbSyncAccountManager.openTBtab('http://www.capeproject.org.uk');"
                     align="center" />
             </vbox>
             <vbox flex="1"  style="padding: 0 2em 0 0;" >
                  <html:p> Cape is an established registered charity offering a dynamic and flexible outreach and day service for people who experience severe and enduring mental health difficulties. </html:p>
-                 <html:p> TzPush is free software, but feel free to donate to good cause, like CAPE or <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tzPushAccountManager.openTBtab('https://addons.mozilla.org/en-US/thunderbird/addon/tzpush/developers?src=api');" style="color:blue;text-decoration: underline">buy me a cup of tea and a slice of cake.</html:span></html:p>
+                 <html:p> TbSync is free software, but feel free to donate to good cause, like CAPE or <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSyncAccountManager.openTBtab('https://addons.mozilla.org/en-US/thunderbird/addon/tbsync/developers?src=api');" style="color:blue;text-decoration: underline">buy me a cup of tea and a slice of cake.</html:span></html:p>
                  <html:p>Thank you,<html:br/>Mark.</html:p> 
             </vbox>
         </hbox>
     </prefpane>
 
-    <prefpane id="Catman" label="&pref.catman;" image="chrome://tzpush/skin/catman.png" >
+    <prefpane id="Catman" label="&pref.catman;" image="chrome://tbsync/skin/catman.png" >
         <hbox flex="1" >
             <vbox flex="1" style="padding: 0 2em;" >
-                <html:p>TzPush is also syncing contact categories. To be able to use them in Thunderbird, you need to install the Category Manager Add-On developed by John Bieling. It enables you to manage overlapping contact groups and provides a bunch of other category related features. It can be found in the official Mozilla Add-On repository:</html:p>
-                <html:p onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tzPushAccountManager.openTBtab('https://addons.mozilla.org/de/thunderbird/addon/categorymanager/');" style="color:blue;text-decoration: underline;padding-left:1em;">https://addons.mozilla.org/de/thunderbird/addon/categorymanager/</html:p>
+                <html:p>TbSync is also syncing contact categories. To be able to use them in Thunderbird, you need to install the Category Manager Add-On developed by John Bieling. It enables you to manage overlapping contact groups and provides a bunch of other category related features. It can be found in the official Mozilla Add-On repository:</html:p>
+                <html:p onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSyncAccountManager.openTBtab('https://addons.mozilla.org/de/thunderbird/addon/categorymanager/');" style="color:blue;text-decoration: underline;padding-left:1em;">https://addons.mozilla.org/de/thunderbird/addon/categorymanager/</html:p>
             </vbox>
          </hbox>
     </prefpane>
 
-    <prefpane id="Help" label="&pref.Help;" image="chrome://tzpush/skin/help.png" >
-        <iframe flex="1" src="chrome://tzpush/content/help.html" />
+    <prefpane id="Help" label="&pref.Help;" image="chrome://tbsync/skin/help.png" >
+        <iframe flex="1" src="chrome://tbsync/content/help.html" />
     </prefpane>
 
 </prefwindow>

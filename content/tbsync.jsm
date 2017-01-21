@@ -1,11 +1,11 @@
 "use strict";
 
-var EXPORTED_SYMBOLS = ["tzPush"];
+var EXPORTED_SYMBOLS = ["tbSync"];
 
 //global objects (not exported, not available outside this module)
 const Cc = Components.classes;
 const Ci = Components.interfaces;
-var bundle = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tzpush/locale/strings");
+var bundle = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tbsync/locale/strings");
 
 
 //import calUtils if avail
@@ -26,7 +26,7 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
 
 */
 
-var tzPush = {
+var tbSync = {
 
     prefWindowObj: null,
 
@@ -34,18 +34,18 @@ var tzPush = {
     
     init: function () {
         //init stuff for address book
-        tzPush.addressbookListener.add();
-        tzPush.scanPrefIdsOfAddressBooks();
+        tbSync.addressbookListener.add();
+        tbSync.scanPrefIdsOfAddressBooks();
 
         //init stuff for calendar (only if lightning is installed)
         if ("calICalendar" in Components.interfaces) {
             //adding a global observer, or one for each "known" book?
-            cal.getCalendarManager().addCalendarObserver(tzPush.calendarObserver);
-            cal.getCalendarManager().addObserver(tzPush.calendarManagerObserver)
+            cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
+            cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver)
         }
 
         //init stuff for sync process
-        tzPush.sync.resetSync();
+        tbSync.sync.resetSync();
     },
 
 
@@ -110,14 +110,14 @@ var tzPush = {
         for (let i=0; i< wbxml.length; i++) charcodes.push(wbxml.charCodeAt(i).toString(16));
         let bytestring = charcodes.join(" ");
         //let xml = decodeURIComponent(escape(wbxmltools.convert2xml(wbxml).split('><').join('>\n<')));
-        let xml = tzPush.decode_utf8(tzPush.wbxmltools.convert2xml(wbxml).split('><').join('>\n<'));
+        let xml = tbSync.decode_utf8(tbSync.wbxmltools.convert2xml(wbxml).split('><').join('>\n<'));
 
-        //tzPush.dump(aMessage + " (bytes)", bytestring);
-        tzPush.dump(aMessage + " (xml)", xml);
-        //tzPush.appendToFile("wbxml-debug.log", "\n\n" + aMessage + " (bytes)\n");
-        //tzPush.appendToFile("wbxml-debug.log", bytestring);
-        tzPush.appendToFile("wbxml-debug.log", "\n\n" + aMessage + " (xml)\n");
-        tzPush.appendToFile("wbxml-debug.log", xml);
+        //tbSync.dump(aMessage + " (bytes)", bytestring);
+        tbSync.dump(aMessage + " (xml)", xml);
+        //tbSync.appendToFile("wbxml-debug.log", "\n\n" + aMessage + " (bytes)\n");
+        //tbSync.appendToFile("wbxml-debug.log", bytestring);
+        tbSync.appendToFile("wbxml-debug.log", "\n\n" + aMessage + " (xml)\n");
+        tbSync.appendToFile("wbxml-debug.log", xml);
     },
 
     
@@ -162,12 +162,12 @@ var tzPush = {
 
     getConnection: function(account) {
         let connection = {
-            protocol: (tzPush.db.getAccountSetting(account, "https") == "1") ? "https://" : "http://",
-            set host(newHost) { tzPush.db.setAccountSetting(account, "host", newHost); },
-            get server() { return tzPush.db.getAccountSetting(account, "host"); },
-            get host() { return this.protocol + tzPush.db.getAccountSetting(account, "host"); },
+            protocol: (tbSync.db.getAccountSetting(account, "https") == "1") ? "https://" : "http://",
+            set host(newHost) { tbSync.db.setAccountSetting(account, "host", newHost); },
+            get server() { return tbSync.db.getAccountSetting(account, "host"); },
+            get host() { return this.protocol + tbSync.db.getAccountSetting(account, "host"); },
             get url() { return this.host + "/Microsoft-Server-ActiveSync"; },
-            user: tzPush.db.getAccountSetting(account, "user"),
+            user: tbSync.db.getAccountSetting(account, "user"),
         };
         return connection;
     },
@@ -214,11 +214,11 @@ var tzPush = {
 
     setTargetModified : function (folder) {
         if (folder.status == "OK") {
-            tzPush.db.setAccountSetting(folder.account, "status", "notsyncronized");
-            tzPush.db.setFolderSetting(folder.account, folder.folderID, "status", "modified");
+            tbSync.db.setAccountSetting(folder.account, "status", "notsyncronized");
+            tbSync.db.setFolderSetting(folder.account, folder.folderID, "status", "modified");
             //notify settings gui to update status
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tzpush.changedSyncstate", folder.account);
+            observerService.notifyObservers(null, "tbsync.changedSyncstate", folder.account);
         }
     },
 
@@ -226,14 +226,14 @@ var tzPush = {
         switch (type) {
             case "8":
             case "13":
-                tzPush.removeCalendar(target);
+                tbSync.removeCalendar(target);
                 break;
             case "9":
             case "14":
-                tzPush.removeBook(target);
+                tbSync.removeBook(target);
                 break;
             default:
-                tzPush.dump("tzPush::removeTarget","Unknown type <"+type+">");
+                tbSync.dump("tbSync::removeTarget","Unknown type <"+type+">");
         }
     },
 
@@ -248,9 +248,9 @@ var tzPush = {
         //if a contact in one of the synced books is modified, update status of target and account
         onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
             if (aItem instanceof Components.interfaces.nsIAbCard) {
-                let aParentDirURI = tzPush.getUriFromPrefId(aItem.directoryId.split("&")[0]);
-                let folders = tzPush.db.findFoldersWithSetting("target", aParentDirURI);
-                if (folders.length > 0) tzPush.setTargetModified(folders[0]);
+                let aParentDirURI = tbSync.getUriFromPrefId(aItem.directoryId.split("&")[0]);
+                let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
+                if (folders.length > 0) tbSync.setTargetModified(folders[0]);
             }
         },
 
@@ -264,11 +264,11 @@ var tzPush = {
              * deletions and log them to a file in the profile folder
              */
             if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory) {
-                let folders = tzPush.db.findFoldersWithSetting("target", aParentDir.URI);
+                let folders = tbSync.db.findFoldersWithSetting("target", aParentDir.URI);
                 if (folders.length > 0) {
                     let cardId = aItem.getProperty("ServerId", "");
-                    if (cardId) tzPush.db.addItemToChangeLog(aParentDir.URI, cardId, "delete");
-                    tzPush.setTargetModified(folders[0]);
+                    if (cardId) tbSync.db.addItemToChangeLog(aParentDir.URI, cardId, "delete");
+                    tbSync.setTargetModified(folders[0]);
                 }
             }
 
@@ -277,22 +277,22 @@ var tzPush = {
              * clean up delete log
              */
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                let folders =  tzPush.db.findFoldersWithSetting("target", aItem.URI);
+                let folders =  tbSync.db.findFoldersWithSetting("target", aItem.URI);
                 //It should not be possible to link a book to two different accounts, so we just take the first target found
                 if (folders.length > 0) {
                     folders[0].target="";
                     folders[0].synckey="";
                     folders[0].lastsynctime= "";
                     folders[0].status= "aborted";
-                    tzPush.db.setFolder(folders[0]);
-                    tzPush.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
-                    //not needed - tzPush.db.setAccountSetting(owner[0], "policykey", ""); //- this is identical to tzPush.sync.resync() without the actual sync
+                    tbSync.db.setFolder(folders[0]);
+                    tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
+                    //not needed - tbSync.db.setAccountSetting(owner[0], "policykey", ""); //- this is identical to tbSync.sync.resync() without the actual sync
 
-                    tzPush.db.clearChangeLog(aItem.URI);
+                    tbSync.db.clearChangeLog(aItem.URI);
 
                     //update settings window, if open
                     let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                    observerService.notifyObservers(null, "tzpush.changedSyncstate", folders[0].account);
+                    observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
                 }
             }
         },
@@ -300,7 +300,7 @@ var tzPush = {
         onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {
             //if a new book is added, get its prefId (which we need to get the parentDir of a modified card)
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                tzPush.scanPrefIdsOfAddressBooks();
+                tbSync.scanPrefIdsOfAddressBooks();
             }
             
             if (aParentDir instanceof Components.interfaces.nsIAbDirectory) {
@@ -319,8 +319,8 @@ var tzPush = {
                     aParentDir.modifyCard(aItem);
                 }
                 //also update target status
-                let folders = tzPush.db.findFoldersWithSetting("target", aParentDir.URI);
-                if (folders.length > 0) tzPush.setTargetModified(folders[0]);
+                let folders = tbSync.db.findFoldersWithSetting("target", aParentDir.URI);
+                if (folders.length > 0) tbSync.setTargetModified(folders[0]);
             }
         },
 
@@ -328,13 +328,13 @@ var tzPush = {
             let flags = Components.interfaces.nsIAbListener;
             Components.classes["@mozilla.org/abmanager;1"]
                 .getService(Components.interfaces.nsIAbManager)
-                .addAddressBookListener(tzPush.addressbookListener, flags.all);
+                .addAddressBookListener(tbSync.addressbookListener, flags.all);
         },
 
         remove: function addressbookListener_remove () {
             Components.classes["@mozilla.org/abmanager;1"]
                 .getService(Components.interfaces.nsIAbManager)
-                .removeAddressBookListener(tzPush.addressbookListener);
+                .removeAddressBookListener(tbSync.addressbookListener);
         }
     },
         
@@ -354,7 +354,7 @@ var tzPush = {
     },
 
     addNewCardFromServer: function (card, addressBook, account) {
-        if (tzPush.db.getAccountSetting(account, "displayoverride") == "1") {
+        if (tbSync.db.getAccountSetting(account, "displayoverride") == "1") {
             card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
         }
         
@@ -406,14 +406,14 @@ var tzPush = {
     },
     
     checkAddressbook: function (account, folderID) {
-        let folder = tzPush.db.getFolder(account, folderID);
-        let targetName = tzPush.getAddressBookName(folder.target);
-        let targetObject = tzPush.getAddressBookObject(folder.target);
+        let folder = tbSync.db.getFolder(account, folderID);
+        let targetName = tbSync.getAddressBookName(folder.target);
+        let targetObject = tbSync.getAddressBookObject(folder.target);
         
         if (targetName !== null && targetObject !== null && targetObject instanceof Components.interfaces.nsIAbDirectory) return true;
         
         // Get unique Name for new address book
-        let testname = tzPush.db.getAccountSetting(account, "accountname") + "." + folder.name;
+        let testname = tbSync.db.getAccountSetting(account, "accountname") + "." + folder.name;
         let newname = testname;
         let count = 1;
         let unique = false;
@@ -434,15 +434,15 @@ var tzPush = {
         } while (!unique);
         
         //Create the new book with the unique name
-        let dirPrefId = tzPush.addBook(newname);
+        let dirPrefId = tbSync.addBook(newname);
         
         //find uri of new book and store in DB
         let booksIter = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).directories;
         while (booksIter.hasMoreElements()) {
             let data = booksIter.getNext();
             if (data instanceof Components.interfaces.nsIAbDirectory && data.dirPrefId == dirPrefId) {
-                tzPush.db.setFolderSetting(account, folderID, "target", data.URI); 
-                tzPush.dump("checkAddressbook("+account+", "+folderID+")", "Creating new address book (" + newname + ", " + data.URI + ")");
+                tbSync.db.setFolderSetting(account, folderID, "target", data.URI); 
+                tbSync.dump("checkAddressbook("+account+", "+folderID+")", "Creating new address book (" + newname + ", " + data.URI + ")");
                 return true;
             }
         }
@@ -459,19 +459,19 @@ var tzPush = {
     calendarObserver : { 
         onStartBatch : function () {},
         onEndBatch : function () {},
-        onLoad : function (aCalendar) { tzPush.dump("calendarObserver::onLoad","<" + aCalendar.name + "> was loaded."); },
+        onLoad : function (aCalendar) { tbSync.dump("calendarObserver::onLoad","<" + aCalendar.name + "> was loaded."); },
 
         onAddItem : function (aItem) { 
-            let itemStatus = tzPush.db.getItemStatusFromChangeLog(aItem.calendar.id, aItem.id)
+            let itemStatus = tbSync.db.getItemStatusFromChangeLog(aItem.calendar.id, aItem.id)
 
             //if an event in one of the synced calendars is added, update status of target and account
-            let folders = tzPush.db.findFoldersWithSetting("target", aItem.calendar.id);
+            let folders = tbSync.db.findFoldersWithSetting("target", aItem.calendar.id);
             if (folders.length > 0) {
                 if (itemStatus == "added_by_server") {
-                    tzPush.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);
+                    tbSync.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);
                 } else {
-                    tzPush.setTargetModified(folders[0]);
-                    tzPush.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "added_by_user");
+                    tbSync.setTargetModified(folders[0]);
+                    tbSync.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "added_by_user");
                 }
             }
         },
@@ -480,17 +480,17 @@ var tzPush = {
             //check, if it is a pure modification within the same calendar
             if (aNewItem.calendar.id == aOldItem.calendar.id) { // aNewItem.calendar could be null ??? throw up on server pushed deletes as well ??? TODO
 
-                let itemStatus = tzPush.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
+                let itemStatus = tbSync.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
                 //check, if it is an event in one of the synced calendars
 
-                let newFolders = tzPush.db.findFoldersWithSetting("target", aNewItem.calendar.id);
+                let newFolders = tbSync.db.findFoldersWithSetting("target", aNewItem.calendar.id);
                 if (newFolders.length > 0) {
                     if (itemStatus == "modified_by_server") {
-                        tzPush.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);
+                        tbSync.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);
                     } else if (itemStatus != "added_by_user") { //if it is a local unprocessed add, do not set it to modified
                         //update status of target and account
-                        tzPush.setTargetModified(newFolders[0]);
-                        tzPush.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "modified_by_user");
+                        tbSync.setTargetModified(newFolders[0]);
+                        tbSync.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "modified_by_user");
 
                     }
                 }
@@ -499,48 +499,48 @@ var tzPush = {
         },
 
         onDeleteItem : function (aDeletedItem) {
-            let itemStatus = tzPush.db.getItemStatusFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id)
+            let itemStatus = tbSync.db.getItemStatusFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id)
 
             //if an event in one of the synced calendars is modified, update status of target and account
-            let folders = tzPush.db.findFoldersWithSetting("target", aDeletedItem.calendar.id);
+            let folders = tbSync.db.findFoldersWithSetting("target", aDeletedItem.calendar.id);
             if (folders.length > 0) {
                 if (itemStatus == "deleted_by_server" || itemStatus == "added_by_user") {
                     //if it is a delete pushed from the server, simply acknowledge (do nothing) 
                     //a local add, which has not yet been processed (synced) is deleted -> remove all traces
-                    tzPush.db.removeItemFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id);
+                    tbSync.db.removeItemFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id);
                 } else {
-                    tzPush.setTargetModified(folders[0]);
-                    tzPush.db.addItemToChangeLog(aDeletedItem.calendar.id, aDeletedItem.id, "deleted_by_user");
+                    tbSync.setTargetModified(folders[0]);
+                    tbSync.db.addItemToChangeLog(aDeletedItem.calendar.id, aDeletedItem.id, "deleted_by_user");
                 }
             }
         },
             
-        onError : function (aCalendar, aErrNo, aMessage) { tzPush.dump("calendarObserver::onError","<" + aCalendar.name + "> had error #"+aErrNo+"("+aMessage+")."); },
+        onError : function (aCalendar, aErrNo, aMessage) { tbSync.dump("calendarObserver::onError","<" + aCalendar.name + "> had error #"+aErrNo+"("+aMessage+")."); },
 
         //Properties of the calendar itself (name, color etc.)
         onPropertyChanged : function (aCalendar, aName, aValue, aOldValue) {
-            tzPush.dump("calendarObserver::onPropertyChanged","<" + aName + "> changed from <"+aOldValue+"> to <"+aValue+">");
+            tbSync.dump("calendarObserver::onPropertyChanged","<" + aName + "> changed from <"+aOldValue+"> to <"+aValue+">");
             switch (aName) {
                 case "name":
-                    let folders = tzPush.db.findFoldersWithSetting("target", aCalendar.id);
+                    let folders = tbSync.db.findFoldersWithSetting("target", aCalendar.id);
                     if (folders.length > 0) {
                         //update settings window, if open
                         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                        observerService.notifyObservers(null, "tzpush.changedSyncstate", folders[0].account);
+                        observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
                     }
                     break;
             }
         },
 
         onPropertyDeleting : function (aCalendar, aName) {
-            tzPush.dump("calendarObserver::onPropertyDeleting","<" + aName + "> was deleted");
+            tbSync.dump("calendarObserver::onPropertyDeleting","<" + aName + "> was deleted");
             switch (aName) {
                 case "name":
-                    let folders = tzPush.db.findFoldersWithSetting("target", aCalendar.id);
+                    let folders = tbSync.db.findFoldersWithSetting("target", aCalendar.id);
                     if (folders.length > 0) {
                         //update settings window, if open
                         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                        observerService.notifyObservers(null, "tzpush.changedSyncstate", folders[0].account);
+                        observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
                     }
                     break;
             }
@@ -548,38 +548,38 @@ var tzPush = {
     },
 
     calendarManagerObserver : {
-        onCalendarRegistered : function (aCalendar) { tzPush.dump("calendarManagerObserver::onCalendarRegistered","<" + aCalendar.name + "> was registered."); },
-        onCalendarUnregistering : function (aCalendar) { tzPush.dump("calendarManagerObserver::onCalendarUnregistering","<" + aCalendar.name + "> was unregisterd."); },
+        onCalendarRegistered : function (aCalendar) { tbSync.dump("calendarManagerObserver::onCalendarRegistered","<" + aCalendar.name + "> was registered."); },
+        onCalendarUnregistering : function (aCalendar) { tbSync.dump("calendarManagerObserver::onCalendarUnregistering","<" + aCalendar.name + "> was unregisterd."); },
         onCalendarDeleting : function (aCalendar) {
-            let folders =  tzPush.db.findFoldersWithSetting("target", aCalendar.id);
+            let folders =  tbSync.db.findFoldersWithSetting("target", aCalendar.id);
             //It should not be possible to link a calendar to two different accounts, so we just take the first target found
             if (folders.length > 0) {
                 folders[0].target="";
                 folders[0].synckey="";
                 folders[0].lastsynctime= "";
                 folders[0].status= "aborted";
-                tzPush.db.setFolder(folders[0]);
-                tzPush.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
+                tbSync.db.setFolder(folders[0]);
+                tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
 
-                tzPush.db.clearChangeLog(aCalendar.id);
+                tbSync.db.clearChangeLog(aCalendar.id);
 
                 //update settings window, if open
                 let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                observerService.notifyObservers(null, "tzpush.changedSyncstate", folders[0].account);
+                observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
             }
         },
     },
 
     calendarOperationObserver : { 
         onOperationComplete : function (aOperationType, aId, aDetail) {
-            tzPush.dump("onOperationComplete",[aOperationType, aId, aDetail].join("|"));
+            tbSync.dump("onOperationComplete",[aOperationType, aId, aDetail].join("|"));
         },
         
         onGetResult (aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
             //aItems is array with size_is(aCount), iid_is(aItemType)
-            tzPush.dump("onGetResult",[aStatus,aItemType, aDetail, aCount].join("|"));
+            tbSync.dump("onGetResult",[aStatus,aItemType, aDetail, aCount].join("|"));
             for (let i=0; i<aItems.length; i++) {
-                tzPush.dump("onGetResult(item)",aItems[i].title);
+                tbSync.dump("onGetResult(item)",aItems[i].title);
             }
         }
     },
@@ -605,7 +605,7 @@ var tzPush = {
     },
 
     checkCalender: function (account, folderID) {
-        let folder = tzPush.db.getFolder(account, folderID);
+        let folder = tbSync.db.getFolder(account, folderID);
         let calManager = cal.getCalendarManager();
         let targetCal = calManager.getCalendarById(folder.target);
         
@@ -615,7 +615,7 @@ var tzPush = {
 
         
         // Get unique Name for new calendar
-        let testname = tzPush.db.getAccountSetting(account, "accountname") + "." + folder.name;
+        let testname = tbSync.db.getAccountSetting(account, "accountname") + "." + folder.name;
         let newname = testname;
         let count = 1;
         let unique = false;
@@ -640,10 +640,10 @@ var tzPush = {
         calManager.registerCalendar(newCalendar);
         newCalendar.setProperty("color","#c11d3b"); //any chance to get the color from the provider?
         newCalendar.setProperty("calendar-main-in-composite",true);
-        tzPush.dump("tzPush::checkCalendar("+account+", "+folderID+")", "Creating new calendar (" + newname + ")");
+        tbSync.dump("tbSync::checkCalendar("+account+", "+folderID+")", "Creating new calendar (" + newname + ")");
         
         //store id of calendar as target in DB
-        tzPush.db.setFolderSetting(account, folderID, "target", newCalendar.id); 
+        tbSync.db.setFolderSetting(account, folderID, "target", newCalendar.id); 
         return true;
 
 /*
@@ -651,8 +651,8 @@ var tzPush = {
             // - https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIItemBase.idl
             // - https://dxr.mozilla.org/comm-central/source/calendar/base/public/calICalendar.idl
             
-            // add custom observer to calender - besides the global one added in tzPush.init()
-            calendar.addObserver(tzPush.calendarObserver2);
+            // add custom observer to calender - besides the global one added in tbSync.init()
+            calendar.addObserver(tbSync.calendarObserver2);
             
             //get all items of a calendar - results are catched by the listener and finished by a onOperationComplete
             //Flags : https://dxr.mozilla.org/comm-central/source/calendar/base/public/calICalendar.idl#243
@@ -672,11 +672,11 @@ var tzPush = {
 
 let loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
 
-// load all subscripts into tzPush
+// load all subscripts into tbSync
 //- each subscript will be able to access functions/members of other subscripts
 //- loading order does not matter
-loader.loadSubScript("chrome://tzpush/content/subscripts/db.js", tzPush);
-loader.loadSubScript("chrome://tzpush/content/subscripts/sync.js", tzPush);
-loader.loadSubScript("chrome://tzpush/content/subscripts/contactsync.js", tzPush);
-loader.loadSubScript("chrome://tzpush/content/subscripts/calendarsync.js", tzPush);
-loader.loadSubScript("chrome://tzpush/content/subscripts/wbxmltools.js", tzPush);
+loader.loadSubScript("chrome://tbsync/content/subscripts/db.js", tbSync);
+loader.loadSubScript("chrome://tbsync/content/subscripts/sync.js", tbSync);
+loader.loadSubScript("chrome://tbsync/content/subscripts/contactsync.js", tbSync);
+loader.loadSubScript("chrome://tbsync/content/subscripts/calendarsync.js", tbSync);
+loader.loadSubScript("chrome://tbsync/content/subscripts/wbxmltools.js", tbSync);

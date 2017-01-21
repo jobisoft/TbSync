@@ -1,6 +1,6 @@
 "use strict";
 
-var tzPushPassword = {
+var tbSyncPassword = {
     
     onload: function () {
         document.title = window.arguments[0];
@@ -9,7 +9,7 @@ var tzPushPassword = {
 
     doOK: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tzpush.setPassword", this.account + "." + document.getElementById("tzpush.password").value);
+        observerService.notifyObservers(null, "tbsync.setPassword", this.account + "." + document.getElementById("tbsync.password").value);
     }
 
 };
