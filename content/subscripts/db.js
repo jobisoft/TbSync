@@ -7,6 +7,8 @@
 var db = {
 
     prefSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tzpush."),
+    tzpushSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tzpush."),
+
     conn: null,
     _accountCache: null,
     _folderCache: {},
@@ -60,7 +62,7 @@ var db = {
 
     
     init: function () {
-        let dbFile = FileUtils.getFile("ProfD", ["ZPush", "db.sqlite"]);
+        let dbFile = FileUtils.getFile("ProfD", ["ZPush", "db_1_0.sqlite"]);
         let dbService = Cc["@mozilla.org/storage/service;1"].getService(Ci.mozIStorageService);
 
         this.accountColumns = this.getTableFields("accounts");
@@ -82,28 +84,37 @@ var db = {
             }
 
             //DB has just been created and we should try to import old TzPush 1.9 account data from preferences
-            let account = this.getAccount(this.addAccount("TzPush"), true); //get a copy of the cache, which can be modified
+            let hasTzPushSettinngs = false;
+            try { 
+                this.tzpushSettings.getCharPref("host"); 
+                hasTzPushSettinngs = true;
+            } catch(e) {};
             
-            try { account.deviceId = this.prefSettings.getCharPref("deviceId") } catch(e) {};
-            try { account.asversion = this.prefSettings.getCharPref("asversion") } catch(e) {};
-            try { account.host = this.prefSettings.getCharPref("host") } catch(e) {};
-            try { account.user = this.prefSettings.getCharPref("user") } catch(e) {};
-            try { account.autosync = this.prefSettings.getIntPref("autosync") } catch(e) {};
+            //Migrate
+            if (hasTzPushSettinngs) {
+                let account = this.getAccount(this.addAccount("TzPush"), true); //get a copy of the cache, which can be modified
+                
+                try { account.deviceId = this.tzpushSettings.getCharPref("deviceId") } catch(e) {};
+                try { account.asversion = this.tzpushSettings.getCharPref("asversion") } catch(e) {};
+                try { account.host = this.tzpushSettings.getCharPref("host") } catch(e) {};
+                try { account.user = this.tzpushSettings.getCharPref("user") } catch(e) {};
+                try { account.autosync = this.tzpushSettings.getIntPref("autosync") } catch(e) {};
 
-            //BOOL fields - to not have to mess with different field types, everything is stored as TEXT in the DB
-            try { account.https = (this.prefSettings.getBoolPref("https") ? "1" : "0") } catch(e) {};
-            try { account.provision = (this.prefSettings.getBoolPref("prov") ? "1" : "0") } catch(e) {};
-            try { account.birthday = (this.prefSettings.getBoolPref("birthday") ? "1" : "0") } catch(e) {};
-            try { account.displayoverride = (this.prefSettings.getBoolPref("displayoverride") ? "1" : "0") } catch(e) {};
-            try { account.downloadonly = (this.prefSettings.getBoolPref("downloadonly") ? "1" : "0") } catch(e) {};
-            
-            //migrate seperator into server setting
-            try {
-                if (this.prefSettings.getCharPref("seperator") == ", ") account.servertype = "horde";
-                else account.servertype = "zarafa";
-            } catch(e) {}
-            
-            this.setAccount(account);
+                //BOOL fields - to not have to mess with different field types, everything is stored as TEXT in the DB
+                try { account.https = (this.tzpushSettings.getBoolPref("https") ? "1" : "0") } catch(e) {};
+                try { account.provision = (this.tzpushSettings.getBoolPref("prov") ? "1" : "0") } catch(e) {};
+                try { account.birthday = (this.tzpushSettings.getBoolPref("birthday") ? "1" : "0") } catch(e) {};
+                try { account.displayoverride = (this.tzpushSettings.getBoolPref("displayoverride") ? "1" : "0") } catch(e) {};
+                try { account.downloadonly = (this.tzpushSettings.getBoolPref("downloadonly") ? "1" : "0") } catch(e) {};
+                
+                //migrate seperator into server setting
+                try {
+                    if (this.tzpushSettings.getCharPref("seperator") == ", ") account.servertype = "horde";
+                    else account.servertype = "zarafa";
+                } catch(e) {}
+                
+                this.setAccount(account);
+            }
 
         } else {
             this.conn = dbService.openDatabase(dbFile);

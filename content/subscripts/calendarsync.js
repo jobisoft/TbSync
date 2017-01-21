@@ -54,6 +54,23 @@ var calendarsync = {
         setstr : function (byteoffset, str) {
             //clear first
             for (let i=0;i<32;i++) this.buf.setUint16(byteoffset+i*2, 0);
+
+            //add GMT Offset to string
+            if (str == "UTC") str = "(GMT+00:00) Coordinated Universal Time";
+            else {
+                let offset = this.utcOffset;
+                let GMT = "GMT+";
+                if (offset<0) {
+                    GMT="GMT-";
+                    offset=0-offset;
+                }
+                
+                let m = this.utcOffset % 60;
+                let h = (this.utcOffset-m)/60;
+                GMT += (h<10 ? "0" :"" ) + h.toString() + ":" + (m<10 ? "0" :"" ) + m.toString();
+                str = "(" + GMT + ") " + str;
+            }
+            
             //walk thru the buffer in steps of 16bit (wchars)
             for (let i=0;i<str.length && i<32; i++) this.buf.setUint16(byteoffset+i*2, str.charCodeAt(i), true);
         },
@@ -149,7 +166,17 @@ var calendarsync = {
         };
         
         calendar.getItem(id, itemListener);
-        while (!opDone) {tzPush.dump("Waiting","onOperationDone() not finished yet");} //TODO wait 1s
+        // we need to wait for the async job to finish
+        // I would realy like to access the getItemById function of the storage provider, but duno how..
+        // that function directly returns the id from the private member memory without going thru a listener
+        while (!opDone) {
+            //sleep 1s and check again
+            let date = Date.now();
+            let curDate = Date.now();
+            do { 
+                curDate = Date.now();
+            } while (curDate-date < 1000);
+        }
         return requestedItem;
     },
 
@@ -166,6 +193,10 @@ var calendarsync = {
         if (data.Location) item.setProperty("location", data.Location);
         if (data.Categories && data.Categories.Category) item.setCategories(data.Categories.Category.length, data.Categories.Category);
 
+        //store the UID send from the server as EAS_UID. The field UID is reserved for the ServerId of this item and can be accessed as item.id and as item.getProperty("UID");
+        if (data.UID) item.setProperty("EAS_UID", data.UID);
+        
+        
         if (asversion == "2.5") {
             if (data.Body) item.setProperty("description", data.Body);
         } else {
@@ -201,11 +232,12 @@ var calendarsync = {
             //load timezone struct into EAS TimeZone object
             this.EASTZ.base64 = data.TimeZone;
             utcOffset = this.EASTZ.utcOffset;
-            tzPush.dump("Recieve TZ",utcOffset + " --- " + this.offsets[utcOffset] + " --- " + this.EASTZ.toString());
+            tzPush.dump("Recieve TZ","Extracted UTC Offset: " + utcOffset + ", Guessed TimeZone: " + this.offsets[utcOffset] + ", Full Received TZ: " + this.EASTZ.toString());
         }
 
         let utc = cal.createDateTime(data.StartTime); //format "19800101T000000Z" - UTC
         item.startDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
+        tzPush.dump("TB TZ", item.startDate.timezone);
 
         utc = cal.createDateTime(data.EndTime); 
         item.endDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
@@ -264,28 +296,23 @@ var calendarsync = {
     getEventApplicationDataAsWBXML: function (item, asversion) {
         let wbxml = tzPush.wbxmltools.createWBXML(""); //init wbxml with "" and not with precodes
 
-        /*	    
-         * IMPORTANT:
-         *
-         * The TB event item has an item.id which is identical to item.getProperty("UID") (a so called promoted property). This id is used locally
-         * to identify a card and is set to the ServerID during download. However, there could be a true UID property stored in the item on
-         * the server which we do not need and touch. We MUST NOT send a UID property to the server. We only send ClientID and/or ServerId, 
-         * 
-         * Protocoll requieres the following fields:
-         *  - BusyStatus
-         *  - DtStamp
-         *  - Sensitivity
-         *  - Start/EndTime
-         *  - Timezone
-         * 
+        /*
          *  We do not use ghosting, that means, if we do not include a value in CHANGE, it is removed from the server. 
-         *  OBACHT: Need to include any (empty) container to blank its childs.
-         * 
+         *  However, this does not seem to work on all fields. Furthermore, we need to include any (empty) container to blank its childs.
          */
 
         wbxml.switchpage("Calendar");
         
-        // REQUIRED FIELDS
+        //if EAS_UID is not set, the user just created this item and it has a new UID as id
+        //this UID is stored in the item and also on the server as ApplicationData.UID
+        //After the server receives this item, he will send back a ServerId, which we need to store as item id (UID),
+        //but we also need to keep the ApplicationData.UID, so we backup that into the field EAS_UID
+        if (item.hasProperty("EAS_UID")) wbxml.atag("UID", item.getProperty("EAS_UID"));
+        else wbxml.atag("UID", item.id);
+        
+        //IMPORTANT in EAS v16 it is no longer allowed to send a UID
+        
+        
         
 /*        item.timezoneOffset();
          let date_utc = date;
@@ -318,7 +345,32 @@ var calendarsync = {
 
         */
 
-        //clear  EAS TimeZone object and fill it with timezone settings (using startDate) - we need to parse VTIMEZONE
+/* 
+    Is that really needed? For UTC all is zero, but server still does not accept...
+
+    BEGIN:VTIMEZONE
+    TZID:Europe/Berlin
+    BEGIN:DAYLIGHT
+    TZOFFSETFROM:+0100
+    TZOFFSETTO:+0200
+    TZNAME:CEST
+    DTSTART:19700329T020000
+    RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3
+    END:DAYLIGHT
+    BEGIN:STANDARD
+    TZOFFSETFROM:+0200
+    TZOFFSETTO:+0100
+    TZNAME:CET
+    DTSTART:19701025T030000
+    RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10
+    END:STANDARD
+    END:VTIMEZONE
+*/        
+
+
+    // REQUIRED FIELDS
+
+        //Clear TZ object an manually load fields from TB
         this.EASTZ.base64 = "";
         this.EASTZ.utcOffset = item.startDate.timezoneOffset/-60;
         this.EASTZ.standardBias = 0;
@@ -327,7 +379,8 @@ var calendarsync = {
         this.EASTZ.daylightName = item.startDate.timezone.tzid;
         //this.EASTZ.standardDate
         //this.EASTZ.daylightDate
-        tzPush.dump("Send TZ",this.EASTZ.toString());
+        tzPush.dump("Send TZ", this.EASTZ.toString());
+        tzPush.dump("TB TZ", item.startDate.timezone);
 
         //TimeZone
         wbxml.atag("TimeZone", this.EASTZ.base64);
@@ -584,7 +637,7 @@ var calendarsync = {
                     wbxml.otag("Commands");
 
                         for (let i=0; i<changes.length; i++) {
-                            tzPush.dump("CHANGES",(i+1) + "/" + changes.length + " ("+changes[i].status+"," + changes[i].id + ")");
+//                            tzPush.dump("CHANGES",(i+1) + "/" + changes.length + " ("+changes[i].status+"," + changes[i].id + ")");
                             switch (changes[i].status) {
 
                                 case "added_by_user":
@@ -665,6 +718,11 @@ var calendarsync = {
                 let oldItem = this.getItem(syncdata.targetObj, add[count].ClientId);
                 if (oldItem !== null) {
                     let newItem = oldItem.clone();
+                    //server has two identifiers for this item, serverId and UID
+                    //on creation, TB created a UID which has been send to the server as UID inside AplicationData
+                    //we NEED to use ServerId as TB UID without changing UID on Server -> Backup
+                    newItem.setProperty("EAS_UID", newItem.id);
+                    
                     newItem.id = add[count].ServerId;
                     db.addItemToChangeLog(syncdata.targetObj.id, newItem.id, "modified_by_server");
                     syncdata.targetObj.modifyItem(newItem, oldItem, tzPush.calendarOperationObserver);
