@@ -102,7 +102,7 @@ var tbSync = {
 
     dump: function (what, aMessage) {
         var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
-        consoleService.logStringMessage("[TzPush] " + what + " : " + aMessage);
+        consoleService.logStringMessage("[TbSync] " + what + " : " + aMessage);
     },
 
     debuglog : function (wbxml, aMessage) {

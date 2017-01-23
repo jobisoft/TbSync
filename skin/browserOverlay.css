@@ -1,14 +1,10 @@
 /*  skin/toolbar-button.css  */
 
-#myextension-button {
-  list-style-image: url("chrome://tzpush/skin/sync.png");
+#tbsync-toolbarbutton {
+  list-style-image: url("chrome://tbsync/skin/sync.png");
 }
 
-toolbar[iconsize="small"] #myextension-button {
-  list-style-image: url("chrome://tzpush/skin/syncsmall.png");
+toolbar[iconsize="small"] #tbsync-toolbarbutton {
+  list-style-image: url("chrome://tbsync/skin/syncsmall.png");
 }
-#myextension-button-1{
-  list-style-image: url("chrome://tzpush/skin/sync.png");
-}
-
 

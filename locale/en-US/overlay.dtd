@@ -4,7 +4,7 @@
 
 <!ENTITY menu.settingslabel "Synchronization Settings (TbSync)">
 
-<!ENTITY toolbar.label " Synchronize all accounts (TbSync)">
+<!ENTITY toolbar.label " Synchronize all TbSync accounts">
 <!ENTITY toolbar.tooltiptext "Synchronization latest changes">
 
 <!ENTITY manager.accounts "Accounts">

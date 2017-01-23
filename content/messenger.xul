@@ -27,6 +27,7 @@
  
     <toolbarpalette id="MailToolbarPalette">
         <toolbarbutton 
+            id ="tbsync-toolbarbutton" 
             class="toolbarbutton"
             label="&toolbar.label;" 
             tooltiptext="&toolbar.tooltiptext;"
