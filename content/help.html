@@ -1,47 +1,26 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html><head>
-  
+<html>
+
+<head>
   <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
   <title>Help</title>
+</head>
 
-  
-</head><body>
-<h4>Birthdays</h4>
+<body style="font-size:14px">
+
+<h3>Birthdays</h3>
 
 <p>There seems to be a problem with entering birthday data in some
 versions of Zarafa Webaccess. It does work in the Webapp.<br>
-This is why there is a check box "Send Birthday Information"<br>
-This is a Zarafa bug not TbSync<br>
-</p>
+This is why there is a check box "Send Birthday Information" in the account settings dialog.<br>
+This is a bug in  Zarafa not in TbSync.</p>
 
-<h4>gcontactsync</h4>
+<h3>Debug</h3>
 
-<p>gcontactsync add its own aniversary field as does TbSync.<br>
-You can disable showing the anniversary field in TbSync by setting
-tbsync.showanniversary to false in about:config.<br>
-</p>
+<p>Set <b>tbsync.debugwbxml</b> to <b>true</b> in about:config to print the xml being sent and received by TbSync in the
+error console. It will also dump the raw wbxml in <i>[TB profile folder]/TbSync/wbxml-debug.log</i>.<p>
 
-<h4>Extra ActiveSync Fields</h4>
+<p>Switch off debug output if no longer needed and delete the log file.</p>
 
-<p>TbSync will add in extra fields for phone numbers in Contact main tab.<br>
-To hide them set tbsync.hidephones to true in about:config.<br>
-You may need this if you use other addons that alter the Contact display.<br>
-
-</p>
-
-<h4>Debug<br>
-</h4>
-
-<p>Set tbsync.debugwbxml to 1 in about:config<br>
-</p>
-
-This will show you the xml being sent and received by TbSync in the
-error console.<br>
-
-It will also dump the raw wbxml in profile/wbxml.<br>
-
-Turn off after use, and delete profile/wbxml/all the stuff here<br>
-
-<br>
-
-</body></html>
+</body>
+</html>

@@ -62,7 +62,7 @@ var db = {
 
     
     init: function () {
-        let dbFile = FileUtils.getFile("ProfD", ["ZPush", "db_1_0.sqlite"]);
+        let dbFile = FileUtils.getFile("ProfD", ["TbSync", "db_1_0.sqlite"]);
         let dbService = Cc["@mozilla.org/storage/service;1"].getService(Ci.mozIStorageService);
 
         this.accountColumns = this.getTableFields("accounts");

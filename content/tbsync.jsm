@@ -127,7 +127,7 @@ var tbSync = {
     // FILESYSTEM FUNCTION
 
     appendToFile: function (filename, data) {
-        let file = FileUtils.getFile("ProfD", ["ZPush",filename]);
+        let file = FileUtils.getFile("ProfD", ["TbSync",filename]);
         //create a strem to write to that file
         let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
         foStream.init(file, 0x02 | 0x08 | 0x10, parseInt("0666", 8), 0); // write, create, append
@@ -138,7 +138,7 @@ var tbSync = {
 
     addphoto: function (card, data) {
         let photo = card.getProperty("ServerId", "") + '.jpg';
-        let file = FileUtils.getFile("ProfD", ["ZPush","Photos", photo] );
+        let file = FileUtils.getFile("ProfD", ["TbSync","Photos", photo] );
 
         let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
         foStream.init(file, 0x02 | 0x08 | 0x20, 0x180, 0); // write, create, truncate

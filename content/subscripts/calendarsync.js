@@ -269,6 +269,9 @@ var calendarsync = {
         if (data.Sensitivity) item.setProperty("CLASS", CLASS[data.Sensitivity]);
                 
             /*
+	
+	Missing : MeetingStatus, Attendees, Attachements, Repeated Events
+	
             <OrganizerName xmlns='Calendar'>John Bieling</OrganizerName>
             <OrganizerEmail xmlns='Calendar'>john.bieling@uni-bonn.de</OrganizerEmail>
 
