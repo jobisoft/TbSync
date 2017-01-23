@@ -21,7 +21,11 @@
         </popupset>
     </statusbar>
 
-    <menupopup id="taskPopup">
+    <menupopup id="taskPopup"> <!-- TB40 Windows -->
+            <menuitem label="&menu.settingslabel;" insertbefore="menu_accountmgr" onclick="tbSyncMessenger.openAccountManager();" />
+    </menupopup>
+
+    <menupopup id="menu_EditPopup"> <!-- TB45 Linux-->
             <menuitem label="&menu.settingslabel;" insertbefore="menu_accountmgr" onclick="tbSyncMessenger.openAccountManager();" />
     </menupopup>
  
