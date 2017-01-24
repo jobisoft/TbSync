@@ -13,14 +13,12 @@ var tbSyncAccountManager = {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncAccountManager.updateAccountSyncStateObserver, "tbsync.changedSyncstate", false);
         observerService.addObserver(tbSyncAccountManager.updateAccountNameObserver, "tbsync.changedAccountName", false);
-        observerService.addObserver(tbSyncAccountManager.updateAccountStatusObserver, "tbsync.changedAccountStatus", false);
     },
 
     onunload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.removeObserver(tbSyncAccountManager.updateAccountSyncStateObserver, "tbsync.changedSyncstate");
         observerService.removeObserver(tbSyncAccountManager.updateAccountNameObserver, "tbsync.changedAccountName");
-        observerService.removeObserver(tbSyncAccountManager.updateAccountStatusObserver, "tbsync.changedAccountStatus");
         tbSync.prefWindowObj = null;
     },
 
@@ -65,7 +63,7 @@ var tbSyncAccountManager = {
             //react on true syncstate changes send by setSyncState()
             if (aData == "" && (state == "syncing" || state == "accountdone")) tbSyncAccountManager.updateAccountStatus(tbSync.sync.currentProzess.account );
 
-            //react on manual notifications send by tzmessenger
+            //react on any manual notification
             if (aData != "") tbSyncAccountManager.updateAccountStatus(aData);
         }
     },
@@ -96,12 +94,6 @@ var tbSyncAccountManager = {
         }
 
         return "chrome://tbsync/skin/" + src;
-    },
-
-    updateAccountStatusObserver: {
-        observe: function (aSubject, aTopic, aData) {
-            tbSyncAccountManager.updateAccountStatus(aData);
-        }
     },
 
     updateAccountStatus: function (id) {

@@ -32,7 +32,7 @@ var tbSyncMessenger = {
             tbSync.db.setAccountSetting(account, "state", "connecting");
             tbSync.sync.addAccountToSyncQueue("resync", account);
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tbsync.updateGui", account);
+            observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
         }
     },
 

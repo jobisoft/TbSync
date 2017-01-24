@@ -19,7 +19,7 @@ var tbSyncAccountSettings = {
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate", false);
-        observerService.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateGui", false);
+        observerService.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui", false);
         tbSyncAccountSettings.init = true;
 	
     },
@@ -29,7 +29,7 @@ var tbSyncAccountSettings = {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         if (tbSyncAccountSettings.init) {
             observerService.removeObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate");
-            observerService.removeObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateGui");
+            observerService.removeObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui");
         }
     },
 
@@ -207,7 +207,7 @@ var tbSyncAccountSettings = {
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "status", "aborted");
                 tbSync.db.setAccountSetting(folder.account, "status", "notsyncronized");
                 let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                observerService.notifyObservers(null, "tbsync.changedAccountStatus", tbSyncAccountSettings.selectedAccount);
+                observerService.notifyObservers(null, "tbsync.changedSyncstate", tbSyncAccountSettings.selectedAccount);
                 this.updateSyncstate();
             }
             this.updateFolderList();
@@ -382,7 +382,7 @@ var tbSyncAccountSettings = {
                 tbSync.sync.disconnectAccount(tbSyncAccountSettings.selectedAccount);
                 tbSyncAccountSettings.updateGui();
                 let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                observerService.notifyObservers(null, "tbsync.changedAccountStatus", tbSyncAccountSettings.selectedAccount);
+                observerService.notifyObservers(null, "tbsync.changedSyncstate", tbSyncAccountSettings.selectedAccount);
             }
         } else if (state == "disconnected") {
             //we are disconnected and want to connected
