@@ -574,6 +574,54 @@ var sync = {
         }
 
         return true;
-    }
+    },
+    
+    
+    autodiscover: function (user, password) {
+
+        let urls = [];
+        let parts = user.split("@");
+        urls.push("https://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
+        urls.push("https://"+parts[1]+"/Autodiscover/Autodiscover.xml");
+            
+        let xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n";
+        xml += "<Autodiscover xmlns= \"http://schemas.microsoft.com/exchange/autodiscover/mobilesync/requestschema/2006\">\r\n";
+        xml += "<Request>\r\n";
+        xml += "<EMailAddress>"+user+"</EMailAddress>\r\n";
+        xml += "<AcceptableResponseSchema>http://schemas.microsoft.com/exchange/autodiscover/mobilesync/responseschema/2006</AcceptableResponseSchema>\r\n";
+        xml += "</Request>\r\n";
+        xml += "</Autodiscover>";
+
+        tbSync.dump("XML", xml);
+        
+        // Create request handler
+        let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+        req.mozBackgroundRequest = true;
+        req.open("POST", urls[0], true);
+        req.setRequestHeader("Content-Length", xml.length);
+        req.setRequestHeader("Content-Type", "text/xml");
+        req.setRequestHeader("User-Agent", "Thunderbird ActiveSync");
+        req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + password));
+
+        // Define response handler for our request
+        req.onreadystatechange = function() { 
+//            tbSync.dump("header",req.getAllResponseHeaders().toLowerCase())
+            if (req.readyState === 4 && req.status === 200) {
+                tbSync.dump("DISCOVER GOOD",req.responseText);
+            } else if (req.readyState === 4) {
+                tbSync.dump("DISCOVER BAD",req.status);
+                tbSync.dump("DISCOVER TEXT",req.responseText);
+            }
+        }.bind(this);
+        
+        let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
+        try {
+            req.send(xml);
+        } catch (e) {
+            tbSync.dump("unknown error", e);
+        }
+
+        return true;
+    }    
 
 };
