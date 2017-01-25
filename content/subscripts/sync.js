@@ -1,5 +1,3 @@
-/* Copyright (c) 2012 Mark Nethersole
-   See the file LICENSE.txt for licensing information. */
 "use strict";
 
 var sync = {
@@ -586,15 +584,7 @@ var sync = {
         urls.push("https://"+parts[1]+"/Autodiscover/Autodiscover.xml");
         sync.autodiscoverHTTP(user, password, urls, 0);
     },
-    
-    autodiscoverFailed: function (user) {
-        tbSync.dump("EAS autodiscover failed", user);
-    },
-    
-    autodiscoverSucceeded: function (user, url) {
-        tbSync.dump("EAS autodiscover succeeded", user + " : " + url);
-    },
-    
+        
     autodiscoverHTTP: function (user, password, urls, index) {
         if (index>=urls.length) {
             this.autodiscoverFailed(user);
@@ -647,7 +637,7 @@ var sync = {
 
                                 for (let count = 0; count < server.length && !done; count++) {
                                     if (server[count].Type == "MobileSync" && server[count].Url) {
-                                        this.autodiscoverSucceeded(user, server[count].Url)
+                                        this.autodiscoverOPTIONS(user, password, server[count].Url)
                                         //there is also a type CertEnroll
                                         //do not continue with other urls and/or other server nodes
                                         done = true;
@@ -666,15 +656,36 @@ var sync = {
             }
         }.bind(this);
         
-        let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
-        try {
-            req.send(xml);
-        } catch (e) {
-            tbSync.dump("unknown error", e);
-        }
+        req.send(xml);
+    },
+    
+    autodiscoverOPTIONS: function (user, password, url) {
+        //send OPTIONS request to get ActiveSync Version
+        let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+        req.mozBackgroundRequest = true;
+        req.open("OPTIONS", url, true);
+        req.setRequestHeader("User-Agent", "Thunderbird ActiveSync");
+        req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + password));
 
-        return true;
-    }
+        // define response handler for our request
+        req.onreadystatechange = function() {
+            if (req.readyState === 4) {
+                if (req.status === 200) sync.autodiscoverSucceeded (user, password, url, req.getResponseHeader("MS-ASProtocolVersions"), req.getResponseHeader("MS-ASProtocolCommands"));
+                else sync.autodiscoverFailed (user);
+            }
+        }.bind(this);
 
+        req.send();
+    },
+    
+    autodiscoverFailed: function (user) {
+        tbSync.dump("EAS autodiscover failed", user);
+    },
+
+    autodiscoverSucceeded: function (user, password, url, versions, commands) {
+        tbSync.dump("EAS autodiscover succeeded", user);
+        tbSync.dump("EAS Url", url);
+        tbSync.dump("EAS Versions", versions);
+        tbSync.dump("EAS Commands", commands); //check for Provision
+    },
 };
-

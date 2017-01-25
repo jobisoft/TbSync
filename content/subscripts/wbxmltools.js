@@ -1,5 +1,3 @@
-/* Copyright (c) 2012 Mark Nethersole
-   See the file LICENSE.txt for licensing information. */
 "use strict";
 
 var wbxmltools = {
