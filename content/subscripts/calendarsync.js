@@ -129,7 +129,7 @@ var calendarsync = {
         }
 
         //debug
-        wbxmltools.printWbxmlData(wbxmlData);
+        xmltools.printXmlData(wbxmlData);
 
         //check status
         if (sync.statusIsBad(wbxmlData.Sync.Collections.Collection.Status, syncdata)) {
@@ -556,7 +556,7 @@ var calendarsync = {
         if (wbxmlData.Sync.Collections.Collection.Commands) {
 
             //looking for additions
-            let add = wbxmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Add);
+            let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Add);
             for (let count = 0; count < add.length; count++) {
 
                 let ServerId = add[count].ServerId;
@@ -572,7 +572,7 @@ var calendarsync = {
             }
 
             //looking for changes
-            let upd = wbxmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Change);
+            let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Change);
             for (let count = 0; count < upd.length; count++) {
 
                 let ServerId = upd[count].ServerId;
@@ -588,7 +588,7 @@ var calendarsync = {
             }
             
             //looking for deletes
-            let del = wbxmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Delete);
+            let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Delete);
             for (let count = 0; count < del.length; count++) {
 
                 let ServerId = del[count].ServerId;
@@ -708,7 +708,7 @@ var calendarsync = {
         if (wbxmlData.Sync.Collections.Collection.Responses) {
 
             //looking for additions (Add node contains, status, old ClientId and new ServerId)
-            let add = wbxmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Add);
+            let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Add);
             for (let count = 0; count < add.length; count++) {
                 
                 //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
@@ -730,14 +730,14 @@ var calendarsync = {
             }
 
             //looking for modifications 
-            let upd = wbxmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
+            let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
             for (let count = 0; count < upd.length; count++) {
                 //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
                 if (sync.statusIsBad(upd[count].Status, syncdata)) return;
             }
 
             //looking for deletions 
-            let del = wbxmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Delete);
+            let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Delete);
             for (let count = 0; count < del.length; count++) {
                 //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
                 if (sync.statusIsBad(del[count].Status, syncdata)) return;

@@ -234,7 +234,7 @@ var sync = {
 
         if (wbxmlData.FolderSync.Changes) {
             //looking for additions
-            let add = wbxmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Add);
+            let add = xmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Add);
             for (let count = 0; count < add.length; count++) {
                 //check if we have a folder with that folderID (=data[ServerId])
                 if (tbSync.db.getFolder(syncdata.account, add[count].ServerId) === null) {
@@ -256,7 +256,7 @@ var sync = {
             }
             
             //looking for updates if a folder gets moved to trash, its parentId is no longer zero! TODO
-            let update = wbxmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Update);
+            let update = xmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Update);
             for (let count = 0; count < update.length; count++) {
                 //get a copy of the folder, so we can update it
                 let folder = tbSync.db.getFolder(syncdata.account, update[count]["ServerId"], true);
@@ -271,7 +271,7 @@ var sync = {
             }
 
             //looking for deletes
-            let del = wbxmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Delete);
+            let del = xmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Delete);
             for (let count = 0; count < del.length; count++) {
 
                 //get a copy of the folder, so we can del it
@@ -578,12 +578,29 @@ var sync = {
     
     
     autodiscover: function (user, password) {
-
         let urls = [];
         let parts = user.split("@");
+        urls.push("https://autodiscover."+parts[1]+"/autodiscover/autodiscover.xml");
+        urls.push("https://"+parts[1]+"/autodiscover/autodiscover.xml");
         urls.push("https://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
         urls.push("https://"+parts[1]+"/Autodiscover/Autodiscover.xml");
-            
+        sync.autodiscoverHTTP(user, password, urls, 0);
+    },
+    
+    autodiscoverFailed: function (user) {
+        tbSync.dump("EAS autodiscover failed", user);
+    },
+    
+    autodiscoverSucceeded: function (user, url) {
+        tbSync.dump("EAS autodiscover succeeded", user + " : " + url);
+    },
+    
+    autodiscoverHTTP: function (user, password, urls, index) {
+        if (index>=urls.length) {
+            this.autodiscoverFailed(user);
+            return;
+        }
+        
         let xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n";
         xml += "<Autodiscover xmlns= \"http://schemas.microsoft.com/exchange/autodiscover/mobilesync/requestschema/2006\">\r\n";
         xml += "<Request>\r\n";
@@ -592,25 +609,60 @@ var sync = {
         xml += "</Request>\r\n";
         xml += "</Autodiscover>";
 
-        tbSync.dump("XML", xml);
-        
-        // Create request handler
+        // create request handler
         let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
         req.mozBackgroundRequest = true;
-        req.open("POST", urls[0], true);
+        req.open("POST", urls[index], true);
         req.setRequestHeader("Content-Length", xml.length);
         req.setRequestHeader("Content-Type", "text/xml");
         req.setRequestHeader("User-Agent", "Thunderbird ActiveSync");
         req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + password));
 
-        // Define response handler for our request
+        // define response handler for our request
         req.onreadystatechange = function() { 
-//            tbSync.dump("header",req.getAllResponseHeaders().toLowerCase())
-            if (req.readyState === 4 && req.status === 200) {
-                tbSync.dump("DISCOVER GOOD",req.responseText);
-            } else if (req.readyState === 4) {
-                tbSync.dump("DISCOVER BAD",req.status);
-                tbSync.dump("DISCOVER TEXT",req.responseText);
+            if (req.readyState === 4) {
+
+                let done = false;
+
+                if (req.status === 200) {
+                    let data = xmltools.getDataFromXMLString(req.responseText);
+            
+                    if (data && data.Autodiscover && data.Autodiscover.Response) {
+                        // there is a response from the server
+                        
+                        if (data.Autodiscover.Response.Action) {
+                            // "Redirect" or "Settings" are possible
+                            if (data.Autodiscover.Response.Action.Redirect) {
+                                // redirect, start anew with new user
+                                let newuser = action.Redirect;
+                                tbSync.dump("Redirect on EAS autodiscover", user +" => "+ newuser);
+                                //password may not change
+                                sync.autodiscover(newuser, password);
+                                //do not continue with other urls, but restart
+                                done = true;
+
+                            } else if (data.Autodiscover.Response.Action.Settings) {
+                                // get server settings
+                                let server = xmltools.nodeAsArray(data.Autodiscover.Response.Action.Settings.Server);
+
+                                for (let count = 0; count < server.length && !done; count++) {
+                                    if (server[count].Type == "MobileSync" && server[count].Url) {
+                                        this.autodiscoverSucceeded(user, server[count].Url)
+                                        //there is also a type CertEnroll
+                                        //do not continue with other urls and/or other server nodes
+                                        done = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!done) {
+                    //log error and try next server
+                    tbSync.dump("Error on EAS autodiscover (" + req.status + ")", (req.responseText) ? req.responseText : urls[index]);
+                    sync.autodiscoverHTTP(user, password, urls, index+1);
+                }
             }
         }.bind(this);
         
@@ -622,6 +674,7 @@ var sync = {
         }
 
         return true;
-    }    
+    }
 
 };
+

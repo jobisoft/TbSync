@@ -680,3 +680,4 @@ loader.loadSubScript("chrome://tbsync/content/subscripts/sync.js", tbSync);
 loader.loadSubScript("chrome://tbsync/content/subscripts/contactsync.js", tbSync);
 loader.loadSubScript("chrome://tbsync/content/subscripts/calendarsync.js", tbSync);
 loader.loadSubScript("chrome://tbsync/content/subscripts/wbxmltools.js", tbSync);
+loader.loadSubScript("chrome://tbsync/content/subscripts/xmltools.js", tbSync);
