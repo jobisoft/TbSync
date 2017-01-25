@@ -7,13 +7,23 @@
 </head>
 
 <body style="font-size:14px; padding:0 16px">
-<p><b>Birthdays</b></p>
+
+<p><b>Settings for outlook.com (or outlook.de)</b></p>
+
+<table>
+<tr><td>user name </td><td><i>your outlook email address</i></td></tr>
+<tr><td>server name </td><td>eas.outlook.com</td></tr>
+<tr><td>use secure connection</td><td>ON</td></tr>
+<tr><td>use provisioning</td><td>OFF</td></tr>
+</table>
+
+<br><p><b>Birthdays</b></p>
 
 <p>There seems to be a problem with entering birthday data in some
 versions of Zarafa Webaccess. It does work in the Webapp. This is why there is a check box "Send Birthday Information" in the account settings dialog.<br>
 This is a bug in  Zarafa not in TbSync.</p>
 
-<p><b>Debug</b></p>
+<br><p><b>Debug</b></p>
 
 <p>Set <b>tbsync.debugwbxml</b> to <b>true</b> in about:config to print the xml being sent and received by TbSync in the
 error console. It will also dump the raw wbxml in <i>[TB profile folder]/TbSync/wbxml-debug.log</i>.<p>
