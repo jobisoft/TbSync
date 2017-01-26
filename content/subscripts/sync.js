@@ -472,82 +472,88 @@ var sync = {
             req.setRequestHeader("X-MS-PolicyKey", tbSync.db.getAccountSetting(syncdata.account, "policykey"));
         }
 
-        // Define response handler for our request
-        req.onreadystatechange = function() { 
-            //tbSync.dump("header",req.getAllResponseHeaders().toLowerCase())
-            if (req.readyState === 4 && req.status === 200) {
+        req.timeout = 10000;
 
-                wbxml = req.responseText;
-                if (tbSync.db.prefSettings.getBoolPref("debugwbxml")) tbSync.debuglog(wbxml,"receiving");
-
-                if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
-                    if (wbxml.length !== 0) {
-                        tbSync.dump("recieved", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
-                    }
-                }
-                callback(req.responseText, syncdata);
-            } else if (req.readyState === 4) {
-
-                switch(req.status) {
-                    case 0: // ConnectError
-                        this.finishSync(syncdata, req.status);
-                        break;
-                    
-                    case 401: // AuthError
-                        this.finishSync(syncdata, req.status);
-                        break;
-                    
-                    case 449: // Request for new provision
-                        if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1") {
-                            sync.init("resync", syncdata.account, syncdata.folderID);
-                        } else {
-                            this.finishSync(syncdata, req.status);
-                        }
-                        break;
-                
-                    case 451: // Redirect - update host and login manager 
-                        let header = req.getResponseHeader("X-MS-Location");
-                        let newHost = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
-                        let connection = tbSync.getConnection(syncdata.account);
-                        let password = tbSync.getPassword(connection);
-
-                        tbSync.dump("redirect (451)", "header: " + header + ", oldHost: " + connection.host + ", newHost: " + newHost);
-                        
-                        //If the current connection has a LoginInfo (password stored !== null), try to update it
-                        if (password !== null) {
-                            tbSync.dump("redirect (451)", "updating loginInfo");
-                            let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-                            let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
-                            
-                            //remove current login info
-                            let currentLoginInfo = new nsLoginInfo(connection.host, connection.url, null, connection.user, password, "USER", "PASSWORD");
-                            myLoginManager.removeLogin(currentLoginInfo);
-
-                            //update host and add new login info
-                            connection.host = newHost;
-                            let newLoginInfo = new nsLoginInfo(connection.host, connection.url, null, connection.user, password, "USER", "PASSWORD");
-                            try {
-                                myLoginManager.addLogin(newLoginInfo);
-                            } catch (e) {
-                                this.finishSync(syncdata, req.status);
-                            }
-                        } else {
-                            //just update host
-                            connection.host = newHost;
-                        }
-
-                        //TODO: We could end up in a redirect loop - stop here and ask user to manually resync?
-                        sync.init("resync", syncdata.account); //resync everything
-                        break;
-                        
-                    default:
-                        tbSync.dump("request status", "reported -- " + req.status);
-                        this.finishSync(syncdata, req.status);
-                }
-            }
-
+        req.ontimeout = function () {
+            this.finishSync(syncdata, "timeout");
+        }.bind(this);
+        
+        req.onerror = function () {
+            this.finishSync(syncdata, "0");
         }.bind(this);
 
+        // Define response handler for our request
+        req.onload = function() { 
+            switch(req.status) {
+
+                case 200: //OK
+                    wbxml = req.responseText;
+                    if (tbSync.db.prefSettings.getBoolPref("debugwbxml")) tbSync.debuglog(wbxml,"receiving");
+
+                    if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
+                        if (wbxml.length !== 0) {
+                            tbSync.dump("recieved", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
+                        }
+                    }
+                    callback(req.responseText, syncdata);
+                    break;
+                
+                case 0: // ConnectError - should not be called by onload
+                    //this.finishSync(syncdata, req.status);
+                    break;
+                
+                case 401: // AuthError
+                    this.finishSync(syncdata, req.status);
+                    break;
+                
+                case 449: // Request for new provision
+                    if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1") {
+                        sync.init("resync", syncdata.account, syncdata.folderID);
+                    } else {
+                        this.finishSync(syncdata, req.status);
+                    }
+                    break;
+            
+                case 451: // Redirect - update host and login manager 
+                    let header = req.getResponseHeader("X-MS-Location");
+                    let newHost = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
+                    let connection = tbSync.getConnection(syncdata.account);
+                    let password = tbSync.getPassword(connection);
+
+                    tbSync.dump("redirect (451)", "header: " + header + ", oldHost: " + connection.host + ", newHost: " + newHost);
+                    
+                    //If the current connection has a LoginInfo (password stored !== null), try to update it
+                    if (password !== null) {
+                        tbSync.dump("redirect (451)", "updating loginInfo");
+                        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
+                        let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
+                        
+                        //remove current login info
+                        let currentLoginInfo = new nsLoginInfo(connection.host, connection.url, null, connection.user, password, "USER", "PASSWORD");
+                        myLoginManager.removeLogin(currentLoginInfo);
+
+                        //update host and add new login info
+                        connection.host = newHost;
+                        let newLoginInfo = new nsLoginInfo(connection.host, connection.url, null, connection.user, password, "USER", "PASSWORD");
+                        try {
+                            myLoginManager.addLogin(newLoginInfo);
+                        } catch (e) {
+                            this.finishSync(syncdata, req.status);
+                        }
+                    } else {
+                        //just update host
+                        connection.host = newHost;
+                    }
+
+                    //TODO: We could end up in a redirect loop - stop here and ask user to manually resync?
+                    sync.init("resync", syncdata.account); //resync everything
+                    break;
+                    
+                default:
+                    tbSync.dump("request status", "reported -- " + req.status);
+                    this.finishSync(syncdata, req.status);
+            }
+        }.bind(this);
 
         try {
             if (platformVer >= 50) {
@@ -608,70 +614,84 @@ var sync = {
         req.setRequestHeader("User-Agent", "Thunderbird ActiveSync");
         req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + password));
 
+        req.timeout = 10000;
+
+        req.ontimeout  = function() {
+            //log error and try next server
+            tbSync.dump("Timeout on EAS autodiscover", urls[index]);
+            sync.autodiscoverHTTP(user, password, urls, index+1);
+        }.bind(this);
+
+        req.onerror = function() {
+            //log error and try next server
+            tbSync.dump("Network error on EAS autodiscover (" + req.status + ")", (req.responseText) ? req.responseText : urls[index]);
+            sync.autodiscoverHTTP(user, password, urls, index+1);
+        }.bind(this);
+
         // define response handler for our request
-        req.onreadystatechange = function() { 
-            if (req.readyState === 4) {
+        req.onload = function() { 
+            if (req.status === 200) {
+                let data = xmltools.getDataFromXMLString(req.responseText);
+        
+                if (data && data.Autodiscover && data.Autodiscover.Response) {
+                    // there is a response from the server
+                    
+                    if (data.Autodiscover.Response.Action) {
+                        // "Redirect" or "Settings" are possible
+                        if (data.Autodiscover.Response.Action.Redirect) {
+                            // redirect, start anew with new user
+                            let newuser = action.Redirect;
+                            tbSync.dump("Redirect on EAS autodiscover", user +" => "+ newuser);
+                            //password may not change
+                            sync.autodiscover(newuser, password);
 
-                let done = false;
+                        } else if (data.Autodiscover.Response.Action.Settings) {
+                            // get server settings
+                            let server = xmltools.nodeAsArray(data.Autodiscover.Response.Action.Settings.Server);
 
-                if (req.status === 200) {
-                    let data = xmltools.getDataFromXMLString(req.responseText);
-            
-                    if (data && data.Autodiscover && data.Autodiscover.Response) {
-                        // there is a response from the server
-                        
-                        if (data.Autodiscover.Response.Action) {
-                            // "Redirect" or "Settings" are possible
-                            if (data.Autodiscover.Response.Action.Redirect) {
-                                // redirect, start anew with new user
-                                let newuser = action.Redirect;
-                                tbSync.dump("Redirect on EAS autodiscover", user +" => "+ newuser);
-                                //password may not change
-                                sync.autodiscover(newuser, password);
-                                //do not continue with other urls, but restart
-                                done = true;
-
-                            } else if (data.Autodiscover.Response.Action.Settings) {
-                                // get server settings
-                                let server = xmltools.nodeAsArray(data.Autodiscover.Response.Action.Settings.Server);
-
-                                for (let count = 0; count < server.length && !done; count++) {
-                                    if (server[count].Type == "MobileSync" && server[count].Url) {
-                                        this.autodiscoverOPTIONS(user, password, server[count].Url)
-                                        //there is also a type CertEnroll
-                                        //do not continue with other urls and/or other server nodes
-                                        done = true;
-                                    }
+                            for (let count = 0; count < server.length; count++) {
+                                if (server[count].Type == "MobileSync" && server[count].Url) {
+                                    this.autodiscoverOPTIONS(user, password, server[count].Url)
+                                    //there is also a type CertEnroll
+                                    break;
                                 }
                             }
                         }
                     }
                 }
-
-                if (!done) {
-                    //log error and try next server
-                    tbSync.dump("Error on EAS autodiscover (" + req.status + ")", (req.responseText) ? req.responseText : urls[index]);
-                    sync.autodiscoverHTTP(user, password, urls, index+1);
-                }
+            } else {
+                tbSync.dump("Error on EAS autodiscover (" + req.status + ")", (req.responseText) ? req.responseText : urls[index]);
+                sync.autodiscoverHTTP(user, password, urls, index+1);
             }
         }.bind(this);
-        
+
         req.send(xml);
     },
     
     autodiscoverOPTIONS: function (user, password, url) {
-        //send OPTIONS request to get ActiveSync Version
+        //send OPTIONS request to get ActiveSync Version and provision
         let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
         req.mozBackgroundRequest = true;
         req.open("OPTIONS", url, true);
         req.setRequestHeader("User-Agent", "Thunderbird ActiveSync");
         req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + password));
 
+        req.timeout = 10000;
+
+        req.ontimeout  = function() {
+            sync.autodiscoverFailed (user);
+        }.bind(this);
+
+        req.onerror = function() {
+            sync.autodiscoverFailed (user);
+        }.bind(this);
+
         // define response handler for our request
-        req.onreadystatechange = function() {
-            if (req.readyState === 4) {
-                if (req.status === 200) sync.autodiscoverSucceeded (user, password, url, req.getResponseHeader("MS-ASProtocolVersions"), req.getResponseHeader("MS-ASProtocolCommands"));
-                else sync.autodiscoverFailed (user);
+        req.onload = function() {
+            if (req.status === 200) {
+                sync.autodiscoverSucceeded (user, password, url, req.getResponseHeader("MS-ASProtocolVersions"), req.getResponseHeader("MS-ASProtocolCommands"));
+            } else {
+                sync.autodiscoverFailed (user);
             }
         }.bind(this);
 

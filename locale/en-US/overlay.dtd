@@ -16,6 +16,7 @@
 <!ENTITY pref.SettingDialog "Account Settings">
 <!ENTITY pref.AccountName "Account Name">
 <!ENTITY pref.Server "Server Name">
+<!ENTITY pref.ActiveSyncVersion "ActiveSync Version">
 <!ENTITY pref.usehttps "Use secure connection (connect via https)">
 <!ENTITY pref.UserName "User Name">
 <!ENTITY pref.DeviceId "Device Id">

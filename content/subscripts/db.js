@@ -458,7 +458,7 @@ var db = {
 
     // SERVER SETTINGS 
     
-    getServerSetting: function(account, field) {
+    getServerSetting: function(account) {
         let settings = {};
         //read-only server setting
         let servertype =  this.getAccountSetting(account, "servertype");
@@ -471,13 +471,17 @@ var db = {
             case "horde":
                 settings["seperator"] = ", ";
                 break;
+
+            case "outlook.com":
+                settings["seperator"] = ", ";
+                settings["host"] = "eas.outlook.com";
+                settings["https"] = "1";
+                settings["provision"] = "0";
+                settings["asversion"] = "14.0";
+                break;
         }
         
-        if (settings.hasOwnProperty(field)) {
-            return settings[field];
-        } else {
-            throw "Unknown server setting!" + "\nThrown by db.getServerSetting("+account+", " + field + ")";
-        }
+        return settings;
     }
 
 };

@@ -12,7 +12,7 @@ syncstate.sendingchanges=Sending changes to server
 syncstate.recievingchanges=Recieving changes from server
 syncstate.requestingchanges=Requesting changes from server
 
-state.disconnected=Save settings & connected account
+state.disconnected=Connected account
 state.connected=Disconnect
 state.connecting=Connecting ...
 

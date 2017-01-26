@@ -19,45 +19,48 @@
                 <column flex="1" />
            </columns>
            <rows>
+                <row id="tbsync.accountsettings.options.1" style="margin-bottom:1em">
+                     <label control="tbsync.accountsettings.servertype" value="&pref.servertype;" />
+                     <menulist id="tbsync.accountsettings.servertype" onselect="tbSyncAccountSettings.loadServerProfile();" >
+                          <menupopup>
+                               <menuitem label="Zarafa, Zentyal, Kopano" value="zarafa" />
+                               <menuitem label="Outlook.com" value="outlook.com" />
+                               <menuitem label="Horde" value="horde" />
+                          </menupopup>
+                     </menulist>
+                </row>
+
                 <row>
                      <label control="tbsync.accountsettings.accountname" value="&pref.AccountName;" />
                      <textbox id="tbsync.accountsettings.accountname" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
                 </row>
                 <row>
                      <label control="tbsync.accountsettings.user" value="&pref.UserName;" />
-                     <textbox id="tbsync.accountsettings.user" disabled="true" />
+                     <textbox id="tbsync.accountsettings.user" onblur="tbSyncAccountSettings.instantSaveSetting(this);"/>
                 </row>
                 <row>
                      <label control="tbsync.accountsettings.host" value="&pref.Server;" />
-                     <textbox id="tbsync.accountsettings.host" onblur="tbSyncAccountSettings.stripHost();" disabled="true" />
+                     <textbox id="tbsync.accountsettings.host" onblur="tbSyncAccountSettings.stripHost();" />
                 </row>
 
-                <row id="tbsync.accountsettings.options.1">
-                     <label control="tbsync.accountsettings.servertype" value="&pref.servertype;" />
-                     <menulist id="tbsync.accountsettings.servertype" disabled="true" >
-                          <menupopup>
-                               <menuitem label="Horde (&pref.seperator.comma;)" value="horde" />
-                               <menuitem label="Zarafa, Zentyal, Kopano (&pref.seperator.linebreak;)" value="zarafa" />
-                          </menupopup>
-                     </menulist>
-                </row>
                 <row id="tbsync.accountsettings.options.2">
-                     <label control="tbsync.accountsettings.asversion" value="ActiveSync Version" />
-                     <menulist id="tbsync.accountsettings.asversion" disabled="true" >
+                     <label control="tbsync.accountsettings.asversion" value="&pref.ActiveSyncVersion;" />
+                     <menulist id="tbsync.accountsettings.asversion" onblur="tbSyncAccountSettings.instantSaveSetting(this);" >
                           <menupopup>
                                <menuitem label="2.5" value="2.5" />
                                <menuitem label="14.0" value="14.0" />
                           </menupopup>
                      </menulist>
                 </row> 
+
                 <row id="tbsync.accountsettings.options.3">
                     <label value="" />
                     <vbox>
-                        <checkbox id="tbsync.accountsettings.https" label="&pref.usehttps;" disabled="true" />
-                        <checkbox  id="tbsync.accountsettings.provision" label="&pref.UseProvisioning;" disabled="true" />
-                        <checkbox id="tbsync.accountsettings.birthday" label="&pref.birthday;" disabled="true" />
-                        <checkbox id="tbsync.accountsettings.displayoverride" label="&pref.displayoverride;" disabled="true" />
-                        <checkbox id="tbsync.accountsettings.downloadonly" label="&pref.downloadonly;" disabled="true" />
+                        <checkbox id="tbsync.accountsettings.https" label="&pref.usehttps;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                        <checkbox  id="tbsync.accountsettings.provision" label="&pref.UseProvisioning;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                        <checkbox id="tbsync.accountsettings.birthday" label="&pref.birthday;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                        <checkbox id="tbsync.accountsettings.displayoverride" label="&pref.displayoverride;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                        <checkbox id="tbsync.accountsettings.downloadonly" label="&pref.downloadonly;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
                     </vbox>
                 </row>
 

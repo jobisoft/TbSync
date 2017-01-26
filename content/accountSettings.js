@@ -6,9 +6,9 @@ var tbSyncAccountSettings = {
 
     selectedAccount: null,
     init: false,
-    boolSettings: ["https", "provision", "birthday", "displayoverride", "downloadonly"],
-    protectedSettings: ["asversion", "host", "https", "user", "provision", "birthday", "servertype", "displayoverride", "downloadonly"],
-        
+    fixedSettings: {},
+    protectedSettings: ["host", "user"],
+
     onload: function () {
         //get the selected account from the loaded URI
         tbSyncAccountSettings.selectedAccount = window.location.toString().split("id=")[1];
@@ -21,7 +21,6 @@ var tbSyncAccountSettings = {
         observerService.addObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate", false);
         observerService.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui", false);
         tbSyncAccountSettings.init = true;
-	
     },
 
     onunload: function () {
@@ -49,15 +48,21 @@ var tbSyncAccountSettings = {
         
         for (let i=0; i<settings.length;i++) {
             if (document.getElementById("tbsync.accountsettings." + settings[i])) {
-                //bool fields need special treatment
-                if (this.boolSettings.indexOf(settings[i]) == -1) {
-                    //Not BOOL
-                    document.getElementById("tbsync.accountsettings." + settings[i]).value = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, settings[i]);
-                } else {
+                //is this a checkbox?
+                if (document.getElementById("tbsync.accountsettings." + settings[i]).tagName == "checkbox") {
                     //BOOL
                     if (tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, settings[i])  == "1") document.getElementById("tbsync.accountsettings." + settings[i]).checked = true;
                     else document.getElementById("tbsync.accountsettings." + settings[i]).checked = false;
+                    
+                } else {
+                    //Not BOOL
+                    document.getElementById("tbsync.accountsettings." + settings[i]).value = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, settings[i]);
+                    
                 }
+                
+                if (this.fixedSettings.hasOwnProperty(settings[i])) document.getElementById("tbsync.accountsettings." + settings[i]).disabled = true;
+                else document.getElementById("tbsync.accountsettings." + settings[i]).disabled = false;
+                
             }
         }
 
@@ -77,13 +82,13 @@ var tbSyncAccountSettings = {
         for (let i=0; i<settings.length;i++) {
             if (document.getElementById("tbsync.accountsettings." + settings[i])) {
                 //bool fields need special treatment
-                if (this.boolSettings.indexOf(settings[i]) == -1) {
-                    //Not BOOL
-                    data[settings[i]] = document.getElementById("tbsync.accountsettings." + settings[i]).value;
-                } else {
+                if (document.getElementById("tbsync.accountsettings." + settings[i]).tagName == "checkbox") {
                     //BOOL
                     if (document.getElementById("tbsync.accountsettings." + settings[i]).checked) data[settings[i]] = "1";
                     else data[settings[i]] = "0";
+                } else {
+                    //Not BOOL
+                    data[settings[i]] = document.getElementById("tbsync.accountsettings." + settings[i]).value;
                 }
             }
         }
@@ -94,13 +99,18 @@ var tbSyncAccountSettings = {
     },
 
 
-    /* * *
-    * Some fields are not protected and can be changed even if the account is connected. Since we
-    * do not have (want) another save button for these, they are saved upon change.
-    */
     instantSaveSetting: function (field) {
         let setting = field.id.replace("tbsync.accountsettings.","");
-        tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, setting, field.value);
+        let value = "";
+        
+        if (field.tagName == "checkbox") {
+            if (field.checked) value = "1";
+            else value = "0";
+        } else {
+            value = field.value;
+        }
+        tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, setting, value);
+        
         if (setting == "accountname") {
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
             observerService.notifyObservers(null, "tbsync.changedAccountName", tbSyncAccountSettings.selectedAccount + ":" + field.value);
@@ -113,14 +123,38 @@ var tbSyncAccountSettings = {
         if (host.indexOf("https://") == 0) {
             host = host.replace("https://","");
             document.getElementById('tbsync.accountsettings.https').checked = true;
+            tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, "https", "1");
         } else if (host.indexOf("http://") == 0) {
             host = host.replace("http://","");
             document.getElementById('tbsync.accountsettings.https').checked = false;
+            tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, "https", "0");
         }
-        document.getElementById('tbsync.accountsettings.host').value = host.replace("/","");
+        host = host.replace(/\//g,"");
+        document.getElementById('tbsync.accountsettings.host').value = host
+        tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, "host", host);
     },
 
+    loadServerProfile: function () {
+        if (tbSyncAccountSettings.selectedAccount !== null) {
+            let servertype = document.getElementById('tbsync.accountsettings.servertype').value;
 
+            // save new servertype and update fixedSettings
+            tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype", servertype);
+            this.fixedSettings = tbSync.db.getServerSetting(tbSyncAccountSettings.selectedAccount);
+
+            //save fixed values
+            let data = tbSync.db.getAccount(tbSyncAccountSettings.selectedAccount, true); //get a copy of the cache, which can be modified
+            for (let key in this.fixedSettings) {
+                if (data.hasOwnProperty(key)) {
+                    data[key] = this.fixedSettings[key];
+                }
+            }
+            tbSync.db.setAccount(data);
+
+            //update gui 
+            this.loadSettings();
+        }
+    },
 
     updateGuiObserver: {
         observe: function (aSubject, aTopic, aData) {
@@ -142,7 +176,7 @@ var tbSyncAccountSettings = {
 
         //disable all seetings field, if connected or connecting
         for (let i=0; i<this.protectedSettings.length;i++) {
-            document.getElementById("tbsync.accountsettings." + this.protectedSettings[i]).disabled = (state != "disconnected");
+            document.getElementById("tbsync.accountsettings." + this.protectedSettings[i]).disabled = (state != "disconnected" || this.fixedSettings.hasOwnProperty(this.protectedSettings[i]));
         }
         
         this.updateSyncstate();
