@@ -188,7 +188,12 @@ var calendarsync = {
 
         if (data.Subject) item.title = data.Subject;
         if (data.Location) item.setProperty("location", data.Location);
-        if (data.Categories && data.Categories.Category) item.setCategories(data.Categories.Category.length, data.Categories.Category);
+        if (data.Categories && data.Categories.Category) {
+            let cats = [];
+            if (Array.isArray(data.Categories.Category)) cats = data.Categories.Category;
+            else cats.push(data.Categories.Category);
+            item.setCategories(cats.length, cats);
+        }
 
         //store the UID send from the server as EAS_UID. The field UID is reserved for the ServerId of this item and can be accessed as item.id and as item.getProperty("UID");
         if (data.UID) item.setProperty("EAS_UID", data.UID);
