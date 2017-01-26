@@ -94,8 +94,13 @@ var tbSync = {
 
     getLocalizedMessage: function (msg) {
         let localized = msg;
+        let parts = msg.split("::");
+
         try {
-            localized = bundle.GetStringFromName(msg);
+            //spezial treatment of strings with :: like status.httperror::403
+            if (parts.length==2) localized = bundle.GetStringFromName(parts[0]).replace("##error##", parts[1]);
+            else localized = bundle.GetStringFromName(msg);
+            
         } catch (e) {}
         return localized;
     },

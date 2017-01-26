@@ -439,7 +439,7 @@ var sync = {
                 break;
             default:
                 tbSync.dump("wbxml status", "Server reports status <"+status+">. Error? Aborting Sync.");
-                sync.finishSync(syncdata, "wbxmlservererror");
+                sync.finishSync(syncdata, "wbxmlerror::" + status);
                 break;
         }        
         return true;
@@ -484,7 +484,7 @@ var sync = {
         }.bind(this);
         
         req.onerror = function () {
-            this.finishSync(syncdata, "0");
+            this.finishSync(syncdata, "networkerror");
         }.bind(this);
 
         // Define response handler for our request
@@ -495,6 +495,7 @@ var sync = {
                     wbxml = req.responseText;
                     if (tbSync.db.prefSettings.getBoolPref("debugwbxml")) tbSync.debuglog(wbxml,"receiving");
 
+                    //What to do on error? IS this an error? TODO
                     if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
                         if (wbxml.length !== 0) {
                             tbSync.dump("recieved", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
@@ -502,23 +503,19 @@ var sync = {
                     }
                     callback(req.responseText, syncdata);
                     break;
-                
-                case 0: // ConnectError - should not be called by onload
-                    //this.finishSync(syncdata, req.status);
-                    break;
-                
+
                 case 401: // AuthError
-                    this.finishSync(syncdata, req.status);
+                    this.finishSync(syncdata, "httperror::" + req.status);
                     break;
-                
+
                 case 449: // Request for new provision
                     if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1") {
                         sync.init("resync", syncdata.account, syncdata.folderID);
                     } else {
-                        this.finishSync(syncdata, req.status);
+                        this.finishSync(syncdata, "httperror::" + req.status);
                     }
                     break;
-            
+
                 case 451: // Redirect - update host and login manager 
                     let header = req.getResponseHeader("X-MS-Location");
                     let newHost = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
@@ -526,7 +523,7 @@ var sync = {
                     let password = tbSync.getPassword(connection);
 
                     tbSync.dump("redirect (451)", "header: " + header + ", oldHost: " + connection.host + ", newHost: " + newHost);
-                    
+
                     //If the current connection has a LoginInfo (password stored !== null), try to update it
                     if (password !== null) {
                         tbSync.dump("redirect (451)", "updating loginInfo");
@@ -543,7 +540,7 @@ var sync = {
                         try {
                             myLoginManager.addLogin(newLoginInfo);
                         } catch (e) {
-                            this.finishSync(syncdata, req.status);
+                            this.finishSync(syncdata, "httperror::" + req.status);
                         }
                     } else {
                         //just update host
@@ -555,8 +552,7 @@ var sync = {
                     break;
                     
                 default:
-                    tbSync.dump("request status", "reported -- " + req.status);
-                    this.finishSync(syncdata, req.status);
+                    this.finishSync(syncdata, "httperror::" + req.status);
             }
         }.bind(this);
 

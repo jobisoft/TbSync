@@ -525,7 +525,7 @@ var calendarsync = {
         wbxml.otag("Sync");
             wbxml.otag("Collections");
                 wbxml.otag("Collection");
-                    wbxml.atag("Class", "Calendar");
+                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type);
                     wbxml.atag("SyncKey", syncdata.synckey);
                     wbxml.atag("CollectionId", syncdata.folderID);
                     wbxml.atag("DeletesAsMoves", "");
@@ -637,7 +637,7 @@ var calendarsync = {
         wbxml.otag("Sync");
             wbxml.otag("Collections");
                 wbxml.otag("Collection");
-                    wbxml.atag("Class", "Calendar");
+                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type);
                     wbxml.atag("SyncKey", syncdata.synckey);
                     wbxml.atag("CollectionId", syncdata.folderID);
                     wbxml.otag("Commands");
