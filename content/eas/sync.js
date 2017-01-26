@@ -505,14 +505,14 @@ var sync = {
                     break;
 
                 case 401: // AuthError
-                    this.finishSync(syncdata, "httperror::" + req.status);
+                    this.finishSync(syncdata, req.status);
                     break;
 
                 case 449: // Request for new provision
                     if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1") {
                         sync.init("resync", syncdata.account, syncdata.folderID);
                     } else {
-                        this.finishSync(syncdata, "httperror::" + req.status);
+                        this.finishSync(syncdata, req.status);
                     }
                     break;
 
@@ -579,134 +579,5 @@ var sync = {
         }
 
         return true;
-    },
-    
-    
-    autodiscover: function (user, password) {
-        let urls = [];
-        let parts = user.split("@");
-        urls.push("https://autodiscover."+parts[1]+"/autodiscover/autodiscover.xml");
-        urls.push("https://"+parts[1]+"/autodiscover/autodiscover.xml");
-        urls.push("https://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
-        urls.push("https://"+parts[1]+"/Autodiscover/Autodiscover.xml");
-        sync.autodiscoverHTTP(user, password, urls, 0);
-    },
-        
-    autodiscoverHTTP: function (user, password, urls, index) {
-        if (index>=urls.length) {
-            this.autodiscoverFailed(user);
-            return;
-        }
-        
-        let xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n";
-        xml += "<Autodiscover xmlns= \"http://schemas.microsoft.com/exchange/autodiscover/mobilesync/requestschema/2006\">\r\n";
-        xml += "<Request>\r\n";
-        xml += "<EMailAddress>"+user+"</EMailAddress>\r\n";
-        xml += "<AcceptableResponseSchema>http://schemas.microsoft.com/exchange/autodiscover/mobilesync/responseschema/2006</AcceptableResponseSchema>\r\n";
-        xml += "</Request>\r\n";
-        xml += "</Autodiscover>";
-
-        // create request handler
-        let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-        req.mozBackgroundRequest = true;
-        req.open("POST", urls[index], true);
-        req.setRequestHeader("Content-Length", xml.length);
-        req.setRequestHeader("Content-Type", "text/xml");
-        req.setRequestHeader("User-Agent", "Thunderbird ActiveSync");
-        req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + password));
-
-        req.timeout = 10000;
-
-        req.ontimeout  = function() {
-            //log error and try next server
-            tbSync.dump("Timeout on EAS autodiscover", urls[index]);
-            sync.autodiscoverHTTP(user, password, urls, index+1);
-        }.bind(this);
-
-        req.onerror = function() {
-            //log error and try next server
-            tbSync.dump("Network error on EAS autodiscover (" + req.status + ")", (req.responseText) ? req.responseText : urls[index]);
-            sync.autodiscoverHTTP(user, password, urls, index+1);
-        }.bind(this);
-
-        // define response handler for our request
-        req.onload = function() { 
-            if (req.status === 200) {
-                let data = xmltools.getDataFromXMLString(req.responseText);
-        
-                if (data && data.Autodiscover && data.Autodiscover.Response) {
-                    // there is a response from the server
-                    
-                    if (data.Autodiscover.Response.Action) {
-                        // "Redirect" or "Settings" are possible
-                        if (data.Autodiscover.Response.Action.Redirect) {
-                            // redirect, start anew with new user
-                            let newuser = action.Redirect;
-                            tbSync.dump("Redirect on EAS autodiscover", user +" => "+ newuser);
-                            //password may not change
-                            sync.autodiscover(newuser, password);
-
-                        } else if (data.Autodiscover.Response.Action.Settings) {
-                            // get server settings
-                            let server = xmltools.nodeAsArray(data.Autodiscover.Response.Action.Settings.Server);
-
-                            for (let count = 0; count < server.length; count++) {
-                                if (server[count].Type == "MobileSync" && server[count].Url) {
-                                    this.autodiscoverOPTIONS(user, password, server[count].Url)
-                                    //there is also a type CertEnroll
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                tbSync.dump("Error on EAS autodiscover (" + req.status + ")", (req.responseText) ? req.responseText : urls[index]);
-                sync.autodiscoverHTTP(user, password, urls, index+1);
-            }
-        }.bind(this);
-
-        req.send(xml);
-    },
-    
-    autodiscoverOPTIONS: function (user, password, url) {
-        //send OPTIONS request to get ActiveSync Version and provision
-        let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-        req.mozBackgroundRequest = true;
-        req.open("OPTIONS", url, true);
-        req.setRequestHeader("User-Agent", "Thunderbird ActiveSync");
-        req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + password));
-
-        req.timeout = 10000;
-
-        req.ontimeout  = function() {
-            sync.autodiscoverFailed (user);
-        }.bind(this);
-
-        req.onerror = function() {
-            sync.autodiscoverFailed (user);
-        }.bind(this);
-
-        // define response handler for our request
-        req.onload = function() {
-            if (req.status === 200) {
-                sync.autodiscoverSucceeded (user, password, url, req.getResponseHeader("MS-ASProtocolVersions"), req.getResponseHeader("MS-ASProtocolCommands"));
-            } else {
-                sync.autodiscoverFailed (user);
-            }
-        }.bind(this);
-
-        req.send();
-    },
-    
-    autodiscoverFailed: function (user) {
-        tbSync.dump("EAS autodiscover failed", user);
-    },
-
-    autodiscoverSucceeded: function (user, password, url, versions, commands) {
-        tbSync.dump("EAS autodiscover succeeded", user);
-        tbSync.dump("EAS Url", url);
-        tbSync.dump("EAS Versions", versions);
-        tbSync.dump("EAS Commands", commands); //check for Provision
-    },
+    }
 };

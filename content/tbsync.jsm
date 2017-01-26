@@ -681,8 +681,9 @@ let loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getServ
 //- each subscript will be able to access functions/members of other subscripts
 //- loading order does not matter
 loader.loadSubScript("chrome://tbsync/content/subscripts/db.js", tbSync);
-loader.loadSubScript("chrome://tbsync/content/subscripts/sync.js", tbSync);
-loader.loadSubScript("chrome://tbsync/content/subscripts/contactsync.js", tbSync);
-loader.loadSubScript("chrome://tbsync/content/subscripts/calendarsync.js", tbSync);
 loader.loadSubScript("chrome://tbsync/content/subscripts/wbxmltools.js", tbSync);
 loader.loadSubScript("chrome://tbsync/content/subscripts/xmltools.js", tbSync);
+
+loader.loadSubScript("chrome://tbsync/content/eas/sync.js", tbSync);
+loader.loadSubScript("chrome://tbsync/content/eas/contactsync.js", tbSync);
+loader.loadSubScript("chrome://tbsync/content/eas/calendarsync.js", tbSync);

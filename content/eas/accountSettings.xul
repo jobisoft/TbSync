@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://tbsync/locale/overlay.dtd">
+
+<window id="tbsync.accountsettings" 
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    onload="tbSyncAccountSettings.onload()"
+    onunload="tbSyncAccountSettings.onunload()"
+    title="" >
+
+    <script type="text/javascript" src="chrome://tbsync/content/eas/accountSettings.js" /> 
+
+    <vbox flex="1">
+
+        <grid style="margin-bottom:1ex">
+           <columns>
+                <column width="150" />
+                <column flex="1" />
+           </columns>
+           <rows>
+                <row>
+                        <vbox pack="center">
+                            <label control="tbsync.accountsettings.accountname" value="&pref.AccountName;" />
+                        </vbox>
+                        <textbox emptytext="&pref.AccountName;" id="tbsync.accountsettings.accountname" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                </row>
+            </rows>
+        </grid>
+
+        <grid style="margin-bottom:2ex">
+           <columns>
+                <column width="150" />
+                <column flex="1" />
+           </columns>
+           <rows>
+                <row>
+                        <vbox pack="center">
+                            <label control="tbsync.accountsettings.user" value="&pref.UserName;" />
+                        </vbox>
+                        <hbox>
+                            <textbox flex="1" emptytext="&pref.UserName;" id="tbsync.accountsettings.user" onblur="tbSyncAccountSettings.instantSaveSetting(this);"/>
+                            <menulist width="150" id="tbsync.accountsettings.servertype" onselect="tbSyncAccountSettings.loadServerProfile();" >
+                                <menupopup>
+                                    <menuitem hidden="true" label="Server settings ..." value="" />
+                                    <menuitem label="Automatic configuration" value="auto" />
+                                    <menuitem label="Manual configuration" value="custom" />
+                                    <menuseparator/>
+                                    <menuitem label="Config: Zarafa server" value="zarafa" />
+                                    <menuitem label="Config: Horde server" value="horde" />
+                                    <menuseparator/>
+                                    <menuitem label="Config: Outlook.com" value="outlook.com" />
+                                    <menuitem id="tbsync.discovered" hidden="true" label="Config: Autodiscover" value="discovered" />
+                                </menupopup>
+                            </menulist>
+                        </hbox>
+                </row>
+           </rows>
+        </grid>
+
+
+        <grid flex="1" style="margin-left:150px" >
+           <columns>
+                <column flex="1" />
+           </columns>
+           <rows>
+
+                <row flex="1" style="margin-top:1ex; margin-bottom:1ex;" id="tbsync.accountsettings.options">
+                    <vbox>
+                        <groupbox style="margin-bottom:1ex;">
+                            <caption label="ActiveSync Server Settings"/>
+
+                            <hbox style="margin-bottom:1ex">
+                                 <textbox width="225" emptytext="&pref.ServerName;" id="tbsync.accountsettings.host" onblur="tbSyncAccountSettings.stripHost();" />
+                                <menulist id="tbsync.accountsettings.asversion" onblur="tbSyncAccountSettings.instantSaveSetting(this);" >
+                                    <menupopup>
+                                        <menuitem label="ActiveSync v2.5" value="2.5" />
+                                        <menuitem label="ActiveSync v14.0" value="14.0" />
+                                    </menupopup>
+                                </menulist>
+                            </hbox>
+
+                            <vbox>
+                                <checkbox id="tbsync.accountsettings.https" label="&pref.usehttps;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                                <checkbox  id="tbsync.accountsettings.provision" label="&pref.UseProvisioning;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                            </vbox>
+                        </groupbox>
+
+                        <groupbox>
+                            <caption label="Optional Server Settings"/>
+                            <vbox>
+                                <checkbox id="tbsync.accountsettings.birthday" label="&pref.birthday;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                                <checkbox id="tbsync.accountsettings.displayoverride" label="&pref.displayoverride;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                                <checkbox id="tbsync.accountsettings.downloadonly" label="&pref.downloadonly;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                            </vbox>
+                        </groupbox>
+                    </vbox>
+                </row>
+                
+                <row flex="1" style="margin-top:1ex; margin-bottom:1ex;" id="tbsync.accountsettings.folders">
+                    <richlistbox 
+                        id="tbsync.accountsettings.folderlist"
+                        flex="1"
+                        seltype="single"
+                        ondblclick="tbSyncAccountSettings.toggleFolder();">
+                        <listhead style="border-bottom: 1px solid lightgrey;">
+                            <listheader style="font-weight:bold;" label="" width="24" />
+                            <listheader style="font-weight:bold;" label="&pref.foldername;" width="145" />
+                            <listheader style="font-weight:bold;" label="&pref.status;" flex="1" />
+                        </listhead>
+                    </richlistbox>
+                </row> 
+
+           </rows>
+        </grid>
+
+
+        <grid flex="0" align="center" pack="end">
+           <columns>
+                <column width="150" />
+                <column flex="1" />
+           </columns>
+           <rows>
+
+                <row>
+                     <label value="&pref.DeviceId;" />
+                     <label value="" disabled="true" id="deviceId" />
+                </row>
+                <row>
+                     <label value="&pref.syncstate;" />
+                     <label id="syncstate" style="height: 4ex;"></label>
+                </row>
+
+                <row>
+                     <vbox pack="center">
+                        <label control="tbsync.accountsettings.autosync" value="&pref.autotime;" tooltiptext="&pref.never;" />
+                    </vbox>
+                     <textbox id="tbsync.accountsettings.autosync" tooltiptext="&pref.never;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                </row>
+                
+                <row>
+                     <label />
+                     <hbox flex="1" >
+                         <!--button flex="1" label="&pref.Resync;" id="tbsync.accountsettings.resyncbtn" onclick="tbSyncAccountSettings.requestSync('resync', tbSyncAccountSettings.selectedAccount, this.disabled);" tooltiptext="&pref.ResyncText;" /-->
+                         <button flex="1" label="" id="tbsync.accountsettings.connectbtn" onclick="tbSyncAccountSettings.toggleConnectionState();" />
+                        <button flex="4" label="&pref.Sync;" id="tbsync.accountsettings.syncbtn" onclick="tbSyncAccountSettings.requestSync('sync', tbSyncAccountSettings.selectedAccount, this.disabled);" />
+                     </hbox>
+                </row>
+
+           </rows>
+        </grid>
+    </vbox>
+    
+</window>

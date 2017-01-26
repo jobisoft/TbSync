@@ -196,7 +196,7 @@ var tbSyncAccountManager = {
             //get id of selected account from value of selectedItem
             this.selectedAccount = accountsList.selectedItem.value;
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-            document.getElementById("tbSyncAccountManager.contentFrame").webNavigation.loadURI("chrome://tbsync/content/accountSettings.xul?id=" + this.selectedAccount, LOAD_FLAGS_NONE, null, null, null);
+            document.getElementById("tbSyncAccountManager.contentFrame").webNavigation.loadURI("chrome://tbsync/content/eas/accountSettings.xul?id=" + this.selectedAccount, LOAD_FLAGS_NONE, null, null, null);
         }
     },
 

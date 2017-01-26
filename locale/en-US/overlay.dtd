@@ -15,10 +15,10 @@
 
 <!ENTITY pref.SettingDialog "Account Settings">
 <!ENTITY pref.AccountName "Account Name">
-<!ENTITY pref.Server "Server Name">
-<!ENTITY pref.ActiveSyncVersion "ActiveSync Version">
-<!ENTITY pref.usehttps "Use secure connection (connect via https)">
 <!ENTITY pref.UserName "User Name">
+<!ENTITY pref.ServerType "Configuration Profile">
+<!ENTITY pref.ServerName "Server address (e.g. mail.yourserver.com)">
+<!ENTITY pref.usehttps "Use secure connection (connect via https)">
 <!ENTITY pref.DeviceId "Device Id">
 <!ENTITY pref.UseProvisioning "Use provisioning">
 <!ENTITY pref.birthday "Send birthday information">
@@ -34,7 +34,6 @@
 <!ENTITY pref.catman "Category Manager">
 
 <!ENTITY pref.syncstate "SyncStatus">
-<!ENTITY pref.servertype "Server Type">
 <!ENTITY pref.seperator.comma "comma as seperator">
 <!ENTITY pref.seperator.linebreak "line break as seperator">
 <!ENTITY pref.displayoverride "Overide Display Name with 'First Name' + 'Second Name'">

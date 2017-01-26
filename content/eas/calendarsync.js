@@ -195,8 +195,8 @@ var calendarsync = {
             item.setCategories(cats.length, cats);
         }
 
-        //store the UID send from the server as EAS_UID. The field UID is reserved for the ServerId of this item and can be accessed as item.id and as item.getProperty("UID");
-        if (data.UID) item.setProperty("EAS_UID", data.UID);
+        //store the UID send from the server as EASUID. The field UID is reserved for the ServerId of this item and can be accessed as item.id and as item.getProperty("UID");
+        if (data.UID) item.setProperty("EASUID", data.UID);
         
         
         if (asversion == "2.5") {
@@ -308,11 +308,11 @@ var calendarsync = {
 
         wbxml.switchpage("Calendar");
         
-        //if EAS_UID is not set, the user just created this item and it has a new UID as id
+        //if EASUID is not set, the user just created this item and it has a new UID as id
         //this UID is stored in the item and also on the server as ApplicationData.UID
         //After the server receives this item, he will send back a ServerId, which we need to store as item id (UID),
-        //but we also need to keep the ApplicationData.UID, so we backup that into the field EAS_UID
-        if (item.hasProperty("EAS_UID")) wbxml.atag("UID", item.getProperty("EAS_UID"));
+        //but we also need to keep the ApplicationData.UID, so we backup that into the field EASUID
+        if (item.hasProperty("EASUID")) wbxml.atag("UID", item.getProperty("EASUID"));
         else wbxml.atag("UID", item.id);
         
         //IMPORTANT in EAS v16 it is no longer allowed to send a UID
@@ -573,7 +573,9 @@ var calendarsync = {
                     let newItem = cal.createEvent();
                     this.setEvent(newItem, data, ServerId, tbSync.db.getAccountSetting(syncdata.account, "asversion"));
                     db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "added_by_server");
-                    syncdata.targetObj.addItem(newItem, tbSync.calendarOperationObserver);
+                    try {
+                        syncdata.targetObj.addItem(newItem, tbSync.calendarOperationObserver);
+                    } catch (e) {tbSync.dump("Error during Add", e);}
                 }
             }
 
@@ -727,7 +729,7 @@ var calendarsync = {
                     //server has two identifiers for this item, serverId and UID
                     //on creation, TB created a UID which has been send to the server as UID inside AplicationData
                     //we NEED to use ServerId as TB UID without changing UID on Server -> Backup
-                    newItem.setProperty("EAS_UID", newItem.id);
+                    newItem.setProperty("EASUID", newItem.id);
                     
                     newItem.id = add[count].ServerId;
                     db.addItemToChangeLog(syncdata.targetObj.id, newItem.id, "modified_by_server");

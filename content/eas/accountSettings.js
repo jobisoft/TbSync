@@ -7,7 +7,7 @@ var tbSyncAccountSettings = {
     selectedAccount: null,
     init: false,
     fixedSettings: {},
-    protectedSettings: ["host", "user"],
+    protectedSettings: ["host", "user", "servertype"],
 
     onload: function () {
         //get the selected account from the loaded URI
@@ -20,6 +20,7 @@ var tbSyncAccountSettings = {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate", false);
         observerService.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui", false);
+        observerService.addObserver(tbSyncAccountSettings.autodiscoverObserver, "tbsync.autodiscoverDone", false);
         tbSyncAccountSettings.init = true;
     },
 
@@ -29,6 +30,7 @@ var tbSyncAccountSettings = {
         if (tbSyncAccountSettings.init) {
             observerService.removeObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate");
             observerService.removeObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui");
+            observerService.removeObserver(tbSyncAccountSettings.autodiscoverObserver, "tbsync.autodiscoverDone");
         }
     },
 
@@ -45,7 +47,8 @@ var tbSyncAccountSettings = {
     */
     loadSettings: function () {
         let settings = tbSync.db.getTableFields("accounts");
-        
+        this.fixedSettings = tbSync.db.getServerSetting(tbSyncAccountSettings.selectedAccount);
+
         for (let i=0; i<settings.length;i++) {
             if (document.getElementById("tbsync.accountsettings." + settings[i])) {
                 //is this a checkbox?
@@ -65,8 +68,8 @@ var tbSyncAccountSettings = {
                 
             }
         }
-
-        //Also load DeviceId
+        
+        // also load DeviceId
         document.getElementById('deviceId').value = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "deviceId");
     },
 
@@ -134,9 +137,28 @@ var tbSyncAccountSettings = {
         tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, "host", host);
     },
 
+    autodiscoverObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            //only update if request for this account
+            if (aData == tbSyncAccountSettings.selectedAccount) {
+                tbSyncAccountSettings.loadSettings();
+                tbSyncAccountSettings.updateGui();
+            }
+        }
+    },
+
     loadServerProfile: function () {
-        if (tbSyncAccountSettings.selectedAccount !== null) {
-            let servertype = document.getElementById('tbsync.accountsettings.servertype').value;
+        if (tbSyncAccountSettings.selectedAccount === null) return;
+
+        //do nothing, if servertype did not change
+        let servertype = document.getElementById('tbsync.accountsettings.servertype').value;
+        if (servertype == tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype")) return;
+        
+
+        //special treatment for autodiscover request
+        if (servertype == "auto") {
+            window.openDialog("chrome://tbsync/content/eas/autodiscover.xul", "easautodiscover", "centerscreen,modal,resizable=no", this.selectedAccount, document.getElementById('tbsync.accountsettings.user').value);
+        } else if (servertype != tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype")) {
 
             // save new servertype and update fixedSettings
             tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype", servertype);
@@ -145,7 +167,7 @@ var tbSyncAccountSettings = {
             //save fixed values
             let data = tbSync.db.getAccount(tbSyncAccountSettings.selectedAccount, true); //get a copy of the cache, which can be modified
             for (let key in this.fixedSettings) {
-                if (data.hasOwnProperty(key)) {
+                if (data.hasOwnProperty(key) && this.fixedSettings[key] !== null) { //null is used by autodiscover, do not change real value
                     data[key] = this.fixedSettings[key];
                 }
             }
@@ -153,6 +175,7 @@ var tbSyncAccountSettings = {
 
             //update gui 
             this.loadSettings();
+            this.updateGui();
         }
     },
 
@@ -169,9 +192,8 @@ var tbSyncAccountSettings = {
         let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
         document.getElementById('tbsync.accountsettings.connectbtn').label = tbSync.getLocalizedMessage("state."+state); 
         
-        document.getElementById("tbsync.accountsettings.options.1").hidden = (state != "disconnected"); 
-        document.getElementById("tbsync.accountsettings.options.2").hidden = (state != "disconnected"); 
-        document.getElementById("tbsync.accountsettings.options.3").hidden = (state != "disconnected"); 
+        document.getElementById("tbsync.accountsettings.options").hidden = (state != "disconnected" || document.getElementById('tbsync.accountsettings.servertype').value == ""); 
+//        document.getElementById("tbsync.accountsettings.servertype").hidden = (state != "disconnected"); 
         document.getElementById("tbsync.accountsettings.folders").hidden = (state == "disconnected"); 
 
         //disable all seetings field, if connected or connecting
@@ -203,7 +225,7 @@ var tbSyncAccountSettings = {
         }
 
         //disable connect/disconnect btn, sync btn and folderlist during sync, also hide sync button if disconnected
-        document.getElementById('tbsync.accountsettings.connectbtn').disabled = (status == "syncing");
+        document.getElementById('tbsync.accountsettings.connectbtn').disabled = (status == "syncing" || document.getElementById('tbsync.accountsettings.servertype').value == "");
         document.getElementById('tbsync.accountsettings.folderlist').disabled = (status == "syncing");
         document.getElementById('tbsync.accountsettings.syncbtn').disabled = (status == "syncing");
         document.getElementById('tbsync.accountsettings.syncbtn').hidden = (state == "disconnected");

@@ -22,8 +22,8 @@ status.notargets=Aborting Sync, because sync targets could not be created.
 status.nouserhost=Missing username and/or server. Please provide those values.
 status.timeout=Communication timeout.
 status.networkerror=Could not connect to server.
-status.httperror:401=Could not authenticate, check username and password.
-status.httperror:449=Server requests provisioning.
+status.401=Could not authenticate, check username and password.
+status.449=Server requests provisioning.
 status.httperror=Communication error (HTTP status ##error##).
 status.wbxmlerror=ActiveSync error (Status ##error##).
 status.OK=Ok
@@ -38,6 +38,7 @@ status.modified=Local modifications
 promptDeleteAccount=Delete account ##accountName## for sure?
 promptDisconnect=Are you sure you want to disconnect this account? All local modifications, which have not been synced yet, will be lost!
 promptUnsubscribe=Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!
+
 resync_from_scratch=Resync from scratch
 new_account=New Account
 

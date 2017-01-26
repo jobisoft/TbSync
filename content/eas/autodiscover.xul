@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://tbsync/locale/autodiscover.dtd">
+
+<dialog
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    title="&title;"
+    buttons="cancel,extra1"
+    defaultButton="extra1"
+    buttonlabelextra1="&search;"
+    onload="tbSyncEasAutodiscover.onLoad();"
+    onclose="return tbSyncEasAutodiscover.onClose()"
+    ondialogcancel="tbSyncEasAutodiscover.onCancel();"
+    ondialogextra1="tbSyncEasAutodiscover.onSearch();">
+
+    <script type="application/javascript" src="chrome://tbsync/content/eas/autodiscover.js"/>
+
+    <vbox>
+        <description style="width: 250px">&description;</description>
+
+        <grid style="margin-top:1ex">
+            <columns>
+                <column flex="1" />
+                <column flex="1" />
+            </columns>
+            <rows>
+                <row>
+                    <label value="&user;" />
+                    <label value="&password;" />
+                </row>
+                <row>
+                    <textbox id="tbsync.autodiscover.user" />
+                    <textbox type="password" id="tbsync.autodiscover.password" />
+                </row>
+            </rows>
+        </grid>
+
+        <vbox height="20" style="margin-bottom:1ex;">
+            <progressmeter id="tbsync.autodiscover.progress" mode="determined" value="5" flex="1" />
+        </vbox>
+
+    </vbox>
+</dialog>

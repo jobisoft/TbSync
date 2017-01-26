@@ -27,7 +27,7 @@ var db = {
             asversion : "TEXT NOT NULL DEFAULT '14.0'",
             host : "TEXT NOT NULL DEFAULT ''",
             user : "TEXT NOT NULL DEFAULT ''",
-            servertype : "TEXT NOT NULL DEFAULT 'zarafa'",
+            servertype : "TEXT NOT NULL DEFAULT ''",
             https : "TEXT NOT NULL DEFAULT '0'",
             provision : "TEXT NOT NULL DEFAULT '1'",
             birthday : "TEXT NOT NULL DEFAULT '0'",
@@ -63,7 +63,7 @@ var db = {
 
     
     init: function () {
-        let dbFile = FileUtils.getFile("ProfD", ["TbSync", "db_1_0.sqlite"]);
+        let dbFile = FileUtils.getFile("ProfD", ["TbSync", "db_1_1.sqlite"]);
         let dbService = Cc["@mozilla.org/storage/service;1"].getService(Ci.mozIStorageService);
 
         this.accountColumns = this.getTableFields("accounts");
@@ -464,6 +464,18 @@ var db = {
         let servertype =  this.getAccountSetting(account, "servertype");
 
         switch (servertype) {
+            case "discovered":
+                settings["seperator"] = "\n";
+                settings["host"] = null;
+                settings["https"] = null;
+                settings["provision"] = null;
+                settings["asversion"] = null;
+                break;
+
+            case "custom":
+                settings["seperator"] = "\n";
+                break;
+
             case "zarafa":
                 settings["seperator"] = "\n";
                 break;
@@ -487,3 +499,10 @@ var db = {
 };
 
 db.init();
+
+/*
+let syncProvider = db.syncProvider.getChildList("", {});
+for (let i=0;i<syncProvider.length;i++) {
+    tbSync.dump("PROVIDER", syncProvider[i]);
+}
+*/
