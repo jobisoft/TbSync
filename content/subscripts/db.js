@@ -477,7 +477,7 @@ var db = {
                 settings["host"] = "eas.outlook.com";
                 settings["https"] = "1";
                 settings["provision"] = "0";
-                settings["asversion"] = "14.0";
+                settings["asversion"] = "2.5";
                 break;
         }
         

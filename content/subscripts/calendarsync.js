@@ -525,6 +525,7 @@ var calendarsync = {
         wbxml.otag("Sync");
             wbxml.otag("Collections");
                 wbxml.otag("Collection");
+                    wbxml.atag("Class", "Calendar");
                     wbxml.atag("SyncKey", syncdata.synckey);
                     wbxml.atag("CollectionId", syncdata.folderID);
                     wbxml.atag("DeletesAsMoves", "");
@@ -636,7 +637,7 @@ var calendarsync = {
         wbxml.otag("Sync");
             wbxml.otag("Collections");
                 wbxml.otag("Collection");
-//optional                    wbxml.atag("Class", "Calendar");
+                    wbxml.atag("Class", "Calendar");
                     wbxml.atag("SyncKey", syncdata.synckey);
                     wbxml.atag("CollectionId", syncdata.folderID);
                     wbxml.otag("Commands");

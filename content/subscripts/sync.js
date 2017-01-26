@@ -304,21 +304,32 @@ var sync = {
         } else {
             syncdata.synckey = folders[0].synckey;
             syncdata.folderID = folders[0].folderID;
+            switch (folders[0].type) {
+                case "9": 
+                case "14": 
+                    syncdata.type = "Contacts";
+                    break;
+                case "8":
+                case "13":
+                    syncdata.type = "Calendar";
+                    break;
+                default:
+                    sync.finishSync(syncdata, "skipped");
+                    return;
+            };
 
             if (syncdata.synckey == "") {
-
                 //request a new syncKey
                 let wbxml = tbSync.wbxmltools.createWBXML();
                 wbxml.otag("Sync");
                     wbxml.otag("Collections");
                         wbxml.otag("Collection");
-//                            if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class","Contacts"); //TODO for calendar???
+                            if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type);
                             wbxml.atag("SyncKey","0");
                             wbxml.atag("CollectionId",syncdata.folderID);
                         wbxml.ctag();
                     wbxml.ctag();
                 wbxml.ctag();
-
                 this.Send(wbxml.getBytes(), this.getSynckey.bind(this), "Sync", syncdata);
             } else {
                 this.startSync(syncdata); 
@@ -335,19 +346,13 @@ var sync = {
 
 
     startSync: function (syncdata) {
-        syncdata.type = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "type");
         switch (syncdata.type) {
-            case "9": 
-            case "14": 
+            case "Contacts": 
                 contactsync.fromzpush(syncdata);
                 break;
-            case "8":
-            case "13":
+            case "Calendar":
                 calendarsync.start(syncdata);
                 break;
-            default:
-                tbSync.dump("startSync()", "Skipping unknown folder type <"+syncdata.type+">");
-                this.finishSync(syncdata);
         }
     },
 
