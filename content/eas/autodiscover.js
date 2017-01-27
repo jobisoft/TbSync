@@ -15,13 +15,17 @@ var tbSyncEasAutodiscover = {
         let user = window.arguments[1];
         document.getElementById("tbsync.autodiscover.user").value = user;
         document.getElementById('tbsync.autodiscover.progress').hidden = true;
-        document.getElementById("tbsync.autodiscover.password").focus();
+        if (user == "") document.getElementById("tbsync.autodiscover.user").focus();
+        else document.getElementById("tbsync.autodiscover.password").focus();
     },
 
+    onUnload: function () {
+        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+        observerService.notifyObservers(null, "tbsync.autodiscoverDone", tbSyncEasAutodiscover.account);
+    },
+    
     onCancel: function () {
         if (document.documentElement.getButton("cancel").disabled == false) {
-            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tbsync.autodiscoverDone", this.account);
             tbSyncEasAutodiscover.locked = false;
         }
     },
@@ -125,7 +129,7 @@ var tbSyncEasAutodiscover = {
                 document.getElementById('tbsync.autodiscover.progress').hidden = true;
                 document.documentElement.getButton("cancel").disabled = false;
                 document.documentElement.getButton("extra1").disabled = false;
-                alert("Wrong password for user <"+user+">. Autodiscover failed!");
+                alert(tbSync.getLocalizedMessage("info.AutodiscoverWrongPassword").replace("##user##", user));
             } else {
                 tbSync.dump("Error on EAS autodiscover (" + req.status + ")", (req.responseText) ? req.responseText : urls[index]);
                 this.autodiscoverHTTP(account, user, password, urls, index+1);
@@ -169,7 +173,7 @@ var tbSyncEasAutodiscover = {
         document.getElementById('tbsync.autodiscover.progress').hidden = true;
         document.documentElement.getButton("cancel").disabled = false;
         document.documentElement.getButton("extra1").disabled = false;
-        alert("Autodiscover for user <"+user+"> failed!");
+        alert(tbSync.getLocalizedMessage("info.AutodiscoverFailed").replace("##user##", user));
     },
 
     autodiscoverSucceeded: function (account, user, password, url, versions, commands) {
@@ -181,13 +185,13 @@ var tbSyncEasAutodiscover = {
         if (versions.indexOf("14.0") > -1) tbSync.db.setAccountSetting(account, "asversion", "14.0");
         else if (versions.indexOf("2.5") > -1) tbSync.db.setAccountSetting(account, "asversion", "2.5");
         else {
-            alert("Server does not support ActiveSync v2.5 or v14.0 (only "+versions+"). TbSync will not work with this ActiveSync server!");
+            alert(tbSync.getLocalizedMessage("info.AutodiscoverBadVersion").replace("##versions##", versions));
             return;
         }
 
         tbSync.db.setAccountSetting(account, "user", user);
         tbSync.db.setAccountSetting(account, "host", url.split("/")[2]);
-        tbSync.db.setAccountSetting(account, "servertype", "discovered");
+        tbSync.db.setAccountSetting(account, "servertype", "auto");
 
         if (url.substring(0,5) == "https") tbSync.db.setAccountSetting(account, "https", "1");
         else tbSync.db.setAccountSetting(account, "https", "0");
@@ -198,11 +202,7 @@ var tbSyncEasAutodiscover = {
 
         //also update password in PasswordManager
         tbSync.setPassword (account, password);
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tbsync.autodiscoverDone", account);
 
-        
-        //alert("Autodiscover completed successfully. Check optional settings and connect your account.");
         tbSyncEasAutodiscover.locked = false;
         window.close();
     }

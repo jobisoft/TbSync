@@ -192,7 +192,7 @@ var contactsync = {
                     var modcard;
                     var ServerId;
                     var cardsToDelete;
-                    var seperator = tbSync.db.getServerSetting(syncdata.account)["seperator"];
+                    var seperator = String.fromCharCode(tbSync.db.getAccountSetting(syncdata.account, "seperator"));
 
                     while (num < wbxml.length) {
                         token = wbxml.substr(num, 1);
@@ -453,7 +453,7 @@ var contactsync = {
         var card;
         var maxnumbertosend = tbSync.db.prefSettings.getIntPref("maxnumbertosend");
         var morecards = false;
-        var seperator = tbSync.db.getServerSetting(syncdata.account)["seperator"]; // default is " ," can be changed to "/n"
+        var seperator = String.fromCharCode(tbSync.db.getAccountSetting(syncdata.account,"seperator")); // options are 44 (,) or 10 (\n)
         var cards = addressBook.childCards;
 
         // this while loops over all cards but only works on new cards without serverid

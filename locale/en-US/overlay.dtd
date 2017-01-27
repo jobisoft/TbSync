@@ -16,8 +16,10 @@
 <!ENTITY pref.SettingDialog "Account Settings">
 <!ENTITY pref.AccountName "Account Name">
 <!ENTITY pref.UserName "User Name">
+<!ENTITY pref.UserNameDescription "User name is usually the email address of your account.">
+<!ENTITY pref.ServerName "Server address">
+<!ENTITY pref.ServerNameDescription "e.g. mail.yourserver.com">
 <!ENTITY pref.ServerType "Configuration Profile">
-<!ENTITY pref.ServerName "Server address (e.g. mail.yourserver.com)">
 <!ENTITY pref.usehttps "Use secure connection (connect via https)">
 <!ENTITY pref.DeviceId "Device Id">
 <!ENTITY pref.UseProvisioning "Use provisioning">
@@ -34,8 +36,9 @@
 <!ENTITY pref.catman "Category Manager">
 
 <!ENTITY pref.syncstate "SyncStatus">
-<!ENTITY pref.seperator.comma "comma as seperator">
-<!ENTITY pref.seperator.linebreak "line break as seperator">
+<!ENTITY pref.seperator.comma "Comma">
+<!ENTITY pref.seperator.linebreak "Line break">
+<!ENTITY pref.seperator.description "Seperator for multiline address field.">
 <!ENTITY pref.displayoverride "Overide Display Name with 'First Name' + 'Second Name'">
 
 <!ENTITY pref.ResyncText "Get new sync key and resync folders. Use if sync state information is lost.">
@@ -46,3 +49,13 @@
 <!ENTITY pref.foldername "Folder">
 <!ENTITY pref.targetname "SyncTarget">
 <!ENTITY pref.status "Status">
+
+<!ENTITY pref.servertype.setup "Setup ActiveSync server configuration ...">
+<!ENTITY pref.servertype.auto "Automatic configuration via ActiveSync Autodiscover">
+<!ENTITY pref.servertype.custom "Custom configuration">
+<!ENTITY pref.servertype.zarafa "Zarafa / Kopano server">
+<!ENTITY pref.servertype.horde "Horde server">
+<!ENTITY pref.servertype.outlook.com "Outlook.com">
+<!ENTITY pref.servertype.unlock "Double click to unlock all predefined server settings.">
+
+<!ENTITY pref.contactoptions "Contact options">

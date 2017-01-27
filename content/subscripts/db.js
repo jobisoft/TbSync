@@ -28,6 +28,7 @@ var db = {
             host : "TEXT NOT NULL DEFAULT ''",
             user : "TEXT NOT NULL DEFAULT ''",
             servertype : "TEXT NOT NULL DEFAULT ''",
+            seperator : "TEXT NOT NULL DEFAULT '10'",
             https : "TEXT NOT NULL DEFAULT '0'",
             provision : "TEXT NOT NULL DEFAULT '1'",
             birthday : "TEXT NOT NULL DEFAULT '0'",
@@ -109,9 +110,10 @@ var db = {
                 try { account.downloadonly = (this.tzpushSettings.getBoolPref("downloadonly") ? "1" : "0") } catch(e) {};
                 
                 //migrate seperator into server setting
+                account.servertype = "custom";
                 try {
-                    if (this.tzpushSettings.getCharPref("seperator") == ", ") account.servertype = "horde";
-                    else account.servertype = "zarafa";
+                    if (this.tzpushSettings.getCharPref("seperator") == ", ") account.seperator = "44";
+                    else account.seperator = "10";
                 } catch(e) {}
                 
                 this.setAccount(account);
@@ -450,50 +452,6 @@ var db = {
     deleteFolder: function(account, folderID) {
         this.conn.executeSimpleSQL("DELETE FROM folders WHERE account='"+account+"' AND folderID = '"+folderID+"';");
         delete (this._folderCache[account][folderID]);
-    },
-
-
-
-
-
-    // SERVER SETTINGS 
-    
-    getServerSetting: function(account) {
-        let settings = {};
-        //read-only server setting
-        let servertype =  this.getAccountSetting(account, "servertype");
-
-        switch (servertype) {
-            case "discovered":
-                settings["seperator"] = "\n";
-                settings["host"] = null;
-                settings["https"] = null;
-                settings["provision"] = null;
-                settings["asversion"] = null;
-                break;
-
-            case "custom":
-                settings["seperator"] = "\n";
-                break;
-
-            case "zarafa":
-                settings["seperator"] = "\n";
-                break;
-            
-            case "horde":
-                settings["seperator"] = ", ";
-                break;
-
-            case "outlook.com":
-                settings["seperator"] = ", ";
-                settings["host"] = "eas.outlook.com";
-                settings["https"] = "1";
-                settings["provision"] = "0";
-                settings["asversion"] = "2.5";
-                break;
-        }
-        
-        return settings;
     }
 
 };

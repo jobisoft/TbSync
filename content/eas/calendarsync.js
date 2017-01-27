@@ -197,14 +197,12 @@ var calendarsync = {
 
         //store the UID send from the server as EASUID. The field UID is reserved for the ServerId of this item and can be accessed as item.id and as item.getProperty("UID");
         if (data.UID) item.setProperty("EASUID", data.UID);
-        
-        
+
         if (asversion == "2.5") {
             if (data.Body) item.setProperty("description", data.Body);
         } else {
-            if (data.Body && data.Body.Data) item.setProperty("description", data.Body.Data);
+            if (data.Body && data.Body.EstimatedDataSize > 0 && data.Body.Data) item.setProperty("description", data.Body.Data);
         }
-
 
         //get a list of all zones - we only do this once, we do it here to not slow down TB startup time
         //alternativly use cal.fromRFC3339 - but this is only doing this
@@ -272,8 +270,8 @@ var calendarsync = {
         // 0 = Normal // 1 = Personal // 2 = Private // 3 = Confidential
         let CLASS = { "0":"PUBLIC", "1":"PRIVATE", "2":"PRIVATE", "3":"CONFIDENTIAL"};
         if (data.Sensitivity) item.setProperty("CLASS", CLASS[data.Sensitivity]);
-                
-            /*
+ 
+ /*
 	
 	Missing : MeetingStatus, Attendees, Attachements, Repeated Events
 	

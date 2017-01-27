@@ -14,91 +14,93 @@
 
     <vbox flex="1">
 
-        <grid style="margin-bottom:1ex">
+        <grid flex="1">
            <columns>
                 <column width="150" />
                 <column flex="1" />
            </columns>
            <rows>
                 <row>
-                        <vbox pack="center">
-                            <label control="tbsync.accountsettings.accountname" value="&pref.AccountName;" />
-                        </vbox>
-                        <textbox emptytext="&pref.AccountName;" id="tbsync.accountsettings.accountname" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                    <vbox pack="center">
+                        <label control="tbsync.accountsettings.accountname" value="&pref.AccountName;" />
+                    </vbox>
+                    <textbox flex="1" id="tbsync.accountsettings.accountname" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
                 </row>
-            </rows>
-        </grid>
 
-        <grid style="margin-bottom:2ex">
-           <columns>
-                <column width="150" />
-                <column flex="1" />
-           </columns>
-           <rows>
-                <row>
-                        <vbox pack="center">
-                            <label control="tbsync.accountsettings.user" value="&pref.UserName;" />
-                        </vbox>
-                        <hbox>
-                            <textbox flex="1" emptytext="&pref.UserName;" id="tbsync.accountsettings.user" onblur="tbSyncAccountSettings.instantSaveSetting(this);"/>
-                            <menulist width="150" id="tbsync.accountsettings.servertype" onselect="tbSyncAccountSettings.loadServerProfile();" >
-                                <menupopup>
-                                    <menuitem hidden="true" label="Server settings ..." value="" />
-                                    <menuitem label="Automatic configuration" value="auto" />
-                                    <menuitem label="Manual configuration" value="custom" />
-                                    <menuseparator/>
-                                    <menuitem label="Config: Zarafa server" value="zarafa" />
-                                    <menuitem label="Config: Horde server" value="horde" />
-                                    <menuseparator/>
-                                    <menuitem label="Config: Outlook.com" value="outlook.com" />
-                                    <menuitem id="tbsync.discovered" hidden="true" label="Config: Autodiscover" value="discovered" />
-                                </menupopup>
-                            </menulist>
+                <row style="margin-bottom:1em">
+                    <vbox pack="center">
+                        <label control="tbsync.accountsettings.user" value="&pref.UserName;" />
+                    </vbox>
+                    <textbox tooltiptext="&pref.UserNameDescription;" flex="1" id="tbsync.accountsettings.user" onblur="tbSyncAccountSettings.instantSaveSetting(this);"/>
+                </row>
+
+                <row style="margin-bottom:1ex;" id="tbsync.accountsettings.presets">
+                    <vbox/>
+                    <menulist width="150" id="tbsync.servertype" onselect="tbSyncAccountSettings.loadServerProfile();" >
+                        <menupopup>
+                            <menuitem hidden="true" label="&pref.servertype.setup;" value="" />
+                            <menuitem label="&pref.servertype.auto;" value="auto" />
+                            <menuitem label="&pref.servertype.custom;" value="custom" />
+                            <menuseparator/>
+                            <menuitem label="&pref.servertype.zarafa;" value="zarafa" />
+                            <menuitem label="&pref.servertype.horde;" value="horde" />
+                            <menuseparator/>
+                            <menuitem label="&pref.servertype.outlook.com;" value="outlook.com" />
+                        </menupopup>
+                    </menulist>
+                </row> 
+
+                <row flex="1" style="margin-bottom:2ex;" id="tbsync.accountsettings.options">
+                    <vbox/>
+                    <vbox style='overflow: auto;'>
+
+                        <hbox height="24" align="center">
+                            <label flex="1" class="header" value="" id="tbsync.accountsettings.config.label"/>
+                            <image tooltiptext="&pref.servertype.unlock;" ondblclick="tbSyncAccountSettings.unlockSettings()" width="24" height="24" id="tbsync.accountsettings.config.unlock" src="chrome://tbsync/skin/lock24.png" />
                         </hbox>
-                </row>
-           </rows>
-        </grid>
 
-
-        <grid flex="1" style="margin-left:150px" >
-           <columns>
-                <column flex="1" />
-           </columns>
-           <rows>
-
-                <row flex="1" style="margin-top:1ex; margin-bottom:1ex;" id="tbsync.accountsettings.options">
-                    <vbox>
-                        <groupbox style="margin-bottom:1ex;">
-                            <caption label="ActiveSync Server Settings"/>
-
-                            <hbox style="margin-bottom:1ex">
-                                 <textbox width="225" emptytext="&pref.ServerName;" id="tbsync.accountsettings.host" onblur="tbSyncAccountSettings.stripHost();" />
-                                <menulist id="tbsync.accountsettings.asversion" onblur="tbSyncAccountSettings.instantSaveSetting(this);" >
+                        <hbox>
+                            <hbox width="245"><label style="padding:1px 3px;" control="tbsync.accountsettings.host" value="&pref.ServerName;" /></hbox>
+                            <hbox flex="1"><label style="padding:1px 3px;" control="tbsync.accountsettings.asversion" value ="ActiveSync version" /></hbox>
+                        </hbox>
+                        <hbox style="margin-bottom:1ex;">
+                            <hbox width="245"><textbox flex="1" tooltiptext="&pref.ServerNameDescription;" id="tbsync.accountsettings.host" onblur="tbSyncAccountSettings.stripHost();" /></hbox>
+                            <vbox flex="1">
+                                <menulist flex="1" id="tbsync.accountsettings.asversion" onblur="tbSyncAccountSettings.instantSaveSetting(this);" >
                                     <menupopup>
-                                        <menuitem label="ActiveSync v2.5" value="2.5" />
-                                        <menuitem label="ActiveSync v14.0" value="14.0" />
+                                        <menuitem label="v2.5" value="2.5" />
+                                        <menuitem label="v14.0" value="14.0" />
                                     </menupopup>
                                 </menulist>
-                            </hbox>
-
-                            <vbox>
-                                <checkbox id="tbsync.accountsettings.https" label="&pref.usehttps;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
-                                <checkbox  id="tbsync.accountsettings.provision" label="&pref.UseProvisioning;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
                             </vbox>
-                        </groupbox>
+                        </hbox>
 
-                        <groupbox>
-                            <caption label="Optional Server Settings"/>
-                            <vbox>
-                                <checkbox id="tbsync.accountsettings.birthday" label="&pref.birthday;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
-                                <checkbox id="tbsync.accountsettings.displayoverride" label="&pref.displayoverride;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
-                                <checkbox id="tbsync.accountsettings.downloadonly" label="&pref.downloadonly;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
-                            </vbox>
-                        </groupbox>
+                        <checkbox id="tbsync.accountsettings.https" label="&pref.usehttps;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                        <checkbox  id="tbsync.accountsettings.provision" label="&pref.UseProvisioning;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+
+                        <hbox height="24" align="center" style="margin-top:2ex" >
+                            <label flex="1" class="header" value="&pref.contactoptions;"/>
+                        </hbox>
+                        <checkbox id="tbsync.accountsettings.birthday" label="&pref.birthday;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                        <checkbox id="tbsync.accountsettings.displayoverride" label="&pref.displayoverride;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                        <checkbox id="tbsync.accountsettings.downloadonly" label="&pref.downloadonly;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+
+                        <hbox align="center">
+                            <menulist id="tbsync.accountsettings.seperator" onblur="tbSyncAccountSettings.instantSaveSetting(this);" >
+                                <menupopup>
+                                    <menuitem label="&pref.seperator.linebreak;" value="10" />
+                                    <menuitem label="&pref.seperator.comma;" value="44" />
+                                </menupopup>
+                            </menulist>
+                            <label flex="1" value="&pref.seperator.description;"/>
+                        </hbox>
+                        
                     </vbox>
                 </row>
+
                 
-                <row flex="1" style="margin-top:1ex; margin-bottom:1ex;" id="tbsync.accountsettings.folders">
+                <row flex="1" style="margin-bottom:1ex;" id="tbsync.accountsettings.folders">
+                    <vbox/>
                     <richlistbox 
                         id="tbsync.accountsettings.folderlist"
                         flex="1"

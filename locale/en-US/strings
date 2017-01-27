@@ -35,12 +35,25 @@ status.aborted=Not synchronized
 status.pending=Waiting to be synchronized
 status.modified=Local modifications
 
-promptDeleteAccount=Delete account ##accountName## for sure?
-promptDisconnect=Are you sure you want to disconnect this account? All local modifications, which have not been synced yet, will be lost!
-promptUnsubscribe=Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!
+prompt.DeleteAccount=Delete account ##accountName## for sure?
+prompt.Disconnect=Are you sure you want to disconnect this account? All local modifications, which have not been synced yet, will be lost!
+prompt.Unsubscribe=Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!
+prompt.UnlockSettings=Changing any of the predefined server settings could lead to synchronisation errors. Are you sure you want to unlock all predefined server settings?
+prompt.Password=Please enter the password for user ##user##:
+
+info.AutodiscoverOk=Autodiscover completed successfully, you can now check the optional settings and connect this account.
+info.AutodiscoverBadVersion=Server does not support ActiveSync v2.5 or v14.0 (only ##versions##). TbSync will not work with this ActiveSync server.
+info.AutodiscoverWrongPassword=Wrong password for user <##user##>. Autodiscover failed.
+info.AutodiscoverFailed=Autodiscover for user <##user##> failed. Your ActiveSync provider does not seem to support Autodiscover.
 
 resync_from_scratch=Resync from scratch
 new_account=New Account
 
-promptPassword=Please enter the password for user ##user##:
 account=TbSync account [##accountname##]
+
+config.auto=ActiveSync server configuration (via Autodiscover)
+config.custom=ActiveSync server configuration
+config.zarafa=Zarafa or Kopano server configuration
+config.horde=Horde server configuration
+config.outlook.com=Server configuration for Outlook.com accounts
+

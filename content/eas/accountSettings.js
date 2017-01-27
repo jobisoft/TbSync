@@ -7,14 +7,13 @@ var tbSyncAccountSettings = {
     selectedAccount: null,
     init: false,
     fixedSettings: {},
-    protectedSettings: ["host", "user", "servertype"],
+    protectedSettings: ["host", "user"],
 
     onload: function () {
         //get the selected account from the loaded URI
         tbSyncAccountSettings.selectedAccount = window.location.toString().split("id=")[1];
 
         tbSyncAccountSettings.loadSettings();
-        tbSyncAccountSettings.updateGui();
         tbSyncAccountSettings.addressbookListener.add();
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
@@ -47,7 +46,9 @@ var tbSyncAccountSettings = {
     */
     loadSettings: function () {
         let settings = tbSync.db.getTableFields("accounts");
-        this.fixedSettings = tbSync.db.getServerSetting(tbSyncAccountSettings.selectedAccount);
+        let servertype = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype");
+        
+        this.fixedSettings = this.getServerSetting(servertype);
 
         for (let i=0; i<settings.length;i++) {
             if (document.getElementById("tbsync.accountsettings." + settings[i])) {
@@ -68,9 +69,17 @@ var tbSyncAccountSettings = {
                 
             }
         }
+
+        // special treatment for servertype - always select main item
+        document.getElementById("tbsync.servertype").value= "";
+        
+        // special treatment for configuration label
+        document.getElementById("tbsync.accountsettings.config.label").value= tbSync.getLocalizedMessage("config." + servertype);
         
         // also load DeviceId
         document.getElementById('deviceId').value = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "deviceId");
+        
+        this.updateGui();
     },
 
 
@@ -137,45 +146,79 @@ var tbSyncAccountSettings = {
         tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, "host", host);
     },
 
-    autodiscoverObserver: {
-        observe: function (aSubject, aTopic, aData) {
-            //only update if request for this account
-            if (aData == tbSyncAccountSettings.selectedAccount) {
-                tbSyncAccountSettings.loadSettings();
-                tbSyncAccountSettings.updateGui();
-            }
+    getServerSetting: function(servertype) {
+        let settings = {};
+
+        switch (servertype) {
+            case "auto":
+                settings["host"] = null;
+                settings["https"] = null;
+                settings["provision"] = null;
+                settings["asversion"] = null;
+                break;
+
+            case "zarafa":
+                settings["seperator"] = "10";
+                break;
+            
+            case "horde":
+                settings["seperator"] = "44";
+                break;
+
+            case "outlook.com":
+                settings["host"] = "eas.outlook.com";
+                settings["https"] = "1";
+                settings["provision"] = "0";
+                settings["asversion"] = "2.5";
+                settings["seperator"] = "44";
+                break;
         }
+        
+        return settings;
     },
 
+    
     loadServerProfile: function () {
         if (tbSyncAccountSettings.selectedAccount === null) return;
 
-        //do nothing, if servertype did not change
-        let servertype = document.getElementById('tbsync.accountsettings.servertype').value;
-        if (servertype == tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype")) return;
+        let selection = document.getElementById('tbsync.servertype').value;
+        if (selection == "") return;
         
-
         //special treatment for autodiscover request
-        if (servertype == "auto") {
+        if (selection == "auto") {
             window.openDialog("chrome://tbsync/content/eas/autodiscover.xul", "easautodiscover", "centerscreen,modal,resizable=no", this.selectedAccount, document.getElementById('tbsync.accountsettings.user').value);
-        } else if (servertype != tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype")) {
-
-            // save new servertype and update fixedSettings
-            tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype", servertype);
-            this.fixedSettings = tbSync.db.getServerSetting(tbSyncAccountSettings.selectedAccount);
-
+        } else {
             //save fixed values
+            this.fixedSettings = this.getServerSetting(selection);
             let data = tbSync.db.getAccount(tbSyncAccountSettings.selectedAccount, true); //get a copy of the cache, which can be modified
             for (let key in this.fixedSettings) {
                 if (data.hasOwnProperty(key) && this.fixedSettings[key] !== null) { //null is used by autodiscover, do not change real value
                     data[key] = this.fixedSettings[key];
                 }
             }
+            data.servertype = selection;
             tbSync.db.setAccount(data);
 
-            //update gui 
+            // load new settings and update gui 
             this.loadSettings();
-            this.updateGui();
+        }
+    },
+
+    unlockSettings: function () {
+        if (confirm(tbSync.getLocalizedMessage("prompt.UnlockSettings"))) {
+            tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype", "custom");
+            this.loadSettings();
+        }
+    },
+    
+    autodiscoverObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            //only update if request for this account
+            tbSync.dump("DONE","A");
+            if (aData == tbSyncAccountSettings.selectedAccount) {
+                tbSyncAccountSettings.loadSettings();
+                if (tbSync.db.getAccountSetting(aData, "servertype") == "auto") setTimeout(function(){ alert(tbSync.getLocalizedMessage("info.AutodiscoverOk")); }, 100);
+            }
         }
     },
 
@@ -192,8 +235,12 @@ var tbSyncAccountSettings = {
         let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
         document.getElementById('tbsync.accountsettings.connectbtn').label = tbSync.getLocalizedMessage("state."+state); 
         
-        document.getElementById("tbsync.accountsettings.options").hidden = (state != "disconnected" || document.getElementById('tbsync.accountsettings.servertype').value == ""); 
-//        document.getElementById("tbsync.accountsettings.servertype").hidden = (state != "disconnected"); 
+        //which box is to be displayed? presets, options or folders
+        document.getElementById("tbsync.accountsettings.presets").hidden = (state != "disconnected" || tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype") != "");
+
+        document.getElementById("tbsync.accountsettings.config.unlock").hidden = (state != "disconnected" || tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype") == "custom" || tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype") == ""); 
+
+        document.getElementById("tbsync.accountsettings.options").hidden = (state != "disconnected" || tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype") == ""); 
         document.getElementById("tbsync.accountsettings.folders").hidden = (state == "disconnected"); 
 
         //disable all seetings field, if connected or connecting
@@ -225,7 +272,7 @@ var tbSyncAccountSettings = {
         }
 
         //disable connect/disconnect btn, sync btn and folderlist during sync, also hide sync button if disconnected
-        document.getElementById('tbsync.accountsettings.connectbtn').disabled = (status == "syncing" || document.getElementById('tbsync.accountsettings.servertype').value == "");
+        document.getElementById('tbsync.accountsettings.connectbtn').disabled = (status == "syncing" || tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype") == "");
         document.getElementById('tbsync.accountsettings.folderlist').disabled = (status == "syncing");
         document.getElementById('tbsync.accountsettings.syncbtn').disabled = (status == "syncing");
         document.getElementById('tbsync.accountsettings.syncbtn').hidden = (state == "disconnected");
@@ -241,7 +288,7 @@ var tbSyncAccountSettings = {
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.selectedAccount, fID, true);
 
             if (folder.selected == "1") {
-                if (window.confirm(tbSync.getLocalizedMessage("promptUnsubscribe"))) {
+                if (window.confirm(tbSync.getLocalizedMessage("prompt.Unsubscribe"))) {
                     //get copy of the current target, before resetting it
                     let target = folder.target;
                     let type = folder.type;
@@ -434,7 +481,7 @@ var tbSyncAccountSettings = {
         let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
         if (state == "connected") {
             //we are connected and want to disconnect
-            if (window.confirm(tbSync.getLocalizedMessage("promptDisconnect"))) {
+            if (window.confirm(tbSync.getLocalizedMessage("prompt.Disconnect"))) {
                 tbSync.sync.disconnectAccount(tbSyncAccountSettings.selectedAccount);
                 tbSyncAccountSettings.updateGui();
                 let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);

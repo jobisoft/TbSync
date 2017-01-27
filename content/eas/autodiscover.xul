@@ -9,6 +9,7 @@
     defaultButton="extra1"
     buttonlabelextra1="&search;"
     onload="tbSyncEasAutodiscover.onLoad();"
+    onunload="tbSyncEasAutodiscover.onUnload();"
     onclose="return tbSyncEasAutodiscover.onClose()"
     ondialogcancel="tbSyncEasAutodiscover.onCancel();"
     ondialogextra1="tbSyncEasAutodiscover.onSearch();">
@@ -26,10 +27,10 @@
             <rows>
                 <row>
                     <label value="&user;" />
-                    <label value="&password;" />
+                    <textbox id="tbsync.autodiscover.user" />
                 </row>
                 <row>
-                    <textbox id="tbsync.autodiscover.user" />
+                    <label value="&password;" />
                     <textbox type="password" id="tbsync.autodiscover.password" />
                 </row>
             </rows>
