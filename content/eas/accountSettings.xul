@@ -144,9 +144,9 @@
                 <row>
                      <label />
                      <hbox flex="1" >
-                         <!--button flex="1" label="&pref.Resync;" id="tbsync.accountsettings.resyncbtn" onclick="tbSyncAccountSettings.requestSync('resync', tbSyncAccountSettings.selectedAccount, this.disabled);" tooltiptext="&pref.ResyncText;" /-->
-                         <button flex="1" label="" id="tbsync.accountsettings.connectbtn" onclick="tbSyncAccountSettings.toggleConnectionState();" />
-                        <button flex="4" label="&pref.Sync;" id="tbsync.accountsettings.syncbtn" onclick="tbSyncAccountSettings.requestSync('sync', tbSyncAccountSettings.selectedAccount, this.disabled);" />
+                         <!--button flex="1" label="&pref.Resync;" id="tbsync.accountsettings.resyncbtn" oncommand="tbSyncAccountSettings.requestSync('resync', tbSyncAccountSettings.selectedAccount, this.disabled);" tooltiptext="&pref.ResyncText;" /-->
+                         <button flex="1" label="" id="tbsync.accountsettings.connectbtn" oncommand="tbSyncAccountSettings.toggleConnectionState();" />
+                        <button flex="4" label="&pref.Sync;" id="tbsync.accountsettings.syncbtn" oncommand="tbSyncAccountSettings.requestSync('sync', tbSyncAccountSettings.selectedAccount, this.disabled);" />
                      </hbox>
                 </row>
 

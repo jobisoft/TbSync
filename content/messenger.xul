@@ -14,19 +14,19 @@
         <statusbarpanel id="tbsync.status" label="&pref.TbSync;" context="tbsync.statusmenu" ondblclick="tbSyncMessenger.openAccountManager();" />
         <popupset>
             <menupopup id="tbsync.statusmenu">
-                <menuitem label="&popup.sync;" onclick="tbSync.sync.addAccountToSyncQueue('sync');" />
-                <menuitem label="&popup.opensettings;" onclick="tbSyncMessenger.openAccountManager();" />
-                <menuitem label="&popup.cancelsync;" onclick="tbSync.sync.resetSync();" />
+                <menuitem label="&popup.sync;" oncommand="tbSync.sync.addAccountToSyncQueue('sync');" />
+                <menuitem label="&popup.opensettings;" oncommand="tbSyncMessenger.openAccountManager();" />
+                <menuitem label="&popup.cancelsync;" oncommand="tbSync.sync.resetSync();" />
             </menupopup>
         </popupset>
     </statusbar>
 
     <menupopup id="taskPopup"> <!-- TB40 Windows -->
-            <menuitem label="&menu.settingslabel;" insertbefore="menu_accountmgr" onclick="tbSyncMessenger.openAccountManager();" />
+            <menuitem label="&menu.settingslabel;" insertbefore="menu_accountmgr" oncommand="tbSyncMessenger.openAccountManager();" />
     </menupopup>
 
     <menupopup id="menu_EditPopup"> <!-- TB45 Linux-->
-            <menuitem label="&menu.settingslabel;" insertbefore="menu_accountmgr" onclick="tbSyncMessenger.openAccountManager();" />
+            <menuitem label="&menu.settingslabel;" insertbefore="menu_accountmgr" oncommand="tbSyncMessenger.openAccountManager();" />
     </menupopup>
  
     <toolbarpalette id="MailToolbarPalette">
