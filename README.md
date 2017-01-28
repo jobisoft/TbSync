@@ -1,7 +1,13 @@
 # TbSync
-[Thunderbird Add-On] Sync contacts and calendar to thunderbird using Exchange Active Sync (EAS). Based on tzpush 1.9.9.9.7
+[Thunderbird Add-On] Sync contacts and calendar to thunderbird using Exchange Active Sync (EAS). 
 
-This is work in progress. Roadmap:
+## How to get started
+
+A quick start guide on how to use this Add-On can be found in the [wiki](wiki/How-to-get-started) of this repository
+
+## Roadmap
+
+This is work in progress.
 
  * [x] store passwords in password manager, not in Prefs
  * [x] change design to be more intuitive
@@ -13,9 +19,10 @@ This is work in progress. Roadmap:
  * [ ] sync advanced calendar properties (MeetingStatus, Attendees, Attachements, Repeated Events)
  * [ ] sync tasks
  * [ ] sync global adress book
- * [ ] auto discover
+ * [x] support ActiveSync Autodiscover
 
-Icon sources:
+## Icon sources
+
 * [tbsync.png] https://www.iconfinder.com/paomedia 
 * [discon.png] http://p.yusukekamiyamane.com/
 * [tick16.png] http://www.iconarchive.com/artist/pixelmixer.html
