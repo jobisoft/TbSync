@@ -3,7 +3,7 @@
 
 ## How to get started
 
-A quick start guide on how to use this Add-On can be found in the [wiki](wiki/How-to-get-started) of this repository
+A quick start guide on how to use this Add-On can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki/How-to-get-started) of this repository
 
 ## Roadmap
 
