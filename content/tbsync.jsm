@@ -53,6 +53,11 @@ var tbSync = {
 
 
     // TOOLS
+    
+    includeJS: function (file) {
+        let loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
+        loader.loadSubScript(file, this);
+    },
 
     decode_utf8: function (s) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;
@@ -672,18 +677,13 @@ var tbSync = {
 };
 
 
+// load all subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
+tbSync.includeJS("chrome://tbsync/content/subscripts/db.js");
+tbSync.includeJS("chrome://tbsync/content/subscripts/wbxmltools.js");
+tbSync.includeJS("chrome://tbsync/content/subscripts/xmltools.js");
 
-
-
-let loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
-
-// load all subscripts into tbSync
-//- each subscript will be able to access functions/members of other subscripts
-//- loading order does not matter
-loader.loadSubScript("chrome://tbsync/content/subscripts/db.js", tbSync);
-loader.loadSubScript("chrome://tbsync/content/subscripts/wbxmltools.js", tbSync);
-loader.loadSubScript("chrome://tbsync/content/subscripts/xmltools.js", tbSync);
-
-loader.loadSubScript("chrome://tbsync/content/eas/sync.js", tbSync);
-loader.loadSubScript("chrome://tbsync/content/eas/contactsync.js", tbSync);
-loader.loadSubScript("chrome://tbsync/content/eas/calendarsync.js", tbSync);
+let syncProvider = tbSync.db.syncProvider.getChildList("", {});
+for (let i=0;i<syncProvider.length;i++) {
+    tbSync.dump("PROVIDER", syncProvider[i] + "::" + tbSync.db.syncProvider.getCharPref(syncProvider[i]));
+    tbSync.includeJS("chrome://tbsync/content/provider/"+syncProvider[i]+"/init.js");
+}

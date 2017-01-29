@@ -457,10 +457,3 @@ var db = {
 };
 
 db.init();
-
-/*
-let syncProvider = db.syncProvider.getChildList("", {});
-for (let i=0;i<syncProvider.length;i++) {
-    tbSync.dump("PROVIDER", syncProvider[i]);
-}
-*/

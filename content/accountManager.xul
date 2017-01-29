@@ -6,11 +6,10 @@
     xmlns:html="http://www.w3.org/1999/xhtml"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-    buttons="accept"
-    buttonlabelaccept="&pref.Close;"
+    buttons="cancel"
+    buttonlabelcancel="&pref.Close;"
     onload="tbSyncAccountManager.onload();"
     onunload="tbSyncAccountManager.onunload();"
-    style="width: 750px; height: 560px"
     title="&manager.title;" >
 
     <prefpane id="settings" label="&pref.SettingDialog;" image="chrome://tbsync/skin/settings.png" >
@@ -21,7 +20,7 @@
             </menupopup>
         </popupset>
 
-        <hbox flex="1">
+        <hbox width="750" height="450" >
             <vbox style="width:200px;">
                     <richlistbox 
                         id="tbSyncAccountManager.accounts"
@@ -47,8 +46,8 @@
 
     </prefpane>
 
-    <prefpane  flex="1" id="Cape" label="&pref.Cape;" image="chrome://tbsync/skin/cape.png" >
-        <hbox flex="1" >
+    <prefpane id="Cape" label="&pref.Cape;" image="chrome://tbsync/skin/cape.png" >
+        <hbox  width="750" height="450" >
             <vbox flex="0" style="padding: 2em 2em 0 2em;" >
                 <image src="chrome://tbsync/skin/cape_logo.png" style='padding:8px;' align='center' oncommand="tbSyncAccountManager.openTBtab('http://www.capeproject.org.uk');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
                 <label
@@ -71,8 +70,8 @@
         </hbox>
     </prefpane>
 
-    <prefpane flex="1" id="Catman" label="&pref.catman;" image="chrome://tbsync/skin/catman.png" >
-        <hbox flex="1" >
+    <prefpane id="Catman" label="&pref.catman;" image="chrome://tbsync/skin/catman.png" >
+        <hbox  width="750" height="450" >
             <vbox flex="1" style="padding: 0 2em;" >
                 <html:p>TbSync is also syncing contact categories. To be able to use them in Thunderbird, you need to install the Category Manager Add-On developed by John Bieling. It enables you to manage overlapping contact groups and provides a bunch of other category related features. It can be found in the official Mozilla Add-On repository:</html:p>
                 <html:p onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" oncommand="tbSyncAccountManager.openTBtab('https://addons.mozilla.org/de/thunderbird/addon/categorymanager/');" style="color:blue;text-decoration: underline;padding-left:1em;">https://addons.mozilla.org/de/thunderbird/addon/categorymanager/</html:p>
@@ -80,8 +79,10 @@
          </hbox>
     </prefpane>
 
-    <prefpane flex="1"  id="Help" label="&pref.Help;" image="chrome://tbsync/skin/help.png" >
-        <iframe flex="1" src="chrome://tbsync/content/help.html" />
+    <prefpane id="Help" label="&pref.Help;" image="chrome://tbsync/skin/help.png" >
+        <hbox  width="750" height="450" >
+            <iframe flex="1" src="chrome://tbsync/content/help.html" />
+         </hbox>
     </prefpane>
 
     <script type="text/javascript" src="chrome://tbsync/content/accountManager.js" /> 

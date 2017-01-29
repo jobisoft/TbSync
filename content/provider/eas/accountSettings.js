@@ -186,7 +186,7 @@ var tbSyncAccountSettings = {
         
         //special treatment for autodiscover request
         if (selection == "auto") {
-            window.openDialog("chrome://tbsync/content/eas/autodiscover.xul", "easautodiscover", "centerscreen,modal,resizable=no", this.selectedAccount, document.getElementById('tbsync.accountsettings.user').value);
+            window.openDialog("chrome://tbsync/content/provider/eas/autodiscover.xul", "easautodiscover", "centerscreen,modal,resizable=no", this.selectedAccount, document.getElementById('tbsync.accountsettings.user').value);
         } else {
             //save fixed values
             this.fixedSettings = this.getServerSetting(selection);

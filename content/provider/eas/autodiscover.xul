@@ -14,7 +14,7 @@
     ondialogcancel="tbSyncEasAutodiscover.onCancel();"
     ondialogextra1="tbSyncEasAutodiscover.onSearch();">
 
-    <script type="application/javascript" src="chrome://tbsync/content/eas/autodiscover.js"/>
+    <script type="application/javascript" src="chrome://tbsync/content/provider/eas/autodiscover.js"/>
 
     <vbox>
         <description style="width: 250px">&description;</description>

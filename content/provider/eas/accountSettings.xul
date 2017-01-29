@@ -10,7 +10,7 @@
     onunload="tbSyncAccountSettings.onunload()"
     title="" >
 
-    <script type="text/javascript" src="chrome://tbsync/content/eas/accountSettings.js" /> 
+    <script type="text/javascript" src="chrome://tbsync/content/provider/eas/accountSettings.js" /> 
 
     <vbox flex="1">
 
