@@ -2,6 +2,15 @@
 
 var xmltools = {
 
+    isString : function (obj) {
+	return (Object.prototype.toString.call(obj) === '[object String]');
+    },
+	
+    checkString : function(d) {
+	if (this.isString(d)) return d;
+	else return "";
+    },	    
+	
     nodeAsArray : function (node) {
         let a = [];
         if (node) {
@@ -34,11 +43,11 @@ var xmltools = {
         let data = null;
         let oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
         try {
-            data = this.getDataFromXML(oParser.parseFromString(str, "text/xml"));
+            data = this.getDataFromXML(oParser.parseFromString(str.replace(new RegExp("&", "g"),"&amp;"), "text/xml"));
         } catch (e) {}
         return data;
     },
-
+    
     //create data object from XML node
     getDataFromXML : function (nodes) {
         
