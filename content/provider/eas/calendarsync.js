@@ -186,8 +186,8 @@ var calendarsync = {
     setEvent: function (item, data, id, asversion) {
         item.id = id;
 
-        if (data.Subject) item.title = data.Subject;
-        if (data.Location) item.setProperty("location", data.Location);
+        if (data.Subject) item.title = xmltools.checkString(data.Subject);
+        if (data.Location) item.setProperty("location", xmltools.checkString(data.Location));
         if (data.Categories && data.Categories.Category) {
             let cats = [];
             if (Array.isArray(data.Categories.Category)) cats = data.Categories.Category;
@@ -195,13 +195,13 @@ var calendarsync = {
             item.setCategories(cats.length, cats);
         }
 
-        //store the UID send from the server as EASUID. The field UID is reserved for the ServerId of this item and can be accessed as item.id and as item.getProperty("UID");
-        if (data.UID) item.setProperty("EASUID", data.UID);
+        //store the UID part of data as EASUID. The field UID is reserved for the ServerId of this item and can be accessed as item.id and as item.getProperty("UID");
+//        if (data.UID) item.setProperty("EASUID", "" + data.UID);
 
         if (asversion == "2.5") {
-            if (data.Body) item.setProperty("description", data.Body);
+            if (data.Body) item.setProperty("description", xmltools.checkString(data.Body));
         } else {
-            if (data.Body && data.Body.EstimatedDataSize > 0 && data.Body.Data) item.setProperty("description", data.Body.Data);
+            if (data.Body && data.Body.EstimatedDataSize > 0 && data.Body.Data) item.setProperty("description", xmltools.checkString(data.Body.Data)); //CLEAR??? DataSize>0 ??
         }
 
         //get a list of all zones - we only do this once, we do it here to not slow down TB startup time
@@ -237,7 +237,7 @@ var calendarsync = {
 
         let utc = cal.createDateTime(data.StartTime); //format "19800101T000000Z" - UTC
         item.startDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
-        tbSync.dump("TB TZ", item.startDate.timezone);
+//        tbSync.dump("TB TZ", item.startDate.timezone);
 
         utc = cal.createDateTime(data.EndTime); 
         item.endDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
@@ -270,7 +270,7 @@ var calendarsync = {
         // 0 = Normal // 1 = Personal // 2 = Private // 3 = Confidential
         let CLASS = { "0":"PUBLIC", "1":"PRIVATE", "2":"PRIVATE", "3":"CONFIDENTIAL"};
         if (data.Sensitivity) item.setProperty("CLASS", CLASS[data.Sensitivity]);
- 
+
  /*
 	
 	Missing : MeetingStatus, Attendees, Attachements, Repeated Events
@@ -310,9 +310,10 @@ var calendarsync = {
         //this UID is stored in the item and also on the server as ApplicationData.UID
         //After the server receives this item, he will send back a ServerId, which we need to store as item id (UID),
         //but we also need to keep the ApplicationData.UID, so we backup that into the field EASUID
-        if (item.hasProperty("EASUID")) wbxml.atag("UID", item.getProperty("EASUID"));
-        else wbxml.atag("UID", item.id);
-        
+//        if (item.hasProperty("EASUID")) wbxml.atag("UID", item.getProperty("EASUID"));
+//        else wbxml.atag("UID", item.id);
+// FOR NOW WE SIMPLY DO NOT SEND ANY UID TO THE SERVER
+	    
         //IMPORTANT in EAS v16 it is no longer allowed to send a UID
         
         
@@ -727,7 +728,7 @@ var calendarsync = {
                     //server has two identifiers for this item, serverId and UID
                     //on creation, TB created a UID which has been send to the server as UID inside AplicationData
                     //we NEED to use ServerId as TB UID without changing UID on Server -> Backup
-                    newItem.setProperty("EASUID", newItem.id);
+//                    newItem.setProperty("EASUID", "" + newItem.id);
                     
                     newItem.id = add[count].ServerId;
                     db.addItemToChangeLog(syncdata.targetObj.id, newItem.id, "modified_by_server");
