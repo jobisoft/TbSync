@@ -77,7 +77,7 @@ var db = {
                     sql = sql + field + " " + this.tables[tablename][field];
                 }
 
-                // Create table
+                // Create table - this statement is created completly from hardcoded elements, no userland input, no need to use createStatement
                 this.conn.executeSimpleSQL("CREATE TABLE " + tablename + " (" + sql + ");");
             }
 
@@ -132,7 +132,10 @@ var db = {
     // CHANGELOG FUNCTIONS - needs caching // TODO
 
     getItemStatusFromChangeLog: function (parentId, itemId) {
-        let statement = this.conn.createStatement("SELECT status FROM changelog WHERE parentId='"+parentId+"' AND itemId='"+itemId+"';");
+        let statement = this.conn.createStatement("SELECT status FROM changelog WHERE parentId = :parentId AND itemId = :itemId");
+        statement.params.parentId = parentId;
+        statement.params.itemId = itemId;
+        
         if (statement.executeStep()) {
             return statement.row.status;
         }
@@ -141,22 +144,41 @@ var db = {
 
     addItemToChangeLog: function (parentId, itemId, status, data = "") {
         this.removeItemFromChangeLog(parentId, itemId);
-        this.conn.executeSimpleSQL("INSERT INTO changelog (parentId, itemId, status, data) VALUES ('"+parentId+"', '"+itemId+"', '"+status+"', '"+data+"');");
+        let statement = this.conn.createStatement("INSERT INTO changelog (parentId, itemId, status, data) VALUES (:parentId, :itemId, :status, :data)");
+        statement.params.parentId = parentId;
+        statement.params.itemId = itemId;
+        statement.params.status = status;
+        statement.params.data = data;
+        statement.executeStep();
     },
 
     removeItemFromChangeLog: function (parentId, itemId) {
-        this.conn.executeSimpleSQL("DELETE FROM changelog WHERE parentId='"+parentId+"' AND itemId='"+itemId+"';");
+        let statement = this.conn.createStatement("DELETE FROM changelog WHERE parentId = :parentId AND itemId = :itemId");
+        statement.params.parentId = parentId;
+        statement.params.itemId = itemId;
+        statement.executeStep();
+
     },
     
     // Remove all cards of a parentId from ChangeLog
     clearChangeLog: function (parentId) {
-        this.conn.executeSimpleSQL("DELETE FROM changelog WHERE parentId='"+parentId+"';");
+        let statement = this.conn.createStatement("DELETE FROM changelog WHERE parentId = :parentId");
+        statement.params.parentId = parentId;
+        statement.executeStep();        
     },
 
     getItemsFromChangeLog: function (parentId, maxnumbertosend, status = null) {
         let changelog = [];
-        let statussql = (status === null) ? "" : "status LIKE '%"+status+"%' AND ";
-        let statement = this.conn.createStatement("SELECT itemId, status FROM changelog WHERE " + statussql+ "parentId='"+parentId+"' LIMIT "+ maxnumbertosend +";");
+        let statement = null;
+        if (status === null) {
+            statement = this.conn.createStatement("SELECT itemId, status FROM changelog WHERE parentId = :parentId LIMIT :maxnumbertosend");
+        } else {
+            statement = this.conn.createStatement("SELECT itemId, status FROM changelog WHERE status LIKE :status AND parentId = :parentId LIMIT :maxnumbertosend");
+            statement.params.status = "%"+status+"%";
+        }
+        statement.params.parentId = parentId;
+        statement.params.maxnumbertosend = maxnumbertosend;
+        
         while (statement.executeStep()) {
             changelog.push({ "id":statement.row.itemId, "status":statement.row.status });
         }
@@ -195,7 +217,7 @@ var db = {
         //update this._accountCache
         if (this._accountCache === null || forceupdate) {
             this._accountCache = {};
-            let statement = this.conn.createStatement("SELECT * FROM accounts;");
+            let statement = this.conn.createStatement("SELECT * FROM accounts");
             while (statement.executeStep()) {
                 let data = {};
                 for (let x=0; x<this.accountColumns.length; x++) data[this.accountColumns[x]] = statement.row[this.accountColumns[x]];
@@ -237,12 +259,17 @@ var db = {
     }, 
 
     addAccount: function (accountname, appendID = false) {
-        this.conn.executeSimpleSQL("INSERT INTO accounts (accountname, deviceId) VALUES ('" + accountname + "', '" + this.getNewDeviceId() + "');");
-        this.getAccounts(true); //force update of this._accountCache
+        let statement = this.conn.createStatement("INSERT INTO accounts (accountname, deviceId) VALUES (:accountname, :deviceId)");
+        statement.params.accountname = accountname;
+        statement.params.deviceId = this.getNewDeviceId();
+        statement.executeStep();
         
-        let statement = this.conn.createStatement("SELECT seq FROM sqlite_sequence where name='accounts';");
-        if (statement.executeStep()) {
-            let accountID = statement.row.seq;
+        this.getAccounts(true); //force update of this._accountCache        
+        let statement2 = this.conn.createStatement("SELECT seq FROM sqlite_sequence where name = :accounts");
+        statement2.params.accounts = "accounts";
+        
+        if (statement2.executeStep()) {
+            let accountID = statement2.row.seq;
             if (appendID) this.setAccountSetting(accountID, "accountname", accountname + " #" + accountID);
             return accountID;
         } else {
@@ -252,7 +279,9 @@ var db = {
 
     removeAccount: function (account) {
         // remove account from DB
-        this.conn.executeSimpleSQL("DELETE FROM accounts WHERE account='"+account+"';");
+        let statement = this.conn.createStatement("DELETE FROM accounts WHERE account = :account");
+        statement.params.account = account;
+        statement.executeStep();
 
         // remove Account from Cache
         delete(this._accountCache[account]);
@@ -264,20 +293,25 @@ var db = {
     setAccount: function (data) {
         // if the requested account does not exist, getAccount() will fail
         let settings = this.getAccount(data.account);
-
+        
+        let params = {};
         let sql = "";
         for (let p in data) {
             // update account cache if allowed
             if (settings.hasOwnProperty(p)) {
                 this._accountCache[data.account][p] = data[p].toString();
                 if (sql.length > 0) sql = sql + ", ";
-                sql = sql + p + " = '" + data[p] + "'";
+                sql = sql + p + " = :" + p; //build paramstring p = :p which will actually be set by statement.params
+                params[p] = data[p].toString();
             }
             else throw "Unknown account setting <" + p + ">!" + "\nThrown by db.setAccount("+data.account+")";
         }
 
         // update DB
-        this.conn.executeSimpleSQL("UPDATE accounts SET " + sql + " WHERE account='" + data.account + "';");
+        let statement = this.conn.createStatement("UPDATE accounts SET " + sql + " WHERE account = :account"); //sql is a param-string
+        statement.params.account = data.account;
+        for (let p in params) statement.params[p] = params[p];
+        statement.executeStep();
     },
 
     setAccountSetting: function (account , name, value) {
@@ -289,7 +323,10 @@ var db = {
             //update this._accountCache
             this._accountCache[account][name] = value.toString();
             //update DB
-            this.conn.executeSimpleSQL("UPDATE accounts SET "+name+"='" + value + "' WHERE account='" + account + "';");
+            let statement = this.conn.createStatement("UPDATE accounts SET "+name+" = :value WHERE account = :account"); //name is NOT coming from userland
+            statement.params.value = value;
+            statement.params.account = account;
+            statement.executeStep();
         } else {
             throw "Unknown account setting!" + "\nThrown by db.setAccountSetting("+account+", " + name + ", " + value + ")";
         }
@@ -317,7 +354,9 @@ var db = {
         if (this._folderCache.hasOwnProperty(account) == false) {
 
             let folders = {};
-            let statement = this.conn.createStatement("SELECT * FROM folders WHERE account = '"+account+"';");
+            let statement = this.conn.createStatement("SELECT * FROM folders WHERE account = :account");
+            statement.params.account = account;
+            
             let entries = 0;
             while (statement.executeStep()) {
                 let data = {};
@@ -371,12 +410,19 @@ var db = {
 
     //use sql to find the desired data, not the cache
     findFoldersWithSetting: function (name, value, account = null) {
-        let accountsql = "";
-        if (account !== null) accountsql = "account = '"+account+"' AND ";
 
         let data = [];
-        let statement = this.conn.createStatement("SELECT * FROM folders WHERE "+ accountsql + name+" = '"+value+"';");
+        let statement = null;
+        if (account === null) {
+            statement = this.conn.createStatement("SELECT * FROM folders WHERE "+name+" = :value"); //name is NOT coming from userland!
+        } else {
+            statement = this.conn.createStatement("SELECT * FROM folders WHERE account = :account AND "+name+" = :value"); //name is NOT coming from userland!
+            statement.params.account = account;
+        }
+        statement.params.value = value;
+        
         while (statement.executeStep()) {
+            
             let folder = {};
             for (let x=0; x<this.folderColumns.length; x++) folder[this.folderColumns[x]] = statement.row[this.folderColumns[x]];
             data.push(folder);
@@ -390,16 +436,22 @@ var db = {
         let folder = this.getFolder(data.account, data.folderID); 
 
         let sql = "";
+        let params = {};
         for (let p in data) {
             //update folder cache if allowed
             if (folder.hasOwnProperty(p)) {
                 this._folderCache[data.account][data.folderID][p] = data[p].toString();
                 if (sql.length > 0) sql = sql + ", ";
-                sql = sql + p + " = '" + data[p] + "'";
+                sql = sql + p + " = :" +p; //build param string, which will be replaced by statement.params
+                params[p] = data[p].toString();
             }
             else throw "Unknown folder setting <" + p + ">!" + "\nThrown by db.setFolder("+data.account+")";
         }
-        this.conn.executeSimpleSQL("UPDATE folders SET " + sql + " WHERE account='" + data.account + "'  AND folderID = '" + data.folderID + "';");
+        let statement = this.conn.createStatement("UPDATE folders SET " + sql + " WHERE account = :account AND folderID = :folderID");
+        statement.params.account = data.account;
+        statement.params.folderID = data.folderID;
+        for (let p in params) statement.params[p] = params[p];
+        statement.executeStep();                
     },
 
     setFolderSetting: function(account, folderID, field, value) {
@@ -409,16 +461,23 @@ var db = {
         if (folderID == "") folders = this.getFolders(account);
         else folders[folderID] = this.getFolder(account, folderID);
 
-        // update cache of all requested folders
+        //update cache of all requested folders
         for (let fID in folders) {
             if (folders[fID].hasOwnProperty(field)) this._folderCache[account][fID][field] = value.toString();
             else throw "Unknown folder field!" + "\nThrown by db.setFolderSetting("+account+", " + folderID + ", " + field + ", " + value + ")";
         }
 
-        //DB update - if folderID is given, set value only for that folder, otherwise for all folders
-        let sql = "SET "+field+" = '" + value + "' WHERE account = '"+account+"'";
-        if (folderID != "") sql = sql + " AND folderID = '" + folderID + "'";
-        this.conn.executeSimpleSQL("UPDATE folders "+ sql +";");
+        //DB update - if folderID is given, set value only for that folder, otherwise for all folders - field is checked for allowed values prior to usage in SQL statement
+        let statement = null;
+        if (folderID != "") {
+            statement = this.conn.createStatement("UPDATE folders SET "+field+" = :value WHERE account = :account AND folderID = :folderID");
+            statement.params.folderID = folderID;
+        } else {
+            statement = this.conn.createStatement("UPDATE folders SET "+field+" = :value WHERE account = :account");
+        }
+        statement.params.account = account;
+        statement.params.value = value;
+        statement.executeStep();                        
     },
 
     addFolder: function(data) {
@@ -429,28 +488,31 @@ var db = {
         for (let x=0; x<this.folderColumns.length; x++) {
             if (x>0) {fields = fields + ", "; values = values + ", "; }
             fields = fields + this.folderColumns[x];
-            values = values + "'" + data[this.folderColumns[x]] + "'";
+            values = values + ":" + this.folderColumns[x];
             //only add to the cache, what has been added to the DB
             addedData[this.folderColumns[x]] = data[this.folderColumns[x]];
         }
-	try { 
-		this.conn.executeSimpleSQL("INSERT INTO folders (" + fields + ") VALUES ("+values+");");        
-	} catch(e) {throw "SQL Error: INSERT INTO folders (" + fields + ") VALUES ("+values+");"};
-	
+        let statement = this.conn.createStatement("INSERT INTO folders (" + fields + ") VALUES ("+values+");");
+        for (let x=0; x<this.folderColumns.length; x++) statement.params[this.folderColumns[x]] = data[this.folderColumns[x]];
+        statement.executeStep();
         
-
         //update this._folderCache
         if (!this._folderCache.hasOwnProperty(data.account)) this._folderCache[data.account] = {};
         this._folderCache[data.account][data.folderID] = addedData;
     },
 
     deleteAllFolders: function(account) {
-        this.conn.executeSimpleSQL("DELETE FROM folders WHERE account='"+account+"';");
+        let statement = this.conn.createStatement("DELETE FROM folders WHERE account = :account");
+        statement.params.account = account;
+        statement.executeStep();
         delete (this._folderCache[account]);
     },
 
     deleteFolder: function(account, folderID) {
-        this.conn.executeSimpleSQL("DELETE FROM folders WHERE account='"+account+"' AND folderID = '"+folderID+"';");
+        let statement = this.conn.createStatement("DELETE FROM folders WHERE account = :account AND folderID = :folderID");
+        statement.params.account = account;
+        statement.params.folderID = folderID;
+        statement.executeStep();        
         delete (this._folderCache[account][folderID]);
     }
 
