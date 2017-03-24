@@ -55,7 +55,7 @@ var tbSyncMessenger = {
                     target = accounts[data.account].accountname
                     
                     if (data.folderID !== "" && data.state != "done") { //if "Done" do not print folder info in status bar
-                        target = target + "/" + tbSync.db.getFolderSetting(data.account, data.folderID, "name");
+                        target = target + "." + tbSync.db.getFolderSetting(data.account, data.folderID, "name");
                     }
                     
                     target = " [" + target + "]";
