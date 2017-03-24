@@ -42,9 +42,6 @@
                             <menuitem label="&pref.servertype.auto;" value="auto" />
                             <menuitem label="&pref.servertype.custom;" value="custom" />
                             <menuseparator/>
-                            <menuitem label="&pref.servertype.zarafa;" value="zarafa" />
-                            <menuitem label="&pref.servertype.horde;" value="horde" />
-                            <menuseparator/>
                             <menuitem label="&pref.servertype.outlook.com;" value="outlook.com" />
                         </menupopup>
                     </menulist>
