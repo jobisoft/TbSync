@@ -263,8 +263,10 @@ var tbSync = {
         onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
             if (aItem instanceof Components.interfaces.nsIAbCard) {
                 let aParentDirURI = tbSync.getUriFromPrefId(aItem.directoryId.split("&")[0]);
-                let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
-                if (folders.length > 0) tbSync.setTargetModified(folders[0]);
+                if (aParentDirURI) { //could be undefined
+                    let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
+                    if (folders.length > 0) tbSync.setTargetModified(folders[0]);
+                }
             }
         },
 
