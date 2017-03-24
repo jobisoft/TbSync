@@ -26,7 +26,7 @@ var xmltools = {
 
     //print content of xml data object (if debug output enabled)
     printXmlData : function (data, lvl = 0) {
-        if (tbSync.db.prefSettings.getBoolPref("debugdata")) {
+        if (tbSync.prefSettings.getBoolPref("debugdata")) {
             for (let d in data) {
                 if (typeof(data[d]) == "object") {
                     tbSync.dump("DATA", " ".repeat(lvl) + d + " => ");
@@ -43,7 +43,7 @@ var xmltools = {
         let data = null;
         let oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
         try {
-            data = this.getDataFromXML(oParser.parseFromString(str.replace(new RegExp("&", "g"),"&amp;"), "text/xml"));
+            data = this.getDataFromXML(oParser.parseFromString(str, "text/xml"));
         } catch (e) {}
         return data;
     },

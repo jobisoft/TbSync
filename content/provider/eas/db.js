@@ -6,10 +6,6 @@
 
 var db = {
 
-    syncProvider: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync.provider."),
-    prefSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync."),
-    tzpushSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tzpush."),
-
     conn: null,
     _accountCache: null,
     _folderCache: {},
@@ -88,7 +84,7 @@ var db = {
             //DB has just been created and we should try to import old TzPush 1.9 account data from preferences
             let hasTzPushSettinngs = false;
             try { 
-                this.tzpushSettings.getCharPref("host"); 
+                tbSync.tzpushSettings.getCharPref("host"); 
                 hasTzPushSettinngs = true;
             } catch(e) {};
             
@@ -96,23 +92,23 @@ var db = {
             if (hasTzPushSettinngs) {
                 let account = this.getAccount(this.addAccount("TzPush"), true); //get a copy of the cache, which can be modified
                 
-                try { account.deviceId = this.tzpushSettings.getCharPref("deviceId") } catch(e) {};
-                try { account.asversion = this.tzpushSettings.getCharPref("asversion") } catch(e) {};
-                try { account.host = this.tzpushSettings.getCharPref("host") } catch(e) {};
-                try { account.user = this.tzpushSettings.getCharPref("user") } catch(e) {};
-                try { account.autosync = this.tzpushSettings.getIntPref("autosync") } catch(e) {};
+                try { account.deviceId = tbSync.tzpushSettings.getCharPref("deviceId") } catch(e) {};
+                try { account.asversion = tbSync.tzpushSettings.getCharPref("asversion") } catch(e) {};
+                try { account.host = tbSync.tzpushSettings.getCharPref("host") } catch(e) {};
+                try { account.user = tbSync.tzpushSettings.getCharPref("user") } catch(e) {};
+                try { account.autosync = tbSync.tzpushSettings.getIntPref("autosync") } catch(e) {};
 
                 //BOOL fields - to not have to mess with different field types, everything is stored as TEXT in the DB
-                try { account.https = (this.tzpushSettings.getBoolPref("https") ? "1" : "0") } catch(e) {};
-                try { account.provision = (this.tzpushSettings.getBoolPref("prov") ? "1" : "0") } catch(e) {};
-                try { account.birthday = (this.tzpushSettings.getBoolPref("birthday") ? "1" : "0") } catch(e) {};
-                try { account.displayoverride = (this.tzpushSettings.getBoolPref("displayoverride") ? "1" : "0") } catch(e) {};
-                try { account.downloadonly = (this.tzpushSettings.getBoolPref("downloadonly") ? "1" : "0") } catch(e) {};
+                try { account.https = (tbSync.tzpushSettings.getBoolPref("https") ? "1" : "0") } catch(e) {};
+                try { account.provision = (tbSync.tzpushSettings.getBoolPref("prov") ? "1" : "0") } catch(e) {};
+                try { account.birthday = (tbSync.tzpushSettings.getBoolPref("birthday") ? "1" : "0") } catch(e) {};
+                try { account.displayoverride = (tbSync.tzpushSettings.getBoolPref("displayoverride") ? "1" : "0") } catch(e) {};
+                try { account.downloadonly = (tbSync.tzpushSettings.getBoolPref("downloadonly") ? "1" : "0") } catch(e) {};
                 
                 //migrate seperator into server setting
                 account.servertype = "custom";
                 try {
-                    if (this.tzpushSettings.getCharPref("seperator") == ", ") account.seperator = "44";
+                    if (tbSync.tzpushSettings.getCharPref("seperator") == ", ") account.seperator = "44";
                     else account.seperator = "10";
                 } catch(e) {}
                 
@@ -437,7 +433,11 @@ var db = {
             //only add to the cache, what has been added to the DB
             addedData[this.folderColumns[x]] = data[this.folderColumns[x]];
         }
-        this.conn.executeSimpleSQL("INSERT INTO folders (" + fields + ") VALUES ("+values+");");
+	try { 
+		this.conn.executeSimpleSQL("INSERT INTO folders (" + fields + ") VALUES ("+values+");");        
+	} catch(e) {throw "SQL Error: INSERT INTO folders (" + fields + ") VALUES ("+values+");"};
+	
+        
 
         //update this._folderCache
         if (!this._folderCache.hasOwnProperty(data.account)) this._folderCache[data.account] = {};

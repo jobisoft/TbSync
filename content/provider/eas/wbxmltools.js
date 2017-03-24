@@ -78,7 +78,7 @@ var wbxmltools = {
                 
                 case 0x03: // Inline string followed by a termstr. (0x00)
                     let termpos = wbxml.indexOf(String.fromCharCode(0x00), num);
-                    xml = xml + (wbxml.substring(num + 1, termpos));
+                    xml = xml + (wbxml.substring(num + 1, termpos)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/'/g,"&apos;").replace(/"/g,"&quot;");
                     num = termpos;
                     break;
                 

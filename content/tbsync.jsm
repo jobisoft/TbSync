@@ -30,6 +30,10 @@ var tbSync = {
 
     prefWindowObj: null,
 
+    syncProvider: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync.provider."),
+    prefSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync."),
+    tzpushSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tzpush."),
+
     // INIT
     
     init: function () {
@@ -678,12 +682,8 @@ var tbSync = {
 
 
 // load all subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
-tbSync.includeJS("chrome://tbsync/content/subscripts/db.js");
-tbSync.includeJS("chrome://tbsync/content/subscripts/wbxmltools.js");
-tbSync.includeJS("chrome://tbsync/content/subscripts/xmltools.js");
-
-let syncProvider = tbSync.db.syncProvider.getChildList("", {});
+let syncProvider = tbSync.syncProvider.getChildList("", {});
 for (let i=0;i<syncProvider.length;i++) {
-    tbSync.dump("PROVIDER", syncProvider[i] + "::" + tbSync.db.syncProvider.getCharPref(syncProvider[i]));
+    tbSync.dump("PROVIDER", syncProvider[i] + "::" + tbSync.syncProvider.getCharPref(syncProvider[i]));
     tbSync.includeJS("chrome://tbsync/content/provider/"+syncProvider[i]+"/init.js");
 }

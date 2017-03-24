@@ -629,7 +629,7 @@ var calendarsync = {
         sync.setSyncState("sendingchanges", syncdata);
 
         let c = 0;
-        let maxnumbertosend = tbSync.db.prefSettings.getIntPref("maxnumbertosend");
+        let maxnumbertosend = tbSync.prefSettings.getIntPref("maxnumbertosend");
         
         //get changed items from ChangeLog
         let changes = db.getItemsFromChangeLog(syncdata.targetObj.id, maxnumbertosend, "_by_user");

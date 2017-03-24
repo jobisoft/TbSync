@@ -448,7 +448,7 @@ var sync = {
     Send: function (wbxml, callback, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
         
-        if (tbSync.db.prefSettings.getBoolPref("debugwbxml")) tbSync.debuglog(wbxml, "["+sync.currentProzess.state+"] sending:");
+        if (tbSync.prefSettings.getBoolPref("debugwbxml")) tbSync.debuglog(wbxml, "["+sync.currentProzess.state+"] sending:");
 
         let connection = tbSync.getConnection(syncdata.account);
         let password = tbSync.getPassword(connection);
@@ -459,7 +459,7 @@ var sync = {
         // Create request handler
         let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
         req.mozBackgroundRequest = true;
-        if (tbSync.db.prefSettings.getBoolPref("debugwbxml")) {
+        if (tbSync.prefSettings.getBoolPref("debugwbxml")) {
             tbSync.dump("sending", "POST " + connection.url + '?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
         }
         req.open("POST", connection.url + '?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
@@ -493,7 +493,7 @@ var sync = {
 
                 case 200: //OK
                     wbxml = req.responseText;
-                    if (tbSync.db.prefSettings.getBoolPref("debugwbxml")) tbSync.debuglog(wbxml,"receiving");
+                    if (tbSync.prefSettings.getBoolPref("debugwbxml")) tbSync.debuglog(wbxml,"receiving");
 
                     //What to do on error? IS this an error? TODO
                     if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
