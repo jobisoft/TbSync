@@ -415,14 +415,14 @@ var calendarsync = {
         wbxml.atag("AllDayEvent", (item.startDate.isDate && item.endDate.isDate) ? "1" : "0");
         
         //obmitting these, should remove them from the server - that does not work reliably, so we send blanks
-        wbxml.atag("Subject", (item.title) ? item.title : "");
-        wbxml.atag("Location", (item.hasProperty("location")) ? item.getProperty("location") : "");
+        wbxml.atag("Subject", (item.title) ? tbSync.encode_utf8(item.title) : "");
+        wbxml.atag("Location", (item.hasProperty("location")) ? tbSync.encode_utf8(item.getProperty("location")) : "");
         
         //categories, to properly "blank" them, we need to always include the container
         let categories = item.getCategories({});
         if (categories.length > 0) {
             wbxml.otag("Categories");
-                for (let i=0; i<categories.length; i++) wbxml.atag("Category", categories[i]);
+                for (let i=0; i<categories.length; i++) wbxml.atag("Category", tbSync.encode_utf8(categories[i]));
             wbxml.ctag();
         } else {
             wbxml.atag("Categories");
@@ -461,10 +461,10 @@ var calendarsync = {
 
         //Description, should be done at the very end (page switch)
         if (asversion == "2.5") {
-            wbxml.atag("Body", (item.hasProperty("description")) ? item.getProperty("description") : "");
+            wbxml.atag("Body", (item.hasProperty("description")) ? tbSync.encode_utf8(item.getProperty("description")) : "");
         } else {
             wbxml.switchpage("AirSyncBase");
-            let description =(item.hasProperty("description")) ? item.getProperty("description") : "";
+            let description =(item.hasProperty("description")) ? tbSync.encode_utf8(item.getProperty("description")) : "";
             wbxml.otag("Body");
                 wbxml.atag("Data", description);
                 wbxml.atag("EstimatedDataSize", "" + description.length);
