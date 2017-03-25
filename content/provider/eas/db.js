@@ -6,9 +6,11 @@
 
 var db = {
 
-    conn: null,
     _accountCache: null,
     _folderCache: {},
+    
+    dbFile: FileUtils.getFile("ProfD", ["TbSync", "db_1_1.sqlite"]),
+    dbService: Cc["@mozilla.org/storage/service;1"].getService(Ci.mozIStorageService),
 
     tables: { 
         accounts: {
@@ -60,14 +62,12 @@ var db = {
 
     
     init: function () {
-        let dbFile = FileUtils.getFile("ProfD", ["TbSync", "db_1_1.sqlite"]);
-        let dbService = Cc["@mozilla.org/storage/service;1"].getService(Ci.mozIStorageService);
 
         this.accountColumns = this.getTableFields("accounts");
         this.folderColumns = this.getTableFields("folders");
 
-        if (!dbFile.exists()) {
-            this.conn = dbService.openDatabase(dbFile);
+        if (!this.dbFile.exists()) {
+            let conn = this.dbService.openDatabase(this.dbFile);
 
             // Create all defined tables
             for (let tablename in this.tables) {
@@ -78,7 +78,7 @@ var db = {
                 }
 
                 // Create table - this statement is created completly from hardcoded elements, no userland input, no need to use createStatement
-                this.conn.executeSimpleSQL("CREATE TABLE " + tablename + " (" + sql + ");");
+                conn.executeSimpleSQL("CREATE TABLE " + tablename + " (" + sql + ");");
             }
 
             //DB has just been created and we should try to import old TzPush 1.9 account data from preferences
@@ -114,9 +114,7 @@ var db = {
                 
                 this.setAccount(account);
             }
-
-        } else {
-            this.conn = dbService.openDatabase(dbFile);
+            conn.close();
         }
     
     },
@@ -132,48 +130,55 @@ var db = {
     // CHANGELOG FUNCTIONS - needs caching // TODO
 
     getItemStatusFromChangeLog: function (parentId, itemId) {
-        let statement = this.conn.createStatement("SELECT status FROM changelog WHERE parentId = :parentId AND itemId = :itemId");
+        let conn = this.dbService.openDatabase(this.dbFile);
+        let statement = conn.createStatement("SELECT status FROM changelog WHERE parentId = :parentId AND itemId = :itemId");
         statement.params.parentId = parentId;
         statement.params.itemId = itemId;
         
-        if (statement.executeStep()) {
-            return statement.row.status;
-        }
-        return null;
+        let retval = (statement.executeStep()) ? statement.row.status : null;
+
+        conn.close();
+        return retval;
     },
 
     addItemToChangeLog: function (parentId, itemId, status, data = "") {
         this.removeItemFromChangeLog(parentId, itemId);
-        let statement = this.conn.createStatement("INSERT INTO changelog (parentId, itemId, status, data) VALUES (:parentId, :itemId, :status, :data)");
+        let conn = this.dbService.openDatabase(this.dbFile);
+        let statement = conn.createStatement("INSERT INTO changelog (parentId, itemId, status, data) VALUES (:parentId, :itemId, :status, :data)");
         statement.params.parentId = parentId;
         statement.params.itemId = itemId;
         statement.params.status = status;
         statement.params.data = data;
         statement.executeStep();
+        conn.close();
     },
 
     removeItemFromChangeLog: function (parentId, itemId) {
-        let statement = this.conn.createStatement("DELETE FROM changelog WHERE parentId = :parentId AND itemId = :itemId");
+        let conn = this.dbService.openDatabase(this.dbFile);
+        let statement = conn.createStatement("DELETE FROM changelog WHERE parentId = :parentId AND itemId = :itemId");
         statement.params.parentId = parentId;
         statement.params.itemId = itemId;
         statement.executeStep();
-
+        conn.close();
     },
     
     // Remove all cards of a parentId from ChangeLog
     clearChangeLog: function (parentId) {
-        let statement = this.conn.createStatement("DELETE FROM changelog WHERE parentId = :parentId");
+        let conn = this.dbService.openDatabase(this.dbFile);
+        let statement = conn.createStatement("DELETE FROM changelog WHERE parentId = :parentId");
         statement.params.parentId = parentId;
         statement.executeStep();        
+        conn.close();
     },
 
     getItemsFromChangeLog: function (parentId, maxnumbertosend, status = null) {
+        let conn = this.dbService.openDatabase(this.dbFile);
         let changelog = [];
         let statement = null;
         if (status === null) {
-            statement = this.conn.createStatement("SELECT itemId, status FROM changelog WHERE parentId = :parentId LIMIT :maxnumbertosend");
+            statement = conn.createStatement("SELECT itemId, status FROM changelog WHERE parentId = :parentId LIMIT :maxnumbertosend");
         } else {
-            statement = this.conn.createStatement("SELECT itemId, status FROM changelog WHERE status LIKE :status AND parentId = :parentId LIMIT :maxnumbertosend");
+            statement = conn.createStatement("SELECT itemId, status FROM changelog WHERE status LIKE :status AND parentId = :parentId LIMIT :maxnumbertosend");
             statement.params.status = "%"+status+"%";
         }
         statement.params.parentId = parentId;
@@ -182,6 +187,7 @@ var db = {
         while (statement.executeStep()) {
             changelog.push({ "id":statement.row.itemId, "status":statement.row.status });
         }
+        conn.close();
         return changelog;
     },
 
@@ -217,12 +223,14 @@ var db = {
         //update this._accountCache
         if (this._accountCache === null || forceupdate) {
             this._accountCache = {};
-            let statement = this.conn.createStatement("SELECT * FROM accounts");
+            let conn = this.dbService.openDatabase(this.dbFile);
+            let statement = conn.createStatement("SELECT * FROM accounts");
             while (statement.executeStep()) {
                 let data = {};
                 for (let x=0; x<this.accountColumns.length; x++) data[this.accountColumns[x]] = statement.row[this.accountColumns[x]];
                 this._accountCache[statement.row.account] = data;
             }
+            conn.close();
         }
         
         let proxyAccounts = {};
@@ -259,29 +267,34 @@ var db = {
     }, 
 
     addAccount: function (accountname, appendID = false) {
-        let statement = this.conn.createStatement("INSERT INTO accounts (accountname, deviceId) VALUES (:accountname, :deviceId)");
+        let conn = this.dbService.openDatabase(this.dbFile);
+        let statement = conn.createStatement("INSERT INTO accounts (accountname, deviceId) VALUES (:accountname, :deviceId)");
         statement.params.accountname = accountname;
         statement.params.deviceId = this.getNewDeviceId();
         statement.executeStep();
         
         this.getAccounts(true); //force update of this._accountCache        
-        let statement2 = this.conn.createStatement("SELECT seq FROM sqlite_sequence where name = :accounts");
+        let statement2 = conn.createStatement("SELECT seq FROM sqlite_sequence where name = :accounts");
         statement2.params.accounts = "accounts";
         
+        let retval = null;
         if (statement2.executeStep()) {
             let accountID = statement2.row.seq;
             if (appendID) this.setAccountSetting(accountID, "accountname", accountname + " #" + accountID);
-            return accountID;
-        } else {
-            return null;
+            retval = accountID;
         }
+        
+        conn.close();
+        return retval;
     },
 
     removeAccount: function (account) {
         // remove account from DB
-        let statement = this.conn.createStatement("DELETE FROM accounts WHERE account = :account");
+        let conn = this.dbService.openDatabase(this.dbFile);
+        let statement = conn.createStatement("DELETE FROM accounts WHERE account = :account");
         statement.params.account = account;
         statement.executeStep();
+        conn.close();
 
         // remove Account from Cache
         delete(this._accountCache[account]);
@@ -308,10 +321,12 @@ var db = {
         }
 
         // update DB
-        let statement = this.conn.createStatement("UPDATE accounts SET " + sql + " WHERE account = :account"); //sql is a param-string
+        let conn = this.dbService.openDatabase(this.dbFile);
+        let statement = conn.createStatement("UPDATE accounts SET " + sql + " WHERE account = :account"); //sql is a param-string
         statement.params.account = data.account;
         for (let p in params) statement.params[p] = params[p];
         statement.executeStep();
+        conn.close();
     },
 
     setAccountSetting: function (account , name, value) {
@@ -323,10 +338,12 @@ var db = {
             //update this._accountCache
             this._accountCache[account][name] = value.toString();
             //update DB
-            let statement = this.conn.createStatement("UPDATE accounts SET "+name+" = :value WHERE account = :account"); //name is NOT coming from userland
+            let conn = this.dbService.openDatabase(this.dbFile);
+            let statement = conn.createStatement("UPDATE accounts SET "+name+" = :value WHERE account = :account"); //name is NOT coming from userland
             statement.params.value = value;
             statement.params.account = account;
             statement.executeStep();
+            conn.close();
         } else {
             throw "Unknown account setting!" + "\nThrown by db.setAccountSetting("+account+", " + name + ", " + value + ")";
         }
@@ -354,9 +371,10 @@ var db = {
         if (this._folderCache.hasOwnProperty(account) == false) {
 
             let folders = {};
-            let statement = this.conn.createStatement("SELECT * FROM folders WHERE account = :account");
+            let conn = this.dbService.openDatabase(this.dbFile);
+            let statement = conn.createStatement("SELECT * FROM folders WHERE account = :account");
             statement.params.account = account;
-            
+
             let entries = 0;
             while (statement.executeStep()) {
                 let data = {};
@@ -364,6 +382,7 @@ var db = {
                 folders[statement.row.folderID] = data;
                 entries++;
             }
+            conn.close();
 
             //update this._folderCache (array of array!)
             this._folderCache[account] = folders;
@@ -410,23 +429,23 @@ var db = {
 
     //use sql to find the desired data, not the cache
     findFoldersWithSetting: function (name, value, account = null) {
-
         let data = [];
+        let conn = this.dbService.openDatabase(this.dbFile);
         let statement = null;
         if (account === null) {
-            statement = this.conn.createStatement("SELECT * FROM folders WHERE "+name+" = :value"); //name is NOT coming from userland!
+            statement = conn.createStatement("SELECT * FROM folders WHERE "+name+" = :value"); //name is NOT coming from userland!
         } else {
-            statement = this.conn.createStatement("SELECT * FROM folders WHERE account = :account AND "+name+" = :value"); //name is NOT coming from userland!
+            statement = conn.createStatement("SELECT * FROM folders WHERE account = :account AND "+name+" = :value"); //name is NOT coming from userland!
             statement.params.account = account;
         }
         statement.params.value = value;
         
-        while (statement.executeStep()) {
-            
+        while (statement.executeStep()) {            
             let folder = {};
             for (let x=0; x<this.folderColumns.length; x++) folder[this.folderColumns[x]] = statement.row[this.folderColumns[x]];
             data.push(folder);
         }
+        conn.close();
         
         return data;
     },
@@ -434,7 +453,6 @@ var db = {
     setFolder: function(data) {
         //update this._folderCache from DB, if not yet done so or a reload has been requested
         let folder = this.getFolder(data.account, data.folderID); 
-
         let sql = "";
         let params = {};
         for (let p in data) {
@@ -447,11 +465,13 @@ var db = {
             }
             else throw "Unknown folder setting <" + p + ">!" + "\nThrown by db.setFolder("+data.account+")";
         }
-        let statement = this.conn.createStatement("UPDATE folders SET " + sql + " WHERE account = :account AND folderID = :folderID");
+        let conn = this.dbService.openDatabase(this.dbFile);
+        let statement = conn.createStatement("UPDATE folders SET " + sql + " WHERE account = :account AND folderID = :folderID");
         statement.params.account = data.account;
         statement.params.folderID = data.folderID;
         for (let p in params) statement.params[p] = params[p];
         statement.executeStep();                
+        conn.close();
     },
 
     setFolderSetting: function(account, folderID, field, value) {
@@ -468,16 +488,18 @@ var db = {
         }
 
         //DB update - if folderID is given, set value only for that folder, otherwise for all folders - field is checked for allowed values prior to usage in SQL statement
+        let conn = this.dbService.openDatabase(this.dbFile);
         let statement = null;
         if (folderID != "") {
-            statement = this.conn.createStatement("UPDATE folders SET "+field+" = :value WHERE account = :account AND folderID = :folderID");
+            statement = conn.createStatement("UPDATE folders SET "+field+" = :value WHERE account = :account AND folderID = :folderID");
             statement.params.folderID = folderID;
         } else {
-            statement = this.conn.createStatement("UPDATE folders SET "+field+" = :value WHERE account = :account");
+            statement = conn.createStatement("UPDATE folders SET "+field+" = :value WHERE account = :account");
         }
         statement.params.account = account;
         statement.params.value = value;
-        statement.executeStep();                        
+        statement.executeStep();
+        conn.close();
     },
 
     addFolder: function(data) {
@@ -492,9 +514,11 @@ var db = {
             //only add to the cache, what has been added to the DB
             addedData[this.folderColumns[x]] = data[this.folderColumns[x]];
         }
-        let statement = this.conn.createStatement("INSERT INTO folders (" + fields + ") VALUES ("+values+");");
+        let conn = this.dbService.openDatabase(this.dbFile);
+        let statement = conn.createStatement("INSERT INTO folders (" + fields + ") VALUES ("+values+");");
         for (let x=0; x<this.folderColumns.length; x++) statement.params[this.folderColumns[x]] = data[this.folderColumns[x]];
         statement.executeStep();
+        conn.close();
         
         //update this._folderCache
         if (!this._folderCache.hasOwnProperty(data.account)) this._folderCache[data.account] = {};
@@ -502,17 +526,21 @@ var db = {
     },
 
     deleteAllFolders: function(account) {
-        let statement = this.conn.createStatement("DELETE FROM folders WHERE account = :account");
+        let conn = this.dbService.openDatabase(this.dbFile);
+        let statement = conn.createStatement("DELETE FROM folders WHERE account = :account");
         statement.params.account = account;
         statement.executeStep();
+        conn.close();
         delete (this._folderCache[account]);
     },
 
     deleteFolder: function(account, folderID) {
-        let statement = this.conn.createStatement("DELETE FROM folders WHERE account = :account AND folderID = :folderID");
+        let conn = this.dbService.openDatabase(this.dbFile);
+        let statement = conn.createStatement("DELETE FROM folders WHERE account = :account AND folderID = :folderID");
         statement.params.account = account;
         statement.params.folderID = folderID;
-        statement.executeStep();        
+        statement.executeStep();
+        conn.close();
         delete (this._folderCache[account][folderID]);
     }
 
