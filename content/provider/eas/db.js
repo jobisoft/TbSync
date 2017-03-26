@@ -10,7 +10,7 @@ var db = {
     _folderCache: {},
     
     changelog: [], 
-    changelogFile : OS.Path.join("TbSync","changelog_0_7.json"),
+    changelogFile : "changelog_0_7.json",
 
     dbFile: FileUtils.getFile("ProfD", ["TbSync", "db_1_1.sqlite"]),
     dbService: Cc["@mozilla.org/storage/service;1"].getService(Ci.mozIStorageService),
@@ -170,7 +170,7 @@ var db = {
             "data" : data };
     
         this.changelog.push(row);
-        OS.File.writeAtomic(db.changelogFile, encoder.encode(JSON.stringify(this.changelog)), {tmpPath: db.changelogFile + ".tmp"});
+        tbSync.writeAsyncJSON(this.changelog, this.changelogFile);
     },
 
     removeItemFromChangeLog: function (parentId, itemId) {
@@ -185,7 +185,7 @@ var db = {
         for (let i=this.changelog.length-1; i>-1; i-- ) {
             if (this.changelog[i].parentId == parentId && this.changelog[i].itemId == itemId) this.changelog.splice(i,1);
         }
-        OS.File.writeAtomic(db.changelogFile, encoder.encode(JSON.stringify(this.changelog)), {tmpPath: db.changelogFile + ".tmp"});
+        tbSync.writeAsyncJSON(this.changelog, this.changelogFile);
     },
     
     // Remove all cards of a parentId from ChangeLog
@@ -197,7 +197,7 @@ var db = {
         statement.executeStep();        
         conn.close();*/
         this.changelog = [];
-        OS.File.writeAtomic(db.changelogFile, encoder.encode(JSON.stringify(this.changelog)), {tmpPath: db.changelogFile + ".tmp"});
+        tbSync.writeAsyncJSON(this.changelog, this.changelogFile);
     },
 
     getItemsFromChangeLog: function (parentId, maxnumbertosend, status = null) {

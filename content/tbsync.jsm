@@ -30,6 +30,8 @@ Components.utils.import("resource://gre/modules/osfile.jsm");
 var tbSync = {
 
     prefWindowObj: null,
+    decoder : new TextDecoder(),
+    encoder : new TextEncoder(),
 
     syncProvider: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync.provider."),
     prefSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync."),
@@ -58,6 +60,16 @@ var tbSync = {
 
 
     // TOOLS
+    
+    writeAsyncJSON: function (obj, filename) {
+        let dirpath = OS.Path.join(OS.Constants.Path.profileDir, "TbSync");
+        let filepath = OS.Path.join(dirpath, filename);
+        Task.spawn(function* () {
+            //MDN states, instead of checking if dir exists, just create it and catch error on exist (but it does not even throw)
+            yield OS.File.makeDir(dirpath);
+            yield OS.File.writeAtomic(filepath, tbSync.encoder.encode(JSON.stringify(obj)), {tmpPath: filepath + ".tmp"});
+        }).then(null, Components.utils.reportError);
+    },
     
     includeJS: function (file) {
         let loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
