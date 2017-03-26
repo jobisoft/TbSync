@@ -53,7 +53,7 @@ var wbxmltools = {
         let mainCodePage = null;
 
         let tagStack = [];
-        let xml = '<?xml version="1.0"?>' ;
+        let xml = "";
         let codepage = 0;
         
         while (num < wbxml.length) {
@@ -121,7 +121,7 @@ var wbxmltools = {
             }
             num = num + 1;
         }
-        return xml;
+        return (xml == "") ? "" : '<?xml version="1.0"?>' + xml;
     },
 
 

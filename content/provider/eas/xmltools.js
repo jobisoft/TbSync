@@ -41,6 +41,8 @@ var xmltools = {
 
     getDataFromXMLString: function (str) {
         let data = null;
+        if (str == "") return data;
+        
         let oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
         try {
             data = this.getDataFromXML(oParser.parseFromString(str, "text/xml"));
