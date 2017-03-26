@@ -14,6 +14,7 @@ if ("calICalendar" in Components.interfaces) {
 }
 
 Components.utils.import("resource://gre/modules/FileUtils.jsm");
+Components.utils.import("resource://gre/modules/osfile.jsm");
 
 
 /* TODO
