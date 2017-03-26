@@ -9,9 +9,12 @@ var db = {
     _accountCache: null,
     _folderCache: {},
     
+    changelog: [], 
+    changelogFile : OS.Path.join("TbSync","changelog_0_7.json"),
+
     dbFile: FileUtils.getFile("ProfD", ["TbSync", "db_1_1.sqlite"]),
     dbService: Cc["@mozilla.org/storage/service;1"].getService(Ci.mozIStorageService),
-
+    
     tables: { 
         accounts: {
             account : "INTEGER PRIMARY KEY AUTOINCREMENT", 
@@ -47,13 +50,13 @@ var db = {
             status : "TEXT NOT NULL DEFAULT ''"
         },
 
-        changelog: {
+/*        changelog: {
             id : "INTEGER PRIMARY KEY AUTOINCREMENT",
             parentId : "TEXT NOT NULL DEFAULT ''",
             itemId : "TEXT NOT NULL DEFAULT ''",
             status : "TEXT NOT NULL DEFAULT ''",
             data : "TEXT NOT NULL DEFAULT ''"
-        },
+        },*/
         
     },
 
@@ -65,7 +68,7 @@ var db = {
 
         this.accountColumns = this.getTableFields("accounts");
         this.folderColumns = this.getTableFields("folders");
-
+       
         if (!this.dbFile.exists()) {
             let conn = this.dbService.openDatabase(this.dbFile);
 
@@ -127,10 +130,11 @@ var db = {
 
 
 
-    // CHANGELOG FUNCTIONS - needs caching // TODO
+    // CHANGELOG FUNCTIONS
 
     getItemStatusFromChangeLog: function (parentId, itemId) {
-        let conn = this.dbService.openDatabase(this.dbFile);
+        tbSync.dump("Getting CLOG", db.changelogFile);
+/*        let conn = this.dbService.openDatabase(this.dbFile);
         let statement = conn.createStatement("SELECT status FROM changelog WHERE parentId = :parentId AND itemId = :itemId");
         statement.params.parentId = parentId;
         statement.params.itemId = itemId;
@@ -138,41 +142,67 @@ var db = {
         let retval = (statement.executeStep()) ? statement.row.status : null;
 
         conn.close();
-        return retval;
+        return retval;*/
+    
+        for (let i=0; i<this.changelog.length; i++) {
+            if (this.changelog[i].parentId == parentId && this.changelog[i].itemId == itemId) return this.changelog[i].status;
+        }
+        return null;
     },
 
     addItemToChangeLog: function (parentId, itemId, status, data = "") {
+        tbSync.dump("Adding CLOG", db.changelogFile);
         this.removeItemFromChangeLog(parentId, itemId);
-        let conn = this.dbService.openDatabase(this.dbFile);
+
+/*        let conn = this.dbService.openDatabase(this.dbFile);
         let statement = conn.createStatement("INSERT INTO changelog (parentId, itemId, status, data) VALUES (:parentId, :itemId, :status, :data)");
         statement.params.parentId = parentId;
         statement.params.itemId = itemId;
         statement.params.status = status;
         statement.params.data = data;
         statement.executeStep();
-        conn.close();
+        conn.close();*/
+        
+        let row = {
+            "parentId" : parentId,
+            "itemId" : itemId,
+            "status" : status,
+            "data" : data };
+    
+        this.changelog.push(row);
+        OS.File.writeAtomic(db.changelogFile, encoder.encode(JSON.stringify(this.changelog)), {tmpPath: db.changelogFile + ".tmp"});
     },
 
     removeItemFromChangeLog: function (parentId, itemId) {
-        let conn = this.dbService.openDatabase(this.dbFile);
+        tbSync.dump("Removing CLOG", db.changelogFile);
+/*        let conn = this.dbService.openDatabase(this.dbFile);
         let statement = conn.createStatement("DELETE FROM changelog WHERE parentId = :parentId AND itemId = :itemId");
         statement.params.parentId = parentId;
         statement.params.itemId = itemId;
         statement.executeStep();
-        conn.close();
+        conn.close();*/
+
+        for (let i=this.changelog.length-1; i>-1; i-- ) {
+            if (this.changelog[i].parentId == parentId && this.changelog[i].itemId == itemId) this.changelog.splice(i,1);
+        }
+        OS.File.writeAtomic(db.changelogFile, encoder.encode(JSON.stringify(this.changelog)), {tmpPath: db.changelogFile + ".tmp"});
     },
     
     // Remove all cards of a parentId from ChangeLog
     clearChangeLog: function (parentId) {
-        let conn = this.dbService.openDatabase(this.dbFile);
+        tbSync.dump("Clearing CLOG", db.changelogFile);
+        /*let conn = this.dbService.openDatabase(this.dbFile);
         let statement = conn.createStatement("DELETE FROM changelog WHERE parentId = :parentId");
         statement.params.parentId = parentId;
         statement.executeStep();        
-        conn.close();
+        conn.close();*/
+        this.changelog = [];
+        OS.File.writeAtomic(db.changelogFile, encoder.encode(JSON.stringify(this.changelog)), {tmpPath: db.changelogFile + ".tmp"});
     },
 
     getItemsFromChangeLog: function (parentId, maxnumbertosend, status = null) {
-        let conn = this.dbService.openDatabase(this.dbFile);
+        tbSync.dump("Getting CLOG", db.changelogFile);
+        /*let conn = this.dbService.openDatabase(this.dbFile);
         let changelog = [];
         let statement = null;
         if (status === null) {
@@ -188,7 +218,14 @@ var db = {
             changelog.push({ "id":statement.row.itemId, "status":statement.row.status });
         }
         conn.close();
-        return changelog;
+        return changelog;*/
+        
+        let log = [];
+        let counts = 0;
+        for (let i=0; i<this.changelog.length && log.length < maxnumbertosend; i++) {
+            if (this.changelog[i].parentId == parentId && (status === null || this.changelog[i].status.indexOf(status) != -1)) log.push({ "id":this.changelog[i].itemId, "status":this.changelog[i].status });
+        }
+        return log;
     },
 
 
@@ -514,15 +551,16 @@ var db = {
             //only add to the cache, what has been added to the DB
             addedData[this.folderColumns[x]] = data[this.folderColumns[x]];
         }
+
+        //update this._folderCache
+        if (!this._folderCache.hasOwnProperty(data.account)) this._folderCache[data.account] = {};
+        this._folderCache[data.account][data.folderID] = addedData;
+
         let conn = this.dbService.openDatabase(this.dbFile);
         let statement = conn.createStatement("INSERT INTO folders (" + fields + ") VALUES ("+values+");");
         for (let x=0; x<this.folderColumns.length; x++) statement.params[this.folderColumns[x]] = data[this.folderColumns[x]];
         statement.executeStep();
         conn.close();
-        
-        //update this._folderCache
-        if (!this._folderCache.hasOwnProperty(data.account)) this._folderCache[data.account] = {};
-        this._folderCache[data.account][data.folderID] = addedData;
     },
 
     deleteAllFolders: function(account) {
