@@ -17,13 +17,11 @@ var eas = {
 
         //A task is "serializing" async jobs
         Task.spawn(function* () {
-            let decoder = new TextDecoder();
-            let encoder = new TextEncoder();
 
             //load changelog from file
             try {
                 let data = yield OS.File.read(db.changelogFile);
-                this.changelog = JSON.parse(decoder.decode(data));
+                this.changelog = JSON.parse(tbSync.decoder.decode(data));
             } catch (ex) {
                 //if there is no file, there is no file...
             }
@@ -31,7 +29,7 @@ var eas = {
             //load accounts from file
             try {
                 let data = yield OS.File.read(db.changelogFile);
-                tbSync.dump("ASYNC OK", decoder.decode(data));
+                tbSync.dump("ASYNC OK", tbSync.decoder.decode(data));
             } catch (ex) {
                 //if there is no file, there is no file...
             }

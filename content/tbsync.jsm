@@ -15,6 +15,7 @@ if ("calICalendar" in Components.interfaces) {
 
 Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import("resource://gre/modules/osfile.jsm");
+Components.utils.import("resource://gre/modules/Task.jsm");
 
 
 /* TODO
@@ -700,5 +701,5 @@ var tbSync = {
 let syncProvider = tbSync.syncProvider.getChildList("", {});
 for (let i=0;i<syncProvider.length;i++) {
     tbSync.dump("PROVIDER", syncProvider[i] + "::" + tbSync.syncProvider.getCharPref(syncProvider[i]));
-    tbSync.includeJS("chrome://tbsync/content/provider/"+syncProvider[i]+"/init.js");
+    tbSync.includeJS("chrome://tbsync/content/provider/"+syncProvider[i]+"/_include.js");
 }

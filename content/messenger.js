@@ -4,6 +4,8 @@ Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncMessenger = {
 
+    enabled: true,
+
     onload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncMessenger.syncstateObserver, "tbsync.changedSyncstate", false);
