@@ -57,3 +57,4 @@ config.zarafa=Zarafa or Kopano server configuration
 config.horde=Horde server configuration
 config.outlook.com=Server configuration for Outlook.com accounts
 
+error.init=TbSync did not yet finish its init sequence.

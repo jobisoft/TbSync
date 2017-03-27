@@ -20,25 +20,18 @@ var eas = {
 
             //load changelog from file
             try {
-                let data = yield OS.File.read(db.changelogFile);
-                this.changelog = JSON.parse(tbSync.decoder.decode(data));
+                let data = yield OS.File.read(tbSync.getAbsolutePath(db.changelogFile));
+                db.changelog = JSON.parse(tbSync.decoder.decode(data));
             } catch (ex) {
                 //if there is no file, there is no file...
             }
-            
-            //load accounts from file
-            try {
-                let data = yield OS.File.read(db.changelogFile);
-                tbSync.dump("ASYNC OK", tbSync.decoder.decode(data));
-            } catch (ex) {
-                //if there is no file, there is no file...
-            }
-            
-            //notify messenger, that this provider has finished its init sequence
-            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tbsync.init", "");
+                        
+            //finish async init by calling main init()
+            tbSync.init();
             
         }).then(null, Components.utils.reportError);
 
     }
 };
+
+eas.init();

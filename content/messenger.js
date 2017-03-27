@@ -4,8 +4,6 @@ Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncMessenger = {
 
-    enabled: true,
-
     onload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncMessenger.syncstateObserver, "tbsync.changedSyncstate", false);
@@ -21,6 +19,9 @@ var tbSyncMessenger = {
         tbSync.prefWindowObj.focus();
     },
 
+    popupNotEnabled: function () {
+        alert(tbSync.getLocalizedMessage("error.init"));
+    },
 
     /* * *
     * Observer to catch setPassword requests
@@ -82,14 +83,16 @@ var tbSyncMessenger = {
 
         event: {
             notify: function (timer) {
-                //get all accounts and check, which one needs sync (accounts array is without order, extract keys (ids) and loop over them)
-                let accounts = tbSync.db.getAccounts();
-                for (let i=0; i<accounts.IDs.length; i++) {
-                    let syncInterval = accounts.data[accounts.IDs[i]].autosync * 60 * 1000;
-                    let lastsynctime = accounts.data[accounts.IDs[i]].lastsynctime;
-                    
-                    if (accounts.data[accounts.IDs[i]].state == "connected" && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval) ) {
+                if (tbSync.enabled) {
+                    //get all accounts and check, which one needs sync (accounts array is without order, extract keys (ids) and loop over them)
+                    let accounts = tbSync.db.getAccounts();
+                    for (let i=0; i<accounts.IDs.length; i++) {
+                        let syncInterval = accounts.data[accounts.IDs[i]].autosync * 60 * 1000;
+                        let lastsynctime = accounts.data[accounts.IDs[i]].lastsynctime;
+                        
+                        if (accounts.data[accounts.IDs[i]].state == "connected" && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval) ) {
                         tbSync.sync.addAccountToSyncQueue("sync",accounts.IDs[i]);
+                        }
                     }
                 }
             }

@@ -3,7 +3,6 @@
 <!ENTITY popup.sync "Synchronize latest changes">
 
 <!ENTITY menu.settingslabel "Synchronization Settings (TbSync)">
-<!ENTITY error.init "TbSync did not yet finish its init sequence.">
 
 <!ENTITY toolbar.label " Synchronize all TbSync accounts">
 <!ENTITY toolbar.tooltiptext "Synchronization latest changes">

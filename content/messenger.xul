@@ -11,22 +11,22 @@
     <script type="application/x-javascript" src="chrome://tbsync/content/messenger.js" />
 
     <statusbar id="status-bar">
-        <statusbarpanel id="tbsync.status" label="&pref.TbSync;" context="tbsync.statusmenu" ondblclick="if (tbSyncMessenger.enabled) tbSyncMessenger.openAccountManager(); else alert('&error.init;');" />
+        <statusbarpanel id="tbsync.status" label="&pref.TbSync;" context="tbsync.statusmenu" ondblclick="if (tbSync.enabled) tbSyncMessenger.openAccountManager(); else tbSyncMessenger.popupNotEnabled();" />
         <popupset>
             <menupopup id="tbsync.statusmenu">
-                <menuitem label="&popup.sync;" oncommand="if (tbSyncMessenger.enabled) tbSync.sync.addAccountToSyncQueue('sync'); else alert('&error.init;');" />
-                <menuitem label="&popup.opensettings;" oncommand="if (tbSyncMessenger.enabled) tbSyncMessenger.openAccountManager(); else alert('&error.init;');" />
-                <menuitem label="&popup.cancelsync;" oncommand="if (tbSyncMessenger.enabled) tbSync.sync.resetSync(); else alert('&error.init;');" />
+                <menuitem label="&popup.sync;" oncommand="if (tbSync.enabled) tbSync.sync.addAccountToSyncQueue('sync'); else tbSyncMessenger.popupNotEnabled();" />
+                <menuitem label="&popup.opensettings;" oncommand="if (tbSync.enabled) tbSyncMessenger.openAccountManager(); else tbSyncMessenger.popupNotEnabled();" />
+                <menuitem label="&popup.cancelsync;" oncommand="if (tbSync.enabled) tbSync.sync.resetSync(); else tbSyncMessenger.popupNotEnabled();" />
             </menupopup>
         </popupset>
     </statusbar>
 
     <menupopup id="taskPopup"> <!-- TB40 Windows -->
-            <menuitem label="&menu.settingslabel;" insertbefore="menu_accountmgr" oncommand="if (tbSyncMessenger.enabled) tbSyncMessenger.openAccountManager(); else alert('&error.init;');" />
+            <menuitem label="&menu.settingslabel;" insertbefore="menu_accountmgr" oncommand="if (tbSync.enabled) tbSyncMessenger.openAccountManager(); else tbSyncMessenger.popupNotEnabled();" />
     </menupopup>
 
     <menupopup id="menu_EditPopup"> <!-- TB45 Linux-->
-            <menuitem label="&menu.settingslabel;" insertbefore="menu_accountmgr" oncommand="if (tbSyncMessenger.enabled) tbSyncMessenger.openAccountManager(); else alert('&error.init;');" />
+            <menuitem label="&menu.settingslabel;" insertbefore="menu_accountmgr" oncommand="if (tbSync.enabled) tbSyncMessenger.openAccountManager(); else tbSyncMessenger.popupNotEnabled();" />
     </menupopup>
  
     <toolbarpalette id="MailToolbarPalette">
@@ -35,7 +35,7 @@
             class="toolbarbutton"
             label="&toolbar.label;" 
             tooltiptext="&toolbar.tooltiptext;"
-            oncommand="if (tbSyncMessenger.enabled) tbSync.sync.addAccountToSyncQueue('sync'); else alert('&error.init;');"/>
+            oncommand="if (tbSync.enabled) tbSync.sync.addAccountToSyncQueue('sync'); else tbSyncMessenger.popupNotEnabled();"/>
     </toolbarpalette>
  
 </overlay>

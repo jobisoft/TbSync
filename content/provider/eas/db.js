@@ -133,7 +133,6 @@ var db = {
     // CHANGELOG FUNCTIONS
 
     getItemStatusFromChangeLog: function (parentId, itemId) {
-        tbSync.dump("Getting CLOG", db.changelogFile);
 /*        let conn = this.dbService.openDatabase(this.dbFile);
         let statement = conn.createStatement("SELECT status FROM changelog WHERE parentId = :parentId AND itemId = :itemId");
         statement.params.parentId = parentId;
@@ -151,7 +150,6 @@ var db = {
     },
 
     addItemToChangeLog: function (parentId, itemId, status, data = "") {
-        tbSync.dump("Adding CLOG", db.changelogFile);
         this.removeItemFromChangeLog(parentId, itemId);
 
 /*        let conn = this.dbService.openDatabase(this.dbFile);
@@ -174,7 +172,6 @@ var db = {
     },
 
     removeItemFromChangeLog: function (parentId, itemId) {
-        tbSync.dump("Removing CLOG", db.changelogFile);
 /*        let conn = this.dbService.openDatabase(this.dbFile);
         let statement = conn.createStatement("DELETE FROM changelog WHERE parentId = :parentId AND itemId = :itemId");
         statement.params.parentId = parentId;
@@ -190,7 +187,6 @@ var db = {
     
     // Remove all cards of a parentId from ChangeLog
     clearChangeLog: function (parentId) {
-        tbSync.dump("Clearing CLOG", db.changelogFile);
         /*let conn = this.dbService.openDatabase(this.dbFile);
         let statement = conn.createStatement("DELETE FROM changelog WHERE parentId = :parentId");
         statement.params.parentId = parentId;
@@ -201,7 +197,6 @@ var db = {
     },
 
     getItemsFromChangeLog: function (parentId, maxnumbertosend, status = null) {
-        tbSync.dump("Getting CLOG", db.changelogFile);
         /*let conn = this.dbService.openDatabase(this.dbFile);
         let changelog = [];
         let statement = null;

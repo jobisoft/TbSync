@@ -30,6 +30,9 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 
 var tbSync = {
 
+    enabled: false,
+    initjobs: 0,
+
     prefWindowObj: null,
     decoder : new TextDecoder(),
     encoder : new TextEncoder(),
@@ -38,22 +41,32 @@ var tbSync = {
     prefSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync."),
     tzpushSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tzpush."),
 
+    storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
+
     // INIT
     
     init: function () {
-        //init stuff for address book
-        tbSync.addressbookListener.add();
-        tbSync.scanPrefIdsOfAddressBooks();
+        tbSync.initjobs++;
+        let syncProvider = tbSync.syncProvider.getChildList("", {});
 
-        //init stuff for calendar (only if lightning is installed)
-        if ("calICalendar" in Components.interfaces) {
-            //adding a global observer, or one for each "known" book?
-            cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
-            cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver)
+        if (tbSync.initjobs > syncProvider.length) {
+            //init stuff for address book
+            tbSync.addressbookListener.add();
+            tbSync.scanPrefIdsOfAddressBooks();
+
+            //init stuff for calendar (only if lightning is installed)
+            if ("calICalendar" in Components.interfaces) {
+                //adding a global observer, or one for each "known" book?
+                cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
+                cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver)
+            }
+
+            //init stuff for sync process
+            tbSync.sync.resetSync();
+            
+            //enable
+            tbSync.enabled = true;
         }
-
-        //init stuff for sync process
-        tbSync.sync.resetSync();
     },
 
 
@@ -61,13 +74,15 @@ var tbSync = {
 
 
     // TOOLS
+    getAbsolutePath: function(filename) {
+        return OS.Path.join(tbSync.storageDirectory, filename);
+    },
     
     writeAsyncJSON: function (obj, filename) {
-        let dirpath = OS.Path.join(OS.Constants.Path.profileDir, "TbSync");
-        let filepath = OS.Path.join(dirpath, filename);
+        let filepath = tbSync.getAbsolutePath(filename);
         Task.spawn(function* () {
             //MDN states, instead of checking if dir exists, just create it and catch error on exist (but it does not even throw)
-            yield OS.File.makeDir(dirpath);
+            yield OS.File.makeDir(tbSync.storageDirectory);
             yield OS.File.writeAtomic(filepath, tbSync.encoder.encode(JSON.stringify(obj)), {tmpPath: filepath + ".tmp"});
         }).then(null, Components.utils.reportError);
     },
