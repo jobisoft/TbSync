@@ -25,7 +25,7 @@ var eas = {
             } catch (ex) {
                 //if there is no file, there is no file...
             }
-                        
+
             //load accounts from file
             try {
                 let data = yield OS.File.read(tbSync.getAbsolutePath(db.accountsFile));
@@ -41,13 +41,28 @@ var eas = {
             } catch (ex) {
                 //if there is no file, there is no file...
             }
-	    	    
+
             //finish async init by calling main init()
             tbSync.init();
             
         }).then(null, Components.utils.reportError);
 
+    },
+    
+    unload: function () {
+        // i thought that I might need to manually write pending/scheduled write jobs before closing, but it looks like I do not have to
+        //db.changelogTimer.cancel();
+        //db.accountsTimer.cancel();
+        //db.foldersTimer.cancel();
+        //tbSync.writeAsyncJSON(tbSync.db.accounts, tbSync.db.accountsFile);
+        //tbSync.writeAsyncJSON(tbSync.db.folders, tbSync.db.foldersFile);
+        //tbSync.writeAsyncJSON(tbSync.db.changelog, tbSync.db.changelogFile);
+
+        //test
+        //tbSync.db.addItemToChangeLog("WriteRequest", "JustBefore", "ClosingThunderbird");
+        //tbSync.db.saveChangelog();
     }
+
 };
 
 eas.init();

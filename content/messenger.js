@@ -101,3 +101,6 @@ var tbSyncMessenger = {
 };
 
 window.addEventListener("load", tbSyncMessenger.onload, false);
+for (let i=0;i<tbSync.syncProviderList.length;i++) {
+    window.addEventListener("beforeunload", tbSync[tbSync.syncProviderList[i]].unload, false);
+}

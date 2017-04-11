@@ -2,9 +2,13 @@
 
 var owncloud = {
     init: function () {
-        //finish async init by calling main init()
-	    tbSync.init();
+        //finish init by calling main init()
+        tbSync.init();
+    },
+    
+    unload: function () {
     }
+
 };
 
 owncloud.init();

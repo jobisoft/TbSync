@@ -38,18 +38,20 @@ var tbSync = {
     encoder : new TextEncoder(),
 
     syncProvider: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync.provider."),
+    syncProviderList: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync.provider.").getChildList("", {}),
+
     prefSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync."),
     tzpushSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tzpush."),
 
     storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
 
-    // INIT
-    
-    init: function () {
-        tbSync.initjobs++;
-        let syncProvider = tbSync.syncProvider.getChildList("", {});
 
-        if (tbSync.initjobs > syncProvider.length) {
+
+    // INIT
+    init: function () { //this init function is called by the init of each provider + messenger
+        tbSync.initjobs++;
+
+        if (tbSync.initjobs > tbSync.syncProviderList.length) { //one extra, because messenger needs to init as well
             //init stuff for address book
             tbSync.addressbookListener.add();
             tbSync.scanPrefIdsOfAddressBooks();
@@ -68,8 +70,6 @@ var tbSync = {
             tbSync.enabled = true;
         }
     },
-
-
 
 
 
@@ -739,8 +739,7 @@ var tbSync = {
 
 
 // load all subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
-let syncProvider = tbSync.syncProvider.getChildList("", {});
-for (let i=0;i<syncProvider.length;i++) {
-    tbSync.dump("PROVIDER", syncProvider[i] + "::" + tbSync.syncProvider.getCharPref(syncProvider[i]));
-    tbSync.includeJS("chrome://tbsync/content/provider/"+syncProvider[i]+"/_include.js");
+for (let i=0;i<tbSync.syncProviderList.length;i++) {
+    tbSync.dump("PROVIDER", tbSync.syncProviderList[i] + "::" + tbSync.syncProvider.getCharPref(tbSync.syncProviderList[i]));
+    tbSync.includeJS("chrome://tbsync/content/provider/"+tbSync.syncProviderList[i]+"/_include.js");
 }
