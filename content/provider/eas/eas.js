@@ -527,9 +527,9 @@ var sync = {
         let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
         req.mozBackgroundRequest = true;
         if (tbSync.prefSettings.getBoolPref("debugwbxml")) {
-            tbSync.dump("sending", "POST " + connection.url + '?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
+            tbSync.dump("sending", "POST " + connection.host + '/Microsoft-Server-ActiveSync?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
         }
-        req.open("POST", connection.url + '?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
+        req.open("POST", connection.host + '/Microsoft-Server-ActiveSync?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
         req.overrideMimeType("text/plain");
         req.setRequestHeader("User-Agent", deviceType + ' ActiveSync');
         req.setRequestHeader("Content-Type", "application/vnd.ms-sync.wbxml");
@@ -598,12 +598,12 @@ var sync = {
                         let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
                         
                         //remove current login info
-                        let currentLoginInfo = new nsLoginInfo(connection.host, connection.url, null, connection.user, password, "USER", "PASSWORD");
+                        let currentLoginInfo = new nsLoginInfo(connection.host, connection.host, null, connection.user, password, "USER", "PASSWORD");
                         myLoginManager.removeLogin(currentLoginInfo);
 
                         //update host and add new login info
                         connection.host = newHost;
-                        let newLoginInfo = new nsLoginInfo(connection.host, connection.url, null, connection.user, password, "USER", "PASSWORD");
+                        let newLoginInfo = new nsLoginInfo(connection.host, connection.host, null, connection.user, password, "USER", "PASSWORD");
                         try {
                             myLoginManager.addLogin(newLoginInfo);
                         } catch (e) {

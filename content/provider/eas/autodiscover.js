@@ -79,7 +79,7 @@ var tbSyncEasAutodiscover = {
         req.setRequestHeader("User-Agent", "Thunderbird ActiveSync");
         req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + password));
 
-        req.timeout = 10000;
+        req.timeout = 30000;
 
         req.ontimeout  = function() {
             //log error and try next server

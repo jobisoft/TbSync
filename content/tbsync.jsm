@@ -39,7 +39,6 @@ var tbSync = {
     syncProviderList: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync.provider.").getChildList("", {}),
 
     prefSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync."),
-    tzpushSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tzpush."),
 
     storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
 
@@ -207,7 +206,6 @@ var tbSync = {
             set host(newHost) { tbSync.db.setAccountSetting(account, "host", newHost); },
             get server() { return tbSync.db.getAccountSetting(account, "host"); },
             get host() { return this.protocol + tbSync.db.getAccountSetting(account, "host"); },
-            get url() { return this.host + "/Microsoft-Server-ActiveSync"; },
             user: tbSync.db.getAccountSetting(account, "user"),
         };
         return connection;
