@@ -329,10 +329,9 @@ var tbSync = {
                     folders[0].synckey="";
                     folders[0].lastsynctime= "";
                     folders[0].status= "aborted";
-                    tbSync.db.setFolder(folders[0]);
-                    tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
-                    //not needed - tbSync.db.setAccountSetting(owner[0], "policykey", ""); //- this is identical to tbSync.sync.resync() without the actual sync
 
+                    tbSync.db.saveFolders();
+                    tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
                     tbSync.db.clearChangeLog(aItem.URI);
 
                     //update settings window, if open
@@ -603,9 +602,9 @@ var tbSync = {
                 folders[0].synckey="";
                 folders[0].lastsynctime= "";
                 folders[0].status= "aborted";
-                tbSync.db.setFolder(folders[0]);
-                tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
 
+                tbSync.db.saveFolders();
+                tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
                 tbSync.db.clearChangeLog(aCalendar.id);
 
                 //update settings window, if open
