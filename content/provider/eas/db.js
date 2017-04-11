@@ -11,31 +11,33 @@ var db = {
     foldersFile : "eas_folders_0_7.json",
     folders: {}, //assoziative array of assoziative array : folders[<int>accountID][<string>folderID] = {row} 
 
-    changelogTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
     accountsTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
     foldersTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
+    changelogTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
+
+    writeDelay : 6000,
 
     saveAccounts: function () {
         db.accountsTimer.cancel();
-        db.accountsTimer.init(db.writeJSON, 3001, 0); //run in 3s
+        db.accountsTimer.init(db.writeJSON, db.writeDelay + 1, 0);
     },
 
     saveFolders: function () {
         db.foldersTimer.cancel();
-        db.foldersTimer.init(db.writeJSON, 3002, 0); //run in 3s
+        db.foldersTimer.init(db.writeJSON, db.writeDelay + 2, 0);
     },
 
     saveChangelog: function () {
         db.changelogTimer.cancel();
-        db.changelogTimer.initWithCallback(db.writeJSON, 3003, 0); //run in 3s
+        db.changelogTimer.init(db.writeJSON, db.writeDelay + 3, 0);
     },
 
     writeJSON : {
       observe: function(subject, topic, data) {
         switch (subject.delay) { //use delay setting to find out, which file is to be saved
-            case 3001: tbSync.writeAsyncJSON(db.accounts, db.accountsFile); break;
-            case 3002: tbSync.writeAsyncJSON(db.folders, db.foldersFile); break;
-            case 3003: tbSync.writeAsyncJSON(db.changelog, db.changelogFile); break;
+            case (db.writeDelay + 1): tbSync.writeAsyncJSON(db.accounts, db.accountsFile); break;
+            case (db.writeDelay + 2): tbSync.writeAsyncJSON(db.folders, db.foldersFile); break;
+            case (db.writeDelay + 3): tbSync.writeAsyncJSON(db.changelog, db.changelogFile); break;
         }
       }
     },
