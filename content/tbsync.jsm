@@ -23,9 +23,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
  - loop over all properties when card copy
  - check "resync account folder" - maybe rework it
  - drop syncdata and use currentProcess only ???
-
  - fix blanks bug also for contacts group (not only for contacts2)
-
 */
 
 var tbSync = {
@@ -741,5 +739,5 @@ var tbSync = {
 // load all subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
 for (let i=0;i<tbSync.syncProviderList.length;i++) {
     tbSync.dump("PROVIDER", tbSync.syncProviderList[i] + "::" + tbSync.syncProvider.getCharPref(tbSync.syncProviderList[i]));
-    tbSync.includeJS("chrome://tbsync/content/provider/"+tbSync.syncProviderList[i]+"/_include.js");
+    tbSync.includeJS("chrome://tbsync/content/provider/"+tbSync.syncProviderList[i]+"/" + tbSync.syncProviderList[i] +".js");
 }
