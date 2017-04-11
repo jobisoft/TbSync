@@ -824,7 +824,7 @@ var contactsync = {
         let cardstodelete = tbSync.db.getItemsFromChangeLog(addressbook, tbSync.prefSettings.getIntPref("maxnumbertosend"), "delete");
         let wbxmlinner = "";
         for (let i = 0; i < cardstodelete.length; i++) {
-            wbxmlinner = wbxmlinner + String.fromCharCode(0x49, 0x4D, 0x03) + cardstodelete[i] + String.fromCharCode(0x00, 0x01, 0x01);
+            wbxmlinner = wbxmlinner + String.fromCharCode(0x49, 0x4D, 0x03) + cardstodelete[i].id + String.fromCharCode(0x00, 0x01, 0x01);
         }
 
         if (cardstodelete.length > 0) {
@@ -866,7 +866,7 @@ var contactsync = {
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
             for (let count in syncdata.cardstodelete) {
                 sync.setSyncState("cleaningdeleted", syncdata);
-                tbSync.db.removeItemFromChangeLog(addressbook, syncdata.cardstodelete[count]);
+                tbSync.db.removeItemFromChangeLog(addressbook, syncdata.cardstodelete[count].id);
             }
             // The selected cards have been deleted from the server and from the changelog -> rerun senddel to look for more cards to delete
             this.senddel(syncdata);
