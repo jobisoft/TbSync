@@ -716,15 +716,15 @@ var contactsync = {
             }
         }
 
-        if (numofcards !== 0) {
-            wbxmlinner = wbxml;
-            wbxml = wbxmlouter.replace('replacehere', wbxmlinner);
-            wbxml = wbxml.replace('SyncKeyReplace', syncdata.synckey);
-            wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
-            wbxml = sync.Send(wbxml, callback.bind(this), "Sync", syncdata);
-        } else {
+//        if (numofcards !== 0) {
+//            wbxmlinner = wbxml;
+//            wbxml = wbxmlouter.replace('replacehere', wbxmlinner);
+//            wbxml = wbxml.replace('SyncKeyReplace', syncdata.synckey);
+//            wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
+//            wbxml = sync.Send(wbxml, callback.bind(this), "Sync", syncdata); 
+//        } else {
             this.senddel(syncdata);
-        }
+//        }
 
 
         function callback(returnedwbxml, syncdata) {
