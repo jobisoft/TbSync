@@ -26,6 +26,22 @@ var eas = {
                 //if there is no file, there is no file...
             }
                         
+            //load accounts from file
+            try {
+                let data = yield OS.File.read(tbSync.getAbsolutePath(db.accountsFile));
+                db.accounts = JSON.parse(tbSync.decoder.decode(data));
+            } catch (ex) {
+                //if there is no file, there is no file...
+            }
+
+            //load folders from file
+            try {
+                let data = yield OS.File.read(tbSync.getAbsolutePath(db.foldersFile));
+                db.folders = JSON.parse(tbSync.decoder.decode(data));
+            } catch (ex) {
+                //if there is no file, there is no file...
+            }
+	    	    
             //finish async init by calling main init()
             tbSync.init();
             
