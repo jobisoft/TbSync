@@ -479,7 +479,7 @@ var sync = {
             req.setRequestHeader("X-MS-PolicyKey", tbSync.db.getAccountSetting(syncdata.account, "policykey"));
         }
 
-        req.timeout = 10000;
+        req.timeout = 30000;
 
         req.ontimeout = function () {
             this.finishSync(syncdata, "timeout");
