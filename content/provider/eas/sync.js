@@ -49,12 +49,13 @@ var sync = {
         sync.setSyncState("idle"); 
         //flush the queue
         sync.syncQueue = [];
+        //get all accounts
+        let accounts = db.getAccounts();
 
         //check each account, if state is "connecting" and disconnect it
-        let accounts = db.getAccounts();
-        for (let i=0; i<accounts.IDs.length; i++) {
-            if (accounts.data[accounts.IDs[i]].state == "connecting") this.disconnectAccount(accounts.IDs[i]);
-        }
+//        for (let i=0; i<accounts.IDs.length; i++) {
+//            if (accounts.data[accounts.IDs[i]].state == "connecting") this.disconnectAccount(accounts.IDs[i]);
+//        }
 
         for (let i=0; i<accounts.IDs.length; i++) {
             if (accounts.data[accounts.IDs[i]].status == "syncing") tbSync.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
@@ -381,13 +382,14 @@ var sync = {
     finishAccountSync: function (syncdata) {
         let state = tbSync.db.getAccountSetting(syncdata.account, "state");
         
+//        No longer disconnect on error during initial connect, users are confused
         if (state == "connecting") {
-            if (syncdata.status == "OK") {
+//            if (syncdata.status == "OK") {
                 tbSync.db.setAccountSetting(syncdata.account, "state", "connected");
-            } else {
-                this.disconnectAccount(syncdata.account);
-                tbSync.db.setAccountSetting(syncdata.account, "state", "disconnected");
-            }
+//            } else {
+//                this.disconnectAccount(syncdata.account);
+//                tbSync.db.setAccountSetting(syncdata.account, "state", "disconnected");
+//            }
         }
         
         if (syncdata.status != "OK") {
