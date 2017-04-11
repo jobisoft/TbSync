@@ -7,37 +7,36 @@ var db = {
 
     accountsFile : "eas_accounts_0_7.json",
     accounts: { sequence: 0, data : {} }, //data[account] = {row}
-	    
+
     foldersFile : "eas_folders_0_7.json",
     folders: {}, //assoziative array of assoziative array : folders[<int>accountID][<string>folderID] = {row} 
 
-	changelogTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
+    changelogTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
     accountsTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
-	foldersTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
-	    
+    foldersTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
+
     saveAccounts: function () {
         db.accountsTimer.cancel();
-        db.accountsTimer.init(db.writeJSON, 3001, 0); //run in 3s        
-    },    
+        db.accountsTimer.init(db.writeJSON, 3001, 0); //run in 3s
+    },
 
     saveFolders: function () {
         db.foldersTimer.cancel();
-        db.foldersTimer.init(db.writeJSON, 3002, 0); //run in 3s        
-    },    
+        db.foldersTimer.init(db.writeJSON, 3002, 0); //run in 3s
+    },
 
     saveChangelog: function () {
         db.changelogTimer.cancel();
         db.changelogTimer.initWithCallback(db.writeJSON, 3003, 0); //run in 3s
-    },    
+    },
 
     writeJSON : {
       observe: function(subject, topic, data) {
-        switch (subject.delay) {
+        switch (subject.delay) { //use delay setting to find out, which file is to be saved
             case 3001: tbSync.writeAsyncJSON(db.accounts, db.accountsFile); break;
             case 3002: tbSync.writeAsyncJSON(db.folders, db.foldersFile); break;
             case 3003: tbSync.writeAsyncJSON(db.changelog, db.changelogFile); break;
         }
-        tbSync.dump("timer", subject.delay);        
       }
     },
 
@@ -61,8 +60,8 @@ var db = {
             "itemId" : itemId,
             "status" : status,
             "data" : data };
-    
-	this.changelog.push(row);
+        
+        this.changelog.push(row);
         this.saveChangelog();
     },
 
@@ -72,7 +71,7 @@ var db = {
         }
         this.saveChangelog();
     },
-    
+
     // Remove all cards of a parentId from ChangeLog
     clearChangeLog: function (parentId) {
         for (let i=this.changelog.length-1; i>-1; i-- ) {
@@ -110,14 +109,14 @@ var db = {
     getAccountStorageFields: function (account) {
         return Object.keys(this.accounts.data[account]).sort();
     },
-    
+
     addAccount: function (accountname, appendID = false) {
         this.accounts.sequence++;
 
         let id = this.accounts.sequence;
         let name = accountname;
         if (appendID) name = name + " #" + id;
-        
+
         let row = {
             "account" : id.toString(),
             "accountname": name, 
@@ -138,13 +137,13 @@ var db = {
             "displayoverride" : "0", 
             "downloadonly" : "0",
             "autosync" : "0" };
-		
-        this.accounts.data[id]=row;            
+
+        this.accounts.data[id]=row;
         this.saveAccounts();
         return id;
     },
-    
-    removeAccount: function (account) {        
+
+    removeAccount: function (account) {
         //check if account is known
         if (this.accounts.data.hasOwnProperty(account) == false ) {
             throw "Unknown account!" + "\nThrown by db.removeAccount("+account+ ")";
@@ -185,9 +184,9 @@ var db = {
             return this.accounts.data[account];
         }
     }, 
-    
+
     getAccountSetting: function (account, name) {
-        let data = this.getAccount(account);        
+        let data = this.getAccount(account);
         //check if field is allowed
         if (data.hasOwnProperty(name)) return data[name];
         else throw "Unknown account setting!" + "\nThrown by db.getAccountSetting("+account+", " + name + ")";
@@ -234,13 +233,13 @@ var db = {
         delete (this.folders[account][folderID]);
         this.saveFolders();
     },
-    
+
     //get all folders of a given account.
     getFolders: function (account) {
         if (!this.folders.hasOwnProperty(account)) this.folders[account] = {};
         return this.folders[account];
     },
-    
+
     //get a specific folder
     getFolder: function(account, folderID) {
         let folders = this.getFolders(account);
@@ -260,11 +259,11 @@ var db = {
         let data = [];
         for (let aID in this.folders) {
             for (let fID in this.folders[aID]) {
-                if ((account === null || account == aID) && this.folders[aID][fID].hasOwnProperty(name) && this.folders[aID][fID][name] == value) data.push(this.folders[aID][fID]);                
+                if ((account === null || account == aID) && this.folders[aID][fID].hasOwnProperty(name) && this.folders[aID][fID][name] == value) data.push(this.folders[aID][fID]);
             }
         }
-        
-        //still by reference???
+
+        //still a reference to the original data
         return data;
     },
 
