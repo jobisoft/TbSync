@@ -45,7 +45,7 @@ var tbSyncAccountSettings = {
     * field in the settings dialog, fill it with the stored value.
     */
     loadSettings: function () {
-        let settings = tbSync.db.getTableFields("accounts");
+        let settings = tbSync.db.getAccountStorageFields(tbSyncAccountSettings.selectedAccount);
         let servertype = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype");
         
         this.fixedSettings = this.getServerSetting(servertype);
@@ -88,9 +88,9 @@ var tbSyncAccountSettings = {
     * field in the settings dialog, store its current value.
     */
     saveSettings: function () {
-        let settings = tbSync.db.getTableFields("accounts");
+        let settings = tbSync.db.getAccountStorageFields(tbSyncAccountSettings.selectedAccount);
 
-        let data = tbSync.db.getAccount(tbSyncAccountSettings.selectedAccount, true); //get a copy of the cache, which can be modified
+        let data = tbSync.db.getAccount(tbSyncAccountSettings.selectedAccount); //gets a reference
         for (let i=0; i<settings.length;i++) {
             if (document.getElementById("tbsync.accountsettings." + settings[i])) {
                 //bool fields need special treatment
@@ -105,7 +105,7 @@ var tbSyncAccountSettings = {
             }
         }
         
-        tbSync.db.setAccount(data);
+        tbSync.db.saveAccounts(); //write modified accounts to disk
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.notifyObservers(null, "tbsync.changedAccountName", tbSyncAccountSettings.selectedAccount + ":" + data.accountname);
     },
@@ -190,14 +190,14 @@ var tbSyncAccountSettings = {
         } else {
             //save fixed values
             this.fixedSettings = this.getServerSetting(selection);
-            let data = tbSync.db.getAccount(tbSyncAccountSettings.selectedAccount, true); //get a copy of the cache, which can be modified
+            let data = tbSync.db.getAccount(tbSyncAccountSettings.selectedAccount); //gets a reference
             for (let key in this.fixedSettings) {
                 if (data.hasOwnProperty(key) && this.fixedSettings[key] !== null) { //null is used by autodiscover, do not change real value
                     data[key] = this.fixedSettings[key];
                 }
             }
             data.servertype = selection;
-            tbSync.db.setAccount(data);
+            tbSync.db.saveAccounts(); //write modified accounts to disk
 
             // load new settings and update gui 
             this.loadSettings();
@@ -214,7 +214,6 @@ var tbSyncAccountSettings = {
     autodiscoverObserver: {
         observe: function (aSubject, aTopic, aData) {
             //only update if request for this account
-            tbSync.dump("DONE","A");
             if (aData == tbSyncAccountSettings.selectedAccount) {
                 tbSyncAccountSettings.loadSettings();
                 if (tbSync.db.getAccountSetting(aData, "servertype") == "auto") setTimeout(function(){ alert(tbSync.getLocalizedMessage("info.AutodiscoverOk")); }, 100);
@@ -299,7 +298,8 @@ var tbSyncAccountSettings = {
                     folder.synckey = "";
                     folder.lastsynctime = "";
                     folder.status = "";
-                    tbSync.db.setFolder(folder);
+                    
+                    tbSync.db.saveFolders();
                     tbSync.db.clearChangeLog(target);
 
                     if (target != "") tbSync.removeTarget(target, type); //we must remove the target AFTER cleaning up the DB, otherwise the addressbookListener in tbSync.jsm will interfere
