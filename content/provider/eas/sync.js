@@ -255,15 +255,16 @@ var sync = {
             }
             
             //looking for updates if a folder gets moved to trash, its parentId is no longer zero! TODO
+            // -> this means, deleted folders still show up here, because we do not check, if folder is in root
             let update = xmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Update);
             for (let count = 0; count < update.length; count++) {
-                //get a copy of the folder, so we can update it
-                let folder = tbSync.db.getFolder(syncdata.account, update[count]["ServerId"], true);
+                //geta a reference
+                let folder = tbSync.db.getFolder(syncdata.account, update[count]["ServerId"]);
                 if (folder !== null) {
                     //update folder
                     folder.name = update[count]["DisplayName"];
                     folder.type = update[count]["Type"];
-                    tbSync.db.setFolder(folder);
+                    tbSync.db.saveFolders();
                 } else {
                     //TODO? - cannot update an non-existing folder - resync!
                 }
