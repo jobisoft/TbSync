@@ -1,148 +1,52 @@
 "use strict";
 
-//TODO (for production)
-// - after migration, delete the data stored in prefs, the user might get confused at a later time, if that old account data is remigrated again, if the db was deleted
-// - check database fields if add-on updates added/removed fields
-
 var db = {
 
-    _accountCache: null,
-    _folderCache: {},
-    
+    changelogFile : "eas_changelog_0_7.json",
     changelog: [], 
-    changelogFile : "changelog_0_7.json",
 
-    dbFile: FileUtils.getFile("ProfD", ["TbSync", "db_1_1.sqlite"]),
-    dbService: Cc["@mozilla.org/storage/service;1"].getService(Ci.mozIStorageService),
-    
-    tables: { 
-        accounts: {
-            account : "INTEGER PRIMARY KEY AUTOINCREMENT", 
-            accountname : "TEXT NOT NULL DEFAULT ''", 
-            policykey : "TEXT NOT NULL DEFAULT ''", 
-            foldersynckey : "TEXT NOT NULL DEFAULT ''",
-            lastsynctime : "TEXT NOT NULL DEFAULT ''", 
-            state : "TEXT NOT NULL DEFAULT 'disconnected'",
-            status : "TEXT NOT NULL DEFAULT 'notconnected'",
-            deviceId : "TEXT NOT NULL DEFAULT ''",
-            asversion : "TEXT NOT NULL DEFAULT '14.0'",
-            host : "TEXT NOT NULL DEFAULT ''",
-            user : "TEXT NOT NULL DEFAULT ''",
-            servertype : "TEXT NOT NULL DEFAULT ''",
-            seperator : "TEXT NOT NULL DEFAULT '10'",
-            https : "TEXT NOT NULL DEFAULT '0'",
-            provision : "TEXT NOT NULL DEFAULT '1'",
-            birthday : "TEXT NOT NULL DEFAULT '0'",
-            displayoverride : "TEXT NOT NULL DEFAULT '0'", 
-            downloadonly : "TEXT NOT NULL DEFAULT '0'",
-            autosync : "TEXT NOT NULL DEFAULT '0'"
-        },
+    accountsFile : "eas_accounts_0_7.json",
+    accounts: { sequence: 0, data : {} }, //data[account] = {row}
+	    
+    foldersFile : "eas_folders_0_7.json",
+    folders: {}, //assoziative array of assoziative array : folders[<int>accountID][<string>folderID] = {row} 
 
-        folders: {
-            account : "INTEGER",
-            folderID : "TEXT NOT NULL DEFAULT ''",
-            name : "TEXT NOT NULL DEFAULT ''",
-            type : "TEXT NOT NULL DEFAULT ''",
-            synckey : "TEXT NOT NULL DEFAULT ''",
-            target : "TEXT NOT NULL DEFAULT ''",
-            selected : "TEXT NOT NULL DEFAULT ''",
-            lastsynctime : "TEXT NOT NULL DEFAULT ''",
-            status : "TEXT NOT NULL DEFAULT ''"
-        },
+	changelogTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
+    accountsTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
+	foldersTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
+	    
+    saveAccounts: function () {
+        db.accountsTimer.cancel();
+        db.accountsTimer.init(db.writeJSON, 3001, 0); //run in 3s        
+    },    
 
-/*        changelog: {
-            id : "INTEGER PRIMARY KEY AUTOINCREMENT",
-            parentId : "TEXT NOT NULL DEFAULT ''",
-            itemId : "TEXT NOT NULL DEFAULT ''",
-            status : "TEXT NOT NULL DEFAULT ''",
-            data : "TEXT NOT NULL DEFAULT ''"
-        },*/
-        
-    },
+    saveFolders: function () {
+        db.foldersTimer.cancel();
+        db.foldersTimer.init(db.writeJSON, 3002, 0); //run in 3s        
+    },    
 
-    accountColumns: null,
-    folderColumns: null,
+    saveChangelog: function () {
+        db.changelogTimer.cancel();
+        db.changelogTimer.initWithCallback(db.writeJSON, 3003, 0); //run in 3s
+    },    
 
-    
-    init: function () {
-
-        this.accountColumns = this.getTableFields("accounts");
-        this.folderColumns = this.getTableFields("folders");
-       
-        if (!this.dbFile.exists()) {
-            let conn = this.dbService.openDatabase(this.dbFile);
-
-            // Create all defined tables
-            for (let tablename in this.tables) {
-                let sql = "";
-                for (let field in this.tables[tablename]) {
-                    if (sql.length > 0) sql = sql + ", ";
-                    sql = sql + field + " " + this.tables[tablename][field];
-                }
-
-                // Create table - this statement is created completly from hardcoded elements, no userland input, no need to use createStatement
-                conn.executeSimpleSQL("CREATE TABLE " + tablename + " (" + sql + ");");
-            }
-
-            //DB has just been created and we should try to import old TzPush 1.9 account data from preferences
-            let hasTzPushSettinngs = false;
-            try { 
-                tbSync.tzpushSettings.getCharPref("host"); 
-                hasTzPushSettinngs = true;
-            } catch(e) {};
-            
-            //Migrate
-            if (hasTzPushSettinngs) {
-                let account = this.getAccount(this.addAccount("TzPush"), true); //get a copy of the cache, which can be modified
-                
-                try { account.deviceId = tbSync.tzpushSettings.getCharPref("deviceId") } catch(e) {};
-                try { account.asversion = tbSync.tzpushSettings.getCharPref("asversion") } catch(e) {};
-                try { account.host = tbSync.tzpushSettings.getCharPref("host") } catch(e) {};
-                try { account.user = tbSync.tzpushSettings.getCharPref("user") } catch(e) {};
-                try { account.autosync = tbSync.tzpushSettings.getIntPref("autosync") } catch(e) {};
-
-                //BOOL fields - to not have to mess with different field types, everything is stored as TEXT in the DB
-                try { account.https = (tbSync.tzpushSettings.getBoolPref("https") ? "1" : "0") } catch(e) {};
-                try { account.provision = (tbSync.tzpushSettings.getBoolPref("prov") ? "1" : "0") } catch(e) {};
-                try { account.birthday = (tbSync.tzpushSettings.getBoolPref("birthday") ? "1" : "0") } catch(e) {};
-                try { account.displayoverride = (tbSync.tzpushSettings.getBoolPref("displayoverride") ? "1" : "0") } catch(e) {};
-                try { account.downloadonly = (tbSync.tzpushSettings.getBoolPref("downloadonly") ? "1" : "0") } catch(e) {};
-                
-                //migrate seperator into server setting
-                account.servertype = "custom";
-                try {
-                    if (tbSync.tzpushSettings.getCharPref("seperator") == ", ") account.seperator = "44";
-                    else account.seperator = "10";
-                } catch(e) {}
-                
-                this.setAccount(account);
-            }
-            conn.close();
+    writeJSON : {
+      observe: function(subject, topic, data) {
+        switch (subject.delay) {
+            case 3001: tbSync.writeAsyncJSON(db.accounts, db.accountsFile); break;
+            case 3002: tbSync.writeAsyncJSON(db.folders, db.foldersFile); break;
+            case 3003: tbSync.writeAsyncJSON(db.changelog, db.changelogFile); break;
         }
-    
+        tbSync.dump("timer", subject.delay);        
+      }
     },
-
-    getTableFields: function (tablename) {
-        return Object.keys(this.tables[tablename]).sort();
-    },
-    
 
 
 
 
     // CHANGELOG FUNCTIONS
 
-    getItemStatusFromChangeLog: function (parentId, itemId) {
-/*        let conn = this.dbService.openDatabase(this.dbFile);
-        let statement = conn.createStatement("SELECT status FROM changelog WHERE parentId = :parentId AND itemId = :itemId");
-        statement.params.parentId = parentId;
-        statement.params.itemId = itemId;
-        
-        let retval = (statement.executeStep()) ? statement.row.status : null;
-
-        conn.close();
-        return retval;*/
-    
+    getItemStatusFromChangeLog: function (parentId, itemId) {   
         for (let i=0; i<this.changelog.length; i++) {
             if (this.changelog[i].parentId == parentId && this.changelog[i].itemId == itemId) return this.changelog[i].status;
         }
@@ -152,69 +56,32 @@ var db = {
     addItemToChangeLog: function (parentId, itemId, status, data = "") {
         this.removeItemFromChangeLog(parentId, itemId);
 
-/*        let conn = this.dbService.openDatabase(this.dbFile);
-        let statement = conn.createStatement("INSERT INTO changelog (parentId, itemId, status, data) VALUES (:parentId, :itemId, :status, :data)");
-        statement.params.parentId = parentId;
-        statement.params.itemId = itemId;
-        statement.params.status = status;
-        statement.params.data = data;
-        statement.executeStep();
-        conn.close();*/
-        
         let row = {
             "parentId" : parentId,
             "itemId" : itemId,
             "status" : status,
             "data" : data };
     
-        this.changelog.push(row);
-        tbSync.writeAsyncJSON(this.changelog, this.changelogFile);
+	this.changelog.push(row);
+        this.saveChangelog();
     },
 
     removeItemFromChangeLog: function (parentId, itemId) {
-/*        let conn = this.dbService.openDatabase(this.dbFile);
-        let statement = conn.createStatement("DELETE FROM changelog WHERE parentId = :parentId AND itemId = :itemId");
-        statement.params.parentId = parentId;
-        statement.params.itemId = itemId;
-        statement.executeStep();
-        conn.close();*/
-
         for (let i=this.changelog.length-1; i>-1; i-- ) {
             if (this.changelog[i].parentId == parentId && this.changelog[i].itemId == itemId) this.changelog.splice(i,1);
         }
-        tbSync.writeAsyncJSON(this.changelog, this.changelogFile);
+        this.saveChangelog();
     },
     
     // Remove all cards of a parentId from ChangeLog
     clearChangeLog: function (parentId) {
-        /*let conn = this.dbService.openDatabase(this.dbFile);
-        let statement = conn.createStatement("DELETE FROM changelog WHERE parentId = :parentId");
-        statement.params.parentId = parentId;
-        statement.executeStep();        
-        conn.close();*/
-        this.changelog = [];
-        tbSync.writeAsyncJSON(this.changelog, this.changelogFile);
+        for (let i=this.changelog.length-1; i>-1; i-- ) {
+            if (this.changelog[i].parentId == parentId) this.changelog.splice(i,1);
+        }
+        this.saveChangelog();
     },
 
-    getItemsFromChangeLog: function (parentId, maxnumbertosend, status = null) {
-        /*let conn = this.dbService.openDatabase(this.dbFile);
-        let changelog = [];
-        let statement = null;
-        if (status === null) {
-            statement = conn.createStatement("SELECT itemId, status FROM changelog WHERE parentId = :parentId LIMIT :maxnumbertosend");
-        } else {
-            statement = conn.createStatement("SELECT itemId, status FROM changelog WHERE status LIKE :status AND parentId = :parentId LIMIT :maxnumbertosend");
-            statement.params.status = "%"+status+"%";
-        }
-        statement.params.parentId = parentId;
-        statement.params.maxnumbertosend = maxnumbertosend;
-        
-        while (statement.executeStep()) {
-            changelog.push({ "id":statement.row.itemId, "status":statement.row.status });
-        }
-        conn.close();
-        return changelog;*/
-        
+    getItemsFromChangeLog: function (parentId, maxnumbertosend, status = null) {        
         let log = [];
         let counts = 0;
         for (let i=0; i<this.changelog.length && log.length < maxnumbertosend; i++) {
@@ -239,126 +106,55 @@ var db = {
         });
         return "mztb" + uuid;
     },
-    
-    // Get a proxied version of the cached account, which cannot be modified
-    getProxyAccount: function(account) {
-        let handler = {
-            get (target, key) { return target[key]; },
-            set (target, key, value) { Components.utils.reportError("[TbSync] Trying to write to a readonly reference of the this._accountCache!"); throw "Aborting."; return false; }
-        };
-        return new Proxy(this._accountCache[account], handler);
+
+    getAccountStorageFields: function (account) {
+        return Object.keys(this.accounts.data[account]).sort();
     },
     
-    // The first request to get any account data will retrieve all data and store it in cache
-    // This function returns a proxied read-only-reference to the account cache.
-    getAccounts: function (forceupdate = false) {
-        //update this._accountCache
-        if (this._accountCache === null || forceupdate) {
-            this._accountCache = {};
-            let conn = this.dbService.openDatabase(this.dbFile);
-            let statement = conn.createStatement("SELECT * FROM accounts");
-            while (statement.executeStep()) {
-                let data = {};
-                for (let x=0; x<this.accountColumns.length; x++) data[this.accountColumns[x]] = statement.row[this.accountColumns[x]];
-                this._accountCache[statement.row.account] = data;
-            }
-            conn.close();
-        }
-        
-        let proxyAccounts = {};
-        proxyAccounts.IDs = Object.keys(this._accountCache).sort((a, b) => a - b);
-        proxyAccounts.data = {};
-        for (let a in this._accountCache) proxyAccounts.data[a] = this.getProxyAccount(a);
-        return proxyAccounts;
-    },
-
-    // This function can either return a read-only-reference or a copy of the cached account data. The default is to get a reference,
-    getAccount: function (account, copy = false) {
-        let data = this.getAccounts().data;
-        
-        //check if account is known
-        if (data.hasOwnProperty(account) == false ) throw "Unknown account!" + "\nThrown by db.getAccount("+account+ ")";
-        else {
-            // return a reference or a copy?
-            if (copy) {
-                let copy = {};
-                for(let p in data[account]) copy[p] = data[account][p];
-                return copy;
-            } else {
-                return data[account];
-            }
-        }
-    }, 
-    
-    getAccountSetting: function (account, name) {
-        let data = this.getAccount(account);
-        
-        //check if field is allowed
-        if (data.hasOwnProperty(name)) return data[name];
-        else throw "Unknown account setting!" + "\nThrown by db.getAccountSetting("+account+", " + name + ")";
-    }, 
-
     addAccount: function (accountname, appendID = false) {
-        let conn = this.dbService.openDatabase(this.dbFile);
-        let statement = conn.createStatement("INSERT INTO accounts (accountname, deviceId) VALUES (:accountname, :deviceId)");
-        statement.params.accountname = accountname;
-        statement.params.deviceId = this.getNewDeviceId();
-        statement.executeStep();
+        this.accounts.sequence++;
+
+        let id = this.accounts.sequence;
+        let name = accountname;
+        if (appendID) name = name + " #" + id;
         
-        this.getAccounts(true); //force update of this._accountCache        
-        let statement2 = conn.createStatement("SELECT seq FROM sqlite_sequence where name = :accounts");
-        statement2.params.accounts = "accounts";
-        
-        let retval = null;
-        if (statement2.executeStep()) {
-            let accountID = statement2.row.seq;
-            if (appendID) this.setAccountSetting(accountID, "accountname", accountname + " #" + accountID);
-            retval = accountID;
-        }
-        
-        conn.close();
-        return retval;
+        let row = {
+            "account" : id.toString(),
+            "accountname": name, 
+            "policykey" : "", 
+            "foldersynckey" : "0",
+            "lastsynctime" : "0", 
+            "state" : "disconnected",
+            "status" : "notconnected",
+            "deviceId" : this.getNewDeviceId(),
+            "asversion" : "14.0",
+            "host" : "",
+            "user" : "",
+            "servertype" : "",
+            "seperator" : "10",
+            "https" : "0",
+            "provision" : "1",
+            "birthday" : "0",
+            "displayoverride" : "0", 
+            "downloadonly" : "0",
+            "autosync" : "0" };
+		
+        this.accounts.data[id]=row;            
+        this.saveAccounts();
+        return id;
     },
+    
+    removeAccount: function (account) {        
+        //check if account is known
+        if (this.accounts.data.hasOwnProperty(account) == false ) {
+            throw "Unknown account!" + "\nThrown by db.removeAccount("+account+ ")";
+        } else {
+            delete(this.accounts.data[account]);
+            this.saveAccounts();
 
-    removeAccount: function (account) {
-        // remove account from DB
-        let conn = this.dbService.openDatabase(this.dbFile);
-        let statement = conn.createStatement("DELETE FROM accounts WHERE account = :account");
-        statement.params.account = account;
-        statement.executeStep();
-        conn.close();
-
-        // remove Account from Cache
-        delete(this._accountCache[account]);
-
-        // also remove all folders of that account
-        this.deleteAllFolders(account);
-    },
-
-    setAccount: function (data) {
-        // if the requested account does not exist, getAccount() will fail
-        let settings = this.getAccount(data.account);
-        
-        let params = {};
-        let sql = "";
-        for (let p in data) {
-            // update account cache if allowed
-            if (settings.hasOwnProperty(p)) {
-                this._accountCache[data.account][p] = data[p].toString();
-                if (sql.length > 0) sql = sql + ", ";
-                sql = sql + p + " = :" + p; //build paramstring p = :p which will actually be set by statement.params
-                params[p] = data[p].toString();
-            }
-            else throw "Unknown account setting <" + p + ">!" + "\nThrown by db.setAccount("+data.account+")";
+            // also remove all folders of that account
+            this.deleteAllFolders(account);
         }
-
-        // update DB
-        let conn = this.dbService.openDatabase(this.dbFile);
-        let statement = conn.createStatement("UPDATE accounts SET " + sql + " WHERE account = :account"); //sql is a param-string
-        statement.params.account = data.account;
-        for (let p in params) statement.params[p] = params[p];
-        statement.executeStep();
-        conn.close();
     },
 
     setAccountSetting: function (account , name, value) {
@@ -367,19 +163,35 @@ var db = {
 
         //check if field is allowed
         if (settings.hasOwnProperty(name)) {
-            //update this._accountCache
-            this._accountCache[account][name] = value.toString();
-            //update DB
-            let conn = this.dbService.openDatabase(this.dbFile);
-            let statement = conn.createStatement("UPDATE accounts SET "+name+" = :value WHERE account = :account"); //name is NOT coming from userland
-            statement.params.value = value;
-            statement.params.account = account;
-            statement.executeStep();
-            conn.close();
+            this.accounts.data[account][name] = value.toString();
         } else {
             throw "Unknown account setting!" + "\nThrown by db.setAccountSetting("+account+", " + name + ", " + value + ")";
         }
+        this.saveAccounts();
     },
+
+    getAccounts: function () {
+        let accounts = {};
+        accounts.IDs = Object.keys(this.accounts.data).sort((a, b) => a - b);
+        accounts.data = this.accounts.data;
+        return accounts;
+    },
+
+    getAccount: function (account) {
+        //check if account is known
+        if (this.accounts.data.hasOwnProperty(account) == false ) {
+            throw "Unknown account!" + "\nThrown by db.getAccount("+account+ ")";
+        } else {
+            return this.accounts.data[account];
+        }
+    }, 
+    
+    getAccountSetting: function (account, name) {
+        let data = this.getAccount(account);        
+        //check if field is allowed
+        if (data.hasOwnProperty(name)) return data[name];
+        else throw "Unknown account setting!" + "\nThrown by db.getAccountSetting("+account+", " + name + ")";
+    }, 
 
 
 
@@ -387,196 +199,91 @@ var db = {
 
     // FOLDER FUNCTIONS
 
-    // Get a proxied version of the cached folder, which cannot be modified
-    getProxyFolder: function(account, folder) {
-        let handler = {
-            get (target, key) { return target[key]; },
-            set (target, key, value) { Components.utils.reportError("[TbSync] Trying to write to a readonly reference of the this._folderCache!"); throw "Aborting"; return false; }
-        };
-        return new Proxy(this._folderCache[account][folder], handler);
+    addFolder: function(data) {
+        let account = parseInt(data.account);
+        if (!this.folders.hasOwnProperty(account)) this.folders[account] = {};
+            
+        let folder = {
+            "account" : "",
+            "folderID" : "",
+            "name" : "",
+            "type" : "",
+            "synckey" : "",
+            "target" : "",
+            "selected" : "",
+            "lastsynctime" : "",
+            "status" : ""};
+
+        //copy all valid fields from data to folder
+        for (let property in data) {
+            if (folder.hasOwnProperty(property)) {
+                folder[property] = data[property];
+            }
+        }
+            
+        this.folders[account][data.folderID] = folder;
+        this.saveFolders();
     },
 
-    // Get all folders of a given account.
-    // This function returns either a proxied read-only-reference to the folder cache, or a deep copy. Reference is default.
-    getFolders: function (account, copy = false) {
-        //query this._folderCache
-        if (this._folderCache.hasOwnProperty(account) == false) {
+    deleteAllFolders: function(account) {
+        delete (this.folders[account]);
+        this.saveFolders();
+    },
 
-            let folders = {};
-            let conn = this.dbService.openDatabase(this.dbFile);
-            let statement = conn.createStatement("SELECT * FROM folders WHERE account = :account");
-            statement.params.account = account;
-
-            let entries = 0;
-            while (statement.executeStep()) {
-                let data = {};
-                for (let x=0; x<this.folderColumns.length; x++) data[this.folderColumns[x]] = statement.row[this.folderColumns[x]];
-                folders[statement.row.folderID] = data;
-                entries++;
-            }
-            conn.close();
-
-            //update this._folderCache (array of array!)
-            this._folderCache[account] = folders;
-        }
-
-        //return proxy-read-only reference or a deep copy
-        if (copy) {
-            let copiedFolders = {};
-            for (let f in this._folderCache[account]) {
-                copiedFolders[f] = {};
-                for (let s in this._folderCache[account][f]) copiedFolders[f][s] = this._folderCache[account][f][s];
-            }
-            return copiedFolders;
-        } else {
-            let proxyFolders = {};
-            for (let f in this._folderCache[account]) proxyFolders[f] = this.getProxyFolder(account, f);
-            return proxyFolders;
-        }
+    deleteFolder: function(account, folderID) {
+        delete (this.folders[account][folderID]);
+        this.saveFolders();
     },
     
-    getFolder: function(account, folderID, copy = false) {
+    //get all folders of a given account.
+    getFolders: function (account) {
+        if (!this.folders.hasOwnProperty(account)) this.folders[account] = {};
+        return this.folders[account];
+    },
+    
+    //get a specific folder
+    getFolder: function(account, folderID) {
         let folders = this.getFolders(account);
-        
         //does the folder exist?
-        if (folders.hasOwnProperty(folderID)) {
-            if (copy) {
-                let copiedFolder = {};        
-                for (let s in folders[folderID]) copiedFolder[s] = folders[folderID][s];
-                return copiedFolder;
-            } else {
-                return folders[folderID];
-            }
-        }
+        if (folders.hasOwnProperty(folderID)) return folders[folderID];
         else return null;
     },
 
     getFolderSetting: function(account, folderID, field) {
         let folder = this.getFolder(account, folderID);
-
         //does the field exist?
-        if (folder.hasOwnProperty(field)) return folder[field];
-        else throw "Unknown folder field!" + "\nThrown by db.getFolderSetting("+account+", " + folderID + ", " + field + ")";
+        if (folder === null || !folder.hasOwnProperty(field)) throw "Unknown folder field!" + "\nThrown by db.getFolderSetting("+account+", " + folderID + ", " + field + ")";
+        else return folder[field];
     },
 
-    //use sql to find the desired data, not the cache
     findFoldersWithSetting: function (name, value, account = null) {
         let data = [];
-        let conn = this.dbService.openDatabase(this.dbFile);
-        let statement = null;
-        if (account === null) {
-            statement = conn.createStatement("SELECT * FROM folders WHERE "+name+" = :value"); //name is NOT coming from userland!
-        } else {
-            statement = conn.createStatement("SELECT * FROM folders WHERE account = :account AND "+name+" = :value"); //name is NOT coming from userland!
-            statement.params.account = account;
-        }
-        statement.params.value = value;
-        
-        while (statement.executeStep()) {            
-            let folder = {};
-            for (let x=0; x<this.folderColumns.length; x++) folder[this.folderColumns[x]] = statement.row[this.folderColumns[x]];
-            data.push(folder);
-        }
-        conn.close();
-        
-        return data;
-    },
-
-    setFolder: function(data) {
-        //update this._folderCache from DB, if not yet done so or a reload has been requested
-        let folder = this.getFolder(data.account, data.folderID); 
-        let sql = "";
-        let params = {};
-        for (let p in data) {
-            //update folder cache if allowed
-            if (folder.hasOwnProperty(p)) {
-                this._folderCache[data.account][data.folderID][p] = data[p].toString();
-                if (sql.length > 0) sql = sql + ", ";
-                sql = sql + p + " = :" +p; //build param string, which will be replaced by statement.params
-                params[p] = data[p].toString();
+        for (let aID in this.folders) {
+            for (let fID in this.folders[aID]) {
+                if ((account === null || account == aID) && this.folders[aID][fID].hasOwnProperty(name) && this.folders[aID][fID][name] == value) data.push(this.folders[aID][fID]);                
             }
-            else throw "Unknown folder setting <" + p + ">!" + "\nThrown by db.setFolder("+data.account+")";
         }
-        let conn = this.dbService.openDatabase(this.dbFile);
-        let statement = conn.createStatement("UPDATE folders SET " + sql + " WHERE account = :account AND folderID = :folderID");
-        statement.params.account = data.account;
-        statement.params.folderID = data.folderID;
-        for (let p in params) statement.params[p] = params[p];
-        statement.executeStep();                
-        conn.close();
+        
+        //still by reference???
+        return data;
     },
 
     setFolderSetting: function(account, folderID, field, value) {
         //this function can update ALL folders for a given account (if folderID == "") or just a specific folder
         //folders will contain all folders, which need to be updated;
-        let folders = {};
-        if (folderID == "") folders = this.getFolders(account);
-        else folders[folderID] = this.getFolder(account, folderID);
+        let folders = this.getFolders(account);
 
-        //update cache of all requested folders
-        for (let fID in folders) {
-            if (folders[fID].hasOwnProperty(field)) this._folderCache[account][fID][field] = value.toString();
+        if (folderID == "") {
+            for (let fID in folders) {
+                if (folders[fID].hasOwnProperty(field)) folders[fID][field] = value.toString();
+                else throw "Unknown folder field!" + "\nThrown by db.setFolderSetting("+account+", " + folderID + ", " + field + ", " + value + ")";
+            }
+        } else {
+            if (folders[folderID].hasOwnProperty(field)) folders[folderID][field] = value.toString();
             else throw "Unknown folder field!" + "\nThrown by db.setFolderSetting("+account+", " + folderID + ", " + field + ", " + value + ")";
         }
 
-        //DB update - if folderID is given, set value only for that folder, otherwise for all folders - field is checked for allowed values prior to usage in SQL statement
-        let conn = this.dbService.openDatabase(this.dbFile);
-        let statement = null;
-        if (folderID != "") {
-            statement = conn.createStatement("UPDATE folders SET "+field+" = :value WHERE account = :account AND folderID = :folderID");
-            statement.params.folderID = folderID;
-        } else {
-            statement = conn.createStatement("UPDATE folders SET "+field+" = :value WHERE account = :account");
-        }
-        statement.params.account = account;
-        statement.params.value = value;
-        statement.executeStep();
-        conn.close();
-    },
-
-    addFolder: function(data) {
-        let fields = "";
-        let values ="";
-        let addedData = {};
-            
-        for (let x=0; x<this.folderColumns.length; x++) {
-            if (x>0) {fields = fields + ", "; values = values + ", "; }
-            fields = fields + this.folderColumns[x];
-            values = values + ":" + this.folderColumns[x];
-            //only add to the cache, what has been added to the DB
-            addedData[this.folderColumns[x]] = data[this.folderColumns[x]];
-        }
-
-        //update this._folderCache
-        if (!this._folderCache.hasOwnProperty(data.account)) this._folderCache[data.account] = {};
-        this._folderCache[data.account][data.folderID] = addedData;
-
-        let conn = this.dbService.openDatabase(this.dbFile);
-        let statement = conn.createStatement("INSERT INTO folders (" + fields + ") VALUES ("+values+");");
-        for (let x=0; x<this.folderColumns.length; x++) statement.params[this.folderColumns[x]] = data[this.folderColumns[x]];
-        statement.executeStep();
-        conn.close();
-    },
-
-    deleteAllFolders: function(account) {
-        let conn = this.dbService.openDatabase(this.dbFile);
-        let statement = conn.createStatement("DELETE FROM folders WHERE account = :account");
-        statement.params.account = account;
-        statement.executeStep();
-        conn.close();
-        delete (this._folderCache[account]);
-    },
-
-    deleteFolder: function(account, folderID) {
-        let conn = this.dbService.openDatabase(this.dbFile);
-        let statement = conn.createStatement("DELETE FROM folders WHERE account = :account AND folderID = :folderID");
-        statement.params.account = account;
-        statement.params.folderID = folderID;
-        statement.executeStep();
-        conn.close();
-        delete (this._folderCache[account][folderID]);
+        this.saveFolders();
     }
 
 };
-
-db.init();
