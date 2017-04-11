@@ -293,8 +293,24 @@ var tbSync = {
             if (aItem instanceof Components.interfaces.nsIAbCard) {
                 let aParentDirURI = tbSync.getUriFromPrefId(aItem.directoryId.split("&")[0]);
                 if (aParentDirURI) { //could be undefined
+
                     let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
-                    if (folders.length > 0) tbSync.setTargetModified(folders[0]);
+                    if (folders.length > 0) {
+                        let cardId = aItem.getProperty("ServerId", "");
+                        //Cards without ServerId have not yet been synced to the server, therefore this is a hidden modification.
+                        //Next time we sync, this entire card will be added, regardless if it was modified or not
+                        if (cardId) {
+                            //Problem: A card modified by server should not trigger a changelog entry, so they are pretagged with modified_by_server
+                            let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
+                            if (itemStatus == "modified_by_server") {
+                                tbSync.db.removeItemFromChangeLog(aParentDirURI, cardId);
+                            } else {
+                                tbSync.setTargetModified(folders[0]);
+                                tbSync.db.addItemToChangeLog(aParentDirURI, cardId, "modified_by_user");
+                            }
+                        }
+                    }
+                    
                 }
             }
         },
@@ -312,8 +328,16 @@ var tbSync = {
                 let folders = tbSync.db.findFoldersWithSetting("target", aParentDir.URI);
                 if (folders.length > 0) {
                     let cardId = aItem.getProperty("ServerId", "");
-                    if (cardId) tbSync.db.addItemToChangeLog(aParentDir.URI, cardId, "delete");
-                    tbSync.setTargetModified(folders[0]);
+                    if (cardId) {
+                        //Problem: A card deleted by server should not trigger a changelog entry, so they are pretagged with deleted_by_server
+                        let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
+                        if (itemStatus == "deleted_by_server") {
+                            tbSync.db.removeItemFromChangeLog(aParentDir.URI, cardId);
+                        } else {
+                            tbSync.db.addItemToChangeLog(aParentDir.URI, cardId, "deleted_by_user");
+                            tbSync.setTargetModified(folders[0]);
+                        }
+                    }
                 }
             }
 
@@ -362,7 +386,7 @@ var tbSync = {
                     aItem.setProperty("ServerId", "");
                     aParentDir.modifyCard(aItem);
                 }
-                //also update target status
+                //also update target status - no need to update changelog, because every added card is without serverid
                 let folders = tbSync.db.findFoldersWithSetting("target", aParentDir.URI);
                 if (folders.length > 0) tbSync.setTargetModified(folders[0]);
             }
@@ -404,9 +428,12 @@ var tbSync = {
         
         //Remove the ServerID from the card, add the card without serverId and modify the added card later on - otherwise the ServerId will be removed by the onAddItem-listener
         let curID = card.getProperty("ServerId", "");
-        card.setProperty("ServerId", "");
+        //preload the changelog with modified_by_server
+        tbSync.db.addItemToChangeLog(addressBook.URI, curID, "modified_by_server");
         
+        card.setProperty("ServerId", "");
         let addedCard = addressBook.addCard(card);
+        
         addedCard.setProperty("ServerId", curID);
         addressBook.modifyCard(addedCard);
     },

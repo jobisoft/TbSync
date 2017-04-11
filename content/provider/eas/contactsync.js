@@ -340,12 +340,11 @@ var contactsync = {
 
                                     cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
                                     cardsToDelete.appendElement(card, "");
-
+                                    tbSync.db.addItemToChangeLog(addressBook.URI, data, "deleted_by_server");
                                     try {
                                         addressBook.deleteCards(cardsToDelete);
                                     } catch (e) {}
                                     card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-                                    tbSync.db.removeItemFromChangeLog(addressBook.URI, data);
                                 } else {
                                     card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
                                 }
@@ -587,6 +586,7 @@ var contactsync = {
         let time2 = (Date.now() / 1000) - 1;
 
         // this while loops over all cards but only works on old cards already having a serverid
+
         while (cards.hasMoreElements()) {
 
             if (numofcards === maxnumbertosend) {
@@ -821,7 +821,7 @@ var contactsync = {
         let addressbook = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
         
         // cardstodelete will not contain more cards than max
-        let cardstodelete = tbSync.db.getItemsFromChangeLog(addressbook, tbSync.prefSettings.getIntPref("maxnumbertosend"), "delete");
+        let cardstodelete = tbSync.db.getItemsFromChangeLog(addressbook, tbSync.prefSettings.getIntPref("maxnumbertosend"), "deleted_by_user");
         let wbxmlinner = "";
         for (let i = 0; i < cardstodelete.length; i++) {
             wbxmlinner = wbxmlinner + String.fromCharCode(0x49, 0x4D, 0x03) + cardstodelete[i].id + String.fromCharCode(0x00, 0x01, 0x01);
