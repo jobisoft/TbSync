@@ -1,6 +1,5 @@
 "use strict";
 
-tbSync.includeJS("chrome://tbsync/content/provider/eas/db.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/wbxmltools.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/xmltools.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/contactsync.js");
@@ -60,7 +59,56 @@ var eas = {
         //test
         //tbSync.db.addItemToChangeLog("WriteRequest", "JustBefore", "ClosingThunderbird");
         //tbSync.db.saveChangelog();
-    }
+    },
+    
+    getNewDeviceId: function () {
+        //taken from https://jsfiddle.net/briguy37/2MVFd/
+        let d = new Date().getTime();
+        let uuid = 'xxxxxxxxxxxxxxxxyxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            let r = (d + Math.random()*16)%16 | 0;
+            d = Math.floor(d/16);
+            return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+        });
+        return "mztb" + uuid;
+    },
+    
+    getNewAccountEntry: function (id, name) {
+        let row = {
+            "account" : id.toString(),
+            "accountname": name, 
+            "policykey" : "", 
+            "foldersynckey" : "0",
+            "lastsynctime" : "0", 
+            "state" : "disconnected",
+            "status" : "notconnected",
+            "deviceId" : this.getNewDeviceId(),
+            "asversion" : "14.0",
+            "host" : "",
+            "user" : "",
+            "servertype" : "",
+            "seperator" : "10",
+            "https" : "0",
+            "provision" : "1",
+            "birthday" : "0",
+            "displayoverride" : "0", 
+            "downloadonly" : "0",
+            "autosync" : "0" };
+        return row;
+    },
+    
+    getNewFolderEntry: function () {
+        let folder = {
+            "account" : "",
+            "folderID" : "",
+            "name" : "",
+            "type" : "",
+            "synckey" : "",
+            "target" : "",
+            "selected" : "",
+            "lastsynctime" : "",
+            "status" : ""};
+        return folder;
+    },
 
 };
 
@@ -312,7 +360,7 @@ var sync = {
                     newData.selected = (newData.type == "9" || newData.type == "8" ) ? "1" : "0";
                     newData.status = "";
                     newData.lastsynctime = "";
-                    tbSync.db.addFolder(newData);
+                    tbSync.db.addFolder("eas", newData); //this IS eas, so no need to querry which provider this is, hardcoded is fine
                 } else {
                     //TODO? - cannot add an existing folder - resync!
                 }

@@ -26,7 +26,8 @@ var tbSyncAccountManager = {
     addAccount: function () {
         //create a new account and pass its id to updateAccountsList, which wil select it
         //the onSelect event of the List will load the selected account
-        this.updateAccountsList(tbSync.db.addAccount(tbSync.getLocalizedMessage("new_account"), true));
+        //EAS is HARDCODED for now, will me made dynamic, as soon we actually allow different providers
+        this.updateAccountsList(tbSync.db.addAccount("eas", tbSync.getLocalizedMessage("new_account"), true));
     },
 
 

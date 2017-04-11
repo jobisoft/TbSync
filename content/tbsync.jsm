@@ -24,6 +24,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
  - check "resync account folder" - maybe rework it
  - drop syncdata and use currentProcess only ???
  - fix blanks bug also for contacts group (not only for contacts2)
+- db will get moved out of eas, some functions will get a provider parameter, to load provider specifics
 */
 
 var tbSync = {
@@ -733,8 +734,10 @@ var tbSync = {
 
 };
 
+// load common subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
+tbSync.includeJS("chrome://tbsync/content/db.js");
 
-// load all subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
+// load provider subscripts into tbSync 
 for (let i=0;i<tbSync.syncProviderList.length;i++) {
     tbSync.dump("PROVIDER", tbSync.syncProviderList[i] + "::" + tbSync.syncProvider.getCharPref(tbSync.syncProviderList[i]));
     tbSync.includeJS("chrome://tbsync/content/provider/"+tbSync.syncProviderList[i]+"/" + tbSync.syncProviderList[i] +".js");

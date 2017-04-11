@@ -2,13 +2,13 @@
 
 var db = {
 
-    changelogFile : "eas_changelog_0_7.json",
+    changelogFile : "changelog_0_7.json",
     changelog: [], 
 
-    accountsFile : "eas_accounts_0_7.json",
+    accountsFile : "accounts_0_7.json",
     accounts: { sequence: 0, data : {} }, //data[account] = {row}
 
-    foldersFile : "eas_folders_0_7.json",
+    foldersFile : "folders_0_7.json",
     folders: {}, //assoziative array of assoziative array : folders[<int>accountID][<string>folderID] = {row} 
 
     accountsTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
@@ -97,50 +97,18 @@ var db = {
 
     // ACCOUNT FUNCTIONS
 
-    getNewDeviceId: function () {
-        //taken from https://jsfiddle.net/briguy37/2MVFd/
-        let d = new Date().getTime();
-        let uuid = 'xxxxxxxxxxxxxxxxyxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            let r = (d + Math.random()*16)%16 | 0;
-            d = Math.floor(d/16);
-            return (c=='x' ? r : (r&0x3|0x8)).toString(16);
-        });
-        return "mztb" + uuid;
-    },
-
     getAccountStorageFields: function (account) {
         return Object.keys(this.accounts.data[account]).sort();
     },
 
-    addAccount: function (accountname, appendID = false) {
+    addAccount: function (provider, accountname, appendID = false) {
         this.accounts.sequence++;
 
         let id = this.accounts.sequence;
         let name = accountname;
         if (appendID) name = name + " #" + id;
 
-        let row = {
-            "account" : id.toString(),
-            "accountname": name, 
-            "policykey" : "", 
-            "foldersynckey" : "0",
-            "lastsynctime" : "0", 
-            "state" : "disconnected",
-            "status" : "notconnected",
-            "deviceId" : this.getNewDeviceId(),
-            "asversion" : "14.0",
-            "host" : "",
-            "user" : "",
-            "servertype" : "",
-            "seperator" : "10",
-            "https" : "0",
-            "provision" : "1",
-            "birthday" : "0",
-            "displayoverride" : "0", 
-            "downloadonly" : "0",
-            "autosync" : "0" };
-
-        this.accounts.data[id]=row;
+        this.accounts.data[id]=tbSync[provider].getNewAccountEntry(id, name);
         this.saveAccounts();
         return id;
     },
@@ -200,20 +168,11 @@ var db = {
 
     // FOLDER FUNCTIONS
 
-    addFolder: function(data) {
+    addFolder: function(provider, data) {
         let account = parseInt(data.account);
         if (!this.folders.hasOwnProperty(account)) this.folders[account] = {};
             
-        let folder = {
-            "account" : "",
-            "folderID" : "",
-            "name" : "",
-            "type" : "",
-            "synckey" : "",
-            "target" : "",
-            "selected" : "",
-            "lastsynctime" : "",
-            "status" : ""};
+        let folder = tbSync[provider].getNewFolderEntry();
 
         //copy all valid fields from data to folder
         for (let property in data) {
