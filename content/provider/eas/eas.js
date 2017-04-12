@@ -81,7 +81,8 @@ var eas = {
     getNewAccountEntry: function (id, name) {
         let row = {
             "account" : id.toString(),
-            "accountname": name, 
+            "accountname": name,
+            "provider": "eas",
             "policykey" : "", 
             "foldersynckey" : "0",
             "lastsynctime" : "0", 

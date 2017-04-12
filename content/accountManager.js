@@ -43,7 +43,7 @@ var tbSyncAccountManager = {
             
             if (confirm(tbSync.getLocalizedMessage("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.label))) {
                 //disconnect (removes ab, triggers changelog cleanup) 
-                tbSync.eas.disconnectAccount(accountsList.selectedItem.value);
+                tbSync[tbSync.db.getAccountSetting(accountsList.selectedItem.value, "provider")].disconnectAccount(accountsList.selectedItem.value);
                 //delete account from db
                 tbSync.db.removeAccount(accountsList.selectedItem.value);
 
@@ -197,7 +197,7 @@ var tbSyncAccountManager = {
             //get id of selected account from value of selectedItem
             this.selectedAccount = accountsList.selectedItem.value;
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-            document.getElementById("tbSyncAccountManager.contentFrame").webNavigation.loadURI("chrome://tbsync/content/provider/eas/accountSettings.xul?id=" + this.selectedAccount, LOAD_FLAGS_NONE, null, null, null);
+            document.getElementById("tbSyncAccountManager.contentFrame").webNavigation.loadURI("chrome://tbsync/content/provider/"+tbSync.db.getAccountSetting(this.selectedAccount, "provider")+"/accountSettings.xul?id=" + this.selectedAccount, LOAD_FLAGS_NONE, null, null, null);
         }
     },
 

@@ -108,7 +108,7 @@ var tbSync = {
         switch (job) {
             case "sync":
             case "resync":
-                tbSync["eas"].initSync(job, account); //EAS hardcoded, will by made dynamic as soon as different providers are usable
+                tbSync[tbSync.db.getAccountSetting(account, "provider")].initSync(job, account);
                 break;
             default:
                 tbSync.dump("workSyncQueue()", "Unknow job for sync queue ("+ job + ")");
