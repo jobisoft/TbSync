@@ -110,57 +110,30 @@ var eas = {
         return folder;
     },
 
+    removeTarget: function(target, type) {
+        switch (type) {
+            case "8":
+            case "13":
+                tbSync.removeCalendar(target);
+                break;
+            case "9":
+            case "14":
+                tbSync.removeBook(target);
+                break;
+            default:
+                tbSync.dump("tbSync.eas.removeTarget","Unknown type <"+type+">");
+        }
+    },
+    
 };
 
 var sync = {
-
-    // SYNC QUEUE MANAGEMENT
-    
-    syncQueue : [],
-    currentProzess : {},
-
-    addAccountToSyncQueue: function (job, account = "") {
-        if (account == "") {
-            //Add all connected accounts to the queue - at this point we do not know anything about folders, they are handled by the sync process
-            let accounts = tbSync.db.getAccounts().IDs;
-            for (let i=0; i<accounts.length; i++) {
-                sync.syncQueue.push( job + "." + accounts[i] );
-            }
-        } else {
-            //Add specified account to the queue
-            sync.syncQueue.push( job + "." + account );
-        }
-
-        //after jobs have been aded to the queue, try to start working on the queue
-        if (sync.currentProzess.state == "idle") sync.workSyncQueue();
-    },
-    
-    workSyncQueue: function () {
-        //workSyncQueue assumes, that it is allowed to start a new sync job
-        //if no more jobs in queue, do nothing
-        if (sync.syncQueue.length == 0) return;
-
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-
-        let syncrequest = sync.syncQueue.shift().split(".");
-        let job = syncrequest[0];
-        let account = syncrequest[1];
-
-        switch (job) {
-            case "sync":
-            case "resync":
-                sync.init(job, account);
-                break;
-            default:
-                tbSync.dump("workSyncQueue()", "Unknow job for sync queue ("+ job + ")");
-        }
-    },
 
     resetSync: function () {
         //set state to idle
         sync.setSyncState("idle"); 
         //flush the queue
-        sync.syncQueue = [];
+        tbSync.syncQueue = [];
         //get all accounts
         let accounts = db.getAccounts();
 
@@ -244,7 +217,7 @@ var sync = {
         //Delete all targets
         let folders = db.findFoldersWithSetting("selected", "1", account);
         for (let i = 0; i<folders.length; i++) {
-            tbSync.removeTarget(folders[i].target, folders[i].type);
+            tbSync.eas.removeTarget(folders[i].target, folders[i].type);
         }
         db.deleteAllFolders(account);
 
@@ -519,20 +492,20 @@ var sync = {
         sync.setSyncState("accountdone", syncdata); 
                 
         //work on the queue
-        if (sync.syncQueue.length > 0) sync.workSyncQueue();
+        if (tbSync.syncQueue.length > 0) tbSync.workSyncQueue();
         else sync.setSyncState("idle"); 
     },
 
 
     setSyncState: function(state, syncdata = null) {
         //set new state
-        sync.currentProzess.state = state;
+        tbSync.currentProzess.state = state;
         if (syncdata !== null) {
-            sync.currentProzess.account = syncdata.account;
-            sync.currentProzess.folderID = syncdata.folderID;
+            tbSync.currentProzess.account = syncdata.account;
+            tbSync.currentProzess.folderID = syncdata.folderID;
         } else {
-            sync.currentProzess.account = "";
-            sync.currentProzess.folderID = "";
+            tbSync.currentProzess.account = "";
+            tbSync.currentProzess.folderID = "";
         }
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
@@ -563,7 +536,7 @@ var sync = {
     Send: function (wbxml, callback, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
         
-        if (tbSync.prefSettings.getBoolPref("debugwbxml")) tbSync.debuglog(wbxml, "["+sync.currentProzess.state+"] sending:");
+        if (tbSync.prefSettings.getBoolPref("debugwbxml")) tbSync.debuglog(wbxml, "["+tbSync.currentProzess.state+"] sending:");
 
         let connection = tbSync.getConnection(syncdata.account);
         let password = tbSync.getPassword(connection);

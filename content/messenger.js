@@ -33,7 +33,7 @@ var tbSyncMessenger = {
             let newpassword = aData.substring(dot+1);
             tbSync.setPassword(account, newpassword);
             tbSync.db.setAccountSetting(account, "state", "connecting");
-            tbSync.sync.addAccountToSyncQueue("resync", account);
+            tbSync.addAccountToSyncQueue("resync", account);
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
             observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
         }
@@ -50,7 +50,7 @@ var tbSyncMessenger = {
             let status = document.getElementById("tbsync.status");
             if (status && aData == "") { //only observe true notifications from setSyncState()
                 
-                let data = tbSync.sync.currentProzess;
+                let data = tbSync.currentProzess;
                 let target = "";
                 let accounts = tbSync.db.getAccounts().data;
 
@@ -91,7 +91,7 @@ var tbSyncMessenger = {
                         let lastsynctime = accounts.data[accounts.IDs[i]].lastsynctime;
                         
                         if (accounts.data[accounts.IDs[i]].state == "connected" && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval) ) {
-                        tbSync.sync.addAccountToSyncQueue("sync",accounts.IDs[i]);
+                        tbSync.addAccountToSyncQueue("sync",accounts.IDs[i]);
                         }
                     }
                 }

@@ -59,10 +59,10 @@ var tbSyncAccountManager = {
     updateAccountSyncStateObserver: {
         observe: function (aSubject, aTopic, aData) {
             //limit execution to a couple of states, not all
-            let state = tbSync.sync.currentProzess.state;
+            let state = tbSync.currentProzess.state;
             
             //react on true syncstate changes send by setSyncState()
-            if (aData == "" && (state == "syncing" || state == "accountdone")) tbSyncAccountManager.updateAccountStatus(tbSync.sync.currentProzess.account );
+            if (aData == "" && (state == "syncing" || state == "accountdone")) tbSyncAccountManager.updateAccountStatus(tbSync.currentProzess.account );
 
             //react on any manual notification
             if (aData != "") tbSyncAccountManager.updateAccountStatus(aData);

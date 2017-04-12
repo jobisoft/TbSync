@@ -35,7 +35,7 @@ var tbSyncAccountSettings = {
 
     // manage sync via queue
     requestSync: function (job, account, btnDisabled = false) {
-        if (btnDisabled == false && tbSync.sync.currentProzess.account != account) tbSync.sync.addAccountToSyncQueue(job, account);
+        if (btnDisabled == false && tbSync.currentProzess.account != account) tbSync.addAccountToSyncQueue(job, account);
 
     },
 
@@ -253,7 +253,7 @@ var tbSyncAccountSettings = {
 
 
     updateSyncstate: function () {
-        let data = tbSync.sync.currentProzess;
+        let data = tbSync.currentProzess;
         
         // if this account is beeing synced, display syncstate, otherwise print status
         let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "status");
@@ -302,7 +302,7 @@ var tbSyncAccountSettings = {
                     tbSync.db.saveFolders();
                     tbSync.db.clearChangeLog(target);
 
-                    if (target != "") tbSync.removeTarget(target, type); //we must remove the target AFTER cleaning up the DB, otherwise the addressbookListener in tbSync.jsm will interfere
+                    if (target != "") tbSync.eas.removeTarget(target, type); //we must remove the target AFTER cleaning up the DB, otherwise the addressbookListener in tbSync.jsm will interfere
                 }
             } else {
                 //select and update status
@@ -391,7 +391,7 @@ var tbSyncAccountSettings = {
                             if (type == "9" || type == "14") status = tbSync.getLocalizedMessage("status." + status) + " ["+ tbSync.getAddressBookName(folders[folderIDs[i]].target) + "]";
                             break;
                         case "pending":
-                            if (folderIDs[i] == tbSync.sync.currentProzess.folderID) status = "syncing"; 
+                            if (folderIDs[i] == tbSync.currentProzess.folderID) status = "syncing"; 
                         default:
                             status = tbSync.getLocalizedMessage("status." + status);
                     }
@@ -476,7 +476,7 @@ var tbSyncAccountSettings = {
     */
     toggleConnectionState: function () {
         //ignore cancel request, if button is disabled or a sync is ongoing
-        if (document.getElementById('tbsync.accountsettings.connectbtn').disabled || (tbSync.sync.currentProzess.account == tbSyncAccountSettings.selectedAccount)) return;
+        if (document.getElementById('tbsync.accountsettings.connectbtn').disabled || (tbSync.currentProzess.account == tbSyncAccountSettings.selectedAccount)) return;
 
         let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
         if (state == "connected") {
@@ -504,15 +504,15 @@ var tbSyncAccountSettings = {
     syncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
             //the notification could be send by setSyncState (aData = "") or by tzMessenger (aData = account)
-            let account = (aData == "") ? tbSync.sync.currentProzess.account : aData;
+            let account = (aData == "") ? tbSync.currentProzess.account : aData;
 
             //only handle syncstate changes of the active account
             if (account == tbSyncAccountSettings.selectedAccount) {
                 
-                if (aData == "" && tbSync.sync.currentProzess.state == "accountdone") {
+                if (aData == "" && tbSync.currentProzess.state == "accountdone") {
 
                         //this syncstate change notification was send by setSyncState
-                        let status = tbSync.db.getAccountSetting(tbSync.sync.currentProzess.account, "status");
+                        let status = tbSync.db.getAccountSetting(tbSync.currentProzess.account, "status");
                         switch (status) {
                             case "401":
                                 window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.getLocalizedMessage("account").replace("##accountname##", tbSync.db.getAccountSetting(account, "accountname")), account);

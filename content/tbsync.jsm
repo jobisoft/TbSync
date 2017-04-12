@@ -24,7 +24,6 @@ Components.utils.import("resource://gre/modules/Task.jsm");
  - check "resync account folder" - maybe rework it
  - drop syncdata and use currentProcess only ???
  - fix blanks bug also for contacts group (not only for contacts2)
-- db will get moved out of eas, some functions will get a provider parameter, to load provider specifics
 */
 
 var tbSync = {
@@ -61,13 +60,63 @@ var tbSync = {
                 cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver)
             }
 
-            //init stuff for sync process
+            //init stuff for sync process - EAS specific???
             tbSync.sync.resetSync();
             
             //enable
             tbSync.enabled = true;
         }
     },
+
+
+
+
+
+    // SYNC QUEUE MANAGEMENT
+
+    syncQueue : [],
+    currentProzess : {},
+
+    addAccountToSyncQueue: function (job, account = "") {
+        if (account == "") {
+            //Add all connected accounts to the queue
+            let accounts = tbSync.db.getAccounts().IDs;
+            for (let i=0; i<accounts.length; i++) {
+                let newentry = job + "." + accounts[i];
+                //do not add same job more than once
+                if (tbSync.syncQueue.filter(item => item == newentry).length == 0) tbSync.syncQueue.push( newentry );
+            }
+        } else {
+            //Add specified account to the queue
+            tbSync.syncQueue.push( job + "." + account );
+        }
+
+        //after jobs have been aded to the queue, try to start working on the queue
+        if (tbSync.currentProzess.state == "idle") tbSync.workSyncQueue();
+    },
+    
+    workSyncQueue: function () {
+        //workSyncQueue assumes, that it is allowed to start a new sync job
+        //if no more jobs in queue, do nothing
+        if (tbSync.syncQueue.length == 0) return;
+
+        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+
+        let syncrequest = tbSync.syncQueue.shift().split(".");
+        let job = syncrequest[0];
+        let account = syncrequest[1];
+
+        switch (job) {
+            case "sync":
+            case "resync":
+                tbSync.sync.init(job, account); //EAS specific !!!
+                break;
+            default:
+                tbSync.dump("workSyncQueue()", "Unknow job for sync queue ("+ job + ")");
+        }
+    },
+
+
 
 
 
@@ -161,12 +210,6 @@ var tbSync = {
         tbSync.appendToFile("wbxml-debug.log", xml);
     },
 
-    
-
-
-
-    // FILESYSTEM FUNCTION
-
     appendToFile: function (filename, data) {
         let file = FileUtils.getFile("ProfD", ["TbSync",filename]);
         //create a strem to write to that file
@@ -175,31 +218,6 @@ var tbSync = {
         foStream.write(data, data.length);
         foStream.close();
     },
-
-
-    addphoto: function (card, data) {
-        let photo = card.getProperty("ServerId", "") + '.jpg';
-        let file = FileUtils.getFile("ProfD", ["TbSync","Photos", photo] );
-
-        let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
-        foStream.init(file, 0x02 | 0x08 | 0x20, 0x180, 0); // write, create, truncate
-        let binary = atob(data);
-        foStream.write(binary, binary.length);
-        foStream.close();
-
-        let filePath = 'file:///' + file.path.replace(/\\/g, '\/').replace(/^\s*\/?/, '').replace(/\ /g, '%20');
-        card.setProperty("PhotoName", photo);
-        card.setProperty("PhotoType", "file");
-        card.setProperty("PhotoURI", filePath);
-
-        return filePath;
-    },
-
-
-
-
-
-    // GENERAL STUFF
 
     getConnection: function(account) {
         let connection = {
@@ -259,21 +277,6 @@ var tbSync = {
             //notify settings gui to update status
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
             observerService.notifyObservers(null, "tbsync.changedSyncstate", folder.account);
-        }
-    },
-
-    removeTarget: function(target, type) {
-        switch (type) {
-            case "8":
-            case "13":
-                tbSync.removeCalendar(target);
-                break;
-            case "9":
-            case "14":
-                tbSync.removeBook(target);
-                break;
-            default:
-                tbSync.dump("tbSync::removeTarget","Unknown type <"+type+">");
         }
     },
 
@@ -518,6 +521,23 @@ var tbSync = {
         return false;
     },
 
+    addphoto: function (card, data) {
+        let photo = card.getProperty("ServerId", "") + '.jpg';
+        let file = FileUtils.getFile("ProfD", ["TbSync","Photos", photo] );
+
+        let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
+        foStream.init(file, 0x02 | 0x08 | 0x20, 0x180, 0); // write, create, truncate
+        let binary = atob(data);
+        foStream.write(binary, binary.length);
+        foStream.close();
+
+        let filePath = 'file:///' + file.path.replace(/\\/g, '\/').replace(/^\s*\/?/, '').replace(/\ /g, '%20');
+        card.setProperty("PhotoName", photo);
+        card.setProperty("PhotoType", "file");
+        card.setProperty("PhotoURI", filePath);
+
+        return filePath;
+    },
 
 
 
