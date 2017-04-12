@@ -132,7 +132,7 @@ var calendarsync = {
         xmltools.printXmlData(wbxmlData);
 
         //check status
-        if (sync.statusIsBad(wbxmlData.Sync.Collections.Collection.Status, syncdata)) {
+        if (eas.statusIsBad(wbxmlData.Sync.Collections.Collection.Status, syncdata)) {
             return "bad_status";
         }
 
@@ -142,7 +142,7 @@ var calendarsync = {
             db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
             return wbxmlData;
         } else {
-            sync.finishSync(syncdata, "nosynckey");
+            eas.finishSync(syncdata, "nosynckey");
             return "nokey";
         }
     },
@@ -489,13 +489,13 @@ var calendarsync = {
     start: function (syncdata) {
         // skip if lightning is not installed
         if ("calICalendar" in Components.interfaces == false) {
-            sync.finishSync(syncdata, "nolightning");
+            eas.finishSync(syncdata, "nolightning");
             return;
         }
 
         // check SyncTarget
         if (!tbSync.checkCalender(syncdata.account, syncdata.folderID)) {
-            sync.finishSync(syncdata, "notargets");
+            eas.finishSync(syncdata, "notargets");
             return;
         }
         
@@ -517,7 +517,7 @@ var calendarsync = {
 
     requestRemoteChanges: function (syncdata) {
 
-        sync.setSyncState("requestingchanges", syncdata);
+        tbSync.setSyncState("requestingchanges", syncdata);
 
         // request changes
         let wbxml = tbSync.wbxmltools.createWBXML();
@@ -534,7 +534,7 @@ var calendarsync = {
             wbxml.ctag();
         wbxml.ctag();
 
-        sync.Send(wbxml.getBytes(), this.processRemoteChanges.bind(this), "Sync", syncdata);
+        eas.Send(wbxml.getBytes(), this.processRemoteChanges.bind(this), "Sync", syncdata);
     },
 
 
@@ -547,7 +547,7 @@ var calendarsync = {
 
 
     processRemoteChanges: function (wbxml, syncdata) {
-        sync.setSyncState("recievingchanges", syncdata);
+        tbSync.setSyncState("recievingchanges", syncdata);
 
         // get data from wbxml response (this is processing status and also updates SyncKey)
         let wbxmlData = this.processResponseAndGetData(wbxml, syncdata);
@@ -626,7 +626,7 @@ var calendarsync = {
 
 
     sendLocalChanges: function (syncdata) {
-        sync.setSyncState("sendingchanges", syncdata);
+        tbSync.setSyncState("sendingchanges", syncdata);
 
         let c = 0;
         let maxnumbertosend = tbSync.prefSettings.getIntPref("maxnumbertosend");
@@ -685,9 +685,9 @@ var calendarsync = {
         wbxml.ctag(); //Sync
 
         if (c == 0) {
-            sync.finishSync(syncdata);
+            eas.finishSync(syncdata);
         } else {
-            sync.Send(wbxml.getBytes(), this.processLocalChangesResponse.bind(this), "Sync", syncdata); 
+            eas.Send(wbxml.getBytes(), this.processLocalChangesResponse.bind(this), "Sync", syncdata); 
         }
     },
 
@@ -701,12 +701,12 @@ var calendarsync = {
 
 
     processLocalChangesResponse: function (wbxml, syncdata) {
-        sync.setSyncState("serverid", syncdata);
+        tbSync.setSyncState("serverid", syncdata);
 
         // get data from wbxml response (this is processing status and also updates SyncKey)
         let wbxmlData = this.processResponseAndGetData(wbxml, syncdata);
         switch (wbxmlData) {
-                case "empty" : sync.finishSync(syncdata); return;
+                case "empty" : eas.finishSync(syncdata); return;
                 case "bad_status" : return;
                 case "nokey": return;
         }
@@ -719,7 +719,7 @@ var calendarsync = {
             for (let count = 0; count < add.length; count++) {
                 
                 //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                if (sync.statusIsBad(add[count].Status, syncdata)) return;
+                if (eas.statusIsBad(add[count].Status, syncdata)) return;
 
                 //look for an item identfied by ClientId and update its id to the new id received from the server
                 let oldItem = this.getItem(syncdata.targetObj, add[count].ClientId);
@@ -740,21 +740,21 @@ var calendarsync = {
             let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
             for (let count = 0; count < upd.length; count++) {
                 //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                if (sync.statusIsBad(upd[count].Status, syncdata)) return;
+                if (eas.statusIsBad(upd[count].Status, syncdata)) return;
             }
 
             //looking for deletions 
             let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Delete);
             for (let count = 0; count < del.length; count++) {
                 //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                if (sync.statusIsBad(del[count].Status, syncdata)) return;
+                if (eas.statusIsBad(del[count].Status, syncdata)) return;
             }
             
             //we might not be done yet (max number to send)
             this.sendLocalChanges(syncdata); 
             
         } else {
-            sync.finishSync(syncdata);
+            eas.finishSync(syncdata);
         }
     }
 

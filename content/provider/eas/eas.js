@@ -48,7 +48,9 @@ var eas = {
     },
     
     unload: function () {
-        // i thought that I might need to manually write pending/scheduled write jobs before closing, but it looks like I do not have to
+        //i thought that I might need to manually write pending/scheduled write jobs before closing, 
+        //but it looks like I do not have to
+
         //db.changelogTimer.cancel();
         //db.accountsTimer.cancel();
         //db.foldersTimer.cancel();
@@ -60,7 +62,11 @@ var eas = {
         //tbSync.db.addItemToChangeLog("WriteRequest", "JustBefore", "ClosingThunderbird");
         //tbSync.db.saveChangelog();
     },
-    
+
+
+
+
+
     getNewDeviceId: function () {
         //taken from https://jsfiddle.net/briguy37/2MVFd/
         let d = new Date().getTime();
@@ -124,32 +130,35 @@ var eas = {
                 tbSync.dump("tbSync.eas.removeTarget","Unknown type <"+type+">");
         }
     },
-    
-};
 
-var sync = {
-
-    resetSync: function () {
-        //set state to idle
-        sync.setSyncState("idle"); 
-        //flush the queue
-        tbSync.syncQueue = [];
-        //get all accounts
-        let accounts = db.getAccounts();
-
-        for (let i=0; i<accounts.IDs.length; i++) {
-            if (accounts.data[accounts.IDs[i]].status == "syncing") tbSync.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
-        }
-
-        // set each folder with PENDING status to ABORTED
-        let folders = tbSync.db.findFoldersWithSetting("status", "pending");
-        for (let i=0; i < folders.length; i++) {
-            tbSync.db.setFolderSetting(folders[i].account, folders[i].folderID, "status", "aborted");
-        }
-
+    connectAccount: function (account) {
+        db.setAccountSetting(account, "state", "connecting");
+        db.setAccountSetting(account, "policykey", "");
+        db.setAccountSetting(account, "foldersynckey", "");
     },
 
-    init: function (job, account,  folderID = "") {
+    disconnectAccount: function (account) {
+        db.setAccountSetting(account, "state", "disconnected"); //connected, connecting or disconnected
+        db.setAccountSetting(account, "policykey", "");
+        db.setAccountSetting(account, "foldersynckey", "");
+
+        //Delete all targets
+        let folders = db.findFoldersWithSetting("selected", "1", account);
+        for (let i = 0; i<folders.length; i++) {
+            tbSync.eas.removeTarget(folders[i].target, folders[i].type);
+        }
+        db.deleteAllFolders(account);
+
+        db.setAccountSetting(account, "status", "notconnected");
+    },
+
+
+
+
+
+    // EAS SYNC FUNCTIONS
+
+    initSync: function (job, account,  folderID = "") {
 
         //set syncdata for this sync process
         let syncdata = {};
@@ -160,7 +169,7 @@ var sync = {
 
         // set status to syncing (so settingswindow will display syncstates instead of status) and set initial syncstate
         tbSync.db.setAccountSetting(syncdata.account, "status", "syncing");
-        sync.setSyncState("syncing", syncdata);
+        tbSync.setSyncState("syncing", syncdata);
 
         // check if connected
         if (tbSync.db.getAccountSetting(account, "state") == "disconnected") { //allow connected and connecting
@@ -198,39 +207,8 @@ var sync = {
         }
     },
 
-    connectAccount: function (account) {
-        db.setAccountSetting(account, "state", "connecting");
-        db.setAccountSetting(account, "policykey", "");
-        db.setAccountSetting(account, "foldersynckey", "");
-    },
-
-    disconnectAccount: function (account) {
-        db.setAccountSetting(account, "state", "disconnected"); //connected, connecting or disconnected
-        db.setAccountSetting(account, "policykey", "");
-        db.setAccountSetting(account, "foldersynckey", "");
-
-        //Delete all targets
-        let folders = db.findFoldersWithSetting("selected", "1", account);
-        for (let i = 0; i<folders.length; i++) {
-            tbSync.eas.removeTarget(folders[i].target, folders[i].type);
-        }
-        db.deleteAllFolders(account);
-
-        db.setAccountSetting(account, "status", "notconnected");
-    },
-
-
-
-
-
-
-
-
-
-    // GLOBAL SYNC FUNCTIONS
-
     getPolicykey: function(syncdata) {
-        sync.setSyncState("requestingprovision", syncdata); 
+        tbSync.setSyncState("requestingprovision", syncdata); 
 
         //request provision
         let wbxml = wbxmltools.createWBXML();
@@ -286,7 +264,7 @@ var sync = {
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", "pending");
             this.syncNextFolder(syncdata);
         } else {
-            sync.setSyncState("requestingfolders", syncdata); 
+            tbSync.setSyncState("requestingfolders", syncdata); 
             let foldersynckey = tbSync.db.getAccountSetting(syncdata.account, "foldersynckey");
             if (foldersynckey == "") foldersynckey = "0";
 
@@ -382,7 +360,7 @@ var sync = {
         let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
         if (folders.length == 0 || syncdata.status != "OK") {
             //all folders of this account have been synced
-            sync.finishAccountSync(syncdata);
+            tbSync.finishAccountSync(syncdata);
         } else {
             syncdata.synckey = folders[0].synckey;
             syncdata.folderID = folders[0].folderID;
@@ -396,7 +374,7 @@ var sync = {
                     syncdata.type = "Calendar";
                     break;
                 default:
-                    sync.finishSync(syncdata, "skipped");
+                    eas.finishSync(syncdata, "skipped");
                     return;
             };
 
@@ -419,13 +397,11 @@ var sync = {
         }
     },
 
-
     getSynckey: function (responseWbxml, syncdata) {
         syncdata.synckey = wbxmltools.FindKey(responseWbxml);
         tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
         this.startSync(syncdata); 
     },
-
 
     startSync: function (syncdata) {
         switch (syncdata.type) {
@@ -437,7 +413,6 @@ var sync = {
                 break;
         }
     },
-
 
     finishSync: function (syncdata, error = "") {
         //a folder has been finished, process next one
@@ -455,51 +430,14 @@ var sync = {
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime", time);
         }
 
-        sync.setSyncState("done", syncdata);
+        tbSync.setSyncState("done", syncdata);
         this.syncNextFolder(syncdata);
     },
 
-    
-    finishAccountSync: function (syncdata) {
-        let state = tbSync.db.getAccountSetting(syncdata.account, "state");
-        
-        if (state == "connecting") {
-                tbSync.db.setAccountSetting(syncdata.account, "state", "connected");
-        }
-        
-        if (syncdata.status != "OK") {
-            // set each folder with PENDING status to ABORTED
-            let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
-            for (let i=0; i < folders.length; i++) {
-                tbSync.db.setFolderSetting(syncdata.account, folders[i].folderID, "status", "aborted");
-            }
-        }
-
-        //update account status
-        tbSync.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
-        tbSync.db.setAccountSetting(syncdata.account, "status", syncdata.status);
-        sync.setSyncState("accountdone", syncdata); 
-                
-        //work on the queue
-        if (tbSync.syncQueue.length > 0) tbSync.workSyncQueue();
-        else sync.setSyncState("idle"); 
-    },
 
 
-    setSyncState: function(state, syncdata = null) {
-        //set new state
-        tbSync.currentProzess.state = state;
-        if (syncdata !== null) {
-            tbSync.currentProzess.account = syncdata.account;
-            tbSync.currentProzess.folderID = syncdata.folderID;
-        } else {
-            tbSync.currentProzess.account = "";
-            tbSync.currentProzess.folderID = "";
-        }
 
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tbsync.changedSyncstate", "");
-    },
+
 
     statusIsBad : function (status, syncdata) {
         switch (status) {
@@ -508,15 +446,15 @@ var sync = {
                 return false;
             case "3": 
                 tbSync.dump("wbxml status", "Server reports <invalid synchronization key> (" + status + "), resyncing.");
-                sync.init("resync", syncdata.account, syncdata.folderID);
+                eas.initSync("resync", syncdata.account, syncdata.folderID);
                 break;
             case "12": 
                 tbSync.dump("wbxml status", "Server reports <folder hierarchy changed> (" + status + "), resyncing");
-                sync.init("resync", syncdata.account, syncdata.folderID);
+                eas.initSync("resync", syncdata.account, syncdata.folderID);
                 break;
             default:
                 tbSync.dump("wbxml status", "Server reports status <"+status+">. Error? Aborting Sync.");
-                sync.finishSync(syncdata, "wbxmlerror::" + status);
+                eas.finishSync(syncdata, "wbxmlerror::" + status);
                 break;
         }        
         return true;
@@ -587,7 +525,7 @@ var sync = {
 
                 case 449: // Request for new provision
                     if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1") {
-                        sync.init("resync", syncdata.account, syncdata.folderID);
+                        eas.initSync("resync", syncdata.account, syncdata.folderID);
                     } else {
                         this.finishSync(syncdata, req.status);
                     }
@@ -625,7 +563,7 @@ var sync = {
                     }
 
                     //TODO: We could end up in a redirect loop - stop here and ask user to manually resync?
-                    sync.init("resync", syncdata.account); //resync everything
+                    eas.initSync("resync", syncdata.account); //resync everything
                     break;
                     
                 default:

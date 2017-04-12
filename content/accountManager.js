@@ -26,7 +26,7 @@ var tbSyncAccountManager = {
     addAccount: function () {
         //create a new account and pass its id to updateAccountsList, which wil select it
         //the onSelect event of the List will load the selected account
-        //EAS is HARDCODED for now, will me made dynamic, as soon we actually allow different providers
+        //EAS hardcoded, will by made dynamic as soon as different providers are usable
         this.updateAccountsList(tbSync.db.addAccount("eas", tbSync.getLocalizedMessage("new_account"), true));
     },
 
@@ -43,7 +43,7 @@ var tbSyncAccountManager = {
             
             if (confirm(tbSync.getLocalizedMessage("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.label))) {
                 //disconnect (removes ab, triggers changelog cleanup) 
-                tbSync.sync.disconnectAccount(accountsList.selectedItem.value);
+                tbSync.eas.disconnectAccount(accountsList.selectedItem.value);
                 //delete account from db
                 tbSync.db.removeAccount(accountsList.selectedItem.value);
 

@@ -44,8 +44,8 @@ var tbSync = {
 
 
 
-    // INIT
-    init: function () { //this init function is called by the init of each provider + messenger
+    // GLOBAL INIT (this init function is called by the init of each provider + messenger)
+    init: function () { 
         tbSync.initjobs++;
 
         if (tbSync.initjobs > tbSync.syncProviderList.length) { //one extra, because messenger needs to init as well
@@ -60,8 +60,8 @@ var tbSync = {
                 cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver)
             }
 
-            //init stuff for sync process - EAS specific???
-            tbSync.sync.resetSync();
+            //init stuff for sync process
+            tbSync.resetSync();
             
             //enable
             tbSync.enabled = true;
@@ -73,7 +73,6 @@ var tbSync = {
 
 
     // SYNC QUEUE MANAGEMENT
-
     syncQueue : [],
     currentProzess : {},
 
@@ -109,11 +108,70 @@ var tbSync = {
         switch (job) {
             case "sync":
             case "resync":
-                tbSync.sync.init(job, account); //EAS specific !!!
+                tbSync["eas"].initSync(job, account); //EAS hardcoded, will by made dynamic as soon as different providers are usable
                 break;
             default:
                 tbSync.dump("workSyncQueue()", "Unknow job for sync queue ("+ job + ")");
         }
+    },
+    
+    setSyncState: function(state, syncdata = null) {
+        //set new state
+        tbSync.currentProzess.state = state;
+        if (syncdata !== null) {
+            tbSync.currentProzess.account = syncdata.account;
+            tbSync.currentProzess.folderID = syncdata.folderID;
+        } else {
+            tbSync.currentProzess.account = "";
+            tbSync.currentProzess.folderID = "";
+        }
+
+        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+        observerService.notifyObservers(null, "tbsync.changedSyncstate", "");
+    },
+    
+    resetSync: function () {
+        //set state to idle
+        tbSync.setSyncState("idle"); 
+        //flush the queue
+        tbSync.syncQueue = [];
+        //get all accounts
+        let accounts = tbSync.db.getAccounts();
+
+        for (let i=0; i<accounts.IDs.length; i++) {
+            if (accounts.data[accounts.IDs[i]].status == "syncing") tbSync.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
+        }
+
+        // set each folder with PENDING status to ABORTED
+        let folders = tbSync.db.findFoldersWithSetting("status", "pending");
+        for (let i=0; i < folders.length; i++) {
+            tbSync.db.setFolderSetting(folders[i].account, folders[i].folderID, "status", "aborted");
+        }
+    },
+
+    finishAccountSync: function (syncdata) {
+        let state = tbSync.db.getAccountSetting(syncdata.account, "state");
+        
+        if (state == "connecting") {
+                tbSync.db.setAccountSetting(syncdata.account, "state", "connected");
+        }
+        
+        if (syncdata.status != "OK") {
+            // set each folder with PENDING status to ABORTED
+            let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
+            for (let i=0; i < folders.length; i++) {
+                tbSync.db.setFolderSetting(syncdata.account, folders[i].folderID, "status", "aborted");
+            }
+        }
+
+        //update account status
+        tbSync.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
+        tbSync.db.setAccountSetting(syncdata.account, "status", syncdata.status);
+        tbSync.setSyncState("accountdone", syncdata); 
+                
+        //work on the queue
+        if (tbSync.syncQueue.length > 0) tbSync.workSyncQueue();
+        else tbSync.setSyncState("idle"); 
     },
 
 
@@ -285,7 +343,6 @@ var tbSync = {
 
 
     // ADDRESS BOOK FUNCTIONS
-
     addressbookListener: {
 
         //if a contact in one of the synced books is modified, update status of target and account
@@ -542,8 +599,8 @@ var tbSync = {
 
 
 
-    // CALENDAR FUNCTIONS
 
+    // CALENDAR FUNCTIONS
     calendarObserver : { 
         onStartBatch : function () {},
         onEndBatch : function () {},

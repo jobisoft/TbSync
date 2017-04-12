@@ -482,14 +482,14 @@ var tbSyncAccountSettings = {
         if (state == "connected") {
             //we are connected and want to disconnect
             if (window.confirm(tbSync.getLocalizedMessage("prompt.Disconnect"))) {
-                tbSync.sync.disconnectAccount(tbSyncAccountSettings.selectedAccount);
+                tbSync.eas.disconnectAccount(tbSyncAccountSettings.selectedAccount);
                 tbSyncAccountSettings.updateGui();
                 let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
                 observerService.notifyObservers(null, "tbsync.changedSyncstate", tbSyncAccountSettings.selectedAccount);
             }
         } else if (state == "disconnected") {
             //we are disconnected and want to connected
-            tbSync.sync.connectAccount(tbSyncAccountSettings.selectedAccount);
+            tbSync.eas.connectAccount(tbSyncAccountSettings.selectedAccount);
             tbSyncAccountSettings.updateGui();
             tbSyncAccountSettings.saveSettings();
             tbSyncAccountSettings.requestSync("sync", tbSyncAccountSettings.selectedAccount);

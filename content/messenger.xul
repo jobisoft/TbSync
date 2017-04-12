@@ -16,7 +16,7 @@
             <menupopup id="tbsync.statusmenu">
                 <menuitem label="&popup.sync;" oncommand="if (tbSync.enabled) tbSync.addAccountToSyncQueue('sync'); else tbSyncMessenger.popupNotEnabled();" />
                 <menuitem label="&popup.opensettings;" oncommand="if (tbSync.enabled) tbSyncMessenger.openAccountManager(); else tbSyncMessenger.popupNotEnabled();" />
-                <menuitem label="&popup.cancelsync;" oncommand="if (tbSync.enabled) tbSync.sync.resetSync(); else tbSyncMessenger.popupNotEnabled();" />
+                <menuitem label="&popup.cancelsync;" oncommand="if (tbSync.enabled) tbSync.resetSync(); else tbSyncMessenger.popupNotEnabled();" />
             </menupopup>
         </popupset>
     </statusbar>
