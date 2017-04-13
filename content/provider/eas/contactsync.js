@@ -124,7 +124,7 @@ var contactsync = {
             eas.finishSync(syncdata, "notargets");
             return;
         }
-
+        
         tbSync.setSyncState("requestingchanges", syncdata);
         var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
         var moreavilable = 1;
@@ -414,7 +414,7 @@ var contactsync = {
                 }
             }
         }
-
+    
     },
 
     tozpush: function(syncdata) {
@@ -445,7 +445,6 @@ var contactsync = {
         var waddressline2;
         var newcards;
         var numofcards = 0;
-        var cardArr = [];
         var mbd = 0;
         var ambd = 0;
         var wbxmlinner;
@@ -459,15 +458,16 @@ var contactsync = {
         while (cards.hasMoreElements()) {
             card = cards.getNext();
 
-            if (numofcards === maxnumbertosend) {
+            if (numofcards > maxnumbertosend) {
                 morecards = true;
                 break;
             }
 
             if (card instanceof Components.interfaces.nsIAbCard) {
-                if (card.getProperty('ServerId', '') === '' && !card.isMailList) {
-                    card.setProperty('localId', card.localId);
-                    /* var newCard = */ addressBook.modifyCard(card);
+                //cards without ServerId will be retried during each sync, not limited to time since last sync
+                if (card.getProperty("ServerId", "") === '' && card.getProperty("LastModifiedDate", "") < syncdata.timeOfThisSync && !card.isMailList) {
+                    card.setProperty('localId', card.localId); //prepare clientID, which we can find later
+                    addressBook.modifyCard(card);
                     numofcards = numofcards + 1;
                     wbxml = wbxml + String.fromCharCode(0x47, 0x4C, 0x03) + card.localId + String.fromCharCode(0x00, 0x01, 0x5D, 0x00, 0x01);
                     for (x in this.FromContacts) {
@@ -569,7 +569,6 @@ var contactsync = {
                         }
                     }
 
-                    cardArr.push(card);
                     for (x in this.FromContacts2) {
                         if (card.getProperty(x, "") !== '') {
                             wbxml = wbxml + String.fromCharCode(0x00, 0x0C) + String.fromCharCode(this.FromContacts2[x]) + String.fromCharCode(0x03) + tbSync.encode_utf8(card.getProperty(x, '')) + String.fromCharCode(0x00, 0x01);
@@ -580,29 +579,27 @@ var contactsync = {
             }
             newcards = numofcards;
         }
+        tbSync.dump("Sending new cards", newcards);
 
-        cards = addressBook.childCards;
-        let time = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime") / 1000;
-        let time2 = (Date.now() / 1000) - 1;
 
         // this while loops over all cards but only works on old cards already having a serverid
-
+        cards = addressBook.childCards;
         while (cards.hasMoreElements()) {
+            card = cards.getNext();
 
-            if (numofcards === maxnumbertosend) {
+            if (numofcards > maxnumbertosend) {
                 morecards = true;
                 break;
             }
-            card = cards.getNext();
+
             if (card instanceof Components.interfaces.nsIAbCard) {
 
-                if (card.getProperty("LastModifiedDate", "") > time && card.getProperty("LastModifiedDate", "") < time2 && card.getProperty("ServerId", "") !== "") {
+                if (card.getProperty("LastModifiedDate", "") > syncdata.timeOfLastSync && card.getProperty("LastModifiedDate", "") < syncdata.timeOfThisSync && card.getProperty("ServerId", "") !== '' && !card.isMailList) {
 
                     numofcards = numofcards + 1;
-                    if (card.getProperty("ServerId", "") === "dontsend") {
+                    if (card.getProperty("ServerId", "") === "CardWasDeniedByServerRetryNextTime") {
                         card.setProperty("ServerId", "");
                         addressBook.modifyCard(card);
-                        morecards = true;
                     } else {
                         addressBook.modifyCard(card);
                         wbxml = wbxml + String.fromCharCode(0x48, 0x4D, 0x03) + card.getProperty("ServerId", "") + String.fromCharCode(0x00, 0x01, 0x5D, 0x00, 0x01);
@@ -714,17 +711,18 @@ var contactsync = {
                     }
                 }
             }
-        }
+        } 
+        tbSync.dump("Sending total cards", numofcards);
 
-//        if (numofcards !== 0) {
-//            wbxmlinner = wbxml;
-//            wbxml = wbxmlouter.replace('replacehere', wbxmlinner);
-//            wbxml = wbxml.replace('SyncKeyReplace', syncdata.synckey);
-//            wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
-//            wbxml = eas.Send(wbxml, callback.bind(this), "Sync", syncdata); 
-//        } else {
+        if (numofcards !== 0) {
+            wbxmlinner = wbxml;
+            wbxml = wbxmlouter.replace('replacehere', wbxmlinner);
+            wbxml = wbxml.replace('SyncKeyReplace', syncdata.synckey);
+            wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
+            wbxml = eas.Send(wbxml, callback.bind(this), "Sync", syncdata); 
+        } else {
             this.senddel(syncdata);
-//        }
+        }
 
 
         function callback(returnedwbxml, syncdata) {
@@ -764,7 +762,7 @@ var contactsync = {
                         var inadd = add[count];
 
                         let tag = inadd.getElementsByTagName("ServerId");
-                        let ServerId = "dontsend";
+                        let ServerId = "CardWasDeniedByServerRetryNextTime";
                         if (tag.length > 0) ServerId = tag[0].childNodes[0].nodeValue;
 
                         tag = inadd.getElementsByTagName("ClientId");
@@ -773,7 +771,7 @@ var contactsync = {
                         try {
                             let addserverid = addressBook.getCardFromProperty("localId", ClientId, false);
                             addserverid.setProperty('ServerId', ServerId);
-                            /* var newCard = */ addressBook.modifyCard(addserverid);
+                            addressBook.modifyCard(addserverid);
                         } catch (e) {
                             tbSync.dump("unknown error", e);
                         }
@@ -792,17 +790,19 @@ var contactsync = {
                             status = tag[0].childNodes[0].nodeValue;
                         } catch (e) { }
 
-                        if (status !== "1") {
-                            try {
+                        if (status !== "1") { // a CHANGE we send was not acknowledged, but we should NOT remove the id, we must RESEND our change later (do not remove it from changelog) TODO
+                                tbSync.dump("SendContactChange", "bad status: " + status);
+
+                            /*                            try {
                                 tag = inchange.getElementsByTagName("ServerId");
                                 let ServerId = tag[0].childNodes[0].nodeValue;
                                 let addserverid = addressBook.getCardFromProperty('ServerId', ServerId, false);
                                 addserverid.setProperty('ServerId', '');
-                                /* newCard = */ addressBook.modifyCard(addserverid);
+                                addressBook.modifyCard(addserverid);
                                 morecards = true;
                             } catch (e) {
                                 tbSync.dump("unknown error", e);
-                            }
+                            }*/
                         }
                     }
 

@@ -23,6 +23,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
  - check "resync account folder" - maybe rework it
  - drop syncdata and use currentProcess only ???
  - fix blanks bug also for contacts group (not only for contacts2)
+ - cancel current sync must recover all
+ - display number of added/increasing contacts as feedback
 */
 
 var tbSync = {
@@ -247,8 +249,8 @@ var tbSync = {
     getLocalizedMessage: function (msg, provider = "") {
         let localized = msg;
         let parts = msg.split("::");
-	let bundle = (provider == "") ? tbSync.bundle : tbSync[provider].bundle;
-	    
+        let bundle = (provider == "") ? tbSync.bundle : tbSync[provider].bundle;
+            
         try {
             //spezial treatment of strings with :: like status.httperror::403
             if (parts.length==2) localized = bundle.GetStringFromName(parts[0]).replace("##error##", parts[1]);

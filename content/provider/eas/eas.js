@@ -491,6 +491,8 @@ var eas = {
     },
 
     startSync: function (syncdata) {
+        syncdata.timeOfLastSync = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime") / 1000;
+        syncdata.timeOfThisSync = (Date.now() / 1000) - 1;
         switch (syncdata.type) {
             case "Contacts": 
                 contactsync.fromzpush(syncdata);
