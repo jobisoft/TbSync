@@ -75,6 +75,7 @@ var tbSync = {
     // SYNC QUEUE MANAGEMENT
     syncQueue : [],
     currentProzess : {},
+    queueTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
     addAccountToSyncQueue: function (job, account = "") {
         if (account == "") {
@@ -91,20 +92,29 @@ var tbSync = {
         }
 
         //after jobs have been aded to the queue, try to start working on the queue
-        if (tbSync.currentProzess.state == "idle") tbSync.workSyncQueue();
+        //we delay the "is idle" querry, to prevent race condition, also, this forces the sync into a background thread
+        this.queueTimer.cancel();
+        this.queueTimer.initWithCallback(tbSync.checkSyncQueue, 100, 0);
     },
-    
-    workSyncQueue: function () {
-        //workSyncQueue assumes, that it is allowed to start a new sync job
-        //if no more jobs in queue, do nothing
-        if (tbSync.syncQueue.length == 0) return;
 
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+    checkSyncQueue: {
+        notify: function (timer) {
+            if (tbSync.currentProzess.state == "idle") tbSync.workSyncQueue();
+        }
+    },
+
+    workSyncQueue: function () {
+        //if no more jobs in queue, do nothing
+        if (tbSync.syncQueue.length == 0) {
+            tbSync.setSyncState("idle"); 
+            return;
+        }
 
         let syncrequest = tbSync.syncQueue.shift().split(".");
         let job = syncrequest[0];
         let account = syncrequest[1];
 
+        //workSyncQueue assumes, that it is allowed to start a new sync job
         switch (job) {
             case "sync":
             case "resync":
@@ -114,7 +124,7 @@ var tbSync = {
                 tbSync.dump("workSyncQueue()", "Unknow job for sync queue ("+ job + ")");
         }
     },
-    
+
     setSyncState: function(state, syncdata = null) {
         //set new state
         tbSync.currentProzess.state = state;
@@ -129,7 +139,7 @@ var tbSync = {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.notifyObservers(null, "tbsync.changedSyncstate", "");
     },
-    
+
     resetSync: function () {
         //set state to idle
         tbSync.setSyncState("idle"); 
@@ -170,8 +180,7 @@ var tbSync = {
         tbSync.setSyncState("accountdone", syncdata); 
                 
         //work on the queue
-        if (tbSync.syncQueue.length > 0) tbSync.workSyncQueue();
-        else tbSync.setSyncState("idle"); 
+        tbSync.workSyncQueue();
     },
 
 
