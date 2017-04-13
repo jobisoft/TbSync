@@ -4,6 +4,8 @@
 <!ENTITY name "Account name:">
 <!ENTITY user "User name (email address):">
 <!ENTITY server "Server configuration:">
+<!ENTITY querying "Querying:">
+
 
 <!ENTITY description "Please enter a name for the new TbSync account, the user name of the ActiveSync account you want to add (probably an email address) and select one of the available server configuration options. ">
 

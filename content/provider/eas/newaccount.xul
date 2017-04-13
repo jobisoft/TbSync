@@ -45,12 +45,13 @@
                     </menulist>
                 </row>
 
+                <row style="height:40px; margin-top:1ex;margin-bottom:1ex;">
+                    <vbox pack="center"><label id='tbsync.newaccount.autodiscoverlabel' value="&querying;" /></vbox>
+                    <vbox pack="center"><description style="white-space: pre-wrap;" id='tbsync.newaccount.autodiscoverstatus'></description></vbox>
+                </row>
+
             </rows>
         </grid>
-
-        <vbox height="20" style="margin-bottom:1ex;">
-            <progressmeter id="tbsync.newaccount.progress" mode="determined" value="5" flex="1" />
-        </vbox>
 
     </vbox>
 </dialog>

@@ -14,11 +14,12 @@ var tbSyncEasNewAccount = {
         this.elementName = document.getElementById('tbsync.newaccount.name');
         this.elementUser = document.getElementById('tbsync.newaccount.user');
         this.elementServertype = document.getElementById('tbsync.newaccount.servertype');
-        document.getElementById('tbsync.newaccount.progress').hidden = true;
         
         document.documentElement.getButton("extra1").disabled = true;
         document.documentElement.getButton("extra1").label = tbSync.getLocalizedMessage("newaccount.add_auto","eas");
-        
+        document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
+        document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
+
         document.getElementById("tbsync.newaccount.name").focus();
     },
 
@@ -96,11 +97,12 @@ var tbSyncEasNewAccount = {
         this.autodiscoverHTTP(accountdata, password, urls, 0);
     },
 
-    setProgressBar: function (index, length) {
-        let value = 5+(95*index/length);
-        document.getElementById('tbsync.newaccount.progress').hidden = false;
-        document.getElementById('tbsync.newaccount.progress').value = value;
+    setAutodiscoverStatus: function (index, urls) {
+        document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = false;
+        document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = false;
+        document.getElementById('tbsync.newaccount.autodiscoverstatus').textContent  = urls[index] + " ("+(index+1)+"/"+urls.length+")";
     },
+    
 
     autodiscoverHTTP: function (accountdata, password, urls, index) {
         if (index>=urls.length) {
@@ -108,7 +110,7 @@ var tbSyncEasNewAccount = {
             return;
         }
 
-        this.setProgressBar(index, urls.length);
+        this.setAutodiscoverStatus(index, urls);
         
         let xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n";
         xml += "<Autodiscover xmlns= \"http://schemas.microsoft.com/exchange/autodiscover/mobilesync/requestschema/2006\">\r\n";
@@ -175,7 +177,8 @@ var tbSyncEasNewAccount = {
                 }
             } else if (req.status === 401) {
                 //Report wrong password and start again
-                document.getElementById('tbsync.newaccount.progress').hidden = true;
+                document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
+                document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
                 document.documentElement.getButton("cancel").disabled = false;
                 document.documentElement.getButton("extra1").disabled = false;
                 window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", accountdata, function() {tbSyncEasNewAccount.autodiscover(accountdata, tbSync.eas.getPassword(accountdata));});
@@ -219,14 +222,16 @@ var tbSyncEasNewAccount = {
     },
     
     autodiscoverFailed: function (accountdata) {
-        document.getElementById('tbsync.newaccount.progress').hidden = true;
+        document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
+        document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
+        alert(tbSync.getLocalizedMessage("info.AutodiscoverFailed","eas").replace("##user##", accountdata.user));
         document.documentElement.getButton("cancel").disabled = false;
         document.documentElement.getButton("extra1").disabled = false;
-        alert(tbSync.getLocalizedMessage("info.AutodiscoverFailed","eas").replace("##user##", accountdata.user));
     },
 
     autodiscoverSucceeded: function (accountdata, password, url, versions, commands) {
-        document.getElementById('tbsync.newaccount.progress').hidden = true;
+        document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
+        document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
         document.documentElement.getButton("cancel").disabled = false;
         document.documentElement.getButton("extra1").disabled = false;
         
