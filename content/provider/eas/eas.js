@@ -105,6 +105,16 @@ var eas = {
         return row;
     },
     
+    getHost4PasswordManager: function (account) {
+        let parts = tbSync.db.getAccountSetting(account, "user").split("@");
+        if (parts.length > 1) {
+            return "eas://" + parts[1];
+        } else {
+            return  "eas://" + tbSync.db.getAccountSetting(account, "accountname");
+        }
+        //return "eas://" + tbSync.db.getAccountSetting(account, "host");
+    },
+    
     getNewFolderEntry: function () {
         let folder = {
             "account" : "",
@@ -561,32 +571,12 @@ var eas = {
                     let header = req.getResponseHeader("X-MS-Location");
                     let newHost = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
                     let connection = tbSync.getConnection(syncdata.account);
-                    let password = tbSync.getPassword(connection);
 
                     tbSync.dump("redirect (451)", "header: " + header + ", oldHost: " + connection.host + ", newHost: " + newHost);
 
-                    //If the current connection has a LoginInfo (password stored !== null), try to update it
-                    if (password !== null) {
-                        tbSync.dump("redirect (451)", "updating loginInfo");
-                        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-                        let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
-                        
-                        //remove current login info
-                        let currentLoginInfo = new nsLoginInfo(connection.host, connection.host, null, connection.user, password, "USER", "PASSWORD");
-                        myLoginManager.removeLogin(currentLoginInfo);
-
-                        //update host and add new login info
-                        connection.host = newHost;
-                        let newLoginInfo = new nsLoginInfo(connection.host, connection.host, null, connection.user, password, "USER", "PASSWORD");
-                        try {
-                            myLoginManager.addLogin(newLoginInfo);
-                        } catch (e) {
-                            this.finishSync(syncdata, "httperror::" + req.status);
-                        }
-                    } else {
-                        //just update host
-                        connection.host = newHost;
-                    }
+                    //Since we do not use the actual host in the LoginManager (but the FQDN part of the user name), a changing host
+                    //does not affect the loginmanager - no further action needed
+                    connection.host = newHost;
 
                     //TODO: We could end up in a redirect loop - stop here and ask user to manually resync?
                     eas.initSync("resync", syncdata.account); //resync everything

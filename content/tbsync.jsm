@@ -284,6 +284,7 @@ var tbSync = {
             set host(newHost) { tbSync.db.setAccountSetting(account, "host", newHost); },
             get server() { return tbSync.db.getAccountSetting(account, "host"); },
             get host() { return this.protocol + tbSync.db.getAccountSetting(account, "host"); },
+            get host4PasswordManager() { return tbSync[tbSync.db.getAccountSetting(account, "provider")].getHost4PasswordManager(account);},
             user: tbSync.db.getAccountSetting(account, "user"),
         };
         return connection;
@@ -291,7 +292,7 @@ var tbSync = {
 
     getPassword: function (connection) {
         let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-        let logins = myLoginManager.findLogins({}, connection.host, null, "TbSync");
+        let logins = myLoginManager.findLogins({}, connection.host4PasswordManager, null, "TbSync");
         for (let i = 0; i < logins.length; i++) {
             if (logins[i].username == connection.user) {
                 return logins[i].password;
@@ -310,7 +311,7 @@ var tbSync = {
         //Is there a loginInfo for this connection?
         if (curPassword !== null) {
             //remove current login info
-            let currentLoginInfo = new nsLoginInfo(connection.host, null, "TbSync", connection.user, curPassword, "", "");
+            let currentLoginInfo = new nsLoginInfo(connection.host4PasswordManager, null, "TbSync", connection.user, curPassword, "", "");
             try {
                 myLoginManager.removeLogin(currentLoginInfo);
             } catch (e) {
@@ -320,7 +321,7 @@ var tbSync = {
         
         //create loginInfo with new password
         if (newPassword != "") {
-            let newLoginInfo = new nsLoginInfo(connection.host, null, "TbSync", connection.user, newPassword, "", "");
+            let newLoginInfo = new nsLoginInfo(connection.host4PasswordManager, null, "TbSync", connection.user, newPassword, "", "");
             try {
                 myLoginManager.addLogin(newLoginInfo);
             } catch (e) {
