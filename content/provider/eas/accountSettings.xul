@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
-<!DOCTYPE window SYSTEM "chrome://tbsync/locale/overlay.dtd">
+<!DOCTYPE window SYSTEM "chrome://tbsync/locale/eas.dtd">
 
 <window id="tbsync.accountsettings" 
     xmlns:html="http://www.w3.org/1999/xhtml"
@@ -53,7 +53,7 @@
 
                         <hbox height="24" align="center">
                             <label flex="1" class="header" value="" id="tbsync.accountsettings.config.label"/>
-                            <image tooltiptext="&pref.servertype.unlock;" ondblclick="tbSyncAccountSettings.unlockSettings()" width="24" height="24" id="tbsync.accountsettings.config.unlock" src="chrome://tbsync/skin/lock24.png" />
+                            <image tooltiptext="&servertype.unlock;" ondblclick="tbSyncAccountSettings.unlockSettings()" width="24" height="24" id="tbsync.accountsettings.config.unlock" src="chrome://tbsync/skin/lock24.png" />
                         </hbox>
 
                         <hbox>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
-<!DOCTYPE window SYSTEM "chrome://tbsync/locale/overlay.dtd">
+<!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
 
 <prefwindow id="tbsync.accountmanger"
     xmlns:html="http://www.w3.org/1999/xhtml"
@@ -46,7 +46,7 @@
 
     </prefpane>
 
-    <prefpane id="Cape" label="&pref.Cape;" image="chrome://tbsync/skin/cape.png" >
+    <prefpane id="Cape" label="&pref.cape;" image="chrome://tbsync/skin/cape.png" >
         <hbox  width="750" height="450" >
             <vbox flex="0" style="padding: 2em 2em 0 2em;" >
                 <image src="chrome://tbsync/skin/cape_logo.png" style='padding:8px;' align='center' onclick="tbSyncAccountManager.openTBtab('http://c-a-p-e.co.uk/');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
@@ -77,7 +77,7 @@
          </hbox>
     </prefpane>
 
-    <prefpane id="Help" label="&pref.Help;" image="chrome://tbsync/skin/help.png" >
+    <prefpane id="Help" label="&pref.help;" image="chrome://tbsync/skin/help.png" >
         <hbox  width="750" height="450" >
             <iframe flex="1" src="chrome://tbsync/content/help.html" />
          </hbox>

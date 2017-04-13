@@ -6,6 +6,8 @@ tbSync.includeJS("chrome://tbsync/content/provider/eas/contactsync.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/calendarsync.js");
 
 var eas = {
+
+    bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tbsync/locale/eas.strings"),
     init: function () {
         
         //DB Concept:
@@ -115,6 +117,29 @@ var eas = {
             "lastsynctime" : "",
             "status" : ""};
         return folder;
+    },
+
+    getFixedServerSettings: function(servertype) {
+        let settings = {};
+
+        switch (servertype) {
+            case "auto":
+                settings["host"] = null;
+                settings["https"] = null;
+                settings["provision"] = null;
+                settings["asversion"] = null;
+                break;
+
+            case "outlook.com":
+                settings["host"] = "eas.outlook.com";
+                settings["https"] = "1";
+                settings["provision"] = "0";
+                settings["asversion"] = "2.5";
+                settings["seperator"] = "44";
+                break;
+        }
+        
+        return settings;
     },
 
     removeTarget: function(target, type) {

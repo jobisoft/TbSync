@@ -5,7 +5,6 @@ var EXPORTED_SYMBOLS = ["tbSync"];
 //global objects (not exported, not available outside this module)
 const Cc = Components.classes;
 const Ci = Components.interfaces;
-var bundle = Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tbsync/locale/strings");
 
 
 //import calUtils if avail
@@ -30,6 +29,7 @@ var tbSync = {
 
     enabled: false,
     initjobs: 0,
+    bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tbsync/locale/tbSync.strings"),
 
     prefWindowObj: null,
     decoder : new TextDecoder(),
@@ -235,10 +235,11 @@ var tbSync = {
         }
     },
 
-    getLocalizedMessage: function (msg) {
+    getLocalizedMessage: function (msg, provider = "") {
         let localized = msg;
         let parts = msg.split("::");
-
+	let bundle = (provider == "") ? tbSync.bundle : tbSync[provider].bundle;
+	    
         try {
             //spezial treatment of strings with :: like status.httperror::403
             if (parts.length==2) localized = bundle.GetStringFromName(parts[0]).replace("##error##", parts[1]);

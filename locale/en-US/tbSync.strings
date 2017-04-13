@@ -46,15 +46,12 @@ info.AutodiscoverBadVersion=Server does not support ActiveSync v2.5 or v14.0 (on
 info.AutodiscoverWrongPassword=Wrong password for user <##user##>. Autodiscover failed.
 info.AutodiscoverFailed=Autodiscover for user <##user##> failed. Your ActiveSync provider does not seem to support Autodiscover.
 
-resync_from_scratch=Resync from scratch
 new_account=New Account
 
 account=TbSync account [##accountname##]
 
 config.auto=ActiveSync server configuration (via Autodiscover)
 config.custom=ActiveSync server configuration
-config.zarafa=Zarafa or Kopano server configuration
-config.horde=Horde server configuration
 config.outlook.com=Server configuration for Outlook.com accounts
 
 error.init=TbSync did not yet finish its init sequence.

@@ -48,7 +48,7 @@ var tbSyncAccountSettings = {
         let settings = tbSync.db.getAccountStorageFields(tbSyncAccountSettings.selectedAccount);
         let servertype = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype");
         
-        this.fixedSettings = this.getServerSetting(servertype);
+        this.fixedSettings = tbSync.eas.getFixedServerSettings(servertype);
 
         for (let i=0; i<settings.length;i++) {
             if (document.getElementById("tbsync.accountsettings." + settings[i])) {
@@ -146,38 +146,6 @@ var tbSyncAccountSettings = {
         tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, "host", host);
     },
 
-    getServerSetting: function(servertype) {
-        let settings = {};
-
-        switch (servertype) {
-            case "auto":
-                settings["host"] = null;
-                settings["https"] = null;
-                settings["provision"] = null;
-                settings["asversion"] = null;
-                break;
-
-            case "zarafa":
-                settings["seperator"] = "10";
-                break;
-            
-            case "horde":
-                settings["seperator"] = "44";
-                break;
-
-            case "outlook.com":
-                settings["host"] = "eas.outlook.com";
-                settings["https"] = "1";
-                settings["provision"] = "0";
-                settings["asversion"] = "2.5";
-                settings["seperator"] = "44";
-                break;
-        }
-        
-        return settings;
-    },
-
-    
     loadServerProfile: function () {
         if (tbSyncAccountSettings.selectedAccount === null) return;
 

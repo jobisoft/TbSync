@@ -1,0 +1,40 @@
+<!ENTITY title "Adding an Exchange ActiveSync account to TbSync">
+
+<!ENTITY ok "Add account">
+<!ENTITY name "Account name:">
+<!ENTITY user "User name (email address):">
+<!ENTITY server "Server configuration:">
+
+<!ENTITY description "Please enter a name for the new TbSync account, the user name of the ActiveSync account you want to add (probably an email address) and select one of the available server configuration options. ">
+
+<!ENTITY pref.AccountName "Account name">
+<!ENTITY pref.UserName "User name">
+<!ENTITY pref.UserNameDescription "User name is usually the email address of your account.">
+<!ENTITY pref.ServerName "Server address">
+<!ENTITY pref.ServerNameDescription "e.g. mail.yourserver.com">
+<!ENTITY pref.ServerType "Configuration Profile">
+<!ENTITY pref.usehttps "Use secure connection (connect via https)">
+<!ENTITY pref.DeviceId "Device Id">
+<!ENTITY pref.UseProvisioning "Use provisioning">
+<!ENTITY pref.birthday "Send birthday information">
+<!ENTITY pref.downloadonly "One-way sync (do not send local changes to the server)">
+<!ENTITY pref.autotime "AutoSync time in minutes">
+<!ENTITY pref.never "0 for never">
+<!ENTITY pref.Sync "Synchronize now!">
+
+<!ENTITY pref.syncstate "SyncStatus">
+<!ENTITY pref.seperator.comma "Comma">
+<!ENTITY pref.seperator.linebreak "Line break">
+<!ENTITY pref.seperator.description "Seperator for multiline address field.">
+<!ENTITY pref.displayoverride "Overide Display Name with 'First Name' + 'Second Name'">
+
+<!ENTITY pref.foldername "Folder">
+<!ENTITY pref.targetname "SyncTarget">
+<!ENTITY pref.status "Status">
+<!ENTITY pref.contactoptions "Contact options">
+
+<!ENTITY servertype.setup "Setup ActiveSync server configuration ...">
+<!ENTITY servertype.auto "Automatic configuration via ActiveSync Autodiscover">
+<!ENTITY servertype.custom "Custom configuration">
+<!ENTITY servertype.outlook.com "Outlook.com">
+<!ENTITY servertype.unlock "Double click to unlock all predefined server settings.">
