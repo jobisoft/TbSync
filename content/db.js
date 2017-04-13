@@ -101,14 +101,12 @@ var db = {
         return Object.keys(this.accounts.data[account]).sort();
     },
 
-    addAccount: function (provider, accountname, appendID = false) {
+    addAccount: function (newAccountEntry) {
         this.accounts.sequence++;
+	let id = this.accounts.sequence;
+        newAccountEntry.account = id.toString(),
 
-        let id = this.accounts.sequence;
-        let name = accountname;
-        if (appendID) name = name + " #" + id;
-
-        this.accounts.data[id]=tbSync[provider].getNewAccountEntry(id, name);
+        this.accounts.data[id]=newAccountEntry;
         this.saveAccounts();
         return id;
     },
@@ -168,20 +166,11 @@ var db = {
 
     // FOLDER FUNCTIONS
 
-    addFolder: function(provider, data) {
+    addFolder: function(data) {
         let account = parseInt(data.account);
         if (!this.folders.hasOwnProperty(account)) this.folders[account] = {};
-            
-        let folder = tbSync[provider].getNewFolderEntry();
-
-        //copy all valid fields from data to folder
-        for (let property in data) {
-            if (folder.hasOwnProperty(property)) {
-                folder[property] = data[property];
-            }
-        }
-            
-        this.folders[account][data.folderID] = folder;
+                        
+        this.folders[account][data.folderID] = data;
         this.saveFolders();
     },
 

@@ -2,46 +2,85 @@
 
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
-var tbSyncEasAutodiscover = {
+var tbSyncEasNewAccount = {
 
     locked: true,
   
     onClose: function () {
-        return !tbSyncEasAutodiscover.locked;
+        return !tbSyncEasNewAccount.locked;
     },
     
     onLoad: function () {
-        this.account = window.arguments[0];
-        let user = window.arguments[1];
-        document.getElementById("tbsync.autodiscover.user").value = user;
-        document.getElementById('tbsync.autodiscover.progress').hidden = true;
-        if (user == "") document.getElementById("tbsync.autodiscover.user").focus();
-        else document.getElementById("tbsync.autodiscover.password").focus();
+        this.elementName = document.getElementById('tbsync.newaccount.name');
+        this.elementUser = document.getElementById('tbsync.newaccount.user');
+        this.elementServertype = document.getElementById('tbsync.newaccount.servertype');
+        document.getElementById('tbsync.newaccount.progress').hidden = true;
+        
+        document.documentElement.getButton("extra1").disabled = true;
+        document.documentElement.getButton("extra1").label = tbSync.getLocalizedMessage("newaccount.add","eas");
+        
+        document.getElementById("tbsync.newaccount.name").focus();
     },
 
     onUnload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tbsync.autodiscoverDone", tbSyncEasAutodiscover.account);
+        observerService.notifyObservers(null, "tbsync.autodiscoverDone", tbSyncEasNewAccount.account);
     },
     
     onCancel: function () {
         if (document.documentElement.getButton("cancel").disabled == false) {
-            tbSyncEasAutodiscover.locked = false;
+            tbSyncEasNewAccount.locked = false;
         }
     },
     
-    onSearch: function () {
+/*    onSearch: function () {
         if (document.documentElement.getButton("extra1").disabled == false) {
             document.documentElement.getButton("cancel").disabled = true;
             document.documentElement.getButton("extra1").disabled = true;
-            this.autodiscover(this.account, document.getElementById('tbsync.autodiscover.user').value, document.getElementById('tbsync.autodiscover.password').value);
+            this.autodiscover(this.account, document.getElementById('tbsync.newaccount.user').value, document.getElementById('tbsync.newaccount.password').value);
+        }
+    },*/
+    
+    onUserInput: function () {            
+            if (this.elementServertype.value == "" && this.elementUser.value.indexOf("@outlook.")!=-1) this.elementServertype.selectedIndex = 4;
+            if (this.elementServertype.value == "auto") {
+                document.documentElement.getButton("extra1").label = tbSync.getLocalizedMessage("newaccount.search","eas");
+            } else {
+                document.documentElement.getButton("extra1").label = tbSync.getLocalizedMessage("newaccount.add","eas");                
+            }            
+            document.documentElement.getButton("extra1").disabled = (this.elementName.value == "" || this.elementUser.value == "" || this.elementServertype.value == "");
+    },
+    
+    onAdd: function () {
+        if (document.documentElement.getButton("extra1").disabled == false) {
+            let servertype = this.elementServertype.value;
+            let newAccountEntry = tbSync.eas.getNewAccountEntry();
+            
+            newAccountEntry.accountname = this.elementName.value;
+            newAccountEntry.user = this.elementUser.value;
+            newAccountEntry["servertype"] = servertype;
+
+            if (servertype == "outlook.com") {
+                let fixedSettings = tbSync.eas.getFixedServerSettings(servertype);
+                for (let prop in fixedSettings) {
+                  if( newAccountEntry.hasOwnProperty(prop) ) {
+                    newAccountEntry[prop] = fixedSettings[prop];
+                  } 
+                }
+            }
+            
+            //create a new EAS account and pass its id to updateAccountsList, which will select it
+            //the onSelect event of the List will load the selected account
+            window.opener.tbSyncAccountManager.updateAccountsList(tbSync.db.addAccount(newAccountEntry));
+            tbSyncEasNewAccount.locked = false;
+            window.close();
         }
     },
     
     setProgressBar: function (index, length) {
         let value = 5+(95*index/length);
-        document.getElementById('tbsync.autodiscover.progress').hidden = false;
-        document.getElementById('tbsync.autodiscover.progress').value = value;
+        document.getElementById('tbsync.newaccount.progress').hidden = false;
+        document.getElementById('tbsync.newaccount.progress').value = value;
     },
     
     autodiscover: function (account, user, password) {
@@ -126,7 +165,7 @@ var tbSyncEasAutodiscover = {
                 }
             } else if (req.status === 401) {
                 //No need to try other server, report wrong password
-                document.getElementById('tbsync.autodiscover.progress').hidden = true;
+                document.getElementById('tbsync.newaccount.progress').hidden = true;
                 document.documentElement.getButton("cancel").disabled = false;
                 document.documentElement.getButton("extra1").disabled = false;
                 alert(tbSync.getLocalizedMessage("info.AutodiscoverWrongPassword").replace("##user##", user));
@@ -170,14 +209,14 @@ var tbSyncEasAutodiscover = {
     },
     
     autodiscoverFailed: function (account, user) {
-        document.getElementById('tbsync.autodiscover.progress').hidden = true;
+        document.getElementById('tbsync.newaccount.progress').hidden = true;
         document.documentElement.getButton("cancel").disabled = false;
         document.documentElement.getButton("extra1").disabled = false;
         alert(tbSync.getLocalizedMessage("info.AutodiscoverFailed").replace("##user##", user));
     },
 
     autodiscoverSucceeded: function (account, user, password, url, versions, commands) {
-        document.getElementById('tbsync.autodiscover.progress').hidden = true;
+        document.getElementById('tbsync.newaccount.progress').hidden = true;
         document.documentElement.getButton("cancel").disabled = false;
         document.documentElement.getButton("extra1").disabled = false;
         
@@ -203,7 +242,7 @@ var tbSyncEasAutodiscover = {
         //also update password in PasswordManager
         tbSync.setPassword (account, password);
 
-        tbSyncEasAutodiscover.locked = false;
+        tbSyncEasNewAccount.locked = false;
         window.close();
     }
 };

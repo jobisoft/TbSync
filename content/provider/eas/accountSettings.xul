@@ -34,19 +34,6 @@
                     <textbox tooltiptext="&pref.UserNameDescription;" flex="1" id="tbsync.accountsettings.user" onblur="tbSyncAccountSettings.instantSaveSetting(this);"/>
                 </row>
 
-                <row style="margin-bottom:1ex;" id="tbsync.accountsettings.presets">
-                    <vbox/>
-                    <menulist width="150" id="tbsync.servertype" onselect="tbSyncAccountSettings.loadServerProfile();" >
-                        <menupopup>
-                            <menuitem hidden="true" label="&pref.servertype.setup;" value="" />
-                            <menuitem label="&pref.servertype.auto;" value="auto" />
-                            <menuitem label="&pref.servertype.custom;" value="custom" />
-                            <menuseparator/>
-                            <menuitem label="&pref.servertype.outlook.com;" value="outlook.com" />
-                        </menupopup>
-                    </menulist>
-                </row> 
-
                 <row flex="1" style="margin-bottom:2ex;" id="tbsync.accountsettings.options">
                     <vbox/>
                     <vbox style='overflow: auto;'>

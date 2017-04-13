@@ -1,8 +1,0 @@
-<!ENTITY title "Exchange ActiveSync Autodiscover">
-<!ENTITY search "Discover server settings">
-
-<!ENTITY user "User name (email address):">
-<!ENTITY password "Password:">
-<!ENTITY description "Please enter user name and password of your ActiveSync account, to discover your server settings.">
-
-<!ENTITY searching "Searching...">

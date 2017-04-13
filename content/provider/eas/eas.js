@@ -80,10 +80,10 @@ var eas = {
         return "mztb" + uuid;
     },
     
-    getNewAccountEntry: function (id, name) {
+    getNewAccountEntry: function () {
         let row = {
-            "account" : id.toString(),
-            "accountname": name,
+            "account" : "",
+            "accountname": "",
             "provider": "eas",
             "policykey" : "", 
             "foldersynckey" : "0",
@@ -322,7 +322,7 @@ var eas = {
                 //check if we have a folder with that folderID (=data[ServerId])
                 if (tbSync.db.getFolder(syncdata.account, add[count].ServerId) === null) {
                     //add folder
-                    let newData ={};
+                    let newData =tbSync.eas.getNewFolderEntry();
                     newData.account = syncdata.account;
                     newData.folderID = add[count].ServerId;
                     newData.name = add[count].DisplayName;
@@ -332,7 +332,7 @@ var eas = {
                     newData.selected = (newData.type == "9" || newData.type == "8" ) ? "1" : "0";
                     newData.status = "";
                     newData.lastsynctime = "";
-                    tbSync.db.addFolder("eas", newData); //this IS eas, so no need to querry which provider this is, hardcoded is fine
+                    tbSync.db.addFolder(newData);
                 } else {
                     //TODO? - cannot add an existing folder - resync!
                 }

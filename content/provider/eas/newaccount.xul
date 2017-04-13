@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://tbsync/locale/eas.dtd">
+
+<dialog
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    title="&title;"
+    buttons="cancel,extra1"
+    defaultButton="extra1"
+    buttonlabelextra1=""
+    onload="tbSyncEasNewAccount.onLoad();"
+    onunload="tbSyncEasNewAccount.onUnload();"
+    onclose="return tbSyncEasNewAccount.onClose()"
+    ondialogcancel="tbSyncEasNewAccount.onCancel();"
+    ondialogextra1="tbSyncEasNewAccount.onAdd();">
+
+    <script type="application/javascript" src="chrome://tbsync/content/provider/eas/newaccount.js"/>
+
+    <vbox>
+        <description style="width: 450px">&description;</description>
+
+        <grid style="margin-top:1ex">
+            <columns>
+                <column flex="1" />
+                <column flex="2" />
+            </columns>
+            <rows>
+                <row>
+                    <vbox pack="center"><label value="&name;" /></vbox>
+                    <textbox id="tbsync.newaccount.name" oninput="tbSyncEasNewAccount.onUserInput();"/>
+                </row>
+                <row>
+                    <vbox pack="center"><label value="&user;" /></vbox>
+                    <textbox id="tbsync.newaccount.user"  oninput="tbSyncEasNewAccount.onUserInput();"/>
+                </row>
+                <row>
+                    <vbox pack="center"><label value="&server;" /></vbox>
+                    <menulist id="tbsync.newaccount.servertype"  oncommand="tbSyncEasNewAccount.onUserInput();">
+                        <menupopup>
+                            <menuitem hidden="true" label="&servertype.setup;" value="" />
+                            <menuitem label="&servertype.auto;" value="auto" />
+                            <menuitem label="&servertype.custom;" value="custom" />
+                            <menuseparator/>
+                            <menuitem label="&servertype.outlook.com;" value="outlook.com" />
+                        </menupopup>
+                    </menulist>
+                </row>
+
+            </rows>
+        </grid>
+
+        <vbox height="20" style="margin-bottom:1ex;">
+            <progressmeter id="tbsync.newaccount.progress" mode="determined" value="5" flex="1" />
+        </vbox>
+
+    </vbox>
+</dialog>
