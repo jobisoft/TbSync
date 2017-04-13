@@ -19,7 +19,6 @@ var tbSyncAccountSettings = {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate", false);
         observerService.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui", false);
-        observerService.addObserver(tbSyncAccountSettings.autodiscoverObserver, "tbsync.autodiscoverDone", false);
         tbSyncAccountSettings.init = true;
     },
 
@@ -29,7 +28,6 @@ var tbSyncAccountSettings = {
         if (tbSyncAccountSettings.init) {
             observerService.removeObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate");
             observerService.removeObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui");
-            observerService.removeObserver(tbSyncAccountSettings.autodiscoverObserver, "tbsync.autodiscoverDone");
         }
     },
 
@@ -147,16 +145,6 @@ var tbSyncAccountSettings = {
         if (confirm(tbSync.getLocalizedMessage("prompt.UnlockSettings"))) {
             tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype", "custom");
             this.loadSettings();
-        }
-    },
-    
-    autodiscoverObserver: {
-        observe: function (aSubject, aTopic, aData) {
-            //only update if request for this account
-            if (aData == tbSyncAccountSettings.selectedAccount) {
-                tbSyncAccountSettings.loadSettings();
-                if (tbSync.db.getAccountSetting(aData, "servertype") == "auto") setTimeout(function(){ alert(tbSync.getLocalizedMessage("info.AutodiscoverOk")); }, 100);
-            }
         }
     },
 
@@ -452,7 +440,7 @@ var tbSyncAccountSettings = {
                         let status = tbSync.db.getAccountSetting(tbSync.currentProzess.account, "status");
                         switch (status) {
                             case "401":
-                                window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.getLocalizedMessage("account").replace("##accountname##", tbSync.db.getAccountSetting(account, "accountname")), account);
+                                window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.db.getAccount(account), function() {tbSync.addAccountToSyncQueue("resync", account);});
                                 break;
                             case "OK":
                             case "notsyncronized":

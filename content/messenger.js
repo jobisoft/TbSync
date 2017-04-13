@@ -7,7 +7,6 @@ var tbSyncMessenger = {
     onload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncMessenger.syncstateObserver, "tbsync.changedSyncstate", false);
-        observerService.addObserver(tbSyncMessenger.setPasswordObserver, "tbsync.setPassword", false);
 
         tbSync.init();
         tbSyncMessenger.syncTimer.start();
@@ -22,23 +21,6 @@ var tbSyncMessenger = {
     popupNotEnabled: function () {
         alert(tbSync.getLocalizedMessage("error.init"));
     },
-
-    /* * *
-    * Observer to catch setPassword requests
-    */
-    setPasswordObserver: {
-        observe: function (aSubject, aTopic, aData) {
-            let dot = aData.indexOf(".");
-            let account = aData.substring(0,dot);
-            let newpassword = aData.substring(dot+1);
-            tbSync.setPassword(account, newpassword);
-            tbSync.db.setAccountSetting(account, "state", "connecting");
-            tbSync.addAccountToSyncQueue("resync", account);
-            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
-        }
-    },
-
 
 
     /* * *

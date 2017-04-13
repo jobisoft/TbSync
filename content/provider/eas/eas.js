@@ -105,16 +105,67 @@ var eas = {
         return row;
     },
     
-    getHost4PasswordManager: function (account) {
-        let parts = tbSync.db.getAccountSetting(account, "user").split("@");
+    getConnection: function(account) {
+        let connection = {
+            protocol: (tbSync.db.getAccountSetting(account, "https") == "1") ? "https://" : "http://",
+            set host(newHost) { tbSync.db.setAccountSetting(account, "host", newHost); },
+            get server() { return tbSync.db.getAccountSetting(account, "host"); },
+            get host() { return this.protocol + tbSync.db.getAccountSetting(account, "host"); },
+            user: tbSync.db.getAccountSetting(account, "user"),
+        };
+        return connection;
+    },
+
+    getHost4PasswordManager: function (accountdata) {
+        let parts = accountdata.user.split("@");
         if (parts.length > 1) {
             return "eas://" + parts[1];
         } else {
-            return  "eas://" + tbSync.db.getAccountSetting(account, "accountname");
+            return "eas://" + accountdata.accountname;
         }
-        //return "eas://" + tbSync.db.getAccountSetting(account, "host");
     },
     
+    getPassword: function (accountdata) {
+        let host4PasswordManager = eas.getHost4PasswordManager(accountdata);
+        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
+        let logins = myLoginManager.findLogins({}, host4PasswordManager, null, "TbSync");
+        for (let i = 0; i < logins.length; i++) {
+            if (logins[i].username == accountdata.user) {
+                return logins[i].password;
+            }
+        }
+        //No password found - we should ask for one - this will be triggered by the 401 response, which also catches wrong passwords
+        return null;
+    },
+
+    setPassword: function (accountdata, newPassword) {
+        let host4PasswordManager = eas.getHost4PasswordManager(accountdata);
+        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
+        let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
+        let curPassword = eas.getPassword(accountdata);
+        
+        //Is there a loginInfo for this accountdata?
+        if (curPassword !== null) {
+            //remove current login info
+            let currentLoginInfo = new nsLoginInfo(host4PasswordManager, null, "TbSync", accountdata.user, curPassword, "", "");
+            try {
+                myLoginManager.removeLogin(currentLoginInfo);
+            } catch (e) {
+                this.dump("Error removing loginInfo", e);
+            }
+        }
+        
+        //create loginInfo with new password
+        if (newPassword != "") {
+            let newLoginInfo = new nsLoginInfo(host4PasswordManager, null, "TbSync", accountdata.user, newPassword, "", "");
+            try {
+                myLoginManager.addLogin(newLoginInfo);
+            } catch (e) {
+                this.dump("Error adding loginInfo", e);
+            }
+        }
+    } ,
+
     getNewFolderEntry: function () {
         let folder = {
             "account" : "",
@@ -214,7 +265,7 @@ var eas = {
         }
 
         // check if connection has data
-        let connection = tbSync.getConnection(account);
+        let connection = tbSync.eas.getConnection(account);
         if (connection.server == "" || connection.user == "") {
             this.finishSync(syncdata, "nouserhost");
             return;
@@ -501,8 +552,8 @@ var eas = {
         
         if (tbSync.prefSettings.getBoolPref("debugwbxml")) tbSync.debuglog(wbxml, "["+tbSync.currentProzess.state+"] sending:");
 
-        let connection = tbSync.getConnection(syncdata.account);
-        let password = tbSync.getPassword(connection);
+        let connection = tbSync.eas.getConnection(syncdata.account);
+        let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
 
         let deviceType = 'Thunderbird';
         let deviceId = tbSync.db.getAccountSetting(syncdata.account, "deviceId");
@@ -570,7 +621,7 @@ var eas = {
                 case 451: // Redirect - update host and login manager 
                     let header = req.getResponseHeader("X-MS-Location");
                     let newHost = header.slice(header.indexOf("://") + 3, header.indexOf("/M"));
-                    let connection = tbSync.getConnection(syncdata.account);
+                    let connection = tbSync.eas.getConnection(syncdata.account);
 
                     tbSync.dump("redirect (451)", "header: " + header + ", oldHost: " + connection.host + ", newHost: " + newHost);
 

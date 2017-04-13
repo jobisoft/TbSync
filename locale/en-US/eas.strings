@@ -1,2 +1,7 @@
-newaccount.add=Add account
-newaccount.search=Autodiscover settings and add account
+newaccount.add_custom=Add account
+newaccount.add_outlook.com=Add outlook.com account
+newaccount.add_auto=Autodiscover settings and add account
+
+info.AutodiscoverOk=Autodiscover completed successfully, you can now check the optional settings and connect this account.
+info.AutodiscoverBadVersion=Server does not support ActiveSync v2.5 or v14.0 (only ##versions##). TbSync will not work with this ActiveSync server.
+info.AutodiscoverFailed=Autodiscover for user <##user##> failed. Your ActiveSync provider does not seem to support Autodiscover. Please choose "custom configuration" as your server configuration and enter all settings manually.

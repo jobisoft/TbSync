@@ -278,58 +278,6 @@ var tbSync = {
         foStream.close();
     },
 
-    getConnection: function(account) {
-        let connection = {
-            protocol: (tbSync.db.getAccountSetting(account, "https") == "1") ? "https://" : "http://",
-            set host(newHost) { tbSync.db.setAccountSetting(account, "host", newHost); },
-            get server() { return tbSync.db.getAccountSetting(account, "host"); },
-            get host() { return this.protocol + tbSync.db.getAccountSetting(account, "host"); },
-            get host4PasswordManager() { return tbSync[tbSync.db.getAccountSetting(account, "provider")].getHost4PasswordManager(account);},
-            user: tbSync.db.getAccountSetting(account, "user"),
-        };
-        return connection;
-    },
-
-    getPassword: function (connection) {
-        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-        let logins = myLoginManager.findLogins({}, connection.host4PasswordManager, null, "TbSync");
-        for (let i = 0; i < logins.length; i++) {
-            if (logins[i].username == connection.user) {
-                return logins[i].password;
-            }
-        }
-        //No password found - we should ask for one - this will be triggered by the 401 response, which also catches wrong passwords
-        return null;
-    },
-
-    setPassword: function (account, newPassword) {
-        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-        let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
-        let connection = this.getConnection(account);
-        let curPassword = this.getPassword(connection);
-        
-        //Is there a loginInfo for this connection?
-        if (curPassword !== null) {
-            //remove current login info
-            let currentLoginInfo = new nsLoginInfo(connection.host4PasswordManager, null, "TbSync", connection.user, curPassword, "", "");
-            try {
-                myLoginManager.removeLogin(currentLoginInfo);
-            } catch (e) {
-                this.dump("Error removing loginInfo", e);
-            }
-        }
-        
-        //create loginInfo with new password
-        if (newPassword != "") {
-            let newLoginInfo = new nsLoginInfo(connection.host4PasswordManager, null, "TbSync", connection.user, newPassword, "", "");
-            try {
-                myLoginManager.addLogin(newLoginInfo);
-            } catch (e) {
-                this.dump("Error adding loginInfo", e);
-            }
-        }
-    } ,
-
     setTargetModified : function (folder) {
         if (folder.status == "OK") {
             tbSync.db.setAccountSetting(folder.account, "status", "notsyncronized");

@@ -27,17 +27,16 @@
             <rows>
                 <row>
                     <vbox pack="center"><label value="&name;" /></vbox>
-                    <textbox id="tbsync.newaccount.name" oninput="tbSyncEasNewAccount.onUserInput();"/>
+                    <textbox id="tbsync.newaccount.name" oninput="tbSyncEasNewAccount.onUserTextInput();"/>
                 </row>
                 <row>
                     <vbox pack="center"><label value="&user;" /></vbox>
-                    <textbox id="tbsync.newaccount.user"  oninput="tbSyncEasNewAccount.onUserInput();"/>
+                    <textbox id="tbsync.newaccount.user"  oninput="tbSyncEasNewAccount.onUserTextInput();"/>
                 </row>
                 <row>
                     <vbox pack="center"><label value="&server;" /></vbox>
-                    <menulist id="tbsync.newaccount.servertype"  oncommand="tbSyncEasNewAccount.onUserInput();">
+                    <menulist id="tbsync.newaccount.servertype" oncommand="tbSyncEasNewAccount.onUserDropdown();">
                         <menupopup>
-                            <menuitem hidden="true" label="&servertype.setup;" value="" />
                             <menuitem label="&servertype.auto;" value="auto" />
                             <menuitem label="&servertype.custom;" value="custom" />
                             <menuseparator/>
