@@ -403,6 +403,7 @@ var contactsync = {
                         num = num + 1;
                     }
                     if (moreavilable === 1) {
+                        tbSync.dump("Receiving cards", "Server told us, he has more cards. Requesting next set (would be a shame, if server sends them one by one).");
                         wbxml = wbxmlsend.replace('SyncKeyReplace', syncdata.synckey);
                         wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
                         eas.Send(wbxml, callback.bind(this), "Sync", syncdata);
