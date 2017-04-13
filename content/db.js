@@ -2,13 +2,13 @@
 
 var db = {
 
-    changelogFile : "changelog_0_7.json",
+    changelogFile : "changelog.json",
     changelog: [], 
 
-    accountsFile : "accounts_0_7.json",
+    accountsFile : "accounts.json",
     accounts: { sequence: 0, data : {} }, //data[account] = {row}
 
-    foldersFile : "folders_0_7.json",
+    foldersFile : "folders.json",
     folders: {}, //assoziative array of assoziative array : folders[<int>accountID][<string>folderID] = {row} 
 
     accountsTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
