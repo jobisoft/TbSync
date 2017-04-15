@@ -177,11 +177,16 @@ var tbSyncEasNewAccount = {
                 }
             } else if (req.status === 401) {
                 //Report wrong password and start again
-                document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
-                document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
-                document.documentElement.getButton("cancel").disabled = false;
-                document.documentElement.getButton("extra1").disabled = false;
-                window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", accountdata, function() {tbSyncEasNewAccount.autodiscover(accountdata, tbSync.eas.getPassword(accountdata));});
+                window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", accountdata, 
+                    function() {
+                        tbSyncEasNewAccount.autodiscover(accountdata, tbSync.eas.getPassword(accountdata));
+                    },
+                    function() {                
+                        document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
+                        document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
+                        document.documentElement.getButton("cancel").disabled = false;
+                        document.documentElement.getButton("extra1").disabled = false;
+                    });
             } else {
                 tbSync.dump("Error on EAS autodiscover (" + req.status + ")", (req.responseText) ? req.responseText : urls[index]);
                 this.autodiscoverHTTP(accountdata, password, urls, index+1);
