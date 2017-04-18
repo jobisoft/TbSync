@@ -105,6 +105,22 @@ var eas = {
         return row;
     },
     
+    logxml : function (wbxml, what) {
+        if (tbSync.prefSettings.getBoolPref("log.toconsole") || tbSync.prefSettings.getBoolPref("log.tofile")) {
+
+                //let xml = decodeURIComponent(escape(wbxmltools.convert2xml(wbxml).split('><').join('>\n<')));
+                let xml = tbSync.decode_utf8(tbSync.wbxmltools.convert2xml(wbxml).split('><').join('>\n<'));
+                tbSync.dump(what + " (XML)", xml);
+
+                //let charcodes = [];
+                //for (let i=0; i< wbxml.length; i++) charcodes.push(wbxml.charCodeAt(i).toString(16));
+                //let bytestring = charcodes.join(" ");
+                //tbSync.dump(aMessage + " (bytes)", bytestring);
+                //tbSync.appendToFile("wbxml-debug.log", "\n\n" + aMessage + " (bytes)\n");
+                //tbSync.appendToFile("wbxml-debug.log", bytestring);
+        }
+    },
+ 
     getConnection: function(account) {
         let connection = {
             protocol: (tbSync.db.getAccountSetting(account, "https") == "1") ? "https://" : "http://",
@@ -552,7 +568,7 @@ var eas = {
     Send: function (wbxml, callback, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
         
-        if (tbSync.prefSettings.getBoolPref("debugwbxml")) tbSync.debuglog(wbxml, "["+tbSync.currentProzess.state+"] sending:");
+        tbSync.eas.logxml(wbxml, "["+tbSync.currentProzess.state+"] sending:");
 
         let connection = tbSync.eas.getConnection(syncdata.account);
         let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
@@ -563,9 +579,8 @@ var eas = {
         // Create request handler
         let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
         req.mozBackgroundRequest = true;
-        if (tbSync.prefSettings.getBoolPref("debugwbxml")) {
-            tbSync.dump("sending", "POST " + connection.host + '/Microsoft-Server-ActiveSync?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
-        }
+        tbSync.dump("sending", "POST " + connection.host + '/Microsoft-Server-ActiveSync?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
+
         req.open("POST", connection.host + '/Microsoft-Server-ActiveSync?Cmd=' + command + '&User=' + connection.user + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
         req.overrideMimeType("text/plain");
         req.setRequestHeader("User-Agent", deviceType + ' ActiveSync');
@@ -597,7 +612,7 @@ var eas = {
 
                 case 200: //OK
                     wbxml = req.responseText;
-                    if (tbSync.prefSettings.getBoolPref("debugwbxml")) tbSync.debuglog(wbxml,"receiving");
+                    tbSync.eas.logxml(wbxml,"receiving");
 
                     //What to do on error? IS this an error? TODO
                     if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {

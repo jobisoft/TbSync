@@ -78,8 +78,18 @@
     </prefpane>
 
     <prefpane id="Help" label="&pref.help;" image="chrome://tbsync/skin/help.png" >
+        <preferences>
+                <preference id="log" name="extensions.tbsync.log.tofile" type="bool" instantApply="true" />
+        </preferences>
         <hbox  width="750" height="450" >
-            <iframe flex="1" src="chrome://tbsync/content/help.html" />
+            <vbox flex="1" style="padding: 0 2em;" >
+                <html:p><html:b>Birthdays</html:b></html:p>
+                <html:p>There seems to be a problem with entering birthday data in some versions of Zarafa Webaccess. It does work in the Webapp. This is why there is a check box "Send Birthday Information" in the account settings dialog. This is a bug in  Zarafa not in TbSync.</html:p>
+                <html:p><html:b>Debug</html:b></html:p>
+                <html:p>Enable debug log to store all debug messages and the xml being sent and received by TbSync in a log file.</html:p>
+                <html:p>Switch off debug output if no longer needed.</html:p>
+                <checkbox label="" preference="log" data="https://developer.mozilla.org/en-US/docs/Tools/Browser_Console"/>
+            </vbox>
          </hbox>
     </prefpane>
 

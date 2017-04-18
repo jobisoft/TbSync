@@ -26,7 +26,7 @@ var xmltools = {
 
     //print content of xml data object (if debug output enabled)
     printXmlData : function (data, lvl = 0) {
-        if (tbSync.prefSettings.getBoolPref("debugdata")) {
+        if ((tbSync.prefSettings.getBoolPref("log.toconsole") || tbSync.prefSettings.getBoolPref("log.tofile")) && tbSync.prefSettings.getBoolPref("log.easdata")) {
             for (let d in data) {
                 if (typeof(data[d]) == "object") {
                     tbSync.dump("DATA", " ".repeat(lvl) + d + " => ");

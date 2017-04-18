@@ -261,23 +261,14 @@ var tbSync = {
     },
 
     dump: function (what, aMessage) {
-        var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
-        consoleService.logStringMessage("[TbSync] " + what + " : " + aMessage);
-    },
-
-    debuglog : function (wbxml, aMessage) {
-        let charcodes = [];
-        for (let i=0; i< wbxml.length; i++) charcodes.push(wbxml.charCodeAt(i).toString(16));
-        let bytestring = charcodes.join(" ");
-        //let xml = decodeURIComponent(escape(wbxmltools.convert2xml(wbxml).split('><').join('>\n<')));
-        let xml = tbSync.decode_utf8(tbSync.wbxmltools.convert2xml(wbxml).split('><').join('>\n<'));
-
-        //tbSync.dump(aMessage + " (bytes)", bytestring);
-        tbSync.dump(aMessage + " (xml)", xml);
-        //tbSync.appendToFile("wbxml-debug.log", "\n\n" + aMessage + " (bytes)\n");
-        //tbSync.appendToFile("wbxml-debug.log", bytestring);
-        tbSync.appendToFile("wbxml-debug.log", "\n\n" + aMessage + " (xml)\n");
-        tbSync.appendToFile("wbxml-debug.log", xml);
+        if (tbSync.prefSettings.getBoolPref("log.toconsole")) {
+            var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
+            consoleService.logStringMessage("[TbSync] " + what + " : " + aMessage);
+        }
+        
+        if (tbSync.prefSettings.getBoolPref("log.tofile")) {
+            tbSync.appendToFile("debug.log", "\n******\n" + what + "\n" + aMessage + "\n******\n");
+        }
     },
 
     appendToFile: function (filename, data) {

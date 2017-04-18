@@ -459,7 +459,7 @@ var contactsync = {
         while (cards.hasMoreElements()) {
             card = cards.getNext();
 
-            if (numofcards > maxnumbertosend) {
+            if (numofcards >= maxnumbertosend) {
                 morecards = true;
                 break;
             }
@@ -588,7 +588,7 @@ var contactsync = {
         while (cards.hasMoreElements()) {
             card = cards.getNext();
 
-            if (numofcards > maxnumbertosend) {
+            if (numofcards >= maxnumbertosend) {
                 morecards = true;
                 break;
             }
