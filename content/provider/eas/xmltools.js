@@ -3,14 +3,14 @@
 var xmltools = {
 
     isString : function (obj) {
-	return (Object.prototype.toString.call(obj) === '[object String]');
+        return (Object.prototype.toString.call(obj) === '[object String]');
     },
-	
+        
     checkString : function(d) {
-	if (this.isString(d)) return d;
-	else return "";
+        if (this.isString(d)) return d;
+        else return "";
     },	    
-	
+        
     nodeAsArray : function (node) {
         let a = [];
         if (node) {
@@ -27,15 +27,17 @@ var xmltools = {
     //print content of xml data object (if debug output enabled)
     printXmlData : function (data, lvl = 0) {
         if ((tbSync.prefSettings.getBoolPref("log.toconsole") || tbSync.prefSettings.getBoolPref("log.tofile")) && tbSync.prefSettings.getBoolPref("log.easdata")) {
+            let dump = "\n";
             for (let d in data) {
                 if (typeof(data[d]) == "object") {
-                    tbSync.dump("DATA", " ".repeat(lvl) + d + " => ");
-                    this.printXmlData(data[d], lvl+1);                
-                    tbSync.dump("DATA", " ".repeat(lvl) + d + " <= ");
+                    dump = dump + " ".repeat(lvl) + d + " => " + this.printXmlData(data[d], lvl+1) + "\n";
+                    dump = dump + " ".repeat(lvl) + d + " <= ";
                 } else {
-                    tbSync.dump("DATA"," ".repeat(lvl) + d + " = [" + data[d] + "]");
+                    dump = dump + " ".repeat(lvl) + d + " = [" + data[d] + "]\n";
                 }
             }
+            if (lvl == 0) tbSync.dump("DATA", dump);
+            else return dump;
         }
     },
 

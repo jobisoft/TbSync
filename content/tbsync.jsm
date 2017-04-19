@@ -32,6 +32,7 @@ var tbSync = {
     enabled: false,
     initjobs: 0,
     bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tbsync/locale/tbSync.strings"),
+    mozConsoleService : Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService),
 
     prefWindowObj: null,
     decoder : new TextDecoder(),
@@ -262,13 +263,36 @@ var tbSync = {
 
     dump: function (what, aMessage) {
         if (tbSync.prefSettings.getBoolPref("log.toconsole")) {
-            var consoleService = Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService);
-            consoleService.logStringMessage("[TbSync] " + what + " : " + aMessage);
+            tbSync.mozConsoleService.logStringMessage("[TbSync] " + what + " : " + aMessage);
         }
         
         if (tbSync.prefSettings.getBoolPref("log.tofile")) {
-            tbSync.appendToFile("debug.log", "\n******\n" + what + "\n" + aMessage + "\n******\n");
+            let now = new Date();
+			tbSync.appendToFile("debug.log", "** " + now.toString() + " **\n[" + what + "] : " + aMessage + "\n\n");
         }
+    },
+
+	consoleListener: {
+		observe : function (aMessage) {
+			if (tbSync.prefSettings.getBoolPref("log.tofile")) {
+				let now = new Date();
+				aMessage.QueryInterface(Components.interfaces.nsIScriptError);
+				//errorFlag	0x0	Error messages. A pseudo-flag for the default, error case.
+				//warningFlag	0x1	Warning messages.
+				//exceptionFlag	0x2	An exception was thrown for this case - exception-aware hosts can ignore this.
+				//strictFlag	0x4	One of the flags declared in nsIScriptError.
+				//infoFlag	0x8	Just a log message
+				if (!(aMessage.flags & 0x1 || aMessage.flags & 0x8)) tbSync.appendToFile("debug.log", "** " + now.toString() + " **\n" + aMessage + "\n\n");
+			}
+		}
+	},
+
+    initFile: function (filename) {
+        let file = FileUtils.getFile("ProfD", ["TbSync",filename]);
+        //create a strem to write to that file
+        let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
+        foStream.init(file, 0x02 | 0x08 | 0x20, parseInt("0666", 8), 0); // write, create, truncate
+        foStream.close();
     },
 
     appendToFile: function (filename, data) {
@@ -279,7 +303,7 @@ var tbSync = {
         foStream.write(data, data.length);
         foStream.close();
     },
-
+    
     setTargetModified : function (folder) {
         if (folder.status == "OK") {
             tbSync.db.setAccountSetting(folder.account, "status", "notsyncronized");
@@ -762,6 +786,10 @@ var tbSync = {
     }
 
 };
+
+//clear debug log on start
+tbSync.initFile("debug.log");
+tbSync.mozConsoleService.registerListener(tbSync.consoleListener);
 
 // load common subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
 tbSync.includeJS("chrome://tbsync/content/db.js");

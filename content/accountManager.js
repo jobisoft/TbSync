@@ -1,6 +1,9 @@
 "use strict";
 
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+Components.utils.import("resource://app/modules/mailServices.js"); //using mailservices to open message window
+Components.utils.import("resource://gre/modules/osfile.jsm");
+Components.utils.import("resource://gre/modules/Task.jsm");
 
 var tbSyncAccountManager = {
 
@@ -199,8 +202,10 @@ var tbSyncAccountManager = {
         }
     },
 
-
-
+    openFileTab: function (file) {
+        return this.openTBtab(tbSync.getAbsolutePath(file));
+    },
+    
     openTBtab: function (url) {
         var tabmail = null;
         var mail3PaneWindow =

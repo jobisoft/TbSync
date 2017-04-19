@@ -110,7 +110,7 @@ var eas = {
 
                 //let xml = decodeURIComponent(escape(wbxmltools.convert2xml(wbxml).split('><').join('>\n<')));
                 let xml = tbSync.decode_utf8(tbSync.wbxmltools.convert2xml(wbxml).split('><').join('>\n<'));
-                tbSync.dump(what + " (XML)", xml);
+                tbSync.dump(what, "\n" + xml);
 
                 //let charcodes = [];
                 //for (let i=0; i< wbxml.length; i++) charcodes.push(wbxml.charCodeAt(i).toString(16));
@@ -568,7 +568,7 @@ var eas = {
     Send: function (wbxml, callback, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
         
-        tbSync.eas.logxml(wbxml, "["+tbSync.currentProzess.state+"] sending:");
+        tbSync.eas.logxml(wbxml, "Sending XML for "+tbSync.currentProzess.state);
 
         let connection = tbSync.eas.getConnection(syncdata.account);
         let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
@@ -612,7 +612,7 @@ var eas = {
 
                 case 200: //OK
                     wbxml = req.responseText;
-                    tbSync.eas.logxml(wbxml,"receiving");
+                    tbSync.eas.logxml(wbxml, "Receiving XML");
 
                     //What to do on error? IS this an error? TODO
                     if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
