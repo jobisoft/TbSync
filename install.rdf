@@ -4,7 +4,7 @@
     <Description about="urn:mozilla:install-manifest">
         <em:id>tbsync@jobisoft.de</em:id>
         <em:name>TbSync (Provider for Exchange ActiveSync)</em:name>
-        <em:version>0.6.7</em:version>
+        <em:version>0.6.7.1</em:version>
         <em:description>Synchronize Exchange ActiveSync accounts to Thunderbird Addressbook and Calendar</em:description>
         <em:creator>John Bieling</em:creator>
         <em:homepageURL>https://github.com/jobisoft/TbSync</em:homepageURL>
@@ -22,7 +22,7 @@
            <Description>
                 <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
                 <em:minVersion>10.0</em:minVersion>
-                <em:maxVersion>45.*</em:maxVersion>
+                <em:maxVersion>52.*</em:maxVersion>
            </Description>
 
         </em:targetApplication>
