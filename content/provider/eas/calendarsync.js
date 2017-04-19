@@ -166,6 +166,7 @@ var calendarsync = {
         // we need to wait for the async job to finish
         // I would realy like to access the getItemById function of the storage provider, but duno how..
         // that function directly returns the id from the private member memory without going thru a listener
+        tbSync.dump("getItem","waiting for async job to finish");
         while (!opDone) {
             //sleep 1s and check again
             let date = Date.now();
@@ -174,6 +175,7 @@ var calendarsync = {
                 curDate = Date.now();
             } while (curDate-date < 1000);
         }
+        tbSync.dump("getItem","async job finished");
         return requestedItem;
     },
 
@@ -272,9 +274,9 @@ var calendarsync = {
         if (data.Sensitivity) item.setProperty("CLASS", CLASS[data.Sensitivity]);
 
  /*
-	
-	Missing : MeetingStatus, Attendees, Attachements, Repeated Events
-	
+        
+        Missing : MeetingStatus, Attendees, Attachements, Repeated Events
+        
             <OrganizerName xmlns='Calendar'>John Bieling</OrganizerName>
             <OrganizerEmail xmlns='Calendar'>john.bieling@uni-bonn.de</OrganizerEmail>
 
@@ -313,7 +315,7 @@ var calendarsync = {
 //        if (item.hasProperty("EASUID")) wbxml.atag("UID", item.getProperty("EASUID"));
 //        else wbxml.atag("UID", item.id);
 // FOR NOW WE SIMPLY DO NOT SEND ANY UID TO THE SERVER
-	    
+            
         //IMPORTANT in EAS v16 it is no longer allowed to send a UID
         
         
