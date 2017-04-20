@@ -83,11 +83,11 @@ var tbSync = {
     addAccountToSyncQueue: function (job, account = "") {
         if (account == "") {
             //Add all connected accounts to the queue
-            let accounts = tbSync.db.getAccounts().IDs;
-            for (let i=0; i<accounts.length; i++) {
-                let newentry = job + "." + accounts[i];
+            let accounts = tbSync.db.getAccounts();
+            for (let i=0; i<accounts.IDs.length; i++) {
+                let newentry = job + "." + accounts.IDs[i];
                 //do not add same job more than once
-                if (tbSync.syncQueue.filter(item => item == newentry).length == 0) tbSync.syncQueue.push( newentry );
+                if (accounts.data[accounts.IDs[i]].state != "disconnected" && tbSync.syncQueue.filter(item => item == newentry).length == 0) tbSync.syncQueue.push( newentry );
             }
         } else {
             //Add specified account to the queue
