@@ -74,6 +74,8 @@ var wbxmltools = {
                     break;
                     
                 case 0x02: // A character entity. Followed by a mb_u_int32 encoding the character entity number.
+                    tbSync.dump("wbxml", "Encoded character entity has not yet been implemented. Sorry.");
+                    return  "WBXML PARSE ERROR"; //abort on error, returned error string needs to be catched later as error for user
                     break;
                 
                 case 0x03: // Inline string followed by a termstr. (0x00)
@@ -98,6 +100,8 @@ var wbxmltools = {
                 case 0xC2: // Single-byte document-type-specific extension token.
                 case 0xC3: // Opaque document-type-specific data.
                 case 0xC4: // Unknown tag, with content and attributes.
+                    tbSync.dump("wbxml", "Global token <" + token + "> has not yet been implemented. Sorry.");
+                    return  "WBXML PARSE ERROR"; //abort on error, returned error string needs to be catched later as error for user
                     break;
                     
                 default:
@@ -117,7 +121,7 @@ var wbxmltools = {
                         }
                     } else {
                         tbSync.dump("wbxml", "Unknown token <" + token + "> for codepage <"+codepage+">");
-                        return  '<?xml version="1.0"?>'; //abort on error
+                        return  "WBXML PARSE ERROR"; //abort on error, returned error string needs to be catched later as error for user
                     }
             }
             num = num + 1;
