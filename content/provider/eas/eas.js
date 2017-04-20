@@ -108,13 +108,17 @@ var eas = {
     logxml : function (wbxml, what) {
         if (tbSync.prefSettings.getBoolPref("log.toconsole") || tbSync.prefSettings.getBoolPref("log.tofile")) {
 
+                //log wbxml
+                let charcodes = [];
+                for (let i=0; i< wbxml.length; i++) charcodes.push(wbxml.charCodeAt(i).toString(16));
+                let bytestring = charcodes.join(" ");
+                tbSync.dump(what + " (WBXML)", "\n" + bytestring);
+
                 //let xml = decodeURIComponent(escape(wbxmltools.convert2xml(wbxml).split('><').join('>\n<')));
                 let xml = tbSync.decode_utf8(tbSync.wbxmltools.convert2xml(wbxml).split('><').join('>\n<'));
-                tbSync.dump(what, "\n" + xml);
+                tbSync.dump(what +" (XML)", "\n" + xml);
 
-                //let charcodes = [];
-                //for (let i=0; i< wbxml.length; i++) charcodes.push(wbxml.charCodeAt(i).toString(16));
-                //let bytestring = charcodes.join(" ");
+                
                 //tbSync.dump(aMessage + " (bytes)", bytestring);
                 //tbSync.appendToFile("wbxml-debug.log", "\n\n" + aMessage + " (bytes)\n");
                 //tbSync.appendToFile("wbxml-debug.log", bytestring);
@@ -568,7 +572,7 @@ var eas = {
     Send: function (wbxml, callback, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
         
-        tbSync.eas.logxml(wbxml, "Sending XML for "+tbSync.currentProzess.state);
+        tbSync.eas.logxml(wbxml, "Sending data "+tbSync.currentProzess.state);
 
         let connection = tbSync.eas.getConnection(syncdata.account);
         let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
@@ -612,7 +616,7 @@ var eas = {
 
                 case 200: //OK
                     wbxml = req.responseText;
-                    tbSync.eas.logxml(wbxml, "Receiving XML");
+                    tbSync.eas.logxml(wbxml, "Receiving Data");
 
                     //What to do on error? IS this an error? TODO
                     if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {

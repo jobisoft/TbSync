@@ -88,7 +88,7 @@
                 <html:p><html:b>Debug</html:b></html:p>
                 <html:p>If you encounter bugs, you can help to fix them by sending in a debug report. Activate debug logging only as long as needed, because it slows down Thunderbird.</html:p>
                 <checkbox label="Enable debug logging to store all debug messages and the xml being sent and received by TbSync in a log file." preference="log" />                
-                <html:p> To generate a clean bug report, restart Thunderbird (which clears the log) and perform all steps needed to trigger the bug, <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSyncAccountManager.openFileTab('debug.log');" style="color:blue;text-decoration: underline">open the debug report</html:span> and copy it into an email to john.bieling@gmx.de. Do not forget a short bug description.</html:p>
+                <html:p> To generate a clean bug report, restart Thunderbird (which clears the log) and perform all steps needed to trigger the bug, <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSyncAccountManager.openFileTab('debug.log');" style="color:blue;text-decoration: underline">open the debug report (click here)</html:span> and copy it into an email to john.bieling@gmx.de. Do not forget a short bug description.</html:p>
             </vbox>
          </hbox>
     </prefpane>

@@ -27,16 +27,16 @@ var xmltools = {
     //print content of xml data object (if debug output enabled)
     printXmlData : function (data, lvl = 0) {
         if ((tbSync.prefSettings.getBoolPref("log.toconsole") || tbSync.prefSettings.getBoolPref("log.tofile")) && tbSync.prefSettings.getBoolPref("log.easdata")) {
-            let dump = "\n";
+            let dump = "";
             for (let d in data) {
                 if (typeof(data[d]) == "object") {
-                    dump = dump + " ".repeat(lvl) + d + " => " + this.printXmlData(data[d], lvl+1) + "\n";
-                    dump = dump + " ".repeat(lvl) + d + " <= ";
+                    dump = dump + " ".repeat(lvl) + d + " => \n" + this.printXmlData(data[d], lvl+1);
+                    dump = dump + " ".repeat(lvl) + d + " <= \n";
                 } else {
                     dump = dump + " ".repeat(lvl) + d + " = [" + data[d] + "]\n";
                 }
             }
-            if (lvl == 0) tbSync.dump("DATA", dump);
+            if (lvl == 0) tbSync.dump("Extracted XML data", "\n" + dump);
             else return dump;
         }
     },

@@ -117,6 +117,7 @@ var wbxmltools = {
                         }
                     } else {
                         tbSync.dump("wbxml", "Unknown token <" + token + "> for codepage <"+codepage+">");
+                        return  '<?xml version="1.0"?>'; //abort on error
                     }
             }
             num = num + 1;
