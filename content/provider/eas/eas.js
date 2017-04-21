@@ -348,11 +348,10 @@ var eas = {
         tbSync.dump("policykeyCallback("+syncdata.next+")", policykey);
         tbSync.db.setAccountSetting(syncdata.account, "policykey", policykey);
 
-        //next == 1 and 2 = resend - next ==3 = GetFolderIds() - 
+        //next == 1  => resend - next ==2 => GetFolderIds() - 
         // - the protocol requests us to first send zero as policykey and get a temp policykey in return,
         // - the we need to resend this tempkey and get the final one 
-        // - then we need to resend the final one and check, if we get that one back - THIS CHECK IS MISSING (TODO)
-        if (syncdata.next < 3) {
+        if (syncdata.next < 2) {
 
             //re-request provision
             let wbxml = wbxmltools.createWBXML();
