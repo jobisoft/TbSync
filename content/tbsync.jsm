@@ -190,9 +190,18 @@ var tbSync = {
 
         //update account status
         tbSync.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
-        tbSync.db.setAccountSetting(syncdata.account, "status", syncdata.status);
+        
+        //scan all folders of this account and if they are all ok, set global status
+        let status = "OK";
+        let folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);
+        for (let i=0; i < folders.length && status == "OK"; i++) {
+            if (folders[i].status != "OK") status = "notsyncronized";
+        }
+        tbSync.db.setAccountSetting(syncdata.account, "status", status);
+
+        //done
         tbSync.setSyncState("accountdone", syncdata); 
-                
+
         //work on the queue
         tbSync.workSyncQueue();
     },
@@ -279,24 +288,24 @@ var tbSync = {
         
         if (tbSync.prefSettings.getBoolPref("log.tofile")) {
             let now = new Date();
-			tbSync.appendToFile("debug.log", "** " + now.toString() + " **\n[" + what + "] : " + aMessage + "\n\n");
+            tbSync.appendToFile("debug.log", "** " + now.toString() + " **\n[" + what + "] : " + aMessage + "\n\n");
         }
     },
 
-	consoleListener: {
-		observe : function (aMessage) {
-			if (tbSync.prefSettings.getBoolPref("log.tofile")) {
-				let now = new Date();
-				aMessage.QueryInterface(Components.interfaces.nsIScriptError);
-				//errorFlag	0x0	Error messages. A pseudo-flag for the default, error case.
-				//warningFlag	0x1	Warning messages.
-				//exceptionFlag	0x2	An exception was thrown for this case - exception-aware hosts can ignore this.
-				//strictFlag	0x4	One of the flags declared in nsIScriptError.
-				//infoFlag	0x8	Just a log message
-				if (!(aMessage.flags & 0x1 || aMessage.flags & 0x8)) tbSync.appendToFile("debug.log", "** " + now.toString() + " **\n" + aMessage + "\n\n");
-			}
-		}
-	},
+    consoleListener: {
+        observe : function (aMessage) {
+            if (tbSync.prefSettings.getBoolPref("log.tofile")) {
+                let now = new Date();
+                aMessage.QueryInterface(Components.interfaces.nsIScriptError);
+                //errorFlag	0x0	Error messages. A pseudo-flag for the default, error case.
+                //warningFlag	0x1	Warning messages.
+                //exceptionFlag	0x2	An exception was thrown for this case - exception-aware hosts can ignore this.
+                //strictFlag	0x4	One of the flags declared in nsIScriptError.
+                //infoFlag	0x8	Just a log message
+                if (!(aMessage.flags & 0x1 || aMessage.flags & 0x8)) tbSync.appendToFile("debug.log", "** " + now.toString() + " **\n" + aMessage + "\n\n");
+            }
+        }
+    },
 
     initFile: function (filename) {
         let file = FileUtils.getFile("ProfD", ["TbSync",filename]);
