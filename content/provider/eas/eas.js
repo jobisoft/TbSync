@@ -87,7 +87,7 @@ var eas = {
             "account" : "",
             "accountname": "",
             "provider": "eas",
-            "policykey" : "", 
+            "policykey" : 0, 
             "foldersynckey" : "0",
             "lastsynctime" : "0", 
             "state" : "disconnected",
@@ -243,13 +243,13 @@ var eas = {
 
     connectAccount: function (account) {
         db.setAccountSetting(account, "state", "connecting");
-        db.setAccountSetting(account, "policykey", "");
+        db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
     },
 
     disconnectAccount: function (account) {
         db.setAccountSetting(account, "state", "disconnected"); //connected, connecting or disconnected
-        db.setAccountSetting(account, "policykey", "");
+        db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
 
         //Delete all targets
@@ -305,7 +305,7 @@ var eas = {
         switch (job) {
             case "resync":
                 syncdata.fResync = true;
-                tbSync.db.setAccountSetting(account, "policykey", "");
+                tbSync.db.setAccountSetting(account, "policykey", 0);
 
                 //if folderID present, resync only that one folder, otherwise all folders
                 if (folderID !== "") {
@@ -316,7 +316,7 @@ var eas = {
                 }
                 
             case "sync":
-                if (tbSync.db.getAccountSetting(account, "provision") == "1" && tbSync.db.getAccountSetting(account, "policykey") == "") {
+                if (tbSync.db.getAccountSetting(account, "provision") == "1" && tbSync.db.getAccountSetting(account, "policykey") == 0) {
                     this.getPolicykey(syncdata);
                 } else {
                     this.getFolderIds(syncdata);
@@ -327,6 +327,8 @@ var eas = {
 
     getPolicykey: function(syncdata) {
         tbSync.setSyncState("requestingprovision", syncdata); 
+        //reset policykey
+        tbSync.db.setAccountSetting(syncdata.account, "policykey", 0);
 
         //request provision
         let wbxml = wbxmltools.createWBXML();
@@ -344,16 +346,27 @@ var eas = {
     },
     
     getPolicykeyCallback: function (responseWbxml, syncdata) {
-        let policykey = wbxmltools.FindPolicykey(responseWbxml);
+
+        let wbxmlData = eas.getDataFromResponse(responseWbxml, syncdata, function(){eas.finishSync(syncdata, "policykey-failed")});
+        if (wbxmlData === false) return;
+
+        let policykey = 0;
+        if (wbxmlData.Provision.Policies.Policy.PolicyKey) {
+            policykey = wbxmlData.Provision.Policies.Policy.PolicyKey;
+        } else {
+            eas.finishSync(syncdata, "policykey-failed");
+            return;
+        }
+        
         tbSync.dump("policykeyCallback("+syncdata.next+")", policykey);
         tbSync.db.setAccountSetting(syncdata.account, "policykey", policykey);
 
         //next == 1  => resend - next ==2 => GetFolderIds() - 
-        // - the protocol requests us to first send zero as policykey and get a temp policykey in return,
-        // - the we need to resend this tempkey and get the final one 
+        // - the protocol requests us to request a policykey and get a temp policykey in return,
+        // - than we need to resend this tempkey and acknowledge all policies and get the final key
         if (syncdata.next < 2) {
 
-            //re-request provision
+            //acknowledge provision
             let wbxml = wbxmltools.createWBXML();
             wbxml.switchpage("Provision");
             wbxml.otag("Provision");
@@ -369,7 +382,6 @@ var eas = {
             syncdata.next++;
             this.Send(wbxml.getBytes(), this.getPolicykeyCallback.bind(this), "Provision", syncdata);
         } else {
-            let policykey = wbxmltools.FindPolicykey(responseWbxml);
             tbSync.dump("final returned policykey", policykey);
             this.getFolderIds(syncdata);
         }
@@ -648,6 +660,7 @@ var eas = {
         req.setRequestHeader("Content-Length", wbxml.length);
         if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1") {
             req.setRequestHeader("X-MS-PolicyKey", tbSync.db.getAccountSetting(syncdata.account, "policykey"));
+            tbSync.dump("PolicyKey used",tbSync.db.getAccountSetting(syncdata.account, "policykey"));
         }
 
         req.timeout = 30000;
@@ -704,7 +717,6 @@ var eas = {
                     //does not affect the loginmanager - no further action needed
                     connection.host = newHost;
 
-                    //TODO: We could end up in a redirect loop - stop here and ask user to manually resync?
                     eas.initSync("resync", syncdata.account); //resync everything
                     break;
                     
