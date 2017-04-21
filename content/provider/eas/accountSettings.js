@@ -190,7 +190,7 @@ var tbSyncAccountSettings = {
             if (accounts.hasOwnProperty(data.account) && data.folderID !== "" && data.state != "done") { //if "Done" do not print folder info syncstate
                 target = " [" + tbSync.db.getFolderSetting(data.account, data.folderID, "name") + "]";
             }
-            document.getElementById('syncstate').textContent = tbSync.getLocalizedMessage("syncstate." + data.state) + target;
+            document.getElementById('syncstate').textContent = tbSync.getLocalizedMessage("syncstate." + data.state) + target + tbSync.getSyncChunks();
         } else {
             document.getElementById('syncstate').textContent = tbSync.getLocalizedMessage("status." + status);
         }

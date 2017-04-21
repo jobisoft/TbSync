@@ -130,7 +130,10 @@ var tbSync = {
 
     setSyncState: function(state, syncdata = null) {
         //set new state
+        tbSync.currentProzess.laststate = tbSync.currentProzess.state;
         tbSync.currentProzess.state = state;
+        if (tbSync.currentProzess.state != tbSync.currentProzess.laststate) tbSync.currentProzess.chunks = 0;
+
         if (syncdata !== null) {
             tbSync.currentProzess.account = syncdata.account;
             tbSync.currentProzess.folderID = syncdata.folderID;
@@ -143,6 +146,11 @@ var tbSync = {
         observerService.notifyObservers(null, "tbsync.changedSyncstate", "");
     },
 
+    getSyncChunks: function() {
+        if (tbSync.currentProzess.chunks > 1) return " #" + tbSync.currentProzess.chunks;
+        else return "";
+    },
+    
     resetSync: function () {
         //set state to idle
         tbSync.setSyncState("idle"); 

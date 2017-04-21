@@ -46,7 +46,7 @@ var tbSyncMessenger = {
                     target = " [" + target + "]";
                 }
                     
-                status.label = "TbSync: " + tbSync.getLocalizedMessage("syncstate." + data.state) + target;
+                status.label = "TbSync: " + tbSync.getLocalizedMessage("syncstate." + data.state) + target + tbSync.getSyncChunks();
                 
                 //TODO check if error and print in status
             }

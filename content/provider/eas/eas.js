@@ -635,6 +635,8 @@ var eas = {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
         
         tbSync.eas.logxml(wbxml, "Sending data "+tbSync.currentProzess.state);
+        if (tbSync.currentProzess.state == tbSync.currentProzess.laststate) tbSync.currentProzess.chunks++;
+        else tbSync.currentProzess.chunks = 0;
 
         let connection = tbSync.eas.getConnection(syncdata.account);
         let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
