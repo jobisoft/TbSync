@@ -63,9 +63,9 @@ var tbSyncEasNewAccount = {
                     newAccountEntry[prop] = fixedSettings[prop];
                   } 
                 }
-                tbSyncEasNewAccount.addAccount(newAccountEntry);
+                tbSyncEasNewAccount.addAccount(newAccountEntry, this.elementPass.value);
             } else if (servertype == "custom") {
-                tbSyncEasNewAccount.addAccount(newAccountEntry);
+                tbSyncEasNewAccount.addAccount(newAccountEntry, this.elementPass.value);
             } else if (servertype == "auto") {
                 document.documentElement.getButton("cancel").disabled = true;
                 document.documentElement.getButton("extra1").disabled = true;
@@ -75,10 +75,15 @@ var tbSyncEasNewAccount = {
         }
     },
     
-    addAccount (newAccountEntry) {
+    addAccount (newAccountEntry, password, msg) {
+        //also update password in PasswordManager
+        tbSync.eas.setPassword (newAccountEntry, password);
+
         //create a new EAS account and pass its id to updateAccountsList, which will select it
         //the onSelect event of the List will load the selected account
         window.opener.tbSyncAccountManager.updateAccountsList(tbSync.db.addAccount(newAccountEntry));
+
+        if (msg) alert(msg);
         tbSyncEasNewAccount.locked = false;
         window.close();
     },
@@ -260,13 +265,7 @@ var tbSyncEasNewAccount = {
         let c = commands.split(",");
         if (c.indexOf("Provision") > -1) accountdata.provision = "1";
         else accountdata.provision = "0";
-
-        //also update password in PasswordManager
-        tbSync.eas.setPassword (accountdata, password);
-        alert(tbSync.getLocalizedMessage("info.AutodiscoverOk","eas"));
         
-        tbSyncEasNewAccount.addAccount(accountdata);
-        tbSyncEasNewAccount.locked = false;
-        window.close();
+        tbSyncEasNewAccount.addAccount(accountdata, password, tbSync.getLocalizedMessage("info.AutodiscoverOk","eas"));
     }
 };
