@@ -172,7 +172,7 @@ var eas = {
             try {
                 myLoginManager.removeLogin(currentLoginInfo);
             } catch (e) {
-                this.dump("Error removing loginInfo", e);
+                tbSync.dump("Error removing loginInfo", e);
             }
         }
         
@@ -182,7 +182,7 @@ var eas = {
             try {
                 myLoginManager.addLogin(newLoginInfo);
             } catch (e) {
-                this.dump("Error adding loginInfo", e);
+                tbSync.dump("Error adding loginInfo", e);
             }
         }
     } ,
@@ -388,7 +388,6 @@ var eas = {
     },
 
     getFolderIdsCallback: function (wbxml, syncdata) {
-
         let wbxmlData = eas.getDataFromResponse(wbxml, syncdata, function(){this.finishSync(syncdata, "no-folders-found")});
         if (wbxmlData === false) return;
 
@@ -660,13 +659,17 @@ var eas = {
                     wbxml = req.responseText;
                     tbSync.eas.logxml(wbxml, "Receiving Data");
 
-                    //What to do on error? IS this an error? TODO
+                    //What to do on error? IS this an error? Yes!
                     if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
                         if (wbxml.length !== 0) {
-                            tbSync.dump("recieved", "expecting wbxml but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
+                            tbSync.dump("Recieved Data", "Expecting WBXML but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
                         }
+                        //Freenet.de hack - if we got back junk, the password is probably wrong. we need to stop anyhow, due to this error
+                        tbSync.dump("Recieved Data", "We got back junk, which *could* mean, the password is wrong. Prompting.");
+                        this.finishSync(syncdata, 401);
+                    } else {
+                        callback(req.responseText, syncdata);
                     }
-                    callback(req.responseText, syncdata);
                     break;
 
                 case 401: // AuthError
