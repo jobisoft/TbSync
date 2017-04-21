@@ -3,6 +3,7 @@
 <!ENTITY ok "Add account">
 <!ENTITY name "Account name:">
 <!ENTITY user "User name (email address):">
+<!ENTITY password "Password:">
 <!ENTITY server "Server configuration:">
 <!ENTITY querying "Querying:">
 

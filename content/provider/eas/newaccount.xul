@@ -31,7 +31,11 @@
                 </row>
                 <row>
                     <vbox pack="center"><label value="&user;" /></vbox>
-                    <textbox id="tbsync.newaccount.user"  oninput="tbSyncEasNewAccount.onUserTextInput();"/>
+                    <textbox id="tbsync.newaccount.user" oninput="tbSyncEasNewAccount.onUserTextInput();"/>
+                </row>
+                <row>
+                    <vbox pack="center"><label value="&password;" /></vbox>
+                    <textbox id="tbsync.newaccount.password" type="password" oninput="tbSyncEasNewAccount.onUserTextInput();"/>
                 </row>
                 <row>
                     <vbox pack="center"><label value="&server;" /></vbox>

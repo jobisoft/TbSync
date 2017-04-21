@@ -13,6 +13,7 @@ var tbSyncEasNewAccount = {
     onLoad: function () {
         this.elementName = document.getElementById('tbsync.newaccount.name');
         this.elementUser = document.getElementById('tbsync.newaccount.user');
+        this.elementPass = document.getElementById('tbsync.newaccount.password');
         this.elementServertype = document.getElementById('tbsync.newaccount.servertype');
         
         document.documentElement.getButton("extra1").disabled = true;
@@ -39,7 +40,7 @@ var tbSyncEasNewAccount = {
             this.elementServertype.selectedIndex = 3;
             this.onUserDropdown();
         }
-        document.documentElement.getButton("extra1").disabled = (this.elementName.value == "" || this.elementUser.value == "");
+        document.documentElement.getButton("extra1").disabled = (this.elementName.value == "" || this.elementUser.value == "" || this.elementPass.value == "");
     },
 
     onUserDropdown: function () {
@@ -68,7 +69,7 @@ var tbSyncEasNewAccount = {
             } else if (servertype == "auto") {
                 document.documentElement.getButton("cancel").disabled = true;
                 document.documentElement.getButton("extra1").disabled = true;
-                this.autodiscover(newAccountEntry, tbSync.eas.getPassword(newAccountEntry));
+                this.autodiscover(newAccountEntry, this.elementPass.value);
             }
 
         }
@@ -98,6 +99,7 @@ var tbSyncEasNewAccount = {
     },
 
     setAutodiscoverStatus: function (index, urls) {
+        tbSync.dump("Trying EAS autodiscover", urls[index]);
         document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = false;
         document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = false;
         document.getElementById('tbsync.newaccount.autodiscoverstatus').textContent  = urls[index] + " ("+(index+1)+"/"+urls.length+")";
@@ -129,7 +131,7 @@ var tbSyncEasNewAccount = {
         req.setRequestHeader("User-Agent", "Thunderbird ActiveSync");
         req.setRequestHeader("Authorization", "Basic " + btoa(accountdata.user + ":" + password));
 
-        req.timeout = 30000;
+        req.timeout = 15000;
 
         req.ontimeout  = function() {
             //log error and try next server
@@ -146,34 +148,34 @@ var tbSyncEasNewAccount = {
         // define response handler for our request
         req.onload = function() { 
             if (req.status === 200) {
+                tbSync.dump("EAS autodiscover with response (status: 200)", "\n" + req.responseText);
                 let data = tbSync.xmltools.getDataFromXMLString(req.responseText);
         
-                if (data && data.Autodiscover && data.Autodiscover.Response) {
-                    // there is a response from the server
-                    
-                    if (data.Autodiscover.Response.Action) {
-                        // "Redirect" or "Settings" are possible
-                        if (data.Autodiscover.Response.Action.Redirect) {
-                            // redirect, start anew with new user
-                            let newuser = action.Redirect;
-                            tbSync.dump("Redirect on EAS autodiscover", accountdata.user +" => "+ newuser);
-                            //password may not change
-                            accountdata.user = newuser;
-                            this.autodiscover(accountdata, password);
+                if (!(data === null) && data.Autodiscover && data.Autodiscover.Response && data.Autodiscover.Response.Action) {
+                    // "Redirect" or "Settings" are possible
+                    if (data.Autodiscover.Response.Action.Redirect) {
+                        // redirect, start anew with new user
+                        let newuser = action.Redirect;
+                        tbSync.dump("Redirect on EAS autodiscover", accountdata.user +" => "+ newuser);
+                        //password may not change
+                        accountdata.user = newuser;
+                        this.autodiscover(accountdata, password);
 
-                        } else if (data.Autodiscover.Response.Action.Settings) {
-                            // get server settings
-                            let server = tbSync.xmltools.nodeAsArray(data.Autodiscover.Response.Action.Settings.Server);
+                    } else if (data.Autodiscover.Response.Action.Settings) {
+                        // get server settings
+                        let server = tbSync.xmltools.nodeAsArray(data.Autodiscover.Response.Action.Settings.Server);
 
-                            for (let count = 0; count < server.length; count++) {
-                                if (server[count].Type == "MobileSync" && server[count].Url) {
-                                    this.autodiscoverOPTIONS(accountdata, password, server[count].Url)
-                                    //there is also a type CertEnroll
-                                    return; //was break;
-                                }
+                        for (let count = 0; count < server.length; count++) {
+                            if (server[count].Type == "MobileSync" && server[count].Url) {
+                                this.autodiscoverOPTIONS(accountdata, password, server[count].Url)
+                                //there is also a type CertEnroll
+                                return; //was break;
                             }
                         }
                     }
+                } else {
+                    tbSync.dump("EAS autodiscover with invalid response, skipping.", urls[index]);
+                    this.autodiscoverHTTP(accountdata, password, urls, index+1);
                 }
             } else if (req.status === 401) {
                 //Report wrong password and start again
@@ -181,7 +183,7 @@ var tbSyncEasNewAccount = {
                     function() {
                         tbSyncEasNewAccount.autodiscover(accountdata, tbSync.eas.getPassword(accountdata));
                     },
-                    function() {                
+                    function() {
                         document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
                         document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
                         document.documentElement.getButton("cancel").disabled = false;
