@@ -634,6 +634,8 @@ var eas = {
     Send: function (wbxml, callback, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   
         
+        if (tbSync.currentProzess.forceAbort) return;
+        
         tbSync.eas.logxml(wbxml, "Sending data "+tbSync.currentProzess.state);
         if (tbSync.currentProzess.state == tbSync.currentProzess.laststate) tbSync.currentProzess.chunks++;
         else tbSync.currentProzess.chunks = 0;
@@ -676,7 +678,9 @@ var eas = {
         }.bind(this);
 
         // Define response handler for our request
-        req.onload = function() { 
+        req.onload = function() {
+            if (tbSync.currentProzess.forceAbort) return;
+
             switch(req.status) {
 
                 case 200: //OK

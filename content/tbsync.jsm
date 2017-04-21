@@ -23,9 +23,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
  - check "resync account folder" - maybe rework it
  - drop syncdata and use currentProcess only ???
  - fix blanks bug also for contacts group (not only for contacts2)
- - cancel current sync must recover all
- - display number of added/increasing contacts as feedback
-*/
+ */
 
 var tbSync = {
 
@@ -113,6 +111,8 @@ var tbSync = {
             return;
         }
 
+        tbSync.currentProzess.forceAbort = false;
+
         let syncrequest = tbSync.syncQueue.shift().split(".");
         let job = syncrequest[0];
         let account = syncrequest[1];
@@ -159,8 +159,11 @@ var tbSync = {
         //get all accounts
         let accounts = tbSync.db.getAccounts();
 
+        tbSync.currentProzess.forceAbort = true;
+
         for (let i=0; i<accounts.IDs.length; i++) {
             if (accounts.data[accounts.IDs[i]].status == "syncing") tbSync.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
+            if (accounts.data[accounts.IDs[i]].state == "connecting") tbSync.db.setAccountSetting(accounts.IDs[i], "state", "connected");
         }
 
         // set each folder with PENDING status to ABORTED
