@@ -219,6 +219,7 @@ var tbSyncEasNewAccount = {
         // define response handler for our request
         req.onload = function() {
             if (req.status === 200) {
+                tbSync.dump("EAS OPTIONS with response (status: 200)", "\n[" + req.responseText + "] ["+req.getResponseHeader("MS-ASProtocolVersions")+"] ["+req.getResponseHeader("MS-ASProtocolCommands")+"]");
                 this.autodiscoverSucceeded (accountdata, password, url, req.getResponseHeader("MS-ASProtocolVersions"), req.getResponseHeader("MS-ASProtocolCommands"));
             } else {
                 this.autodiscoverFailed (accountdata);
