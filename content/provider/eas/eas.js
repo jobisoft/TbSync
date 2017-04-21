@@ -108,20 +108,21 @@ var eas = {
     logxml : function (wbxml, what) {
         if (tbSync.prefSettings.getBoolPref("log.toconsole") || tbSync.prefSettings.getBoolPref("log.tofile")) {
 
-                //log wbxml
-                let charcodes = [];
-                for (let i=0; i< wbxml.length; i++) charcodes.push(wbxml.charCodeAt(i).toString(16));
-                let bytestring = charcodes.join(" ");
-                tbSync.dump(what + " (WBXML)", "\n" + bytestring);
+            //log wbxml
+            let charcodes = [];
+            for (let i=0; i< wbxml.length; i++) charcodes.push(wbxml.charCodeAt(i).toString(16));
+            let bytestring = charcodes.join(" ");
+            tbSync.dump(what + " (WBXML)", "\n" + bytestring);
 
-                //let xml = decodeURIComponent(escape(wbxmltools.convert2xml(wbxml).split('><').join('>\n<')));
-                let xml = tbSync.decode_utf8(tbSync.wbxmltools.convert2xml(wbxml).split('><').join('>\n<'));
-                tbSync.dump(what +" (XML)", "\n" + xml);
-
-                
-                //tbSync.dump(aMessage + " (bytes)", bytestring);
-                //tbSync.appendToFile("wbxml-debug.log", "\n\n" + aMessage + " (bytes)\n");
-                //tbSync.appendToFile("wbxml-debug.log", bytestring);
+            let rawxml = tbSync.wbxmltools.convert2xml(wbxml);
+            if (rawxml === false) {
+                tbSync.dump(what +" (XML)", "\nFailed to convert WBXML to XML!\n");
+                return;
+            }
+            
+            //let xml = decodeURIComponent(escape(rawxml.split('><').join('>\n<')));
+            let xml = tbSync.decode_utf8(rawxml.split('><').join('>\n<'));
+            tbSync.dump(what +" (XML)", "\n" + xml);
         }
     },
  
@@ -388,10 +389,10 @@ var eas = {
 
     getFolderIdsCallback: function (wbxml, syncdata) {
 
-        let wbxmlData = tbSync.wbxmltools.createWBXML(wbxml).getData();
-        if (this.statusIsBad(wbxmlData.FolderSync.Status, syncdata)) {
-            return;
-        }
+        let wbxmlData = eas.getDataFromResponse(wbxml, syncdata, function(){this.finishSync(syncdata, "no-folders-found")});
+        if (wbxmlData === false) return;
+
+        if (eas.statusIsBad(wbxmlData.FolderSync.Status, syncdata)) return;
 
         if (wbxmlData.FolderSync.SyncKey) tbSync.db.setAccountSetting(syncdata.account, "foldersynckey", wbxmlData.FolderSync.SyncKey);
         else this.finishSync(syncdata, "missingfoldersynckey");
@@ -547,7 +548,7 @@ var eas = {
 
 
 
-
+    // RESPONSE PROCESS FUNCTIONS
     statusIsBad : function (status, syncdata) {
         switch (status) {
             case "1":
@@ -568,6 +569,47 @@ var eas = {
         }        
         return true;
     },
+
+    getDataFromResponse: function (wbxml, syncdata, executeOnEmpty) {
+        //check for empty wbxml
+        if (wbxml.length === 0) {
+            executeOnEmpty();
+            return false;
+        }
+
+        //convert to xml and check for parse errors
+        let xml = wbxmltools.convert2xml(wbxml);
+        if (xml === false) {
+            eas.finishSync(syncdata, "wbxml-parse-error");
+            return false;
+        }
+        
+        //retrieve data and check for empty data
+        let wbxmlData = xmltools.getDataFromXMLString(xml);
+        if (wbxmlData === null) {
+            executeOnEmpty();
+            return false;
+        }
+        
+        //debug
+        xmltools.printXmlData(wbxmlData);
+        return wbxmlData;
+    },
+
+    updateSynckey: function (wbxmlData, syncdata) {
+        if (wbxmlData.Sync.Collections.Collection.SyncKey) {
+            syncdata.synckey = wbxmlData.Sync.Collections.Collection.SyncKey;
+            db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
+            return true;
+        } else {
+            eas.finishSync(syncdata, "nosynckey");
+            return false;
+        }
+    },
+
+
+
+
 
     Send: function (wbxml, callback, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;   

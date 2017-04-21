@@ -118,36 +118,6 @@ var calendarsync = {
 
 
 
-    // wrapper for standard stuff done on each response
-    processResponseAndGetData: function (wbxml, syncdata) {
-        // get data from wbxml response
-        let wbxmlData = tbSync.wbxmltools.createWBXML(wbxml).getData();
-
-        // check for empty response
-        if (wbxml.length === 0 || wbxmlData === null) {
-            return "empty";
-        }
-
-        //debug
-        xmltools.printXmlData(wbxmlData);
-
-        //check status
-        if (eas.statusIsBad(wbxmlData.Sync.Collections.Collection.Status, syncdata)) {
-            return "bad_status";
-        }
-
-        //update synckey
-        if (wbxmlData.Sync.Collections.Collection.SyncKey) {
-            syncdata.synckey = wbxmlData.Sync.Collections.Collection.SyncKey;
-            db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
-            return wbxmlData;
-        } else {
-            eas.finishSync(syncdata, "nosynckey");
-            return "nokey";
-        }
-    },
-
-
     // wraper to get items by Id
     getItem: function (calendar, id) {
         let requestedItem = null;
@@ -551,13 +521,15 @@ var calendarsync = {
     processRemoteChanges: function (wbxml, syncdata) {
         tbSync.setSyncState("recievingchanges", syncdata);
 
-        // get data from wbxml response (this is processing status and also updates SyncKey)
-        let wbxmlData = this.processResponseAndGetData(wbxml, syncdata);
-        switch (wbxmlData) {
-                case "empty" : this.sendLocalChanges(syncdata); return;
-                case "bad_status" : return;
-                case "nokey": return;
-        }
+        // get data from wbxml response
+        let wbxmlData = eas.getDataFromResponse(wbxml, syncdata, function(){this.sendLocalChanges(syncdata)});
+        if (wbxmlData === false) return;
+
+        //check status
+        if (eas.statusIsBad(wbxmlData.Sync.Collections.Collection.Status, syncdata)) return;
+        
+        //update synckey
+        if (eas.updateSynckey(wbxmlData, syncdata) === false) return;
 
         //any commands for us to work on?
         if (wbxmlData.Sync.Collections.Collection.Commands) {
@@ -705,14 +677,16 @@ var calendarsync = {
     processLocalChangesResponse: function (wbxml, syncdata) {
         tbSync.setSyncState("serverid", syncdata);
 
-        // get data from wbxml response (this is processing status and also updates SyncKey)
-        let wbxmlData = this.processResponseAndGetData(wbxml, syncdata);
-        switch (wbxmlData) {
-                case "empty" : eas.finishSync(syncdata); return;
-                case "bad_status" : return;
-                case "nokey": return;
-        }
+        //get data from wbxml response
+        let wbxmlData = eas.getDataFromResponse(wbxml, syncdata, function(){eas.finishSync(syncdata)});
+        if (wbxmlData === false) return;
 
+        //check status
+        if (eas.statusIsBad(wbxmlData.Sync.Collections.Collection.Status, syncdata)) return;
+        
+        //update synckey
+        if (eas.updateSynckey(wbxmlData, syncdata) === false) return;
+        
         //any responses for us to work on?
         if (wbxmlData.Sync.Collections.Collection.Responses) {
 

@@ -753,7 +753,13 @@ var contactsync = {
                 tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
 
                 var oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
-                var oDOM = oParser.parseFromString(wbxmltools.convert2xml(wbxml), "text/xml");
+                let xml = wbxmltools.convert2xml(wbxml);
+                if (xml === false) {
+                    eas.finishSync(syncdata, "wbxml-parse-error");
+                    return;
+                }
+                
+                var oDOM = oParser.parseFromString(xml, "text/xml");
                 var addressBook = tbSync.getAddressBookObject(tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
 
 
