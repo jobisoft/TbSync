@@ -7,6 +7,8 @@ tbSync.includeJS("chrome://tbsync/content/provider/eas/calendarsync.js");
 
 var eas = {
 
+    numberOfResync: 0, //hack needs to be merged into syncdata/currentprocess
+    
     bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tbsync/locale/eas.strings"),
     init: function () {
         
@@ -292,6 +294,14 @@ var eas = {
             return;
         }
 
+        if (job == "resync") this.numberOfResync++;
+        else this.numberOfResync=0;
+
+        if (this.numberOfResync>5) {
+            this.finishSync(syncdata, "resync-loop");
+            return;
+        }
+        
         switch (job) {
             case "resync":
                 syncdata.fResync = true;
