@@ -522,7 +522,7 @@ var calendarsync = {
         tbSync.setSyncState("recievingchanges", eas.syncdata.account, eas.syncdata.folderID);
 
         // get data from wbxml response
-        let wbxmlData = eas.getDataFromResponse(wbxml, function(){this.sendLocalChanges()});
+        let wbxmlData = eas.getDataFromResponse(wbxml, function(){calendarsync.sendLocalChanges()});
         if (wbxmlData === false) return;
 
         //check status

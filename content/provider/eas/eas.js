@@ -693,10 +693,8 @@ var eas = {
                     tbSync.eas.logxml(wbxml, "Receiving Data");
 
                     //What to do on error? IS this an error? Yes!
-                    if (wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
-                        if (wbxml.length !== 0) {
-                            tbSync.dump("Recieved Data", "Expecting WBXML but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
-                        }
+                    if (wbxml.length !== 0 && wbxml.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
+                        tbSync.dump("Recieved Data", "Expecting WBXML but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
                         //Freenet.de hack - if we got back junk, the password is probably wrong. we need to stop anyhow, due to this error
                         tbSync.dump("Recieved Data", "We got back junk, which *could* mean, the password is wrong. Prompting.");
                         this.finishSync(401);
