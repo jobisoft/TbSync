@@ -456,11 +456,11 @@ var tbSyncAccountSettings = {
                     
                         //this syncstate change notification could have been send setSyncState (aData = "") for the currentProcess or by manual notifications from tzmessenger
                         //in either case, the notification is for THIS account
-                        tbSyncAccountSettings.updateSyncstate();
                         tbSyncAccountSettings.updateFolderList();
                     
                 }
             }
+            tbSyncAccountSettings.updateSyncstate();
         }
     },
 
