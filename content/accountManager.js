@@ -63,7 +63,7 @@ var tbSyncAccountManager = {
             let state = tbSync.currentProzess.state;
             
             //react on true syncstate changes send by setSyncState()
-            if (aData == "" && (state == "syncing" || state == "accountdone")) tbSyncAccountManager.updateAccountStatus(tbSync.currentProzess.account );
+            if (aData == "" && (state == "syncing" || state == "accountdone")) tbSyncAccountManager.updateAccountStatus(tbSync.currentProzess.account);
 
             //react on any manual notification
             if (aData != "") tbSyncAccountManager.updateAccountStatus(aData);

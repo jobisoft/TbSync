@@ -21,9 +21,10 @@ Components.utils.import("resource://gre/modules/Task.jsm");
  - explizitly use if (error !== "") not if (error) - fails on "0"
  - loop over all properties when card copy
  - check "resync account folder" - maybe rework it
- - drop syncdata and use currentProcess only ???
  - fix blanks bug also for contacts group (not only for contacts2)
- */
+ - think about write on exit, or check if sceduled write and execute 
+ - fix timezone
+*/
 
 var tbSync = {
 
@@ -78,6 +79,10 @@ var tbSync = {
     currentProzess : {},
     queueTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
+    accountScheduledForSync: function (account) {
+        return (tbSync.syncQueue.filter(item => item.endsWith("."+account)).length > 0);
+    },
+
     addAccountToSyncQueue: function (job, account = "") {
         if (account == "") {
             //Add all connected accounts to the queue
@@ -85,12 +90,18 @@ var tbSync = {
             for (let i=0; i<accounts.IDs.length; i++) {
                 let newentry = job + "." + accounts.IDs[i];
                 //do not add same job more than once
-                if (accounts.data[accounts.IDs[i]].state != "disconnected" && tbSync.syncQueue.filter(item => item == newentry).length == 0) tbSync.syncQueue.push( newentry );
+                if (accounts.data[accounts.IDs[i]].state != "disconnected" && !tbSync.accountScheduledForSync(accounts.IDs[i])) {
+                    tbSync.syncQueue.push(newentry);
+                }
             }
-        } else {
+        } else if (!tbSync.accountScheduledForSync(account)) {
             //Add specified account to the queue
             tbSync.syncQueue.push( job + "." + account );
         }
+
+        //update gui
+        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+        observerService.notifyObservers(null, "tbsync.changedSyncstate", "");
 
         //after jobs have been aded to the queue, try to start working on the queue
         //we delay the "is idle" querry, to prevent race condition, also, this forces the sync into a background thread
@@ -128,15 +139,15 @@ var tbSync = {
         }
     },
 
-    setSyncState: function(state, syncdata = null) {
+    setSyncState: function(state, account = "", folderID = "") {
         //set new state
         tbSync.currentProzess.laststate = tbSync.currentProzess.state;
         tbSync.currentProzess.state = state;
         if (tbSync.currentProzess.state != tbSync.currentProzess.laststate) tbSync.currentProzess.chunks = 0;
 
-        if (syncdata !== null) {
-            tbSync.currentProzess.account = syncdata.account;
-            tbSync.currentProzess.folderID = syncdata.folderID;
+        if (account !== "") {
+            tbSync.currentProzess.account = account;
+            tbSync.currentProzess.folderID = folderID;
         } else {
             tbSync.currentProzess.account = "";
             tbSync.currentProzess.folderID = "";
@@ -152,15 +163,13 @@ var tbSync = {
     },
     
     resetSync: function () {
-        //set state to idle
-        tbSync.setSyncState("idle"); 
         //flush the queue
         tbSync.syncQueue = [];
-        //get all accounts
-        let accounts = tbSync.db.getAccounts();
-
+        //abort further sync execution (must be implemented by provider!)
         tbSync.currentProzess.forceAbort = true;
 
+        //get all accounts and set all with syncing state to notsyncronized
+        let accounts = tbSync.db.getAccounts();
         for (let i=0; i<accounts.IDs.length; i++) {
             if (accounts.data[accounts.IDs[i]].status == "syncing") tbSync.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
             if (accounts.data[accounts.IDs[i]].state == "connecting") tbSync.db.setAccountSetting(accounts.IDs[i], "state", "connected");
@@ -171,36 +180,41 @@ var tbSync = {
         for (let i=0; i < folders.length; i++) {
             tbSync.db.setFolderSetting(folders[i].account, folders[i].folderID, "status", "aborted");
         }
+
+        //end current sync and switch to idle
+        tbSync.setSyncState("accountdone", tbSync.currentProzess.account); 
+        tbSync.setSyncState("idle"); 
     },
 
-    finishAccountSync: function (syncdata) {
-        let state = tbSync.db.getAccountSetting(syncdata.account, "state");
+    finishAccountSync: function (account) {
+        let state = tbSync.db.getAccountSetting(account, "state");
         
         if (state == "connecting") {
-                tbSync.db.setAccountSetting(syncdata.account, "state", "connected");
+                tbSync.db.setAccountSetting(account, "state", "connected");
         }
         
-        if (syncdata.status != "OK") {
-            // set each folder with PENDING status to ABORTED
-            let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
-            for (let i=0; i < folders.length; i++) {
-                tbSync.db.setFolderSetting(syncdata.account, folders[i].folderID, "status", "aborted");
-            }
+        // set each folder with PENDING status to ABORTED
+        let folders = tbSync.db.findFoldersWithSetting("status", "pending", account);
+        for (let i=0; i < folders.length; i++) {
+            tbSync.db.setFolderSetting(account, folders[i].folderID, "status", "aborted");
         }
 
         //update account status
-        tbSync.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
+        tbSync.db.setAccountSetting(account, "lastsynctime", Date.now());
         
-        //scan all folders of this account and if they are all ok, set global status
-        let status = "OK";
-        let folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);
-        for (let i=0; i < folders.length && status == "OK"; i++) {
-            if (folders[i].status != "OK") status = "notsyncronized";
+        //if global status is OK, scan all folders of this account and if any of them is not ok, set global status
+        if (tbSync.db.getAccountSetting(account, "status") == "syncing") {
+            let status = "OK";
+            folders = tbSync.db.findFoldersWithSetting("selected", "1", account);
+            for (let i=0; i < folders.length && status == "OK"; i++) {
+                if (folders[i].status != "OK") status = "notsyncronized";
+            }
+            tbSync.dump("FinishAccount  was still syncing, is now", status);
+            tbSync.db.setAccountSetting(account, "status", status);
         }
-        tbSync.db.setAccountSetting(syncdata.account, "status", status);
 
         //done
-        tbSync.setSyncState("accountdone", syncdata); 
+        tbSync.setSyncState("accountdone", account); 
 
         //work on the queue
         tbSync.workSyncQueue();
@@ -290,6 +304,10 @@ var tbSync = {
             let now = new Date();
             tbSync.appendToFile("debug.log", "** " + now.toString() + " **\n[" + what + "] : " + aMessage + "\n\n");
         }
+    },
+    
+    quickdump: function (what, aMessage) {
+        tbSync.mozConsoleService.logStringMessage("[TbSync] " + what + " : " + aMessage);
     },
 
     consoleListener: {

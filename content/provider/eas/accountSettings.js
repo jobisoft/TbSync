@@ -32,9 +32,8 @@ var tbSyncAccountSettings = {
     },
 
     // manage sync via queue
-    requestSync: function (job, account, btnDisabled = false) {
-        if (btnDisabled == false && tbSync.currentProzess.account != account) tbSync.addAccountToSyncQueue(job, account);
-
+    requestSync: function (job, account) {
+        if (!document.getElementById('tbsync.accountsettings.syncbtn').disabled && tbSync.currentProzess.account != tbSyncAccountSettings.selectedAccount) tbSync.addAccountToSyncQueue('sync', tbSyncAccountSettings.selectedAccount);
     },
 
 
@@ -196,12 +195,14 @@ var tbSyncAccountSettings = {
         }
 
         //disable connect/disconnect btn, sync btn and folderlist during sync, also hide sync button if disconnected
-        document.getElementById('tbsync.accountsettings.connectbtn').disabled = (status == "syncing" || tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype") == "");
+        document.getElementById('tbsync.accountsettings.connectbtn').disabled = (status == "syncing" || tbSync.accountScheduledForSync(tbSyncAccountSettings.selectedAccount));
         document.getElementById('tbsync.accountsettings.folderlist').disabled = (status == "syncing");
-        document.getElementById('tbsync.accountsettings.syncbtn').disabled = (status == "syncing");
+        document.getElementById('tbsync.accountsettings.syncbtn').disabled = (status == "syncing" || tbSync.accountScheduledForSync(tbSyncAccountSettings.selectedAccount));
         document.getElementById('tbsync.accountsettings.syncbtn').hidden = (state == "disconnected");
         
-        
+        if (status == "syncing") document.getElementById('tbsync.accountsettings.syncbtn').label = "Synchronizing ... ";
+        else if (tbSync.accountScheduledForSync(tbSyncAccountSettings.selectedAccount)) document.getElementById('tbsync.accountsettings.syncbtn').label = "Account is scheduled to be synchronized.";
+        else document.getElementById('tbsync.accountsettings.syncbtn').label = "Synchronize this account";
     },
 
 
@@ -417,7 +418,7 @@ var tbSyncAccountSettings = {
             tbSync.eas.connectAccount(tbSyncAccountSettings.selectedAccount);
             tbSyncAccountSettings.updateGui();
             tbSyncAccountSettings.saveSettings();
-            tbSyncAccountSettings.requestSync("sync", tbSyncAccountSettings.selectedAccount);
+            tbSync.addAccountToSyncQueue("sync", tbSyncAccountSettings.selectedAccount);
         }
     },
 
@@ -430,7 +431,7 @@ var tbSyncAccountSettings = {
         observe: function (aSubject, aTopic, aData) {
             //the notification could be send by setSyncState (aData = "") or by tzMessenger (aData = account)
             let account = (aData == "") ? tbSync.currentProzess.account : aData;
-
+            
             //only handle syncstate changes of the active account
             if (account == tbSyncAccountSettings.selectedAccount) {
                 
