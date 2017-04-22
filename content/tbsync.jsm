@@ -22,7 +22,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
  - loop over all properties when card copy
  - check "resync account folder" - maybe rework it
  - fix blanks bug also for contacts group (not only for contacts2)
- - think about write on exit, or check if sceduled write and execute 
+ - think about write on exit, or check if sceduled write and execute
+ - task!
  - fix timezone
 */
 
@@ -158,7 +159,7 @@ var tbSync = {
     },
 
     getSyncChunks: function() {
-        if (tbSync.currentProzess.chunks > 1) return " #" + tbSync.currentProzess.chunks;
+        if (tbSync.currentProzess.chunks > 0) return " #" + tbSync.currentProzess.chunks;
         else return "";
     },
     
@@ -209,7 +210,6 @@ var tbSync = {
             for (let i=0; i < folders.length && status == "OK"; i++) {
                 if (folders[i].status != "OK") status = "notsyncronized";
             }
-            tbSync.dump("FinishAccount  was still syncing, is now", status);
             tbSync.db.setAccountSetting(account, "status", status);
         }
 
