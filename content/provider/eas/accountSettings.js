@@ -157,7 +157,7 @@ var tbSyncAccountSettings = {
     },
 
     updateGui: function () {
-        let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
+        let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connected, disconnected
         document.getElementById('tbsync.accountsettings.connectbtn').label = tbSync.getLocalizedMessage("state."+state); 
         
         //which box is to be displayed? options or folders
@@ -166,7 +166,7 @@ var tbSyncAccountSettings = {
         document.getElementById("tbsync.accountsettings.options").hidden = (state != "disconnected"); 
         document.getElementById("tbsync.accountsettings.folders").hidden = (state == "disconnected"); 
 
-        //disable all seetings field, if connected or connecting
+        //disable all seetings field, if connected
         for (let i=0; i<this.protectedSettings.length;i++) {
             document.getElementById("tbsync.accountsettings." + this.protectedSettings[i]).disabled = (state != "disconnected" || this.fixedSettings.hasOwnProperty(this.protectedSettings[i]));
         }
@@ -181,7 +181,7 @@ var tbSyncAccountSettings = {
         
         // if this account is beeing synced, display syncstate, otherwise print status
         let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "status");
-        let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
+        let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connected, disconnected
 
         if (status == "syncing") {
             let target = "";
@@ -404,7 +404,7 @@ var tbSyncAccountSettings = {
         //ignore cancel request, if button is disabled or a sync is ongoing
         if (document.getElementById('tbsync.accountsettings.connectbtn').disabled || (tbSync.currentProzess.account == tbSyncAccountSettings.selectedAccount)) return;
 
-        let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connecting, connected, disconnected
+        let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connected, disconnected
         if (state == "connected") {
             //we are connected and want to disconnect
             if (window.confirm(tbSync.getLocalizedMessage("prompt.Disconnect"))) {

@@ -173,7 +173,6 @@ var tbSync = {
         let accounts = tbSync.db.getAccounts();
         for (let i=0; i<accounts.IDs.length; i++) {
             if (accounts.data[accounts.IDs[i]].status == "syncing") tbSync.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
-            if (accounts.data[accounts.IDs[i]].state == "connecting") tbSync.db.setAccountSetting(accounts.IDs[i], "state", "connected");
         }
 
         // set each folder with PENDING status to ABORTED
@@ -189,11 +188,7 @@ var tbSync = {
 
     finishAccountSync: function (account) {
         let state = tbSync.db.getAccountSetting(account, "state");
-        
-        if (state == "connecting") {
-                tbSync.db.setAccountSetting(account, "state", "connected");
-        }
-        
+
         // set each folder with PENDING status to ABORTED
         let folders = tbSync.db.findFoldersWithSetting("status", "pending", account);
         for (let i=0; i < folders.length; i++) {

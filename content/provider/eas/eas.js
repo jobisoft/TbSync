@@ -244,13 +244,13 @@ var eas = {
     },
 
     connectAccount: function (account) {
-        db.setAccountSetting(account, "state", "connecting");
+        db.setAccountSetting(account, "state", "connected");
         db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
     },
 
     disconnectAccount: function (account) {
-        db.setAccountSetting(account, "state", "disconnected"); //connected, connecting or disconnected
+        db.setAccountSetting(account, "state", "disconnected"); //connected or disconnected
         db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
 
@@ -286,7 +286,7 @@ var eas = {
         tbSync.setSyncState("syncing", account);
 
         // check if connected
-        if (tbSync.db.getAccountSetting(account, "state") == "disconnected") { //allow connected and connecting
+        if (tbSync.db.getAccountSetting(account, "state") == "disconnected") { //allow connected
             this.finishSync("notconnected");
             return;
         }
