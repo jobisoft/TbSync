@@ -26,6 +26,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
  - task!
  - fix timezone (not all parameters are set yet)
  - do not use add + modify trick, but a true add, so we can cope with any add
+ - Link calender sync to lightning-sync-button using providerId
+
 */
 
 var tbSync = {

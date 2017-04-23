@@ -3,8 +3,8 @@
 var calendarsync = {
 
     // CALENDAR SYNC
-    // TODO: Link sync to lightning-sync-button using providerId
     offsets : null,
+    defaultUtcOffset : 0,
 
 
 
@@ -181,7 +181,6 @@ var calendarsync = {
         let tzService = cal.getTimezoneService();
         
         if (this.offsets === null) {
-            this.defaultUtcOffset = 0;
             this.offsets = {};
             let dateTime = cal.createDateTime("20160101T000000Z"); //UTC
 
