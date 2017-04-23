@@ -24,7 +24,8 @@ Components.utils.import("resource://gre/modules/Task.jsm");
  - fix blanks bug also for contacts group (not only for contacts2)
  - think about write on exit, or check if sceduled write and execute
  - task!
- - fix timezone
+ - fix timezone (not all parameters are set yet)
+ - do not use add + modify trick, but a true add, so we can cope with any add
 */
 
 var tbSync = {
@@ -107,7 +108,7 @@ var tbSync = {
         //after jobs have been aded to the queue, try to start working on the queue
         //we delay the "is idle" querry, to prevent race condition, also, this forces the sync into a background thread
         this.queueTimer.cancel();
-        this.queueTimer.initWithCallback(tbSync.checkSyncQueue, 100, 0);
+        this.queueTimer.initWithCallback(tbSync.checkSyncQueue, 500, 0);
     },
 
     checkSyncQueue: {
