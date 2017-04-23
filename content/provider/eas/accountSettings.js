@@ -200,9 +200,9 @@ var tbSyncAccountSettings = {
         document.getElementById('tbsync.accountsettings.syncbtn').disabled = (status == "syncing" || tbSync.accountScheduledForSync(tbSyncAccountSettings.selectedAccount));
         document.getElementById('tbsync.accountsettings.syncbtn').hidden = (state == "disconnected");
         
-        if (status == "syncing") document.getElementById('tbsync.accountsettings.syncbtn').label = "Synchronizing ... ";
-        else if (tbSync.accountScheduledForSync(tbSyncAccountSettings.selectedAccount)) document.getElementById('tbsync.accountsettings.syncbtn').label = "Account is scheduled to be synchronized.";
-        else document.getElementById('tbsync.accountsettings.syncbtn').label = "Synchronize this account";
+        if (status == "syncing") document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.syncing");
+        else if (tbSync.accountScheduledForSync(tbSyncAccountSettings.selectedAccount)) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.waiting");
+        else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.idle");
     },
 
 

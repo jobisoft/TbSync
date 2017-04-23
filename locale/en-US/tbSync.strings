@@ -14,7 +14,6 @@ syncstate.requestingchanges=Requesting changes from server
 
 state.disconnected=Connect account
 state.connected=Disconnect
-state.connecting=Connecting ...
 
 status.notsyncronized=Account needs to be syncronized, at least one item is out of sync.
 status.notconnected=Account is not connected, synchronisation is disabled.
@@ -34,6 +33,9 @@ status.skipped=Not yet supported, skippped
 status.aborted=Not synchronized
 status.pending=Waiting to be synchronized
 status.modified=Local modifications
+
+status.waiting=Account is scheduled to be synchronized
+status.idle=Synchronize this account
 
 prompt.DeleteAccount=Delete account ##accountName## for sure?
 prompt.Disconnect=Are you sure you want to disconnect this account? All local modifications, which have not been synced yet, will be lost!
