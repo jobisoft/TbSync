@@ -729,21 +729,6 @@ var tbSync = {
         },
     },
 
-    calendarOperationObserver : { 
-        onOperationComplete : function (aOperationType, aId, aDetail) {
-            tbSync.dump("onOperationComplete",[aOperationType, aId, aDetail].join("|"));
-        },
-        
-        onGetResult (aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
-            //aItems is array with size_is(aCount), iid_is(aItemType)
-            tbSync.dump("onGetResult",[aStatus,aItemType, aDetail, aCount].join("|"));
-            for (let i=0; i<aItems.length; i++) {
-                tbSync.dump("onGetResult(item)",aItems[i].title);
-            }
-        }
-    },
- 
-    
     getCalendarName: function (id) {
         if ("calICalendar" in Components.interfaces) {
             let targetCal = cal.getCalendarManager().getCalendarById(id);

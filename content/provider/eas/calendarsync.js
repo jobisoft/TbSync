@@ -116,42 +116,6 @@ var calendarsync = {
 
 
 
-    // wraper to get items by Id
-    getItem: function (calendar, id) {
-        let requestedItem = null;
-        let opDone = false;
-
-        let itemListener = {
-            onGetResult (aCalendar, aStatus, aItemType, aDetail, aCount, aItems) {
-                if (aCount == 1) requestedItem = aItems[0];
-            },
-            onOperationComplete : function (aOperationType, aId, aDetail) { 
-                opDone = true;
-            }
-        };
-        
-        calendar.getItem(id, itemListener);
-        // we need to wait for the async job to finish
-        // I would realy like to access the getItemById function of the storage provider, but duno how..
-        // that function directly returns the id from the private member memory without going thru a listener
-        tbSync.dump("getItem","waiting for async job to finish");
-        while (!opDone) {
-            //sleep 1s and check again
-            let date = Date.now();
-            let curDate = Date.now();
-            do { 
-                curDate = Date.now();
-            } while (curDate-date < 1000);
-        }
-        tbSync.dump("getItem","async job finished");
-        return requestedItem;
-    },
-
-
-
-
-
-
     //insert data from wbxml object into a TB event item
     setEvent: function (item, data, id, asversion) {
         item.id = id;
