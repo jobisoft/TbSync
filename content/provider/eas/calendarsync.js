@@ -5,7 +5,6 @@ var calendarsync = {
     // CALENDAR SYNC
     offsets : null,
     defaultUtcOffset : 0,
-//eleminate: calendarOperationObserver
 
 
 
@@ -554,52 +553,60 @@ var calendarsync = {
         //any commands for us to work on?
         if (wbxmlData.Sync.Collections.Collection.Commands) {
 
-            //looking for additions
-            let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Add);
-            for (let count = 0; count < add.length; count++) {
+            //A task is "serializing" async jobs
+            Task.spawn(function* () {
 
-                let ServerId = add[count].ServerId;
-                let data = add[count].ApplicationData;
-
-                let oldItem = this.getItem(eas.syncdata.targetObj, ServerId);
-                if (oldItem === null) { //do NOT add, if an item with that ServerId was found
-                    let newItem = cal.createEvent();
-                    this.setEvent(newItem, data, ServerId, tbSync.db.getAccountSetting(eas.syncdata.account, "asversion"));
-                    db.addItemToChangeLog(eas.syncdata.targetObj.id, ServerId, "added_by_server");
-                    try {
-                        eas.syncdata.targetObj.addItem(newItem, tbSync.calendarOperationObserver);
-                    } catch (e) {tbSync.dump("Error during Add", e);}
-                }
-            }
-
-            //looking for changes
-            let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Change);
-            for (let count = 0; count < upd.length; count++) {
-
-                let ServerId = upd[count].ServerId;
-                let data = upd[count].ApplicationData;
-
-                let oldItem = this.getItem(eas.syncdata.targetObj, ServerId);
-                if (oldItem !== null) { //only update, if an item with that ServerId was found
-                    let newItem = oldItem.clone();
-                    this.setEvent(newItem, data, ServerId, tbSync.db.getAccountSetting(eas.syncdata.account, "asversion"));
-                    db.addItemToChangeLog(eas.syncdata.targetObj.id, ServerId, "modified_by_server");
-                    eas.syncdata.targetObj.modifyItem(newItem, oldItem, tbSync.calendarOperationObserver);
-                }
-            }
+                //promisify calender, so it can be used together with yield
+                let pcal = cal.async.promisifyCalendar(eas.syncdata.targetObj.wrappedJSObject);
             
-            //looking for deletes
-            let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Delete);
-            for (let count = 0; count < del.length; count++) {
+                //looking for additions
+                let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Add);
+                for (let count = 0; count < add.length; count++) {
 
-                let ServerId = del[count].ServerId;
+                    let ServerId = add[count].ServerId;
+                    let data = add[count].ApplicationData;
 
-                let oldItem = this.getItem(eas.syncdata.targetObj, ServerId);
-                if (oldItem !== null) { //delete item with that ServerId
-                    db.addItemToChangeLog(eas.syncdata.targetObj.id, ServerId, "deleted_by_server");
-                    eas.syncdata.targetObj.deleteItem(oldItem, tbSync.calendarOperationObserver);
+                    let foundItems = yield pcal.getItem(ServerId);
+                    if (foundItems[0] === null) { //do NOT add, if an item with that ServerId was found
+                        let newItem = cal.createEvent();
+                        calendarsync.setEvent(newItem, data, ServerId, tbSync.db.getAccountSetting(eas.syncdata.account, "asversion"));
+                        db.addItemToChangeLog(eas.syncdata.targetObj.id, ServerId, "added_by_server");
+                        try {
+                            yield pcal.addItem(newItem);
+                        } catch (e) {tbSync.dump("Error during Add", e);}
+                    }
                 }
-            }
+
+                //looking for changes
+                let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Change);
+                for (let count = 0; count < upd.length; count++) {
+
+                    let ServerId = upd[count].ServerId;
+                    let data = upd[count].ApplicationData;
+
+                    let foundItems = yield pcal.getItem(ServerId);
+                    if (foundItems[0] !== null) { //only update, if an item with that ServerId was found
+                        let newItem = foundItems[0].clone();
+                        calendarsync.setEvent(newItem, data, ServerId, tbSync.db.getAccountSetting(eas.syncdata.account, "asversion"));
+                        db.addItemToChangeLog(eas.syncdata.targetObj.id, ServerId, "modified_by_server");
+                        yield pcal.modifyItem(newItem, foundItems[0]);
+                    }
+                }
+                
+                //looking for deletes
+                let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Delete);
+                for (let count = 0; count < del.length; count++) {
+
+                    let ServerId = del[count].ServerId;
+
+                    let foundItems = yield pcal.getItem(ServerId);
+                    if (foundItems[0] !== null) { //delete item with that ServerId
+                        db.addItemToChangeLog(eas.syncdata.targetObj.id, ServerId, "deleted_by_server");
+                        yield pcal.deleteItem(foundItems[0]);
+                    }
+                }
+                
+            }).then(null, function (exception) {tbSync.dump("exception", exception); eas.finishSync("js-error-in-calendarsync.processRemoteChanges")});
             
         }
 
@@ -735,10 +742,10 @@ var calendarsync = {
                     if (eas.statusIsBad(add[count].Status)) return;
 
                     //look for an item identfied by ClientId and update its id to the new id received from the server
-                    let oldItem = yield pcal.getItem(add[count].ClientId);
+                    let foundItems = yield pcal.getItem(add[count].ClientId);
                     
-                    if (oldItem[0] !== null) {
-                        let newItem = oldItem[0].clone();
+                    if (foundItems[0] !== null) {
+                        let newItem = foundItems[0].clone();
                         //server has two identifiers for this item, serverId and UID
                         //on creation, TB created a UID which has been send to the server as UID inside AplicationData
                         //we NEED to use ServerId as TB UID without changing UID on Server -> Backup
@@ -747,7 +754,7 @@ var calendarsync = {
                         
                         newItem.id = add[count].ServerId;
                         db.addItemToChangeLog(eas.syncdata.targetObj.id, newItem.id, "modified_by_server");
-                        yield pcal.modifyItem(newItem, oldItem[0]);
+                        yield pcal.modifyItem(newItem, foundItems[0]);
                     }
                 }
 
