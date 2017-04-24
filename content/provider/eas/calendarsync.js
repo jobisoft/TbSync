@@ -709,45 +709,52 @@ var calendarsync = {
         
         //any responses for us to work on?
         if (wbxmlData.Sync.Collections.Collection.Responses) {
-
-            //looking for additions (Add node contains, status, old ClientId and new ServerId)
-            let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Add);
-            for (let count = 0; count < add.length; count++) {
                 
-                //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                if (eas.statusIsBad(add[count].Status)) return;
+            //A task is "serializing" async jobs
+            Task.spawn(function* () {
 
-                //look for an item identfied by ClientId and update its id to the new id received from the server
-                let oldItem = this.getItem(eas.syncdata.targetObj, add[count].ClientId);
-                if (oldItem !== null) {
-                    let newItem = oldItem.clone();
-                    //server has two identifiers for this item, serverId and UID
-                    //on creation, TB created a UID which has been send to the server as UID inside AplicationData
-                    //we NEED to use ServerId as TB UID without changing UID on Server -> Backup
-//                    newItem.setProperty("EASUID", "" + newItem.id);
+                //promisify calender, so it can be used together with yield
+                let pcal = cal.async.promisifyCalendar(eas.syncdata.targetObj.wrappedJSObject);
+
+                //looking for additions (Add node contains, status, old ClientId and new ServerId)
+                let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Add);
+                for (let count = 0; count < add.length; count++) {
                     
-                    newItem.id = add[count].ServerId;
-                    db.addItemToChangeLog(eas.syncdata.targetObj.id, newItem.id, "modified_by_server");
-                    eas.syncdata.targetObj.modifyItem(newItem, oldItem, tbSync.calendarOperationObserver);
+                    //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
+                    if (eas.statusIsBad(add[count].Status)) return;
+
+                    //look for an item identfied by ClientId and update its id to the new id received from the server
+                    let oldItem = yield pcal.getItem(add[count].ClientId);
+                    
+                    if (oldItem[0] !== null) {
+                        let newItem = oldItem[0].clone();
+                        //server has two identifiers for this item, serverId and UID
+                        //on creation, TB created a UID which has been send to the server as UID inside AplicationData
+                        //we NEED to use ServerId as TB UID without changing UID on Server -> Backup
+                        //AT THE MOMENT; WE DO NET SEND A UID AT ALL
+                        //newItem.setProperty("EASUID", "" + newItem.id);
+                        
+                        newItem.id = add[count].ServerId;
+                        db.addItemToChangeLog(eas.syncdata.targetObj.id, newItem.id, "modified_by_server");
+                        yield pcal.modifyItem(newItem, oldItem[0]);
+                    }
                 }
-            }
 
-            //looking for modifications 
-            let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
-            for (let count = 0; count < upd.length; count++) {
-                //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                if (eas.statusIsBad(upd[count].Status)) return;
-            }
+                //looking for modifications 
+                let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
+                for (let count = 0; count < upd.length; count++) {
+                    //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
+                    if (eas.statusIsBad(upd[count].Status)) return;
+                }
 
-            //looking for deletions 
-            let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Delete);
-            for (let count = 0; count < del.length; count++) {
-                //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                if (eas.statusIsBad(del[count].Status)) return;
-            }
-            
-            //we might not be done yet (max number to send)
-            this.sendLocalChanges(); 
+                //looking for deletions 
+                let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Delete);
+                for (let count = 0; count < del.length; count++) {
+                    //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
+                    if (eas.statusIsBad(del[count].Status)) return;
+                }
+                
+            }).then(calendarsync.sendLocalChanges(), function (exception) {tbSync.dump("exception", exception); eas.finishSync("js-error-in-calendarsync.processLocalChangesResponse")});
             
         } else {
             eas.finishSync();
