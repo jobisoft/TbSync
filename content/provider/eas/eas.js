@@ -555,7 +555,7 @@ var eas = {
         if (error !== "") {
             status = error;
             time = "";
-            tbSync.dump("finishSync(): Error @ Account " + tbSync.db.getAccountSetting(eas.syncdata.account, accountname), tbSync.getLocalizedMessage("status." + status));
+            tbSync.dump("finishSync(): Error @ Account " + tbSync.db.getAccountSetting(eas.syncdata.account, "accountname"), tbSync.getLocalizedMessage("status." + status));
             //setting a status on the account will overwrite syncing status, which will abort syncing on nextFolder
             tbSync.db.setAccountSetting(eas.syncdata.account, "status", status);
         }
