@@ -94,7 +94,7 @@ var eas = {
             "lastsynctime" : "0", 
             "state" : "disconnected",
             "status" : "notconnected",
-            "deviceId" : this.getNewDeviceId(),
+            "deviceId" : eas.getNewDeviceId(),
             "asversion" : "14.0",
             "host" : "",
             "user" : "",
@@ -287,14 +287,14 @@ var eas = {
 
         // check if connected
         if (tbSync.db.getAccountSetting(account, "state") == "disconnected") { //allow connected
-            this.finishSync("notconnected");
+            eas.finishSync("notconnected");
             return;
         }
 
         // check if connection has data
         let connection = tbSync.eas.getConnection(account);
         if (connection.server == "" || connection.user == "") {
-            this.finishSync("nouserhost");
+            eas.finishSync("nouserhost");
             return;
         }
 
@@ -302,7 +302,7 @@ var eas = {
         else eas.syncdata.numberOfResync = 0;
 
         if (eas.syncdata.numberOfResync > 5) {
-            this.finishSync("resync-loop");
+            eas.finishSync("resync-loop");
             return;
         }
         
@@ -321,9 +321,9 @@ var eas = {
                 
             case "sync":
                 if (tbSync.db.getAccountSetting(account, "provision") == "1" && tbSync.db.getAccountSetting(account, "policykey") == 0) {
-                    this.getPolicykey();
+                    eas.getPolicykey();
                 } else {
-                    this.getFolderIds();
+                    eas.getFolderIds();
                 }
                 break;
         }
@@ -346,7 +346,7 @@ var eas = {
         wbxml.ctag();
 
         eas.syncdata.next = 1;
-        wbxml = this.Send(wbxml.getBytes(), this.getPolicykeyCallback.bind(this), "Provision");
+        wbxml = eas.Send(wbxml.getBytes(), eas.getPolicykeyCallback.bind(this), "Provision");
     },
     
     getPolicykeyCallback: function (responseWbxml) {
@@ -384,10 +384,10 @@ var eas = {
             wbxml.ctag();
 
             eas.syncdata.next++;
-            this.Send(wbxml.getBytes(), this.getPolicykeyCallback.bind(this), "Provision");
+            eas.Send(wbxml.getBytes(), eas.getPolicykeyCallback.bind(this), "Provision");
         } else {
             tbSync.dump("final returned policykey", policykey);
-            this.getFolderIds();
+            eas.getFolderIds();
         }
     },
 
@@ -395,7 +395,7 @@ var eas = {
         //if syncdata already contains a folderID, it is a specific folder sync - otherwise we scan all folders and sync all folders
         if (eas.syncdata.folderID != "") {
             tbSync.db.setFolderSetting(eas.syncdata.account, eas.syncdata.folderID, "status", "pending");
-            this.syncNextFolder();
+            eas.syncNextFolder();
         } else {
             tbSync.setSyncState("requestingfolders", eas.syncdata.account); 
             let foldersynckey = tbSync.db.getAccountSetting(eas.syncdata.account, "foldersynckey");
@@ -408,18 +408,18 @@ var eas = {
                 wbxml.atag("SyncKey",foldersynckey);
             wbxml.ctag();
 
-            this.Send(wbxml.getBytes(), this.getFolderIdsCallback.bind(this), "FolderSync");
+            eas.Send(wbxml.getBytes(), eas.getFolderIdsCallback.bind(this), "FolderSync");
         }
     },
 
     getFolderIdsCallback: function (wbxml) {
-        let wbxmlData = eas.getDataFromResponse(wbxml, function(){this.finishSync("no-folders-found")});
+        let wbxmlData = eas.getDataFromResponse(wbxml, function(){eas.finishSync("no-folders-found")});
         if (wbxmlData === false) return;
 
         if (eas.statusIsBad(wbxmlData.FolderSync.Status)) return;
 
         if (wbxmlData.FolderSync.SyncKey) tbSync.db.setAccountSetting(eas.syncdata.account, "foldersynckey", wbxmlData.FolderSync.SyncKey);
-        else this.finishSync("missingfoldersynckey");
+        else eas.finishSync("missingfoldersynckey");
 
         if (wbxmlData.FolderSync.Changes) {
             //looking for additions
@@ -483,7 +483,7 @@ var eas = {
             }
         }
 
-        this.syncNextFolder();
+        eas.syncNextFolder();
     },
 
 
@@ -522,9 +522,9 @@ var eas = {
                         wbxml.ctag();
                     wbxml.ctag();
                 wbxml.ctag();
-                this.Send(wbxml.getBytes(), this.getSynckey.bind(this), "Sync");
+                eas.Send(wbxml.getBytes(), eas.getSynckey.bind(this), "Sync");
             } else {
-                this.startSync(); 
+                eas.startSync(); 
             }
         }
     },
@@ -532,7 +532,7 @@ var eas = {
     getSynckey: function (responseWbxml) {
         eas.syncdata.synckey = wbxmltools.FindKey(responseWbxml);
         tbSync.db.setFolderSetting(eas.syncdata.account, eas.syncdata.folderID, "synckey", eas.syncdata.synckey);
-        this.startSync(); 
+        eas.startSync(); 
     },
 
     startSync: function () {
@@ -555,7 +555,7 @@ var eas = {
         if (error !== "") {
             status = error;
             time = "";
-            tbSync.dump("finishSync(): Error @ Account #" + eas.syncdata.account, tbSync.getLocalizedMessage("status." + status));
+            tbSync.dump("finishSync(): Error @ Account " + tbSync.db.getAccountSetting(eas.syncdata.account, accountname), tbSync.getLocalizedMessage("status." + status));
             //setting a status on the account will overwrite syncing status, which will abort syncing on nextFolder
             tbSync.db.setAccountSetting(eas.syncdata.account, "status", status);
         }
@@ -566,7 +566,7 @@ var eas = {
         } else 
 
         tbSync.setSyncState("done", eas.syncdata.account);
-        this.syncNextFolder();
+        eas.syncNextFolder();
     },
 
 
@@ -675,11 +675,11 @@ var eas = {
         req.timeout = 30000;
 
         req.ontimeout = function () {
-            this.finishSync("timeout");
+            eas.finishSync("timeout");
         }.bind(this);
         
         req.onerror = function () {
-            this.finishSync("networkerror");
+            eas.finishSync("networkerror");
         }.bind(this);
 
         // Define response handler for our request
@@ -697,21 +697,21 @@ var eas = {
                         tbSync.dump("Recieved Data", "Expecting WBXML but got - " + req.responseText + ", request status = " + req.status + ", ready state = " + req.readyState);
                         //Freenet.de hack - if we got back junk, the password is probably wrong. we need to stop anyhow, due to this error
                         tbSync.dump("Recieved Data", "We got back junk, which *could* mean, the password is wrong. Prompting.");
-                        this.finishSync(401);
+                        eas.finishSync(401);
                     } else {
                          callback(req.responseText);
                     }
                     break;
 
                 case 401: // AuthError
-                    this.finishSync(req.status);
+                    eas.finishSync(req.status);
                     break;
 
                 case 449: // Request for new provision
                     if (tbSync.db.getAccountSetting(eas.syncdata.account, "provision") == "1") {
                         eas.initSync("resync", eas.syncdata.account, eas.syncdata.folderID);
                     } else {
-                        this.finishSync(req.status);
+                        eas.finishSync(req.status);
                     }
                     break;
 
@@ -730,7 +730,7 @@ var eas = {
                     break;
                     
                 default:
-                    this.finishSync("httperror::" + req.status);
+                    eas.finishSync("httperror::" + req.status);
             }
         }.bind(this);
 

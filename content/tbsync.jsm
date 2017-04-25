@@ -23,12 +23,10 @@ Components.utils.import("resource://gre/modules/Task.jsm");
  - check "resync account folder" - maybe rework it
  - fix blanks bug also for contacts group (not only for contacts2)
  - think about write on exit, or check if sceduled write and execute
- - task!
  - fix timezone (not all parameters are set yet)
  - do not use add + modify trick, but a true add, so we can cope with any add
  - Link calender sync to lightning-sync-button using providerId
- - each new "step" should be called async, so we do not have so many backjumps
-
+ - clear changelog on disconnect
 */
 
 var tbSync = {
@@ -146,7 +144,11 @@ var tbSync = {
 
     setSyncState: function(state, account = "", folderID = "") {
         //set new state
-        tbSync.dump("setSyncState", state);
+        let msg = "State: " + state;
+        if (account !== "") msg += ", Account: " + tbSync.db.getAccountSetting(account, "accountname");
+        if (folderID !== "") msg += ", Folder: " + tbSync.db.getFolderSetting(account, folderID, "name");
+        tbSync.dump("setSyncState", msg);
+
         tbSync.currentProzess.laststate = tbSync.currentProzess.state;
         tbSync.currentProzess.state = state;
         if (tbSync.currentProzess.state != tbSync.currentProzess.laststate) tbSync.currentProzess.chunks = 0;

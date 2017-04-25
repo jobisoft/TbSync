@@ -432,6 +432,8 @@ var tbSyncAccountSettings = {
             //the notification could be send by setSyncState (aData = "") or by tzMessenger (aData = account)
             let account = (aData == "") ? tbSync.currentProzess.account : aData;
             
+            let msg = null;
+            
             //only handle syncstate changes of the active account
             if (account == tbSyncAccountSettings.selectedAccount) {
                 
@@ -448,7 +450,7 @@ var tbSyncAccountSettings = {
                                 //do not pop alert box for these
                                 break;
                             default:
-                                alert(tbSync.getLocalizedMessage("status." + status));
+                                msg = tbSync.getLocalizedMessage("status." + status);
                         }
                         tbSyncAccountSettings.updateGui();
                         
@@ -461,6 +463,7 @@ var tbSyncAccountSettings = {
                 }
             }
             tbSyncAccountSettings.updateSyncstate();
+            if (msg !== null) alert(msg);
         }
     },
 
