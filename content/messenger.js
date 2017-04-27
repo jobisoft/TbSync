@@ -10,8 +10,16 @@ var tbSyncMessenger = {
 
         tbSync.init();
         tbSyncMessenger.syncTimer.start();
+        
+        if (document.getElementById("calendar-synchronize-button")) {
+            document.getElementById("calendar-synchronize-button").addEventListener("command", tbSyncMessenger.ligthningSyncRequest, false);
+        }
     },
 
+    ligthningSyncRequest: function() {
+        if (tbSync.enabled) tbSync.addAccountToSyncQueue('sync'); else tbSyncMessenger.popupNotEnabled();
+    },
+    
     openAccountManager: function () {
         // check, if a window is already open and just put it in focus
         if (tbSync.prefWindowObj === null) tbSync.prefWindowObj = window.open("chrome://tbsync/content/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen,toolbar,resizable");
