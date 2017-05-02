@@ -558,12 +558,14 @@ var eas = {
             tbSync.dump("finishSync(): Error @ Account " + tbSync.db.getAccountSetting(eas.syncdata.account, "accountname"), tbSync.getLocalizedMessage("status." + status));
             //setting a status on the account will overwrite syncing status, which will abort syncing on nextFolder
             tbSync.db.setAccountSetting(eas.syncdata.account, "status", status);
-        }
+        } else {
+            tbSync.dump("finishSync(): OK @ Account " + tbSync.db.getAccountSetting(eas.syncdata.account, "accountname"), tbSync.getLocalizedMessage("status." + status));
+	}
 
         if (eas.syncdata.folderID != "") {
             tbSync.db.setFolderSetting(eas.syncdata.account, eas.syncdata.folderID, "status", status);
             tbSync.db.setFolderSetting(eas.syncdata.account, eas.syncdata.folderID, "lastsynctime", time);
-        } else 
+        } 
 
         tbSync.setSyncState("done", eas.syncdata.account);
         eas.syncNextFolder();
