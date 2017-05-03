@@ -1,5 +1,6 @@
 syncstate.syncing=Initialize synchronisation
 syncstate.done=Preparing next item for synchronisation
+syncstate.preparing=Preparing next item for synchronisation
 syncstate.accountdone=Finished account
 syncstate.idle=Idle
 syncstate.requestingfolders=Retrieving folders for syncronization

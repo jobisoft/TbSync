@@ -509,7 +509,8 @@ var eas = {
                     eas.finishSync("skipped");
                     return;
             };
-
+            
+            tbSync.setSyncState("preparing", eas.syncdata.account, eas.syncdata.folderID);
             if (eas.syncdata.synckey == "") {
                 //request a new syncKey
                 let wbxml = tbSync.wbxmltools.createWBXML();
@@ -560,7 +561,7 @@ var eas = {
             tbSync.db.setAccountSetting(eas.syncdata.account, "status", status);
         } else {
             tbSync.dump("finishSync(): OK @ Account " + tbSync.db.getAccountSetting(eas.syncdata.account, "accountname"), tbSync.getLocalizedMessage("status." + status));
-	}
+        }
 
         if (eas.syncdata.folderID != "") {
             tbSync.db.setFolderSetting(eas.syncdata.account, eas.syncdata.folderID, "status", status);
