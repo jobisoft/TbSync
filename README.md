@@ -9,12 +9,12 @@ A quick start guide on how to use this Add-On can be found in the [wiki](https:/
 
 This is work in progress. Future releases will be as follows:
 
-v0.7.0: get all calendar stuff done (MeetingStatus, Attendees, Attachements, Repeated Events)
-v0.7.5: add support for tasks
-v0.8.0: rewrite contacts part (it is still using original TzPush code, but I want to use a different method, which is more easy to maintain) and fix a few bugs
-v0.8.5: add support for global address book (if possible)
-v0.9: release candidate for productive use
-v1.0: stable release
+* v0.7.0: get all calendar stuff done (MeetingStatus, Attendees, Attachements, Repeated Events)
+* v0.7.5: add support for tasks
+* v0.8.0: rewrite contacts part (it is still using original TzPush code, but I want to use a different method, which is more easy to maintain) and fix a few bugs
+* v0.8.5: add support for global address book (if possible)
+* v0.9: release candidate for productive use
+* v1.0: stable release
 
 ## Icon sources
 
