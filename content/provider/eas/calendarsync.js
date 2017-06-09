@@ -129,9 +129,6 @@ var calendarsync = {
             item.setCategories(cats.length, cats);
         }
 
-        //store the UID part of data as EASUID. The field UID is reserved for the ServerId of this item and can be accessed as item.id and as item.getProperty("UID");
-//        if (data.UID) item.setProperty("EASUID", "" + data.UID);
-
         if (asversion == "2.5") {
             if (data.Body) item.setProperty("description", xmltools.checkString(data.Body));
         } else {
@@ -329,16 +326,10 @@ var calendarsync = {
 
         wbxml.switchpage("Calendar");
         
-        //if EASUID is not set, the user just created this item and it has a new UID as id
-        //this UID is stored in the item and also on the server as ApplicationData.UID
-        //After the server receives this item, he will send back a ServerId, which we need to store as item id (UID),
-        //but we also need to keep the ApplicationData.UID, so we backup that into the field EASUID
-//        if (item.hasProperty("EASUID")) wbxml.atag("UID", item.getProperty("EASUID"));
-//        else wbxml.atag("UID", item.id);
-// FOR NOW WE SIMPLY DO NOT SEND ANY UID TO THE SERVER
-            
+        //each TB event has an ID, which is used as EAS serverId - however there is a second UID in the ApplicationData
+        //since we do not have two different IDs to use, we use the same ID
+        wbxml.atag("UID", item.id);
         //IMPORTANT in EAS v16 it is no longer allowed to send a UID
-
 
         // REQUIRED FIELDS
         let tz = this.getTimezoneData(item);
@@ -712,12 +703,6 @@ var calendarsync = {
                     
                     if (foundItems.length > 0) {
                         let newItem = foundItems[0].clone();
-                        //server has two identifiers for this item, serverId and UID
-                        //on creation, TB created a UID which has been send to the server as UID inside AplicationData
-                        //we NEED to use ServerId as TB UID without changing UID on Server -> Backup
-                        //AT THE MOMENT; WE DO NET SEND A UID AT ALL
-                        //newItem.setProperty("EASUID", "" + newItem.id);
-                        
                         newItem.id = add[count].ServerId;
                         db.addItemToChangeLog(eas.syncdata.targetObj.id, newItem.id, "modified_by_server");
                         yield pcal.modifyItem(newItem, foundItems[0]);
