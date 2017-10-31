@@ -43,8 +43,8 @@
                         <menupopup>
                             <menuitem label="&servertype.auto;" value="auto" />
                             <menuitem label="&servertype.custom;" value="custom" />
-                            <menuseparator/>
-                            <menuitem label="&servertype.outlook.com;" value="outlook.com" />
+                            <!--menuseparator/>
+                            <menuitem label="&servertype.outlook.com;" value="outlook.com" /-->
                         </menupopup>
                     </menulist>
                 </row>
