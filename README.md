@@ -5,6 +5,10 @@
 
 A quick start guide on how to use this Add-On can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki/How-to-get-started) of this repository
 
+## Got a question? Maybe it has been answered already!
+
+Please check the [closed issues](https://github.com/jobisoft/TbSync/issues?q=is%3Aissue+is%3Aclosed+label%3Aquestion) before posting your question!
+
 ## Roadmap
 
 This is work in progress. Future releases will be as follows:
