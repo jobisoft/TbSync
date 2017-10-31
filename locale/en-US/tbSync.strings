@@ -50,6 +50,10 @@ prompt.Unsubscribe=Are you sure you want to unsubscribe this item? All local mod
 prompt.UnlockSettings=Changing any of the predefined server settings could lead to synchronisation errors. Are you sure you want to unlock all predefined server settings?
 prompt.Password=Please enter the password for user ##user##:
 
+
+status.security=Could not establish a secure connection (##error##).
+status.network=Could not connect to server (##error##).
+
 account=TbSync account [##accountname##]
 
 config.auto=ActiveSync server configuration (via Autodiscover)
