@@ -9,7 +9,7 @@ A quick start guide on how to use this Add-On can be found in the [wiki](https:/
 
 Please check the [issue section](https://github.com/jobisoft/TbSync/issues?utf8=%E2%9C%93&q=is%3Aissue%20label%3Aquestion%20) before posting your question!
 
-## Roadmap
+## Roadmap for 2018
 
 This is work in progress. Future releases will be as follows:
 
