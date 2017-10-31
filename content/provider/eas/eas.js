@@ -357,9 +357,12 @@ var eas = {
         let policykey = 0;
         if (wbxmlData.Provision.Policies.Policy.PolicyKey) {
             policykey = wbxmlData.Provision.Policies.Policy.PolicyKey;
+        } else if (wbxmlData.Provision.Policies.Policy.Status) {
+			eas.finishSync("policy." + wbxmlData.Provision.Policies.Policy.Status);
+			return;
         } else {
-            eas.finishSync("policykey-failed");
-            return;
+			eas.finishSync("policykey-failed");
+			return;
         }
         
         tbSync.dump("policykeyCallback("+eas.syncdata.next+")", policykey);
