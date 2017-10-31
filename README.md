@@ -7,7 +7,7 @@ A quick start guide on how to use this Add-On can be found in the [wiki](https:/
 
 ## Got a question? Maybe it has been answered already!
 
-Please check the [closed issues](https://github.com/jobisoft/TbSync/issues?q=is%3Aissue+is%3Aclosed+label%3Aquestion) before posting your question!
+Please check the [issue section](https://github.com/jobisoft/TbSync/issues?utf8=%E2%9C%93&q=is%3Aissue%20label%3Aquestion%20) before posting your question!
 
 ## Roadmap
 
