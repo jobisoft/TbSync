@@ -779,7 +779,10 @@ var tbSync = {
             }
         } while (!unique);
 
-        //Create the new calendar with the unique name
+        //Alternative calendar, which uses calTbSyncCalendar
+        //let newCalendar = calManager.createCalendar("TbSync", cal.makeURL('tbsync-calendar://'));
+
+        //Create the new standard calendar with a unique name
         let newCalendar = calManager.createCalendar("storage", cal.makeURL('moz-storage-calendar://'));
         newCalendar.id = cal.getUUID();
         newCalendar.name = newname;
