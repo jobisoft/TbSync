@@ -498,7 +498,7 @@ var calendarsync = {
         // get data from wbxml response, some servers send empty response if there are no changes, which is not an error
         let wbxmlData = eas.getDataFromResponse(wbxml);
         if (wbxmlData === null) {
-            calendarsync.sendLocalChanges()
+            calendarsync.sendLocalChanges();
             return;
         }
     
@@ -677,10 +677,10 @@ var calendarsync = {
     processLocalChangesResponse: function (wbxml) {
         tbSync.setSyncState("serverid", eas.syncdata.account, eas.syncdata.folderID);
 
-        //get data from wbxml response, which is not an error
+        //get data from wbxml response, check for empty response, which is not an error
         let wbxmlData = eas.getDataFromResponse(wbxml);
         if (wbxmlData === null) {
-            eas.finishSync();
+            calendarsync.sendLocalChanges(); //again, until we no longer get here
             return;
         }
     
@@ -735,7 +735,7 @@ var calendarsync = {
             }).then(calendarsync.sendLocalChanges(), function (exception) {tbSync.dump("exception", exception); eas.finishSync("js-error-in-calendarsync.processLocalChangesResponse")});
             
         } else {
-            eas.finishSync();
+            calendarsync.sendLocalChanges(); //again, until we no longer get here
         }
     }
 
