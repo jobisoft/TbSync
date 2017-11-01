@@ -495,12 +495,15 @@ var calendarsync = {
     processRemoteChanges: function (wbxml) {
         tbSync.setSyncState("recievingchanges", eas.syncdata.account, eas.syncdata.folderID);
 
-        // get data from wbxml response
-        let wbxmlData = eas.getDataFromResponse(wbxml, function(){calendarsync.sendLocalChanges()});
-        if (wbxmlData === false) return;
-
+        // get data from wbxml response, some servers send empty response if there are no changes, which is not an error
+        let wbxmlData = eas.getDataFromResponse(wbxml);
+        if (wbxmlData === null) {
+            calendarsync.sendLocalChanges()
+            return;
+        }
+    
         //check status
-        if (eas.statusIsBad(wbxmlData.Sync.Collections.Collection.Status)) return;
+        if (eas.statusIsBad(wbxmlData,"Sync.Collections.Collection.Status")) return;
         
         //update synckey
         if (eas.updateSynckey(wbxmlData) === false) return;
@@ -508,7 +511,8 @@ var calendarsync = {
         //A task is "serializing" async jobs
         Task.spawn(function* () {
 
-            //any commands for us to work on?
+            //any commands for us to work on? If we reach this point, Sync.Collections.Collection is valid, 
+            //no need to use the save getWbxmlDataField function
             if (wbxmlData.Sync.Collections.Collection.Commands) {
 
                 //promisify calender, so it can be used together with yield
@@ -563,6 +567,7 @@ var calendarsync = {
             
             }
 
+            //If we reach this point, Sync.Collections.Collection is valid,  no need to use the save getWbxmlDataField function
             if (wbxmlData.Sync.Collections.Collection.MoreAvailable) {
                 calendarsync.requestRemoteChanges();
             } else { 
@@ -672,17 +677,21 @@ var calendarsync = {
     processLocalChangesResponse: function (wbxml) {
         tbSync.setSyncState("serverid", eas.syncdata.account, eas.syncdata.folderID);
 
-        //get data from wbxml response
-        let wbxmlData = eas.getDataFromResponse(wbxml, function(){eas.finishSync()});
-        if (wbxmlData === false) return;
-
+        //get data from wbxml response, which is not an error
+        let wbxmlData = eas.getDataFromResponse(wbxml);
+        if (wbxmlData === null) {
+            eas.finishSync();
+            return;
+        }
+    
         //check status
-        if (eas.statusIsBad(wbxmlData.Sync.Collections.Collection.Status)) return;
+        if (eas.statusIsBad(wbxmlData,"Sync.Collections.Collection.Status")) return;
         
         //update synckey
         if (eas.updateSynckey(wbxmlData) === false) return;
         
-        //any responses for us to work on?
+        //any responses for us to work on?  If we reach this point, Sync.Collections.Collection is valid, 
+        //no need to use the save getWbxmlDataField function
         if (wbxmlData.Sync.Collections.Collection.Responses) {
                 
             //A task is "serializing" async jobs
@@ -696,7 +705,7 @@ var calendarsync = {
                 for (let count = 0; count < add.length; count++) {
                     
                     //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                    if (eas.statusIsBad(add[count].Status)) return;
+                    if (eas.statusIsBad(add[count],"Status")) return;
 
                     //look for an item identfied by ClientId and update its id to the new id received from the server
                     let foundItems = yield pcal.getItem(add[count].ClientId);
@@ -713,14 +722,14 @@ var calendarsync = {
                 let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
                 for (let count = 0; count < upd.length; count++) {
                     //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                    if (eas.statusIsBad(upd[count].Status)) return;
+                    if (eas.statusIsBad(upd[count],"Status")) return;
                 }
 
                 //looking for deletions 
                 let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Delete);
                 for (let count = 0; count < del.length; count++) {
                     //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                    if (eas.statusIsBad(del[count].Status)) return;
+                    if (eas.statusIsBad(del[count],"Status")) return;
                 }
                 
             }).then(calendarsync.sendLocalChanges(), function (exception) {tbSync.dump("exception", exception); eas.finishSync("js-error-in-calendarsync.processLocalChangesResponse")});

@@ -25,7 +25,8 @@ status.networkerror=Could not connect to server.
 status.401=Could not authenticate, check username and password.
 status.449=Server requests provisioning.
 status.httperror=Communication error (HTTP status ##error##).
-status.wbxmlerror=ActiveSync error (Status ##error##).
+status.wbxmlerror=Server responds with unknown status <##error##>.
+status.wbxmlmissingfield=ActiveSync protocol violation: Mandatory field <##error##> is missing in server response.
 status.OK=Ok
 status.nolightning=Lightning Add-On not installed, calendars are not supported.
 
@@ -38,7 +39,6 @@ status.modified=Local modifications
 status.waiting=Account is scheduled to be synchronized
 status.idle=Synchronize this account
 
-status.policykey-failed=Unknown error while requesting the policy for this device. Disable provisioning for this account and try again.
 status.policy.2=There is no policy for this client. Contact your server administrator or disable provisioning for this account.
 status.policy.3=Unknown PolicyType value. Contact your server administrator or disable provisioning for this account.
 status.policy.4=The policy data on the server is corrupted (possibly tampered with). Contact your server administrator or disable provisioning for this account.
