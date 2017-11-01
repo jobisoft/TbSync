@@ -473,9 +473,20 @@ var calendarsync = {
                     if (tbSync.db.getAccountSetting(eas.syncdata.account, "asversion") == "2.5") wbxml.atag("Class", eas.syncdata.type);
                     wbxml.atag("SyncKey", eas.syncdata.synckey);
                     wbxml.atag("CollectionId", eas.syncdata.folderID);
-                    wbxml.atag("DeletesAsMoves", "");
-                    wbxml.atag("GetChanges", "");
+                    wbxml.atag("DeletesAsMoves", "0");
+                    //wbxml.atag("GetChanges", ""); //Not needed, as it is default
                     wbxml.atag("WindowSize", "100");
+
+                    if (tbSync.db.getAccountSetting(eas.syncdata.account, "asversion") != "2.5") {
+                        wbxml.otag("Options");
+                            wbxml.switchpage("AirSyncBase");
+                            wbxml.otag("BodyPreference");
+                                wbxml.atag("Type", "1");
+                            wbxml.ctag();
+                            wbxml.switchpage("AirSync");
+                        wbxml.ctag();
+                    }
+
                 wbxml.ctag();
             wbxml.ctag();
         wbxml.ctag();
