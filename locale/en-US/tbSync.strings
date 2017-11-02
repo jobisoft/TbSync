@@ -24,9 +24,9 @@ status.timeout=Communication timeout.
 status.networkerror=Could not connect to server.
 status.401=Could not authenticate, check username and password.
 status.449=Server requests provisioning.
-status.httperror=Communication error (HTTP status ##error##).
-status.wbxmlerror=Sync failed. Server responds with status <##error##>.
-status.wbxmlmissingfield=ActiveSync protocol violation: Mandatory field <##error##> is missing in server response.
+status.httperror=Communication error (HTTP status ##replace##).
+status.wbxmlerror=Sync failed. Server responds with status <##replace##>.
+status.wbxmlmissingfield=ActiveSync protocol violation: Mandatory field <##replace##> is missing in server response.
 status.OK=Ok
 status.nolightning=Lightning Add-On not installed, calendars are not supported.
 
@@ -51,8 +51,8 @@ prompt.UnlockSettings=Changing any of the predefined server settings could lead 
 prompt.Password=Please enter the password for user ##user##:
 
 
-status.security=Could not establish a secure connection (##error##).
-status.network=Could not connect to server (##error##).
+status.security=Could not establish a secure connection (##replace##).
+status.network=Could not connect to server (##replace##).
 
 account=TbSync account [##accountname##]
 
