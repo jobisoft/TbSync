@@ -318,8 +318,12 @@ var contactsync = {
                                             modcard.setProperty("PhotoURI", filePath);
                                             photo = '';
                                         }
-                                        if (tbSync.db.getAccountSetting(eas.syncdata.account, "displayoverride") == "1") {
-                                            modcard.setProperty("DisplayName", modcard.getProperty("FirstName", "") + " " + modcard.getProperty("LastName", ""));
+
+                                        if (tbSync.db.getAccountSetting(eas.syncdata.account, "displayoverride") == "1" ) {
+                                          modcard.setProperty("DisplayName", modcard.getProperty("FirstName", "") + " " + modcard.getProperty("LastName", ""));
+
+                                          if (modcard.getProperty("DisplayName", "" ) == " " )
+                                            modcard.setProperty("DisplayName", card.getProperty("Company", card.getProperty("PrimaryEmail", "")));
                                         }
 
                                         /* newCard = */ addressBook.modifyCard(modcard);
@@ -381,6 +385,9 @@ var contactsync = {
                                 }
                                 if (tbSync.db.getAccountSetting(eas.syncdata.account, "displayoverride") == "1") {
                                     modcard.setProperty("DisplayName", modcard.getProperty("FirstName", "") + " " + modcard.getProperty("LastName", ""));
+
+                                    if (modcard.getProperty("DisplayName", "" ) == " " )
+                                        modcard.setProperty("DisplayName", card.getProperty("Company", card.getProperty("PrimaryEmail", "")));
                                 }
                                 /* newCard = */ addressBook.modifyCard(modcard);
 

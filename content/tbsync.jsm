@@ -496,7 +496,10 @@ var tbSync = {
 
     addNewCardFromServer: function (card, addressBook, account) {
         if (tbSync.db.getAccountSetting(account, "displayoverride") == "1") {
-            card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
+           card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
+
+        if (card.getProperty("DisplayName", "" ) == " " )
+           card.setProperty("DisplayName", card.getProperty("Company", card.getProperty("PrimaryEmail", "")));
         }
         
         //Remove the ServerID from the card, add the card without serverId and modify the added card later on - otherwise the ServerId will be removed by the onAddItem-listener
