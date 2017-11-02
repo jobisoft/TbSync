@@ -16,6 +16,8 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 
+Components.utils.import("resource://gre/modules/Console.jsm");
+
 
 /* TODO
  - explizitly use if (error !== "") not if (error) - fails on "0"
@@ -496,7 +498,10 @@ var tbSync = {
 
     addNewCardFromServer: function (card, addressBook, account) {
         if (tbSync.db.getAccountSetting(account, "displayoverride") == "1") {
-            card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
+           card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
+
+        if (card.getProperty("DisplayName", "" ) == " " )
+           card.setProperty("DisplayName", card.getProperty("Company", card.getProperty("PrimaryEmail", "")));
         }
         
         //Remove the ServerID from the card, add the card without serverId and modify the added card later on - otherwise the ServerId will be removed by the onAddItem-listener
