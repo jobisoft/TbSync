@@ -89,6 +89,7 @@
                         id="tbsync.accountsettings.folderlist"
                         flex="1"
                         seltype="single"
+                        onkeypress="if (event.keyCode == 46) {tbSyncAccountSettings.deleteFolder();}"
                         ondblclick="tbSyncAccountSettings.toggleFolder();">
                         <listhead style="border-bottom: 1px solid lightgrey;">
                             <listheader style="font-weight:bold;" label="" width="24" />

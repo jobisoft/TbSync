@@ -83,15 +83,15 @@ var tbSync = {
     queueTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
     accountScheduledForSync: function (account) {
-        return (tbSync.syncQueue.filter(item => item.endsWith("."+account)).length > 0);
+        return (tbSync.syncQueue.filter(item => item.includes("."+account + ".")).length > 0);
     },
 
-    addAccountToSyncQueue: function (job, account = "") {
+    addAccountToSyncQueue: function (job, account = "", folderID = "") {
         if (account == "") {
             //Add all connected accounts to the queue
             let accounts = tbSync.db.getAccounts();
             for (let i=0; i<accounts.IDs.length; i++) {
-                let newentry = job + "." + accounts.IDs[i];
+                let newentry = job + "." + accounts.IDs[i] + ".";
                 //do not add same job more than once
                 if (accounts.data[accounts.IDs[i]].state != "disconnected" && !tbSync.accountScheduledForSync(accounts.IDs[i])) {
                     tbSync.syncQueue.push(newentry);
@@ -99,7 +99,7 @@ var tbSync = {
             }
         } else if (!tbSync.accountScheduledForSync(account)) {
             //Add specified account to the queue
-            tbSync.syncQueue.push( job + "." + account );
+            tbSync.syncQueue.push( job + "." + account + "." + folderID);
         }
 
         //update gui
@@ -130,15 +130,22 @@ var tbSync = {
         let syncrequest = tbSync.syncQueue.shift().split(".");
         let job = syncrequest[0];
         let account = syncrequest[1];
-
+        let folderID = syncrequest[2];
+        let provider = tbSync.db.getAccountSetting(account, "provider");
+        
         //workSyncQueue assumes, that it is allowed to start a new sync job
         switch (job) {
             case "sync":
             case "resync":
-                tbSync[tbSync.db.getAccountSetting(account, "provider")].initSync(job, account);
-                break;
+                tbSync[provider].initSync(job, account);
+                return;
+            case "deletefolder":
+                if (provider == "eas") {
+                    tbSync[provider].initSync(job, account, folderID);
+                    return;
+                }
             default:
-                tbSync.dump("workSyncQueue()", "Unknow job for sync queue ("+ job + ")");
+                tbSync.dump("workSyncQueue()", "Adding unknow job <"+ job +"> for provider <"+ provider +"> to sync queue!");
         }
     },
 

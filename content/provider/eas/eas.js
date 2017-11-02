@@ -326,6 +326,10 @@ var eas = {
                     eas.getFolderIds();
                 }
                 break;
+                
+            case "deletefolder":
+                    eas.deleteFolder();
+                break;
         }
     },
 
@@ -649,6 +653,51 @@ var eas = {
             return false;
         }
     },
+
+
+
+
+
+    deleteFolder: function() {
+        if (eas.syncdata.folderID == "") {
+            eas.finishSync();
+        } else {
+            tbSync.setSyncState("deletingfolder", eas.syncdata.account); 
+            let foldersynckey = tbSync.db.getAccountSetting(eas.syncdata.account, "foldersynckey");
+            if (foldersynckey == "") foldersynckey = "0";
+
+            //request foldersync
+            let wbxml = wbxmltools.createWBXML();
+            wbxml.switchpage("FolderHierarchy");
+            wbxml.otag("FolderDelete");
+                wbxml.atag("SyncKey", foldersynckey);
+                wbxml.atag("ServerId", eas.syncdata.folderID);
+            wbxml.ctag();
+
+            eas.Send(wbxml.getBytes(), eas.deleteFolderCallback.bind(this), "FolderDelete");
+        }
+    },
+    
+    deleteFolderCallback: function (wbxml) {
+        let wbxmlData = eas.getDataFromResponse(wbxml);
+
+        if (eas.statusIsBad(wbxmlData,"FolderDelete.Status")) return;
+
+        let synckey = xmltools.getWbxmlDataField(wbxmlData,"FolderDelete.SyncKey");
+        if (synckey) {
+            tbSync.db.setAccountSetting(eas.syncdata.account, "foldersynckey", synckey);
+            eas.finishSync();
+            tbSync.db.deleteFolder(eas.syncdata.account, eas.syncdata.folderID);
+            //update manager gui / folder list
+            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+            observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", eas.syncdata.account);
+        } else {
+            eas.finishSync("wbxmlmissingfield::FolderDelete.SyncKey");
+        }
+    },
+
+
+
 
 
     createTCPErrorFromFailedXHR: function (xhr) {

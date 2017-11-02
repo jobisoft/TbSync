@@ -5,6 +5,7 @@ syncstate.accountdone=Finished account
 syncstate.idle=Idle
 syncstate.requestingfolders=Retrieving folders for syncronization
 syncstate.requestingprovision=Requesting provision
+syncstate.deletingfolder=Deleting folder from server
 
 syncstate.serverid=Adding new serverid
 syncstate.cleaningdeleted=Cleaning up deleted items

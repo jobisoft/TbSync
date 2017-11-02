@@ -37,6 +37,19 @@ var tbSyncAccountSettings = {
     },
 
 
+    deleteFolder: function() {
+        let folderList = document.getElementById("tbsync.accountsettings.folderlist");
+        if (folderList.selectedItem !== null && !folderList.disabled) {
+            let fID =  folderList.selectedItem.value;
+            let folder = tbSync.db.getFolder(tbSyncAccountSettings.selectedAccount, fID, true);
+
+            if (folder.selected == "1") alert(tbSync.getLocalizedMessage("deletefolder.notallowed::" + folder.name,"eas"));
+            else if (confirm(tbSync.getLocalizedMessage("deletefolder.confirm::" + folder.name,"eas"))) {
+                tbSync.addAccountToSyncQueue("deletefolder", tbSyncAccountSettings.selectedAccount, fID);
+            } 
+        }            
+    },
+    
     /* * *
     * Run through all defined TbSync settings and if there is a corresponding
     * field in the settings dialog, fill it with the stored value.
