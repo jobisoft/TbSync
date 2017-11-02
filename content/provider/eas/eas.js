@@ -57,12 +57,12 @@ var eas = {
         //i thought that I might need to manually write pending/scheduled write jobs before closing, 
         //but it looks like I do not have to
 
-        //db.changelogTimer.cancel();
-        //db.accountsTimer.cancel();
-        //db.foldersTimer.cancel();
-        //tbSync.writeAsyncJSON(tbSync.db.accounts, tbSync.db.accountsFile);
-        //tbSync.writeAsyncJSON(tbSync.db.folders, tbSync.db.foldersFile);
-        //tbSync.writeAsyncJSON(tbSync.db.changelog, tbSync.db.changelogFile);
+        db.changelogTimer.cancel();
+        db.accountsTimer.cancel();
+        db.foldersTimer.cancel();
+        tbSync.writeAsyncJSON(tbSync.db.accounts, tbSync.db.accountsFile);
+        tbSync.writeAsyncJSON(tbSync.db.folders, tbSync.db.foldersFile);
+        tbSync.writeAsyncJSON(tbSync.db.changelog, tbSync.db.changelogFile);
 
         //test
         //tbSync.db.addItemToChangeLog("WriteRequest", "JustBefore", "ClosingThunderbird");
