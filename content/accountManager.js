@@ -42,7 +42,7 @@ var tbSyncAccountManager = {
                 else nextAccount = accountsList.getItemAtIndex(accountsList.selectedIndex - 1).value;
             }
             
-            if (confirm(tbSync.getLocalizedMessage("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.label))) {
+            if (confirm(tbSync.getLocalizedMessage("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
                 //disconnect (removes ab, triggers changelog cleanup) 
                 tbSync[tbSync.db.getAccountSetting(accountsList.selectedItem.value, "provider")].disconnectAccount(accountsList.selectedItem.value);
                 //delete account from db
@@ -143,6 +143,7 @@ var tbSyncAccountManager = {
                     let newListItem = document.createElement("richlistitem");
                     newListItem.setAttribute("id", "tbSyncAccountManager.accounts." + accounts.IDs[i]);
                     newListItem.setAttribute("value", accounts.IDs[i]);
+                    newListItem.setAttribute("label", accounts.data[accounts.IDs[i]].accountname);
 
                     //add account name
                     let itemLabelCell = document.createElement("listcell");

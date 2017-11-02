@@ -23,6 +23,19 @@ var xmltools = {
         return a;
     },
 
+    getWbxmlDataField: function(wbxmlData,path) {
+	if (wbxmlData) {		
+		let pathElements = path.split(".");
+		let data = wbxmlData;
+		let valid = true;
+		for (let x = 0; valid && x < pathElements.length; x++) {
+			if (data[pathElements[x]]) data = data[pathElements[x]];
+			else valid = false;
+		}
+		if (valid) return data;
+	}
+	return false
+    },
 
     //print content of xml data object (if debug output enabled)
     printXmlData : function (data, lvl = 0) {
