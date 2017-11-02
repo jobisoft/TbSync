@@ -16,8 +16,6 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 
-Components.utils.import("resource://gre/modules/Console.jsm");
-
 
 /* TODO
  - explizitly use if (error !== "") not if (error) - fails on "0"
