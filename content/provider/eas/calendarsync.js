@@ -373,7 +373,7 @@ var calendarsync = {
         } else {
             wbxml.atag("Categories");
         }
-        
+
         //TP PRIORIRY (9=LOW, 5=NORMAL, 1=HIGH) not mapable to EAS
         
         //EAS Reminder (TB getAlarms) - at least with zarafa blanking by omitting works
@@ -406,19 +406,23 @@ var calendarsync = {
 
 
         //Description, should be done at the very end (page switch)
+        let description = (item.hasProperty("description")) ? tbSync.encode_utf8(item.getProperty("description")) : "";
         if (asversion == "2.5") {
-            wbxml.atag("Body", (item.hasProperty("description")) ? tbSync.encode_utf8(item.getProperty("description")) : "");
+            wbxml.atag("Body", description);
         } else {
             wbxml.switchpage("AirSyncBase");
-            let description =(item.hasProperty("description")) ? tbSync.encode_utf8(item.getProperty("description")) : "";
             wbxml.otag("Body");
-                wbxml.atag("Data", description);
-                wbxml.atag("EstimatedDataSize", "" + description.length);
                 wbxml.atag("Type", "1");
+                wbxml.atag("EstimatedDataSize", "" + description.length);
+                wbxml.atag("Data", description);
             wbxml.ctag();
             wbxml.atag("NativeBodyType", "1");
+
+            //return to Calendar code page
+            wbxml.switchpage("Calendar");
         }
-        //return to AirSync
+
+        //return to AirSync code page
         wbxml.switchpage("AirSync");
         return wbxml.getBytes();
     },
