@@ -243,6 +243,14 @@ var eas = {
         }
     },
 
+    removeAllTargets: function (account) {
+        let folders = db.findFoldersWithSetting("selected", "1", account);
+        for (let i = 0; i<folders.length; i++) {
+             tbSync.eas.removeTarget(folders[i].target, folders[i].type);
+        }
+        db.deleteAllFolders(account);
+    },
+
     connectAccount: function (account) {
         db.setAccountSetting(account, "state", "connected");
         db.setAccountSetting(account, "policykey", 0);
@@ -255,12 +263,7 @@ var eas = {
         db.setAccountSetting(account, "foldersynckey", "");
 
         //Delete all targets
-        let folders = db.findFoldersWithSetting("selected", "1", account);
-        for (let i = 0; i<folders.length; i++) {
-            tbSync.eas.removeTarget(folders[i].target, folders[i].type);
-        }
-        db.deleteAllFolders(account);
-
+         tbSync.eas.removeAllTargets(account);
         db.setAccountSetting(account, "status", "notconnected");
     },
 
