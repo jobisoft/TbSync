@@ -202,12 +202,80 @@ var calendarsync = {
         let CLASS = { "0":"PUBLIC", "1":"PRIVATE", "2":"PRIVATE", "3":"CONFIDENTIAL"};
         if (data.Sensitivity) item.setProperty("CLASS", CLASS[data.Sensitivity]);
 
- /*
+
+        //Attendees - remove all Attendees and re-add the ones from XML
+        item.removeAllAttendees();
+        if (data.Attendees && data.Attendees.Attendee) {
+            let att = [];
+            if (Array.isArray(data.Attendees.Attendee)) att = data.Attendees.Attendee;
+            else att.push(data.Attendees.Attendee);
+            for (let i = 0; i < att.length; i++) {
+
+                let attendee = cal.createAttendee();
+
+                attendee["id"] = cal.prependMailTo(att[i].Email);
+                attendee["commonName"] = att[i].Name;
+                attendee["rsvp"] = "TRUE";
+
+                //not supported in 2.5
+                switch (att[i].AttendeeType) {
+                    case "1": //required
+                        attendee["role"] = "REQ-PARTICIPANT";
+                        attendee["userType"] = "INDIVIDUAL";
+                        break;
+                    case "2": //optional
+                        attendee["role"] = "OPT-PARTICIPANT";
+                        attendee["userType"] = "INDIVIDUAL";
+                        break;
+                    default : //resource or unknown
+                        attendee["role"] = "NON-PARTICIPANT";
+                        attendee["userType"] = "RESOURCE";
+                        break;
+                }
+
+                //not supported in 2.5
+                switch (att[i].AttendeeStatus) {
+                    case "2": //Tentative
+                        attendee["participationStatus"] = "TENTATIVE";
+                        break;
+                    case "3": //Accept
+                        attendee["participationStatus"] = "ACCEPTED";
+                        break;
+                    case "4": //Decline
+                        attendee["participationStatus"] = "DECLINED";
+                        break;
+                    case "5": //Not responded
+                        attendee["participationStatus"] = "NEEDS-ACTION";
+                        break;
+                    default : //Unknown
+                        attendee["participationStatus"] = "NEEDS-ACTION";
+                        break;
+                }
+
+                /*
+                 * status  : [NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, DELEGATED, COMPLETED, IN-PROCESS]
+                 * rolemap : [REQ-PARTICIPANT, OPT-PARTICIPANT, NON-PARTICIPANT, CHAIR]
+                 * typemap : [INDIVIDUAL, GROUP, RESOURCE, ROOM]
+                 */
+
+                // Add attendee to event
+                item.addAttendee(attendee);
+            }
+        }
         
-        Missing : MeetingStatus, Attendees, Attachements, Repeated Events
-        
-            <OrganizerName xmlns='Calendar'>John Bieling</OrganizerName>
-            <OrganizerEmail xmlns='Calendar'>john.bieling@uni-bonn.de</OrganizerEmail>
+        //Organizer
+        let organizer = cal.createAttendee();
+        organizer.id = cal.prependMailTo(data.OrganizerEmail);
+        organizer.commonName = data.OrganizerName;
+        organizer.rsvp = "TRUE";
+        organizer.role = "CHAIR";
+        organizer.userType = null;
+        organizer.participationStatus = "ACCEPTED";
+        organizer.isOrganizer = true;
+        item.organizer = organizer;
+
+
+        /* Missing : MeetingStatus, Attachements (needs EAS 16.0 !), Repeated Events
 
             <Recurrence xmlns='Calendar'>
                 <Type xmlns='Calendar'>5</Type>
@@ -390,20 +458,59 @@ var calendarsync = {
         // 5  The meeting has been canceled and the user was the meeting organizer.
         // 7  The meeting has been canceled. The user was not the meeting organizer; the meeting was received from someone else
 
-        //attendees
-        //attachements
+
+        //Organizer
+        if (item.organizer && item.organizer.commonName) wbxml.atag("OrganizerName", item.organizer.commonName);
+        if (item.organizer && item.organizer.id) wbxml.atag("OrganizerEmail",  cal.removeMailTo(item.organizer.id));
+
+
+        //Attendees - remove all Attendees and re-add the ones from XML
+        let countObj = {};
+        let attendees = item.getAttendees(countObj);
+        if (countObj.value > 0) {
+            wbxml.otag("Attendees");
+                for (let attendee of attendees) {
+                    wbxml.otag("Attendee");
+                        wbxml.atag("Email", cal.removeMailTo(attendee.id));
+                        wbxml.atag("Name", attendee.commonName);
+                        if (asversion != "2.5") {
+                            switch (attendee.participationStatus) {
+                                case "TENTATIVE": wbxml.atag("AttendeeStatus","2");break;
+                                case "ACCEPTED" : wbxml.atag("AttendeeStatus","3");break;
+                                case "DECLINED" : wbxml.atag("AttendeeStatus","4");break;
+                                default         : wbxml.atag("AttendeeStatus","0");break;
+                            }
+
+                            /*
+                            * status  : [NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, DELEGATED, COMPLETED, IN-PROCESS]
+                            * rolemap : [REQ-PARTICIPANT, OPT-PARTICIPANT, NON-PARTICIPANT, CHAIR]
+                            * typemap : [INDIVIDUAL, GROUP, RESOURCE, ROOM]
+                            */
+
+                            if (attendee.userType == "RESOURCE" || attendee.userType == "ROOM" || attendee.role == "NON-PARTICIPANT") wbxml.atag("AttendeeType","3");
+                            else if (attendee.role == "REQ-PARTICIPANT" || attendee.role == "CHAIR") wbxml.atag("AttendeeType","1");
+                            else wbxml.atag("AttendeeType","2"); //leftovers are optional
+                        }
+                    wbxml.ctag();
+                }
+            wbxml.ctag();
+        } else {
+            wbxml.atag("Attendees");
+        }
+
+        //attachements (needs EAS 16.0!)
         //repeat
 
         
-        
-        /*loop over all properties
+        /*
+        //loop over all properties
         let propEnum = item.propertyEnumerator;
         while (propEnum.hasMoreElements()) {
             let prop = propEnum.getNext().QueryInterface(Components.interfaces.nsIProperty);
             let pname = prop.name;
             tbSync.dump("PROP", pname + " = " + prop.value);
-        }*/
-
+        }
+        */
 
         //Description, should be done at the very end (page switch)
         let description = (item.hasProperty("description")) ? tbSync.encode_utf8(item.getProperty("description")) : "";
