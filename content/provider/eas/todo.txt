@@ -1,0 +1,104 @@
+
+
+
+
+
+
+
+
+/*    convertAbCardToEvent: function cTBS_convertAbCardToEvent(abCard) {
+        
+        var event = cal.createEvent();
+        
+        
+        // Search for valid date.
+        var year = parseInt(abCard.getProperty("BirthYear", null),10);
+        var month = parseInt(abCard.getProperty("BirthMonth", null),10) - 1;   // month is zero-based
+        var day = parseInt(abCard.getProperty("BirthDay", null),10);
+        
+        // This is also false when year, month or day is not set or NaN.
+        if (!(year >= 0 && year < 3000 && month >= 0 && month <= 11 &&
+              day >= 1 && day <= 31)) {
+            return null;
+        }
+        
+        
+        // Set start and end date.
+        event.startDate = cal.createDateTime();
+        event.startDate.year = year;
+        event.startDate.month = month;
+        event.startDate.day = day;
+        event.startDate.isDate = true;
+        
+        // This is an allday event, so set its timezone to floating.
+        event.startDate.timezone = cal.floating();
+        event.startDate.makeImmutable();
+
+        event.endDate = event.startDate.clone();
+        event.endDate.day += 1;         // all-day events end 1 day after they began
+        event.endDate.makeImmutable();
+        
+        
+        // remark:the base items title only consist of the name. Occurrences titles
+        // make use of the base items title and append additional information like age
+        // and such
+        
+        // choose best field of the abCard for the title (one of these fields
+        // (except nickname) has to be set for every card)
+        with (abCard) var possibleTitles = [getProperty("DisplayName", null),
+                                            getProperty("NickName", null),
+                                            ( getProperty("FirstName", null) && getProperty("LastName", null) ?
+                                              getProperty("FirstName", null) + " " + getProperty("LastName", null) :
+                                              null ),
+                                            getProperty("FirstName", null),
+                                            getProperty("LastName", null),
+                                            getProperty("PrimaryEmail", null),
+                                            getProperty("Company", null)]
+        for (var i = 0; i < possibleTitles.length; i++) {
+            if (possibleTitles[i]) {
+                event.title = possibleTitles[i];
+                break;
+            }
+        }
+        
+        
+        // set recurrence information
+        event.recurrenceInfo = cal.createRecurrenceInfo();
+        event.recurrenceInfo.item = event;
+        
+        var recRule = cal.createRecurrenceRule();
+            recRule.type = "YEARLY";
+            recRule.interval = 1;
+            recRule.count = -1;
+            recRule.setComponent("BYMONTH", 1, [(month+1)]);
+            recRule.setComponent("BYMONTHDAY", 1, [day]);
+        
+        event.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
+        
+        
+        // additional info
+        if(abCard.getProperty("WebPage2",null))       // webPage2 is home web page
+            event.setProperty("URL", abCard.getProperty("WebPage2",null));
+        
+        event.privacy = "PRIVATE";
+        
+        // Id of the event = MD5 sum depending of the persons name, his/her birthday
+        // and the calendar URI
+        event.id = md5(event.title + event.startDate.year
+                       + event.startDate.month + event.startDate.day
+                       + this.mUri.spec) + "@ThunderBirthDay";
+        
+        event.calendar = this;
+        
+        
+        // set "LAST-MODIFIED" at the end, since it get changed when s.th. else is set
+        var lastMod = cal.createDateTime();
+        lastMod.nativeTime = abCard.getProperty("LastModifiedDate",0) * 1000 * 1000;
+        lastMod.makeImmutable();
+        event.setProperty("LAST-MODIFIED", lastMod);
+        
+        
+        event.makeImmutable();
+        
+        return event;
+    }*/
