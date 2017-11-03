@@ -162,7 +162,7 @@ var contactsync = {
                     eas.initSync("resync", eas.syncdata.account, eas.syncdata.folderID);
                 } else if (wbxmlstatus !== '1') {
                     tbSync.dump("wbxml status", "server error? " + wbxmlstatus);
-                    eas.finishSync("wbxmlerror::" + status);
+                    eas.finishSync("wbxmlerror::" + wbxmlstatus);
                 } else {
                     eas.syncdata.synckey = wbxmltools.FindKey(wbxml);
                     tbSync.db.setFolderSetting(eas.syncdata.account, eas.syncdata.folderID, "synckey", eas.syncdata.synckey);
@@ -752,7 +752,7 @@ var contactsync = {
                 eas.initSync("resync", eas.syncdata.account, eas.syncdata.folderID);
             } else if (wbxmlstatus !== '1') {
                 tbSync.dump("wbxml status", "server error? " + wbxmlstatus);
-                eas.finishSync("wbxmlerror::" + status);
+                eas.finishSync("wbxmlerror::" + wbxmlstatus);
             } else {
                 tbSync.setSyncState("serverid", eas.syncdata.account, eas.syncdata.folderID);
 
@@ -874,7 +874,7 @@ var contactsync = {
             eas.initSync("resync", eas.syncdata.account, eas.syncdata.folderID);
         } else if (wbxmlstatus !== '1') {
             tbSync.dump("wbxml status", "server error? " + wbxmlstatus);
-            eas.finishSync("wbxmlerror::" + status);
+            eas.finishSync("wbxmlerror::" + wbxmlstatus);
         } else {
             eas.syncdata.synckey = wbxmltools.FindKey(responseWbxml);
             tbSync.db.setFolderSetting(eas.syncdata.account, eas.syncdata.folderID, "synckey", eas.syncdata.synckey);
