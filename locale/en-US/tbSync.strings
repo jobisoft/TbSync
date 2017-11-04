@@ -45,6 +45,8 @@ status.policy.3=Unknown PolicyType value. Contact your server administrator or d
 status.policy.4=The policy data on the server is corrupted (possibly tampered with). Contact your server administrator or disable provisioning for this account.
 status.policy.5=The client is acknowledging the wrong policy key. Contact your server administrator or disable provisioning for this account.
 
+status.provision=Provision failed with status <##replace##>
+
 prompt.DeleteAccount=Delete account ##accountName## for sure?
 prompt.Disconnect=Are you sure you want to disconnect this account? All local modifications, which have not been synced yet, will be lost!
 prompt.Unsubscribe=Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!

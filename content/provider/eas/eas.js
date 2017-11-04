@@ -359,19 +359,51 @@ var eas = {
     getPolicykeyCallback: function (responseWbxml) {
         let wbxmlData = eas.getDataFromResponse(responseWbxml);
 
-        let policykey = xmltools.getWbxmlDataField(wbxmlData,"Provision.Policies.Policy.PolicyKey");
-        if (policykey === false) {
-            let status = xmltools.getWbxmlDataField(wbxmlData,"Provision.Policies.Policy.Status");
-            if (status) {
-                eas.finishSync("policy." + status);
-            } else {
-                eas.finishSync("wbxmlmissingfield::Provision.Policies.Policy.Status");
-            }
+        //HORDE hack, or at least, this is not standard protocol: Horde returns provision status 1, but no synkey with policy status 2 and expects client to go on without provision.
+        //Provision status is 1 -> OK (no error message)
+        //Policy status is 1 or 2 -> OK (no error message)
+        //1: use policykey (abort if missing)
+        //2: go on without provision
+	    
+        let policyStatus = xmltools.getWbxmlDataField(wbxmlData,"Provision.Policies.Policy.Status");
+        let provisionStatus = xmltools.getWbxmlDataField(wbxmlData,"Provision.Status");
+        if (provisionStatus === false) {
+            eas.finishSync("wbxmlmissingfield::Provision.Status");
             return;
+	    } else if (provisionStatus != "1") {
+            //dump policy status as well
+            if (policyStatus) tbSync.dump("Received policy status", policyStatus);
+            eas.finishSync("provision::" + provisionStatus);
+            return;    
         }
-        
-        tbSync.dump("policykeyCallback("+eas.syncdata.next+")", policykey);
-        tbSync.db.setAccountSetting(eas.syncdata.account, "policykey", policykey);
+
+        //reaching this point: provision status was ok
+        let policykey = xmltools.getWbxmlDataField(wbxmlData,"Provision.Policies.Policy.PolicyKey");
+        switch (policyStatus) {
+            case false:
+                eas.finishSync("wbxmlmissingfield::Provision.Policies.Policy.Status");
+                return;
+
+            case "2":
+                //skip provisioning - we could also disable provisioning altogether, but that would alter the config and we could no longer get provision, if the server ever activates a provision for us
+                tbSync.dump("policykeyCallback("+eas.syncdata.next+")", "skipping provision, server does not have a policy for this client");
+                tbSync.db.setAccountSetting(eas.syncdata.account, "policykey", "0");
+                eas.getFolderIds();
+                return;
+
+            case "1":
+                if (policykey === false) {
+                    eas.finishSync("wbxmlmissingfield::Provision.Policies.Policy.PolicyKey");
+                    return;
+                } 
+                tbSync.dump("policykeyCallback("+eas.syncdata.next+")", policykey);
+                tbSync.db.setAccountSetting(eas.syncdata.account, "policykey", policykey);
+                break;
+
+            default:
+                eas.finishSync("policy." + policyStatus);
+                return;
+        }
 
         //next == 1  => resend - next ==2 => GetFolderIds() - 
         // - the protocol requests us to request a policykey and get a temp policykey in return,
