@@ -16,19 +16,6 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 
-
-/* TODO
- - explizitly use if (error !== "") not if (error) - fails on "0"
- - loop over all properties when card copy
- - check "resync account folder" - maybe rework it
- - fix blanks bug also for contacts group (not only for contacts2)
- - think about write on exit, or check if sceduled write and execute
- - fix timezone (not all parameters are set yet)
- - do not use add + modify trick, but a true add, so we can cope with any add
- - Link calender sync to lightning-sync-button using providerId
- - clear changelog on disconnect
-*/
-
 var tbSync = {
 
     enabled: false,
