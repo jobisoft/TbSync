@@ -47,6 +47,15 @@ status.policy.5=The client is acknowledging the wrong policy key. Contact your s
 
 status.provision=Provision failed with status <##replace##>
 
+status.folderDelete.3=Cannot delete a system folder.
+status.folderDelete.6=Command could not be completed, an error occurred on the server.
+
+status.global.101=The request contains WBXML but it could not be decoded into XML (Error 102).
+status.global.102=The request contains WBXML but it could not be decoded into XML (Error 102).
+status.global.103=The XML provided in the request does not follow the protocol requirements (Error 103).
+
+status.resync-loop=There was an error which could not be recovered by resyncing the account. Please disconnect the account and try again.
+
 prompt.DeleteAccount=Delete account ##accountName## for sure?
 prompt.Disconnect=Are you sure you want to disconnect this account? All local modifications, which have not been synced yet, will be lost!
 prompt.Unsubscribe=Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!

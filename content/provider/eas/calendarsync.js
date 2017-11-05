@@ -827,7 +827,7 @@ var calendarsync = {
                 for (let count = 0; count < add.length; count++) {
                     
                     //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                    if (eas.statusIsBad(add[count],"Status")) return;
+                    if (eas.statusIsBad(add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status")) return;
 
                     //look for an item identfied by ClientId and update its id to the new id received from the server
                     let foundItems = yield pcal.getItem(add[count].ClientId);
@@ -844,14 +844,14 @@ var calendarsync = {
                 let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
                 for (let count = 0; count < upd.length; count++) {
                     //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                    if (eas.statusIsBad(upd[count],"Status")) return;
+                    if (eas.statusIsBad(upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status")) return;
                 }
 
                 //looking for deletions 
                 let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Delete);
                 for (let count = 0; count < del.length; count++) {
                     //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                    if (eas.statusIsBad(del[count],"Status")) return;
+                    if (eas.statusIsBad(del[count],"Status","Sync.Collections.Collection.Responses.Delete["+count+"].Status")) return;
                 }
                 
             }).then(calendarsync.sendLocalChanges(), function (exception) {tbSync.dump("exception", exception); eas.finishSync("js-error-in-calendarsync.processLocalChangesResponse")});

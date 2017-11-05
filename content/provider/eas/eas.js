@@ -467,10 +467,14 @@ var eas = {
         
         //if we reach this point, wbxmlData contains FolderSync node, so the next if will not fail with an javascript error, 
         //no need to use save getWbxmlDataField function
+        let addedFolders = [];
         if (wbxmlData.FolderSync.Changes) {
             //looking for additions
             let add = xmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Add);
             for (let count = 0; count < add.length; count++) {
+                //special action needed during resync: keep track off all added folders
+                addedFolders.push(add[count].ServerId);
+                
                 //check if we have a folder with that folderID (=data[ServerId])
                 if (tbSync.db.getFolder(eas.syncdata.account, add[count].ServerId) === null) {
                     //add folder
@@ -486,7 +490,7 @@ var eas = {
                     newData.lastsynctime = "";
                     tbSync.db.addFolder(newData);
                 } else {
-                    //TODO? - cannot add an existing folder - resync!
+                    //trying to add an existing folder, this can happen during resync, do nothing
                 }
             }
             
@@ -502,7 +506,7 @@ var eas = {
                     folder.type = update[count]["Type"];
                     tbSync.db.saveFolders();
                 } else {
-                    //TODO? - cannot update an non-existing folder - resync!
+                    //this might be a problem: cannot update an non-existing folder - resync? TODO
                 }
             }
 
@@ -513,17 +517,25 @@ var eas = {
                 //get a copy of the folder, so we can del it
                 let folder = tbSync.db.getFolder(eas.syncdata.account, del[count]["ServerId"]);
                 if (folder !== null) {
-                    //del folder - we do not touch target (?)
+                    //del folder - we do not touch target (!)
                     tbSync.db.deleteFolder(eas.syncdata.account, del[count]["ServerId"]);
                 } else {
-                    //TODO? - cannot del an non-existing folder - resync!
+                    //cannot del an non-existing folder - do nothing
                 }
             }
         }
+
         
         //set selected folders to pending, so they get synced
+        //also clean up leftover folder entries in DB during resync
         let folders = tbSync.db.getFolders(eas.syncdata.account);
         for (let f in folders) {
+            //special action dring resync: remove all folders from db, which have not been added by server
+            if (eas.syncdata.fResync && !addedFolders.includes(folders[f].folderID)) {
+                tbSync.db.deleteFolder(eas.syncdata.account, folders[f].folderID);
+                continue;
+            }
+                        
             if (folders[f].selected == "1") {
                 tbSync.db.setFolderSetting(folders[f].account, folders[f].folderID, "status", "pending");
             }
@@ -623,30 +635,69 @@ var eas = {
 
 
     // RESPONSE PROCESS FUNCTIONS
-    statusIsBad : function (wbxmlData,path) {
+    statusIsBad : function (wbxmlData, path, rootpath="") {
+        //path is relative to wbxmlData
+        //rootpath is the absolute path and must be specified, if wbxml is not the root node and thus path is not the rootpath	    
         let status = xmltools.getWbxmlDataField(wbxmlData,path);
+        let fullpath = (rootpath=="") ? path : rootpath;
+        let type = fullpath.split(".")[0];
         
-        switch (status) {
-            case false:
-                tbSync.dump("wbxml status", "Server response does not contain mandatory <"+path+"> field . Error? Aborting Sync.");
-                eas.finishSync("wbxmlmissingfield::" + path);
+        tbSync.dump("wbxml status check", type + ": " + fullpath + " = " + status);
+	    
+        //general check
+        if (status === false) {
+            tbSync.dump("wbxml status", "Server response does not contain mandatory <"+fullpath+"> field . Error? Aborting Sync.");
+            eas.finishSync("wbxmlmissingfield::" + fullpath);
+            return true;
+        } else if (status == "1") {
+            //all fine, not bad
+            return false;
+        }
+        
+        //handle errrors based on type
+        switch (type+":"+status) {
+            case "Sync:3": /*
+                        MUST return to SyncKey element value of 0 for the collection. The client SHOULD either delete any items that were added 
+                        since the last successful Sync or the client MUST add those items back to the server after completing the full resynchronization
+                        */
+                tbSync.dump("wbxml status", "Server reports <invalid synchronization key> (" + fullpath + " = " + status + "), resyncing.");
+                eas.initSync("resync", eas.syncdata.account, eas.syncdata.folderID);
+                return true;
+            case "Sync:12": /*
+                        Perform a FolderSync command and then retry the Sync command. (is "resync" here)
+                        */
+                tbSync.dump("wbxml status", "Server reports <folder hierarchy changed> (" + fullpath + " = " + status + "), resyncing");
+                eas.initSync("resync", eas.syncdata.account, eas.syncdata.folderID);
+                return true;
+
+            
+            case "FolderDelete:3": // special system folder - fatal error
+                eas.finishSync("folderDelete.3");
+                return true;
+            case "FolderDelete:6": // error on server
+                eas.finishSync("folderDelete.6");
+                return true;
+            case "FolderDelete:4": // folder does not exist - resync ( we allow delete only if folder is not subscribed )
+            case "FolderDelete:9": // invalid synchronization key - resync
+            case "FolderSync:9": // invalid synchronization key - resync
+                eas.initSync("resync", eas.syncdata.account);
+                return true;
+        }
+        
+        //handle global error (https://msdn.microsoft.com/en-us/library/ee218647(v=exchg.80).aspx)
+        switch(status) {
+            case "101": //invalid content
+            case "102": //invalid wbxml
+            case "103": //invalid xml
+                eas.finishSync("global." + status);
+                return true;
+            case "110": //server error - resync
+                eas.initSync("resync", eas.syncdata.account);
                 return true;
             
-            case "1":
-                //all fine, not bad
-                return false;
-
-            case "3": 
-                tbSync.dump("wbxml status", "Server reports <invalid synchronization key> (" + status + "), resyncing.");
-                eas.initSync("resync", eas.syncdata.account, eas.syncdata.folderID);
-                return true;
-            case "12": 
-                tbSync.dump("wbxml status", "Server reports <folder hierarchy changed> (" + status + "), resyncing");
-                eas.initSync("resync", eas.syncdata.account, eas.syncdata.folderID);
-                return true;
             default:
-                tbSync.dump("wbxml status", "Server reports unknown status <"+status+">. Error? Aborting Sync.");
-                eas.finishSync("wbxmlerror::" + status);
+                tbSync.dump("wbxml status", "Server reports unknown status <" + fullpath + " = " + status + ">. Error? Aborting Sync.");
+                eas.finishSync("wbxmlerror::" + fullpath + " = " + status);
                 return true;
         }		
     },
