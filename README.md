@@ -13,7 +13,11 @@ Please check the [issue section](https://github.com/jobisoft/TbSync/issues?utf8=
 
 This is work in progress. Future releases will be as follows:
 
-* v0.7.0: get all calendar stuff done (MeetingStatus, Attendees, Attachements, Repeated Events)
+* v0.7.0: get all calendar stuff done:
+  - MeetingStatus
+  - Attendees (added in 0.6.8.3)
+  - Attachements (needs EAS v16.0, this will take longer)
+  - repeated Events
 * v0.7.5: add support for tasks
 * v0.8.0: rewrite contacts part (it is still using original TzPush code, but I want to use a different method, which is more easy to maintain) and fix a few bugs
 * v0.8.5: add support for global address book (if possible)
