@@ -250,7 +250,7 @@ var tbSync = {
             "#5574A6",
             "#3B3EAC"];
 
-        return colors[(hash % 20) - 1];
+        return colors[(hash % 20)];
     },
 
 	getAbsolutePath: function(filename) {
