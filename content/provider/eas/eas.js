@@ -304,7 +304,7 @@ var eas = {
         if (job == "resync") eas.syncdata.numberOfResync = numberOfResync + 1;
         else eas.syncdata.numberOfResync = 0;
 
-        if (eas.syncdata.numberOfResync > 5) {
+        if (eas.syncdata.numberOfResync > 3) {
             eas.finishSync("resync-loop");
             return;
         }
