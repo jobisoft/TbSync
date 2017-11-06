@@ -817,7 +817,7 @@ var tbSync = {
 
             let obj = {};
             obj.color = allColors[i];
-            obj.count = usedColors.filter(item => item == allColors[i]).length;
+            obj.count = count;
             statColors.push(obj);
         }
         
