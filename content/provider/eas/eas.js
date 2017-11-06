@@ -201,7 +201,8 @@ var eas = {
             "target" : "",
             "selected" : "",
             "lastsynctime" : "",
-            "status" : ""};
+            "status" : "",
+            "parentID" : ""};
         return folder;
     },
 
@@ -483,6 +484,7 @@ var eas = {
                     newData.folderID = add[count].ServerId;
                     newData.name = add[count].DisplayName;
                     newData.type = add[count].Type;
+                    newData.parentID = add[count].ParentId;
                     newData.synckey = "";
                     newData.target = "";
                     newData.selected = (newData.type == "9" || newData.type == "8" ) ? "1" : "0";
