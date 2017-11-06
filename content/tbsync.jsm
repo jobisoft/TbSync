@@ -221,38 +221,6 @@ var tbSync = {
 
 
     // TOOLS
-
-    getColorFromString: function(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash += str.charCodeAt(i);
-        }
-        
-        let colors = [
-            "#3366CC",
-            "#DC3912",
-            "#FF9900",
-            "#109618",
-            "#990099",
-            "#3B3EAC",
-            "#0099C6",
-            "#DD4477",
-            "#66AA00",
-            "#B82E2E",
-            "#316395",
-            "#994499",
-            "#22AA99",
-            "#AAAA11",
-            "#6633CC",
-            "#E67300",
-            "#8B0707",
-            "#329262",
-            "#5574A6",
-            "#3B3EAC"];
-
-        return colors[(hash % 20)];
-    },
-
 	getAbsolutePath: function(filename) {
         return OS.Path.join(tbSync.storageDirectory, filename);
     },
@@ -808,6 +776,55 @@ var tbSync = {
             }
         } while (!unique);
 
+        //define color set
+        let allColors = [
+            "#3366CC",
+            "#DC3912",
+            "#FF9900",
+            "#109618",
+            "#990099",
+            "#3B3EAC",
+            "#0099C6",
+            "#DD4477",
+            "#66AA00",
+            "#B82E2E",
+            "#316395",
+            "#994499",
+            "#22AA99",
+            "#AAAA11",
+            "#6633CC",
+            "#E67300",
+            "#8B0707",
+            "#329262",
+            "#5574A6",
+            "#3B3EAC"];
+        
+        //find all used colors
+        let usedColors = [];
+        for (let calendar of calManager.getCalendars({})) {
+            if (calendar && calendar.getProperty("color")) {
+                usedColors.push(calendar.getProperty("color").toUpperCase());
+            }
+        }
+
+        //we do not want to change order of colors, we want to FILTER by counts, so we need to find the least count, filter by that and then take the first one
+        let minCount = null;
+        let statColors = [];
+        for (let i=0; i< allColors.length; i++) {
+            let count = usedColors.filter(item => item == allColors[i]).length;
+            if (minCount === null) minCount = count;
+            else if (count < minCount) minCount = count;
+
+            let obj = {};
+            obj.color = allColors[i];
+            obj.count = usedColors.filter(item => item == allColors[i]).length;
+            statColors.push(obj);
+        }
+        
+        //filter by minCount
+        let freeColors = statColors.filter(item => (minCount == null || item.count == minCount));
+        let color = freeColors[0].color;        
+
         //Alternative calendar, which uses calTbSyncCalendar
         //let newCalendar = calManager.createCalendar("TbSync", cal.makeURL('tbsync-calendar://'));
 
@@ -816,7 +833,7 @@ var tbSync = {
         newCalendar.id = cal.getUUID();
         newCalendar.name = newname;
         calManager.registerCalendar(newCalendar);
-        newCalendar.setProperty("color",tbSync.getColorFromString(testname)); //any chance to get the color from the provider?
+        newCalendar.setProperty("color", color); //any chance to get the color from the provider?
 	
         newCalendar.setProperty("calendar-main-in-composite",true);
         tbSync.dump("tbSync::checkCalendar("+account+", "+folderID+")", "Creating new calendar (" + newname + ")");
