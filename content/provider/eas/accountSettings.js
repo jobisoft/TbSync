@@ -243,7 +243,7 @@ var tbSyncAccountSettings = {
 
                     if (target != "") tbSync.eas.removeTarget(target, type); //we must remove the target AFTER cleaning up the DB, otherwise the addressbookListener in tbSync.jsm will interfere
                 }
-            } else {
+            } else if (folder.parentID != "4") { //trashed folders cannot be selected or synced
                 //select and update status
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "selected", "1");
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "status", "aborted");
@@ -274,6 +274,9 @@ var tbSyncAccountSettings = {
 
 
     updateFolderList: function () {
+        //show trash config
+        let hideTrashedFolders = true;
+        
         //do not update folder list, if not visible
         if (document.getElementById("tbsync.accountsettings.folders").hidden) return;
         
@@ -291,7 +294,7 @@ var tbSyncAccountSettings = {
         let listedfolders = [];
         for (let i=folderList.getRowCount()-1; i>=0; i--) {
             listedfolders.push(folderList.getItemAtIndex (i).value); 
-            if (folderIDs.indexOf(folderList.getItemAtIndex(i).value) == -1) {
+            if (folderIDs.indexOf(folderList.getItemAtIndex(i).value) == -1 || (hideTrashedFolders && folders[folderList.getItemAtIndex(i).value].parentID == "4")) {
                 folderList.removeItemAt(i);
             }
         }
@@ -312,12 +315,13 @@ var tbSyncAccountSettings = {
         let lastCheckedEntry = null;
         
         for (let i = folderIDs.length-1; i >= 0; i--) {
-            if (["8","9","13","14"].indexOf(folders[folderIDs[i]].type) != -1) { 
+            if (["8","9","13","14"].indexOf(folders[folderIDs[i]].type) != -1 && (folders[folderIDs[i]].parentID != "4" || !hideTrashedFolders)) { 
                 let selected = (folders[folderIDs[i]].selected == "1");
                 let type = folders[folderIDs[i]].type;
                 let status = (selected) ? folders[folderIDs[i]].status : "";
-                let name = folders[folderIDs[i]].name;
-
+                let name = folders[folderIDs[i]].name ;
+                if (folders[folderIDs[i]].parentID == "4") name += " (trashed)";
+		    
                 //if status OK, print target
                 if (selected) {
                     switch (status) {

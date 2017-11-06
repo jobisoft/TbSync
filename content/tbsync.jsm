@@ -488,6 +488,17 @@ var tbSync = {
         } catch (e) {}
     },
 
+    appendSuffixToNameOfBook: function (uri, suffix) { 
+        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+        let allAddressBooks = abManager.directories;
+        while (allAddressBooks.hasMoreElements()) {
+            let addressBook = allAddressBooks.getNext();
+            if (addressBook instanceof Components.interfaces.nsIAbDirectory && addressBook.URI == uri) {
+                addressBook.dirName += suffix;
+            }
+        }
+    },
+
     addNewCardFromServer: function (card, addressBook, account) {
         if (tbSync.db.getAccountSetting(account, "displayoverride") == "1") {
            card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
@@ -743,6 +754,15 @@ var tbSync = {
             let targetCal = cal.getCalendarManager().getCalendarById(id);
             if (targetCal !== null) {
                 cal.getCalendarManager().removeCalendar(targetCal);
+            }
+        } catch (e) {}
+    },
+
+    appendSuffixToNameOfCalendar: function(id, suffix) {
+        try {
+            let targetCal = cal.getCalendarManager().getCalendarById(id);
+            if (targetCal !== null) {
+                targetCal.name += suffix;
             }
         } catch (e) {}
     },

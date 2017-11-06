@@ -244,6 +244,24 @@ var eas = {
         }
     },
 
+    takeTargetOffline: function(target, type) {
+        tbSync.db.clearChangeLog(target);
+        let suffix = " (offline)";
+        
+        switch (type) {
+            case "8":
+            case "13":
+                tbSync.appendSuffixToNameOfCalendar(target, suffix);
+                break;
+            case "9":
+            case "14":
+                tbSync.appendSuffixToNameOfBook(target, suffix);
+                break;
+            default:
+                tbSync.dump("tbSync.eas.takeTargetOffline","Unknown type <"+type+">");
+        }
+    },
+    
     removeAllTargets: function (account) {
         let folders = db.findFoldersWithSetting("selected", "1", account);
         for (let i = 0; i<folders.length; i++) {
@@ -488,6 +506,7 @@ var eas = {
                     newData.synckey = "";
                     newData.target = "";
                     newData.selected = (newData.type == "9" || newData.type == "8" ) ? "1" : "0";
+                    if (newData.parentID == "4") newData.selected = ""; //trashed folders cannot be synced                    
                     newData.status = "";
                     newData.lastsynctime = "";
                     tbSync.db.addFolder(newData);
@@ -496,8 +515,7 @@ var eas = {
                 }
             }
             
-            //looking for updates if a folder gets moved to trash, its parentId is no longer zero! TODO
-            // -> this means, deleted folders still show up here, because we do not check, if folder is in root
+            //looking for updates, if a folder gets moved to trash, its parentId is no longer "0" but "4"!
             let update = xmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Update);
             for (let count = 0; count < update.length; count++) {
                 //geta a reference
@@ -506,7 +524,22 @@ var eas = {
                     //update folder
                     folder.name = update[count]["DisplayName"];
                     folder.type = update[count]["Type"];
-                    tbSync.db.saveFolders();
+                    folder.parentID = update[count]["ParentId"];
+                    
+                    //check if a synced folder has been moved to trash and disable syncing and mark target as offline
+                    if (folder.parentID == "4" && folder.selected == "1") {
+                        let target = folder.target;
+
+                        folder.selected = "0"; //folders in trash cannot be synced
+                        folder.target = "";
+                        tbSync.db.saveFolders();
+
+                        //we must update db before manipulating target, otherwise the tbsync listener will interfere
+                        if (target != "") tbSync.eas.takeTargetOffline(target, folder.type);
+                    } else {                       
+                        tbSync.db.saveFolders();
+                    }
+
                 } else {
                     //this might be a problem: cannot update an non-existing folder - resync? TODO
                 }
@@ -519,8 +552,13 @@ var eas = {
                 //get a copy of the folder, so we can del it
                 let folder = tbSync.db.getFolder(eas.syncdata.account, del[count]["ServerId"]);
                 if (folder !== null) {
-                    //del folder - we do not touch target (!)
+                    //delete folder and mark local target as offline
+                    let target = folder.target;
+                    let type = folder.type;
                     tbSync.db.deleteFolder(eas.syncdata.account, del[count]["ServerId"]);
+
+                    //we must update db before manipulating target, otherwise the tbsync listener will interfere
+                    if (target != "") tbSync.eas.takeTargetOffline(target, type);
                 } else {
                     //cannot del an non-existing folder - do nothing
                 }
