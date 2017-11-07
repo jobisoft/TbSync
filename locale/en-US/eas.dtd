@@ -39,5 +39,4 @@
 <!ENTITY servertype.setup "Setup ActiveSync server configuration ...">
 <!ENTITY servertype.auto "Automatic configuration via ActiveSync Autodiscover">
 <!ENTITY servertype.custom "Custom configuration">
-<!ENTITY servertype.outlook.com "Outlook.com">
 <!ENTITY servertype.unlock "Double click to unlock all predefined server settings.">

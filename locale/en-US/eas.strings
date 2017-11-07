@@ -1,5 +1,4 @@
 newaccount.add_custom=Add account
-newaccount.add_outlook.com=Add outlook.com account
 newaccount.add_auto=Autodiscover settings and add account
 
 info.AutodiscoverOk=Autodiscover completed successfully, you can now check the optional settings and connect this account.

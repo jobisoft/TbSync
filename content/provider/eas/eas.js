@@ -217,6 +217,7 @@ var eas = {
                 settings["asversion"] = null;
                 break;
 
+            //just here for reference, if this method is going to be used again
             case "outlook.com":
                 settings["host"] = "eas.outlook.com";
                 settings["https"] = "1";

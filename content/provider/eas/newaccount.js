@@ -65,7 +65,8 @@ var tbSyncEasNewAccount = {
                 document.documentElement.getButton("extra1").disabled = true;
                 this.autodiscover(newAccountEntry, this.elementPass.value);
             }
-			else if (servertype == "outlook.com") {
+            //just here for reference, if this method is going to be used again
+            else if (servertype == "outlook.com") {
                 let fixedSettings = tbSync.eas.getFixedServerSettings(servertype);
                 for (let prop in fixedSettings) {
                   if( newAccountEntry.hasOwnProperty(prop) ) {
