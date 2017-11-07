@@ -245,6 +245,7 @@ var eas = {
     },
 
     takeTargetOffline: function(target, type) {
+        //this is the only place, where we manually have to call clearChangelog, because the target is not deleted (on delete, changelog is cleared automatically)
         tbSync.db.clearChangeLog(target);
         let suffix = " (offline)";
         
@@ -265,9 +266,17 @@ var eas = {
     removeAllTargets: function (account) {
         let folders = db.findFoldersWithSetting("selected", "1", account);
         for (let i = 0; i<folders.length; i++) {
-             tbSync.eas.removeTarget(folders[i].target, folders[i].type);
+            let folderID = folders[i].folderID;
+            let target = folders[i].target;
+            let type = folders[i].type;
+
+            //remove folder before target, so we do not get a race condition with the listener 
+            //we will also get no update notification
+            tbSync.db.deleteFolder(account, folderID);
+            tbSync.eas.removeTarget(target, type);
         }
-        db.deleteAllFolders(account);
+        //Delete all remaining folders, which are not synced and thus do not have a target to care about
+        db.deleteAllFolders(account); 
     },
 
     connectAccount: function (account) {
@@ -281,7 +290,7 @@ var eas = {
         db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
 
-        //Delete all targets
+        //Delete all targets and folders
          tbSync.eas.removeAllTargets(account);
         db.setAccountSetting(account, "status", "notconnected");
     },
@@ -515,7 +524,7 @@ var eas = {
                 }
             }
             
-            //looking for updates, if a folder gets moved to trash, its parentId is no longer "0" but "4"!
+            //looking for updates
             let update = xmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Update);
             for (let count = 0; count < update.length; count++) {
                 //geta a reference
@@ -528,17 +537,13 @@ var eas = {
                     
                     //check if a synced folder has been moved to trash and disable syncing and mark target as offline
                     if (folder.parentID == "4" && folder.selected == "1") {
-                        let target = folder.target;
-
-                        folder.selected = "0"; //folders in trash cannot be synced
-                        folder.target = "";
-                        tbSync.db.saveFolders();
-
-                        //we must update db before manipulating target, otherwise the tbsync listener will interfere
-                        if (target != "") tbSync.eas.takeTargetOffline(target, folder.type);
-                    } else {                       
-                        tbSync.db.saveFolders();
+                        //folders in trash cannot be synced: deselect folder
+                        folder.selected = "0";                    
+                        //if target exists, take it offline
+                        if (target != "") tbSync.eas.takeTargetOffline(folder.target, folder.type);
                     }
+
+                    tbSync.db.saveFolders();
 
                 } else {
                     //this might be a problem: cannot update an non-existing folder - resync? TODO
@@ -552,13 +557,12 @@ var eas = {
                 //get a copy of the folder, so we can del it
                 let folder = tbSync.db.getFolder(eas.syncdata.account, del[count]["ServerId"]);
                 if (folder !== null) {
-                    //delete folder and mark local target as offline
-                    let target = folder.target;
-                    let type = folder.type;
+                    //deselect folder
+                    folder.selected = "0";                    
+                    //if target exists, take it offline
+                    if (folder.target != "") tbSync.eas.takeTargetOffline(folder.target, folder.type);
+                    //delete folder in account manager
                     tbSync.db.deleteFolder(eas.syncdata.account, del[count]["ServerId"]);
-
-                    //we must update db before manipulating target, otherwise the tbsync listener will interfere
-                    if (target != "") tbSync.eas.takeTargetOffline(target, type);
                 } else {
                     //cannot del an non-existing folder - do nothing
                 }
@@ -570,8 +574,11 @@ var eas = {
         //also clean up leftover folder entries in DB during resync
         let folders = tbSync.db.getFolders(eas.syncdata.account);
         for (let f in folders) {
-            //special action dring resync: remove all folders from db, which have not been added by server
+            //special action dring resync: remove all folders from db, which have not been added by server (thus are no longer there)
             if (eas.syncdata.fResync && !addedFolders.includes(folders[f].folderID)) {
+                //if target exists, take it offline
+                if (folders[f].target != "") tbSync.eas.takeTargetOffline(folders[f].target, folders[f].type);
+                //delete folder in account manager
                 tbSync.db.deleteFolder(eas.syncdata.account, folders[f].folderID);
                 continue;
             }
@@ -675,6 +682,7 @@ var eas = {
 
 
     // RESPONSE PROCESS FUNCTIONS
+    //TODO: On fail, the answer could just ba a Sync.Status instead of a Sync.Collections.Collections.Status
     statusIsBad : function (wbxmlData, path, rootpath="") {
         //path is relative to wbxmlData
         //rootpath is the absolute path and must be specified, if wbxml is not the root node and thus path is not the rootpath	    
@@ -813,6 +821,7 @@ var eas = {
         if (synckey) {
             tbSync.db.setAccountSetting(eas.syncdata.account, "foldersynckey", synckey);
             eas.finishSync();
+            //this folder is not synced, no target to take care of, just remove the folder
             tbSync.db.deleteFolder(eas.syncdata.account, eas.syncdata.folderID);
             //update manager gui / folder list
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);

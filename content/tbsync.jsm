@@ -221,7 +221,7 @@ var tbSync = {
 
 
     // TOOLS
-	getAbsolutePath: function(filename) {
+    getAbsolutePath: function(filename) {
         return OS.Path.join(tbSync.storageDirectory, filename);
     },
     
@@ -410,7 +410,7 @@ var tbSync = {
 
             /* * *
              * If the entire book we are currently syncing is deleted, remove it from sync and
-             * clean up delete log
+             * clean up change log
              */
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
                 let folders =  tbSync.db.findFoldersWithSetting("target", aItem.URI);
@@ -419,16 +419,21 @@ var tbSync = {
                     folders[0].target="";
                     folders[0].synckey="";
                     folders[0].lastsynctime= "";
-                    folders[0].status= "aborted";
-
-                    tbSync.db.saveFolders();
-                    tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
-                    tbSync.db.clearChangeLog(aItem.URI);
+                    folders[0].status = "";
 
                     //update settings window, if open
-                    let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                    observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+                    if (folders[0].selected == "1") {
+                        folders[0].status= "aborted";
+                        tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
+
+                        //update settings window, if open
+                        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+                        observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+					}
+                    tbSync.db.saveFolders();
                 }
+                //delete any pending changelog of the deleted book
+                tbSync.db.clearChangeLog(aItem.URI);			
             }
         },
 
@@ -726,16 +731,20 @@ var tbSync = {
                 folders[0].target="";
                 folders[0].synckey="";
                 folders[0].lastsynctime= "";
-                folders[0].status= "aborted";
+                folders[0].status = "";
+                
+                if (folders[0].selected == "1") {                
+                    folders[0].status= "aborted";
+                    tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
 
+                    //update settings window, if open
+                    let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+                    observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+                }
                 tbSync.db.saveFolders();
-                tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
-                tbSync.db.clearChangeLog(aCalendar.id);
-
-                //update settings window, if open
-                let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
             }
+            //delete any pending changelog of the deleted calendar
+            tbSync.db.clearChangeLog(aCalendar.id);
         },
     },
 

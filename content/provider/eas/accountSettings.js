@@ -227,21 +227,10 @@ var tbSyncAccountSettings = {
 
             if (folder.selected == "1") {
                 if (window.confirm(tbSync.getLocalizedMessage("prompt.Unsubscribe"))) {
-                    //get copy of the current target, before resetting it
-                    let target = folder.target;
-                    let type = folder.type;
-
-                    //deselect and clean up
+                    //deselect folder
                     folder.selected = "0";
-                    folder.target = "";
-                    folder.synckey = "";
-                    folder.lastsynctime = "";
-                    folder.status = "";
-                    
-                    tbSync.db.saveFolders();
-                    tbSync.db.clearChangeLog(target);
-
-                    if (target != "") tbSync.eas.removeTarget(target, type); //we must remove the target AFTER cleaning up the DB, otherwise the addressbookListener in tbSync.jsm will interfere
+                    //remove folder, which will trigger the listener in tbsync which will clean up everything
+                    tbSync.eas.removeTarget(folder.target, folder.type); 
                 }
             } else if (folder.parentID != "4") { //trashed folders cannot be selected or synced
                 //select and update status
