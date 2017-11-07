@@ -565,7 +565,7 @@ var tbSync = {
         if (targetName !== null && targetObject !== null && targetObject instanceof Components.interfaces.nsIAbDirectory) return true;
         
         // Get unique Name for new address book
-        let testname = tbSync.db.getAccountSetting(account, "accountname") + "." + folder.name;
+        let testname = folder.name + " (" + tbSync.db.getAccountSetting(account, "accountname") + ")";
         let newname = testname;
         let count = 1;
         let unique = false;
@@ -580,7 +580,7 @@ var tbSync = {
                 }
             }
             if (!unique) {
-                newname = testname + "." + count;
+                newname = testname + " #" + count;
                 count = count + 1;
             }
         } while (!unique);
@@ -778,7 +778,7 @@ var tbSync = {
 
         
         // Get unique Name for new calendar
-        let testname = tbSync.db.getAccountSetting(account, "accountname") + "." + folder.name;
+        let testname = folder.name + " (" + tbSync.db.getAccountSetting(account, "accountname") + ")";
         let newname = testname;
         let count = 1;
         let unique = false;
@@ -791,7 +791,7 @@ var tbSync = {
                 }
             }
             if (!unique) {
-                newname = testname + "." + count;
+                newname = testname + " #" + count;
                 count = count + 1;
             }
         } while (!unique);
