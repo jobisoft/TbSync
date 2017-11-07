@@ -274,8 +274,8 @@ var tbSyncAccountSettings = {
 
 
     updateFolderList: function () {
-        //show trash config
-        let hideTrashedFolders = true;
+        //show/hide trash config
+        let hideTrashedFolders = tbSync.prefSettings.getBoolPref("hideTrashedFolders");
         
         //do not update folder list, if not visible
         if (document.getElementById("tbsync.accountsettings.folders").hidden) return;
