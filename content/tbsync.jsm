@@ -69,8 +69,14 @@ var tbSync = {
     currentProzess : {},
     queueTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
+    //used by UI to find out, if any job for this account is scheduled
     accountScheduledForSync: function (account) {
         return (tbSync.syncQueue.filter(item => item.includes("."+account + ".")).length > 0);
+    },
+
+    //used by addAccountToSyncQueue to find out, if a specific job is scheduled
+    jobScheduledForSync: function (jobdescription) {
+        return (tbSync.syncQueue.filter(item => item.includes(jobdescription)).length > 0);
     },
 
     addAccountToSyncQueue: function (job, account = "", folderID = "") {
@@ -79,14 +85,17 @@ var tbSync = {
             let accounts = tbSync.db.getAccounts();
             for (let i=0; i<accounts.IDs.length; i++) {
                 let newentry = job + "." + accounts.IDs[i] + ".";
-                //do not add same job more than once
-                if (accounts.data[accounts.IDs[i]].state != "disconnected" && !tbSync.accountScheduledForSync(accounts.IDs[i])) {
+                //do not add the same job more than once
+                if (accounts.data[accounts.IDs[i]].state != "disconnected" && !tbSync.jobScheduledForSync(newentry)) {
                     tbSync.syncQueue.push(newentry);
                 }
             }
-        } else if (!tbSync.accountScheduledForSync(account)) {
-            //Add specified account to the queue
-            tbSync.syncQueue.push( job + "." + account + "." + folderID);
+        } else {
+            let newentry = job + "." + account + "." + folderID;
+            if (!tbSync.jobScheduledForSync(newentry)) {
+                //Add specified job to the queue
+                tbSync.syncQueue.push(newentry);
+            }
         }
 
         //update gui
