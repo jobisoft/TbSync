@@ -68,7 +68,7 @@ status.network=Could not connect to server (##replace##).
 
 account=TbSync account [##accountname##]
 
-config.auto=ActiveSync server configuration (via Autodiscover)
+config.auto=ActiveSync server configuration (Autodiscover)
 config.custom=ActiveSync server configuration
 config.outlook.com=Server configuration for Outlook.com accounts
 
