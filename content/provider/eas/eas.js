@@ -540,7 +540,19 @@ var eas = {
                     tbSync.db.saveFolders();
 
                 } else {
-                    //this might be a problem: cannot update an non-existing folder - resync? TODO
+                    //this might be a problem: cannot update an non-existing folder - simply add the folder as not selected
+                    let newData =tbSync.eas.getNewFolderEntry();
+                    newData.account = eas.syncdata.account;
+                    newData.folderID = update[count].ServerId;
+                    newData.name = update[count].DisplayName;
+                    newData.type = update[count].Type;
+                    newData.parentID = update[count].ParentId;
+                    newData.synckey = "";
+                    newData.target = "";
+                    newData.selected = "";
+                    newData.status = "";
+                    newData.lastsynctime = "";
+                    tbSync.db.addFolder(newData);
                 }
             }
 
