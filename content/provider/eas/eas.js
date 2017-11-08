@@ -232,10 +232,9 @@ var eas = {
         }
     },
 
-    takeTargetOffline: function(target, type) {
+    takeTargetOffline: function(target, type, suffix = " [offline]") {
         //this is the only place, where we manually have to call clearChangelog, because the target is not deleted (on delete, changelog is cleared automatically)
         tbSync.db.clearChangeLog(target);
-        let suffix = " (offline)";
         
         switch (type) {
             case "8":
