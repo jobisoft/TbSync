@@ -245,6 +245,34 @@ var tbSyncAccountSettings = {
         }
     },
 
+    updateMenuPopup: function () {
+        let folderList = document.getElementById("tbsync.accountsettings.folderlist");
+        if (!folderList.disabled && folderList.selectedItem !== null && folderList.selectedItem.value !== undefined) {
+            let fID =  folderList.selectedItem.value;
+            let folder = tbSync.db.getFolder(tbSyncAccountSettings.selectedAccount, fID, true);
+            if (folder.parentID == "4") {// folder in recycle bin
+                document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").hidden = true;
+            } else {
+                if (folder.selected == "1") document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").label = tbSync.getLocalizedMessage("subscribe.off::" + folder.name, "eas");
+                else document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").label = tbSync.getLocalizedMessage("subscribe.on::" + folder.name, "eas");
+                document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").hidden = false;
+            }
+
+            document.getElementById("tbsync.accountsettings.ContextMenuDelete").label = tbSync.getLocalizedMessage("deletefolder.menuentry::" + folder.name, "eas");
+            document.getElementById("tbsync.accountsettings.ContextMenuDelete").hidden = false;
+
+        } else {
+            document.getElementById("tbsync.accountsettings.ContextMenuDelete").hidden = true;
+            document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").hidden = true;
+        }
+        document.getElementById("tbsync.accountsettings.ContextMenuTrash").setAttribute("checked",!tbSync.prefSettings.getBoolPref("hideTrashedFolders"));
+    },
+
+    toggleTrashSetting: function () {
+        let hideTrashedFolders= tbSync.prefSettings.getBoolPref("hideTrashedFolders");
+        tbSync.prefSettings.setBoolPref("hideTrashedFolders", !hideTrashedFolders);
+        tbSyncAccountSettings.updateFolderList();
+    },
 
     getTypeImage: function (type) {
         let src = ""; 
@@ -309,7 +337,7 @@ var tbSyncAccountSettings = {
                 let type = folders[folderIDs[i]].type;
                 let status = (selected) ? folders[folderIDs[i]].status : "";
                 let name = folders[folderIDs[i]].name ;
-                if (folders[folderIDs[i]].parentID == "4") name += " (trashed)";
+                if (folders[folderIDs[i]].parentID == "4") name += " ("+tbSync.getLocalizedMessage("recyclebin","eas")+")";
 		    
                 //if status OK, print target
                 if (selected) {

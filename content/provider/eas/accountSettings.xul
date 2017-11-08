@@ -12,6 +12,14 @@
 
     <script type="text/javascript" src="chrome://tbsync/content/provider/eas/accountSettings.js" /> 
 
+    <popupset>
+        <menupopup id="tbsync.accountsettings.ContextMenu" onpopupshowing="tbSyncAccountSettings.updateMenuPopup();">
+            <menuitem id="tbsync.accountsettings.ContextMenuToggleSubscription" label="toggle" oncommand="tbSyncAccountSettings.toggleFolder();"/>
+            <menuitem id="tbsync.accountsettings.ContextMenuDelete" label="delete" oncommand="tbSyncAccountSettings.deleteFolder();"/>
+            <menuitem id="tbsync.accountsettings.ContextMenuTrash" type="checkbox" label="&pref.ShowTrashedFolders;" oncommand="tbSyncAccountSettings.toggleTrashSetting();"/>
+        </menupopup>
+    </popupset>
+
     <vbox flex="1">
 
         <grid flex="1">
@@ -88,6 +96,7 @@
                     <richlistbox 
                         id="tbsync.accountsettings.folderlist"
                         flex="1"
+                        context="tbsync.accountsettings.ContextMenu"
                         seltype="single"
                         onkeypress="if (event.keyCode == 46) {tbSyncAccountSettings.deleteFolder();}"
                         ondblclick="tbSyncAccountSettings.toggleFolder();">

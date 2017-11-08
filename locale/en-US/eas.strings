@@ -7,3 +7,9 @@ info.AutodiscoverFailed=Autodiscover for user <##user##> failed. Check username 
 
 deletefolder.notallowed=Please unsubscribe folder "##replace##" before trying to delete it from the server.
 deletefolder.confirm=Do you really want to DELETE folder "##replace##" from the server?
+
+deletefolder.menuentry=Delete "##replace##" from server
+subscribe.on=Subscribe "##replace##"
+subscribe.off=Unsubscribe "##replace##"
+
+recyclebin = recycle bin
