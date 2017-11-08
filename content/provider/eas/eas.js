@@ -54,12 +54,6 @@ var eas = {
     },
     
     unload: function () {
-        db.changelogTimer.cancel();
-        db.accountsTimer.cancel();
-        db.foldersTimer.cancel();
-        tbSync.writeAsyncJSON(tbSync.db.accounts, tbSync.db.accountsFile);
-        tbSync.writeAsyncJSON(tbSync.db.folders, tbSync.db.foldersFile);
-        tbSync.writeAsyncJSON(tbSync.db.changelog, tbSync.db.changelogFile);
     },
 
 
