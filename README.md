@@ -18,9 +18,9 @@ This is work in progress. Future releases will be as follows:
   - Attendees (added in 0.6.8.3)
   - Attachements (needs EAS v16.0, this will take longer)
   - repeated Events
-* v0.7.5: add support for tasks
-* v0.8.0: rewrite contacts part (it is still using original TzPush code, but I want to use a different method, which is more easy to maintain) and fix a few bugs
-* v0.8.5: add support for global address book (if possible)
+* v0.7.1: rewrite contacts part (it is still using original TzPush code, but I want to use a different method, which is more easy to maintain) and fix a few bugs
+* v0.7.2: add support for tasks
+* v0.7.3: add support for global address book (if possible)
 * v0.9: release candidate for productive use
 * v1.0: stable release
 
