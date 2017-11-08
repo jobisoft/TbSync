@@ -178,6 +178,12 @@ var eas = {
         }
     } ,
 
+    parentIsTrash: function (account, parentID) {
+        if (parentID == "0") return false;
+        if (tbSync.db.getFolder(account, parentID) && tbSync.db.getFolder(account, parentID).type == "4") return true;
+        return false;
+    },
+    
     getNewFolderEntry: function () {
         let folder = {
             "account" : "",
@@ -503,7 +509,7 @@ var eas = {
                     newData.synckey = "";
                     newData.target = "";
                     newData.selected = (newData.type == "9" || newData.type == "8" ) ? "1" : "0";
-                    if (newData.parentID == "4") newData.selected = ""; //trashed folders cannot be synced                    
+                    if (eas.parentIsTrash(eas.syncdata.account, newData.parentID)) newData.selected = ""; //trashed folders cannot be synced                    
                     newData.status = "";
                     newData.lastsynctime = "";
                     tbSync.db.addFolder(newData);
@@ -515,7 +521,7 @@ var eas = {
                     folder.parentID = add[count].ParentId;
 
                     //check if type changed or folder got deleted
-                    if ((folder.type != add[count].Type || folder.parentID == "4") && (folder.selected == "1" || target != "")) {
+                    if ((folder.type != add[count].Type || eas.parentIsTrash(eas.syncdata.account, folder.parentID)) && (folder.selected == "1" || target != "")) {
                         //deselect folder
                         folder.selected = "0";
                         folder.target = "";
@@ -546,7 +552,7 @@ var eas = {
                     folder.parentID = update[count].ParentId;
                     
                     //check if type changed or folder got deleted
-                    if ((folder.type != update[count].Type || folder.parentID == "4") && (folder.selected == "1" || target != "")) {
+                    if ((folder.type != update[count].Type || eas.parentIsTrash(eas.syncdata.account, folder.parentID)) && (folder.selected == "1" || target != "")) {
                         //deselect folder
                         folder.selected = "0";                    
                         folder.target = "";                    

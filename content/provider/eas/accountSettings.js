@@ -232,7 +232,7 @@ var tbSyncAccountSettings = {
                     //remove folder, which will trigger the listener in tbsync which will clean up everything
                     tbSync.eas.removeTarget(folder.target, folder.type); 
                 }
-            } else if (folder.parentID != "4") { //trashed folders cannot be selected or synced
+            } else if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) { //trashed folders cannot be selected or synced
                 //select and update status
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "selected", "1");
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "status", "aborted");
@@ -250,7 +250,7 @@ var tbSyncAccountSettings = {
         if (!folderList.disabled && folderList.selectedItem !== null && folderList.selectedItem.value !== undefined) {
             let fID =  folderList.selectedItem.value;
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.selectedAccount, fID, true);
-            if (folder.parentID == "4") {// folder in recycle bin
+            if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) {// folder in recycle bin
                 document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").hidden = true;
             } else {
                 if (folder.selected == "1") document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").label = tbSync.getLocalizedMessage("subscribe.off::" + folder.name, "eas");
@@ -289,7 +289,6 @@ var tbSyncAccountSettings = {
         return "chrome://tbsync/skin/" + src;
     },
 
-
     updateFolderList: function () {
         //show/hide trash config
         let hideTrashedFolders = tbSync.prefSettings.getBoolPref("hideTrashedFolders");
@@ -311,7 +310,7 @@ var tbSyncAccountSettings = {
         let listedfolders = [];
         for (let i=folderList.getRowCount()-1; i>=0; i--) {
             listedfolders.push(folderList.getItemAtIndex (i).value); 
-            if (folderIDs.indexOf(folderList.getItemAtIndex(i).value) == -1 || (hideTrashedFolders && folders[folderList.getItemAtIndex(i).value].parentID == "4")) {
+            if (folderIDs.indexOf(folderList.getItemAtIndex(i).value) == -1 || (hideTrashedFolders && tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderList.getItemAtIndex(i).value].parentID))) {
                 folderList.removeItemAt(i);
             }
         }
@@ -330,14 +329,14 @@ var tbSyncAccountSettings = {
         // add/update allowed folder based on type (check https://msdn.microsoft.com/en-us/library/gg650877(v=exchg.80).aspx)
         // walk backwards, so adding items does not mess up index
         let lastCheckedEntry = null;
-        
+
         for (let i = folderIDs.length-1; i >= 0; i--) {
-            if (["8","9","13","14"].indexOf(folders[folderIDs[i]].type) != -1 && (folders[folderIDs[i]].parentID != "4" || !hideTrashedFolders)) { 
+            if (["8","9","13","14"].indexOf(folders[folderIDs[i]].type) != -1 && (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID) || !hideTrashedFolders)) { 
                 let selected = (folders[folderIDs[i]].selected == "1");
                 let type = folders[folderIDs[i]].type;
                 let status = (selected) ? folders[folderIDs[i]].status : "";
                 let name = folders[folderIDs[i]].name ;
-                if (folders[folderIDs[i]].parentID == "4") name += " ("+tbSync.getLocalizedMessage("recyclebin","eas")+")";
+                if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID)) name += " ("+tbSync.getLocalizedMessage("recyclebin","eas")+")";
 		    
                 //if status OK, print target
                 if (selected) {
