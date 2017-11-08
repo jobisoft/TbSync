@@ -232,7 +232,7 @@ var tbSyncAccountSettings = {
                     //remove folder, which will trigger the listener in tbsync which will clean up everything
                     tbSync.eas.removeTarget(folder.target, folder.type); 
                 }
-            } else if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) { //trashed folders cannot be selected or synced
+            } else if (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) { //trashed folders cannot be selected or synced
                 //select and update status
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "selected", "1");
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "status", "aborted");
