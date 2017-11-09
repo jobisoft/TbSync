@@ -673,8 +673,12 @@ var eas = {
     },
 
     getSynckey: function (responseWbxml) {
-        eas.syncdata.synckey = wbxmltools.FindKey(responseWbxml);
-        tbSync.db.setFolderSetting(eas.syncdata.account, eas.syncdata.folderID, "synckey", eas.syncdata.synckey);
+        // get data from wbxml response
+        let wbxmlData = eas.getDataFromResponse(responseWbxml);
+        //check status
+        if (eas.statusIsBad(wbxmlData,"Sync.Collections.Collection.Status")) return;
+        //update synckey
+        if (eas.updateSynckey(wbxmlData) === false) return;
         eas.startSync(); 
     },
 
@@ -719,26 +723,36 @@ var eas = {
 
 
     // RESPONSE PROCESS FUNCTIONS
-    //TODO: On fail, the answer could just ba a Sync.Status instead of a Sync.Collections.Collections.Status
     statusIsBad : function (wbxmlData, path, rootpath="") {
         //path is relative to wbxmlData
         //rootpath is the absolute path and must be specified, if wbxml is not the root node and thus path is not the rootpath	    
         let status = xmltools.getWbxmlDataField(wbxmlData,path);
         let fullpath = (rootpath=="") ? path : rootpath;
-        let type = fullpath.split(".")[0];
-        
-        tbSync.dump("wbxml status check", type + ": " + fullpath + " = " + status);
-	    
-        //general check
+        let elements = fullpath.split(".");
+        let type = elements[0];
+
+        //check if fallback to main class status: the answer could just be a "Sync.Status" instead of a "Sync.Collections.Collections.Status"
         if (status === false) {
-            tbSync.dump("wbxml status", "Server response does not contain mandatory <"+fullpath+"> field . Error? Aborting Sync.");
-            eas.finishSync("wbxmlmissingfield::" + fullpath);
-            return true;
-        } else if (status == "1") {
-            //all fine, not bad
-            return false;
+            let mainStatus = xmltools.getWbxmlDataField(wbxmlData, type + "." + elements[elements.length-1]);
+            if (mainStatus === false) {
+                //both possible status fields are missing, report and abort
+                tbSync.dump("wbxml status", "Server response does not contain mandatory <"+fullpath+"> field . Error? Aborting Sync.");
+                eas.finishSync("wbxmlmissingfield::" + fullpath);
+                return true;
+            } else {
+                //the alternative status could be extracted
+                status = mainStatus;
+                fullpath = type + "." + elements[elements.length-1];
+            }
         }
         
+        //check if all is fine (not bad)
+        if (status == "1") {
+            return false;
+        }
+
+        tbSync.dump("wbxml status check", type + ": " + fullpath + " = " + status);
+
         //handle errrors based on type
         switch (type+":"+status) {
             case "Sync:3": /*
@@ -748,11 +762,30 @@ var eas = {
                 tbSync.dump("wbxml status", "Server reports <invalid synchronization key> (" + fullpath + " = " + status + "), resyncing.");
                 eas.initSync("resync", eas.syncdata.account, eas.syncdata.folderID);
                 return true;
+/*            case "Sync:8": // Object not found - takeTargetOffline and remove folder
+                tbSync.dump("wbxml status", "Server reports <object not found> (" + eas.syncdata.account + ", " + eas.syncdata.folderID + "), keeping local copy and removing folder.");
+                let folder = tbSync.db.getFolder(eas.syncdata.account, eas.syncdata.folderID);
+                if (folder !== null) {
+                    let target = folder.target;
+                    //deselect folder
+                    folder.selected = "0";
+                    folder.target = "";
+                    //if target exists, take it offline
+                    if (target != "") tbSync.eas.takeTargetOffline(target, folder.type);
+                    tbSync.db.deleteFolder(eas.syncdata.account, eas.syncdata.folderID);
+                }
+                eas.finishSync();
+                return true;
+
+                can be triggered by
+                eas.initSync("resync", eas.syncdata.account, eas.syncdata.folderID); after error 12
+
+*/
             case "Sync:12": /*
                         Perform a FolderSync command and then retry the Sync command. (is "resync" here)
                         */
                 tbSync.dump("wbxml status", "Server reports <folder hierarchy changed> (" + fullpath + " = " + status + "), resyncing");
-                eas.initSync("resync", eas.syncdata.account, eas.syncdata.folderID);
+                eas.initSync("resync", eas.syncdata.account);
                 return true;
 
             
