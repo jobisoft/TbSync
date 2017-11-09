@@ -173,7 +173,7 @@ var calendarsync = {
         }
 
         if (data.EndTime) {
-            utc = cal.createDateTime(data.EndTime);
+            let utc = cal.createDateTime(data.EndTime);
             item.endDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
         }
 
