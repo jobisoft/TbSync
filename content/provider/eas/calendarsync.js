@@ -167,11 +167,15 @@ var calendarsync = {
             tbSync.dump("Recieve TZ","Extracted UTC Offset: " + utcOffset + ", Guessed TimeZone: " + this.offsets[utcOffset] + ", Full Received TZ: " + this.EASTZ.toString());
         }
 
-        let utc = cal.createDateTime(data.StartTime); //format "19800101T000000Z" - UTC
-        item.startDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
+        if (data.StartTime) {
+            let utc = cal.createDateTime(data.StartTime); //format "19800101T000000Z" - UTC
+            item.startDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
+        }
 
-        utc = cal.createDateTime(data.EndTime); 
-        item.endDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
+        if (data.EndTime) {
+            utc = cal.createDateTime(data.EndTime);
+            item.endDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
+        }
 
         //stamp time cannot be set and it is not needed, an updated version is only send to the server, if there was a change, so stamp will be updated
 
@@ -263,17 +267,18 @@ var calendarsync = {
             }
         }
         
-        //Organizer
-        let organizer = cal.createAttendee();
-        organizer.id = cal.prependMailTo(data.OrganizerEmail);
-        organizer.commonName = data.OrganizerName;
-        organizer.rsvp = "TRUE";
-        organizer.role = "CHAIR";
-        organizer.userType = null;
-        organizer.participationStatus = "ACCEPTED";
-        organizer.isOrganizer = true;
-        item.organizer = organizer;
-
+        if (data.OrganizerName && data.OrganizerEmail) {
+            //Organizer
+            let organizer = cal.createAttendee();
+            organizer.id = cal.prependMailTo(data.OrganizerEmail);
+            organizer.commonName = data.OrganizerName;
+            organizer.rsvp = "TRUE";
+            organizer.role = "CHAIR";
+            organizer.userType = null;
+            organizer.participationStatus = "ACCEPTED";
+            organizer.isOrganizer = true;
+            item.organizer = organizer;
+        }
 
         /* Missing : MeetingStatus, Attachements (needs EAS 16.0 !), Repeated Events
 
@@ -660,6 +665,8 @@ var calendarsync = {
 
                 //looking for changes
                 let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Change);
+                //inject custom change object for debug
+                //upd = JSON.parse('[{"ServerId":"2tjoanTeS0CJ3QTsq5vdNQAAAAABDdrY6Gp03ktAid0E7Kub3TUAAAoZy4A1","ApplicationData":{"DtStamp":"20171109T142149Z"}}]');
                 for (let count = 0; count < upd.length; count++) {
 
                     let ServerId = upd[count].ServerId;
@@ -671,6 +678,8 @@ var calendarsync = {
                         calendarsync.setEvent(newItem, data, ServerId, tbSync.db.getAccountSetting(eas.syncdata.account, "asversion"));
                         db.addItemToChangeLog(eas.syncdata.targetObj.id, ServerId, "modified_by_server");
                         yield pcal.modifyItem(newItem, foundItems[0]);
+                    } else {
+                        tbSync.dump("Element not found", ServerId);
                     }
                 }
                 
@@ -684,6 +693,8 @@ var calendarsync = {
                     if (foundItems.length > 0) { //delete item with that ServerId
                         db.addItemToChangeLog(eas.syncdata.targetObj.id, ServerId, "deleted_by_server");
                         yield pcal.deleteItem(foundItems[0]);
+                    } else {
+                        tbSync.dump("Element not found", ServerId);
                     }
                 }
             
