@@ -762,7 +762,7 @@ var eas = {
                 tbSync.dump("wbxml status", "Server reports <invalid synchronization key> (" + fullpath + " = " + status + "), resyncing.");
                 eas.initSync("resync", eas.syncdata.account, eas.syncdata.folderID);
                 return true;
-/*            case "Sync:8": // Object not found - takeTargetOffline and remove folder
+            case "Sync:8": // Object not found - takeTargetOffline and remove folder
                 tbSync.dump("wbxml status", "Server reports <object not found> (" + eas.syncdata.account + ", " + eas.syncdata.folderID + "), keeping local copy and removing folder.");
                 let folder = tbSync.db.getFolder(eas.syncdata.account, eas.syncdata.folderID);
                 if (folder !== null) {
@@ -773,14 +773,11 @@ var eas = {
                     //if target exists, take it offline
                     if (target != "") tbSync.eas.takeTargetOffline(target, folder.type);
                     tbSync.db.deleteFolder(eas.syncdata.account, eas.syncdata.folderID);
+                    //folder is no longer there, unset current folder
+                    eas.syncdata.folderID = "";
                 }
                 eas.finishSync();
                 return true;
-
-                can be triggered by
-                eas.initSync("resync", eas.syncdata.account, eas.syncdata.folderID); after error 12
-
-*/
             case "Sync:12": /*
                         Perform a FolderSync command and then retry the Sync command. (is "resync" here)
                         */
