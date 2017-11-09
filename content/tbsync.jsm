@@ -683,7 +683,6 @@ var tbSync = {
                         //update status of target and account
                         tbSync.setTargetModified(newFolders[0]);
                         tbSync.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "modified_by_user");
-
                     }
                 }
                 

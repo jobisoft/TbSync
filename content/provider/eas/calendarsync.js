@@ -660,6 +660,8 @@ var calendarsync = {
                         try {
                             yield pcal.addItem(newItem);
                         } catch (e) {tbSync.dump("Error during Add", e);}
+                    } else {
+                        tbSync.dump("Element exists already", ServerId); //todo
                     }
                 }
 
@@ -679,7 +681,7 @@ var calendarsync = {
                         db.addItemToChangeLog(eas.syncdata.targetObj.id, ServerId, "modified_by_server");
                         yield pcal.modifyItem(newItem, foundItems[0]);
                     } else {
-                        tbSync.dump("Element not found", ServerId);
+                        tbSync.dump("Element not found", ServerId); //todo
                     }
                 }
                 
@@ -694,7 +696,7 @@ var calendarsync = {
                         db.addItemToChangeLog(eas.syncdata.targetObj.id, ServerId, "deleted_by_server");
                         yield pcal.deleteItem(foundItems[0]);
                     } else {
-                        tbSync.dump("Element not found", ServerId);
+                        tbSync.dump("Element not found", ServerId); //todo
                     }
                 }
             
