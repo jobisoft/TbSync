@@ -34,11 +34,18 @@
                             <listheader style="font-weight:bold;text-align:right;" label="&manager.status;" flex="1" />
                         </listhead>
                     </richlistbox>
-                    <hbox pack="end">
+                    <hbox>
+                     <vbox flex="1">
                         <button 
-                        style="width: 2em; min-width: 2em;"
-                        label="+"
-                        oncommand="tbSyncAccountManager.addAccount();"/>
+                          label="&pref.SyncAll;"
+                          oncommand="tbSync.addAccountToSyncQueue('sync');"/>
+                     </vbox>
+                     <hbox>                  
+                        <button 
+                          style="width: 2em; min-width: 2em;"
+                          label="+"
+                          oncommand="tbSyncAccountManager.addAccount();"/>
+                     </hbox>                  
                     </hbox>
             </vbox>
             <iframe id="tbSyncAccountManager.contentFrame" type="content" flex="1" />
