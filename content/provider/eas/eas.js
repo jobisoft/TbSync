@@ -763,7 +763,7 @@ var eas = {
                 eas.initSync("resync", eas.syncdata.account, eas.syncdata.folderID);
                 return true;
             case "Sync:8": // Object not found - takeTargetOffline and remove folder
-                tbSync.dump("wbxml status", "Server reports <object not found> (" + eas.syncdata.account + ", " + eas.syncdata.folderID + "), keeping local copy and removing folder.");
+                tbSync.dump("wbxml status", "Server reports <object not found> (" +  tbSync.db.getFolderSetting(eas.syncdata.account, eas.syncdata.folderID, "name") + "), keeping local copy and removing folder.");
                 let folder = tbSync.db.getFolder(eas.syncdata.account, eas.syncdata.folderID);
                 if (folder !== null) {
                     let target = folder.target;
