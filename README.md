@@ -7,7 +7,10 @@ A quick start guide on how to use this Add-On can be found in the [wiki](https:/
 
 ## Got a question? Maybe it has been answered already!
 
-Please check the roadmap below and the [issue section](https://github.com/jobisoft/TbSync/issues?utf8=%E2%9C%93&q=is%3Aissue) before posting your question!
+You can use the [issue section](https://github.com/jobisoft/TbSync/issues?q=is%3Aissue) for support or feature requests, but please take the extra minute to check, if your question has been asked and answered already.
+
+Also take a look at the roadmap listed below, to see if a feature is scheduled to be implemented. If so, it is obviously not yet implemented. Asking me how long it will take, will not get it done any faster. A [donating](https://www.paypal.me/johnbieling) might help :-)
+
 
 ## Roadmap for 2018
 
