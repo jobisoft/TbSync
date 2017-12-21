@@ -51,7 +51,7 @@ var tbSyncEasNewAccount = {
     onAdd: function () {
         if (document.documentElement.getButton("extra1").disabled == false) {
             let servertype = this.elementServertype.value;
-            let newAccountEntry = tbSync.eas.getNewAccountEntry();
+            let newAccountEntry = tbSync.eas_common.getNewAccountEntry();
             
             newAccountEntry.accountname = this.elementName.value;
             newAccountEntry.user = this.elementUser.value;
@@ -67,7 +67,7 @@ var tbSyncEasNewAccount = {
             }
             //just here for reference, if this method is going to be used again
             else if (servertype == "outlook.com") {
-                let fixedSettings = tbSync.eas.getFixedServerSettings(servertype);
+                let fixedSettings = tbSync.eas_common.getFixedServerSettings(servertype);
                 for (let prop in fixedSettings) {
                   if( newAccountEntry.hasOwnProperty(prop) ) {
                     newAccountEntry[prop] = fixedSettings[prop];
@@ -81,7 +81,7 @@ var tbSyncEasNewAccount = {
     
     addAccount (newAccountEntry, password, msg) {
         //also update password in PasswordManager
-        tbSync.eas.setPassword (newAccountEntry, password);
+        tbSync.eas_common.setPassword (newAccountEntry, password);
 
         //create a new EAS account and pass its id to updateAccountsList, which will select it
         //the onSelect event of the List will load the selected account
@@ -196,7 +196,7 @@ var tbSyncEasNewAccount = {
                 //Report wrong password and start again
                 window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", accountdata, 
                     function() {
-                        tbSyncEasNewAccount.autodiscover(accountdata, tbSync.eas.getPassword(accountdata));
+                        tbSyncEasNewAccount.autodiscover(accountdata, tbSync.eas_common.getPassword(accountdata));
                     },
                     function() {
                         document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;

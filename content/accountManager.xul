@@ -38,7 +38,7 @@
                      <vbox flex="1">
                         <button 
                           label="&pref.SyncAll;"
-                          oncommand="tbSync.addAccountToSyncQueue('sync');"/>
+                          oncommand="tbSync.syncAccount('sync');"/>
                      </vbox>
                      <hbox>                  
                         <button 

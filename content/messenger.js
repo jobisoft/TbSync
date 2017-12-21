@@ -4,11 +4,14 @@ Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncMessenger = {
 
+    syncSteps: 0,
+    statusLastUpdated: 0,
+    
     onload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncMessenger.syncstateObserver, "tbsync.changedSyncstate", false);
 
-        tbSync.init();
+        tbSync.init("messenger");
         tbSyncMessenger.syncTimer.start();
         
         if (document.getElementById("calendar-synchronize-button")) {
@@ -17,7 +20,7 @@ var tbSyncMessenger = {
     },
 
     ligthningSyncRequest: function() {
-        if (tbSync.enabled) tbSync.addAccountToSyncQueue('sync'); else tbSyncMessenger.popupNotEnabled();
+        if (tbSync.enabled) tbSync.syncAccount('sync'); else tbSyncMessenger.popupNotEnabled();
     },
     
     openAccountManager: function () {
@@ -38,25 +41,37 @@ var tbSyncMessenger = {
         observe: function (aSubject, aTopic, aData) {
             //update status bar
             let status = document.getElementById("tbsync.status");
-            if (status && aData == "") { //only observe true notifications from setSyncState()
-                
-                let data = tbSync.currentProzess;
-                let target = "";
-                let accounts = tbSync.db.getAccounts().data;
+            if (status) {
 
-                if (accounts.hasOwnProperty(data.account)) {
-                    target = accounts[data.account].accountname
-                    
-                    if (data.folderID !== "" && data.state != "done") { //if "Done" do not print folder info in status bar
-                        target = target + "." + tbSync.db.getFolderSetting(data.account, data.folderID, "name");
-                    }
-                    
-                    target = " [" + target + "]";
-                }
-                    
-                status.label = "TbSync: " + tbSync.getLocalizedMessage("syncstate." + data.state) + target + tbSync.getSyncChunks();
+                let label = "TbSync: ";
                 
-                //TODO check if error and print in status
+                //check if any account is syncing, if not switch to idle
+                let accounts = tbSync.db.getAccounts();
+                let idle = true;
+                for (let i=0; i<accounts.IDs.length && idle; i++) {
+                    let state = tbSync.getSyncData(accounts.IDs[i], "state");
+                    idle = (state == "accountdone" || state == "");
+                }
+
+                if (idle) {
+                    label += tbSync.getLocalizedMessage("syncstate.idle");   
+                    status.label = label;      
+                    tbSyncMessenger.syncSteps = 0;                    
+                } else if ((Date.now() - tbSyncMessenger.statusLastUpdated) > 400) {
+                    //only update if status was unchanged for 1s (otherwise progressbar "jumps")
+                    
+                    let syncLabelLength = 8;
+                    if (tbSyncMessenger.syncSteps > syncLabelLength) tbSyncMessenger.syncSteps = 0;                    
+                    for (let i = 0; !(i > syncLabelLength); i++) {
+                        if (i == tbSyncMessenger.syncSteps) label +=  ":";
+                        else label +=  ".";
+                    }                    
+                    tbSyncMessenger.syncSteps++;
+                    tbSyncMessenger.statusLastUpdated = Date.now();
+                    status.label = label;
+                }
+
+                //TODO check if error and print in status, so that the user can check account manager for detailed error info
             }
         }
     },
@@ -81,7 +96,7 @@ var tbSyncMessenger = {
                         let lastsynctime = accounts.data[accounts.IDs[i]].lastsynctime;
                         
                         if (accounts.data[accounts.IDs[i]].state == "connected" && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval) ) {
-                        tbSync.addAccountToSyncQueue("sync",accounts.IDs[i]);
+                        tbSync.syncAccount("sync",accounts.IDs[i]);
                         }
                     }
                 }
@@ -92,6 +107,3 @@ var tbSyncMessenger = {
 
 window.addEventListener("load", tbSyncMessenger.onload, false);
 window.addEventListener("unload", tbSync.unload, false);
-for (let i=0;i<tbSync.syncProviderList.length;i++) {
-    window.addEventListener("unload", tbSync[tbSync.syncProviderList[i]].unload, false);
-}

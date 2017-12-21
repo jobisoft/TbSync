@@ -12,10 +12,12 @@ var tbSyncAccountSettings = {
     onload: function () {
         //get the selected account from the loaded URI
         tbSyncAccountSettings.selectedAccount = window.location.toString().split("id=")[1];
+        tbSync.prepareSyncProviderObj(tbSyncAccountSettings.selectedAccount);
 
         tbSyncAccountSettings.loadSettings();
         tbSyncAccountSettings.addressbookListener.add();
 
+        
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate", false);
         observerService.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui", false);
@@ -33,7 +35,7 @@ var tbSyncAccountSettings = {
 
     // manage sync via queue
     requestSync: function (job, account) {
-        if (!document.getElementById('tbsync.accountsettings.syncbtn').disabled && tbSync.currentProzess.account != tbSyncAccountSettings.selectedAccount) tbSync.addAccountToSyncQueue('sync', tbSyncAccountSettings.selectedAccount);
+        if (!document.getElementById('tbsync.accountsettings.syncbtn').disabled) tbSync.syncAccount('sync', tbSyncAccountSettings.selectedAccount);
     },
 
 
@@ -45,7 +47,7 @@ var tbSyncAccountSettings = {
 
             if (folder.selected == "1") alert(tbSync.getLocalizedMessage("deletefolder.notallowed::" + folder.name,"eas"));
             else if (confirm(tbSync.getLocalizedMessage("deletefolder.confirm::" + folder.name,"eas"))) {
-                tbSync.addAccountToSyncQueue("deletefolder", tbSyncAccountSettings.selectedAccount, fID);
+                tbSync.syncAccount("deletefolder", tbSyncAccountSettings.selectedAccount, fID);
             } 
         }            
     },
@@ -58,7 +60,7 @@ var tbSyncAccountSettings = {
         let settings = tbSync.db.getAccountStorageFields(tbSyncAccountSettings.selectedAccount);
         let servertype = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype");
         
-        this.fixedSettings = tbSync.eas.getFixedServerSettings(servertype);
+        this.fixedSettings = tbSync.eas_common.getFixedServerSettings(servertype);
 
         for (let i=0; i<settings.length;i++) {
             if (document.getElementById("tbsync.accountsettings." + settings[i])) {
@@ -189,32 +191,32 @@ var tbSyncAccountSettings = {
     },
 
 
-    updateSyncstate: function () {
-        let data = tbSync.currentProzess;
-        
+    updateSyncstate: function () {        
         // if this account is beeing synced, display syncstate, otherwise print status
         let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "status");
         let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connected, disconnected
 
         if (status == "syncing") {
-            let target = "";
+            let syncdata = tbSync.getSyncData(tbSyncAccountSettings.selectedAccount);
             let accounts = tbSync.db.getAccounts().data;
-            if (accounts.hasOwnProperty(data.account) && data.folderID !== "" && data.state != "done") { //if "Done" do not print folder info syncstate
-                target = " [" + tbSync.db.getFolderSetting(data.account, data.folderID, "name") + "]";
+            let target = "";
+
+            if (accounts.hasOwnProperty(syncdata.account) && syncdata.folderID !== "" && syncdata.state != "done") { //if "Done" do not print folder info syncstate
+                target = " [" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "]";
             }
-            document.getElementById('syncstate').textContent = tbSync.getLocalizedMessage("syncstate." + data.state) + target + tbSync.getSyncChunks();
+            document.getElementById('syncstate').textContent = tbSync.getLocalizedMessage("syncstate." + syncdata.state) + target;
         } else {
             document.getElementById('syncstate').textContent = tbSync.getLocalizedMessage("status." + status);
         }
 
         //disable connect/disconnect btn, sync btn and folderlist during sync, also hide sync button if disconnected
-        document.getElementById('tbsync.accountsettings.connectbtn').disabled = (status == "syncing" || tbSync.accountScheduledForSync(tbSyncAccountSettings.selectedAccount));
-        document.getElementById('tbsync.accountsettings.folderlist').disabled = (status == "syncing");
-        document.getElementById('tbsync.accountsettings.syncbtn').disabled = (status == "syncing" || tbSync.accountScheduledForSync(tbSyncAccountSettings.selectedAccount));
+        document.getElementById('tbsync.accountsettings.connectbtn').disabled = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
+        document.getElementById('tbsync.accountsettings.folderlist').disabled = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
+        document.getElementById('tbsync.accountsettings.syncbtn').disabled = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
         document.getElementById('tbsync.accountsettings.syncbtn').hidden = (state == "disconnected");
         
         if (status == "syncing") document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.syncing");
-        else if (tbSync.accountScheduledForSync(tbSyncAccountSettings.selectedAccount)) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.waiting");
+        //else if (tbSync.isSyncing(tbSyncAccountSettings.selectedAccount)) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.waiting");
         else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.idle");
     },
 
@@ -230,9 +232,9 @@ var tbSyncAccountSettings = {
                     //deselect folder
                     folder.selected = "0";
                     //remove folder, which will trigger the listener in tbsync which will clean up everything
-                    tbSync.eas.removeTarget(folder.target, folder.type); 
+                    tbSync.eas_common.removeTarget(folder.target, folder.type); 
                 }
-            } else if (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) { //trashed folders cannot be selected or synced
+            } else if (!tbSync.eas_common.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) { //trashed folders cannot be selected or synced
                 //select and update status
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "selected", "1");
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "status", "aborted");
@@ -250,7 +252,7 @@ var tbSyncAccountSettings = {
         if (!folderList.disabled && folderList.selectedItem !== null && folderList.selectedItem.value !== undefined) {
             let fID =  folderList.selectedItem.value;
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.selectedAccount, fID, true);
-            if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) {// folder in recycle bin
+            if (tbSync.eas_common.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) {// folder in recycle bin
                 document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").hidden = true;
             } else {
                 if (folder.selected == "1") document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").label = tbSync.getLocalizedMessage("subscribe.off::" + folder.name, "eas");
@@ -292,7 +294,7 @@ var tbSyncAccountSettings = {
     updateFolderList: function () {
         //show/hide trash config
         let hideTrashedFolders = tbSync.prefSettings.getBoolPref("hideTrashedFolders");
-        
+
         //do not update folder list, if not visible
         if (document.getElementById("tbsync.accountsettings.folders").hidden) return;
         
@@ -310,7 +312,7 @@ var tbSyncAccountSettings = {
         let listedfolders = [];
         for (let i=folderList.getRowCount()-1; i>=0; i--) {
             listedfolders.push(folderList.getItemAtIndex (i).value); 
-            if (folderIDs.indexOf(folderList.getItemAtIndex(i).value) == -1 || (hideTrashedFolders && tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderList.getItemAtIndex(i).value].parentID))) {
+            if (folderIDs.indexOf(folderList.getItemAtIndex(i).value) == -1 || (hideTrashedFolders && tbSync.eas_common.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderList.getItemAtIndex(i).value].parentID))) {
                 folderList.removeItemAt(i);
             }
         }
@@ -331,12 +333,12 @@ var tbSyncAccountSettings = {
         let lastCheckedEntry = null;
 
         for (let i = folderIDs.length-1; i >= 0; i--) {
-            if (["8","9","13","14"].indexOf(folders[folderIDs[i]].type) != -1 && (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID) || !hideTrashedFolders)) { 
+            if (["8","9","13","14"].indexOf(folders[folderIDs[i]].type) != -1 && (!tbSync.eas_common.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID) || !hideTrashedFolders)) { 
                 let selected = (folders[folderIDs[i]].selected == "1");
                 let type = folders[folderIDs[i]].type;
                 let status = (selected) ? folders[folderIDs[i]].status : "";
                 let name = folders[folderIDs[i]].name ;
-                if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID)) name += " ("+tbSync.getLocalizedMessage("recyclebin","eas")+")";
+                if (tbSync.eas_common.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID)) name += " ("+tbSync.getLocalizedMessage("recyclebin","eas")+")";
 		    
                 //if status OK, print target
                 if (selected) {
@@ -350,7 +352,7 @@ var tbSyncAccountSettings = {
                             if (type == "9" || type == "14") status = tbSync.getLocalizedMessage("status." + status) + ": "+ tbSync.getAddressBookName(folders[folderIDs[i]].target);
                             break;
                         case "pending":
-                            if (folderIDs[i] == tbSync.currentProzess.folderID) status = "syncing"; 
+                            if (folderIDs[i] == tbSync.getSyncData(tbSyncAccountSettings.selectedAccount,"folderID")) status = "syncing"; 
                         default:
                             status = tbSync.getLocalizedMessage("status." + status);
                     }
@@ -435,48 +437,44 @@ var tbSyncAccountSettings = {
     */
     toggleConnectionState: function () {
         //ignore cancel request, if button is disabled or a sync is ongoing
-        if (document.getElementById('tbsync.accountsettings.connectbtn').disabled || (tbSync.currentProzess.account == tbSyncAccountSettings.selectedAccount)) return;
+        if (document.getElementById('tbsync.accountsettings.connectbtn').disabled || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount)) return;
 
         let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connected, disconnected
         if (state == "connected") {
             //we are connected and want to disconnect
             if (window.confirm(tbSync.getLocalizedMessage("prompt.Disconnect"))) {
-                tbSync.eas.disconnectAccount(tbSyncAccountSettings.selectedAccount);
+                tbSync.eas_common.disconnectAccount(tbSyncAccountSettings.selectedAccount);
                 tbSyncAccountSettings.updateGui();
                 let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
                 observerService.notifyObservers(null, "tbsync.changedSyncstate", tbSyncAccountSettings.selectedAccount);
             }
         } else if (state == "disconnected") {
             //we are disconnected and want to connected
-            tbSync.eas.connectAccount(tbSyncAccountSettings.selectedAccount);
+            tbSync.eas_common.connectAccount(tbSyncAccountSettings.selectedAccount);
             tbSyncAccountSettings.updateGui();
             tbSyncAccountSettings.saveSettings();
-            tbSync.addAccountToSyncQueue("sync", tbSyncAccountSettings.selectedAccount);
+            tbSync.syncAccount("sync", tbSyncAccountSettings.selectedAccount);
         }
     },
 
 
     /* * *
     * Observer to catch changing syncstate and to update the status info.
-    * aData provides an account information, but this observer ignores it and only acts on the currentProzess
     */
     syncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
-            //the notification could be send by setSyncState (aData = "") or by tzMessenger (aData = account)
-            let account = (aData == "") ? tbSync.currentProzess.account : aData;
-            
+            let account = aData;            
             let msg = null;
             
             //only handle syncstate changes of the active account
             if (account == tbSyncAccountSettings.selectedAccount) {
                 
-                if (aData == "" && tbSync.currentProzess.state == "accountdone") {
+                if (tbSync.getSyncData(account,"state") == "accountdone") {
 
-                        //this syncstate change notification was send by setSyncState
-                        let status = tbSync.db.getAccountSetting(tbSync.currentProzess.account, "status");
+                        let status = tbSync.db.getAccountSetting(account, "status");
                         switch (status) {
                             case "401":
-                                window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.db.getAccount(account), function() {tbSync.addAccountToSyncQueue("resync", account);});
+                                window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.db.getAccount(account), function() {tbSync.syncAccount("resync", account);});
                                 break;
                             case "OK":
                             case "notsyncronized":
@@ -489,8 +487,6 @@ var tbSyncAccountSettings = {
                         
                 } else { 
                     
-                        //this syncstate change notification could have been send setSyncState (aData = "") for the currentProcess or by manual notifications from tzmessenger
-                        //in either case, the notification is for THIS account
                         tbSyncAccountSettings.updateFolderList();
                     
                 }

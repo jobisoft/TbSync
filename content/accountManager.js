@@ -27,7 +27,7 @@ var tbSyncAccountManager = {
 
 
     addAccount: function () {
-        //EAS hardcoded, will by made dynamic as soon as different providers are usable
+        //EAS hardcoded, will be made dynamic as soon as different providers are usable
         window.openDialog("chrome://tbsync/content/provider/eas/newaccount.xul", "easnewaccount", "centerscreen,modal,resizable=no");
     },
 
@@ -44,7 +44,7 @@ var tbSyncAccountManager = {
             
             if (confirm(tbSync.getLocalizedMessage("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
                 //disconnect (removes ab, triggers changelog cleanup) 
-                tbSync[tbSync.db.getAccountSetting(accountsList.selectedItem.value, "provider")].disconnectAccount(accountsList.selectedItem.value);
+                tbSync[tbSync.db.getAccountSetting(accountsList.selectedItem.value, "provider") + "_common"].disconnectAccount(accountsList.selectedItem.value);
                 //delete account from db
                 tbSync.db.removeAccount(accountsList.selectedItem.value);
 
@@ -59,20 +59,24 @@ var tbSyncAccountManager = {
     */
     updateAccountSyncStateObserver: {
         observe: function (aSubject, aTopic, aData) {
-            //limit execution to a couple of states, not all
-            let state = tbSync.currentProzess.state;
-            
-            //react on true syncstate changes send by setSyncState()
-            if (aData == "" && (state == "syncing" || state == "accountdone")) tbSyncAccountManager.updateAccountStatus(tbSync.currentProzess.account);
-
-            //react on any manual notification
-            if (aData != "") tbSyncAccountManager.updateAccountStatus(aData);
+            if (aData != "") {
+                //limit execution to a couple of states, not all
+                let state = tbSync.getSyncData(aData,"state");
+                //if (state == "syncing" || state == "accountdone") 
+                tbSyncAccountManager.updateAccountStatus(aData);
+            }
         }
     },
 
-    getStatusImage: function (account) {
+    setStatusImage: function (account, obj) {
+        let statusImage = this.getStatusImage(account, obj.src);
+        if (statusImage != obj.src) {
+            obj.src = statusImage;
+        }
+    },
+    
+    getStatusImage: function (account, current = "") {
         let src = "";   
-
         switch (tbSync.db.getAccountSetting(account, "status")) {
             case "OK":
                 src = "tick16.png";
@@ -88,7 +92,17 @@ var tbSyncAccountManager = {
                 break;
 
             case "syncing":
-                src = "sync16.png";
+                if (current.indexOf("sync16") == -1) {
+                    //current img is something else, show sync img directly
+                    src = "sync16.png";
+                    tbSync.setSyncData(account, "accountManagerLastUpdated", Date.now());
+                } else if ((Date.now() - tbSync.getSyncData(account, "accountManagerLastUpdated")) > 400) {
+                    //current img is one of the sync images, flip at lower speed see them rotate
+                    if (current.indexOf("sync16.png") == -1) src = "sync16.png"; else src = "sync16_r.png";
+                    tbSync.setSyncData(account, "accountManagerLastUpdated", Date.now());
+                } else {
+                    return current;
+                }
                 break;
 
             default:
@@ -100,10 +114,7 @@ var tbSyncAccountManager = {
 
     updateAccountStatus: function (id) {
         let listItem = document.getElementById("tbSyncAccountManager.accounts." + id);
-        let statusimage = this.getStatusImage(id);
-        if (listItem.childNodes[1].firstChild.src != statusimage) {
-            listItem.childNodes[1].firstChild.src = statusimage;
-        }
+        this.setStatusImage(id, listItem.childNodes[1].firstChild);
     },
 
     updateAccountNameObserver: {

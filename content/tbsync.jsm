@@ -20,6 +20,7 @@ var tbSync = {
 
     enabled: false,
     initjobs: 0,
+
     bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tbsync/locale/tbSync.strings"),
     mozConsoleService : Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService),
 
@@ -27,7 +28,7 @@ var tbSync = {
     decoder : new TextDecoder(),
     encoder : new TextEncoder(),
 
-    syncProvider: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync.provider."),
+    syncProviderPref: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync.provider."),
     syncProviderList: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync.provider.").getChildList("", {}),
 
     prefSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync."),
@@ -36,11 +37,12 @@ var tbSync = {
 
 
 
-    // GLOBAL INIT (this init function is called by the init of each provider + messenger)
-    init: function () { 
+    // GLOBAL INIT (this init function is called by the init of messenger and db)
+    init: function (caller) { 
         tbSync.initjobs++;
-
-        if (tbSync.initjobs > tbSync.syncProviderList.length) { //one extra, because messenger needs to init as well
+        tbSync.dump("INIT","tbSync.init() called by <" + caller + ">");
+        
+        if (tbSync.initjobs > 1) {//messenger and db needs to init
             //init stuff for address book
             tbSync.addressbookListener.add();
             tbSync.scanPrefIdsOfAddressBooks();
@@ -73,85 +75,71 @@ var tbSync = {
 
 
 
-    // SYNC QUEUE MANAGEMENT
-    syncQueue : [],
-    currentProzess : {},
-    queueTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
+    // SYNC MANAGEMENT
+    syncProviderObj : {},
 
-    //used by UI to find out, if any job for this account is scheduled
-    accountScheduledForSync: function (account) {
-        return (tbSync.syncQueue.filter(item => item.includes("."+account + ".")).length > 0);
+    //used by UI to find out, if this account is beeing synced - TODO check/use local syncqeue for specific job?
+    isSyncing: function (account) {
+        let state = tbSync.getSyncData(account,"state");
+        return (state != "accountdone" && state != "");
+    },
+    
+    prepareSyncProviderObj: function (account, forceResetOfSyncData = false) {
+        if (!tbSync.syncProviderObj.hasOwnProperty(account)) {
+            tbSync.syncProviderObj[account] = new tbSync[tbSync.db.getAccountSetting(account, "provider") + "_obj"];            
+        }
+        
+        if (forceResetOfSyncData) {
+            tbSync.syncProviderObj[account].syncdata = {};
+        }
+    },
+    
+    getSyncData: function (account, field = "") {
+        tbSync.prepareSyncProviderObj(account);
+        if (field == "") {
+            //return entire syncdata obj
+            return tbSync.syncProviderObj[account].syncdata;
+        } else {
+            //return the reqested field with fallback value
+            if (tbSync.syncProviderObj[account].syncdata.hasOwnProperty(field)) {
+                return tbSync.syncProviderObj[account].syncdata[field];
+            } else {
+                return "";
+            }
+        }
+    },
+        
+    setSyncData: function (account, field, value) {
+        tbSync.prepareSyncProviderObj(account);
+        tbSync.syncProviderObj[account].syncdata[field] = value;
     },
 
-    //used by addAccountToSyncQueue to find out, if a specific job is scheduled
-    jobScheduledForSync: function (jobdescription) {
-        return (tbSync.syncQueue.filter(item => item.includes(jobdescription)).length > 0);
-    },
+    syncAccount: function (job, account = "", folderID = "") {
+        //get info of all accounts
+        let accounts = tbSync.db.getAccounts();
 
-    addAccountToSyncQueue: function (job, account = "", folderID = "") {
+        //if no account given, loop over all accounts, otherwise only use the provided one
+        let accountsToDo = [];        
         if (account == "") {
-            //Add all connected accounts to the queue
-            let accounts = tbSync.db.getAccounts();
-            for (let i=0; i<accounts.IDs.length; i++) {
-                let newentry = job + "." + accounts.IDs[i] + ".";
-                //do not add the same job more than once
-                if (accounts.data[accounts.IDs[i]].state != "disconnected" && !tbSync.jobScheduledForSync(newentry)) {
-                    tbSync.syncQueue.push(newentry);
-                }
+            //add all connected accounts to the queue
+            for (let i=0; i < accounts.IDs.length; i++) {
+                accountsToDo.push(accounts.IDs[i]);
             }
         } else {
-            let newentry = job + "." + account + "." + folderID;
-            if (!tbSync.jobScheduledForSync(newentry)) {
-                //Add specified job to the queue
-                tbSync.syncQueue.push(newentry);
-            }
+            accountsToDo.push(account);
         }
-
-        //update gui
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tbsync.changedSyncstate", "");
-
-        //after jobs have been aded to the queue, try to start working on the queue
-        //we delay the "is idle" querry, to prevent race condition, also, this forces the sync into a background thread
-        this.queueTimer.cancel();
-        this.queueTimer.initWithCallback(tbSync.checkSyncQueue, 500, 0);
-    },
-
-    checkSyncQueue: {
-        notify: function (timer) {
-            if (tbSync.currentProzess.state == "idle") tbSync.workSyncQueue();
-        }
-    },
-
-    workSyncQueue: function () {
-        //if no more jobs in queue, do nothing
-        if (tbSync.syncQueue.length == 0) {
-            tbSync.setSyncState("idle"); 
-            return;
-        }
-
-        tbSync.currentProzess.forceAbort = false;
-
-        let syncrequest = tbSync.syncQueue.shift().split(".");
-        let job = syncrequest[0];
-        let account = syncrequest[1];
-        let folderID = syncrequest[2];
-        let provider = tbSync.db.getAccountSetting(account, "provider");
         
-        //workSyncQueue assumes, that it is allowed to start a new sync job
-        switch (job) {
-            case "sync":
-            case "resync":
-                tbSync[provider].initSync(job, account);
-                return;
-            case "deletefolder":
-                if (provider == "eas") {
-                    tbSync[provider].initSync(job, account, folderID);
-                    return;
-                }
-            default:
-                tbSync.dump("workSyncQueue()", "Adding unknow job <"+ job +"> for provider <"+ provider +"> to sync queue!");
+        //update gui
+        for (let i = 0; i < accountsToDo.length; i++) {
+            //do not init sync if there is a sync running or account is not connected - TODO we could add the new job to the LOCAL sync queue of the sync obj.
+            if (accounts.data[accountsToDo[i]].state == "disconnected" || tbSync.isSyncing(accountsToDo[i])) continue;
+
+            //create providerObj for each account (to be able to have parallel XHR)
+            tbSync.prepareSyncProviderObj(accountsToDo[i], true);
+            //call initSync of the providerObj
+            tbSync.syncProviderObj[accountsToDo[i]].initSync(job,  accountsToDo[i], folderID);
         }
+        
     },
 
     setSyncState: function(state, account = "", folderID = "") {
@@ -161,36 +149,19 @@ var tbSync = {
         if (folderID !== "") msg += ", Folder: " + tbSync.db.getFolderSetting(account, folderID, "name");
         tbSync.dump("setSyncState", msg);
 
-        tbSync.currentProzess.laststate = tbSync.currentProzess.state;
-        tbSync.currentProzess.state = state;
-        if (tbSync.currentProzess.state != tbSync.currentProzess.laststate) tbSync.currentProzess.chunks = 0;
-
-        if (account !== "") {
-            tbSync.currentProzess.account = account;
-            tbSync.currentProzess.folderID = folderID;
-        } else {
-            tbSync.currentProzess.account = "";
-            tbSync.currentProzess.folderID = "";
-        }
+        if (tbSync.syncProviderObj.hasOwnProperty(account)) tbSync.syncProviderObj[account].syncdata.state = state;
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tbsync.changedSyncstate", "");
-    },
-
-    getSyncChunks: function() {
-        if (tbSync.currentProzess.chunks > 0) return " #" + tbSync.currentProzess.chunks;
-        else return "";
+        observerService.notifyObservers(null, "tbsync.changedSyncstate", account);
     },
     
     resetSync: function () {
-        //flush the queue
-        tbSync.syncQueue = [];
-        //abort further sync execution (must be implemented by provider!)
-        tbSync.currentProzess.forceAbort = true;
-
         //get all accounts and set all with syncing state to notsyncronized
         let accounts = tbSync.db.getAccounts();
         for (let i=0; i<accounts.IDs.length; i++) {
+            //reset sync objects
+            tbSync.prepareSyncProviderObj(accounts.IDs[i], true);
+            //set all accounts which are syncing to notsyncronized
             if (accounts.data[accounts.IDs[i]].status == "syncing") tbSync.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
         }
 
@@ -201,7 +172,6 @@ var tbSync = {
         }
 
         //end current sync and switch to idle
-        tbSync.setSyncState("accountdone", tbSync.currentProzess.account); 
         tbSync.setSyncState("idle"); 
     },
 
@@ -217,7 +187,7 @@ var tbSync = {
         //update account status
         tbSync.db.setAccountSetting(account, "lastsynctime", Date.now());
         
-        //if global status is OK, scan all folders of this account and if any of them is not ok, set global status
+        //if global status is OK, scan all folders of this account and check if any of them is not ok, set global status
         if (tbSync.db.getAccountSetting(account, "status") == "syncing") {
             let status = "OK";
             folders = tbSync.db.findFoldersWithSetting("selected", "1", account);
@@ -229,9 +199,6 @@ var tbSync = {
 
         //done
         tbSync.setSyncState("accountdone", account); 
-
-        //work on the queue
-        tbSync.workSyncQueue();
     },
 
 
@@ -298,7 +265,7 @@ var tbSync = {
     getLocalizedMessage: function (msg, provider = "") {
         let localized = msg;
         let parts = msg.split("::");
-        let bundle = (provider == "") ? tbSync.bundle : tbSync[provider].bundle;
+        let bundle = (provider == "") ? tbSync.bundle : tbSync[provider + "_common"].bundle;
             
         try {
             //spezial treatment of strings with :: like status.httperror::403
@@ -447,7 +414,7 @@ var tbSync = {
                         //update settings window, if open
                         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
                         observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
-					}
+                    }
                     tbSync.db.saveFolders();
                 }
                 //delete any pending changelog of the deleted book
@@ -794,6 +761,7 @@ var tbSync = {
     },
 
     checkCalender: function (account, folderID) {
+        tbSync.dump("checkCalender", account + "." + folderID);
         let folder = tbSync.db.getFolder(account, folderID);
         let calManager = cal.getCalendarManager();
         let targetCal = calManager.getCalendarById(folder.target);
@@ -880,7 +848,7 @@ var tbSync = {
         newCalendar.name = newname;
         calManager.registerCalendar(newCalendar);
         newCalendar.setProperty("color", color); //any chance to get the color from the provider?
-	
+    
         newCalendar.setProperty("calendar-main-in-composite",true);
         tbSync.dump("tbSync::checkCalendar("+account+", "+folderID+")", "Creating new calendar (" + newname + ")");
         
@@ -917,6 +885,6 @@ tbSync.includeJS("chrome://tbsync/content/db.js");
 
 // load provider subscripts into tbSync 
 for (let i=0;i<tbSync.syncProviderList.length;i++) {
-    tbSync.dump("PROVIDER", tbSync.syncProviderList[i] + "::" + tbSync.syncProvider.getCharPref(tbSync.syncProviderList[i]));
+    tbSync.dump("PROVIDER", tbSync.syncProviderList[i] + "::" + tbSync.syncProviderPref.getCharPref(tbSync.syncProviderList[i]));
     tbSync.includeJS("chrome://tbsync/content/provider/"+tbSync.syncProviderList[i]+"/" + tbSync.syncProviderList[i] +".js");
 }
