@@ -163,21 +163,19 @@ var tbSync = {
             tbSync.prepareSyncProviderObj(accounts.IDs[i], true);
             //set all accounts which are syncing to notsyncronized
             if (accounts.data[accounts.IDs[i]].status == "syncing") tbSync.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
-        }
 
-        // set each folder with PENDING status to ABORTED
-        let folders = tbSync.db.findFoldersWithSetting("status", "pending");
-        for (let i=0; i < folders.length; i++) {
-            tbSync.db.setFolderSetting(folders[i].account, folders[i].folderID, "status", "aborted");
+            // set each folder with PENDING status to ABORTED
+            let folders = tbSync.db.findFoldersWithSetting("status", "pending", accounts.IDs[i]);
+            for (let f=0; f < folders.length; f++) {
+                tbSync.db.setFolderSetting(accounts.IDs[i], folders[f].folderID, "status", "aborted");
+            }
+            
+            //end current sync and switch to idle
+            tbSync.setSyncState("accountdone", accounts.IDs[i]); 
         }
-
-        //end current sync and switch to idle
-        tbSync.setSyncState("idle"); 
     },
 
     finishAccountSync: function (account) {
-        let state = tbSync.db.getAccountSetting(account, "state");
-
         // set each folder with PENDING status to ABORTED
         let folders = tbSync.db.findFoldersWithSetting("status", "pending", account);
         for (let i=0; i < folders.length; i++) {
