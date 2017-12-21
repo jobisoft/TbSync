@@ -478,6 +478,7 @@ var tbSyncAccountSettings = {
                                 break;
                             case "OK":
                             case "notsyncronized":
+                            case "notconnected":
                                 //do not pop alert box for these
                                 break;
                             default:
