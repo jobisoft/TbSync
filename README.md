@@ -16,15 +16,15 @@ Also take a look at the roadmap listed below, to see if a feature is scheduled t
 
 This is work in progress. Future releases will be as follows:
 
-* v0.7.0: get all calendar stuff done:
-  - MeetingStatus
-  - Attendees (added in 0.6.8.3)
-  - Attachements (needs EAS v16.0, this will take longer)
-  - repeated Events
-* v0.7.1: rewrite contacts part (it is still using original TzPush code, but I want to use a different method, which is more easy to maintain) and fix a few bugs
+* v0.7.0:
+  - rewrite contacts part (it is still using original TzPush code, but I want to use a different method, which is more easy to maintain) and fix a few bugs
+  - add support for meeting status
+  - add support for attendees (added in 0.6.8.3)
+  - add support for attachements (needs EAS v16.0, this will take longer)
+  - add support for repeated Events
+* v0.7.1: add support for push sync ([heartbeat/ping](https://technet.microsoft.com/en-us/library/ff459598.aspx)) 
 * v0.7.2: add support for tasks
 * v0.7.3: add support for global address book (if possible)
-* v0.7.4: add support for push sync ([heartbeat/ping](https://technet.microsoft.com/en-us/library/ff459598.aspx)) 
 * v0.9: release candidate for productive use
 * v1.0: stable release
 
