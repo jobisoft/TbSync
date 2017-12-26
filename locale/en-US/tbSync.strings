@@ -33,7 +33,7 @@ status.nolightning=Lightning Add-On not installed, calendars are not supported.
 status.javascriptError=Javascript error! Check debug log for details.
 
 status.syncing=Synchronizing ...
-status.skipped=Not yet supported, skippped
+status.skipped=Not yet supported, skipped
 status.aborted=Not synchronized
 status.pending=Waiting to be synchronized
 status.modified=Local modifications
