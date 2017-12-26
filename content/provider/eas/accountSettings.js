@@ -12,7 +12,7 @@ var tbSyncAccountSettings = {
     onload: function () {
         //get the selected account from the loaded URI
         tbSyncAccountSettings.selectedAccount = window.location.toString().split("id=")[1];
-        tbSync.prepareSyncProviderObj(tbSyncAccountSettings.selectedAccount);
+        tbSync.prepareSyncDataObj(tbSyncAccountSettings.selectedAccount);
 
         tbSyncAccountSettings.loadSettings();
         tbSyncAccountSettings.addressbookListener.add();
@@ -60,7 +60,7 @@ var tbSyncAccountSettings = {
         let settings = tbSync.db.getAccountStorageFields(tbSyncAccountSettings.selectedAccount);
         let servertype = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype");
         
-        this.fixedSettings = tbSync.eas_common.getFixedServerSettings(servertype);
+        this.fixedSettings = tbSync.eas.getFixedServerSettings(servertype);
 
         for (let i=0; i<settings.length;i++) {
             if (document.getElementById("tbsync.accountsettings." + settings[i])) {
@@ -232,9 +232,9 @@ var tbSyncAccountSettings = {
                     //deselect folder
                     folder.selected = "0";
                     //remove folder, which will trigger the listener in tbsync which will clean up everything
-                    tbSync.eas_common.removeTarget(folder.target, folder.type); 
+                    tbSync.eas.removeTarget(folder.target, folder.type); 
                 }
-            } else if (!tbSync.eas_common.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) { //trashed folders cannot be selected or synced
+            } else if (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) { //trashed folders cannot be selected or synced
                 //select and update status
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "selected", "1");
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "status", "aborted");
@@ -252,7 +252,7 @@ var tbSyncAccountSettings = {
         if (!folderList.disabled && folderList.selectedItem !== null && folderList.selectedItem.value !== undefined) {
             let fID =  folderList.selectedItem.value;
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.selectedAccount, fID, true);
-            if (tbSync.eas_common.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) {// folder in recycle bin
+            if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) {// folder in recycle bin
                 document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").hidden = true;
             } else {
                 if (folder.selected == "1") document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").label = tbSync.getLocalizedMessage("subscribe.off::" + folder.name, "eas");
@@ -312,7 +312,7 @@ var tbSyncAccountSettings = {
         let listedfolders = [];
         for (let i=folderList.getRowCount()-1; i>=0; i--) {
             listedfolders.push(folderList.getItemAtIndex (i).value); 
-            if (folderIDs.indexOf(folderList.getItemAtIndex(i).value) == -1 || (hideTrashedFolders && tbSync.eas_common.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderList.getItemAtIndex(i).value].parentID))) {
+            if (folderIDs.indexOf(folderList.getItemAtIndex(i).value) == -1 || (hideTrashedFolders && tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderList.getItemAtIndex(i).value].parentID))) {
                 folderList.removeItemAt(i);
             }
         }
@@ -333,12 +333,12 @@ var tbSyncAccountSettings = {
         let lastCheckedEntry = null;
 
         for (let i = folderIDs.length-1; i >= 0; i--) {
-            if (["8","9","13","14"].indexOf(folders[folderIDs[i]].type) != -1 && (!tbSync.eas_common.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID) || !hideTrashedFolders)) { 
+            if (["8","9","13","14"].indexOf(folders[folderIDs[i]].type) != -1 && (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID) || !hideTrashedFolders)) { 
                 let selected = (folders[folderIDs[i]].selected == "1");
                 let type = folders[folderIDs[i]].type;
                 let status = (selected) ? folders[folderIDs[i]].status : "";
                 let name = folders[folderIDs[i]].name ;
-                if (tbSync.eas_common.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID)) name += " ("+tbSync.getLocalizedMessage("recyclebin","eas")+")";
+                if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID)) name += " ("+tbSync.getLocalizedMessage("recyclebin","eas")+")";
 		    
                 //if status OK, print target
                 if (selected) {
@@ -443,14 +443,14 @@ var tbSyncAccountSettings = {
         if (state == "connected") {
             //we are connected and want to disconnect
             if (window.confirm(tbSync.getLocalizedMessage("prompt.Disconnect"))) {
-                tbSync.eas_common.disconnectAccount(tbSyncAccountSettings.selectedAccount);
+                tbSync.eas.disconnectAccount(tbSyncAccountSettings.selectedAccount);
                 tbSyncAccountSettings.updateGui();
                 let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
                 observerService.notifyObservers(null, "tbsync.changedSyncstate", tbSyncAccountSettings.selectedAccount);
             }
         } else if (state == "disconnected") {
             //we are disconnected and want to connected
-            tbSync.eas_common.connectAccount(tbSyncAccountSettings.selectedAccount);
+            tbSync.eas.connectAccount(tbSyncAccountSettings.selectedAccount);
             tbSyncAccountSettings.updateGui();
             tbSyncAccountSettings.saveSettings();
             tbSync.syncAccount("sync", tbSyncAccountSettings.selectedAccount);

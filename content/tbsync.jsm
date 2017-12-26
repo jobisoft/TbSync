@@ -37,12 +37,12 @@ var tbSync = {
 
 
 
-    // GLOBAL INIT (this init function is called by the init of messenger and db)
+    // GLOBAL INIT (this init function is called by the init of messenger, db and the different provider)
     init: function (caller) { 
         tbSync.initjobs++;
         tbSync.dump("INIT","tbSync.init() called by <" + caller + ">");
         
-        if (tbSync.initjobs > 1) {//messenger and db needs to init
+        if (tbSync.initjobs > tbSync.syncProviderList.length + 1) {//messenger and db needs to init
             //init stuff for address book
             tbSync.addressbookListener.add();
             tbSync.scanPrefIdsOfAddressBooks();
@@ -74,9 +74,23 @@ var tbSync = {
     },
 
 
+    //example async sleep function using Promise
+    sleep : function (delay) {
+        let timer =  Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
+        return new Promise(function(resolve, reject) {
+            let event = {
+                notify: function(timer) {
+                    tbSync.dump("Done with sleeping", delay);
+                    resolve();
+                }
+            }            
+            timer.initWithCallback(event,delay, Components.interfaces.nsITimer.TYPE_ONE_SHOT);
+        });
+    },
+    
 
     // SYNC MANAGEMENT
-    syncProviderObj : {},
+    syncDataObj : {},
 
     //used by UI to find out, if this account is beeing synced - TODO check/use local syncqeue for specific job?
     isSyncing: function (account) {
@@ -84,25 +98,27 @@ var tbSync = {
         return (state != "accountdone" && state != "");
     },
     
-    prepareSyncProviderObj: function (account, forceResetOfSyncData = false) {
-        if (!tbSync.syncProviderObj.hasOwnProperty(account)) {
-            tbSync.syncProviderObj[account] = new tbSync[tbSync.db.getAccountSetting(account, "provider") + "_obj"];            
+    prepareSyncDataObj: function (account, forceResetOfSyncData = false) {
+        if (!tbSync.syncDataObj.hasOwnProperty(account)) {
+            tbSync.syncDataObj[account] = new Object();          
         }
         
         if (forceResetOfSyncData) {
-            tbSync.syncProviderObj[account].syncdata = {};
+            tbSync.syncDataObj[account] = {};
+            tbSync.syncDataObj[account].account = account;
         }
+
     },
     
     getSyncData: function (account, field = "") {
-        tbSync.prepareSyncProviderObj(account);
+        tbSync.prepareSyncDataObj(account);
         if (field == "") {
             //return entire syncdata obj
-            return tbSync.syncProviderObj[account].syncdata;
+            return tbSync.syncDataObj[account];
         } else {
             //return the reqested field with fallback value
-            if (tbSync.syncProviderObj[account].syncdata.hasOwnProperty(field)) {
-                return tbSync.syncProviderObj[account].syncdata[field];
+            if (tbSync.syncDataObj[account].hasOwnProperty(field)) {
+                return tbSync.syncDataObj[account][field];
             } else {
                 return "";
             }
@@ -110,8 +126,8 @@ var tbSync = {
     },
         
     setSyncData: function (account, field, value) {
-        tbSync.prepareSyncProviderObj(account);
-        tbSync.syncProviderObj[account].syncdata[field] = value;
+        tbSync.prepareSyncDataObj(account);
+        tbSync.syncDataObj[account][field] = value;
     },
 
     syncAccount: function (job, account = "", folderID = "") {
@@ -134,10 +150,9 @@ var tbSync = {
             //do not init sync if there is a sync running or account is not connected - TODO we could add the new job to the LOCAL sync queue of the sync obj.
             if (accounts.data[accountsToDo[i]].state == "disconnected" || tbSync.isSyncing(accountsToDo[i])) continue;
 
-            //create providerObj for each account (to be able to have parallel XHR)
-            tbSync.prepareSyncProviderObj(accountsToDo[i], true);
-            //call initSync of the providerObj
-            tbSync.syncProviderObj[accountsToDo[i]].initSync(job,  accountsToDo[i], folderID);
+            //create syncdata object for each account (to be able to have parallel XHR)
+            tbSync.prepareSyncDataObj(accountsToDo[i], true);
+            tbSync[tbSync.db.getAccountSetting(accountsToDo[i], "provider")].start(tbSync.getSyncData(accountsToDo[i]), job, folderID);
         }
         
     },
@@ -149,7 +164,7 @@ var tbSync = {
         if (folderID !== "") msg += ", Folder: " + tbSync.db.getFolderSetting(account, folderID, "name");
         tbSync.dump("setSyncState", msg);
 
-        if (tbSync.syncProviderObj.hasOwnProperty(account)) tbSync.syncProviderObj[account].syncdata.state = state;
+        tbSync.setSyncData(account,"state",state);
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.notifyObservers(null, "tbsync.changedSyncstate", account);
@@ -160,7 +175,7 @@ var tbSync = {
         let accounts = tbSync.db.getAccounts();
         for (let i=0; i<accounts.IDs.length; i++) {
             //reset sync objects
-            tbSync.prepareSyncProviderObj(accounts.IDs[i], true);
+            tbSync.prepareSyncDataObj(accounts.IDs[i], true);
             //set all accounts which are syncing to notsyncronized
             if (accounts.data[accounts.IDs[i]].status == "syncing") tbSync.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
 
@@ -214,7 +229,7 @@ var tbSync = {
             //MDN states, instead of checking if dir exists, just create it and catch error on exist (but it does not even throw)
             yield OS.File.makeDir(tbSync.storageDirectory);
             yield OS.File.writeAtomic(filepath, tbSync.encoder.encode(JSON.stringify(obj)), {tmpPath: filepath + ".tmp"});
-        }).then(null, Components.utils.reportError);
+        }).catch(Components.utils.reportError);
     },
     
     includeJS: function (file) {
@@ -263,7 +278,7 @@ var tbSync = {
     getLocalizedMessage: function (msg, provider = "") {
         let localized = msg;
         let parts = msg.split("::");
-        let bundle = (provider == "") ? tbSync.bundle : tbSync[provider + "_common"].bundle;
+        let bundle = (provider == "") ? tbSync.bundle : tbSync[provider].bundle;
             
         try {
             //spezial treatment of strings with :: like status.httperror::403

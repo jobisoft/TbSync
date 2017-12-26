@@ -30,6 +30,7 @@ status.wbxmlerror=Sync failed. Server responds with status <##replace##>.
 status.wbxmlmissingfield=ActiveSync protocol violation: Mandatory field <##replace##> is missing in server response.
 status.OK=Ok
 status.nolightning=Lightning Add-On not installed, calendars are not supported.
+status.javascriptError=Javascript error! Check debug log for details.
 
 status.syncing=Synchronizing ...
 status.skipped=Not yet supported, skippped

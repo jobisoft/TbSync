@@ -1,123 +1,308 @@
 "use strict";
 
-eas_obj.prototype.calendarsync_tools = {
+eas.calendarsync = {
 
-    // CALENDAR SYNC
-    offsets : null,
-    defaultUtcOffset : 0,
     //https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calAsyncUtils.jsm
 
+    start: Task.async (function* (syncdata)  {
+        // skip if lightning is not installed
+        if ("calICalendar" in Components.interfaces == false) {
+            eas.throwFinishSync("nolightning");
+        }
+        
+        // check SyncTarget
+        if (!tbSync.checkCalender(syncdata.account, syncdata.folderID)) {
+            eas.throwFinishSync("notargets");
+        }
+        
+        //get sync target of this calendar
+        syncdata.targetObj = cal.getCalendarManager().getCalendarById(tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
+        syncdata.targetId = syncdata.targetObj.id;
 
-    //EAS TimeZone data structure
-    EASTZ : {
-        buf : new DataView(new ArrayBuffer(172)),
+        syncdata.offsets = null;
+        syncdata.defaultUtcOffset = 0;
+
+        //sync
+        yield eas.calendarsync.requestRemoteChanges (syncdata); 
+        yield eas.calendarsync.sendLocalChanges (syncdata);
         
-        /* Buffer structure:
-         @000    utcOffset (4x8bit as 1xLONG)
-        
-        @004     standardName (64x8bit as 32xWCHAR)
-        @068     standardDate (16x8 as 1xSYSTEMTIME)
-        @084     standardBias (4x8bit as 1xLONG)
-        
-        @088     daylightName (64x8bit as 32xWCHAR)
-        @152    daylightDate (16x8 as 1xSTRUCT)
-        @168    daylightBias (4x8bit as 1xLONG)
-        */
-        
-        set base64 (b64) {
-            //clear buffer
-            for (let i=0; i<172; i++) this.buf.setUint8(i, 0);
-            //load content into buffer
-            let content = (b64 == "") ? "" : atob(b64);
-            for (let i=0; i<content.length; i++) this.buf.setUint8(i, content.charCodeAt(i));
-        },
-        
-        get base64 () {
-            let content = "";
-            for (let i=0; i<172; i++) content += String.fromCharCode(this.buf.getUint8(i));
-            return (btoa(content));
-        },
-        
-        getstr : function (byteoffset) {
-            let str = "";
-            //walk thru the buffer in 32 steps of 16bit (wchars)
-            for (let i=0;i<32;i++) {
-                let cc = this.buf.getUint16(byteoffset+i*2, true);
-                if (cc == 0) break;
-                str += String.fromCharCode(cc);
+        //if everything was OK, we still throw, to get into catch
+        eas.throwFinishSync("");
+    }),
+
+
+
+    
+    requestRemoteChanges: Task.async (function* (syncdata)  {
+        do {
+            tbSync.setSyncState("requestingchanges", syncdata.account, syncdata.folderID);
+
+            // BUILD WBXML
+            let wbxml = tbSync.wbxmltools.createWBXML();
+            wbxml.otag("Sync");
+                wbxml.otag("Collections");
+                    wbxml.otag("Collection");
+                        if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type);
+                        wbxml.atag("SyncKey", syncdata.synckey);
+                        wbxml.atag("CollectionId", syncdata.folderID);
+                        wbxml.atag("DeletesAsMoves", "1");
+                        //wbxml.atag("GetChanges", ""); //Not needed, as it is default
+                        wbxml.atag("WindowSize", "100");
+
+                        if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
+                            wbxml.otag("Options");
+                                wbxml.switchpage("AirSyncBase");
+                                wbxml.otag("BodyPreference");
+                                    wbxml.atag("Type", "1");
+                                wbxml.ctag();
+                                wbxml.switchpage("AirSync");
+                            wbxml.ctag();
+                        }
+
+                    wbxml.ctag();
+                wbxml.ctag();
+            wbxml.ctag();
+
+
+
+            //SEND REQUEST
+            let response = yield eas.sendRequest(wbxml.getBytes(), "Sync", syncdata);
+
+
+
+            //VALIDATE RESPONSE
+            tbSync.setSyncState("recievingchanges", syncdata.account, syncdata.folderID);
+
+            // get data from wbxml response, some servers send empty response if there are no changes, which is not an error
+            let wbxmlData = eas.getDataFromResponse(response);
+            if (wbxmlData === null) {
+                return;
             }
-            return str;
-        },
+        
+            //check status, throw on error
+            eas.checkStatus(syncdata, wbxmlData,"Sync.Collections.Collection.Status");
+            
+            //update synckey, throw on error
+            eas.updateSynckey(syncdata, wbxmlData);
 
-        setstr : function (byteoffset, str) {
-            //clear first
-            for (let i=0;i<32;i++) this.buf.setUint16(byteoffset+i*2, 0);
 
-            //add GMT Offset to string
-            if (str == "UTC") str = "(GMT+00:00) Coordinated Universal Time";
-            else {
-                //offset is just the other way around
-                let GMT = (this.calendarsync_utcOffset<0) ? "GMT+" : "GMT-";
-                let offset = Math.abs(this.calendarsync_utcOffset);
+
+            //PROCESS RESPONSE        
+            //any commands for us to work on? If we reach this point, Sync.Collections.Collection is valid, 
+            //no need to use the save getWbxmlDataField function
+            if (wbxmlData.Sync.Collections.Collection.Commands) {
+
+                //promisify calender, so it can be used together with yield
+                let pcal = cal.async.promisifyCalendar(syncdata.targetObj.wrappedJSObject);
+            
+                //looking for additions
+                let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Add);
+                for (let count = 0; count < add.length; count++) {
+
+                    let ServerId = add[count].ServerId;
+                    let data = add[count].ApplicationData;
+
+                    let foundItems = yield pcal.getItem(ServerId);
+                    if (foundItems.length == 0) { //do NOT add, if an item with that ServerId was found
+                        let newItem = cal.createEvent();
+                        eas.calendarsync.setCalendarItemFromWbxml(newItem, data, ServerId, tbSync.db.getAccountSetting(syncdata.account, "asversion"));
+                        db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "added_by_server");
+                        try {
+                            yield pcal.addItem(newItem);
+                        } catch (e) {tbSync.dump("Error during Add", e);}
+                    } else {
+                        tbSync.dump("Element exists already", ServerId); //todo
+                    }
+                }
+
+                //looking for changes
+                let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Change);
+                //inject custom change object for debug
+                //upd = JSON.parse('[{"ServerId":"2tjoanTeS0CJ3QTsq5vdNQAAAAABDdrY6Gp03ktAid0E7Kub3TUAAAoZy4A1","ApplicationData":{"DtStamp":"20171109T142149Z"}}]');
+                for (let count = 0; count < upd.length; count++) {
+
+                    let ServerId = upd[count].ServerId;
+                    let data = upd[count].ApplicationData;
+
+                    let foundItems = yield pcal.getItem(ServerId);
+                    if (foundItems.length > 0) { //only update, if an item with that ServerId was found
+                        let newItem = foundItems[0].clone();
+                        eas.calendarsync.setCalendarItemFromWbxml(newItem, data, ServerId, tbSync.db.getAccountSetting(syncdata.account, "asversion"));
+                        db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_server");
+                        yield pcal.modifyItem(newItem, foundItems[0]);
+                    } else {
+                        tbSync.dump("Element not found", ServerId); //todo
+                    }
+                }
                 
-                let m = offset % 60;
-                let h = (offset-m)/60;
-                GMT += (h<10 ? "0" :"" ) + h.toString() + ":" + (m<10 ? "0" :"" ) + m.toString();
-                str = "(" + GMT + ") " + str;
+                //looking for deletes
+                let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Delete);
+                for (let count = 0; count < del.length; count++) {
+
+                    let ServerId = del[count].ServerId;
+
+                    let foundItems = yield pcal.getItem(ServerId);
+                    if (foundItems.length > 0) { //delete item with that ServerId
+                        db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "deleted_by_server");
+                        yield pcal.deleteItem(foundItems[0]);
+                    } else {
+                        tbSync.dump("Element not found", ServerId); //todo
+                    }
+                }
+            
             }
             
-            //walk thru the buffer in steps of 16bit (wchars)
-            for (let i=0;i<str.length && i<32; i++) this.buf.setUint16(byteoffset+i*2, str.charCodeAt(i), true);
-        },
-        
-        getsystemtime : function (buf, offset) {
-            let systemtime = {
-                get wYear () { return buf.getUint16(offset + 0, true); },
-                get wMonth () { return buf.getUint16(offset + 2, true); },
-                get wDayOfWeek () { return buf.getUint16(offset + 4, true); },
-                get wDay () { return buf.getUint16(offset + 6, true); },
-                get wHour () { return buf.getUint16(offset + 8, true); },
-                get wMinute () { return buf.getUint16(offset + 10, true); },
-                get wSecond () { return buf.getUint16(offset + 12, true); },
-                get wMilliseconds () { return buf.getUint16(offset + 14, true); },
+            if (!wbxmlData.Sync.Collections.Collection.MoreAvailable) return;
+        } while (true);
+                
+    }),
 
-                set wYear (v) { buf.setUint16(offset + 0, v, true); },
-                set wMonth (v) { buf.setUint16(offset + 2, v, true); },
-                set wDayOfWeek (v) { buf.setUint16(offset + 4, v, true); },
-                set wDay (v) { buf.setUint16(offset + 6, v, true); },
-                set wHour (v) { buf.setUint16(offset + 8, v, true); },
-                set wMinute (v) { buf.setUint16(offset + 10, v, true); },
-                set wSecond (v) { buf.setUint16(offset + 12, v, true); },
-                set wMilliseconds (v) { buf.setUint16(offset + 14, v, true); },
-                };
-            return systemtime;
-        },
+
+
+
+    sendLocalChanges: Task.async (function* (syncdata)  {
+
+        //promisify calender, so it can be used together with yield
+        let pcal = cal.async.promisifyCalendar(syncdata.targetObj.wrappedJSObject);
+        let maxnumbertosend = tbSync.prefSettings.getIntPref("maxnumbertosend");
         
-        get standardDate () {return this.getsystemtime (this.buf, 68); },
-        get daylightDate () {return this.getsystemtime (this.buf, 152); },
+        //get changed items from ChangeLog
+        do {
+            tbSync.setSyncState("sendingchanges", syncdata.account, syncdata.folderID);
+            let changes = db.getItemsFromChangeLog(syncdata.targetObj.id, maxnumbertosend, "_by_user");
+            let c=0;
             
-        get utcOffset () { return this.buf.getInt32(0, true); },
-        set utcOffset (v) { this.buf.setInt32(0, v, true); },
+            // BUILD WBXML
+            let wbxml = tbSync.wbxmltools.createWBXML();
+            wbxml.otag("Sync");
+                wbxml.otag("Collections");
+                    wbxml.otag("Collection");
+                        if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type);
+                        wbxml.atag("SyncKey", syncdata.synckey);
+                        wbxml.atag("CollectionId", syncdata.folderID);
+                        wbxml.otag("Commands");
 
-        get standardBias () { return this.buf.getInt32(84, true); },
-        set standardBias (v) { this.buf.setInt32(84, v, true); },
-        get daylightBias () { return this.buf.getInt32(168, true); },
-        set daylightBias (v) { this.buf.setInt32(168, v, true); },
+                            for (let i=0; i<changes.length; i++) {
+                                //tbSync.dump("CHANGES",(i+1) + "/" + changes.length + " ("+changes[i].status+"," + changes[i].id + ")");
+                                let items = null;
+                                switch (changes[i].status) {
+
+                                    case "added_by_user":
+                                        items = yield pcal.getItem(changes[i].id);
+                                        wbxml.otag("Add");
+                                        wbxml.atag("ClientId", changes[i].id); //ClientId is an id generated by Thunderbird, which will get replaced by an id generated by the server
+                                            wbxml.otag("ApplicationData");
+                                                wbxml.append(eas.calendarsync.getWbxmlFromCalendarItem(items[0], tbSync.db.getAccountSetting(syncdata.account, "asversion")));
+                                            wbxml.ctag();
+                                        wbxml.ctag();
+                                        db.removeItemFromChangeLog(syncdata.targetObj.id, changes[i].id);
+                                        c++;
+                                        break;
+                                    
+                                    case "modified_by_user":
+                                        items = yield pcal.getItem(changes[i].id);
+                                        wbxml.otag("Change");
+                                        wbxml.atag("ServerId", changes[i].id);
+                                            wbxml.otag("ApplicationData");
+                                                wbxml.append(eas.calendarsync.getWbxmlFromCalendarItem(items[0], tbSync.db.getAccountSetting(syncdata.account, "asversion")));
+                                            wbxml.ctag();
+                                        wbxml.ctag();
+                                        db.removeItemFromChangeLog(syncdata.targetObj.id, changes[i].id);
+                                        c++;
+                                        break;
+                                    
+                                    case "deleted_by_user":
+                                        wbxml.otag("Delete");
+                                            wbxml.atag("ServerId", changes[i].id);
+                                        wbxml.ctag();
+                                        db.removeItemFromChangeLog(syncdata.targetObj.id, changes[i].id);
+                                        c++;
+                                        break;
+                                }
+                            }
+
+                        wbxml.ctag(); //Commands
+                    wbxml.ctag(); //Collection
+                wbxml.ctag(); //Collections
+            wbxml.ctag(); //Sync
+
+            //if there was not a single local change, exit
+            if (c == 0) {
+                if (changes !=0 ) tbSync.dump("noMoreChanges, but unproceccessed changes left:", changes);
+                return;
+            }
+
+
+
+            //SEND REQUEST & VALIDATE RESPONSE
+            let response = yield eas.sendRequest(wbxml.getBytes(), "Sync", syncdata);
+
+            tbSync.setSyncState("serverid", syncdata.account, syncdata.folderID);
+
+            //get data from wbxml response - TODO may it allowed to be empty?
+            let wbxmlData = eas.getDataFromResponse(response);
         
-        get standardName () {return this.getstr(4); },
-        set standardName (v) {return this.setstr(4, v); },
-        get daylightName () {return this.getstr(88); },
-        set daylightName (v) {return this.setstr(88, v); },
+            //check status
+            eas.checkStatus(syncdata, wbxmlData,"Sync.Collections.Collection.Status");
+            
+            //update synckey
+            eas.updateSynckey(syncdata, wbxmlData);
+
+
+
+            //PROCESS RESPONSE        
+            //any responses for us to work on?  If we reach this point, Sync.Collections.Collection is valid, 
+            //no need to use the save getWbxmlDataField function
+            if (wbxmlData.Sync.Collections.Collection.Responses) {                
+
+                //looking for additions (Add node contains, status, old ClientId and new ServerId)
+                let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Add);
+                for (let count = 0; count < add.length; count++) {
+                    
+                    //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
+                    eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status");
+
+                    //look for an item identfied by ClientId and update its id to the new id received from the server
+                    let foundItems = yield pcal.getItem(add[count].ClientId);
+                    
+                    if (foundItems.length > 0) {
+                        let newItem = foundItems[0].clone();
+                        newItem.id = add[count].ServerId;
+                        db.addItemToChangeLog(syncdata.targetObj.id, newItem.id, "modified_by_server");
+                        yield pcal.modifyItem(newItem, foundItems[0]);
+                    }
+                }
+
+                //looking for modifications 
+                let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
+                for (let count = 0; count < upd.length; count++) {
+                    //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
+                    eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status");
+                }
+
+                //looking for deletions 
+                let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Delete);
+                for (let count = 0; count < del.length; count++) {
+                    //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
+                    eas.checkStatus(syncdata, del[count],"Status","Sync.Collections.Collection.Responses.Delete["+count+"].Status");
+                }
+                
+            }
+        } while (true);
         
-        toString : function () { return "[" + [this.standardName, this.daylightName, this.utcOffset, this.standardBias, this.daylightBias].join("|") + "]"; }
-    },
+    }),
 
 
 
 
+
+
+    //FUNCTIONS TO ACTUALLY READ FROM AND WRITE TO CALENDAR ITEMS
     //insert data from wbxml object into a TB event item
-    setEvent: function (item, data, id, asversion) {
+    setCalendarItemFromWbxml: function (item, data, id, asversion) {
+        
         item.id = id;
+        let easTZ = new eas.TimeZoneDataStructure();
 
         if (data.Subject) item.title = xmltools.checkString(data.Subject);
         if (data.Location) item.setProperty("location", xmltools.checkString(data.Location));
@@ -133,47 +318,25 @@ eas_obj.prototype.calendarsync_tools = {
         } else {
             if (data.Body && data.Body.EstimatedDataSize > 0 && data.Body.Data) item.setProperty("description", xmltools.checkString(data.Body.Data)); //CLEAR??? DataSize>0 ??
         }
-
-        //get a list of all zones - we only do this once, we do it here to not slow down TB startup time
-        //alternativly use cal.fromRFC3339 - but this is only doing this
-        //https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calProviderUtils.jsm
-        let tzService = cal.getTimezoneService();
-        
-        if (this.offsets === null) {
-            this.offsets = {};
-            let dateTime = cal.createDateTime("20160101T000000Z"); //UTC
-
-            //find timezone based on utcOffset
-            let enumerator = tzService.timezoneIds;
-            while (enumerator.hasMore()) {
-                let id = enumerator.getNext();
-                dateTime.timezone = tzService.getTimezone(id);
-                this.offsets[dateTime.timezoneOffset/-60] = id; //in minutes
-            }
-
-            //also try default timezone
-            dateTime.timezone=cal.calendarDefaultTimezone();
-            this.defaultUtcOffset = dateTime.timezoneOffset/-60
-            this.offsets[this.defaultUtcOffset] = dateTime.timezone.tzid;
-        }
         
         //timezone
-        let utcOffset = this.defaultUtcOffset;
+        let utcOffset =eas.defaultUtcOffset;
         if (data.TimeZone) {
             //load timezone struct into EAS TimeZone object
-            this.EASTZ.base64 = data.TimeZone;
-            utcOffset = this.EASTZ.utcOffset;
-            tbSync.dump("Recieve TZ","Extracted UTC Offset: " + utcOffset + ", Guessed TimeZone: " + this.offsets[utcOffset] + ", Full Received TZ: " + this.EASTZ.toString());
+            easTZ.base64 = data.TimeZone;
+            utcOffset = easTZ.utcOffset;
+            tbSync.dump("Recieve TZ","Extracted UTC Offset: " + utcOffset + ", Guessed TimeZone: " + eas.offsets[utcOffset] + ", Full Received TZ: " + easTZ.toString());
         }
 
+        let tzService = cal.getTimezoneService();
         if (data.StartTime) {
             let utc = cal.createDateTime(data.StartTime); //format "19800101T000000Z" - UTC
-            item.startDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
+            item.startDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[utcOffset]));
         }
 
         if (data.EndTime) {
             let utc = cal.createDateTime(data.EndTime);
-            item.endDate = utc.getInTimezone(tzService.getTimezone(this.offsets[utcOffset]));
+            item.endDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[utcOffset]));
         }
 
         //stamp time cannot be set and it is not needed, an updated version is only send to the server, if there was a change, so stamp will be updated
@@ -300,95 +463,9 @@ eas_obj.prototype.calendarsync_tools = {
 
 
 
-    getTimezoneData: function (origitem) {
-        let item = origitem.clone();
-        //floating timezone cannot be converted to UTC (cause they float) - we have to overwrite it with the local timezone
-        if (item.startDate.timezone.tzid == "floating") item.startDate.timezone = cal.calendarDefaultTimezone();
-        if (item.endDate.timezone.tzid == "floating") item.endDate.timezone = cal.calendarDefaultTimezone();
-        if (item.stampTime.timezone.tzid == "floating") item.stampTime.timezone = cal.calendarDefaultTimezone();
-
-        //to get the UTC string we could use icalString (which does not work on allDayEvents, or calculate it from nativeTime)
-        item.startDate.isDate=0;
-        item.endDate.isDate=0;
-        let tz = {};
-        tz.startDateUTC = item.startDate.getInTimezone(cal.UTC()).icalString;
-        tz.endDateUTC = item.endDate.getInTimezone(cal.UTC()).icalString;
-        tz.stampTimeUTC = item.stampTime.getInTimezone(cal.UTC()).icalString;
-
-        //tbSync.quickdump("startDate", tz.startDateUTC);
-        //tbSync.quickdump("endDate", tz.endDateUTC);
-        //tbSync.quickdump("stampTime", tz.stampTimeUTC);
-            
-/*
-            item.timezoneOffset();
-            let date_utc = date;
-            equal(date_utc.hour, 15);
-            equal(date_utc.icalString, "20051113T150000Z");
-
-            let utc = cal.createDateTime();
-            equal(utc.timezone.tzid, "UTC");
-            equal(utc.clone().timezone.tzid, "UTC");
-            equal(utc.timezoneOffset, 0); 
-
-            tbSync.dump("Timezone", item.startDate.timezone);
-            tbSync.dump("Timezone", item.startDate.timezoneOffset);
-
-            let newDate = item.startDate.getInTimezone(cal.calendarDefaultTimezone());
-            tbSync.dump("Timezone", newDate.timezone);
-            tbSync.dump("Timezone", newDate.timezoneOffset);
-
-            item.timezoneOffset();
-            let date_utc = date.getInTimezone(cal.UTC());
-            equal(date_utc.hour, 15);
-            equal(date_utc.icalString, "20051113T150000Z");
-
-            let utc = cal.createDateTime();
-            equal(utc.timezone.tzid, "UTC");
-            equal(utc.clone().timezone.tzid, "UTC");
-            equal(utc.timezoneOffset, 0);
-
-            equal(cal.createDateTime("20120101T120000").compare(cal.createDateTime("20120101")), 0);
-
-            Is that really needed? For UTC all is zero, but server still does not accept...
-
-            BEGIN:VTIMEZONE
-            TZID:Europe/Berlin
-            BEGIN:DAYLIGHT
-            TZOFFSETFROM:+0100
-            TZOFFSETTO:+0200
-            TZNAME:CEST
-            DTSTART:19700329T020000
-            RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3
-            END:DAYLIGHT
-            BEGIN:STANDARD
-            TZOFFSETFROM:+0200
-            TZOFFSETTO:+0100
-            TZNAME:CET
-            DTSTART:19701025T030000
-            RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10
-            END:STANDARD
-            END:VTIMEZONE
-*/
-
-        //Clear TZ object and manually load fields from TB
-        this.EASTZ.base64 = "";
-        this.EASTZ.utcOffset = item.startDate.timezoneOffset/-60;
-        this.EASTZ.standardBias = 0;
-        this.EASTZ.daylightBias = 0;
-        this.EASTZ.standardName = item.startDate.timezone.tzid;
-        this.EASTZ.daylightName = item.startDate.timezone.tzid;
-        //this.EASTZ.standardDate
-        //this.EASTZ.daylightDate
-        
-        //tbSync.quickdump("Send EASTZ", this.EASTZ.toString());
-
-        //TimeZone
-        tz.timezone = this.EASTZ.base64;
-        return tz;
-    },
 
     //read TB event and return its data as WBXML
-    getEventApplicationDataAsWBXML: function (item, asversion) {
+    getWbxmlFromCalendarItem: function (item, asversion) {
         let wbxml = tbSync.wbxmltools.createWBXML(""); //init wbxml with "" and not with precodes
         
         /*
@@ -404,7 +481,7 @@ eas_obj.prototype.calendarsync_tools = {
         //IMPORTANT in EAS v16 it is no longer allowed to send a UID
 
         // REQUIRED FIELDS
-        let tz = this.getTimezoneData(item);
+        let tz = eas.getEasTimezoneData(item);
         wbxml.atag("TimeZone", tz.timezone);
 
         //StartTime & EndTime in UTC
@@ -537,322 +614,4 @@ eas_obj.prototype.calendarsync_tools = {
         wbxml.switchpage("AirSync");
         return wbxml.getBytes();
     }
-};
-
-
-
-
-
-
-
-
-
-    eas_obj.prototype.calendarsync_start = function () {
-        // skip if lightning is not installed
-        if ("calICalendar" in Components.interfaces == false) {
-            this.finishSync("nolightning");
-            return;
-        }
-        
-        // check SyncTarget
-        if (!tbSync.checkCalender(this.syncdata.account, this.syncdata.folderID)) {
-            this.finishSync("notargets");
-            return;
-        }
-        
-        //get sync target of this calendar
-        this.syncdata.targetObj = cal.getCalendarManager().getCalendarById(tbSync.db.getFolderSetting(this.syncdata.account, this.syncdata.folderID, "target"));
-        this.syncdata.targetId = this.syncdata.targetObj.id;
-
-        this.calendarsync_requestRemoteChanges ();
-    };
-
-
-
-
-
-
-
-
-
-
-    eas_obj.prototype.calendarsync_requestRemoteChanges = function () {
-
-        tbSync.setSyncState("requestingchanges", this.syncdata.account, this.syncdata.folderID);
-
-        // request changes
-        let wbxml = tbSync.wbxmltools.createWBXML();
-        wbxml.otag("Sync");
-            wbxml.otag("Collections");
-                wbxml.otag("Collection");
-                    if (tbSync.db.getAccountSetting(this.syncdata.account, "asversion") == "2.5") wbxml.atag("Class", this.syncdata.type);
-                    wbxml.atag("SyncKey", this.syncdata.synckey);
-                    wbxml.atag("CollectionId", this.syncdata.folderID);
-                    wbxml.atag("DeletesAsMoves", "1");
-                    //wbxml.atag("GetChanges", ""); //Not needed, as it is default
-                    wbxml.atag("WindowSize", "100");
-
-                    if (tbSync.db.getAccountSetting(this.syncdata.account, "asversion") != "2.5") {
-                        wbxml.otag("Options");
-                            wbxml.switchpage("AirSyncBase");
-                            wbxml.otag("BodyPreference");
-                                wbxml.atag("Type", "1");
-                            wbxml.ctag();
-                            wbxml.switchpage("AirSync");
-                        wbxml.ctag();
-                    }
-
-                wbxml.ctag();
-            wbxml.ctag();
-        wbxml.ctag();
-
-        this.Send(wbxml.getBytes(), this.calendarsync_processRemoteChanges.bind(this), "Sync");
-    };
-
-
-
-
-
-
-
-
-
-    eas_obj.prototype.calendarsync_processRemoteChanges = function (wbxml) {
-        tbSync.setSyncState("recievingchanges", this.syncdata.account, this.syncdata.folderID);
-
-        // get data from wbxml response, some servers send empty response if there are no changes, which is not an error
-        let wbxmlData = this.getDataFromResponse(wbxml);
-        if (wbxmlData === null) {
-            this.calendarsync_sendLocalChanges();
-            return;
-        }
-    
-        //check status
-        if (this.statusIsBad(wbxmlData,"Sync.Collections.Collection.Status")) return;
-        
-        //update synckey
-        if (this.updateSynckey(wbxmlData) === false) return;
-
-        this.calendarsync_processRemoteChangesAsync(wbxmlData).then(null, function (exception) {tbSync.dump("exception", exception); this.finishSync("js-error-in-calendarsync.processRemoteChanges")});
-    };
-
-    eas_obj.prototype.calendarsync_processRemoteChangesAsync = Task.async (function* (wbxmlData)  {
-        //any commands for us to work on? If we reach this point, Sync.Collections.Collection is valid, 
-        //no need to use the save getWbxmlDataField function
-        if (wbxmlData.Sync.Collections.Collection.Commands) {
-
-            //promisify calender, so it can be used together with yield
-            let pcal = cal.async.promisifyCalendar(this.syncdata.targetObj.wrappedJSObject);
-        
-            //looking for additions
-            let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Add);
-            for (let count = 0; count < add.length; count++) {
-
-                let ServerId = add[count].ServerId;
-                let data = add[count].ApplicationData;
-
-                let foundItems = yield pcal.getItem(ServerId);
-                if (foundItems.length == 0) { //do NOT add, if an item with that ServerId was found
-                    let newItem = cal.createEvent();
-                    this.calendarsync_tools.setEvent(newItem, data, ServerId, tbSync.db.getAccountSetting(this.syncdata.account, "asversion"));
-                    db.addItemToChangeLog(this.syncdata.targetObj.id, ServerId, "added_by_server");
-                    try {
-                        yield pcal.addItem(newItem);
-                    } catch (e) {tbSync.dump("Error during Add", e);}
-                } else {
-                    tbSync.dump("Element exists already", ServerId); //todo
-                }
-            }
-
-            //looking for changes
-            let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Change);
-            //inject custom change object for debug
-            //upd = JSON.parse('[{"ServerId":"2tjoanTeS0CJ3QTsq5vdNQAAAAABDdrY6Gp03ktAid0E7Kub3TUAAAoZy4A1","ApplicationData":{"DtStamp":"20171109T142149Z"}}]');
-            for (let count = 0; count < upd.length; count++) {
-
-                let ServerId = upd[count].ServerId;
-                let data = upd[count].ApplicationData;
-
-                let foundItems = yield pcal.getItem(ServerId);
-                if (foundItems.length > 0) { //only update, if an item with that ServerId was found
-                    let newItem = foundItems[0].clone();
-                    this.calendarsync_tools.setEvent(newItem, data, ServerId, tbSync.db.getAccountSetting(this.syncdata.account, "asversion"));
-                    db.addItemToChangeLog(this.syncdata.targetObj.id, ServerId, "modified_by_server");
-                    yield pcal.modifyItem(newItem, foundItems[0]);
-                } else {
-                    tbSync.dump("Element not found", ServerId); //todo
-                }
-            }
-            
-            //looking for deletes
-            let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Delete);
-            for (let count = 0; count < del.length; count++) {
-
-                let ServerId = del[count].ServerId;
-
-                let foundItems = yield pcal.getItem(ServerId);
-                if (foundItems.length > 0) { //delete item with that ServerId
-                    db.addItemToChangeLog(this.syncdata.targetObj.id, ServerId, "deleted_by_server");
-                    yield pcal.deleteItem(foundItems[0]);
-                } else {
-                    tbSync.dump("Element not found", ServerId); //todo
-                }
-            }
-        
-        }
-
-        //If we reach this point, Sync.Collections.Collection is valid,  no need to use the save getWbxmlDataField function
-        if (wbxmlData.Sync.Collections.Collection.MoreAvailable) {
-            this.calendarsync_requestRemoteChanges();
-        } else { 
-            this.calendarsync_sendLocalChanges();
-        }
-        
-    });
-
-
-
-
-
-    eas_obj.prototype.calendarsync_sendLocalChanges = function () {
-        tbSync.setSyncState("sendingchanges", this.syncdata.account, this.syncdata.folderID);
-        this.calendarsync_sendLocalChangesAsync().then(null, function (exception) {tbSync.dump("exception", exception); this.finishSync("js-error-in-calendarsync.sendLocalChanges")});
-    };
-
-    eas_obj.prototype.calendarsync_sendLocalChangesAsync = Task.async (function* () {
-        //promisify calender, so it can be used together with yield
-        let pcal = cal.async.promisifyCalendar(this.syncdata.targetObj.wrappedJSObject);
-
-        let c = 0;
-        let maxnumbertosend = tbSync.prefSettings.getIntPref("maxnumbertosend");
-        
-        //get changed items from ChangeLog
-        let changes = db.getItemsFromChangeLog(this.syncdata.targetObj.id, maxnumbertosend, "_by_user");
-
-        let wbxml = tbSync.wbxmltools.createWBXML();
-        wbxml.otag("Sync");
-            wbxml.otag("Collections");
-                wbxml.otag("Collection");
-                    if (tbSync.db.getAccountSetting(this.syncdata.account, "asversion") == "2.5") wbxml.atag("Class", this.syncdata.type);
-                    wbxml.atag("SyncKey", this.syncdata.synckey);
-                    wbxml.atag("CollectionId", this.syncdata.folderID);
-                    wbxml.otag("Commands");
-
-                        for (let i=0; i<changes.length; i++) {
-                            //tbSync.dump("CHANGES",(i+1) + "/" + changes.length + " ("+changes[i].status+"," + changes[i].id + ")");
-                            let items = null;
-                            switch (changes[i].status) {
-
-                                case "added_by_user":
-                                    items = yield pcal.getItem(changes[i].id);
-                                    wbxml.otag("Add");
-                                    wbxml.atag("ClientId", changes[i].id); //ClientId is an id generated by Thunderbird, which will get replaced by an id generated by the server
-                                        wbxml.otag("ApplicationData");
-                                            wbxml.append(this.calendarsync_tools.getEventApplicationDataAsWBXML(items[0], tbSync.db.getAccountSetting(this.syncdata.account, "asversion")));
-                                        wbxml.ctag();
-                                    wbxml.ctag();
-                                    db.removeItemFromChangeLog(this.syncdata.targetObj.id, changes[i].id);
-                                    c++;
-                                    break;
-                                
-                                case "modified_by_user":
-                                    items = yield pcal.getItem(changes[i].id);
-                                    wbxml.otag("Change");
-                                    wbxml.atag("ServerId", changes[i].id);
-                                        wbxml.otag("ApplicationData");
-                                            wbxml.append(this.calendarsync_tools.getEventApplicationDataAsWBXML(items[0], tbSync.db.getAccountSetting(this.syncdata.account, "asversion")));
-                                        wbxml.ctag();
-                                    wbxml.ctag();
-                                    db.removeItemFromChangeLog(this.syncdata.targetObj.id, changes[i].id);
-                                    c++;
-                                    break;
-                                
-                                case "deleted_by_user":
-                                    wbxml.otag("Delete");
-                                        wbxml.atag("ServerId", changes[i].id);
-                                    wbxml.ctag();
-                                    db.removeItemFromChangeLog(this.syncdata.targetObj.id, changes[i].id);
-                                    c++;
-                                    break;
-                            }
-                        }
-
-                    wbxml.ctag(); //Commands
-                wbxml.ctag(); //Collection
-            wbxml.ctag(); //Collections
-        wbxml.ctag(); //Sync
-
-        if (c == 0) {
-            this.finishSync();
-        } else {
-            this.Send(wbxml.getBytes(), this.calendarsync_processLocalChangesResponse.bind(this), "Sync"); 
-        }
-
-    });
-
-
-
-
-
-    eas_obj.prototype.calendarsync_processLocalChangesResponse = function (wbxml) {
-        tbSync.setSyncState("serverid", this.syncdata.account, this.syncdata.folderID);
-
-        //get data from wbxml response, check for empty response, which is not an error
-        let wbxmlData = this.getDataFromResponse(wbxml);
-        if (wbxmlData === null) {
-            this.calendarsync_sendLocalChanges(); //again, until we no longer get here
-            return;
-        }
-    
-        //check status
-        if (this.statusIsBad(wbxmlData,"Sync.Collections.Collection.Status")) return;
-        
-        //update synckey
-        if (this.updateSynckey(wbxmlData) === false) return;
-        
-        //any responses for us to work on?  If we reach this point, Sync.Collections.Collection is valid, 
-        //no need to use the save getWbxmlDataField function
-        if (wbxmlData.Sync.Collections.Collection.Responses) {                
-            this.calendarsync_processLocalChangesResponseAsync(wbxmlData).then(this.calendarsync_sendLocalChanges(), function (exception) {tbSync.dump("exception", exception); this.finishSync("js-error-in-calendarsync.processLocalChangesResponse")});            
-        } else {
-            this.calendarsync_sendLocalChanges(); //again, until we no longer get here
-        }
-    };
-
-    eas_obj.prototype.calendarsync_processLocalChangesResponseAsync = Task.async (function* (wbxmlData) {
-        //promisify calender, so it can be used together with yield
-        let pcal = cal.async.promisifyCalendar(this.syncdata.targetObj.wrappedJSObject);
-
-        //looking for additions (Add node contains, status, old ClientId and new ServerId)
-        let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Add);
-        for (let count = 0; count < add.length; count++) {
-            
-            //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-            if (this.statusIsBad(add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status")) return;
-
-            //look for an item identfied by ClientId and update its id to the new id received from the server
-            let foundItems = yield pcal.getItem(add[count].ClientId);
-            
-            if (foundItems.length > 0) {
-                let newItem = foundItems[0].clone();
-                newItem.id = add[count].ServerId;
-                db.addItemToChangeLog(this.syncdata.targetObj.id, newItem.id, "modified_by_server");
-                yield pcal.modifyItem(newItem, foundItems[0]);
-            }
-        }
-
-        //looking for modifications 
-        let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
-        for (let count = 0; count < upd.length; count++) {
-            //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-            if (this.statusIsBad(upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status")) return;
-        }
-
-        //looking for deletions 
-        let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Delete);
-        for (let count = 0; count < del.length; count++) {
-            //Check Status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-            if (this.statusIsBad(del[count],"Status","Sync.Collections.Collection.Responses.Delete["+count+"].Status")) return;
-        }
-        
-    });
+}

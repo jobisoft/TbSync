@@ -278,7 +278,7 @@ var db = {
             //finish async init by calling main init()
             tbSync.init("db");
             
-        }).then(null, Components.utils.reportError);
+        }).catch(Components.utils.reportError);
 
     },
 

@@ -44,7 +44,7 @@ var tbSyncAccountManager = {
             
             if (confirm(tbSync.getLocalizedMessage("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
                 //disconnect (removes ab, triggers changelog cleanup) 
-                tbSync[tbSync.db.getAccountSetting(accountsList.selectedItem.value, "provider") + "_common"].disconnectAccount(accountsList.selectedItem.value);
+                tbSync[tbSync.db.getAccountSetting(accountsList.selectedItem.value, "provider")].disconnectAccount(accountsList.selectedItem.value);
                 //delete account from db
                 tbSync.db.removeAccount(accountsList.selectedItem.value);
 
