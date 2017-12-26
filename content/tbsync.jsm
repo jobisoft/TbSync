@@ -105,9 +105,9 @@ var tbSync = {
         
         if (forceResetOfSyncData) {
             tbSync.syncDataObj[account] = {};
-            tbSync.syncDataObj[account].account = account;
         }
-
+	
+	tbSync.syncDataObj[account].account = account;
     },
     
     getSyncData: function (account, field = "") {
@@ -152,7 +152,7 @@ var tbSync = {
 
             //create syncdata object for each account (to be able to have parallel XHR)
             tbSync.prepareSyncDataObj(accountsToDo[i], true);
-            tbSync[tbSync.db.getAccountSetting(accountsToDo[i], "provider")].start(tbSync.getSyncData(accountsToDo[i]), job, folderID);
+            tbSync[tbSync.db.getAccountSetting(accountsToDo[i], "provider")].start(tbSync.getSyncData(accountsToDo[i]), false, job, folderID);
         }
         
     },
@@ -176,7 +176,7 @@ var tbSync = {
         for (let i=0; i<accounts.IDs.length; i++) {
             //reset sync objects
             tbSync.prepareSyncDataObj(accounts.IDs[i], true);
-            //set all accounts which are syncing to notsyncronized
+            //set all accounts which are syncing to notsyncronized 
             if (accounts.data[accounts.IDs[i]].status == "syncing") tbSync.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
 
             // set each folder with PENDING status to ABORTED
@@ -190,29 +190,6 @@ var tbSync = {
         }
     },
 
-    finishAccountSync: function (account) {
-        // set each folder with PENDING status to ABORTED
-        let folders = tbSync.db.findFoldersWithSetting("status", "pending", account);
-        for (let i=0; i < folders.length; i++) {
-            tbSync.db.setFolderSetting(account, folders[i].folderID, "status", "aborted");
-        }
-
-        //update account status
-        tbSync.db.setAccountSetting(account, "lastsynctime", Date.now());
-        
-        //if global status is OK, scan all folders of this account and check if any of them is not ok, set global status
-        if (tbSync.db.getAccountSetting(account, "status") == "syncing") {
-            let status = "OK";
-            folders = tbSync.db.findFoldersWithSetting("selected", "1", account);
-            for (let i=0; i < folders.length && status == "OK"; i++) {
-                if (folders[i].status != "OK") status = "notsyncronized";
-            }
-            tbSync.db.setAccountSetting(account, "status", status);
-        }
-
-        //done
-        tbSync.setSyncState("accountdone", account); 
-    },
 
 
 

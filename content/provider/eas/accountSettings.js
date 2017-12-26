@@ -279,6 +279,10 @@ var tbSyncAccountSettings = {
     getTypeImage: function (type) {
         let src = ""; 
         switch (type) {
+            case "7":
+            case "15":
+                src = "todo16.png";
+                break;
             case "8":
             case "13":
                 src = "calendar16.png";
@@ -333,7 +337,7 @@ var tbSyncAccountSettings = {
         let lastCheckedEntry = null;
 
         for (let i = folderIDs.length-1; i >= 0; i--) {
-            if (["8","9","13","14"].indexOf(folders[folderIDs[i]].type) != -1 && (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID) || !hideTrashedFolders)) { 
+            if (["8","9","7","13","14","15"].indexOf(folders[folderIDs[i]].type) != -1 && (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID) || !hideTrashedFolders)) { 
                 let selected = (folders[folderIDs[i]].selected == "1");
                 let type = folders[folderIDs[i]].type;
                 let status = (selected) ? folders[folderIDs[i]].status : "";
@@ -345,7 +349,7 @@ var tbSyncAccountSettings = {
                     switch (status) {
                         case "OK":
                         case "modified":
-                            if (type == "8" || type == "13") {
+                            if (type == "7" || type == "15" || type == "8" || type == "13") {
                                 if ("calICalendar" in Components.interfaces) status = tbSync.getLocalizedMessage("status." + status) + ": "+ tbSync.getCalendarName(folders[folderIDs[i]].target);
                                 else status = tbSync.getLocalizedMessage("status.nolightning");
                             }
@@ -474,7 +478,7 @@ var tbSyncAccountSettings = {
                         let status = tbSync.db.getAccountSetting(account, "status");
                         switch (status) {
                             case "401":
-                                window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.db.getAccount(account), function() {tbSync.syncAccount("resync", account);});
+                                window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.db.getAccount(account), function() {tbSync.syncAccount("sync", account);});
                                 break;
                             case "OK":
                             case "notsyncronized":

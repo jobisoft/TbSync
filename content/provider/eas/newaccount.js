@@ -280,7 +280,7 @@ var tbSyncEasNewAccount = {
         else accountdata.https = "0";
 
         let c = commands.split(",");
-        if (c.indexOf("Provision") > -1) accountdata.provision = "1";
+        if (c.indexOf("Provision") > -1) accountdata.provision = "0"; //we no longer enable provision by default, the server will ask us if it is needed
         else accountdata.provision = "0";
         
         tbSyncEasNewAccount.addAccount(accountdata, password, tbSync.getLocalizedMessage("info.AutodiscoverOk","eas"));

@@ -5,15 +5,15 @@ tbSync.includeJS("chrome://tbsync/content/provider/eas/xmltools.js");
 
 var eas = {
     bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tbsync/locale/eas.strings"),
+    resync : Object.freeze({nothing: 0, account: 1, folder: 2}),
     
     onload: function () {
 
         //get a list of all zones
         //alternativly use cal.fromRFC3339 - but this is only doing this
         //https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calProviderUtils.jsm
-        let tzService = cal.getTimezoneService();
-        
         eas.offsets = {};
+        let tzService = cal.getTimezoneService();
         let dateTime = cal.createDateTime("20160101T000000Z"); //UTC
 
         //find timezone based on utcOffset
@@ -27,103 +27,114 @@ var eas = {
         //also try default timezone
         dateTime.timezone=cal.calendarDefaultTimezone();
         eas.defaultUtcOffset = dateTime.timezoneOffset/-60
-        eas.offsets[this.defaultUtcOffset] = dateTime.timezone.tzid;
+        eas.offsets[eas.defaultUtcOffset] = dateTime.timezone.tzid;
 
         //finish init by calling main init()
         tbSync.init("eas");
     },
 
-    start: Task.async (function* (syncdata, job, folderID = "")  {
-        try {
+    start: Task.async (function* (syncdata, fResync, job, folderID = "")  {
+        //set syncdata for this sync process (reference from outer object)
+        syncdata.state = "";
+        syncdata.folderID = folderID;
+        syncdata.fResync = fResync;
+        syncdata.numberOfSync = 0;
         
-            //store  current value of numberOfResync - TODO
-            let numberOfResync = syncdata.numberOfResync;
-            
-            //set syncdata for this sync process (reference from outer object)
-            syncdata.folderID = folderID;
-            syncdata.fResync = false;
-            syncdata.state = "";
+        do {
+            try {
+                syncdata.numberOfSync++;
 
-            // set status to syncing (so settingswindow will display syncstates instead of status) and set initial syncstate
-            tbSync.db.setAccountSetting(syncdata.account, "status", "syncing");
-            tbSync.setSyncState("syncing", syncdata.account);
+                // set status to syncing (so settingswindow will display syncstates instead of status) and set initial syncstate
+                tbSync.db.setAccountSetting(syncdata.account, "status", "syncing");
+                tbSync.setSyncState("syncing", syncdata.account);
 
-            // check if connected
-            if (tbSync.db.getAccountSetting(syncdata.account, "state") == "disconnected") { //allow connected
-                eas.throwFinishSync("notconnected");
-            }
+                if (syncdata.numberOfSync > 4) {
+                    throw eas.finishSync("resync-loop");
+                }
 
-            // check if connection has data
-            let connection = tbSync.eas.getConnection(syncdata.account);
-            if (connection.server == "" || connection.user == "") {
-                eas.throwFinishSync("nouserhost");
-            }
+                // check if connected
+                if (tbSync.db.getAccountSetting(syncdata.account, "state") == "disconnected") {
+                    throw eas.finishSync("notconnected");
+                }
 
-            if (job == "resync") syncdata.numberOfResync = numberOfResync + 1;
-            else syncdata.numberOfResync = 0;
+                // check if connection has data
+                let connection = tbSync.eas.getConnection(syncdata.account);
+                if (connection.server == "" || connection.user == "") {
+                    throw eas.finishSync("nouserhost");
+                }
 
-            if (syncdata.numberOfResync > 3) {
-                eas.throwFinishSync("resync-loop");
-                return;
-            }
-            
-            switch (job) {
-                case "resync":
-                    syncdata.fResync = true;
+                if (syncdata.fResync) {
                     tbSync.db.setAccountSetting(syncdata.account, "policykey", 0);
 
                     //if folderID present, resync only that one folder, otherwise all folders
-                    if (folderID !== "") {
-                        tbSync.db.setFolderSetting(syncdata.account, folderID, "synckey", "");
+                    if (syncdata.folderID !== "") {
+                        tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", "");
                     } else {
                         tbSync.db.setAccountSetting(syncdata.account, "foldersynckey", "");
                         tbSync.db.setFolderSetting(syncdata.account, "", "synckey", "");
                     }
-                    
-                case "sync":
-                    //do we need to get a policy key?
-                    if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1" && tbSync.db.getAccountSetting(syncdata.account, "policykey") == 0) {
-                        yield eas.getPolicykey(syncdata);
-                    } 
-                    //get all folders, which need to be synced
-                    yield eas.getPendingFolders(syncdata);
-                    //sync all pending folders
-                    yield eas.syncPendingFolders(syncdata); //inside here we throw and catch FinischFolderSync
-                    //finish account sync
-                    eas.throwFinishSync();
-                    break;
-                    
-                case "deletefolder":
+                }
+                
+                switch (job) {
+                    case "sync":
+                        //do we need to get a policy key?
+                        if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1" && tbSync.db.getAccountSetting(syncdata.account, "policykey") == 0) {
+                            yield eas.getPolicykey(syncdata);
+                        } 
+                        //get all folders, which need to be synced
+                        yield eas.getPendingFolders(syncdata);
+                        //sync all pending folders
+                        yield eas.syncPendingFolders(syncdata); //inside here we throw and catch FinischFolderSync
+                        throw eas.finishSync();
+                        break;
+                        
+                    case "deletefolder":
                         yield eas.deleteFolder(syncdata);
-                    break;
+                        throw eas.finishSync();
+                        break;
+                        
+                    default:
+                        throw eas.finishSync("unknown");
+
+                }
+
+            } catch (report) { 
+
+                if (report.type && report.type == "throwFinishSync") {
+                    if (report.resync == eas.resync.account || report.resync == eas.resync.folder ) {
+                        if (report.resync == eas.resync.account) syncdata.folderID = ""; 
+                        syncdata.fResync = true;
+                        tbSync.dump("ReSync", "Account: " + tbSync.db.getAccountSetting(syncdata.account, "accountname") + ", Folder: "+syncdata.folderID + ", Reason: " + report.message);
+                        continue;
+                    }
+                    eas.finishAccountSync(syncdata, report.message);
+                    
+                } else {
+                    //there was some other error
+                    Components.utils.reportError(report);
+                    eas.finishAccountSync(syncdata, "javascriptError");
+                }
+                return;
+
             }
 
-        } catch (report) { 
+        } while (true);
 
-            //if any of the above sync step functions decided "sync is done", we simply throw a special error, which gets
-            //caught here
-            if (report.type && report.type == "throwFinishSync") {
-                tbSync.finishAccountSync(syncdata.account);
-            } else {
-                //there was some other error
-                Components.utils.reportError(report);
-            }
-
-        }
         
     }),
 
     //Process all folders with PENDING status
     syncPendingFolders: Task.async (function* (syncdata)  {
         do {            
+            //any pending folders left?
             let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
-            if (folders.length == 0 || tbSync.db.getAccountSetting(syncdata.account, "status") != "syncing") { //TODO status should be syncing!!!
-                //all folders of this account have been synced, or there was an error
+            if (folders.length == 0) {
+                //all folders of this account have been synced
                 return;
             };
 
-            //The individual folder sync is placed inside a try ... catch block, if a folder sync has to be aborted for some reason, a throwFinishSync error is thrown
-            //and catched here and the next folder can be synced.  The same error is thrown outside of this function, but is used to finish the sync of the entire account
+            //The individual folder sync is placed inside a try ... catch block. If a folder sync has finished, a throwFinishSync error is thrown
+            //and catched here. If that error has a message attached, it ist re-thrown to the main account sync loop, which will abort sync completely
             try {
                 syncdata.synckey = folders[0].synckey;
                 syncdata.folderID = folders[0].folderID;
@@ -136,9 +147,12 @@ var eas = {
                     case "13":
                         syncdata.type = "Calendar";
                         break;
+                    case "7":
+                    case "15":
+                        syncdata.type = "Tasks";
+                        break;
                     default:
-                        eas.throwFinishSync("skipped");
-                        return;
+                        throw eas.finishSync("skipped");
                 };
                 
                 tbSync.setSyncState("preparing", syncdata.account, syncdata.folderID);
@@ -154,7 +168,11 @@ var eas = {
                 switch (syncdata.type) {
                     case "Contacts": 
                         //yield eas.contactsync.start(syncdata);
-                        eas.throwFinishSync("skipped");
+                        throw eas.finishSync("skipped");
+                        break;
+                    case "Tasks": 
+                        //yield eas.tasksync.start(syncdata);
+                        throw eas.finishSync("skipped");
                         break;
                     case "Calendar":
                         yield eas.calendarsync.start(syncdata);
@@ -162,13 +180,16 @@ var eas = {
 
             } catch (report) { 
 
-                //if any of the above sync step functions decided "sync is done", we simply throw a special error, which gets
-                //caught here
                 if (report.type && report.type == "throwFinishSync") {
-                    eas.finishSync(report.message, syncdata);
+                    eas.finishFolderSync(syncdata, report.message);
+                    //if there was a fatal error during folder sync, re-throw error to finish account sync
+                    if (report.message && report.message != "skipped") throw eas.finishSync(report.message);
                 } else {
                     Components.utils.reportError(report);
-                    eas.finishSync("javascriptError", syncdata);
+                    let msg = "javascriptError";
+                    eas.finishFolderSync(syncdata, msg);
+                    //this is a fatal error, re-throw error to finish account sync
+                    throw eas.finishSync(msg);
                 }
 
             }
@@ -196,45 +217,38 @@ var eas = {
             tbSync.setSyncState("requestingprovision", syncdata.account); 
             let response = yield eas.sendRequest(wbxml.getBytes(), "Provision", syncdata);
             let wbxmlData = eas.getDataFromResponse(response);
-            
-            //HORDE hack, or at least, this is not standard protocol: Horde returns provision status 1, but no synkey with policy status 2 and expects client to go on without provision.
-            //Provision status is 1 -> OK (no error message)
-            //Policy status is 1 or 2 -> OK (no error message)
-            //1: use policykey (abort if missing)
-            //2: go on without provision
-            
+                        
             let policyStatus = xmltools.getWbxmlDataField(wbxmlData,"Provision.Policies.Policy.Status");
             let provisionStatus = xmltools.getWbxmlDataField(wbxmlData,"Provision.Status");
             if (provisionStatus === false) {
-                eas.throwFinishSync("wbxmlmissingfield::Provision.Status");
+                throw eas.finishSync("wbxmlmissingfield::Provision.Status");
             } else if (provisionStatus != "1") {
                 //dump policy status as well
                 if (policyStatus) tbSync.dump("PolicyKey","Received policy status: " + policyStatus);
-                eas.throwFinishSync("provision::" + provisionStatus);
+                throw eas.finishSync("provision::" + provisionStatus);
             }
 
             //reaching this point: provision status was ok
             let policykey = xmltools.getWbxmlDataField(wbxmlData,"Provision.Policies.Policy.PolicyKey");
-            tbSync.dump("PolicyKey","Received policykey (" + loop + "): " + policykey);
             switch (policyStatus) {
                 case false:
-                    eas.throwFinishSync("wbxmlmissingfield::Provision.Policies.Policy.Status");
+                    throw eas.finishSync("wbxmlmissingfield::Provision.Policies.Policy.Status");
 
                 case "2":
-                    //skip provisioning - we could also disable provisioning altogether, but that would alter the config and we could no longer get provision, if the server ever activates a provision for us
-                    tbSync.dump("PolicyKey","Skipping provision, server does not have a policy for this client");
-                    tbSync.db.setAccountSetting(syncdata.account, "policykey", "0");
-                    return;
+                    //server does not have a policy for this device: disable provisioning
+                    tbSync.db.setAccountSetting(syncdata.account, "provision","0")
+                    throw eas.finishSync("noPolicyForThisDevice", eas.resync.account);
 
                 case "1":
                     if (policykey === false) {
-                        eas.throwFinishSync("wbxmlmissingfield::Provision.Policies.Policy.PolicyKey");
+                        throw eas.finishSync("wbxmlmissingfield::Provision.Policies.Policy.PolicyKey");
                     } 
+                    tbSync.dump("PolicyKey","Received policykey (" + loop + "): " + policykey);
                     tbSync.db.setAccountSetting(syncdata.account, "policykey", policykey);
                     break;
 
                 default:
-                    eas.throwFinishSync("policy." + policyStatus);
+                    throw eas.finishSync("policy." + policyStatus);
             }
 
             //build WBXML to acknowledge provision
@@ -282,7 +296,7 @@ var eas = {
             if (synckey) {
                 tbSync.db.setAccountSetting(syncdata.account, "foldersynckey", synckey);
             } else {
-                eas.throwFinishSync("wbxmlmissingfield::FolderSync.SyncKey");
+                throw eas.finishSync("wbxmlmissingfield::FolderSync.SyncKey");
             }
             
             //if we reach this point, wbxmlData contains FolderSync node, so the next if will not fail with an javascript error, 
@@ -309,7 +323,7 @@ var eas = {
                         newData.parentID = add[count].ParentId;
                         newData.synckey = "";
                         newData.target = "";
-                        newData.selected = (newData.type == "9" || newData.type == "8" ) ? "1" : "0";
+                        newData.selected = (newData.type == "9" || newData.type == "8" || newData.type == "7" ) ? "1" : "0";
                         if (tbSync.eas.parentIsTrash(syncdata.account, newData.parentID)) newData.selected = ""; //trashed folders cannot be synced                    
                         newData.status = "";
                         newData.lastsynctime = "";
@@ -451,14 +465,15 @@ var eas = {
         eas.updateSynckey(syncdata, wbxmlData);
     }),
 
-    throwFinishSync: function (msg = "") {
+    finishSync: function (msg = "", resync = "") {
         var e = new Error(); 
         e.type = "throwFinishSync";
         e.message = msg;
-        throw e; 
+        e.resync = resync;
+        return e; 
     },
-    
-    finishSync: function (error, syncdata) {
+
+    finishFolderSync: function (syncdata, error) {
         //a folder has been finished, update status
         let time = Date.now();
         let status = "OK";
@@ -468,13 +483,11 @@ var eas = {
             info += "." + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name");
         }
         
-        if (error !== "" && error != "skipped") {
+        if (error !== "") {
             status = error;
             time = "";
-            //setting a status on the account will overwrite syncing status, which will abort syncing on nextFolder
-            tbSync.db.setAccountSetting(syncdata.account, "status", status);
         }
-        tbSync.dump("finishSync(" + info + ")", tbSync.getLocalizedMessage("status." + status));
+        tbSync.dump("finishFolderSync(" + info + ")", tbSync.getLocalizedMessage("status." + status));
         
         if (syncdata.folderID != "") {
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", status);
@@ -484,6 +497,24 @@ var eas = {
         tbSync.setSyncState("done", syncdata.account);
     },
 
+    finishAccountSync: function (syncdata, error) {
+        let status = "OK";
+
+        // set each folder with PENDING status to ABORTED
+        let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
+        for (let i=0; i < folders.length; i++) {
+            tbSync.db.setFolderSetting(syncdata.account, folders[i].folderID, "status", "aborted");
+        }
+
+        //update account status
+        if (error !== "") status = error;
+        tbSync.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
+        tbSync.db.setAccountSetting(syncdata.account, "status", status);
+
+        //done
+        tbSync.setSyncState("accountdone", syncdata.account); 
+    },
+    
     updateSynckey: function (syncdata, wbxmlData) {
         let synckey = xmltools.getWbxmlDataField(wbxmlData,"Sync.Collections.Collection.SyncKey");
 
@@ -491,14 +522,14 @@ var eas = {
             syncdata.synckey = synckey;
             db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", synckey);
         } else {
-            eas.throwFinishSync("wbxmlmissingfield::Sync.Collections.Collection.SyncKey");
+            throw eas.finishSync("wbxmlmissingfield::Sync.Collections.Collection.SyncKey");
         }
     },
 
 
     deleteFolder: Task.async (function* (syncdata)  {
         if (syncdata.folderID == "") {
-            eas.throwFinishSync();
+            throw eas.finishSync();
         } 
         
         tbSync.setSyncState("deletingfolder", syncdata.account); 
@@ -521,14 +552,14 @@ var eas = {
         let synckey = xmltools.getWbxmlDataField(wbxmlData,"FolderDelete.SyncKey");
         if (synckey) {
             tbSync.db.setAccountSetting(syncdata.account, "foldersynckey", synckey);
-            eas.throwFinishSync();
             //this folder is not synced, no target to take care of, just remove the folder
             tbSync.db.deleteFolder(syncdata.account, syncdata.folderID);
             //update manager gui / folder list
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
             observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", syncdata.account);
+            throw eas.finishSync();
         } else {
-            eas.throwFinishSync("wbxmlmissingfield::FolderDelete.SyncKey");
+            throw eas.finishSync("wbxmlmissingfield::FolderDelete.SyncKey");
         }
     }),
 
@@ -873,8 +904,8 @@ var eas = {
             if (str == "UTC") str = "(GMT+00:00) Coordinated Universal Time";
             else {
                 //offset is just the other way around
-                let GMT = (this.calendarsync_utcOffset<0) ? "GMT+" : "GMT-";
-                let offset = Math.abs(this.calendarsync_utcOffset);
+                let GMT = (this.utcOffset<0) ? "GMT+" : "GMT-";
+                let offset = Math.abs(this.utcOffset);
                 
                 let m = offset % 60;
                 let h = (offset-m)/60;
@@ -1058,15 +1089,15 @@ var eas = {
             syncdata.req.timeout = 30000;
 
             syncdata.req.ontimeout = function () {
-                eas.throwFinishSync("timeout");
+                reject(eas.finishSync("timeout"));
             };
 
             syncdata.req.onerror = function () {
                 let error = tbSync.eas.createTCPErrorFromFailedXHR(syncdata.req);
                 if (!error) {
-                    eas.throwFinishSync("networkerror");
+                    reject(eas.finishSync("networkerror"));
                 } else {
-                    eas.throwFinishSync(error);
+                    reject(eas.finishSync(error));
                 }
             };
 
@@ -1082,22 +1113,19 @@ var eas = {
                             tbSync.dump("Recieved Data", "Expecting WBXML but got - " + response + ", request status = " + syncdata.req.status + ", ready state = " + syncdata.req.readyState);
                             //Freenet.de hack - if we got back junk, the password is probably wrong. we need to stop anyhow, due to this error
                             tbSync.dump("Recieved Data", "We got back junk, which *could* mean, the password is wrong. Prompting.");
-                            eas.throwFinishSync(401);
+                            reject(eas.finishSync(401));
                         } else {
-                             resolve(response);
+                            resolve(response);
                         }
                         break;
 
                     case 401: // AuthError
-                        eas.throwFinishSync(syncdata.req.status);
+                        reject(eas.finishSync(syncdata.req.status));
                         break;
 
-                    case 449: // Request for new provision
-                        if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1") {
-                            // TODO self.initSync("resync", syncdata.account, syncdata.folderID);
-                        } else {
-                            eas.throwFinishSync(syncdata.req.status);
-                        }
+                    case 449: // Request for new provision (enable it if needed)
+                        tbSync.db.setAccountSetting(syncdata.account, "provision","1")
+                        reject(eas.finishSync(syncdata.req.status, eas.resync.account));
                         break;
 
                     case 451: // Redirect - update host and login manager 
@@ -1111,11 +1139,11 @@ var eas = {
                         //does not affect the loginmanager - no further action needed
                         connection.host = newHost;
 
-                        // TODO self.initSync("resync", syncdata.account); //resync everything
+                        reject(eas.finishSync(syncdata.req.status, eas.resync.account));
                         break;
                         
                     default:
-                        eas.throwFinishSync("httperror::" + syncdata.req.status);
+                        reject(eas.finishSync("httperror::" + syncdata.req.status));
                 }
             };
 
@@ -1133,7 +1161,7 @@ var eas = {
         });
     },
 
-    //returns false on parse error and null on empty response
+    //returns false on parse error and null on empty response - TODO add param to allow empty or not
     getDataFromResponse: function (wbxml) {        
         //check for empty wbxml
         if (wbxml.length === 0) {
@@ -1143,8 +1171,7 @@ var eas = {
         //convert to xml and check for parse errors
         let xml = wbxmltools.convert2xml(wbxml);
         if (xml === false) {
-            eas.throwFinishSync("wbxml-parse-error");
-            return false;
+            throw eas.finishSync("wbxml-parse-error");
         }
         
         //retrieve data and check for empty data
@@ -1172,7 +1199,7 @@ var eas = {
             if (mainStatus === false) {
                 //both possible status fields are missing, report and abort
                 tbSync.dump("wbxml status", "Server response does not contain mandatory <"+fullpath+"> field . Error? Aborting Sync.");
-                eas.throwFinishSync("wbxmlmissingfield::" + fullpath);
+                throw eas.finishSync("wbxmlmissingfield::" + fullpath);
             } else {
                 //the alternative status could be extracted
                 status = mainStatus;
@@ -1194,8 +1221,7 @@ var eas = {
                         since the last successful Sync or the client MUST add those items back to the server after completing the full resynchronization
                         */
                 tbSync.dump("wbxml status", "Server reports <invalid synchronization key> (" + fullpath + " = " + status + "), resyncing.");
-                //TODO this.initSync("resync", syncdata.account, syncdata.folderID);
-                return true;
+                throw eas.finishSync(type+":"+status, eas.resync.folder);
             
             case "Sync:8": // Object not found - takeTargetOffline and remove folder
                 tbSync.dump("wbxml status", "Server reports <object not found> (" +  tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "), keeping local copy and removing folder.");
@@ -1211,27 +1237,25 @@ var eas = {
                     //folder is no longer there, unset current folder
                     syncdata.folderID = "";
                 }
-                eas.throwFinishSync();
+                throw eas.finishSync();
 
             case "Sync:12": /*
                         Perform a FolderSync command and then retry the Sync command. (is "resync" here)
                         */
                 tbSync.dump("wbxml status", "Server reports <folder hierarchy changed> (" + fullpath + " = " + status + "), resyncing");
-                // TODO this.initSync("resync", syncdata.account);
-                return true;
+                throw eas.finishSync(type+":"+status, eas.resync.account);
 
             
             case "FolderDelete:3": // special system folder - fatal error
-                eas.throwFinishSync("folderDelete.3");
+                throw eas.finishSync("folderDelete.3");
 
             case "FolderDelete:6": // error on server
-                eas.throwFinishSync("folderDelete.6");
+                throw eas.finishSync("folderDelete.6");
 
             case "FolderDelete:4": // folder does not exist - resync ( we allow delete only if folder is not subscribed )
             case "FolderDelete:9": // invalid synchronization key - resync
             case "FolderSync:9": // invalid synchronization key - resync
-                //TODO this.initSync("resync", syncdata.account);
-                return true;
+                throw eas.finishSync(type+":"+status, eas.resync.account);
         }
         
         //handle global error (https://msdn.microsoft.com/en-us/library/ee218647(v=exchg.80).aspx)
@@ -1239,15 +1263,14 @@ var eas = {
             case "101": //invalid content
             case "102": //invalid wbxml
             case "103": //invalid xml
-                eas.throwFinishSync("global." + status);
+                throw eas.finishSync("global." + status);
 
             case "110": //server error - resync
-                //TODO this.initSync("resync", syncdata.account);
-                return true;
+                throw eas.finishSync(type+":"+status, eas.resync.account);
             
             default:
                 tbSync.dump("wbxml status", "Server reports unknown status <" + fullpath + " = " + status + ">. Error? Aborting Sync.");
-                eas.throwFinishSync("wbxmlerror::" + fullpath + " = " + status);
+                throw eas.finishSync("wbxmlerror::" + fullpath + " = " + status);
 
         }		
     },
