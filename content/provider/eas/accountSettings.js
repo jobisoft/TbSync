@@ -46,7 +46,7 @@ var tbSyncAccountSettings = {
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.selectedAccount, fID, true);
 
             //only trashed folders can be purged (for example O365 does not show deleted folders but also does not allow to purge them)
-//            if (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) return;
+            if (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) return;
             
             if (folder.selected == "1") alert(tbSync.getLocalizedMessage("deletefolder.notallowed::" + folder.name,"eas"));
             else if (confirm(tbSync.getLocalizedMessage("deletefolder.confirm::" + folder.name,"eas"))) {
