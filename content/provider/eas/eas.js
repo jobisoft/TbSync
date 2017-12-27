@@ -349,7 +349,6 @@ var eas = {
                         folder.synckey = "";
                         folder.lastsynctime = "";
 
-                        //TODO yield ?
                         tbSync.db.saveFolders();
                     }
                 }
