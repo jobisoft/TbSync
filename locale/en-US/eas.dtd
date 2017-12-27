@@ -25,7 +25,7 @@
 <!ENTITY pref.never "0 for never">
 <!ENTITY pref.Sync "Synchronize now!">
 
-<!ENTITY pref.ShowTrashedFolders "Show folders found in recycle bin" >
+<!ENTITY pref.ShowTrashedFolders "Show folders found in trash" >
 
 <!ENTITY pref.syncstate "SyncStatus">
 <!ENTITY pref.seperator.comma "Comma">

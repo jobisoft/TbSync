@@ -45,6 +45,9 @@ var tbSyncAccountSettings = {
             let fID =  folderList.selectedItem.value;
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.selectedAccount, fID, true);
 
+            //only trashed folders can be purged (for example O365 does not show deleted folders but also does not allow to purge them)
+//            if (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) return;
+            
             if (folder.selected == "1") alert(tbSync.getLocalizedMessage("deletefolder.notallowed::" + folder.name,"eas"));
             else if (confirm(tbSync.getLocalizedMessage("deletefolder.confirm::" + folder.name,"eas"))) {
                 tbSync.syncAccount("deletefolder", tbSyncAccountSettings.selectedAccount, fID);
@@ -234,7 +237,7 @@ var tbSyncAccountSettings = {
                     //remove folder, which will trigger the listener in tbsync which will clean up everything
                     tbSync.eas.removeTarget(folder.target, folder.type); 
                 }
-            } else if (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) { //trashed folders cannot be selected or synced
+            } else {
                 //select and update status
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "selected", "1");
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "status", "aborted");
@@ -249,31 +252,30 @@ var tbSyncAccountSettings = {
 
     updateMenuPopup: function () {
         let folderList = document.getElementById("tbsync.accountsettings.folderlist");
+        let hideContextMenuDelete = true;
+        let hideContextMenuToggleSubscription = true;
+
         if (!folderList.disabled && folderList.selectedItem !== null && folderList.selectedItem.value !== undefined) {
             let fID =  folderList.selectedItem.value;
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.selectedAccount, fID, true);
-            if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) {// folder in recycle bin
-                document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").hidden = true;
+
+            //if any folder is selected, also show ContextMenuToggleSubscription
+            hideContextMenuToggleSubscription = false;
+            if (folder.selected == "1") {
+                document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").label = tbSync.getLocalizedMessage("subscribe.off::" + folder.name, "eas");
             } else {
-                if (folder.selected == "1") document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").label = tbSync.getLocalizedMessage("subscribe.off::" + folder.name, "eas");
-                else document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").label = tbSync.getLocalizedMessage("subscribe.on::" + folder.name, "eas");
-                document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").hidden = false;
+                document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").label = tbSync.getLocalizedMessage("subscribe.on::" + folder.name, "eas");
             }
-
-            document.getElementById("tbsync.accountsettings.ContextMenuDelete").label = tbSync.getLocalizedMessage("deletefolder.menuentry::" + folder.name, "eas");
-            document.getElementById("tbsync.accountsettings.ContextMenuDelete").hidden = false;
-
-        } else {
-            document.getElementById("tbsync.accountsettings.ContextMenuDelete").hidden = true;
-            document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").hidden = true;
+            
+            //if a folder in trash is selected, also show ContextMenuDelete
+            if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) {// folder in recycle bin
+                hideContextMenuDelete = false;
+                document.getElementById("tbsync.accountsettings.ContextMenuDelete").label = tbSync.getLocalizedMessage("deletefolder.menuentry::" + folder.name, "eas");
+            }
         }
-        document.getElementById("tbsync.accountsettings.ContextMenuTrash").setAttribute("checked",!tbSync.prefSettings.getBoolPref("hideTrashedFolders"));
-    },
-
-    toggleTrashSetting: function () {
-        let hideTrashedFolders= tbSync.prefSettings.getBoolPref("hideTrashedFolders");
-        tbSync.prefSettings.setBoolPref("hideTrashedFolders", !hideTrashedFolders);
-        tbSyncAccountSettings.updateFolderList();
+        
+        document.getElementById("tbsync.accountsettings.ContextMenuDelete").hidden = hideContextMenuDelete;
+        document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").hidden = hideContextMenuToggleSubscription;
     },
 
     getTypeImage: function (type) {
@@ -296,27 +298,21 @@ var tbSyncAccountSettings = {
     },
 
     updateFolderList: function () {
-        //show/hide trash config
-        let hideTrashedFolders = tbSync.prefSettings.getBoolPref("hideTrashedFolders");
-
         //do not update folder list, if not visible
         if (document.getElementById("tbsync.accountsettings.folders").hidden) return;
         
         let folderList = document.getElementById("tbsync.accountsettings.folderlist");
         let folders = tbSync.db.getFolders(tbSyncAccountSettings.selectedAccount);
         
-        //sorting as 8,13,9,14 (any value 12+ is custom) 
-        // 8 -> 8*2 = 16
-        // 13 -> (13-5)*2 + 1 = 17
-        // 9 -> 9*2 = 18
-        // 14 -> (14-5) * 2 + 1 = 19
-        let folderIDs = Object.keys(folders).sort((a, b) => (((folders[a].type < 12) ? folders[a].type * 2: 1+ (folders[a].type-5) * 2) - ((folders[b].type < 12) ? folders[b].type * 2: 1+ (folders[b].type-5) * 2)));
+        //sort by specified order, trashed folders are moved to the end
+        let allowedTypesOrder = ["9","14","8","13","7","15"];
+        let folderIDs = Object.keys(folders).sort((a, b) => ( (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount,folders[a].parentID) - tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount,folders[b].parentID)) || (allowedTypesOrder.indexOf(folders[a].type) - allowedTypesOrder.indexOf(folders[b].type))   ));
 
         //get current accounts in list and remove entries of accounts no longer there
         let listedfolders = [];
         for (let i=folderList.getRowCount()-1; i>=0; i--) {
             listedfolders.push(folderList.getItemAtIndex (i).value); 
-            if (folderIDs.indexOf(folderList.getItemAtIndex(i).value) == -1 || (hideTrashedFolders && tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderList.getItemAtIndex(i).value].parentID))) {
+            if (folderIDs.indexOf(folderList.getItemAtIndex(i).value) == -1) {
                 folderList.removeItemAt(i);
             }
         }
@@ -337,12 +333,12 @@ var tbSyncAccountSettings = {
         let lastCheckedEntry = null;
 
         for (let i = folderIDs.length-1; i >= 0; i--) {
-            if (["8","9","7","13","14","15"].indexOf(folders[folderIDs[i]].type) != -1 && (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID) || !hideTrashedFolders)) { 
+            if (allowedTypesOrder.indexOf(folders[folderIDs[i]].type) != -1) { 
                 let selected = (folders[folderIDs[i]].selected == "1");
                 let type = folders[folderIDs[i]].type;
                 let status = (selected) ? folders[folderIDs[i]].status : "";
                 let name = folders[folderIDs[i]].name ;
-                if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID)) name += " ("+tbSync.getLocalizedMessage("recyclebin","eas")+")";
+                if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID)) name = tbSync.getLocalizedMessage("recyclebin","eas")+" | "+name;
 		    
                 //if status OK, print target
                 if (selected) {

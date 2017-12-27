@@ -16,7 +16,6 @@
         <menupopup id="tbsync.accountsettings.ContextMenu" onpopupshowing="tbSyncAccountSettings.updateMenuPopup();">
             <menuitem id="tbsync.accountsettings.ContextMenuToggleSubscription" label="toggle" oncommand="tbSyncAccountSettings.toggleFolder();"/>
             <menuitem id="tbsync.accountsettings.ContextMenuDelete" label="delete" oncommand="tbSyncAccountSettings.deleteFolder();"/>
-            <menuitem id="tbsync.accountsettings.ContextMenuTrash" type="checkbox" label="&pref.ShowTrashedFolders;" oncommand="tbSyncAccountSettings.toggleTrashSetting();"/>
         </menupopup>
     </popupset>
 
@@ -68,7 +67,6 @@
                         </hbox>
 
                         <checkbox id="tbsync.accountsettings.https" label="&pref.usehttps;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
-                        <!--checkbox  id="tbsync.accountsettings.provision" label="&pref.UseProvisioning;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" /-->
 
                         <hbox height="24" align="center" style="margin-top:2ex" >
                             <label flex="1" class="header" value="&pref.contactoptions;"/>

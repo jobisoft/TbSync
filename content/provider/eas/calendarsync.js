@@ -24,7 +24,7 @@ eas.calendarsync = {
         yield eas.calendarsync.sendLocalChanges (syncdata);
         
         //if everything was OK, we still throw, to get into catch
-        throw eas.finishSync("");
+        throw eas.finishSync();
     }),
 
 

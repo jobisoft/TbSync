@@ -324,7 +324,6 @@ var eas = {
                         newData.synckey = "";
                         newData.target = "";
                         newData.selected = (newData.type == "9" || newData.type == "8" || newData.type == "7" ) ? "1" : "0";
-                        if (tbSync.eas.parentIsTrash(syncdata.account, newData.parentID)) newData.selected = ""; //trashed folders cannot be synced                    
                         newData.status = "";
                         newData.lastsynctime = "";
                         tbSync.db.addFolder(newData);
@@ -335,8 +334,8 @@ var eas = {
                         folder.name = add[count].DisplayName;
                         folder.parentID = add[count].ParentId;
 
-                        //check if type changed or folder got deleted
-                        if ((folder.type != add[count].Type || tbSync.eas.parentIsTrash(syncdata.account, folder.parentID)) && (folder.selected == "1" || target != "")) {
+                        //check if type changed
+                        if ((folder.type != add[count].Type) && (folder.selected == "1" || target != "")) {
                             //deselect folder
                             folder.selected = "0";
                             folder.target = "";
@@ -368,7 +367,7 @@ var eas = {
                         folder.parentID = update[count].ParentId;
                         
                         //check if type changed or folder got deleted
-                        if ((folder.type != update[count].Type || tbSync.eas.parentIsTrash(syncdata.account, folder.parentID)) && (folder.selected == "1" || target != "")) {
+                        if ((folder.type != update[count].Type) && (folder.selected == "1" || target != "")) {
                             //deselect folder
                             folder.selected = "0";                    
                             folder.target = "";                    
@@ -547,13 +546,14 @@ var eas = {
         let response = yield eas.sendRequest(wbxml.getBytes(), "FolderDelete", syncdata);
         let wbxmlData = eas.getDataFromResponse(response);
 
-        checkStatus(wbxmlData,"FolderDelete.Status", syncdata);
+        eas.checkStatus(syncdata, wbxmlData,"FolderDelete.Status");
 
         let synckey = xmltools.getWbxmlDataField(wbxmlData,"FolderDelete.SyncKey");
         if (synckey) {
             tbSync.db.setAccountSetting(syncdata.account, "foldersynckey", synckey);
             //this folder is not synced, no target to take care of, just remove the folder
             tbSync.db.deleteFolder(syncdata.account, syncdata.folderID);
+            syncdata.folderID = "";
             //update manager gui / folder list
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
             observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", syncdata.account);
