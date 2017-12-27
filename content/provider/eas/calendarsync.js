@@ -19,9 +19,6 @@ eas.calendarsync = {
         syncdata.targetObj = cal.getCalendarManager().getCalendarById(tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
         syncdata.targetId = syncdata.targetObj.id;
 
-        syncdata.offsets = null;
-        syncdata.defaultUtcOffset = 0;
-
         //sync
         yield eas.calendarsync.requestRemoteChanges (syncdata); 
         yield eas.calendarsync.sendLocalChanges (syncdata);
