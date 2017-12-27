@@ -44,17 +44,30 @@ var tbSyncMessenger = {
             if (status) {
 
                 let label = "TbSync: ";
-                
+
                 //check if any account is syncing, if not switch to idle
                 let accounts = tbSync.db.getAccounts();
                 let idle = true;
+                let err = false;
                 for (let i=0; i<accounts.IDs.length && idle; i++) {
                     let state = tbSync.getSyncData(accounts.IDs[i], "state");
                     idle = (state == "accountdone" || state == "");
+                    //check for errors
+                    switch (tbSync.db.getAccountSetting(accounts.IDs[i], "status")) {
+                        case "OK":
+                        case "notconnected":
+                        case "notsyncronized":
+                        case "nolightning":
+                        case "syncing":
+                            break;
+                        default:
+                            err = true;
+                    }
                 }
 
                 if (idle) {
-                    label += tbSync.getLocalizedMessage("syncstate.idle");   
+                    if (err) label +=tbSync.getLocalizedMessage("syncstate.error");   
+                    else label += tbSync.getLocalizedMessage("syncstate.idle");   
                     status.label = label;      
                     tbSyncMessenger.syncSteps = 0;                    
                 } else if ((Date.now() - tbSyncMessenger.statusLastUpdated) > 400) {
@@ -70,8 +83,6 @@ var tbSyncMessenger = {
                     tbSyncMessenger.statusLastUpdated = Date.now();
                     status.label = label;
                 }
-
-                //TODO check if error and print in status, so that the user can check account manager for detailed error info
             }
         }
     },
