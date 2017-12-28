@@ -71,10 +71,8 @@ eas.calendarsync = {
             tbSync.setSyncState("recievingchanges", syncdata.account, syncdata.folderID);
 
             // get data from wbxml response, some servers send empty response if there are no changes, which is not an error
-            let wbxmlData = eas.getDataFromResponse(response);
-            if (wbxmlData === null) {
-                return;
-            }
+            let wbxmlData = eas.getDataFromResponse(response, eas.flags.allowEmptyResponse);
+            if (wbxmlData === null) return;
         
             //check status, throw on error
             eas.checkStatus(syncdata, wbxmlData,"Sync.Collections.Collection.Status");
@@ -236,7 +234,7 @@ eas.calendarsync = {
 
             tbSync.setSyncState("serverid", syncdata.account, syncdata.folderID);
 
-            //get data from wbxml response - TODO may it allowed to be empty?
+            //get data from wbxml response
             let wbxmlData = eas.getDataFromResponse(response);
         
             //check status

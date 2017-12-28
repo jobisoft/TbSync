@@ -5,7 +5,7 @@ tbSync.includeJS("chrome://tbsync/content/provider/eas/xmltools.js");
 
 var eas = {
     bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tbsync/locale/eas.strings"),
-    resync : Object.freeze({nothing: 0, account: 1, folder: 2}),
+    flags : Object.freeze({allowEmptyResponse: true, resyncNothing: 0, resyncAccount: 1, resyncFolder: 2}),
     
     onload: function () {
 
@@ -101,8 +101,8 @@ var eas = {
             } catch (report) { 
 
                 if (report.type && report.type == "throwFinishSync") {
-                    if (report.resync == eas.resync.account || report.resync == eas.resync.folder ) {
-                        if (report.resync == eas.resync.account) syncdata.folderID = ""; 
+                    if (report.resync == eas.flags.resyncAccount || report.resync == eas.flags.resyncFolder ) {
+                        if (report.resync == eas.flags.resyncAccount) syncdata.folderID = ""; 
                         syncdata.fResync = true;
                         tbSync.dump("ReSync", "Account: " + tbSync.db.getAccountSetting(syncdata.account, "accountname") + ", Folder: "+syncdata.folderID + ", Reason: " + report.message);
                         continue;
@@ -237,7 +237,7 @@ var eas = {
                 case "2":
                     //server does not have a policy for this device: disable provisioning
                     tbSync.db.setAccountSetting(syncdata.account, "provision","0")
-                    throw eas.finishSync("noPolicyForThisDevice", eas.resync.account);
+                    throw eas.finishSync("noPolicyForThisDevice", eas.flags.resyncAccount);
 
                 case "1":
                     if (policykey === false) {
@@ -1124,7 +1124,7 @@ var eas = {
 
                     case 449: // Request for new provision (enable it if needed)
                         tbSync.db.setAccountSetting(syncdata.account, "provision","1")
-                        reject(eas.finishSync(syncdata.req.status, eas.resync.account));
+                        reject(eas.finishSync(syncdata.req.status, eas.flags.resyncAccount));
                         break;
 
                     case 451: // Redirect - update host and login manager 
@@ -1138,7 +1138,7 @@ var eas = {
                         //does not affect the loginmanager - no further action needed
                         connection.host = newHost;
 
-                        reject(eas.finishSync(syncdata.req.status, eas.resync.account));
+                        reject(eas.finishSync(syncdata.req.status, eas.flags.resyncAccount));
                         break;
                         
                     default:
@@ -1160,11 +1160,12 @@ var eas = {
         });
     },
 
-    //returns false on parse error and null on empty response - TODO add param to allow empty or not
-    getDataFromResponse: function (wbxml) {        
+    //returns false on parse error and null on empty response (if allowed)
+    getDataFromResponse: function (wbxml, allowEmptyResponse = !eas.flags.allowEmptyResponse) {        
         //check for empty wbxml
         if (wbxml.length === 0) {
-            return null;
+            if (allowEmptyResponse) return null;
+            else throw eas.finishSync("empty-response");
         }
 
         //convert to xml and check for parse errors
@@ -1176,7 +1177,8 @@ var eas = {
         //retrieve data and check for empty data
         let wbxmlData = xmltools.getDataFromXMLString(xml);
         if (wbxmlData === null) {
-            return null;
+            if (allowEmptyResponse) return null;
+            else throw eas.finishSync("response-contains-no-data");
         }
         
         //debug
@@ -1220,7 +1222,7 @@ var eas = {
                         since the last successful Sync or the client MUST add those items back to the server after completing the full resynchronization
                         */
                 tbSync.dump("wbxml status", "Server reports <invalid synchronization key> (" + fullpath + " = " + status + "), resyncing.");
-                throw eas.finishSync(type+":"+status, eas.resync.folder);
+                throw eas.finishSync(type+":"+status, eas.flags.resyncFolder);
             
             case "Sync:8": // Object not found - takeTargetOffline and remove folder
                 tbSync.dump("wbxml status", "Server reports <object not found> (" +  tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "), keeping local copy and removing folder.");
@@ -1242,7 +1244,7 @@ var eas = {
                         Perform a FolderSync command and then retry the Sync command. (is "resync" here)
                         */
                 tbSync.dump("wbxml status", "Server reports <folder hierarchy changed> (" + fullpath + " = " + status + "), resyncing");
-                throw eas.finishSync(type+":"+status, eas.resync.account);
+                throw eas.finishSync(type+":"+status, eas.flags.resyncAccount);
 
             
             case "FolderDelete:3": // special system folder - fatal error
@@ -1254,7 +1256,7 @@ var eas = {
             case "FolderDelete:4": // folder does not exist - resync ( we allow delete only if folder is not subscribed )
             case "FolderDelete:9": // invalid synchronization key - resync
             case "FolderSync:9": // invalid synchronization key - resync
-                throw eas.finishSync(type+":"+status, eas.resync.account);
+                throw eas.finishSync(type+":"+status, eas.flags.resyncAccount);
         }
         
         //handle global error (https://msdn.microsoft.com/en-us/library/ee218647(v=exchg.80).aspx)
@@ -1265,7 +1267,7 @@ var eas = {
                 throw eas.finishSync("global." + status);
 
             case "110": //server error - resync
-                throw eas.finishSync(type+":"+status, eas.resync.account);
+                throw eas.finishSync(type+":"+status, eas.flags.resyncAccount);
             
             default:
                 tbSync.dump("wbxml status", "Server reports unknown status <" + fullpath + " = " + status + ">. Error? Aborting Sync.");
