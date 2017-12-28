@@ -167,8 +167,7 @@ var eas = {
                 syncdata.timeOfThisSync = (Date.now() / 1000) - 1;
                 switch (syncdata.type) {
                     case "Contacts": 
-                        //yield eas.contactsync.start(syncdata);
-                        throw eas.finishSync("skipped");
+                        yield eas.contactsync.start(syncdata);
                         break;
                     case "Tasks": 
                         //yield eas.tasksync.start(syncdata);
@@ -176,6 +175,7 @@ var eas = {
                         break;
                     case "Calendar":
                         yield eas.calendarsync.start(syncdata);
+                        break;
                 }
 
             } catch (report) { 
