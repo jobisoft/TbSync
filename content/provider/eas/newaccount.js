@@ -153,6 +153,7 @@ var tbSyncEasNewAccount = {
         req.ontimeout  = function() {
             //log error and try next server
             tbSync.dump("Timeout on EAS autodiscover", urls[index]);
+            tbSync.autodiscoverErrors.push(urls[index]+" =>\n\t" + "Timeout");
             this.autodiscoverHTTP(accountdata, password, urls, index+1);
         }.bind(this);
 
