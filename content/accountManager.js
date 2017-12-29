@@ -1,7 +1,6 @@
 "use strict";
 
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
-Components.utils.import("resource://app/modules/mailServices.js"); //using mailservices to open message window
 Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 

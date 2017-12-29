@@ -12,6 +12,7 @@ if ("calICalendar" in Components.interfaces) {
     Components.utils.import("resource://calendar/modules/calUtils.jsm");
 }
 
+Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
@@ -830,10 +831,10 @@ var tbSync = {
         let color = freeColors[0].color;        
 
         //Alternative calendar, which uses calTbSyncCalendar
-        //let newCalendar = calManager.createCalendar("TbSync", cal.makeURL('tbsync-calendar://'));
+        //let newCalendar = calManager.createCalendar("TbSync", Services.io.newURI('tbsync-calendar://'));
 
         //Create the new standard calendar with a unique name
-        let newCalendar = calManager.createCalendar("storage", cal.makeURL('moz-storage-calendar://'));
+        let newCalendar = calManager.createCalendar("storage", Services.io.newURI("moz-storage-calendar://"));
         newCalendar.id = cal.getUUID();
         newCalendar.name = newname;
         calManager.registerCalendar(newCalendar);
