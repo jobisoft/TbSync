@@ -1060,7 +1060,11 @@ var eas = {
         let connection = tbSync.eas.getConnection(syncdata.account);
         let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
 
-        let deviceType = 'Thunderbird';
+        let deviceType = tbSync.prefSettings.getCharPref("clientID.type");
+        let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
+        if (deviceType == "") deviceType = "Thunderbird";
+        if (userAgent == "") userAgent = "Thunderbird ActiveSync";
+
         let deviceId = tbSync.db.getAccountSetting(syncdata.account, "deviceId");
 
         tbSync.dump("sending", "POST " + connection.host + '/Microsoft-Server-ActiveSync?Cmd=' + command + '&User=' + encodeURIComponent(connection.user) + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
@@ -1069,9 +1073,9 @@ var eas = {
             // Create request handler
             syncdata.req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
             syncdata.req.mozBackgroundRequest = true;
-            syncdata.req.open("POST", connection.host + '/Microsoft-Server-ActiveSync?Cmd=' + command + '&User=' + encodeURIComponent(connection.user) + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
+            syncdata.req.open("POST", connection.host + '/Microsoft-Server-ActiveSync?Cmd=' + command + '&User=' + encodeURIComponent(connection.user) + '&DeviceType=' +encodeURIComponent(deviceType) + '&DeviceId=' + deviceId, true);
             syncdata.req.overrideMimeType("text/plain");
-            syncdata.req.setRequestHeader("User-Agent", deviceType + ' ActiveSync');
+            syncdata.req.setRequestHeader("User-Agent", userAgent);
             syncdata.req.setRequestHeader("Content-Type", "application/vnd.ms-sync.wbxml");
             syncdata.req.setRequestHeader("Authorization", 'Basic ' + btoa(connection.user + ':' + password));
             if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
