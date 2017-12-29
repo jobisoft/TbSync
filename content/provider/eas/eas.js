@@ -199,9 +199,6 @@ var eas = {
     }),
 
     getPolicykey: Task.async (function* (syncdata)  {
-        //reset policykey
-        tbSync.db.setAccountSetting(syncdata.account, "policykey", 0);
-
         //build WBXML to request provision
         let wbxml = wbxmltools.createWBXML();
         wbxml.switchpage("Provision");
@@ -1127,7 +1124,10 @@ var eas = {
                         break;
 
                     case 449: // Request for new provision (enable it if needed)
-                        tbSync.db.setAccountSetting(syncdata.account, "provision","1")
+                        //enable provision
+                        tbSync.db.setAccountSetting(syncdata.account, "provision","1");
+                        //reset policykey
+                        tbSync.db.setAccountSetting(syncdata.account, "policykey", 0);
                         reject(eas.finishSync(syncdata.req.status, eas.flags.resyncAccount));
                         break;
 
@@ -1272,9 +1272,18 @@ var eas = {
 
             case "110": //server error - resync
                 throw eas.finishSync(type+":"+status, eas.flags.resyncAccount);
+
+            case "142": // DeviceNotProvisioned
+            case "143": // PolicyRefresh
+            case "144": // InvalidPolicyKey
+                //enable provision
+                tbSync.db.setAccountSetting(syncdata.account, "provision","1");
+                //reset policykey
+                tbSync.db.setAccountSetting(syncdata.account, "policykey", 0);
+                throw eas.finishSync(type+":"+status, eas.flags.resyncAccount);
             
             default:
-                tbSync.dump("wbxml status", "Server reports unknown status <" + fullpath + " = " + status + ">. Error? Aborting Sync.");
+                tbSync.dump("wbxml status", "Server reports unhandled status <" + fullpath + " = " + status + ">. Aborting Sync.");
                 throw eas.finishSync("wbxmlerror::" + fullpath + " = " + status);
 
         }		
