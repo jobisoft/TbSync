@@ -3,7 +3,7 @@
 
 ## How to get started
 
-A quick start guide on how to use this Add-On can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki/How-to-get-started) of this repository
+A quick start guide on how to use this Add-On can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki/How-to-get-started) of this repository. The latest release and the latest stable beta can be found at the [release page](https://github.com/jobisoft/TbSync/releases) (beta version usually have a higher version number than the official release and have a date appended to their filename).
 
 ## Got a question? Maybe it has been answered already!
 
@@ -27,6 +27,8 @@ This is work in progress. Future releases will be as follows:
 * v0.7.3: add support for global address book (if possible)
 * v0.9: release candidate for productive use
 * v1.0: stable release
+
+Further information can be found in the [detailed roadmap](https://github.com/jobisoft/TbSync/issues/2).
 
 ## Icon sources
 
