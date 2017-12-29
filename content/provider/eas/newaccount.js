@@ -36,7 +36,7 @@ var tbSyncEasNewAccount = {
     },
 
     onUserTextInput: function () {
-	/* No longer needed, TbSync is following HTTP redirects now and finds outlook settings by itself
+    /* No longer needed, TbSync is following HTTP redirects now and finds outlook settings by itself
         if (this.elementServertype.value != "outlook.com" && this.elementUser.value.indexOf("@outlook.")!=-1) {
             this.elementServertype.selectedIndex = 3;
             this.onUserDropdown();
@@ -57,10 +57,10 @@ var tbSyncEasNewAccount = {
             newAccountEntry.user = this.elementUser.value;
             newAccountEntry["servertype"] = servertype;
 
-			if (servertype == "custom") {
+            if (servertype == "custom") {
                 tbSyncEasNewAccount.addAccount(newAccountEntry, this.elementPass.value);
             }
-			else if (servertype == "auto") {
+            else if (servertype == "auto") {
                 document.documentElement.getButton("cancel").disabled = true;
                 document.documentElement.getButton("extra1").disabled = true;
                 this.autodiscover(newAccountEntry, this.elementPass.value);
@@ -99,18 +99,20 @@ var tbSyncEasNewAccount = {
     //AUTODISCOVER
     autodiscover: function (accountdata, password, singleurl = null) {
         let urls = [];
+        tbSync.autodiscoverErrors = [];
+        
         if (singleurl) {
-			urls.push(singleurl); //Why in the lords name do I need to request twice? The first one comes back as "invalid verb" WTF?
-			urls.push(singleurl);
+            urls.push(singleurl); //Why in the lords name do I need to request twice? The first one comes back as "invalid verb" WTF?
+            urls.push(singleurl);
         } else {
-			let parts = accountdata.user.split("@");
-			urls.push("http://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
-			urls.push("https://autodiscover."+parts[1]+"/autodiscover/autodiscover.xml");
-			urls.push("https://"+parts[1]+"/autodiscover/autodiscover.xml");
-			urls.push("https://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
-			urls.push("https://"+parts[1]+"/Autodiscover/Autodiscover.xml");
-		}
-		this.autodiscoverHTTP(accountdata, password, urls, 0);
+            let parts = accountdata.user.split("@");
+            urls.push("http://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
+            urls.push("https://autodiscover."+parts[1]+"/autodiscover/autodiscover.xml");
+            urls.push("https://"+parts[1]+"/autodiscover/autodiscover.xml");
+            urls.push("https://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
+            urls.push("https://"+parts[1]+"/Autodiscover/Autodiscover.xml");
+        }
+        this.autodiscoverHTTP(accountdata, password, urls, 0);
     },
 
     setAutodiscoverStatus: function (index, urls) {
@@ -155,8 +157,13 @@ var tbSyncEasNewAccount = {
         }.bind(this);
 
         req.onerror = function() {
-            //log error and try next server
-            tbSync.dump("Network error on EAS autodiscover (" + req.status + ")", (req.responseText) ? req.responseText : urls[index]);
+            let error = tbSync.eas.createTCPErrorFromFailedXHR(req);
+            if (!error) {
+                tbSync.dump("Network error on EAS autodiscover ("+urls[index]+")", req.responseText);
+            } else {
+                tbSync.dump("Connection error on EAS autodiscover ("+urls[index]+")", error);
+            }
+            tbSync.autodiscoverErrors.push(urls[index]+" =>\n\t" + (error ? error : req.responseText));
             this.autodiscoverHTTP(accountdata, password, urls, index+1); 
         }.bind(this);
 
@@ -205,15 +212,15 @@ var tbSyncEasNewAccount = {
                         document.documentElement.getButton("extra1").disabled = false;
                     });
             } else {
-				//check for redirects (301/302 are seen as 501 - WTF? --- using responseURL to check for redirects)
-				if (req.responseURL != urls[index]) {
-					let redirectURL = req.responseURL;
-					tbSync.dump("Autodiscover URL redirected:", "[" +redirectURL + "]");
-					this.autodiscover(accountdata, password, redirectURL);
-				} else {
-					tbSync.dump("Error on EAS autodiscover (" + req.status + ")", (req.responseText) ? req.responseText : urls[index]);
-					this.autodiscoverHTTP(accountdata, password, urls, index+1);
-				}
+                //check for redirects (301/302 are seen as 501 - WTF? --- using responseURL to check for redirects)
+                if (req.responseURL != urls[index]) {
+                    let redirectURL = req.responseURL;
+                    tbSync.dump("Autodiscover URL redirected:", "[" +redirectURL + "]");
+                    this.autodiscover(accountdata, password, redirectURL);
+                } else {
+                    tbSync.dump("Error on EAS autodiscover (" + req.status + ")", (req.responseText) ? req.responseText : urls[index]);
+                    this.autodiscoverHTTP(accountdata, password, urls, index+1);
+                }
             }
         }.bind(this);
 
@@ -254,7 +261,7 @@ var tbSyncEasNewAccount = {
     autodiscoverFailed: function (accountdata) {
         document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
         document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
-        alert(tbSync.getLocalizedMessage("info.AutodiscoverFailed","eas").replace("##user##", accountdata.user));
+        alert(tbSync.getLocalizedMessage("info.AutodiscoverFailed","eas").replace("##user##", accountdata.user).replace("##errors##", tbSync.autodiscoverErrors.join("\n")));
         document.documentElement.getButton("cancel").disabled = false;
         document.documentElement.getButton("extra1").disabled = false;
     },
