@@ -16,6 +16,7 @@ Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
+Components.utils.import("resource://gre/modules/AddonManager.jsm");
 
 var tbSync = {
 
@@ -870,6 +871,14 @@ var tbSync = {
 //clear debug log on start
 tbSync.initFile("debug.log");
 tbSync.mozConsoleService.registerListener(tbSync.consoleListener);
+
+let appInfo =  Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
+tbSync.dump(appInfo.name, appInfo.platformVersion);
+AddonManager.getAllAddons(function(addons) {
+  for (let a=0; a < addons.length; a++) {
+    if (addons[a].isActive) tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version +")");
+  }
+});
 
 // load common subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
 tbSync.includeJS("chrome://tbsync/content/db.js");
