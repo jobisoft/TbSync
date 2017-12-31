@@ -23,6 +23,12 @@ var tbSyncMessenger = {
         if (tbSync.enabled) tbSync.syncAccount('sync'); else tbSyncMessenger.popupNotEnabled();
     },
     
+    clickOnStatusbar: function(event) {
+        if (event.button == 0) {
+            if (tbSync.enabled) tbSyncMessenger.openAccountManager(); else tbSyncMessenger.popupNotEnabled();
+        }
+    },
+    
     openAccountManager: function () {
         // check, if a window is already open and just put it in focus
         if (tbSync.prefWindowObj === null) tbSync.prefWindowObj = window.open("chrome://tbsync/content/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen,toolbar,resizable");

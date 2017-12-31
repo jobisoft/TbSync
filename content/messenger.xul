@@ -11,7 +11,7 @@
     <script type="application/x-javascript" src="chrome://tbsync/content/messenger.js" />
 
     <statusbar id="status-bar">
-        <statusbarpanel id="tbsync.status" label="&pref.TbSync;" context="tbsync.statusmenu" onclick="if (tbSync.enabled) tbSyncMessenger.openAccountManager(); else tbSyncMessenger.popupNotEnabled();" />
+        <statusbarpanel id="tbsync.status" label="&pref.TbSync;" context="tbsync.statusmenu" onclick="tbSyncMessenger.clickOnStatusbar(event);" />
         <popupset>
             <menupopup id="tbsync.statusmenu">
                 <menuitem label="&popup.opensettings;" oncommand="if (tbSync.enabled) tbSyncMessenger.openAccountManager(); else tbSyncMessenger.popupNotEnabled();" />
