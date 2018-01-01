@@ -297,6 +297,23 @@ var tbSyncAccountSettings = {
         return "chrome://tbsync/skin/" + src;
     },
 
+    getIdChain: function (allowedTypesOrder, account, folderID) {
+        //create sort string so that child folders are directly below their parent folders, different folder types are grouped and trashes folders at the end
+        let folder = folderID;
+        let parent =  tbSync.db.getFolder(account, folderID).parentID;
+        let chain = folder.toString().padStart(3,"0");
+        
+        while (parent != "0") {
+            chain = parent.toString().padStart(3,"0") + "." + chain;
+            folder = parent;
+            parent = tbSync.db.getFolder(account, folder).parentID;
+        };
+        
+        let pos = allowedTypesOrder.indexOf(tbSync.db.getFolder(account, folder).type);
+        chain = (pos == -1 ? "U" : pos).toString().padStart(3,"0") + "." + chain;
+        return chain;
+    },    
+
     updateFolderList: function () {
         //do not update folder list, if not visible
         if (document.getElementById("tbsync.accountsettings.folders").hidden) return;
@@ -306,7 +323,7 @@ var tbSyncAccountSettings = {
         
         //sort by specified order, trashed folders are moved to the end
         let allowedTypesOrder = ["9","14","8","13","7","15"];
-        let folderIDs = Object.keys(folders).sort((a, b) => ( (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount,folders[a].parentID) - tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount,folders[b].parentID)) || (allowedTypesOrder.indexOf(folders[a].type) - allowedTypesOrder.indexOf(folders[b].type))   ));
+        let folderIDs = Object.keys(folders).sort((a, b) => (this.getIdChain(allowedTypesOrder, tbSyncAccountSettings.selectedAccount, a).localeCompare(this.getIdChain(allowedTypesOrder, tbSyncAccountSettings.selectedAccount, b))));
 
         //get current accounts in list and remove entries of accounts no longer there
         let listedfolders = [];
