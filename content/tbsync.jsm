@@ -61,6 +61,9 @@ var tbSync = {
             
             //enable
             tbSync.enabled = true;
+        
+            tbSync.debugtestflags = tbSync.prefSettings.getIntPref("debugtestflags");
+
         }
     },
 
@@ -94,7 +97,7 @@ var tbSync = {
     // SYNC MANAGEMENT
     syncDataObj : {},
 
-    //used by UI to find out, if this account is beeing synced - TODO check/use local syncqeue for specific job?
+    //used by UI to find out, if this account is beeing synced
     isSyncing: function (account) {
         let state = tbSync.getSyncData(account,"state");
         return (state != "accountdone" && state != "");
@@ -108,8 +111,8 @@ var tbSync = {
         if (forceResetOfSyncData) {
             tbSync.syncDataObj[account] = {};
         }
-	
-	tbSync.syncDataObj[account].account = account;
+    
+    tbSync.syncDataObj[account].account = account;
     },
     
     getSyncData: function (account, field = "") {
@@ -149,12 +152,12 @@ var tbSync = {
         
         //update gui
         for (let i = 0; i < accountsToDo.length; i++) {
-            //do not init sync if there is a sync running or account is not connected - TODO we could add the new job to the LOCAL sync queue of the sync obj.
+            //do not init sync if there is a sync running or account is not connected
             if (accounts.data[accountsToDo[i]].state == "disconnected" || tbSync.isSyncing(accountsToDo[i])) continue;
 
             //create syncdata object for each account (to be able to have parallel XHR)
             tbSync.prepareSyncDataObj(accountsToDo[i], true);
-            tbSync[tbSync.db.getAccountSetting(accountsToDo[i], "provider")].start(tbSync.getSyncData(accountsToDo[i]), false, job, folderID);
+            tbSync[tbSync.db.getAccountSetting(accountsToDo[i], "provider")].start(tbSync.getSyncData(accountsToDo[i]), job, folderID);
         }
         
     },
@@ -279,6 +282,17 @@ var tbSync = {
         }
     },
     
+    
+    debugTest: function(test) {
+        //the value debugtestflags is resetted on each restart by the pref value (0 default), to be able to test different elements once
+        let bit = 0x1 << test;
+        if (tbSync.debugtestflags & bit) {
+            tbSync.debugtestflags = tbSync.debugtestflags ^ bit;
+            return true;
+        }
+        return false;
+    },
+
     quickdump: function (what, aMessage) {
         tbSync.mozConsoleService.logStringMessage("[TbSync] " + what + " : " + aMessage);
     },

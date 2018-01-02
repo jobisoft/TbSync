@@ -124,7 +124,7 @@ eas.contactsync = {
     start: Task.async (function* (syncdata)  {
         //Check SyncTarget
         if (!tbSync.checkAddressbook(syncdata.account, syncdata.folderID)) {
-            throw eas.finishSync("notargets");
+            throw eas.finishSync("notargets", eas.flags.abortWithError);
         }
         
         //sync
@@ -176,7 +176,7 @@ eas.contactsync = {
                 throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.resyncFolder);
             } else if (wbxmlstatus !== '1') {
                 tbSync.dump("wbxml status", "server error? " + wbxmlstatus);
-                throw eas.finishSync("wbxmlerror::" + wbxmlstatus);
+                throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.abortWithError);
             }
 
             syncdata.synckey = wbxmltools.FindKey(wbxml);
@@ -755,7 +755,7 @@ eas.contactsync = {
                 throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.resyncFolder);
             } else if (wbxmlstatus !== '1') {
                 tbSync.dump("wbxml status", "server error? " + wbxmlstatus);
-                throw eas.finishSync("wbxmlerror::" + wbxmlstatus);
+                throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.abortWithError);
             }
 
             tbSync.setSyncState("serverid", syncdata.account, syncdata.folderID);
@@ -766,7 +766,7 @@ eas.contactsync = {
             var oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
             let xml = wbxmltools.convert2xml(wbxml);
             if (xml === false) {
-                throw eas.finishSync("wbxml-parse-error");
+                throw eas.finishSync("wbxml-parse-error", eas.flags.abortWithError);
             }
             
             var oDOM = oParser.parseFromString(xml, "text/xml");
@@ -869,7 +869,7 @@ eas.contactsync = {
                 throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.resyncFolder);
             } else if (wbxmlstatus !== '1') {
                 tbSync.dump("wbxml status", "server error? " + wbxmlstatus);
-                throw eas.finishSync("wbxmlerror::" + wbxmlstatus);
+                throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.abortWithError);
             }
 
             syncdata.synckey = wbxmltools.FindKey(responseWbxml);

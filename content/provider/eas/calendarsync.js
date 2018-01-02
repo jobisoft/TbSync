@@ -7,12 +7,12 @@ eas.calendarsync = {
     start: Task.async (function* (syncdata)  {
         // skip if lightning is not installed
         if ("calICalendar" in Components.interfaces == false) {
-            throw eas.finishSync("nolightning");
+            throw eas.finishSync("nolightning", eas.flags.abortWithError);
         }
         
         // check SyncTarget
         if (!tbSync.checkCalender(syncdata.account, syncdata.folderID)) {
-            throw eas.finishSync("notargets");
+            throw eas.finishSync("notargets", eas.flags.abortWithError);
         }
         
         //get sync target of this calendar
@@ -22,6 +22,11 @@ eas.calendarsync = {
         //sync
         yield eas.calendarsync.requestRemoteChanges (syncdata); 
         yield eas.calendarsync.sendLocalChanges (syncdata);
+
+        //debug test #0
+        if (tbSync.debugTest(0)) {
+            throw eas.finishSync("debug trigger", eas.flags.resyncFolder);
+        }
         
         //if everything was OK, we still throw, to get into catch
         throw eas.finishSync();
