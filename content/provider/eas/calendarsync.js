@@ -22,11 +22,6 @@ eas.calendarsync = {
         //sync
         yield eas.calendarsync.requestRemoteChanges (syncdata); 
         yield eas.calendarsync.sendLocalChanges (syncdata);
-
-        //debug test #0
-        if (tbSync.debugTest(0)) {
-            throw eas.finishSync("debug trigger", eas.flags.resyncFolder);
-        }
         
         //if everything was OK, we still throw, to get into catch
         throw eas.finishSync();
@@ -104,14 +99,22 @@ eas.calendarsync = {
 
                     let foundItems = yield pcal.getItem(ServerId);
                     if (foundItems.length == 0) { //do NOT add, if an item with that ServerId was found
-                        let newItem = cal.createEvent();
-                        eas.calendarsync.setCalendarItemFromWbxml(newItem, data, ServerId, tbSync.db.getAccountSetting(syncdata.account, "asversion"));
-                        db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "added_by_server");
-                        try {
-                            yield pcal.addItem(newItem);
-                        } catch (e) {tbSync.dump("Error during Add", e);}
+                        //if this is a resync and this item exists in delete_log, do not add it, the follow-up delete request will remove it from the server as well
+                        if (db.getItemStatusFromChangeLog(syncdata.targetObj.id, ServerId) == "deleted_by_user") {
+                            tbSync.dump("Add request, but element is in delete_log, asuming resync, local state wins, not adding.", ServerId);
+                        } else {
+                            let newItem = cal.createEvent();
+                            eas.calendarsync.setCalendarItemFromWbxml(newItem, data, ServerId, tbSync.db.getAccountSetting(syncdata.account, "asversion"));
+                            db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "added_by_server");
+                            try {
+                                yield pcal.addItem(newItem);
+                            } catch (e) {tbSync.dump("Error during Add", e);}
+                        }
                     } else {
-                        tbSync.dump("Element exists already", ServerId); //TODO
+                        //item exists, asuming resync
+                        tbSync.dump("Add request, but element exists already, asuming resync, local version wins.", ServerId);
+                        //we MUST make sure, that our local version is send to the server
+                        db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_user");
                     }
                 }
 
@@ -131,7 +134,9 @@ eas.calendarsync = {
                         db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_server");
                         yield pcal.modifyItem(newItem, foundItems[0]);
                     } else {
-                        tbSync.dump("Element not found", ServerId); //TODO
+                        tbSync.dump("Update request, but element not found", ServerId);
+                        //resync to avoid out-of-sync problems, "add" can take care of local merges
+                        throw eas.finishSync("ChangeElementNotFound", eas.flags.resyncFolder);
                     }
                 }
                 
@@ -146,7 +151,9 @@ eas.calendarsync = {
                         db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "deleted_by_server");
                         yield pcal.deleteItem(foundItems[0]);
                     } else {
-                        tbSync.dump("Element not found", ServerId); //TODO
+                        tbSync.dump("Delete request, but element not found", ServerId);
+                        //resync to avoid out-of-sync problems, local deletes will be droped
+                        throw eas.finishSync("DeleteElementNotFound", eas.flags.resyncFolder);
                     }
                 }
             
