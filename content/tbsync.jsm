@@ -643,39 +643,49 @@ var tbSync = {
 
         onModifyItem : function (aNewItem, aOldItem) {
             //check, if it is a pure modification within the same calendar
-            if (aNewItem.calendar.id == aOldItem.calendar.id) { // aNewItem.calendar could be null ??? throw up on server pushed deletes as well ??? TODO
+            //tbSync.dump("Info cal.onModifyItem", aNewItem.id + " | " + aOldItem.id);                
+            if (aNewItem && aNewItem.calendar && aOldItem && aOldItem.calendar) {
+                if (aNewItem.calendar.id == aOldItem.calendar.id) {
 
-                let itemStatus = tbSync.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
-                //check, if it is an event in one of the synced calendars
+                    let itemStatus = tbSync.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
+                    //check, if it is an event in one of the synced calendars
 
-                let newFolders = tbSync.db.findFoldersWithSetting("target", aNewItem.calendar.id);
-                if (newFolders.length > 0) {
-                    if (itemStatus == "modified_by_server") {
-                        tbSync.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);
-                    } else if (itemStatus != "added_by_user") { //if it is a local unprocessed add, do not set it to modified
-                        //update status of target and account
-                        tbSync.setTargetModified(newFolders[0]);
-                        tbSync.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "modified_by_user");
+                    let newFolders = tbSync.db.findFoldersWithSetting("target", aNewItem.calendar.id);
+                    if (newFolders.length > 0) {
+                        if (itemStatus == "modified_by_server") {
+                            tbSync.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);
+                        } else if (itemStatus != "added_by_user") { //if it is a local unprocessed add, do not set it to modified
+                            //update status of target and account
+                            tbSync.setTargetModified(newFolders[0]);
+                            tbSync.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "modified_by_user");
+                        }
                     }
+                    
                 }
-                
+            } else {
+                tbSync.dump("Error cal.onModifyItem", aNewItem.id + " has no calendar property");                
             }
         },
 
         onDeleteItem : function (aDeletedItem) {
-            let itemStatus = tbSync.db.getItemStatusFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id)
+            //tbSync.dump("Info cal.onDeleteItem", aDeletedItem.id);                
+            if (aDeletedItem && aDeletedItem.calendar) {
+                let itemStatus = tbSync.db.getItemStatusFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id)
 
-            //if an event in one of the synced calendars is modified, update status of target and account
-            let folders = tbSync.db.findFoldersWithSetting("target", aDeletedItem.calendar.id);
-            if (folders.length > 0) {
-                if (itemStatus == "deleted_by_server" || itemStatus == "added_by_user") {
-                    //if it is a delete pushed from the server, simply acknowledge (do nothing) 
-                    //a local add, which has not yet been processed (synced) is deleted -> remove all traces
-                    tbSync.db.removeItemFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id);
-                } else {
-                    tbSync.setTargetModified(folders[0]);
-                    tbSync.db.addItemToChangeLog(aDeletedItem.calendar.id, aDeletedItem.id, "deleted_by_user");
+                //if an event in one of the synced calendars is modified, update status of target and account
+                let folders = tbSync.db.findFoldersWithSetting("target", aDeletedItem.calendar.id);
+                if (folders.length > 0) {
+                    if (itemStatus == "deleted_by_server" || itemStatus == "added_by_user") {
+                        //if it is a delete pushed from the server, simply acknowledge (do nothing) 
+                        //a local add, which has not yet been processed (synced) is deleted -> remove all traces
+                        tbSync.db.removeItemFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id);
+                    } else {
+                        tbSync.setTargetModified(folders[0]);
+                        tbSync.db.addItemToChangeLog(aDeletedItem.calendar.id, aDeletedItem.id, "deleted_by_user");
+                    }
                 }
+            } else {
+                tbSync.dump("Error cal.onDeleteItem", aDeletedItem.id + " has no calendar property");                
             }
         },
             
