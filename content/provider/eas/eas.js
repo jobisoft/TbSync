@@ -69,11 +69,13 @@ var eas = {
                     throw eas.finishSync("nouserhost", eas.flags.abortWithError);
                 }
 
-                //Is this a resync? (The same job is run again) - TODO: I think this flag is not needed, at the moment it is supposed to indicate "local merge needed"
-                if (accountReSyncs > 1) {
-                    syncdata.fResync = true;
+                //Is this a standard sync or an account resync ?
+                if (tbSync.db.getAccountSetting(syncdata.account, "foldersynckey") == "") {
+                    //accountReSyncs == 1 is not a save method to identify initial sync, because a resync due to policy/provision 
+                    //could still be an initial sync
+                    syncdata.accountResync = (accountReSyncs > 1);
                 } else {
-                    syncdata.fResync = false;
+                    syncdata.accountResync = false;
                 }
 
                 //do we need to get a new policy key?
@@ -131,7 +133,7 @@ var eas = {
 
     //Process all folders with PENDING status
     syncPendingFolders: Task.async (function* (syncdata)  {
-        let folderReSyncs = 0;
+        let folderReSyncs = 1;
         
         do {            
             //any pending folders left?
@@ -147,7 +149,7 @@ var eas = {
                 
                 //resync loop control
                 if (folders[0].folderID == syncdata.folderID) folderReSyncs++;
-                else folderReSyncs = 0;
+                else folderReSyncs = 1;
 
                 if (folderReSyncs > 3) {
                     throw eas.finishSync("resync-loop", eas.flags.abortWithError);
@@ -155,6 +157,7 @@ var eas = {
 
                 syncdata.synckey = folders[0].synckey;
                 syncdata.folderID = folders[0].folderID;
+                //get syncdata type, which is also used in WBXML
                 switch (folders[0].type) {
                     case "9": 
                     case "14": 
@@ -174,9 +177,14 @@ var eas = {
                 
                 tbSync.setSyncState("preparing", syncdata.account, syncdata.folderID);
                 
-                //get synckey if needed (this means initial sync or resync) //TODO - set some sort of flag
+                //get synckey if needed (this probably means initial sync or resync)
                 if (syncdata.synckey == "") {
                     yield eas.getSynckey(syncdata);
+                    //folderReSyncs == 1 is not a save method to identify initial sync, because a resync due to policy/provision 
+                    //could still be an initial sync
+                    syncdata.folderResync = (folderReSyncs > 1);
+                } else {
+                    syncdata.folderResync = false;
                 }
                 
                 //sync folder
@@ -209,7 +217,7 @@ var eas = {
                         break;
                                             
                     case eas.flags.resyncFolder:
-                        //reset synckey to indicate "resny" and sync this folder again
+                        //reset synckey to indicate "resync" and sync this folder again
                         tbSync.dump("Folder Resync", "Account: " + tbSync.db.getAccountSetting(syncdata.account, "accountname") + ", Folder: "+ tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + ", Reason: " + report.message);
                         tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", "");
                         continue;
@@ -264,7 +272,7 @@ var eas = {
                 case "2":
                     //server does not have a policy for this device: disable provisioning
                     tbSync.db.setAccountSetting(syncdata.account, "provision","0")
-                    throw eas.finishSync("noPolicyForThisDevice", eas.flags.resyncAccount);
+                    throw eas.finishSync("NoPolicyForThisDevice", eas.flags.resyncAccount);
 
                 case "1":
                     if (policykey === false) {
@@ -354,7 +362,7 @@ var eas = {
                         newData.status = "";
                         newData.lastsynctime = "";
                         tbSync.db.addFolder(newData);
-                    } else if (syncdata.fResync) {
+                    } else if (syncdata.accountResync) {
                         //trying to add an existing folder during resync, overwrite local settings with those from server
                         let target = folder.target;
 
@@ -453,7 +461,7 @@ var eas = {
             let folders = tbSync.db.getFolders(syncdata.account);
             for (let f in folders) {
                 //special action dring resync: remove all folders from db, which have not been added by server (thus are no longer there)
-                if (syncdata.fResync && !addedFolders.includes(folders[f].folderID)) {
+                if (syncdata.accountResync && !addedFolders.includes(folders[f].folderID)) {
                     //if target exists, take it offline
                     if (folders[f].target != "") tbSync.eas.takeTargetOffline(folders[f].target, folders[f].type);
                     //delete folder in account manager

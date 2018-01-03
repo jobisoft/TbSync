@@ -294,7 +294,7 @@ eas.contactsync = {
                             card.setProperty("PhotoURI", filePath);
                             photo = '';
                         }
-                        if (syncdata.fResync) {
+                        if (syncdata.folderResync) {
                             //during resync, we need to check, if the "new" card we are currenty receiving, is really new, or already exists
                             let tempsid;
                             try {
