@@ -152,7 +152,7 @@ eas.calendarsync = {
                         yield pcal.deleteItem(foundItems[0]);
                     } else {
                         tbSync.dump("Delete request, but element not found", ServerId);
-                        //resync to avoid out-of-sync problems, local deletes will be droped
+                        //resync to avoid out-of-sync problems
                         throw eas.finishSync("DeleteElementNotFound", eas.flags.resyncFolder);
                     }
                 }
