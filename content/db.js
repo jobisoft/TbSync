@@ -83,9 +83,10 @@ var db = {
     },
 
     getItemsFromChangeLog: function (parentId, maxnumbertosend, status = null) {        
+        //maxnumbertosend = 0 will return all results
         let log = [];
         let counts = 0;
-        for (let i=0; i<this.changelog.length && log.length < maxnumbertosend; i++) {
+        for (let i=0; i<this.changelog.length && (log.length < maxnumbertosend || maxnumbertosend == 0); i++) {
             if (this.changelog[i].parentId == parentId && (status === null || this.changelog[i].status.indexOf(status) != -1)) log.push({ "id":this.changelog[i].itemId, "status":this.changelog[i].status });
         }
         return log;
