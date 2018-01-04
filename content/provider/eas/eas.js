@@ -787,7 +787,7 @@ var eas = {
 
         //if there are local changes, append an  (*) to the name of the target
         let c = 0;
-        let a = tbSync.db.getItemsFromChangeLog(uri, 0, "_by_user");
+        let a = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
         for (let i=0; i<a.length; i++) c++;
         if (c>0) suffix += " (*)";
 
