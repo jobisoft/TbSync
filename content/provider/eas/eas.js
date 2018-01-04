@@ -781,7 +781,18 @@ var eas = {
         }
     },
 
-    takeTargetOffline: function(target, type, suffix = " [offline]") {
+    takeTargetOffline: function(target, type) {
+        let d = new Date();
+        let suffix = " [lost contact on " + d.getDate().toString().padStart(2,"0") + "." + (d.getMonth()+1).toString().padStart(2,"0") + "." + d.getFullYear() +"]"
+
+        //if there are local changes, append an  (*) to the name of the target
+        let c = 0;
+        let a = tbSync.db.getItemsFromChangeLog(uri, 0, "_by_user");
+        for (let i=0; i<a.length; i++) c++;
+        if (c>0) suffix += " (*)";
+
+        //TODO/IDEA : We could also try to add each modified item to a  xxx_by_user category, so the user can quickly identify, which data was not synced
+
         //this is the only place, where we manually have to call clearChangelog, because the target is not deleted (on delete, changelog is cleared automatically)
         tbSync.db.clearChangeLog(target);
         
