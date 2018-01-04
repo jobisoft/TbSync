@@ -449,6 +449,46 @@ eas.calendarsync = {
             item.organizer = organizer;
         }
 
+        if (data.Recurrence) {
+            item.recurrenceInfo = cal.createRecurrenceInfo();
+            item.recurrenceInfo.item = item;
+            let recRule = cal.createRecurrenceRule();
+            switch (data.Recurrence.Type) {
+            case "0":
+                recRule.type = "DAILY";
+                break;
+            case "1":
+                recRule.type = "WEEKLY";
+                break;
+            case "2":
+            case "3":
+                recRule.type = "MONTHLY";
+                break;
+            case "5":
+            case "6":
+                recRule.type = "YEARLY";
+                break;
+            }
+            recRule.interval = data.Recurrence.Interval;
+            if (data.Recurrence.Until) {
+                recRule.untilDate = cal.createDateTime(data.Recurrence.Until);
+            }
+            if (data.Recurrence.DayOfWeek) {
+                let DOW = data.Recurrence.DayOfWeek;
+                if (DOW == 127) {
+                    // TODO: last day of month
+                }
+                else {
+                    let days = [];
+                    for (let i = 0; i < 7; ++i) {
+                        if (DOW & 1 << i) days.push(i + 1);
+                    }
+                    recRule.setComponent("BYDAY", days.length, days);
+                }
+            }
+            item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
+        }
+
         /* Missing : MeetingStatus, Attachements (needs EAS 16.0 !), Repeated Events
 
             <Recurrence xmlns='Calendar'>
