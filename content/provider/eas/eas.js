@@ -1183,7 +1183,7 @@ var eas = {
                         break;
                         
                     default:
-                        reject(eas.finishSync("httperror::" + syncdata.req.status, eas.flags.abortWithError));
+                        reject(eas.finishSync("httperror::" + syncdata.req.status), eas.flags.abortWithError);
                 }
             };
 
