@@ -69,6 +69,11 @@ var eas = {
                     throw eas.finishSync("nouserhost", eas.flags.abortWithError);
                 }
 
+                //debug test #0
+                if (tbSync.debugTest(0)) {
+                    //throw eas.finishSync("debug trigger", eas.flags.resyncAccount);
+                }
+
                 //Is this a standard sync or an account resync ?
                 if (tbSync.db.getAccountSetting(syncdata.account, "foldersynckey") == "") {
                     //accountReSyncs == 1 is not a save method to identify initial sync, because a resync due to policy/provision 
@@ -209,7 +214,7 @@ var eas = {
                     case eas.flags.abortWithError:  //if there was a fatal error during folder sync, re-throw error to finish account sync (with error)
                     case eas.flags.resyncAccount:   //if the entire account needs to be resynced, finish this folder and re-throw account (re)sync request                                                    
                         eas.finishFolderSync(syncdata, report.message);
-                        throw eas.finishSync(report.messagem, report.type);
+                        throw eas.finishSync(report.message, report.type);
                         break;
 
                     case eas.flags.syncNextFolder:
@@ -1080,7 +1085,7 @@ var eas = {
         easTZ.daylightBias = 0;
         easTZ.standardName = item.startDate.timezone.tzid;
         easTZ.daylightName = item.startDate.timezone.tzid;
-        //easTZ.standardDate
+        //easTZ.standardDate - TODO
         //easTZ.daylightDate
         
         //tbSync.quickdump("Send EASTZ", easTZ.toString());
@@ -1194,7 +1199,7 @@ var eas = {
                         break;
                         
                     default:
-                        reject(eas.finishSync("httperror::" + syncdata.req.status), eas.flags.abortWithError);
+                        reject(eas.finishSync("httperror::" + syncdata.req.status, eas.flags.abortWithError));
                 }
             };
 
