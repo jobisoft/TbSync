@@ -71,7 +71,7 @@ var xmltools = {
 
         //check if xml is error document
         if (xml.documentElement.nodeName == "parsererror") {
-            tbSync.dump("BAD XML",str);
+            tbSync.dump("BAD XML", "The above XML and WBXML could not be parsed correctly, something is wrong.");
             throw eas.finishSync("mailformed-xml", eas.flags.abortWithError);
         }
 
