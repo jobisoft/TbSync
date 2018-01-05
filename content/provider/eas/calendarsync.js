@@ -659,8 +659,16 @@ eas.calendarsync = {
                         weeks[i] = Math.floor(weekDays[i] / 8);
                         weekDays[i] = weekDays[i] % 8;
                     }
+                    else if (weekDays[i] < -8) {
+                        // EAS only supports last week as a special value, treat
+                        // all as last week or assume every month has 5 weeks?
+                        // Change to last week
+                        //weeks[i] = 5;
+                        // Assumes 5 weeks per month for week <= -2
+                        weeks[i] = 6 - Math.floor(-weekDays[i] / 8);
+                        weekDays[i] = -weekDays[i] % 8;
+                    }
                 }
-                // TODO: negative week days eg -1MO
                 if (monthDays[0] && monthDays[0] == -1) {
                     weeks = [5];
                     weekDays = [1, 2, 3, 4, 5, 6, 7]; // 127
