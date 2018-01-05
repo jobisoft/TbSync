@@ -469,14 +469,16 @@ eas.calendarsync = {
                 recRule.type = "YEARLY";
                 break;
             }
-            recRule.interval = data.Recurrence.Interval;
-            if (data.Recurrence.Until) {
-                recRule.untilDate = cal.createDateTime(data.Recurrence.Until);
+            if (data.Recurrence.CalendarType) {
+                // TODO
+            }
+            if (data.Recurrence.DayOfMonth) {
+                recRule.setComponent("BYMONTHDAY", 1, [data.Recurrence.DayOfMonth]);
             }
             if (data.Recurrence.DayOfWeek) {
                 let DOW = data.Recurrence.DayOfWeek;
                 if (DOW == 127) {
-                    // TODO: last day of month
+                    recRule.setComponent("BYMONTHDAY", 1, [-1]);
                 }
                 else {
                     let days = [];
@@ -486,17 +488,32 @@ eas.calendarsync = {
                     recRule.setComponent("BYDAY", days.length, days);
                 }
             }
+            if (data.Recurrence.FirstDayOfWeek) {
+                recRule.setComponent("WKST", 1, [data.Recurrence.FirstDayOfWeek]);
+            }
+            if (data.Recurrence.Interval) {
+                recRule.interval = data.Recurrence.Interval;
+            }
+            if (data.Recurrence.IsLeapMonth) {
+                // TODO
+            }
+            if (data.Recurrence.MonthOfYear) {
+                recRule.setComponent("BYMONTH", 1, [data.Recurrence.MonthOfYear]);
+            }
+            if (data.Recurrence.Occurrences) {
+                recRule.count = data.Recurrence.Occurrences;
+            }
+            if (data.Recurrence.Until) {
+                recRule.untilDate = cal.createDateTime(data.Recurrence.Until);
+            }
+            if (data.Recurrence.WeekOfMonth) {
+                recRule.setComponent("BYWEEKNO", 1, [data.Recurrence.WeekOfMonth]);
+            }
             item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
         }
 
-        /* Missing : MeetingStatus, Attachements (needs EAS 16.0 !), Repeated Events
+        /* Missing : MeetingStatus, Attachements (needs EAS 16.0 !)
 
-            <Recurrence xmlns='Calendar'>
-                <Type xmlns='Calendar'>5</Type>
-                <Interval xmlns='Calendar'>1</Interval>
-                <DayOfMonth xmlns='Calendar'>15</DayOfMonth>
-                <MonthOfYear xmlns='Calendar'>11</MonthOfYear>
-            </Recurrence>
             <MeetingStatus xmlns='Calendar'>0</MeetingStatus>
             */
 
