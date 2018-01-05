@@ -645,6 +645,95 @@ eas.calendarsync = {
 
         //attachements (needs EAS 16.0!)
         //repeat
+        if (item.recurrenceInfo) {
+            for (let recRule of item.recurrenceInfo.getRecurrenceItems({})) {
+                wbxml.otag("Recurrence");
+                let type = 0;
+                let monthDays = recRule.getComponent("BYMONTHDAY", {});
+                let weekDays  = recRule.getComponent("BYDAY", {});
+                let months    = recRule.getComponent("BYMONTH", {});
+                let weeks     = recRule.getComponent("BYWEEKNO", {});
+                if (recRule.type == "WEEKLY") {
+                    type = 1;
+                    if (!weekDays.length) {
+                        weekDays = [item.startDate.weekday + 1];
+                    }
+                }
+                else if (recRule.type == "MONTHLY" && (weekDays.length || monthDays[0] == -1)) {
+                    type = 3;
+                    // Unpack 1MO style days
+                    for (let i = 0; i < weekDays.length; ++i) {
+                        if (weekDays[i] > 8) {
+                            weeks[i] = Math.floor(weekDays[i] / 8);
+                            weekDays[i] = weekDays[i] % 8;
+                        }
+                    }
+                    // TODO: negative
+                }
+                else if (recRule.type == "MONTHLY") {
+                    type = 2;
+                    if (!monthDays.length) {
+                        monthDays = [item.startDate.day];
+                    }
+                }
+                else if (recRule.type == "YEARLY" && weeks.length) {
+                    type = 6;
+                }
+                else if (recRule.type == "YEARLY") {
+                    type = 5;
+                    if (!monthDays.length) {
+                        monthDays = [item.startDate.day];
+                    }
+                    if (!months.length) {
+                        months = [item.startDate.month + 1];
+                    }
+                }
+                wbxml.atag("Type", type.toString());
+                // TODO: CalendarType: 14.0 and up
+                // DayOfMonth (or DayOfWeek 127)
+                if (monthDays[0]) {
+                    if (monthDays[0] == -1) {
+                        wbxml.atag("DayOfWeek", "127");
+                        weeks = [5];
+                        weekDays = [];
+                    }
+                    else {
+                        // TODO: Multiple days of month - multiple Recurrence tags?
+                        wbxml.atag("DayOfMonth", monthDays[0].toString());
+                    }
+                }
+                // DayOfWeek
+                if (weekDays.length) {
+                    let bitfield = 0;
+                    for (let day of weekDays) {
+                        bitfield |= 1 << (day - 1);
+                    }
+                    wbxml.atag("DayOfWeek", bitfield.toString());
+                }
+                // FirstDayOfWeek: 14.1 and up
+                //wbxml.atag("FirstDayOfWeek", recRule.weekStart);
+                // Interval
+                wbxml.atag("Interval", recRule.interval.toString());
+                // TODO: IsLeapMonth: 14.0 and up
+                // MonthOfYear
+                if (months.length) {
+                    wbxml.atag("MonthOfYear", months[0].toString());
+                }
+                // Occurrences
+                if (recRule.isByCount) {
+                    wbxml.atag("Occurrences", recRule.count.toString());
+                }
+                // Until
+                else if (recRule.untilDate != null) {
+                    wbxml.atag("Until", recRule.untilDate.getInTimezone(cal.UTC()).icalString);
+                }
+                // WeekOfMonth
+                if (weeks.length) {
+                    wbxml.atag("WeekOfMonth", weeks[0].toString());
+                }
+                wbxml.ctag();
+            }
+        }
 
         
         /*
@@ -673,6 +762,8 @@ eas.calendarsync = {
             //return to Calendar code page
             wbxml.switchpage("Calendar");
         }
+        
+        let xml = wbxmltools.convert2xml(wbxml);
 
         //return to AirSync code page
         wbxml.switchpage("AirSync");
