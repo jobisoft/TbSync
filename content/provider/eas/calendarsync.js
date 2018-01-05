@@ -653,22 +653,28 @@ eas.calendarsync = {
                 let weekDays  = recRule.getComponent("BYDAY", {});
                 let months    = recRule.getComponent("BYMONTH", {});
                 let weeks     = recRule.getComponent("BYWEEKNO", {});
+                // Unpack 1MO style days
+                for (let i = 0; i < weekDays.length; ++i) {
+                    if (weekDays[i] > 8) {
+                        weeks[i] = Math.floor(weekDays[i] / 8);
+                        weekDays[i] = weekDays[i] % 8;
+                    }
+                }
+                // TODO: negative week days eg -1MO
+                if (monthDays[0] && monthDays[0] == -1) {
+                    weeks = [5];
+                    weekDays = [1, 2, 3, 4, 5, 6, 7]; // 127
+                    monthDays[0] = null;
+                }
+                // Type
                 if (recRule.type == "WEEKLY") {
                     type = 1;
                     if (!weekDays.length) {
                         weekDays = [item.startDate.weekday + 1];
                     }
                 }
-                else if (recRule.type == "MONTHLY" && (weekDays.length || monthDays[0] == -1)) {
+                else if (recRule.type == "MONTHLY" && weeks.length) {
                     type = 3;
-                    // Unpack 1MO style days
-                    for (let i = 0; i < weekDays.length; ++i) {
-                        if (weekDays[i] > 8) {
-                            weeks[i] = Math.floor(weekDays[i] / 8);
-                            weekDays[i] = weekDays[i] % 8;
-                        }
-                    }
-                    // TODO: negative
                 }
                 else if (recRule.type == "MONTHLY") {
                     type = 2;
@@ -690,17 +696,10 @@ eas.calendarsync = {
                 }
                 wbxml.atag("Type", type.toString());
                 // TODO: CalendarType: 14.0 and up
-                // DayOfMonth (or DayOfWeek 127)
+                // DayOfMonth
                 if (monthDays[0]) {
-                    if (monthDays[0] == -1) {
-                        wbxml.atag("DayOfWeek", "127");
-                        weeks = [5];
-                        weekDays = [];
-                    }
-                    else {
-                        // TODO: Multiple days of month - multiple Recurrence tags?
-                        wbxml.atag("DayOfMonth", monthDays[0].toString());
-                    }
+                    // TODO: Multiple days of month - multiple Recurrence tags?
+                    wbxml.atag("DayOfMonth", monthDays[0].toString());
                 }
                 // DayOfWeek
                 if (weekDays.length) {
@@ -762,8 +761,6 @@ eas.calendarsync = {
             //return to Calendar code page
             wbxml.switchpage("Calendar");
         }
-        
-        let xml = wbxmltools.convert2xml(wbxml);
 
         //return to AirSync code page
         wbxml.switchpage("AirSync");
