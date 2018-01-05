@@ -123,7 +123,7 @@
                 </row>
                 <row>
                      <label value="&pref.syncstate;" />
-                     <label id="syncstate" style="height: 4ex;"></label>
+                     <label id="syncstate" style="height: 4ex; white-space: pre-line;"></label>
                 </row>
 
                 <row>

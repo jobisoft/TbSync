@@ -24,17 +24,17 @@ var xmltools = {
     },
 
     getWbxmlDataField: function(wbxmlData,path) {
-	if (wbxmlData) {		
-		let pathElements = path.split(".");
-		let data = wbxmlData;
-		let valid = true;
-		for (let x = 0; valid && x < pathElements.length; x++) {
-			if (data[pathElements[x]]) data = data[pathElements[x]];
-			else valid = false;
-		}
-		if (valid) return data;
-	}
-	return false
+    if (wbxmlData) {		
+        let pathElements = path.split(".");
+        let data = wbxmlData;
+        let valid = true;
+        for (let x = 0; valid && x < pathElements.length; x++) {
+            if (data[pathElements[x]]) data = data[pathElements[x]];
+            else valid = false;
+        }
+        if (valid) return data;
+    }
+    return false
     },
 
     //print content of xml data object (if debug output enabled)
@@ -56,12 +56,31 @@ var xmltools = {
 
     getDataFromXMLString: function (str) {
         let data = null;
+        let xml = "";        
         if (str == "") return data;
         
         let oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
         try {
-            data = this.getDataFromXML(oParser.parseFromString(str, "text/xml"));
-        } catch (e) {}
+            xml = oParser.parseFromString(str, "application/xml");
+        } catch (e) {
+            //however, domparser does not throw an error, it returns an error document
+            //https://developer.mozilla.org/de/docs/Web/API/DOMParser
+            //just in case
+            throw eas.finishSync("mailformed-xml", eas.flags.abortWithError);
+        }
+
+        //check if xml is error document
+        if (xml.documentElement.nodeName == "parsererror") {
+            tbSync.dump("BAD XML",str);
+            throw eas.finishSync("mailformed-xml", eas.flags.abortWithError);
+        }
+
+        try {
+            data = this.getDataFromXML(xml);
+        } catch (e) {
+            throw eas.finishSync("mailformed-data", eas.flags.abortWithError);
+        }
+        
         return data;
     },
     

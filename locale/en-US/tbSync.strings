@@ -32,6 +32,7 @@ status.wbxmlmissingfield=ActiveSync protocol violation: Mandatory field <##repla
 status.OK=Ok
 status.nolightning=Lightning Add-On not installed, calendars are not supported.
 status.javascriptError=Javascript error! Check debug log for details.
+status.mailformed-xml=Could not parse XML. Please help fixing this bug by (in that order!)\n - disconnect this account\n - enabling debug log (@Help)\n - restart Thunderbird\n - reconnect this account and re-trigger this error\n - send me the debug log or at least the line marked with BAD XML   
 
 status.syncing=Synchronizing ...
 status.skipped=Not yet supported, skipped
