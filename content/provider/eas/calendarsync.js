@@ -449,14 +449,73 @@ eas.calendarsync = {
             item.organizer = organizer;
         }
 
-        /* Missing : MeetingStatus, Attachements (needs EAS 16.0 !), Repeated Events
+        if (data.Recurrence) {
+            item.recurrenceInfo = cal.createRecurrenceInfo();
+            item.recurrenceInfo.item = item;
+            let recRule = cal.createRecurrenceRule();
+            switch (data.Recurrence.Type) {
+            case "0":
+                recRule.type = "DAILY";
+                break;
+            case "1":
+                recRule.type = "WEEKLY";
+                break;
+            case "2":
+            case "3":
+                recRule.type = "MONTHLY";
+                break;
+            case "5":
+            case "6":
+                recRule.type = "YEARLY";
+                break;
+            }
+            if (data.Recurrence.CalendarType) {
+                // TODO
+            }
+            if (data.Recurrence.DayOfMonth) {
+                recRule.setComponent("BYMONTHDAY", 1, [data.Recurrence.DayOfMonth]);
+            }
+            if (data.Recurrence.DayOfWeek) {
+                let DOW = data.Recurrence.DayOfWeek;
+                if (DOW == 127) {
+                    recRule.setComponent("BYMONTHDAY", 1, [-1]);
+                }
+                else {
+                    let days = [];
+                    for (let i = 0; i < 7; ++i) {
+                        if (DOW & 1 << i) days.push(i + 1);
+                    }
+                    if (data.Recurrence.WeekOfMonth) {
+                        for (let i = 0; i < days.length; ++i) {
+                            days[i] += 8 * ((data.Recurrence.WeekOfMonth != 5) ? (data.Recurrence.WeekOfMonth - 0) : -1);
+                        }
+                    }
+                    recRule.setComponent("BYDAY", days.length, days);
+                }
+            }
+            if (data.Recurrence.FirstDayOfWeek) {
+                recRule.setComponent("WKST", 1, [data.Recurrence.FirstDayOfWeek]);
+            }
+            if (data.Recurrence.Interval) {
+                recRule.interval = data.Recurrence.Interval;
+            }
+            if (data.Recurrence.IsLeapMonth) {
+                // TODO
+            }
+            if (data.Recurrence.MonthOfYear) {
+                recRule.setComponent("BYMONTH", 1, [data.Recurrence.MonthOfYear]);
+            }
+            if (data.Recurrence.Occurrences) {
+                recRule.count = data.Recurrence.Occurrences;
+            }
+            if (data.Recurrence.Until) {
+                recRule.untilDate = cal.createDateTime(data.Recurrence.Until);
+            }
+            item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
+        }
 
-            <Recurrence xmlns='Calendar'>
-                <Type xmlns='Calendar'>5</Type>
-                <Interval xmlns='Calendar'>1</Interval>
-                <DayOfMonth xmlns='Calendar'>15</DayOfMonth>
-                <MonthOfYear xmlns='Calendar'>11</MonthOfYear>
-            </Recurrence>
+        /* Missing : MeetingStatus, Attachements (needs EAS 16.0 !)
+
             <MeetingStatus xmlns='Calendar'>0</MeetingStatus>
             */
 
@@ -588,6 +647,102 @@ eas.calendarsync = {
 
         //attachements (needs EAS 16.0!)
         //repeat
+        if (item.recurrenceInfo) {
+            for (let recRule of item.recurrenceInfo.getRecurrenceItems({})) {
+                wbxml.otag("Recurrence");
+                let type = 0;
+                let monthDays = recRule.getComponent("BYMONTHDAY", {});
+                let weekDays  = recRule.getComponent("BYDAY", {});
+                let months    = recRule.getComponent("BYMONTH", {});
+                let weeks     = recRule.getComponent("BYWEEKNO", {});
+                // Unpack 1MO style days
+                for (let i = 0; i < weekDays.length; ++i) {
+                    if (weekDays[i] > 8) {
+                        weeks[i] = Math.floor(weekDays[i] / 8);
+                        weekDays[i] = weekDays[i] % 8;
+                    }
+                    else if (weekDays[i] < -8) {
+                        // EAS only supports last week as a special value, treat
+                        // all as last week or assume every month has 5 weeks?
+                        // Change to last week
+                        //weeks[i] = 5;
+                        // Assumes 5 weeks per month for week <= -2
+                        weeks[i] = 6 - Math.floor(-weekDays[i] / 8);
+                        weekDays[i] = -weekDays[i] % 8;
+                    }
+                }
+                if (monthDays[0] && monthDays[0] == -1) {
+                    weeks = [5];
+                    weekDays = [1, 2, 3, 4, 5, 6, 7]; // 127
+                    monthDays[0] = null;
+                }
+                // Type
+                if (recRule.type == "WEEKLY") {
+                    type = 1;
+                    if (!weekDays.length) {
+                        weekDays = [item.startDate.weekday + 1];
+                    }
+                }
+                else if (recRule.type == "MONTHLY" && weeks.length) {
+                    type = 3;
+                }
+                else if (recRule.type == "MONTHLY") {
+                    type = 2;
+                    if (!monthDays.length) {
+                        monthDays = [item.startDate.day];
+                    }
+                }
+                else if (recRule.type == "YEARLY" && weeks.length) {
+                    type = 6;
+                }
+                else if (recRule.type == "YEARLY") {
+                    type = 5;
+                    if (!monthDays.length) {
+                        monthDays = [item.startDate.day];
+                    }
+                    if (!months.length) {
+                        months = [item.startDate.month + 1];
+                    }
+                }
+                wbxml.atag("Type", type.toString());
+                // TODO: CalendarType: 14.0 and up
+                // DayOfMonth
+                if (monthDays[0]) {
+                    // TODO: Multiple days of month - multiple Recurrence tags?
+                    wbxml.atag("DayOfMonth", monthDays[0].toString());
+                }
+                // DayOfWeek
+                if (weekDays.length) {
+                    let bitfield = 0;
+                    for (let day of weekDays) {
+                        bitfield |= 1 << (day - 1);
+                    }
+                    wbxml.atag("DayOfWeek", bitfield.toString());
+                }
+                // FirstDayOfWeek: 14.1 and up
+                //wbxml.atag("FirstDayOfWeek", recRule.weekStart);
+                // Interval
+                wbxml.atag("Interval", recRule.interval.toString());
+                // TODO: IsLeapMonth: 14.0 and up
+                // MonthOfYear
+                if (months.length) {
+                    wbxml.atag("MonthOfYear", months[0].toString());
+                }
+                // Occurrences
+                if (recRule.isByCount) {
+                    wbxml.atag("Occurrences", recRule.count.toString());
+                }
+                // Until
+                else if (recRule.untilDate != null) {
+                    wbxml.atag("Until", recRule.untilDate.getInTimezone(cal.UTC()).icalString);
+                }
+                // WeekOfMonth
+                if (weeks.length) {
+                    wbxml.atag("WeekOfMonth", weeks[0].toString());
+                }
+                wbxml.ctag();
+            }
+        }
 
         
         /*
