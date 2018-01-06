@@ -485,6 +485,11 @@ eas.calendarsync = {
                     for (let i = 0; i < 7; ++i) {
                         if (DOW & 1 << i) days.push(i + 1);
                     }
+                    if (data.Recurrence.WeekOfMonth) {
+                        for (let i = 0; i < days.length; ++i) {
+                            days[i] += 8 * ((data.Recurrence.WeekOfMonth != 5) ? (data.Recurrence.WeekOfMonth - 0) : -1);
+                        }
+                    }
                     recRule.setComponent("BYDAY", days.length, days);
                 }
             }
@@ -505,9 +510,6 @@ eas.calendarsync = {
             }
             if (data.Recurrence.Until) {
                 recRule.untilDate = cal.createDateTime(data.Recurrence.Until);
-            }
-            if (data.Recurrence.WeekOfMonth) {
-                recRule.setComponent("BYWEEKNO", 1, [data.Recurrence.WeekOfMonth]);
             }
             item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
         }
