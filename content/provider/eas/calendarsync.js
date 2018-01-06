@@ -656,7 +656,9 @@ eas.calendarsync = {
                 let monthDays = recRule.getComponent("BYMONTHDAY", {});
                 let weekDays  = recRule.getComponent("BYDAY", {});
                 let months    = recRule.getComponent("BYMONTH", {});
-                let weeks     = recRule.getComponent("BYWEEKNO", {});
+                //proposed change by Chris Allan
+                //let weeks     = recRule.getComponent("BYWEEKNO", {});
+                let weeks     = [];
                 // Unpack 1MO style days
                 for (let i = 0; i < weekDays.length; ++i) {
                     if (weekDays[i] > 8) {
