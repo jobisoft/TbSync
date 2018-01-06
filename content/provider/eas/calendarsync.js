@@ -426,11 +426,9 @@ eas.calendarsync = {
                         break;
                 }
 
-                /*
-                 * status  : [NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, DELEGATED, COMPLETED, IN-PROCESS]
-                 * rolemap : [REQ-PARTICIPANT, OPT-PARTICIPANT, NON-PARTICIPANT, CHAIR]
-                 * typemap : [INDIVIDUAL, GROUP, RESOURCE, ROOM]
-                 */
+                // status  : [NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, DELEGATED, COMPLETED, IN-PROCESS]
+                // rolemap : [REQ-PARTICIPANT, OPT-PARTICIPANT, NON-PARTICIPANT, CHAIR]
+                // typemap : [INDIVIDUAL, GROUP, RESOURCE, ROOM]
 
                 // Add attendee to event
                 item.addAttendee(attendee);
@@ -630,11 +628,9 @@ eas.calendarsync = {
                                 default         : wbxml.atag("AttendeeStatus","0");break;
                             }
 
-                            /*
-                            * status  : [NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, DELEGATED, COMPLETED, IN-PROCESS]
-                            * rolemap : [REQ-PARTICIPANT, OPT-PARTICIPANT, NON-PARTICIPANT, CHAIR]
-                            * typemap : [INDIVIDUAL, GROUP, RESOURCE, ROOM]
-                            */
+                            // status  : [NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, DELEGATED, COMPLETED, IN-PROCESS]
+                            // rolemap : [REQ-PARTICIPANT, OPT-PARTICIPANT, NON-PARTICIPANT, CHAIR]
+                            // typemap : [INDIVIDUAL, GROUP, RESOURCE, ROOM]
 
                             if (attendee.userType == "RESOURCE" || attendee.userType == "ROOM" || attendee.role == "NON-PARTICIPANT") wbxml.atag("AttendeeType","3");
                             else if (attendee.role == "REQ-PARTICIPANT" || attendee.role == "CHAIR") wbxml.atag("AttendeeType","1");
