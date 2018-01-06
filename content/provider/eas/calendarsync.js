@@ -648,7 +648,8 @@ eas.calendarsync = {
         }
 
         //attachements (needs EAS 16.0!)
-        //repeat
+
+        //recurrent events (implemented by Chris Allan)
         if (item.recurrenceInfo) {
             for (let recRule of item.recurrenceInfo.getRecurrenceItems({})) {
                 wbxml.otag("Recurrence");
