@@ -866,6 +866,8 @@ var tbSync = {
         newCalendar.setProperty("color", color); //any chance to get the color from the provider?
     
         newCalendar.setProperty("calendar-main-in-composite",true);
+        newCalendar.setProperty("organizerId", tbSync.db.getAccountSetting(account, "user"));
+        //newCalendar.setProperty("organizerCN", ???); //TODO: The default value for this field is the user of the default IMAP account of TB, which is a good guess, but maybe we add an extra FULL NAME field in TbSync settings?
         tbSync.dump("tbSync::checkCalendar("+account+", "+folderID+")", "Creating new calendar (" + newname + ")");
         
         //store id of calendar as target in DB
