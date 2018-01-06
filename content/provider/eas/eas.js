@@ -640,7 +640,8 @@ var eas = {
             "birthday" : "0",
             "displayoverride" : "0", 
             "downloadonly" : "0",
-            "autosync" : "0" };
+            "autosync" : "0",
+            "horde" : "0"};
         return row;
     },
     

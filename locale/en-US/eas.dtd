@@ -19,6 +19,7 @@
 <!ENTITY pref.usehttps "Use secure connection (connect via https)">
 <!ENTITY pref.DeviceId "Device Id">
 <!ENTITY pref.UseProvisioning "Use provisioning">
+<!ENTITY pref.isHordeServer "This is a horde server">
 <!ENTITY pref.birthday "Send birthday information">
 <!ENTITY pref.downloadonly "One-way sync (do not send local changes to the server)">
 <!ENTITY pref.autotime "AutoSync (minutes)">
