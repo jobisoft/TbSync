@@ -98,8 +98,14 @@ var db = {
 
     // ACCOUNT FUNCTIONS
 
-    getAccountStorageFields: function (account) {
-        return Object.keys(this.accounts.data[account]).sort();
+    isValidAccountSetting: function (settings, name) {
+        //the only hardcoded account option is "provider", all others are taken from tbSync[provider].getNewAccountEntry())
+        return ((name == "provider" || settings.hasOwnProperty(name) || tbSync[settings.provider].getNewAccountEntry().hasOwnProperty(name)));
+    },
+
+    getDefaultAccountSetting: function (settings, name) {
+        //THIS FUNCTION ASSUMES, THAT THE GIVEN FIELD IS VALID
+        return tbSync[settings.provider].getNewAccountEntry()[name];
     },
 
     addAccount: function (newAccountEntry) {
@@ -128,9 +134,9 @@ var db = {
     setAccountSetting: function (account , name, value) {
         // if the requested account does not exist, getAccount() will fail
         let settings = this.getAccount(account);
-
-        //check if field is allowed
-        if (settings.hasOwnProperty(name)) {
+        
+        //check if field is allowed, and set given value 
+        if (this.isValidAccountSetting(settings, name)) {
             this.accounts.data[account][name] = value.toString();
         } else {
             throw "Unknown account setting!" + "\nThrown by db.setAccountSetting("+account+", " + name + ", " + value + ")";
@@ -156,8 +162,12 @@ var db = {
 
     getAccountSetting: function (account, name) {
         let data = this.getAccount(account);
-        //check if field is allowed
-        if (data.hasOwnProperty(name)) return data[name];
+
+        //check if field is allowed, and set given value (the only hardcoded account option is "provider", all others are taken from tbSync[provider].getNewAccountEntry())
+        if (this.isValidAccountSetting(data, name)) {
+            if (data.hasOwnProperty(name)) return data[name];
+            else return this.getDefaultAccountSetting(data, name);
+        }
         else throw "Unknown account setting!" + "\nThrown by db.getAccountSetting("+account+", " + name + ")";
     }, 
 

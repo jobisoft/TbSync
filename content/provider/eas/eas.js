@@ -644,6 +644,10 @@ var eas = {
             "horde" : "0"};
         return row;
     },
+
+    getAccountStorageFields: function () {
+        return Object.keys(this.getNewAccountEntry()).sort();
+    },
     
     logxml : function (wbxml, what) {
         if (tbSync.prefSettings.getBoolPref("log.toconsole") || tbSync.prefSettings.getBoolPref("log.tofile")) {

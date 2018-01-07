@@ -60,7 +60,7 @@ var tbSyncAccountSettings = {
     * field in the settings dialog, fill it with the stored value.
     */
     loadSettings: function () {
-        let settings = tbSync.db.getAccountStorageFields(tbSyncAccountSettings.selectedAccount);
+        let settings = tbSync.eas.getAccountStorageFields();
         let servertype = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype");
         
         this.fixedSettings = tbSync.eas.getFixedServerSettings(servertype);
@@ -100,7 +100,7 @@ var tbSyncAccountSettings = {
     * field in the settings dialog, store its current value.
     */
     saveSettings: function () {
-        let settings = tbSync.db.getAccountStorageFields(tbSyncAccountSettings.selectedAccount);
+        let settings = tbSync.eas.getAccountStorageFields();
 
         let data = tbSync.db.getAccount(tbSyncAccountSettings.selectedAccount); //gets a reference
         for (let i=0; i<settings.length;i++) {
