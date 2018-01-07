@@ -134,7 +134,7 @@ var db = {
     setAccountSetting: function (account , name, value) {
         // if the requested account does not exist, getAccount() will fail
         let settings = this.getAccount(account);
-        
+
         //check if field is allowed, and set given value 
         if (this.isValidAccountSetting(settings, name)) {
             this.accounts.data[account][name] = value.toString();
@@ -163,7 +163,7 @@ var db = {
     getAccountSetting: function (account, name) {
         let data = this.getAccount(account);
 
-        //check if field is allowed, and set given value (the only hardcoded account option is "provider", all others are taken from tbSync[provider].getNewAccountEntry())
+        //check if field is allowed and get value or default value if setting is not set
         if (this.isValidAccountSetting(data, name)) {
             if (data.hasOwnProperty(name)) return data[name];
             else return this.getDefaultAccountSetting(data, name);
