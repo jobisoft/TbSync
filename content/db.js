@@ -100,7 +100,7 @@ var db = {
 
     isValidAccountSetting: function (settings, name) {
         //the only hardcoded account option is "provider", all others are taken from tbSync[provider].getNewAccountEntry())
-        return ((name == "provider" || settings.hasOwnProperty(name) || tbSync[settings.provider].getNewAccountEntry().hasOwnProperty(name)));
+        return ((name == "provider" || tbSync[settings.provider].getNewAccountEntry().hasOwnProperty(name)));
     },
 
     getDefaultAccountSetting: function (settings, name) {
@@ -177,6 +177,17 @@ var db = {
 
     // FOLDER FUNCTIONS
 
+    isValidFolderSetting: function (account, field) {
+        let provider = this.getAccountSetting(account, "provider");
+        return tbSync[provider].getNewFolderEntry().hasOwnProperty(field);
+    },
+
+    getDefaultFolderSetting: function (account, field) {
+        //THIS FUNCTION ASSUMES, THAT THE GIVEN FIELD IS VALID
+        let provider = this.getAccountSetting(account, "provider");
+        return tbSync[provider].getNewFolderEntry()[name];
+    },
+
     addFolder: function(data) {
         let account = parseInt(data.account);
         if (!this.folders.hasOwnProperty(account)) this.folders[account] = {};
@@ -212,15 +223,18 @@ var db = {
     getFolderSetting: function(account, folderID, field) {
         let folder = this.getFolder(account, folderID);
         //does the field exist?
-        if (folder === null || !folder.hasOwnProperty(field)) throw "Unknown folder field!" + "\nThrown by db.getFolderSetting("+account+", " + folderID + ", " + field + ")";
-        else return folder[field];
+        if (folder === null || !this.isValidFolderSetting(account, field)) throw "Unknown folder field!" + "\nThrown by db.getFolderSetting("+account+", " + folderID + ", " + field + ")";
+        else {
+            if (folder.hasOwnProperty(field)) return folder[field];
+            else return this.getDefaultFolderSetting(account, field); //TODO: Actually set the default setting, so that the folder OBJ has the value as well?
+        }
     },
 
     findFoldersWithSetting: function (name, value, account = null) {
         let data = [];
         for (let aID in this.folders) {
             for (let fID in this.folders[aID]) {
-                if ((account === null || account == aID) && this.folders[aID][fID].hasOwnProperty(name) && this.folders[aID][fID][name] == value) data.push(this.folders[aID][fID]);
+                if ((account === null || account == aID) && this.isValidFolderSetting(aID, name) && this.getFolderSetting(aID,fID, name) == value) data.push(this.folders[aID][fID]);
             }
         }
 
@@ -231,19 +245,21 @@ var db = {
     setFolderSetting: function(account, folderID, field, value) {
         //this function can update ALL folders for a given account (if folderID == "") or just a specific folder
         //folders will contain all folders, which need to be updated;
-        let folders = this.getFolders(account);
+        if (this.isValidFolderSetting(account, field)) {
+            let folders = this.getFolders(account);
 
-        if (folderID == "") {
-            for (let fID in folders) {
-                if (folders[fID].hasOwnProperty(field)) folders[fID][field] = value.toString();
-                else throw "Unknown folder field!" + "\nThrown by db.setFolderSetting("+account+", " + folderID + ", " + field + ", " + value + ")";
+            if (folderID == "") {
+                for (let fID in folders) {
+                    folders[fID][field] = value.toString();
+                }
+            } else {
+                folders[folderID][field] = value.toString();
             }
-        } else {
-            if (folders[folderID].hasOwnProperty(field)) folders[folderID][field] = value.toString();
-            else throw "Unknown folder field!" + "\nThrown by db.setFolderSetting("+account+", " + folderID + ", " + field + ", " + value + ")";
-        }
 
-        this.saveFolders();
+            this.saveFolders();
+        } else {
+            throw "Unknown folder field!" + "\nThrown by db.setFolderSetting("+account+", " + folderID + ", " + field + ", " + value + ")";
+        }
     },
     
     
