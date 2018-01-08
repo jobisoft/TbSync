@@ -16,26 +16,29 @@ var eas = {
     
     onload: function () {
 
-        //get a list of all zones
-        //alternativly use cal.fromRFC3339 - but this is only doing this
-        //https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calProviderUtils.jsm
-        eas.offsets = {};
-        let tzService = cal.getTimezoneService();
-        let dateTime = cal.createDateTime("20160101T000000Z"); //UTC
+        if ("calICalendar" in Components.interfaces) {
+            //get a list of all zones
+            //alternativly use cal.fromRFC3339 - but this is only doing this
+            //https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calProviderUtils.jsm
+            eas.offsets = {};
+            let tzService = cal.getTimezoneService();
+            let dateTime = cal.createDateTime("20160101T000000Z"); //UTC
 
-        //find timezone based on utcOffset
-        let enumerator = tzService.timezoneIds;
-        while (enumerator.hasMore()) {
-            let id = enumerator.getNext();
-            dateTime.timezone = tzService.getTimezone(id);
-            eas.offsets[dateTime.timezoneOffset/-60] = id; //in minutes
+            //find timezone based on utcOffset
+            let enumerator = tzService.timezoneIds;
+            while (enumerator.hasMore()) {
+                let id = enumerator.getNext();
+                dateTime.timezone = tzService.getTimezone(id);
+                eas.offsets[dateTime.timezoneOffset/-60] = id; //in minutes
+            }
+
+            //also try default timezone
+            dateTime.timezone=cal.calendarDefaultTimezone();
+            eas.defaultUtcOffset = dateTime.timezoneOffset/-60
+            eas.offsets[eas.defaultUtcOffset] = dateTime.timezone.tzid;
+
         }
-
-        //also try default timezone
-        dateTime.timezone=cal.calendarDefaultTimezone();
-        eas.defaultUtcOffset = dateTime.timezoneOffset/-60
-        eas.offsets[eas.defaultUtcOffset] = dateTime.timezone.tzid;
-
+        
         //finish init by calling main init()
         tbSync.init("eas");
     },
