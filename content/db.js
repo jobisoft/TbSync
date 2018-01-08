@@ -230,11 +230,43 @@ var db = {
         }
     },
 
-    findFoldersWithSetting: function (name, value, account = null) {
+    findFoldersWithSetting: function (_folderFields, _folderValues, _accountFields = [], _accountValues = []) {
+        //Find values based on one (string) or more (array) field conditions in folder and account data.
+        //folderValues element may contain "," to seperate multiple field values for matching (OR)
         let data = [];
+        let folderFields = [];
+        let folderValues = [];
+        let accountFields = [];
+        let accountValues = [];
+        
+        //turn string parameters into arrays
+        if (Array.isArray(_folderFields)) folderFields = _folderFields; else folderFields.push(_folderFields);
+        if (Array.isArray(_folderValues)) folderValues = _folderValues; else folderValues.push(_folderValues);
+        if (Array.isArray(_accountFields)) accountFields = _accountFields; else accountFields.push(_accountFields);
+        if (Array.isArray(_accountValues)) accountValues = _accountValues; else accountValues.push(_accountValues);
+
+        //fallback to old interface (name, value, account = "")
+        if (accountFields.length == 1 && accountValues.length == 0) {
+            accountValues.push(accountFields[0]);
+            accountFields[0] = "account";
+        }
+        
         for (let aID in this.folders) {
-            for (let fID in this.folders[aID]) {
-                if ((account === null || account == aID) && this.isValidFolderSetting(aID, name) && this.getFolderSetting(aID,fID, name) == value) data.push(this.folders[aID][fID]);
+            //does this account match account search options?
+            let accountmatch = true;
+            for (let a = 0; a < accountFields.length && accountmatch; a++) {
+                accountmatch = (this.getAccountSetting(aID, accountFields[a]) == accountValues[a]);
+            }
+            
+            if (accountmatch) {
+                for (let fID in this.folders[aID]) {
+                    //does this folder match folder search options?                
+                    let foldermatch = true;
+                    for (let f = 0; f < folderFields.length && foldermatch; f++) {
+                        foldermatch = folderValues[f].split(",").includes(this.getFolderSetting(aID, fID, folderFields[f]));
+                    }
+                    if (foldermatch) data.push(this.folders[aID][fID]);
+                }
             }
         }
 
