@@ -618,7 +618,7 @@ eas.calendarsync = {
                 for (let attendee of attendees) {
                     wbxml.otag("Attendee");
                         wbxml.atag("Email", cal.removeMailTo(attendee.id));
-                        wbxml.atag("Name", attendee.commonName);
+                        wbxml.atag("Name", (attendee.commonName ? attendee.commonName : cal.removeMailTo(attendee.id).split("@")[0]));
                         if (asversion != "2.5") {
                             switch (attendee.participationStatus) {
                                 case "TENTATIVE": wbxml.atag("AttendeeStatus","2");break;
