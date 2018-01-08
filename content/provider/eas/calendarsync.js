@@ -513,10 +513,8 @@ eas.calendarsync = {
             item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
         }
 
-        /* Missing : MeetingStatus, Attachements (needs EAS 16.0 !)
-
-            <MeetingStatus xmlns='Calendar'>0</MeetingStatus>
-            */
+        // Missing : MeetingStatus
+        // Missing : Attachements (needs EAS 16.0 !)
 
         //TASK STUFF
         //aItem.entryDate = start;
@@ -597,24 +595,25 @@ eas.calendarsync = {
         //https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIAlarm.idl
         //tbSync.dump("ALARM ("+i+")", [, alarms[i].related, alarms[i].repeat, alarms[i].repeatOffset, alarms[i].repeatDate, alarms[i].action].join("|"));
 
-        
-        //EAS MeetingStatus (TB STATUS: CANCELLED,CONFIRMED,TENTATIVE
-        // 0  The event is an appointment, which has no attendees.
-        // 1  The event is a meeting and the user is the meeting organizer.
-        // 3  This event is a meeting, and the user is not the meeting organizer; the meeting was received from someone else.
-        // 5  The meeting has been canceled and the user was the meeting organizer.
-        // 7  The meeting has been canceled. The user was not the meeting organizer; the meeting was received from someone else
 
+
+        //get Attendees here, which is also needed to set MeetingStatus
+        let countAttendees = {};
+        let attendees = item.getAttendees(countAttendees);
+
+        //EAS MeetingStatus
+        // 0 (000) The event is an appointment, which has no attendees.
+        // 1 (001) The event is a meeting and the user is the meeting organizer.
+        // 3 (011) This event is a meeting, and the user is not the meeting organizer; the meeting was received from someone else.
+        // 5 (101) The meeting has been canceled and the user was the meeting organizer.
+        // 7 (111) The meeting has been canceled. The user was not the meeting organizer; the meeting was received from someone else
 
         //Organizer
         if (item.organizer && item.organizer.commonName) wbxml.atag("OrganizerName", item.organizer.commonName);
         if (item.organizer && item.organizer.id) wbxml.atag("OrganizerEmail",  cal.removeMailTo(item.organizer.id));
 
-
-        //Attendees - remove all Attendees and re-add the ones from XML
-        let countObj = {};
-        let attendees = item.getAttendees(countObj);
-        if (countObj.value > 0) {
+        //Attendees
+        if (countAttendees.value > 0) {
             wbxml.otag("Attendees");
                 for (let attendee of attendees) {
                     wbxml.otag("Attendee");
