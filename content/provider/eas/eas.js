@@ -15,7 +15,6 @@ var eas = {
     }),
     
     init: Task.async (function* ()  {
-        tbSync.dump("INIT","EAS provider");
         if ("calICalendar" in Components.interfaces) {
             //get a list of all zones
             //alternativly use cal.fromRFC3339 - but this is only doing this

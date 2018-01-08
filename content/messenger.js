@@ -17,8 +17,8 @@ var tbSyncMessenger = {
             document.getElementById("calendar-synchronize-button").addEventListener("command", tbSyncMessenger.ligthningSyncRequest, false);
         }
 
-        //run global init - do NOT call anything after this, tbSync.init() is async
-        tbSync.init();
+        //run global init as background job, so it does not delay TB startup
+        window.setTimeout(tbSync.init, 1);
     },
 
     ligthningSyncRequest: function() {
