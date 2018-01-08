@@ -885,20 +885,13 @@ var tbSync = {
         //is there an email identity we can associate this calendar to? 
         //getIdentityKey returns "" if none found, which removes any association
         let key = tbSync.getIdentityKey(tbSync.db.getAccountSetting(account, "user"));
+        newCalendar.setProperty("fallbackOrganizerName", newCalendar.getProperty("organizerCN"));
+        newCalendar.setProperty("imip.identity.key", key);
         if (key === "") {
-            //there is no matching email identity - use current default value as best guess
-            newCalendar.setProperty("easOrganizerCN", newCalendar.getProperty("organizerCN"));
-            newCalendar.setProperty("easOrganizerID", tbSync.db.getAccountSetting(account, "user"));
-            //remove association
-            newCalendar.setProperty("imip.identity.key", key);
+            //there is no matching email identity - use current default value as best guess and remove association
             //use current best guess 
-            newCalendar.setProperty("organizerCN", newCalendar.getProperty("easOrganizerCN"));
-            newCalendar.setProperty("organizerId", newCalendar.getProperty("easOrganizerID"));
-        } else {
-            //there is a matching email identity - set and store email and name es best guess
-            newCalendar.setProperty("imip.identity.key", key);
-            newCalendar.setProperty("easOrganizerCN", newCalendar.getProperty("organizerCN"));
-            newCalendar.setProperty("easOrganizerID", newCalendar.getProperty("organizerId"));
+            newCalendar.setProperty("organizerCN", newCalendar.getProperty("fallbackOrganizerName"));
+            newCalendar.setProperty("organizerId", cal.prependMailTo(tbSync.db.getAccountSetting(account, "user")));
         }
 
         //store id of calendar as target in DB
