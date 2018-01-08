@@ -11,12 +11,14 @@ var tbSyncMessenger = {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncMessenger.syncstateObserver, "tbsync.changedSyncstate", false);
 
-        tbSync.init("messenger");
         tbSyncMessenger.syncTimer.start();
         
         if (document.getElementById("calendar-synchronize-button")) {
             document.getElementById("calendar-synchronize-button").addEventListener("command", tbSyncMessenger.ligthningSyncRequest, false);
         }
+
+        //run global init - do NOT call anything after this, tbSync.init() is async
+        tbSync.init();
     },
 
     ligthningSyncRequest: function() {

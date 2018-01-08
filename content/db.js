@@ -266,50 +266,41 @@ var db = {
     
     
     
-    
-    
-    init: function () {
         
+    init: Task.async (function* ()  {
+        
+        tbSync.dump("INIT","DB");
+
         //DB Concept:
         //-- on application start, data is read async from json file into object
         //-- AddOn only works on object
         //-- each time data is changed, an async write job is initiated 2s in the future and is resceduled, if another request arrives within that time
 
-        //A task is "serializing" async jobs
-        Task.spawn(function* () {
+        //load changelog from file
+        try {
+            let data = yield OS.File.read(tbSync.getAbsolutePath(db.changelogFile));
+            db.changelog = JSON.parse(tbSync.decoder.decode(data));
+        } catch (ex) {
+            //if there is no file, there is no file...
+        }
 
-            //load changelog from file
-            try {
-                let data = yield OS.File.read(tbSync.getAbsolutePath(db.changelogFile));
-                db.changelog = JSON.parse(tbSync.decoder.decode(data));
-            } catch (ex) {
-                //if there is no file, there is no file...
-            }
+        //load accounts from file
+        try {
+            let data = yield OS.File.read(tbSync.getAbsolutePath(db.accountsFile));
+            db.accounts = JSON.parse(tbSync.decoder.decode(data));
+        } catch (ex) {
+            //if there is no file, there is no file...
+        }
 
-            //load accounts from file
-            try {
-                let data = yield OS.File.read(tbSync.getAbsolutePath(db.accountsFile));
-                db.accounts = JSON.parse(tbSync.decoder.decode(data));
-            } catch (ex) {
-                //if there is no file, there is no file...
-            }
-
-            //load folders from file
-            try {
-                let data = yield OS.File.read(tbSync.getAbsolutePath(db.foldersFile));
-                db.folders = JSON.parse(tbSync.decoder.decode(data));
-            } catch (ex) {
-                //if there is no file, there is no file...
-            }
-
-            //finish async init by calling main init()
-            tbSync.init("db");
+        //load folders from file
+        try {
+            let data = yield OS.File.read(tbSync.getAbsolutePath(db.foldersFile));
+            db.folders = JSON.parse(tbSync.decoder.decode(data));
+        } catch (ex) {
+            //if there is no file, there is no file...
+        }
             
-        }).catch(Components.utils.reportError);
-
-    },
+    }),
 
 
 };
-
-db.init();

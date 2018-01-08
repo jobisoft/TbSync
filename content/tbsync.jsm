@@ -39,33 +39,37 @@ var tbSync = {
 
 
 
-    // GLOBAL INIT (this init function is called by the init of messenger, db and the different provider)
-    init: function (caller) { 
-        tbSync.initjobs++;
-        tbSync.dump("INIT","tbSync.init() called by <" + caller + ">");
-        
-        if (tbSync.initjobs > tbSync.syncProviderList.length + 1) {//messenger and db needs to init
-            //init stuff for address book
-            tbSync.addressbookListener.add();
-            tbSync.scanPrefIdsOfAddressBooks();
+    // GLOBAL INIT
+    init: Task.async (function* ()  { 
 
-            //init stuff for calendar (only if lightning is installed)
-            if ("calICalendar" in Components.interfaces) {
-                //adding a global observer, or one for each "known" book?
-                cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
-                cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver)
-            }
+        //init DB
+        yield tbSync.db.init();
 
-            //init stuff for sync process
-            tbSync.resetSync();
-            
-            //enable
-            tbSync.enabled = true;
-        
-            tbSync.debugtestflags = tbSync.prefSettings.getIntPref("debugtestflags");
-
+        //init provider 
+        for (let i=0;i<tbSync.syncProviderList.length;i++) {
+            yield tbSync[tbSync.syncProviderList[i]].init();
         }
-    },
+
+        //init stuff for address book
+        tbSync.addressbookListener.add();
+        tbSync.scanPrefIdsOfAddressBooks();
+                
+        //init stuff for calendar (only if lightning is installed)
+        if ("calICalendar" in Components.interfaces) {
+            //adding a global observer, or one for each "known" book?
+            cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
+            cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver)
+        }
+
+        //init stuff for sync process
+        tbSync.resetSync();
+
+       //enable
+        tbSync.enabled = true;
+        
+        tbSync.debugtestflags = tbSync.prefSettings.getIntPref("debugtestflags");
+
+    }),
 
     unload: function () {
         tbSync.db.changelogTimer.cancel();

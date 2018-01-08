@@ -14,8 +14,8 @@ var eas = {
         abortWithError: "abortWithError"
     }),
     
-    onload: function () {
-
+    init: Task.async (function* ()  {
+        tbSync.dump("INIT","EAS provider");
         if ("calICalendar" in Components.interfaces) {
             //get a list of all zones
             //alternativly use cal.fromRFC3339 - but this is only doing this
@@ -37,11 +37,8 @@ var eas = {
             eas.defaultUtcOffset = dateTime.timezoneOffset/-60
             eas.offsets[eas.defaultUtcOffset] = dateTime.timezone.tzid;
 
-        }
-        
-        //finish init by calling main init()
-        tbSync.init("eas");
-    },
+        }        
+    }),
 
     start: Task.async (function* (syncdata, job, folderID = "")  {
         //set syncdata for this sync process (reference from outer object)
@@ -1355,5 +1352,3 @@ var eas = {
 
 tbSync.includeJS("chrome://tbsync/content/provider/eas/contactsync.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/calendarsync.js");
-
-eas.onload();
