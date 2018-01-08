@@ -36,6 +36,29 @@ var eas = {
             eas.defaultUtcOffset = dateTime.timezoneOffset/-60
             eas.offsets[eas.defaultUtcOffset] = dateTime.timezone.tzid;
 
+            //make sure, that EAS self.organizerId (which is set by EAS server) matches TB organizerId
+            //two options: 
+            // - A) find EMAIL IDENTITY and accociate (which sets organizer to that user identity)
+            // - B) overwrite default organizer with current best guess
+            let folders = tbSync.db.findFoldersWithSetting(["selected","type"], ["1","8,13"], "provider", "eas");
+            for (let f=0; f<folders.length; f++) {
+                let calendar = cal.getCalendarManager().getCalendarById(folders[f].target);
+                if (calendar) {
+                    //is there a user identity with the current best guess organizer id?
+                    let key = tbSync.getIdentityKey(calendar.getProperty("easOrganizerID"));
+                    if (key === "") {
+                        //set transient calendar organizer settings based on current best guess and 
+                        //do not associate any email identity (option B)
+                        calendar.setProperty("organizerId", "mailto:" + calendar.getProperty("easOrganizerID"));
+                    } else {                        
+                        //force switch to new identity
+                        calendar.setProperty("imip.identity.key", key);
+                    }
+                    //always set CN, because it could differ from what the user has typed in the identity settings
+                    calendar.setProperty("organizerCN",  calendar.getProperty("easOrganizerCN"));
+                }
+            }
+                    
         }        
     }),
 

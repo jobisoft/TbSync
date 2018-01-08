@@ -302,6 +302,16 @@ var tbSync = {
         tbSync.mozConsoleService.logStringMessage("[TbSync] " + what + " : " + aMessage);
     },
 
+    getIdentityKey: function (email) {
+            let acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
+            let accounts = acctMgr.accounts;
+            for (let a = 0; a < accounts.length; a++) {
+                let account = accounts.queryElementAt(a, Components.interfaces.nsIMsgAccount);
+                if (account.defaultIdentity && account.defaultIdentity.email == email) return account.defaultIdentity.key;
+            }
+            return "";
+        },            
+
     consoleListener: {
         observe : function (aMessage) {
             if (tbSync.prefSettings.getBoolPref("log.tofile")) {
@@ -871,11 +881,28 @@ var tbSync = {
         newCalendar.setProperty("color", color); //any chance to get the color from the provider?
     
         newCalendar.setProperty("calendar-main-in-composite",true);
-        newCalendar.setProperty("organizerId", tbSync.db.getAccountSetting(account, "user"));
-        //newCalendar.setProperty("organizerCN", ???); //TODO: The default value for this field is the user of the default IMAP account of TB, which is a good guess, but maybe we add an extra FULL NAME field in TbSync settings?
-        tbSync.dump("tbSync::checkCalendar("+account+", "+folderID+")", "Creating new calendar (" + newname + ")");
-        
+
+        //is there an email identity we can associate this calendar to? 
+        //getIdentityKey returns "" if none found, which removes any association
+        let key = tbSync.getIdentityKey(tbSync.db.getAccountSetting(account, "user"));
+        if (key === "") {
+            //there is no matching email identity - use current default value as best guess
+            newCalendar.setProperty("easOrganizerCN", newCalendar.getProperty("organizerCN"));
+            newCalendar.setProperty("easOrganizerID", tbSync.db.getAccountSetting(account, "user"));
+            //remove association
+            newCalendar.setProperty("imip.identity.key", key);
+            //use current best guess 
+            newCalendar.setProperty("organizerCN", newCalendar.getProperty("easOrganizerCN"));
+            newCalendar.setProperty("organizerId", newCalendar.getProperty("easOrganizerID"));
+        } else {
+            //there is a matching email identity - set and store email and name es best guess
+            newCalendar.setProperty("imip.identity.key", key);
+            newCalendar.setProperty("easOrganizerCN", newCalendar.getProperty("organizerCN"));
+            newCalendar.setProperty("easOrganizerID", newCalendar.getProperty("organizerId"));
+        }
+
         //store id of calendar as target in DB
+        tbSync.dump("tbSync::checkCalendar("+account+", "+folderID+")", "Creating new calendar (" + newname + ")");
         tbSync.db.setFolderSetting(account, folderID, "target", newCalendar.id); 
         return true;
 
