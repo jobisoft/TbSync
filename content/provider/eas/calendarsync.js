@@ -319,7 +319,7 @@ eas.calendarsync = {
     //EAS AttendeeStatus: 0 =Response unknown  |  2 = Tentative  |  3 = Accept  |  4 = Decline  |  5 = Not responded || 1 = Organizer in ResponseType
     //TB STATUS: NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, DELEGATED, COMPLETED, IN-PROCESS
     MAP_EAS_ATTENDEESTATUS : {"0": "NEEDS-ACTION", "1":"Orga", "2":"TENTATIVE", "3":"ACCEPTED", "4":"DECLINED", "5":"NEEDS-ACTION"},
-    MAP_TB_STATUS : {"NEEDS-ACTION":"0", "ACCEPTED":"3", "DECLINED":"4", "TENTATIVE":"2", "DELEGATED":"0","COMPLETED":"0", "IN-PROCESS":"0"},
+    MAP_TB_ATTENDEESTATUS : {"NEEDS-ACTION":"0", "ACCEPTED":"3", "DECLINED":"4", "TENTATIVE":"2", "DELEGATED":"0","COMPLETED":"0", "IN-PROCESS":"0"},
 
     getItemPropertyWithFallback: function (item, TB_PROP, EAS_PROP, MAP_TB, MAP_EAS) {
         if (item.hasProperty(EAS_PROP) && tbSync.getCalItemProperty(item, TB_PROP) == MAP_EAS[item.getProperty(EAS_PROP)]) {
@@ -646,7 +646,7 @@ eas.calendarsync = {
                             // - if we are the owner of a meeting, TB does not have an option to actually set the attendee status (on behalf of an attendee) in the UI
                             // - if we are an attendee (of an invite) we cannot and should not set status of other attendees and or own status must be send through a MeetingResponse
                             // -> all changes of attendee status are send from the server to us, either via ResponseType or via AttendeeStatus
-                            //wbxml.atag("AttendeeStatus", this.MAP_TB_STATUS[attendee.participationStatus]);
+                            //wbxml.atag("AttendeeStatus", this.MAP_TB_ATTENDEESTATUS[attendee.participationStatus]);
                             
                             if (attendee.userType == "RESOURCE" || attendee.userType == "ROOM" || attendee.role == "NON-PARTICIPANT") wbxml.atag("AttendeeType","3");
                             else if (attendee.role == "REQ-PARTICIPANT" || attendee.role == "CHAIR") wbxml.atag("AttendeeType","1");
