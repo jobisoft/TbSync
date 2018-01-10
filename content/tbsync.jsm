@@ -834,6 +834,16 @@ var tbSync = {
         } catch (e) {}
     },
 
+    setCalItemProperty: function (item, prop, value) {
+        if (value == "unset") item.deleteProperty(prop);
+        else item.setProperty(prop, value);
+    },
+    
+    getCalItemProperty: function (item, prop) {
+        if (item.hasProperty(prop)) return item.getProperty(prop);
+        else return "unset";
+    },
+    
     checkCalender: function (account, folderID) {
         tbSync.dump("checkCalender", account + "." + folderID);
         let folder = tbSync.db.getFolder(account, folderID);
