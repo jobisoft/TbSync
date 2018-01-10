@@ -934,6 +934,7 @@ var tbSync = {
         newCalendar.name = newname;
         calManager.registerCalendar(newCalendar);
         newCalendar.setProperty("color", color); //any chance to get the color from the provider?
+        newCalendar.setProperty("relaxedMode", true); //sometimes we get "generation too old for modifyItem", check can be disabled with relaxedMode
     
         newCalendar.setProperty("calendar-main-in-composite",true);
 
