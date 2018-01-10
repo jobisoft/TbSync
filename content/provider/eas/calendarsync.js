@@ -659,18 +659,6 @@ eas.calendarsync = {
             wbxml.atag("Attendees");
         }
 
-        //we only include responseType, if it is realy a meeting with attendees and one of the attendees is us - in 2.5 we will never get here, no need to check again
-        if (TB_responseType !== null) {
-            //X-EAS-ResponseType contains the current value on the server, does it map to the same TB value as the new TB_responseType?
-            if (item.hasProperty("X-EAS-ResponseType") && this.MAP_EAS_ATTENDEESTATUS[item.getProperty("X-EAS-ResponseType")] == TB_responseType)
-                //use fallback and do not try to convert TB_response into EAS value (which might not get the exact same value as curently)
-                wbxml.atag("ResponseType", item.getProperty("X-EAS-ResponseType"));
-            else
-                wbxml.atag("ResponseType", this.MAP_TB_STATUS[responseType]);
-                //since the responseType changed, we also have to set AppointmentReplyTime
-                //wbxml.atag("AppointmentReplyTime", ???);
-        }        
-        
         //attachements (needs EAS 16.0!)
 
         //recurrent events (implemented by Chris Allan)
