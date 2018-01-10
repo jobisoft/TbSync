@@ -305,6 +305,33 @@ eas.calendarsync = {
 
 
     //FUNCTIONS TO ACTUALLY READ FROM AND WRITE TO CALENDAR ITEMS
+
+    //EAS Sensitivity :  0 = Normal  |  1 = Personal  |  2 = Private  |  3 = Confidential
+    //TB CLASS: PUBLIC, PRIVATE, CONFIDENTIAL)
+    MAP_EAS_SENSITIVITY : { "0":"PUBLIC", "1":"unset", "2":"PRIVATE", "3":"CONFIDENTIAL"},
+    MAP_TB_CLASS : { "PUBLIC":"0", "PRIVATE":"2", "CONFIDENTIAL":"3", "unset":"1"},
+
+    //EAS BusyStatus:  0 = Free  |  1 = Tentative  |  2 = Busy  |  3 = Work  |  4 = Elsewhere
+    //TB TRANSP : free = TRANSPARENT, busy = OPAQUE)
+    MAP_EAS_BUSYSTATUS : {"0":"TRANSPARENT", "1":"unset", "2":"OPAQUE", "3":"OPAQUE", "4":"OPAQUE"},
+    MAP_TB_TRANSP : {"TRANSPARENT":"0", "unset":"1", "OPAQUE":"2"},
+
+    //EAS AttendeeStatus: 0 =Response unknown  |  2 = Tentative  |  3 = Accept  |  4 = Decline  |  5 = Not responded || 1 = Organizer in ResponseType
+    //TB STATUS: NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, DELEGATED, COMPLETED, IN-PROCESS
+    MAP_EAS_ATTENDEESTATUS : {"0": "NEEDS-ACTION", "1":"Orga", "2":"TENTATIVE", "3":"ACCEPTED", "4":"DECLINED", "5":"NEEDS-ACTION"},
+    MAP_TB_STATUS : {"NEEDS-ACTION":"0", "ACCEPTED":"3", "DECLINED":"4", "TENTATIVE":"2", "DELEGATED":"0","COMPLETED":"0", "IN-PROCESS":"0"},
+
+    getItemPropertyWithFallback: function (item, TB_PROP, EAS_PROP, MAP_TB, MAP_EAS) {
+        if (item.hasProperty(EAS_PROP) && tbSync.getCalItemProperty(item, TB_PROP) == MAP_EAS[item.getProperty(EAS_PROP)]) {
+            //we can use our stored EAS value, because it still maps to the current TB value
+            return item.getProperty(EAS_PROP);
+        } else {
+            return MAP_TB[tbSync.getCalItemProperty(item, TB_PROP)]; 
+        }
+    },
+
+    
+    
     //insert data from wbxml object into a TB event item
     setCalendarItemFromWbxml: function (item, data, id, syncdata) {
         
@@ -367,15 +394,24 @@ eas.calendarsync = {
             item.addAlarm(alarm);
         }
 
-        //EAS BusyStatus (TB TRANSP : free = TRANSPARENT, busy = OPAQUE)
-        //0 = Free // 1 = Tentative // 2 = Busy // 3 = Work // 4 = Elsewhere
-        if (data.BusyStatus) item.setProperty("TRANSP", (data.BusyStatus == 0) ? "TRANSPARENT" : "OPAQUE");
+        if (data.BusyStatus) {
+            //store original EAS value 
+            item.setProperty("X-EAS-BusyStatus", data.BusyStatus);
+            //map EAS value to TB value (use setCalItemProperty if there is one option which can unset/delete the property)
+            tbSync.setCalItemProperty(item, "TRANSP", this.MAP_EAS_BUSYSTATUS[data.BusyStatus]);
+        }
 
-        //EAS Sensitivity (TB CLASS: PUBLIC, PRIVATE, CONFIDENTIAL)
-        // 0 = Normal // 1 = Personal // 2 = Private // 3 = Confidential
-        let CLASS = { "0":"PUBLIC", "1":"PRIVATE", "2":"PRIVATE", "3":"CONFIDENTIAL"};
-        if (data.Sensitivity) item.setProperty("CLASS", CLASS[data.Sensitivity]);
+        if (data.Sensitivity) {
+            //store original EAS value 
+            item.setProperty("X-EAS-Sensitivity", data.Sensitivity);
+            //map EAS value to TB value  (use setCalItemProperty if there is one option which can unset/delete the property)
+            tbSync.setCalItemProperty(item,"CLASS", this.MAP_EAS_SENSITIVITY[data.Sensitivity]);
+        }
 
+        if (data.ResponseType) {
+            //store original EAS value 
+            item.setProperty("X-EAS-ResponseType", data.ResponseType);
+        }
 
         //Attendees - remove all Attendees and re-add the ones from XML
         item.removeAllAttendees();
@@ -387,6 +423,9 @@ eas.calendarsync = {
 
                 let attendee = cal.createAttendee();
 
+                //is this an invitation and one of the attendees is us? we than have to apply X-EAS-Responsetype if there is one
+                let isSelf = (att[i].Email == tbSync.db.getAccountSetting(syncdata.account, "user"));
+                
                 attendee["id"] = cal.prependMailTo(att[i].Email);
                 attendee["commonName"] = att[i].Name;
                 attendee["rsvp"] = "TRUE";
@@ -408,23 +447,12 @@ eas.calendarsync = {
                 }
 
                 //not supported in 2.5
-                switch (att[i].AttendeeStatus) {
-                    case "2": //Tentative
-                        attendee["participationStatus"] = "TENTATIVE";
-                        break;
-                    case "3": //Accept
-                        attendee["participationStatus"] = "ACCEPTED";
-                        break;
-                    case "4": //Decline
-                        attendee["participationStatus"] = "DECLINED";
-                        break;
-                    case "5": //Not responded
-                        attendee["participationStatus"] = "NEEDS-ACTION";
-                        break;
-                    default : //Unknown
-                        attendee["participationStatus"] = "NEEDS-ACTION";
-                        break;
-                }
+                if (att[i].AttendeeStatus)
+                    attendee["participationStatus"] = this.MAP_EAS_ATTENDEESTATUS[att[i].AttendeeStatus];
+                else if (isSelf && data.ResponseType) 
+                    attendee["participationStatus"] = this.MAP_EAS_ATTENDEESTATUS[data.ResponseType];
+                else 
+                    attendee["participationStatus"] = "NEEDS-ACTION";
 
                 // status  : [NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, DELEGATED, COMPLETED, IN-PROCESS]
                 // rolemap : [REQ-PARTICIPANT, OPT-PARTICIPANT, NON-PARTICIPANT, CHAIR]
@@ -555,19 +583,12 @@ eas.calendarsync = {
         //DtStamp
         wbxml.atag("DtStamp", tz.stampTimeUTC);
 
-        //EAS BusyStatus (TB TRANSP : free = TRANSPARENT, busy = OPAQUE or unset)
-        //0 = Free // 1 = Tentative // 2 = Busy // 3 = Work // 4 = Elsewhere (v16)
-        // we map TB unset to Tentative , Work and Elsewhere are not used
-        if (item.hasProperty("TRANSP")) wbxml.atag("BusyStatus", (item.getProperty("TRANSP") == "TRANSPARENT") ? "0" : "2");
-        else wbxml.atag("BusyStatus", "1");
-
-        //EAS Sensitivity (TB CLASS: PUBLIC, PRIVATE, CONFIDENTIAL or unset)
-        // 0 = Normal // 1 = Personal // 2 = Private // 3 = Confidential
-        let CLASS = { "PUBLIC":"0", "PRIVATE":"2", "CONFIDENTIAL":"3"}
-        if (item.hasProperty("CLASS")) wbxml.atag("Sensitivity", CLASS[item.getProperty("CLASS")]);
-        else wbxml.atag("Sensitivity", "1");
+        //TRANSP / BusyStatus
+        wbxml.atag("BusyStatus", tbSync.eas.calendarsync.getItemPropertyWithFallback(item, "TRANSP", "X-EAS-BusyStatus", this.MAP_TB_TRANSP, this.MAP_EAS_BUSYSTATUS));
         
-
+        //CLASS / Sensitivity
+        wbxml.atag("Sensitivity", tbSync.eas.calendarsync.getItemPropertyWithFallback(item, "CLASS", "X-EAS-Sensitivity", this.MAP_TB_CLASS, this.MAP_EAS_SENSITIVITY));
+        
 
         // OPTIONAL FIELDS
         //for simplicity, we always send a value for AllDayEvent
@@ -587,7 +608,7 @@ eas.calendarsync = {
             wbxml.atag("Categories");
         }
 
-        //TP PRIORIRY (9=LOW, 5=NORMAL, 1=HIGH) not mapable to EAS
+        //TP PRIORITY (9=LOW, 5=NORMAL, 1=HIGH) not mapable to EAS
         
         //EAS Reminder (TB getAlarms) - at least with zarafa blanking by omitting works
         let alarms = item.getAlarms({});
@@ -597,7 +618,8 @@ eas.calendarsync = {
 
 
 
-        //get Attendees here, which is also needed to set MeetingStatus
+        //get Attendees here, which is also needed to set MeetingStatus and ResponseType
+        let TB_responseType = null;
         let countAttendees = {};
         let attendees = item.getAttendees(countAttendees);
 
@@ -620,17 +642,12 @@ eas.calendarsync = {
                         wbxml.atag("Email", cal.removeMailTo(attendee.id));
                         wbxml.atag("Name", (attendee.commonName ? attendee.commonName : cal.removeMailTo(attendee.id).split("@")[0]));
                         if (asversion != "2.5") {
-                            switch (attendee.participationStatus) {
-                                case "TENTATIVE": wbxml.atag("AttendeeStatus","2");break;
-                                case "ACCEPTED" : wbxml.atag("AttendeeStatus","3");break;
-                                case "DECLINED" : wbxml.atag("AttendeeStatus","4");break;
-                                default         : wbxml.atag("AttendeeStatus","0");break;
-                            }
-
-                            // status  : [NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, DELEGATED, COMPLETED, IN-PROCESS]
-                            // rolemap : [REQ-PARTICIPANT, OPT-PARTICIPANT, NON-PARTICIPANT, CHAIR]
-                            // typemap : [INDIVIDUAL, GROUP, RESOURCE, ROOM]
-
+                            //if this is self, do not add status but ResponseType instead
+                            if (cal.removeMailTo(attendee.id) == tbSync.db.getAccountSetting(syncdata.account, "user"))
+                                TB_responseType = attendee.participationStatus;
+                            else 
+                                wbxml.atag("AttendeeStatus",this.MAP_TB_STATUS[attendee.participationStatus]);
+                            
                             if (attendee.userType == "RESOURCE" || attendee.userType == "ROOM" || attendee.role == "NON-PARTICIPANT") wbxml.atag("AttendeeType","3");
                             else if (attendee.role == "REQ-PARTICIPANT" || attendee.role == "CHAIR") wbxml.atag("AttendeeType","1");
                             else wbxml.atag("AttendeeType","2"); //leftovers are optional
@@ -642,6 +659,18 @@ eas.calendarsync = {
             wbxml.atag("Attendees");
         }
 
+        //we only include responseType, if it is realy a meeting with attendees and one of the attendees is us - in 2.5 we will never get here, no need to check again
+        if (TB_responseType !== null) {
+            //X-EAS-ResponseType contains the current value on the server, does it map to the same TB value as the new TB_responseType?
+            if (item.hasProperty("X-EAS-ResponseType") && this.MAP_EAS_ATTENDEESTATUS[item.getProperty("X-EAS-ResponseType")] == TB_responseType)
+                //use fallback and do not try to convert TB_response into EAS value (which might not get the exact same value as curently)
+                wbxml.atag("ResponseType", item.getProperty("X-EAS-ResponseType"));
+            else
+                wbxml.atag("ResponseType", this.MAP_TB_STATUS[responseType]);
+                //since the responseType changed, we also have to set AppointmentReplyTime
+                //wbxml.atag("AppointmentReplyTime", ???);
+        }        
+        
         //attachements (needs EAS 16.0!)
 
         //recurrent events (implemented by Chris Allan)
