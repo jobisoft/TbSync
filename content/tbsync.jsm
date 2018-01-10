@@ -287,6 +287,29 @@ var tbSync = {
         }
     },
     
+    diffDump: function (obj1, obj2, suffix = "", depth = 0) {
+        let proptlist = [];
+        for(let propt in obj1) {
+            if (suffix.indexOf(propt) != -1) continue;
+            if (propt == "timezone") continue;
+            if (propt == "parentItem") continue;
+            if (propt.indexOf("startOf") == 0) continue;
+            if (propt.indexOf("endOf") == 0) continue;
+            
+            try {
+                if (typeof obj1[propt] == "function") continue;
+            } catch (e) {
+                continue;
+            }
+            
+            if (typeof obj1[propt] == "object") {
+                if (depth<6) tbSync.diffDump(obj1[propt], obj2[propt], suffix + propt + ".", depth + 1);
+                else tbSync.dump("DiffDump object nested to deep", suffix + propt);
+            } else {
+                if (obj1[propt] != obj2[propt]) tbSync.dump("MODIFIED: " + suffix + propt, obj1[propt] + " vs " + obj2[propt]);
+            }
+        }
+    },
     
     debugTest: function(test) {
         //the value debugtestflags is resetted on each restart by the pref value (0 default), to be able to test different elements once
@@ -667,6 +690,26 @@ var tbSync = {
 
                     let newFolders = tbSync.db.findFoldersWithSetting("target", aNewItem.calendar.id);
                     if (newFolders.length > 0) {
+
+                        if (aOldItem !== null) {
+
+                            //tbSync.diffDump(aNewItem, aOldItem);
+
+                            tbSync.dump("Invitation", (cal.isInvitation(aNewItem) ? "true" : "false"));
+
+                            let propEnum = aNewItem.propertyEnumerator;
+                            while (propEnum.hasMoreElements()) {
+                                let prop = propEnum.getNext().QueryInterface(Components.interfaces.nsIProperty);
+
+                                if (aOldItem.hasProperty(prop.name) && aNewItem.getProperty(prop.name).toString() != aOldItem.getProperty(prop.name).toString()) {
+                                  tbSync.dump("MODIFIED: " + prop.name, aNewItem.getProperty(prop.name).toString() + " vs " + aOldItem.getProperty(prop.name).toString());
+                                } else if (!aOldItem.hasProperty(prop.name)) {
+                                  tbSync.dump("MODIFIED: " + prop.name, aNewItem.getProperty(prop.name).toString() + " vs <unset>");
+                                }
+
+                            }
+                        }
+                        
                         if (itemStatus == "modified_by_server") {
                             tbSync.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);
                         } else if (itemStatus != "added_by_user") { //if it is a local unprocessed add, do not set it to modified
