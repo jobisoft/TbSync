@@ -302,11 +302,13 @@ var tbSync = {
                 continue;
             }
             
-            if (typeof obj1[propt] == "object") {
-                if (depth<6) tbSync.diffDump(obj1[propt], obj2[propt], suffix + propt + ".", depth + 1);
-                else tbSync.dump("DiffDump object nested to deep", suffix + propt);
-            } else {
-                if (obj1[propt] != obj2[propt]) tbSync.dump("MODIFIED: " + suffix + propt, obj1[propt] + " vs " + obj2[propt]);
+            if (obj2) {
+                if (typeof obj1[propt] == "object") {
+                    if (depth<6) tbSync.diffDump(obj1[propt], obj2[propt], suffix + propt + ".", depth + 1);
+                    else tbSync.dump("DiffDump object nested to deep", suffix + propt);
+                } else {
+                    if (obj1[propt] != obj2[propt]) tbSync.dump("MODIFIED: " + suffix + propt, obj1[propt] + " vs " + obj2[propt]);
+                }
             }
         }
     },
