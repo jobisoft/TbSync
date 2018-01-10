@@ -642,11 +642,11 @@ eas.calendarsync = {
                         wbxml.atag("Email", cal.removeMailTo(attendee.id));
                         wbxml.atag("Name", (attendee.commonName ? attendee.commonName : cal.removeMailTo(attendee.id).split("@")[0]));
                         if (asversion != "2.5") {
-                            //if this is self, do not add status but ResponseType instead
-                            if (cal.removeMailTo(attendee.id) == tbSync.db.getAccountSetting(syncdata.account, "user"))
-                                TB_responseType = attendee.participationStatus;
-                            else 
-                                wbxml.atag("AttendeeStatus",this.MAP_TB_STATUS[attendee.participationStatus]);
+                            //it's pointless to send AttendeeStatus, 
+                            // - if we are the owner of a meeting, TB does not have an option to actually set the attendee status (on behalf of an attendee) in the UI
+                            // - if we are an attendee (of an invite) we cannot and should not set status of other attendees and or own status must be send through a MeetingResponse
+                            // -> all changes of attendee status are send from the server to us, either via ResponseType or via AttendeeStatus
+                            //wbxml.atag("AttendeeStatus", this.MAP_TB_STATUS[attendee.participationStatus]);
                             
                             if (attendee.userType == "RESOURCE" || attendee.userType == "ROOM" || attendee.role == "NON-PARTICIPANT") wbxml.atag("AttendeeType","3");
                             else if (attendee.role == "REQ-PARTICIPANT" || attendee.role == "CHAIR") wbxml.atag("AttendeeType","1");
