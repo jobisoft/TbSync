@@ -696,9 +696,7 @@ var tbSync = {
                         if (aOldItem !== null) {
 
                             //tbSync.diffDump(aNewItem, aOldItem);
-
-                            tbSync.dump("Invitation", (cal.isInvitation(aNewItem) ? "true" : "false"));
-
+                            
                             let propEnum = aNewItem.propertyEnumerator;
                             while (propEnum.hasMoreElements()) {
                                 let prop = propEnum.getNext().QueryInterface(Components.interfaces.nsIProperty);
@@ -710,6 +708,15 @@ var tbSync = {
                                 }
 
                             }
+                        }
+                        if (cal.isInvitation(aNewItem)) { //TODO
+                            //did attendee.participationStatus change?
+                            //with eas 14.0 it is not possible to directly ack a meeting request (via EAS), the user has to send an email back to the organizer, 
+                            //which is auto interpreted and on the next sync the ack is forwarded to us via EAS (thats what I have understood at least)
+                            //can we send that email via EAS? This would even work, if the user does not have the email account setup in TB
+                            //https://msdn.microsoft.com/en-us/library/ff631378(v=exchg.80).aspx
+                            //https://msdn.microsoft.com/en-us/library/ee158682(v=exchg.80).aspx
+                            tbSync.dump("Invitation!", "");                            
                         }
                         
                         if (itemStatus == "modified_by_server") {
