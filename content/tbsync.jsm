@@ -696,10 +696,10 @@ var tbSync = {
 
                     let newFolders = tbSync.db.findFoldersWithSetting("target", aNewItem.calendar.id);
                     if (newFolders.length > 0) {
-
+/*
                         if (aOldItem !== null) {
 
-                            //tbSync.diffDump(aNewItem, aOldItem);
+                            tbSync.diffDump(aNewItem, aOldItem);
                             
                             let propEnum = aNewItem.propertyEnumerator;
                             while (propEnum.hasMoreElements()) {
@@ -713,6 +713,7 @@ var tbSync = {
 
                             }
                         }
+                        
                         if (cal.isInvitation(aNewItem)) { //TODO
                             //did attendee.participationStatus change?
                             //with eas 14.0 it is not possible to directly ack a meeting request (via EAS), the user has to send an email back to the organizer, 
@@ -732,7 +733,7 @@ var tbSync = {
                                 else  tbSync.dump("Invitation status of selfAttendee", selfAttendeeNew.participationStatus); 
                             }
                         }
-                        
+*/                        
                         if (itemStatus == "modified_by_server") {
                             tbSync.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);
                         } else if (itemStatus != "added_by_user") { //if it is a local unprocessed add, do not set it to modified
