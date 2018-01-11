@@ -716,6 +716,7 @@ var tbSync = {
                             //can we send that email via EAS? This would even work, if the user does not have the email account setup in TB
                             //https://msdn.microsoft.com/en-us/library/ff631378(v=exchg.80).aspx
                             //https://msdn.microsoft.com/en-us/library/ee158682(v=exchg.80).aspx
+                            //https://blogs.msdn.microsoft.com/exchangedev/2011/07/22/working-with-meeting-requests-in-exchange-activesync/
                             tbSync.dump("Invitation!", "");                            
                         }
                         

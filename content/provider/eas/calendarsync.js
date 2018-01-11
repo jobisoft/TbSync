@@ -561,7 +561,8 @@ eas.calendarsync = {
             if (!R && data.OrganizerName) syncdata.targetObj.setProperty("fallbackOrganizerName", data.OrganizerName);            
         }
 
-        // Missing : Attachements (needs EAS 16.0 !)
+        //TODO: attachements (needs EAS 16.0!)
+        //TODO: exceptions to recurrence
 
         //TASK STUFF
         //aItem.entryDate = start;
@@ -651,7 +652,8 @@ eas.calendarsync = {
             wbxml.atag("Attendees");
         }
 
-        //attachements (needs EAS 16.0!)
+        //TODO: attachements (needs EAS 16.0!)
+        //TODO: exceptions to recurrence
 
         //recurrent events (implemented by Chris Allan)
         if (item.recurrenceInfo) {
