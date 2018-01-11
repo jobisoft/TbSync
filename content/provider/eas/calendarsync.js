@@ -336,10 +336,10 @@ eas.calendarsync = {
     MAP_EAS_BUSYSTATUS : {"0":"TRANSPARENT", "1":"unset", "2":"OPAQUE", "3":"OPAQUE", "4":"OPAQUE"},
     MAP_TB_TRANSP : {"TRANSPARENT":"0", "unset":"1", "OPAQUE":"2"},
 
-    //EAS AttendeeStatus: 0 =Response unknown  |  2 = Tentative  |  3 = Accept  |  4 = Decline  |  5 = Not responded || 1 = Organizer in ResponseType
+    //EAS AttendeeStatus: 0 =Response unknown (but needed) |  2 = Tentative  |  3 = Accept  |  4 = Decline  |  5 = Not responded (and not needed) || 1 = Organizer in ResponseType
     //TB STATUS: NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, DELEGATED, COMPLETED, IN-PROCESS
-    MAP_EAS_ATTENDEESTATUS : {"0": "NEEDS-ACTION", "1":"Orga", "2":"TENTATIVE", "3":"ACCEPTED", "4":"DECLINED", "5":"NEEDS-ACTION"},
-    MAP_TB_ATTENDEESTATUS : {"NEEDS-ACTION":"0", "ACCEPTED":"3", "DECLINED":"4", "TENTATIVE":"2", "DELEGATED":"0","COMPLETED":"0", "IN-PROCESS":"0"},
+    MAP_EAS_ATTENDEESTATUS : {"0": "NEEDS-ACTION", "1":"Orga", "2":"TENTATIVE", "3":"ACCEPTED", "4":"DECLINED", "5":"COMPLETED"},
+    MAP_TB_ATTENDEESTATUS : {"NEEDS-ACTION":"0", "ACCEPTED":"3", "DECLINED":"4", "TENTATIVE":"2", "DELEGATED":"5","COMPLETED":"5", "IN-PROCESS":"5"},
 
 
 
