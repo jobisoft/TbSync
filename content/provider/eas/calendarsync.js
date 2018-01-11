@@ -2,8 +2,6 @@
 
 eas.calendarsync = {
 
-    //https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calAsyncUtils.jsm
-
     /* 
         Status TODO:
         

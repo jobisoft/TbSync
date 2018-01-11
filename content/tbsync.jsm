@@ -6,6 +6,10 @@ var EXPORTED_SYMBOLS = ["tbSync"];
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
+// - https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIEvent.idl
+// - https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIItemBase.idl
+// - https://dxr.mozilla.org/comm-central/source/calendar/base/public/calICalendar.idl
+// - https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calAsyncUtils.jsm
 
 //import calUtils if avail
 if ("calICalendar" in Components.interfaces) {
@@ -717,7 +721,16 @@ var tbSync = {
                             //https://msdn.microsoft.com/en-us/library/ff631378(v=exchg.80).aspx
                             //https://msdn.microsoft.com/en-us/library/ee158682(v=exchg.80).aspx
                             //https://blogs.msdn.microsoft.com/exchangedev/2011/07/22/working-with-meeting-requests-in-exchange-activesync/
-                            tbSync.dump("Invitation!", "");                            
+
+                            let parentCalendar = cal.getCalendarManager().getCalendarById(aNewItem.calendar.id);
+                            let selfAttendeeNew = aNewItem.getAttendeeById(parentCalendar.getProperty("organizerId"));
+                            let selfAttendeeOld = (aOldItem ? aOldItem.getAttendeeById(parentCalendar.getProperty("organizerId")) : null);
+                            
+                            if (!(selfAttendeeNew && selfAttendeeOld && selfAttendeeNew.participationStatus == selfAttendeeOld.participationStatus)) {
+                                //something changed
+                                if (selfAttendeeOld) tbSync.dump("Invitation status of selfAttendee", selfAttendeeNew.participationStatus + " vs " + selfAttendeeOld.participationStatus);
+                                else  tbSync.dump("Invitation status of selfAttendee", selfAttendeeNew.participationStatus); 
+                            }
                         }
                         
                         if (itemStatus == "modified_by_server") {
@@ -963,11 +976,7 @@ var tbSync = {
         tbSync.db.setFolderSetting(account, folderID, "target", newCalendar.id); 
         return true;
 
-/*
-            // - https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIEvent.idl
-            // - https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIItemBase.idl
-            // - https://dxr.mozilla.org/comm-central/source/calendar/base/public/calICalendar.idl
-            
+        /*            
             // add custom observer to calender - besides the global one added in tbSync.init()
             calendar.addObserver(tbSync.calendarObserver2);
             
@@ -978,7 +987,8 @@ var tbSync = {
                              null,
                              null,
                              calendarsync.calendarOperationObserver);
-*/
+        */
+        
     }
 
 };
