@@ -18,7 +18,7 @@ var tbSyncMessenger = {
         }
 
         //run global init as background job, so it does not delay TB startup
-        window.setTimeout(tbSync.init, 1);
+        window.setTimeout(function () {tbSync.init()}, 1);
     },
 
     ligthningSyncRequest: function() {
