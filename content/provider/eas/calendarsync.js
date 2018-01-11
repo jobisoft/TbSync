@@ -425,12 +425,13 @@ eas.calendarsync = {
 
                 let attendee = cal.createAttendee();
 
-                //is this an invitation and one of the attendees is us? we than have to apply X-EAS-Responsetype if there is one
+                //is this attendee the local EAS user?
                 let isSelf = (att[i].Email == tbSync.db.getAccountSetting(syncdata.account, "user"));
                 
                 attendee["id"] = cal.prependMailTo(att[i].Email);
                 attendee["commonName"] = att[i].Name;
-                attendee["rsvp"] = "TRUE";
+                //default is "FALSE", only if THIS attendee isSelf, use ResponseRequested (we cannot respond for other attendee) - ResponseType is not send back to the server, it is just a local information
+		attendee["rsvp"] = (isSelf && data.ResponseRequested) ? "TRUE" : "FALSE";		
 
                 //not supported in 2.5
                 switch (att[i].AttendeeType) {
@@ -448,7 +449,7 @@ eas.calendarsync = {
                         break;
                 }
 
-                //not supported in 2.5
+                //not supported in 2.5 - if attendeeStatus is missing, check if this isSelf and there is a ResponseType
                 if (att[i].AttendeeStatus)
                     attendee["participationStatus"] = this.MAP_EAS_ATTENDEESTATUS[att[i].AttendeeStatus];
                 else if (isSelf && data.ResponseType) 
@@ -470,7 +471,7 @@ eas.calendarsync = {
             let organizer = cal.createAttendee();
             organizer.id = cal.prependMailTo(data.OrganizerEmail);
             organizer.commonName = data.OrganizerName;
-            organizer.rsvp = "TRUE";
+            organizer.rsvp = "FALSE";
             organizer.role = "CHAIR";
             organizer.userType = null;
             organizer.participationStatus = "ACCEPTED";
