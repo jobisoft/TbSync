@@ -4,6 +4,28 @@ eas.calendarsync = {
 
     //https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calAsyncUtils.jsm
 
+    /* 
+        Status TODO:
+        
+        TB allows to set status of organizer (accept, decline etc.) which cannot be mapped to EAS.
+        I do not know, if EAS needs the organizer added as attendee, if he actually DOES NOT take part in the meeting
+        To make things simple, we could just hide the menu item which would allow the user to change status of organizer.
+    
+        A few settings cannot be changed with (some) EAS implementations:
+            - MeetingStatus (cancelled/active)
+            - AttendeeStatus (accept, declined etc.)
+        because these information need to be passed to ALL attendees, so just changing them in the users own calendar is not enough. 
+        The client has to send an email to all attendees which is interpreted by the attendees EAS server, which changes the values in the attendees calendar.
+    
+        Can we do that via EAS SendMail in the background? EAS - Notifcations should be send at:
+            - M delete by orga (cancel M, but do not actually delete, let the server handle that) 
+            - I delete by attendee (decline M, but do not actually delete, let the server handle that)
+            - M set to cancel by orga
+
+        TB notification - if the owner editted the meeting - are send via IMAP, which req the IMAP account to be present. Disable TB notification and use EAS notifications as well?
+*/
+    
+    
     start: Task.async (function* (syncdata)  {
         // skip if lightning is not installed
         if ("calICalendar" in Components.interfaces == false) {
@@ -431,7 +453,7 @@ eas.calendarsync = {
                 attendee["id"] = cal.prependMailTo(att[i].Email);
                 attendee["commonName"] = att[i].Name;
                 //default is "FALSE", only if THIS attendee isSelf, use ResponseRequested (we cannot respond for other attendee) - ResponseType is not send back to the server, it is just a local information
-		attendee["rsvp"] = (isSelf && data.ResponseRequested) ? "TRUE" : "FALSE";		
+                attendee["rsvp"] = (isSelf && data.ResponseRequested) ? "TRUE" : "FALSE";		
 
                 //not supported in 2.5
                 switch (att[i].AttendeeType) {
