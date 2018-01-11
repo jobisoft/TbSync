@@ -321,6 +321,8 @@ eas.calendarsync = {
     MAP_EAS_ATTENDEESTATUS : {"0": "NEEDS-ACTION", "1":"Orga", "2":"TENTATIVE", "3":"ACCEPTED", "4":"DECLINED", "5":"NEEDS-ACTION"},
     MAP_TB_ATTENDEESTATUS : {"NEEDS-ACTION":"0", "ACCEPTED":"3", "DECLINED":"4", "TENTATIVE":"2", "DELEGATED":"0","COMPLETED":"0", "IN-PROCESS":"0"},
 
+
+
     getItemPropertyWithFallback: function (item, TB_PROP, EAS_PROP, MAP_TB, MAP_EAS) {
         if (item.hasProperty(EAS_PROP) && tbSync.getCalItemProperty(item, TB_PROP) == MAP_EAS[item.getProperty(EAS_PROP)]) {
             //we can use our stored EAS value, because it still maps to the current TB value
@@ -541,7 +543,24 @@ eas.calendarsync = {
             item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
         }
 
-        // Missing : MeetingStatus
+        if (data.MeetingStatus) {
+            //store original EAS value 
+            item.setProperty("X-EAS-MeetingStatus", data.MeetingStatus);
+            //bitwise representation for Meeting, Received, Cancelled:
+            let M = data.MeetingStatus & 0x1;
+            let R = data.MeetingStatus & 0x2;
+            let C = data.MeetingStatus & 0x4;
+            
+            //we can map M+C to TB STATUS (TENTATIVE, CONFIRMED, CANCELLED, unset)
+            //if it is not a meeting -> unset
+            //if it is a meeting -> CANCELLED or CONFIRMED
+            if (M) item.setProperty("STATUS", (C ? "CANCELLED" : "CONFIRMED"));
+            else item.deleteProperty("STATUS");
+            
+            //we can also use the R information, to update our fallbackOrganizerName
+            if (!R && data.OrganizerName) syncdata.targetObj.setProperty("fallbackOrganizerName", data.OrganizerName);            
+        }
+
         // Missing : Attachements (needs EAS 16.0 !)
 
         //TASK STUFF
@@ -582,17 +601,6 @@ eas.calendarsync = {
 
         //DtStamp
         wbxml.atag("DtStamp", tz.stampTimeUTC);
-
-        //TRANSP / BusyStatus
-        wbxml.atag("BusyStatus", tbSync.eas.calendarsync.getItemPropertyWithFallback(item, "TRANSP", "X-EAS-BusyStatus", this.MAP_TB_TRANSP, this.MAP_EAS_BUSYSTATUS));
-        
-        //CLASS / Sensitivity
-        wbxml.atag("Sensitivity", tbSync.eas.calendarsync.getItemPropertyWithFallback(item, "CLASS", "X-EAS-Sensitivity", this.MAP_TB_CLASS, this.MAP_EAS_SENSITIVITY));
-        
-
-        // OPTIONAL FIELDS
-        //for simplicity, we always send a value for AllDayEvent
-        wbxml.atag("AllDayEvent", (item.startDate.isDate && item.endDate.isDate) ? "1" : "0");
         
         //obmitting these, should remove them from the server - that does not work reliably, so we send blanks
         wbxml.atag("Subject", (item.title) ? tbSync.encode_utf8(item.title) : "");
@@ -610,31 +618,15 @@ eas.calendarsync = {
 
         //TP PRIORITY (9=LOW, 5=NORMAL, 1=HIGH) not mapable to EAS
         
-        //EAS Reminder (TB getAlarms) - at least with zarafa blanking by omitting works
-        let alarms = item.getAlarms({});
-        if (alarms.length>0) wbxml.atag("Reminder", (0 - alarms[0].offset.inSeconds/60).toString());
-        //https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIAlarm.idl
-        //tbSync.dump("ALARM ("+i+")", [, alarms[i].related, alarms[i].repeat, alarms[i].repeatOffset, alarms[i].repeatDate, alarms[i].action].join("|"));
-
-
-
-        //get Attendees here, which is also needed to set MeetingStatus and ResponseType
-        let TB_responseType = null;
-        let countAttendees = {};
-        let attendees = item.getAttendees(countAttendees);
-
-        //EAS MeetingStatus
-        // 0 (000) The event is an appointment, which has no attendees.
-        // 1 (001) The event is a meeting and the user is the meeting organizer.
-        // 3 (011) This event is a meeting, and the user is not the meeting organizer; the meeting was received from someone else.
-        // 5 (101) The meeting has been canceled and the user was the meeting organizer.
-        // 7 (111) The meeting has been canceled. The user was not the meeting organizer; the meeting was received from someone else
-
         //Organizer
         if (item.organizer && item.organizer.commonName) wbxml.atag("OrganizerName", item.organizer.commonName);
         if (item.organizer && item.organizer.id) wbxml.atag("OrganizerEmail",  cal.removeMailTo(item.organizer.id));
 
         //Attendees
+        let TB_responseType = null;
+        let countAttendees = {};
+        let attendees = item.getAttendees(countAttendees);
+        
         if (countAttendees.value > 0) {
             wbxml.otag("Attendees");
                 for (let attendee of attendees) {
@@ -760,7 +752,6 @@ eas.calendarsync = {
                 wbxml.ctag();
             }
         }
-
         
         /*
         //loop over all properties
@@ -788,6 +779,50 @@ eas.calendarsync = {
 
             //return to Calendar code page
             wbxml.switchpage("Calendar");
+        }
+
+
+        //TRANSP / BusyStatus
+        wbxml.atag("BusyStatus", tbSync.eas.calendarsync.getItemPropertyWithFallback(item, "TRANSP", "X-EAS-BusyStatus", this.MAP_TB_TRANSP, this.MAP_EAS_BUSYSTATUS));
+        
+        //CLASS / Sensitivity
+        wbxml.atag("Sensitivity", tbSync.eas.calendarsync.getItemPropertyWithFallback(item, "CLASS", "X-EAS-Sensitivity", this.MAP_TB_CLASS, this.MAP_EAS_SENSITIVITY));
+        
+        //for simplicity, we always send a value for AllDayEvent
+        wbxml.atag("AllDayEvent", (item.startDate.isDate && item.endDate.isDate) ? "1" : "0");
+ 
+        //EAS Reminder (TB getAlarms) - at least with zarafa blanking by omitting works
+        let alarms = item.getAlarms({});
+        if (alarms.length>0) wbxml.atag("Reminder", (0 - alarms[0].offset.inSeconds/60).toString());
+        //https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIAlarm.idl
+        //tbSync.dump("ALARM ("+i+")", [, alarms[i].related, alarms[i].repeat, alarms[i].repeatOffset, alarms[i].repeatDate, alarms[i].action].join("|"));
+
+            //EAS MeetingStatus
+        // 0 (000) The event is an appointment, which has no attendees.
+        // 1 (001) The event is a meeting and the user is the meeting organizer.
+        // 3 (011) This event is a meeting, and the user is not the meeting organizer; the meeting was received from someone else.
+        // 5 (101) The meeting has been canceled and the user was the meeting organizer.
+        // 7 (111) The meeting has been canceled. The user was not the meeting organizer; the meeting was received from someone else
+
+        //there are 3 fields; Meeting, Owner, Cancelled
+        //M can be reconstructed from #of attendees (looking at the old value is not wise, since it could have been changed)
+        //C can be reconstucted from TB STATUS
+        //O can be reconstructed by looking at the original value, or (if not present) by comparing EAS ownerID with TB ownerID
+        if (countAttendees == 0) wbxml.atag("MeetingStatus", "0");
+        else {
+            //get owner information
+            let isReceived = false;
+            if (item.hasProperty("X-EAS-MEETINGSTATUS")) isReceived = item.getProperty("X-EAS-MEETINGSTATUS") & 0x2;
+            else isReceived = (item.organizer && item.organizer.id && cal.removeMailTo(item.organizer.id) != tbSync.db.getAccountSetting(syncdata.account, "user"));
+
+            //either 1,3,5 or 7
+            if (item.hasProperty("STATUS") && item.getProperty("STATUS") == "CANCELLED") {
+                //either 5 or 7
+                wbxml.atag("MeetingStatus", (isReceived ? "7" : "5"));
+            } else {
+                //either 1 or 3
+                wbxml.atag("MeetingStatus", (isReceived ? "3" : "1"));
+            }
         }
 
         //return to AirSync code page
