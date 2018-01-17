@@ -562,6 +562,19 @@ eas.calendarsync = {
                 recRule.untilDate = cal.createDateTime(data.Recurrence.Until);
             }
             item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
+            if (data.Exceptions) {
+                // Exception could be an object or an array of objects
+                let exceptions = [].concat(data.Exceptions.Exception);
+                for (let exception of exceptions) {
+                    let dateTime = cal.createDateTime(exception.ExceptionStartTime);
+                    if (data.AllDayEvent == "1") {
+                        dateTime.isDate = true;
+                    }
+                    if (exception.Deleted == "1") {
+                        item.recurrenceInfo.removeOccurrenceAt(dateTime);
+                    }
+                }
+            }
         }
 
         if (data.MeetingStatus) {
