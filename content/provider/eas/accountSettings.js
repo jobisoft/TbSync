@@ -303,7 +303,7 @@ var tbSyncAccountSettings = {
         let parent =  tbSync.db.getFolder(account, folderID).parentID;
         let chain = folder.toString().padStart(3,"0");
         
-        while (parent != "0") {
+        while (parent && parent != "0") {
             chain = parent.toString().padStart(3,"0") + "." + chain;
             folder = parent;
             parent = tbSync.db.getFolder(account, folder).parentID;
