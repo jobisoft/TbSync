@@ -214,23 +214,7 @@ var tbSyncAccountManager = {
     },
 
     openFileTab: function (file) {
-        return this.openTBtab(tbSync.getAbsolutePath(file));
-    },
-    
-    openTBtab: function (url) {
-        var tabmail = null;
-        var mail3PaneWindow =
-            Components.classes["@mozilla.org/appshell/window-mediator;1"]
-            .getService(Components.interfaces.nsIWindowMediator)
-            .getMostRecentWindow("mail:3pane");
-        if (mail3PaneWindow) {
-            tabmail = mail3PaneWindow.document.getElementById("tabmail");
-            mail3PaneWindow.focus();
-            tabmail.openTab("contentTab", {
-                contentPage: url
-            });
-        }
-        return (tabmail !== null);
+        return tbSync.openTBtab(tbSync.getAbsolutePath(file));
     }
-
+    
 };

@@ -68,7 +68,7 @@ var tbSync = {
         //init stuff for sync process
         tbSync.resetSync();
 
-       //enable
+        //enable
         tbSync.enabled = true;
         
         tbSync.debugtestflags = tbSync.prefSettings.getIntPref("debugtestflags");
@@ -210,6 +210,22 @@ var tbSync = {
 
 
     // TOOLS
+    openTBtab: function (url) {
+        var tabmail = null;
+        var mail3PaneWindow =
+            Components.classes["@mozilla.org/appshell/window-mediator;1"]
+            .getService(Components.interfaces.nsIWindowMediator)
+            .getMostRecentWindow("mail:3pane");
+        if (mail3PaneWindow) {
+            tabmail = mail3PaneWindow.document.getElementById("tabmail");
+            mail3PaneWindow.focus();
+            tabmail.openTab("contentTab", {
+                contentPage: url
+            });
+        }
+        return (tabmail !== null);
+    },
+
     getAbsolutePath: function(filename) {
         return OS.Path.join(tbSync.storageDirectory, filename);
     },
@@ -996,6 +1012,8 @@ var tbSync = {
 
 //clear debug log on start
 tbSync.initFile("debug.log");
+tbSync.dump("Init","Please send this log to john.bieling@gmx.de, if you have encountered an error.");
+
 tbSync.mozConsoleService.registerListener(tbSync.consoleListener);
 
 let appInfo =  Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
