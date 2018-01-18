@@ -1132,7 +1132,9 @@ var eas = {
 
     sendRequest: function (wbxml, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;                  
-        tbSync.eas.logxml(wbxml, "Sending data <" + syncdata.state + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname"));
+        let msg = "Sending data <" + syncdata.state + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
+        if (syncdata.folderID !== "") msg += " (" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + ")";
+        tbSync.eas.logxml(wbxml, msg);
 
         let connection = tbSync.eas.getConnection(syncdata.account);
         let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
@@ -1186,7 +1188,9 @@ var eas = {
                 switch(syncdata.req.status) {
 
                     case 200: //OK
-                        tbSync.eas.logxml(response, "Receiving data <" + syncdata.state + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname"));
+                        let msg = "Receiving data <" + syncdata.state + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
+                        if (syncdata.folderID !== "") msg += " (" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + ")";
+                        tbSync.eas.logxml(response, msg);
 
                         //What to do on error? IS this an error? Yes!
                         if (response.length !== 0 && response.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
