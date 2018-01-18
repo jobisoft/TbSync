@@ -184,7 +184,7 @@ var eas = {
 
                 syncdata.synckey = folders[0].synckey;
                 syncdata.folderID = folders[0].folderID;
-                //get syncdata type, which is also used in WBXML
+                //get syncdata type, which is also used in WBXML for the CLASS element
                 switch (folders[0].type) {
                     case "9": 
                     case "14": 
@@ -221,12 +221,9 @@ var eas = {
                     case "Contacts": 
                         yield eas.contactsync.start(syncdata);
                         break;
-                    case "Tasks": 
-                        //yield eas.tasksync.start(syncdata);
-                        throw eas.finishSync("skipped");
-                        break;
                     case "Calendar":
-                        yield eas.calendarsync.start(syncdata);
+                    case "Tasks": 
+                        yield eas.sync.start(syncdata);
                         break;
                 }
 
