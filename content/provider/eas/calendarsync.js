@@ -2,6 +2,12 @@
 
 eas.sync = {
 
+    createItem : function (syncdata) {
+        switch (syncdata.type) {
+            case "Calendar": return cal.createEvent();
+            case "Tasks": return cal.createTodo();
+        }
+    },
     
     
     start: Task.async (function* (syncdata)  {
@@ -103,7 +109,7 @@ eas.sync = {
                         if (db.getItemStatusFromChangeLog(syncdata.targetObj.id, ServerId) == "deleted_by_user") {
                             tbSync.dump("Add request, but element is in delete_log, asuming resync, local state wins, not adding.", ServerId);
                         } else {
-                            let newItem = cal.createEvent();
+                            let newItem = eas.sync.createItem(syncdata);
                             eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
                             db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "added_by_server");
                             try {
@@ -322,11 +328,28 @@ eas.sync.Tasks = {
     setThunderbirdItemFromWbxml: function (item, data, id, syncdata) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
         item.id = id;
-        let easTZ = new eas.TimeZoneDataStructure();
 
         if (data.Subject) item.title = xmltools.checkString(data.Subject);
-        if (data.Location) item.setProperty("location", xmltools.checkString(data.Location));
 
+/*
+ApplicationData => 
+      Body => 
+       Type = [1]
+       EstimatedDataSize = [6]
+       Data = [Jomy
+]
+      Body <= 
+      Subject = [Testaufgabe]
+      Importance = [1]
+      UtcStartDate = [2017-12-31T23:00:00.000Z]
+      StartDate = [2018-01-01T00:00:00.000Z]
+      UtcDueDate = [2018-01-30T23:00:00.000Z]
+      DueDate = [2018-01-31T00:00:00.000Z]
+      Complete = [0]
+      Sensitivity = [0]
+     ApplicationData <= 
+ */        
+        
         //TASK STUFF
         //aItem.entryDate = start;
         //aItem.dueDate = aEndDate.clone();
@@ -337,32 +360,9 @@ eas.sync.Tasks = {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
         let wbxml = tbSync.wbxmltools.createWBXML(""); //init wbxml with "" and not with precodes
         
-        /*
-         *  We do not use ghosting, that means, if we do not include a value in CHANGE, it is removed from the server. 
-         *  However, this does not seem to work on all fields. Furthermore, we need to include any (empty) container to blank its childs.
-         */
-
-        wbxml.switchpage("Calendar");
+        wbxml.switchpage("Tasks");
         
-        //each TB event has an ID, which is used as EAS serverId - however there is a second UID in the ApplicationData
-        //since we do not have two different IDs to use, we use the same ID
-        wbxml.atag("UID", item.id);
-        //IMPORTANT in EAS v16 it is no longer allowed to send a UID
-
-        // REQUIRED FIELDS
-        let tz = eas.getEasTimezoneData(item);
-        wbxml.atag("TimeZone", tz.timezone);
-
-        //StartTime & EndTime in UTC
-        wbxml.atag("StartTime", tz.startDateUTC);
-        wbxml.atag("EndTime", tz.endDateUTC);
-
-        //DtStamp
-        wbxml.atag("DtStamp", tz.stampTimeUTC);
-        
-        //obmitting these, should remove them from the server - that does not work reliably, so we send blanks
         wbxml.atag("Subject", (item.title) ? tbSync.encode_utf8(item.title) : "");
-        wbxml.atag("Location", (item.hasProperty("location")) ? tbSync.encode_utf8(item.getProperty("location")) : "");
         
         //return to AirSync code page
         wbxml.switchpage("AirSync");

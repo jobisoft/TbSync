@@ -797,8 +797,10 @@ var eas = {
 
     removeTarget: function(target, type) {
         switch (type) {
-            case "8":
+            case "8": //calendar
             case "13":
+            case "7": //tasks
+            case "15":
                 tbSync.removeCalendar(target);
                 break;
             case "9":
