@@ -840,22 +840,6 @@ var eas = {
                 tbSync.dump("eas.takeTargetOffline","Unknown type <"+type+">");
         }
     },
-    
-    removeAllTargets: function (account) {
-        let folders = db.findFoldersWithSetting("selected", "1", account);
-        for (let i = 0; i<folders.length; i++) {
-            let folderID = folders[i].folderID;
-            let target = folders[i].target;
-            let type = folders[i].type;
-
-            //remove folder before target, so we do not get a race condition with the listener 
-            //we will also get no update notification
-            tbSync.db.deleteFolder(account, folderID);
-            tbSync.eas.removeTarget(target, type);
-        }
-        //Delete all remaining folders, which are not synced and thus do not have a target to care about
-        db.deleteAllFolders(account); 
-    },
 
     connectAccount: function (account) {
         db.setAccountSetting(account, "state", "connected");
@@ -868,8 +852,18 @@ var eas = {
         db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
 
-        //Delete all targets and folders
-        tbSync.eas.removeAllTargets(account);
+        //Delete all targets / folders
+        let folders = db.getFolders(account);
+        for (let i in folders) {
+            tbSync.dump("f", folders[i].name);
+            if (folders[i].target != "") {
+                //the adressbook / calendar listener will delete the folder, if the account is disconnected
+                tbSync.eas.removeTarget(folders[i].target, folders[i].type);
+            } else {
+                db.deleteFolder(account, folders[i].folderID); 
+            }
+        }
+
         db.setAccountSetting(account, "status", "notconnected");
     },
 

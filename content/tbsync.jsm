@@ -475,8 +475,19 @@ var tbSync = {
              */
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
                 let folders =  tbSync.db.findFoldersWithSetting("target", aItem.URI);
+
+                //delete any pending changelog of the deleted book
+                tbSync.db.clearChangeLog(aItem.URI);			
+
                 //It should not be possible to link a book to two different accounts, so we just take the first target found
                 if (folders.length > 0) {
+
+                    //if this book was deleted because the account was disconnected, delete the folder
+                    if (tbSync.db.getAccountSetting(folders[0].account, "state") == "disconnected") {
+                        tbSync.db.deleteFolder(folders[0].account, folders[0].folderID);
+                        return;
+                    } 
+
                     folders[0].target="";
                     folders[0].synckey="";
                     folders[0].lastsynctime= "";
@@ -492,9 +503,8 @@ var tbSync = {
                         observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
                     }
                     tbSync.db.saveFolders();
+                    
                 }
-                //delete any pending changelog of the deleted book
-                tbSync.db.clearChangeLog(aItem.URI);			
             }
         },
 
@@ -833,10 +843,21 @@ var tbSync = {
         onCalendarRegistered : function (aCalendar) { tbSync.dump("calendarManagerObserver::onCalendarRegistered","<" + aCalendar.name + "> was registered."); },
         onCalendarUnregistering : function (aCalendar) { tbSync.dump("calendarManagerObserver::onCalendarUnregistering","<" + aCalendar.name + "> was unregisterd."); },
         onCalendarDeleting : function (aCalendar) {
-            tbSync.dump("calendarManagerObserver::onCalendarDeleting","<" + aCalendar.name + "> was d.");
+            tbSync.dump("calendarManagerObserver::onCalendarDeleting","<" + aCalendar.name + "> was deleted.");
+
+            //delete any pending changelog of the deleted calendar
+            tbSync.db.clearChangeLog(aCalendar.id);
+
             let folders =  tbSync.db.findFoldersWithSetting("target", aCalendar.id);
             //It should not be possible to link a calendar to two different accounts, so we just take the first target found
             if (folders.length > 0) {
+
+                //if this calendar was deleted because the account was disconnected, delete the folder
+                if (tbSync.db.getAccountSetting(folders[0].account, "state") == "disconnected") {
+                    tbSync.db.deleteFolder(folders[0].account, folders[0].folderID);
+                    return;
+                } 
+
                 folders[0].target="";
                 folders[0].synckey="";
                 folders[0].lastsynctime= "";
@@ -852,8 +873,6 @@ var tbSync = {
                 }
                 tbSync.db.saveFolders();
             }
-            //delete any pending changelog of the deleted calendar
-            tbSync.db.clearChangeLog(aCalendar.id);
         },
     },
 

@@ -23,7 +23,6 @@ var tbSyncAccountSettings = {
     },
 
     onunload: function () {
-        tbSyncAccountSettings.addressbookListener.remove();
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         if (tbSyncAccountSettings.init) {
             observerService.removeObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate");
