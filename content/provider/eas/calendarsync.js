@@ -691,7 +691,12 @@ eas.calendarsync = {
 
         //recurrent events (implemented by Chris Allan)
         if (item.recurrenceInfo) {
+            let deleted = [];
             for (let recRule of item.recurrenceInfo.getRecurrenceItems({})) {
+                if (recRule.isNegative) {
+                    deleted.push(recRule);
+                    continue;
+                }
                 wbxml.otag("Recurrence");
                 let type = 0;
                 let monthDays = recRule.getComponent("BYMONTHDAY", {});
@@ -784,6 +789,16 @@ eas.calendarsync = {
                 // WeekOfMonth
                 if (weeks.length) {
                     wbxml.atag("WeekOfMonth", weeks[0].toString());
+                }
+                wbxml.ctag();
+            }
+            if (deleted.length) {
+                wbxml.otag("Exceptions");
+                for (let exception of deleted) {
+                    wbxml.otag("Exception");
+                    wbxml.atag("ExceptionStartTime", exception.date.getInTimezone(cal.UTC()).icalString);
+                    wbxml.atag("Deleted", "1");
+                    wbxml.ctag();
                 }
                 wbxml.ctag();
             }
