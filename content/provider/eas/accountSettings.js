@@ -15,8 +15,6 @@ var tbSyncAccountSettings = {
         tbSync.prepareSyncDataObj(tbSyncAccountSettings.selectedAccount);
 
         tbSyncAccountSettings.loadSettings();
-        tbSyncAccountSettings.addressbookListener.add();
-
         
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate", false);
@@ -25,7 +23,6 @@ var tbSyncAccountSettings = {
     },
 
     onunload: function () {
-        tbSyncAccountSettings.addressbookListener.remove();
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         if (tbSyncAccountSettings.init) {
             observerService.removeObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate");
@@ -303,7 +300,7 @@ var tbSyncAccountSettings = {
         let parent =  tbSync.db.getFolder(account, folderID).parentID;
         let chain = folder.toString().padStart(3,"0");
         
-        while (parent != "0") {
+        while (parent && parent != "0") {
             chain = parent.toString().padStart(3,"0") + "." + chain;
             folder = parent;
             parent = tbSync.db.getFolder(account, folder).parentID;
@@ -511,39 +508,6 @@ var tbSyncAccountSettings = {
             }
             tbSyncAccountSettings.updateSyncstate();
             if (msg !== null) alert(msg);
-        }
-    },
-
-
-    /* * *
-    * Address book listener to catch if the synced address book (sync target) has been renamed
-    * or deleted, so the corresponding labels can be updated. For simplicity, we do not check,
-    * if the modified book belongs to the current account - we update on any change.
-    */
-    addressbookListener: {
-
-        onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
-            if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                tbSyncAccountSettings.updateFolderList();
-            }
-        },
-
-        onItemRemoved: function addressbookListener_onItemRemoved (aParentDir, aItem) {
-            if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                tbSyncAccountSettings.updateFolderList();
-            }
-        },
-
-        add: function addressbookListener_add () {
-            Components.classes["@mozilla.org/abmanager;1"]
-                .getService(Components.interfaces.nsIAbManager)
-                .addAddressBookListener(tbSyncAccountSettings.addressbookListener, Components.interfaces.nsIAbListener.all);
-        },
-
-        remove: function addressbookListener_remove () {
-            Components.classes["@mozilla.org/abmanager;1"]
-                .getService(Components.interfaces.nsIAbManager)
-                .removeAddressBookListener(tbSyncAccountSettings.addressbookListener);
         }
     }
 

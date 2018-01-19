@@ -184,7 +184,7 @@ var eas = {
 
                 syncdata.synckey = folders[0].synckey;
                 syncdata.folderID = folders[0].folderID;
-                //get syncdata type, which is also used in WBXML
+                //get syncdata type, which is also used in WBXML for the CLASS element
                 switch (folders[0].type) {
                     case "9": 
                     case "14": 
@@ -221,12 +221,9 @@ var eas = {
                     case "Contacts": 
                         yield eas.contactsync.start(syncdata);
                         break;
-                    case "Tasks": 
-                        //yield eas.tasksync.start(syncdata);
-                        throw eas.finishSync("skipped");
-                        break;
                     case "Calendar":
-                        yield eas.calendarsync.start(syncdata);
+                    case "Tasks": 
+                        yield eas.sync.start(syncdata);
                         break;
                 }
 
@@ -800,8 +797,10 @@ var eas = {
 
     removeTarget: function(target, type) {
         switch (type) {
-            case "8":
+            case "8": //calendar
             case "13":
+            case "7": //tasks
+            case "15":
                 tbSync.removeCalendar(target);
                 break;
             case "9":
@@ -841,22 +840,6 @@ var eas = {
                 tbSync.dump("eas.takeTargetOffline","Unknown type <"+type+">");
         }
     },
-    
-    removeAllTargets: function (account) {
-        let folders = db.findFoldersWithSetting("selected", "1", account);
-        for (let i = 0; i<folders.length; i++) {
-            let folderID = folders[i].folderID;
-            let target = folders[i].target;
-            let type = folders[i].type;
-
-            //remove folder before target, so we do not get a race condition with the listener 
-            //we will also get no update notification
-            tbSync.db.deleteFolder(account, folderID);
-            tbSync.eas.removeTarget(target, type);
-        }
-        //Delete all remaining folders, which are not synced and thus do not have a target to care about
-        db.deleteAllFolders(account); 
-    },
 
     connectAccount: function (account) {
         db.setAccountSetting(account, "state", "connected");
@@ -869,8 +852,17 @@ var eas = {
         db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
 
-        //Delete all targets and folders
-        tbSync.eas.removeAllTargets(account);
+        //Delete all targets / folders
+        let folders = db.getFolders(account);
+        for (let i in folders) {
+            if (folders[i].target != "") {
+                //the adressbook / calendar listener will delete the folder, if the account is disconnected
+                tbSync.eas.removeTarget(folders[i].target, folders[i].type);
+            } else {
+                db.deleteFolder(account, folders[i].folderID); 
+            }
+        }
+
         db.setAccountSetting(account, "status", "notconnected");
     },
 
@@ -1132,7 +1124,9 @@ var eas = {
 
     sendRequest: function (wbxml, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;                  
-        tbSync.eas.logxml(wbxml, "Sending data <" + syncdata.state + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname"));
+        let msg = "Sending data <" + syncdata.state + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
+        if (syncdata.folderID !== "") msg += " (" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + ")";
+        tbSync.eas.logxml(wbxml, msg);
 
         let connection = tbSync.eas.getConnection(syncdata.account);
         let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
@@ -1186,7 +1180,9 @@ var eas = {
                 switch(syncdata.req.status) {
 
                     case 200: //OK
-                        tbSync.eas.logxml(response, "Receiving data <" + syncdata.state + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname"));
+                        let msg = "Receiving data <" + syncdata.state + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
+                        if (syncdata.folderID !== "") msg += " (" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + ")";
+                        tbSync.eas.logxml(response, msg);
 
                         //What to do on error? IS this an error? Yes!
                         if (response.length !== 0 && response.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
@@ -1372,5 +1368,7 @@ var eas = {
 };
     
 
-tbSync.includeJS("chrome://tbsync/content/provider/eas/contactsync.js");
+tbSync.includeJS("chrome://tbsync/content/provider/eas/sync.js");
+tbSync.includeJS("chrome://tbsync/content/provider/eas/tasksync.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/calendarsync.js");
+tbSync.includeJS("chrome://tbsync/content/provider/eas/contactsync.js");

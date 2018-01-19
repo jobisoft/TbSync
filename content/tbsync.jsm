@@ -68,7 +68,7 @@ var tbSync = {
         //init stuff for sync process
         tbSync.resetSync();
 
-       //enable
+        //enable
         tbSync.enabled = true;
         
         tbSync.debugtestflags = tbSync.prefSettings.getIntPref("debugtestflags");
@@ -210,6 +210,22 @@ var tbSync = {
 
 
     // TOOLS
+    openTBtab: function (url) {
+        var tabmail = null;
+        var mail3PaneWindow =
+            Components.classes["@mozilla.org/appshell/window-mediator;1"]
+            .getService(Components.interfaces.nsIWindowMediator)
+            .getMostRecentWindow("mail:3pane");
+        if (mail3PaneWindow) {
+            tabmail = mail3PaneWindow.document.getElementById("tabmail");
+            mail3PaneWindow.focus();
+            tabmail.openTab("contentTab", {
+                contentPage: url
+            });
+        }
+        return (tabmail !== null);
+    },
+
     getAbsolutePath: function(filename) {
         return OS.Path.join(tbSync.storageDirectory, filename);
     },
@@ -392,6 +408,16 @@ var tbSync = {
 
         //if a contact in one of the synced books is modified, update status of target and account
         onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
+            // change on book itself, or on card?
+            if (aItem instanceof Components.interfaces.nsIAbDirectory) {
+                let folders =  tbSync.db.findFoldersWithSetting("target", aItem.URI);
+                if (folders.length > 0) {
+                        //update settings window, if open
+                        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+                        observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+                }
+            }
+
             if (aItem instanceof Components.interfaces.nsIAbCard) {
                 let aParentDirURI = tbSync.getUriFromPrefId(aItem.directoryId.split("&")[0]);
                 if (aParentDirURI) { //could be undefined
@@ -449,8 +475,19 @@ var tbSync = {
              */
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
                 let folders =  tbSync.db.findFoldersWithSetting("target", aItem.URI);
+
+                //delete any pending changelog of the deleted book
+                tbSync.db.clearChangeLog(aItem.URI);			
+
                 //It should not be possible to link a book to two different accounts, so we just take the first target found
                 if (folders.length > 0) {
+
+                    //if this book was deleted because the account was disconnected, delete the folder
+                    if (tbSync.db.getAccountSetting(folders[0].account, "state") == "disconnected") {
+                        tbSync.db.deleteFolder(folders[0].account, folders[0].folderID);
+                        return;
+                    } 
+
                     folders[0].target="";
                     folders[0].synckey="";
                     folders[0].lastsynctime= "";
@@ -466,9 +503,8 @@ var tbSync = {
                         observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
                     }
                     tbSync.db.saveFolders();
+                    
                 }
-                //delete any pending changelog of the deleted book
-                tbSync.db.clearChangeLog(aItem.URI);			
             }
         },
 
@@ -807,9 +843,21 @@ var tbSync = {
         onCalendarRegistered : function (aCalendar) { tbSync.dump("calendarManagerObserver::onCalendarRegistered","<" + aCalendar.name + "> was registered."); },
         onCalendarUnregistering : function (aCalendar) { tbSync.dump("calendarManagerObserver::onCalendarUnregistering","<" + aCalendar.name + "> was unregisterd."); },
         onCalendarDeleting : function (aCalendar) {
+            tbSync.dump("calendarManagerObserver::onCalendarDeleting","<" + aCalendar.name + "> was deleted.");
+
+            //delete any pending changelog of the deleted calendar
+            tbSync.db.clearChangeLog(aCalendar.id);
+
             let folders =  tbSync.db.findFoldersWithSetting("target", aCalendar.id);
             //It should not be possible to link a calendar to two different accounts, so we just take the first target found
             if (folders.length > 0) {
+
+                //if this calendar was deleted because the account was disconnected, delete the folder
+                if (tbSync.db.getAccountSetting(folders[0].account, "state") == "disconnected") {
+                    tbSync.db.deleteFolder(folders[0].account, folders[0].folderID);
+                    return;
+                } 
+
                 folders[0].target="";
                 folders[0].synckey="";
                 folders[0].lastsynctime= "";
@@ -825,8 +873,6 @@ var tbSync = {
                 }
                 tbSync.db.saveFolders();
             }
-            //delete any pending changelog of the deleted calendar
-            tbSync.db.clearChangeLog(aCalendar.id);
         },
     },
 
@@ -856,6 +902,25 @@ var tbSync = {
                 targetCal.name += suffix;
             }
         } catch (e) {}
+    },
+
+    //takes either basic (YYYYMMDDTHHMMSSZ) or extended (YYYY-MM-DDTHH:MM:SS.sssZ) ISO 8601 UTC datestring and returns basic
+    toBasicIso8601: function (str) {
+        //we do not validate the format, we just need to decide, if it is basic or extended
+        if (str.indexOf("-") == 4) {
+            //this must be extendend
+            let dt = str.split("T");
+            let d = dt[0].replace(/-/g,"");
+            let t = "00:00:00";
+            
+            if (dt.length>1) {
+                let td = dt[1].split(".");
+                t = td[0].replace(/:/g,"");
+            }
+            
+            return d + "T" + t +"Z";
+        }
+        return str;
     },
 
     setCalItemProperty: function (item, prop, value) {
@@ -996,10 +1061,12 @@ var tbSync = {
 
 //clear debug log on start
 tbSync.initFile("debug.log");
+tbSync.dump("Init","Please send this log to john.bieling@gmx.de, if you have encountered an error.");
+
 tbSync.mozConsoleService.registerListener(tbSync.consoleListener);
 
 let appInfo =  Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
-tbSync.dump(appInfo.name, appInfo.platformVersion);
+tbSync.dump(appInfo.name, appInfo.platformVersion + " on " + OS.Constants.Sys.Name);
 AddonManager.getAllAddons(function(addons) {
   for (let a=0; a < addons.length; a++) {
     if (addons[a].isActive) tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version +")");

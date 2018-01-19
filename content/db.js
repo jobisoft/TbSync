@@ -125,9 +125,6 @@ var db = {
         } else {
             delete(this.accounts.data[account]);
             this.saveAccounts();
-
-            // also remove all folders of that account
-            this.deleteAllFolders(account);
         }
     },
 
@@ -196,13 +193,10 @@ var db = {
         this.saveFolders();
     },
 
-    deleteAllFolders: function(account) {
-        delete (this.folders[account]);
-        this.saveFolders();
-    },
-
     deleteFolder: function(account, folderID) {
         delete (this.folders[account][folderID]);
+	//if there are no more folders, delete entire account entry
+	if (Object.keys(this.folders[account]).length === 0) delete (this.folders[account]);
         this.saveFolders();
     },
 

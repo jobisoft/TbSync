@@ -56,17 +56,17 @@
     <prefpane id="Cape" label="&pref.cape;" image="chrome://tbsync/skin/cape.png" >
         <hbox  width="750" height="450" >
             <vbox flex="0" style="padding: 2em 2em 0 2em;" >
-                <image src="chrome://tbsync/skin/cape_logo.png" style='padding:8px;' align='center' onclick="tbSyncAccountManager.openTBtab('http://c-a-p-e.co.uk/');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
+                <image src="chrome://tbsync/skin/cape_logo.png" style='padding:8px;' align='center' onclick="tbSync.openTBtab('http://c-a-p-e.co.uk/');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
                 <label
                     value="www.capeproject.org.uk"
                     style="color: blue; text-decoration: underline; text-align: center"
                     onmouseover="this.style.cursor='pointer'"
                     onmouseout="this.style.cursor='default'"
-                    onclick="tbSyncAccountManager.openTBtab('http://c-a-p-e.co.uk/');"
+                    onclick="tbSync.openTBtab('http://c-a-p-e.co.uk/');"
                     width="185" />
             </vbox>
             <vbox flex="1"  style="padding: 0 2em 0 0;" >
-               <html:p> This Add-On is partially based on <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSyncAccountManager.openTBtab('https://addons.mozilla.org/en-US/thunderbird/addon/tzpush');" style="color:blue;text-decoration: underline">TzPush</html:span>, which has been developed by Mark Nethersole. TbSync would not have been possible without his work and I am thankful for his contributions.</html:p>
+               <html:p> This Add-On is partially based on <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openTBtab('https://addons.mozilla.org/en-US/thunderbird/addon/tzpush');" style="color:blue;text-decoration: underline">TzPush</html:span>, which has been developed by Mark Nethersole. TbSync would not have been possible without his work and I am thankful for his contributions.</html:p>
                <html:p>Mark is dedicated to the CAPE charity, which he introduced in TzPush with the following words:</html:p>              
                <html:p><html:i>Cape is an established registered charity offering a dynamic and flexible outreach and day service for people who experience severe and enduring mental health difficulties.</html:i></html:p>
                <html:p><html:i>TzPush is free software, but feel free to donate to good cause, like CAPE.</html:i></html:p>
@@ -79,7 +79,7 @@
         <hbox  width="750" height="450" >
             <vbox flex="1" style="padding: 0 2em;" >
                 <html:p>TbSync is also syncing contact categories. To be able to use them in Thunderbird, you could install the Category Manager Add-On. It enables you to manage overlapping contact groups and provides a bunch of other category related features. It can be found in the official Mozilla Add-On repository:</html:p>
-                <html:p onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSyncAccountManager.openTBtab('https://addons.mozilla.org/de/thunderbird/addon/categorymanager/');" style="color:blue;text-decoration: underline;padding-left:1em;">https://addons.mozilla.org/de/thunderbird/addon/categorymanager/</html:p>
+                <html:p onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openTBtab('https://addons.mozilla.org/de/thunderbird/addon/categorymanager/');" style="color:blue;text-decoration: underline;padding-left:1em;">https://addons.mozilla.org/de/thunderbird/addon/categorymanager/</html:p>
             </vbox>
          </hbox>
     </prefpane>

@@ -38,7 +38,18 @@ var tbSyncMessenger = {
     },
 
     popupNotEnabled: function () {
-        alert(tbSync.getLocalizedMessage("error.init"));
+        let msg = "Oops! TbSync was not able to start!\n\n";
+
+        if (!tbSync.prefSettings.getBoolPref("log.tofile")) {
+            if (confirm(msg + "It is not possible to trace this error, because debug log is currently not enabled. Do you want to enable debug log now, to help fix this error?")) {
+                tbSync.prefSettings.setBoolPref("log.tofile", true);
+                alert("TbSync debug log has been enabled, please restart Thunderbird and again try to open TbSync.");
+            }
+        } else {
+            if (confirm(msg + "To help fix this error, you could send a debug log to the TbSync developer. Do you want to open the debug log now?")) {
+                tbSync.openTBtab(tbSync.getAbsolutePath("debug.log"));
+            }
+        }
     },
 
 

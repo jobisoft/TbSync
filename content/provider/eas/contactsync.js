@@ -853,7 +853,7 @@ eas.contactsync = {
             // Send will send a request to the server, a responce will trigger callback, which will call senddel again.
             syncdata.cardstodelete = cardstodelete;
             
-            responseWbxml = yield eas.sendRequest(wbxml, "Sync", syncdata);
+            let responseWbxml = yield eas.sendRequest(wbxml, "Sync", syncdata);
 
             let firstcmd = responseWbxml.indexOf(String.fromCharCode(0x01, 0x46));
 
