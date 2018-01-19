@@ -11,6 +11,18 @@ eas.sync.Tasks = {
     eas.sync.Calendar.setItemCategories(item, syncdata, data);
     eas.sync.Calendar.setItemRecurrence(item, syncdata, data);
 
+    let tzService = cal.getTimezoneService();
+    if (data.DueDate && data.UtcDueDate) {
+        //extract offset from EAS data
+        let DueDate = new Date(data.DueDate);
+        let UtcDueDate = new Date(data.UtcDueDate);
+        let offset = (UtcDueDate.getTime() - DueDate.getTime())/60000;
+
+        //timezone is identified by its offset
+        let utc = cal.createDateTime(UtcDueDate.toBasicISOString()); //format "19800101T000000Z" - UTC
+        item.dueDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[offset]));
+    }
+
         /*
 
     tasks is using extended ISO 8601 (2019-01-18T00:00:00.000Z)  instead of basic (20190118T000000Z)

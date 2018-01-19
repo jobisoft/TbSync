@@ -22,6 +22,35 @@ Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("resource://gre/modules/AddonManager.jsm");
 
+
+
+//extend Date
+if (!Date.prototype.toBasicISOString) {
+  (function() {
+
+    function pad(number) {
+      if (number < 10) {
+        return '0' + number;
+      }
+      return number;
+    }
+
+    Date.prototype.toBasicISOString = function() {
+      return this.getUTCFullYear() +
+        pad(this.getUTCMonth() + 1) +
+        pad(this.getUTCDate()) +
+        'T' + 
+        pad(this.getUTCHours()) +
+        pad(this.getUTCMinutes()) +
+        pad(this.getUTCSeconds()) +
+        'Z';
+    };
+
+  }());
+}
+
+
+
 var tbSync = {
 
     enabled: false,
@@ -902,25 +931,6 @@ var tbSync = {
                 targetCal.name += suffix;
             }
         } catch (e) {}
-    },
-
-    //takes either basic (YYYYMMDDTHHMMSSZ) or extended (YYYY-MM-DDTHH:MM:SS.sssZ) ISO 8601 UTC datestring and returns basic
-    toBasicIso8601: function (str) {
-        //we do not validate the format, we just need to decide, if it is basic or extended
-        if (str.indexOf("-") == 4) {
-            //this must be extendend
-            let dt = str.split("T");
-            let d = dt[0].replace(/-/g,"");
-            let t = "00:00:00";
-            
-            if (dt.length>1) {
-                let td = dt[1].split(".");
-                t = td[0].replace(/:/g,"");
-            }
-            
-            return d + "T" + t +"Z";
-        }
-        return str;
     },
 
     setCalItemProperty: function (item, prop, value) {

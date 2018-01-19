@@ -116,7 +116,14 @@ eas.sync.Calendar = {
                 recRule.count = data.Recurrence.Occurrences;
             }
             if (data.Recurrence.Until) {
-                recRule.untilDate = cal.createDateTime(tbSync.toBasicIso8601(data.Recurrence.Until));
+                //is the time in compact/basic or extended form of ISO 8601
+                let until = data.Recurrence.Until;
+                if (until.indexOf("-") == 4) {
+                    //this looks like extended ISO 8601
+                    let UntilDate = new Date(until);
+                    until = UntilDate.toBasicISOString();
+                }
+                recRule.untilDate = cal.createDateTime(until);
             }
             item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
         }
