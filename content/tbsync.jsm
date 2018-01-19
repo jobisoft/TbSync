@@ -904,6 +904,26 @@ var tbSync = {
         } catch (e) {}
     },
 
+    //takes either basic (YYYYMMDDTHHMMSSZ) or extended (YYYY-MM-DDTHH:MM:SS.sssZ) ISO 8601 UTC datestring and returns basic
+    toBasicIso8601: function (str) {
+        //we do not validate the format, we just need to decide, if it is basic or extended
+        if (str.indexOf("-") == 4) {
+            //this must be extendend
+            let dt = str.split("T");
+            let d = dt[0].replace(/-/g,"");
+            let t = "00:00:00";
+            
+            if (dt.length>1) {
+                let td = dt[1].split(".");
+                t = td[0].replace(/:/g,"");
+            }
+            
+            tbSync.dump("str", d + "T" + t +"Z");
+            return d + "T" + t +"Z";
+        }
+        return str;
+    },
+
     setCalItemProperty: function (item, prop, value) {
         if (value == "unset") item.deleteProperty(prop);
         else item.setProperty(prop, value);
