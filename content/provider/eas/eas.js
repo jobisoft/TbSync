@@ -563,7 +563,11 @@ var eas = {
         }
 
         //update account status
-        if (error !== "") status = error;
+        if (error !== "") {
+            status = error;
+            let info = tbSync.db.getAccountSetting(syncdata.account, "accountname");
+            tbSync.dump("finishAccountSync(" + info + ")", tbSync.getLocalizedMessage("status." + status));
+        }
         tbSync.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
         tbSync.db.setAccountSetting(syncdata.account, "status", status);
 
