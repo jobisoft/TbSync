@@ -408,6 +408,16 @@ var tbSync = {
 
         //if a contact in one of the synced books is modified, update status of target and account
         onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
+            // change on book itself, or on card?
+            if (aItem instanceof Components.interfaces.nsIAbDirectory) {
+                let folders =  tbSync.db.findFoldersWithSetting("target", aItem.URI);
+                if (folders.length > 0) {
+                        //update settings window, if open
+                        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+                        observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+                }
+            }
+
             if (aItem instanceof Components.interfaces.nsIAbCard) {
                 let aParentDirURI = tbSync.getUriFromPrefId(aItem.directoryId.split("&")[0]);
                 if (aParentDirURI) { //could be undefined
@@ -823,6 +833,7 @@ var tbSync = {
         onCalendarRegistered : function (aCalendar) { tbSync.dump("calendarManagerObserver::onCalendarRegistered","<" + aCalendar.name + "> was registered."); },
         onCalendarUnregistering : function (aCalendar) { tbSync.dump("calendarManagerObserver::onCalendarUnregistering","<" + aCalendar.name + "> was unregisterd."); },
         onCalendarDeleting : function (aCalendar) {
+            tbSync.dump("calendarManagerObserver::onCalendarDeleting","<" + aCalendar.name + "> was d.");
             let folders =  tbSync.db.findFoldersWithSetting("target", aCalendar.id);
             //It should not be possible to link a calendar to two different accounts, so we just take the first target found
             if (folders.length > 0) {
