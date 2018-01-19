@@ -855,7 +855,6 @@ var eas = {
         //Delete all targets / folders
         let folders = db.getFolders(account);
         for (let i in folders) {
-            tbSync.dump("f", folders[i].name);
             if (folders[i].target != "") {
                 //the adressbook / calendar listener will delete the folder, if the account is disconnected
                 tbSync.eas.removeTarget(folders[i].target, folders[i].type);
@@ -1369,5 +1368,7 @@ var eas = {
 };
     
 
-tbSync.includeJS("chrome://tbsync/content/provider/eas/contactsync.js");
+tbSync.includeJS("chrome://tbsync/content/provider/eas/sync.js");
+tbSync.includeJS("chrome://tbsync/content/provider/eas/tasksync.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/calendarsync.js");
+tbSync.includeJS("chrome://tbsync/content/provider/eas/contactsync.js");
