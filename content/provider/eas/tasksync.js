@@ -23,28 +23,34 @@ eas.sync.Tasks = {
         item.dueDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[offset]));
     }
 
+    if (data.StartDate && data.UtcStartDate) {
+        //extract offset from EAS data
+        let StartDate = new Date(data.StartDate);
+        let UtcStartDate = new Date(data.UtcStartDate);
+        let offset = (UtcStartDate.getTime() - StartDate.getTime())/60000;
+
+        //timezone is identified by its offset
+        let utc = cal.createDateTime(UtcStartDate.toBasicISOString()); //format "19800101T000000Z" - UTC
+        item.entryDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[offset]));
+    }
         /*
 
     tasks is using extended ISO 8601 (2019-01-18T00:00:00.000Z)  instead of basic (20190118T000000Z)
 
-    Importance = [1]
-    UtcStartDate = [2017-12-31T23:00:00.000Z]
-    StartDate = [2018-01-01T00:00:00.000Z]
-    UtcDueDate = [2018-01-30T23:00:00.000Z]
-    DueDate = [2018-01-31T00:00:00.000Z]
-    Complete = [0]
-    Sensitivity = [0]
-
+    item.dueDate is calIDateTime (http://doxygen.db48x.net/mozilla-full/html/d0/d83/interfacecalIDateTime.html)
     var date = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
     date.icalString = "20080907T120000Z";
 
-    todo.title = "Crazy new todo";
-    todo.dueDate = date;
+    Importance = [1]
+    Complete = [0]
+    Sensitivity = [0]
+    ReminderSet = [0]
 
-    //TASK STUFF
-    //aItem.entryDate = start;
-    //aItem.dueDate = aEndDate.clone();
-    //due.addDuration(dueOffset);
+    ReminderTime = [2018-01-31T07:00:00.000Z]
+    ReminderSet = [1]
+    
+    Complete = [1]
+    DateCompleted = [2018-01-31T23:00:00.000Z] //UTC
         
         */        
         
