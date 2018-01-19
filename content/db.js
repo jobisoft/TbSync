@@ -195,8 +195,8 @@ var db = {
 
     deleteFolder: function(account, folderID) {
         delete (this.folders[account][folderID]);
-	//if there are no more folders, delete entire account entry
-	if (Object.keys(this.folders[account]).length === 0) delete (this.folders[account]);
+        //if there are no more folders, delete entire account entry
+        if (Object.keys(this.folders[account]).length === 0) delete (this.folders[account]);
         this.saveFolders();
     },
 
