@@ -569,9 +569,18 @@ eas.calendarsync = {
                     let dateTime = cal.createDateTime(exception.ExceptionStartTime);
                     if (data.AllDayEvent == "1") {
                         dateTime.isDate = true;
+                        // Pass to replacement event unless overriden
+                        if (!exception.AllDayEvent) {
+                            exception.AllDayEvent = "1";
+                        }
                     }
                     if (exception.Deleted == "1") {
                         item.recurrenceInfo.removeOccurrenceAt(dateTime);
+                    }
+                    else {
+                        let replacement = item.recurrenceInfo.getOccurrenceFor(dateTime);
+                        eas.calendarsync.setCalendarItemFromWbxml(replacement, exception, replacement.id, syncdata);
+                        item.recurrenceInfo.modifyException(replacement, true);
                     }
                 }
             }
