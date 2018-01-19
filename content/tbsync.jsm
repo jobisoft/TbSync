@@ -918,7 +918,6 @@ var tbSync = {
                 t = td[0].replace(/:/g,"");
             }
             
-            tbSync.dump("str", d + "T" + t +"Z");
             return d + "T" + t +"Z";
         }
         return str;
@@ -1067,7 +1066,7 @@ tbSync.dump("Init","Please send this log to john.bieling@gmx.de, if you have enc
 tbSync.mozConsoleService.registerListener(tbSync.consoleListener);
 
 let appInfo =  Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
-tbSync.dump(appInfo.name, appInfo.platformVersion);
+tbSync.dump(appInfo.name, appInfo.platformVersion + " on " + OS.Constants.Sys.Name);
 AddonManager.getAllAddons(function(addons) {
   for (let a=0; a < addons.length; a++) {
     if (addons[a].isActive) tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version +")");
