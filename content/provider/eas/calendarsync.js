@@ -499,7 +499,7 @@ eas.sync.Calendar = {
                 }
                 // Until
                 else if (recRule.untilDate != null) {
-                    wbxml.atag("Until", recRule.untilDate.getInTimezone(cal.UTC()).icalString);
+                    wbxml.atag("Until", tbSync.eas.getEasTimeUTC(recRule.untilDate));
                 }
                 // WeekOfMonth
                 if (weeks.length) {
@@ -511,7 +511,7 @@ eas.sync.Calendar = {
                 wbxml.otag("Exceptions");
                 for (let exception of deleted) {
                     wbxml.otag("Exception");
-                    wbxml.atag("ExceptionStartTime", exception.date.getInTimezone(cal.UTC()).icalString);
+                    wbxml.atag("ExceptionStartTime", tbSync.eas.getEasTimeUTC(exception.date));
                     wbxml.atag("Deleted", "1");
                     wbxml.ctag();
                 }

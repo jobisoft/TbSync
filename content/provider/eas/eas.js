@@ -1028,20 +1028,11 @@ var eas = {
     },
 
     //get EAS TZ data from calendar item
-    getEasTimezoneData: function (origitem) {
-        let item = origitem.clone();
-        //floating timezone cannot be converted to UTC (cause they float) - we have to overwrite it with the local timezone
-        if (item.startDate.timezone.tzid == "floating") item.startDate.timezone = cal.calendarDefaultTimezone();
-        if (item.endDate.timezone.tzid == "floating") item.endDate.timezone = cal.calendarDefaultTimezone();
-        if (item.stampTime.timezone.tzid == "floating") item.stampTime.timezone = cal.calendarDefaultTimezone();
-
-        //to get the UTC string we could use icalString (which does not work on allDayEvents, or calculate it from nativeTime)
-        item.startDate.isDate=0;
-        item.endDate.isDate=0;
+    getEasTimezoneData: function (item) {
         let tz = {};
-        tz.startDateUTC = item.startDate.getInTimezone(cal.UTC()).icalString;
-        tz.endDateUTC = item.endDate.getInTimezone(cal.UTC()).icalString;
-        tz.stampTimeUTC = item.stampTime.getInTimezone(cal.UTC()).icalString;
+        tz.startDateUTC = tbSync.eas.getEasTimeUTC(item.startDate);
+        tz.endDateUTC = tbSync.eas.getEasTimeUTC(item.endDate);
+        tz.stampTimeUTC = tbSync.eas.getEasTimeUTC(item.stampTime);
 
         //tbSync.quickdump("startDate", tz.startDateUTC);
         //tbSync.quickdump("endDate", tz.endDateUTC);
@@ -1112,6 +1103,15 @@ var eas = {
         //TimeZone
         tz.timezone = easTZ.base64;
         return tz;
+    },
+    // Convert TB date into Eas UTC
+    getEasTimeUTC: function(origdate) {
+        let date = origdate.clone();
+        //floating timezone cannot be converted to UTC (cause they float) - we have to overwrite it with the local timezone
+        if (date.timezone.tzid == "floating") date.timezone = cal.calendarDefaultTimezone();
+        //to get the UTC string we could use icalString (which does not work on allDayEvents, or calculate it from nativeTime)
+        date.isDate = 0;
+        return date.getInTimezone(cal.UTC()).icalString;
     },
 
 
