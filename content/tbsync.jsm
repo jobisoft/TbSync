@@ -24,7 +24,9 @@ Components.utils.import("resource://gre/modules/AddonManager.jsm");
 
 
 
-//extend Date
+//Date has a toISOString method, which returns the Date obj as extended ISO 8601,
+//however EAS MS-ASCAL uses compact/basic ISO 8601,
+//extending Date obj by toBasicISOString method to return compact/basic ISO 8601.
 if (!Date.prototype.toBasicISOString) {
   (function() {
 

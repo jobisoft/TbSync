@@ -130,14 +130,9 @@ eas.sync.Calendar = {
                 recRule.count = data.Recurrence.Occurrences;
             }
             if (data.Recurrence.Until) {
-                //is the time in compact/basic or extended form of ISO 8601
-                let until = data.Recurrence.Until;
-                if (until.indexOf("-") == 4) {
-                    //this looks like extended ISO 8601
-                    let UntilDate = new Date(until);
-                    until = UntilDate.toBasicISOString();
-                }
-                recRule.untilDate = cal.createDateTime(until);
+                //time string could be in compact/basic or extended form of ISO 8601, 
+                //cal.createDateTime only supports  compact/basic, our own method takes both styles
+                recRule.untilDate = tbSync.eas.createDateTime(data.Recurrence.Until);
             }
             item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
             if (data.Exceptions) {
