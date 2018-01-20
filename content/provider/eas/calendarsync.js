@@ -397,7 +397,7 @@ eas.sync.Calendar = {
                                 // - if we are the owner of a meeting, TB does not have an option to actually set the attendee status (on behalf of an attendee) in the UI
                                 // - if we are an attendee (of an invite) we cannot and should not set status of other attendees and or own status must be send through a MeetingResponse
                                 // -> all changes of attendee status are send from the server to us, either via ResponseType or via AttendeeStatus
-                                //wbxml.atag("AttendeeStatus", this.MAP_TB_ATTENDEESTATUS[attendee.participationStatus]);
+                                //wbxml.atag("AttendeeStatus", this.MAP_TB2EAS.ATTENDEESTATUS[attendee.participationStatus]);
 
                                 if (attendee.userType == "RESOURCE" || attendee.userType == "ROOM" || attendee.role == "NON-PARTICIPANT") wbxml.atag("AttendeeType","3");
                                 else if (attendee.role == "REQ-PARTICIPANT" || attendee.role == "CHAIR") wbxml.atag("AttendeeType","1");
