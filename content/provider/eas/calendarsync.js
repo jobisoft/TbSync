@@ -2,29 +2,43 @@
 
 eas.sync.Calendar = {
 
+    MAP_EAS2TB : {
+        //EAS Importance: 0 = LOW | 1 = NORMAL | 2 = HIGH
+        Importance : { "0":"9", "1":"5", "2":"1"}, //to PRIORITY
+        //EAS Sensitivity :  0 = Normal  |  1 = Personal  |  2 = Private  |  3 = Confidential
+        Sensitivity : { "0":"PUBLIC", "1":"unset", "2":"PRIVATE", "3":"CONFIDENTIAL"}, //to CLASS
+        //EAS BusyStatus:  0 = Free  |  1 = Tentative  |  2 = Busy  |  3 = Work  |  4 = Elsewhere
+        BusyStatus : {"0":"TRANSPARENT", "1":"unset", "2":"OPAQUE", "3":"OPAQUE", "4":"OPAQUE"}, //to TRANSP
+        //EAS AttendeeStatus: 0 =Response unknown (but needed) |  2 = Tentative  |  3 = Accept  |  4 = Decline  |  5 = Not responded (and not needed) || 1 = Organizer in ResponseType
+        ATTENDEESTATUS : {"0": "NEEDS-ACTION", "1":"Orga", "2":"TENTATIVE", "3":"ACCEPTED", "4":"DECLINED", "5":"ACCEPTED"},
+        },
+
+    MAP_TB2EAS : {
+        //TB PRIORITY: 9 = LOW | 5 = NORMAL | 1 = HIGH
+        PRIORITY : { "9":"0", "5":"1", "1":"2","unset":"1"}, //to Importance
+        //TB CLASS: PUBLIC, PRIVATE, CONFIDENTIAL)
+        CLASS : { "PUBLIC":"0", "PRIVATE":"2", "CONFIDENTIAL":"3", "unset":"1"}, //to Sensitivity
+        //TB TRANSP : free = TRANSPARENT, busy = OPAQUE)
+        TRANSP : {"TRANSPARENT":"0", "unset":"1", "OPAQUE":"2"}, // to BusyStatus
+        //TB STATUS: NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, (DELEGATED, COMPLETED, IN-PROCESS - for todo)
+        ATTENDEESTATUS : {"NEEDS-ACTION":"0", "ACCEPTED":"3", "DECLINED":"4", "TENTATIVE":"2", "DELEGATED":"5","COMPLETED":"5", "IN-PROCESS":"5"},
+        },
     
-    //EAS Sensitivity :  0 = Normal  |  1 = Personal  |  2 = Private  |  3 = Confidential
-    //TB CLASS: PUBLIC, PRIVATE, CONFIDENTIAL)
-    MAP_EAS_SENSITIVITY : { "0":"PUBLIC", "1":"unset", "2":"PRIVATE", "3":"CONFIDENTIAL"},
-    MAP_TB_CLASS : { "PUBLIC":"0", "PRIVATE":"2", "CONFIDENTIAL":"3", "unset":"1"},
+    mapEasPropertyToThunderbird : function (easProp, tbProp, data, item) {
+        if (data[easProp]) {
+            //store original EAS value 
+            item.setProperty("X-EAS-" + easProp, data[easProp]);
+            //map EAS value to TB value  (use setCalItemProperty if there is one option which can unset/delete the property)
+            tbSync.setCalItemProperty(item,tbProp, this.MAP_EAS2TB[easProp][data[easProp]]);
+        }
+    },
 
-    //EAS BusyStatus:  0 = Free  |  1 = Tentative  |  2 = Busy  |  3 = Work  |  4 = Elsewhere
-    //TB TRANSP : free = TRANSPARENT, busy = OPAQUE)
-    MAP_EAS_BUSYSTATUS : {"0":"TRANSPARENT", "1":"unset", "2":"OPAQUE", "3":"OPAQUE", "4":"OPAQUE"},
-    MAP_TB_TRANSP : {"TRANSPARENT":"0", "unset":"1", "OPAQUE":"2"},
-
-    //EAS AttendeeStatus: 0 =Response unknown (but needed) |  2 = Tentative  |  3 = Accept  |  4 = Decline  |  5 = Not responded (and not needed) || 1 = Organizer in ResponseType
-    //TB STATUS: NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, (DELEGATED, COMPLETED, IN-PROCESS - for todo)
-    MAP_EAS_ATTENDEESTATUS : {"0": "NEEDS-ACTION", "1":"Orga", "2":"TENTATIVE", "3":"ACCEPTED", "4":"DECLINED", "5":"ACCEPTED"},
-    MAP_TB_ATTENDEESTATUS : {"NEEDS-ACTION":"0", "ACCEPTED":"3", "DECLINED":"4", "TENTATIVE":"2", "DELEGATED":"5","COMPLETED":"5", "IN-PROCESS":"5"},
-
-
-    getItemPropertyWithFallback: function (item, TB_PROP, EAS_PROP, MAP_TB, MAP_EAS) {
-        if (item.hasProperty(EAS_PROP) && tbSync.getCalItemProperty(item, TB_PROP) == MAP_EAS[item.getProperty(EAS_PROP)]) {
+    mapThunderbirdPropertyToEas: function (tbProp, easProp, item) {
+        if (item.hasProperty("X-EAS-" + easProp) && tbSync.getCalItemProperty(item, tbProp) == this.MAP_EAS2TB[easProp][item.getProperty("X-EAS-" + easProp)]) {
             //we can use our stored EAS value, because it still maps to the current TB value
-            return item.getProperty(EAS_PROP);
+            return item.getProperty("X-EAS-" + easProp);
         } else {
-            return MAP_TB[tbSync.getCalItemProperty(item, TB_PROP)]; 
+            return this.MAP_TB2EAS[tbProp][tbSync.getCalItemProperty(item, tbProp)]; 
         }
     },
 
@@ -116,7 +130,14 @@ eas.sync.Calendar = {
                 recRule.count = data.Recurrence.Occurrences;
             }
             if (data.Recurrence.Until) {
-                recRule.untilDate = cal.createDateTime(tbSync.toBasicIso8601(data.Recurrence.Until));
+                //is the time in compact/basic or extended form of ISO 8601
+                let until = data.Recurrence.Until;
+                if (until.indexOf("-") == 4) {
+                    //this looks like extended ISO 8601
+                    let UntilDate = new Date(until);
+                    until = UntilDate.toBasicISOString();
+                }
+                recRule.untilDate = cal.createDateTime(until);
             }
             item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
             if (data.Exceptions) {
@@ -206,19 +227,8 @@ eas.sync.Calendar = {
             item.addAlarm(alarm);
         }
 
-        if (data.BusyStatus) {
-            //store original EAS value 
-            item.setProperty("X-EAS-BusyStatus", data.BusyStatus);
-            //map EAS value to TB value (use setCalItemProperty if there is one option which can unset/delete the property)
-            tbSync.setCalItemProperty(item, "TRANSP", this.MAP_EAS_BUSYSTATUS[data.BusyStatus]);
-        }
-
-        if (data.Sensitivity) {
-            //store original EAS value 
-            item.setProperty("X-EAS-Sensitivity", data.Sensitivity);
-            //map EAS value to TB value  (use setCalItemProperty if there is one option which can unset/delete the property)
-            tbSync.setCalItemProperty(item,"CLASS", this.MAP_EAS_SENSITIVITY[data.Sensitivity]);
-        }
+        this.mapEasPropertyToThunderbird ("BusyStatus", "TRANSP", data, item);
+        this.mapEasPropertyToThunderbird ("Sensitivity", "CLASS", data, item);
 
         if (data.ResponseType) {
             //store original EAS value 
@@ -372,7 +382,7 @@ eas.sync.Calendar = {
             wbxml.atag("Categories");
         }
 
-        //TP PRIORITY (9=LOW, 5=NORMAL, 1=HIGH) not mapable to EAS
+        //TP PRIORITY (9=LOW, 5=NORMAL, 1=HIGH) not mapable to EAS Event
         
         //Organizer
         if (!isException) {
@@ -572,10 +582,10 @@ eas.sync.Calendar = {
 
 
         //TRANSP / BusyStatus
-        wbxml.atag("BusyStatus", this.getItemPropertyWithFallback(item, "TRANSP", "X-EAS-BusyStatus", this.MAP_TB_TRANSP, this.MAP_EAS_BUSYSTATUS));
+        wbxml.atag("BusyStatus", this.mapThunderbirdPropertyToEas("TRANSP", "BusyStatus", item));
         
         //CLASS / Sensitivity
-        wbxml.atag("Sensitivity", this.getItemPropertyWithFallback(item, "CLASS", "X-EAS-Sensitivity", this.MAP_TB_CLASS, this.MAP_EAS_SENSITIVITY));
+        wbxml.atag("Sensitivity", this.mapThunderbirdPropertyToEas("CLASS", "Sensitivity", item));
         
         //for simplicity, we always send a value for AllDayEvent
         wbxml.atag("AllDayEvent", (item.startDate.isDate && item.endDate.isDate) ? "1" : "0");
