@@ -140,6 +140,28 @@ eas.sync.Calendar = {
                 recRule.untilDate = cal.createDateTime(until);
             }
             item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
+            if (data.Exceptions) {
+                // Exception could be an object or an array of objects
+                let exceptions = [].concat(data.Exceptions.Exception);
+                for (let exception of exceptions) {
+                    let dateTime = cal.createDateTime(exception.ExceptionStartTime);
+                    if (data.AllDayEvent == "1") {
+                        dateTime.isDate = true;
+                        // Pass to replacement event unless overriden
+                        if (!exception.AllDayEvent) {
+                            exception.AllDayEvent = "1";
+                        }
+                    }
+                    if (exception.Deleted == "1") {
+                        item.recurrenceInfo.removeOccurrenceAt(dateTime);
+                    }
+                    else {
+                        let replacement = item.recurrenceInfo.getOccurrenceFor(dateTime);
+                        this.setThunderbirdItemFromWbxml(replacement, exception, replacement.id, syncdata);
+                        item.recurrenceInfo.modifyException(replacement, true);
+                    }
+                }
+            }
         }
     },
 
@@ -298,7 +320,6 @@ eas.sync.Calendar = {
         }
 
         //TODO: attachements (needs EAS 16.0!)
-        //TODO: exceptions to recurrence
 
     },
 
@@ -313,7 +334,7 @@ eas.sync.Calendar = {
     // --------------------------------------------------------------------------- //
     //read TB event and return its data as WBXML
     // --------------------------------------------------------------------------- //
-    getWbxmlFromThunderbirdItem: function (item, syncdata) {
+    getWbxmlFromThunderbirdItem: function (item, syncdata, isException = false) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
         let wbxml = tbSync.wbxmltools.createWBXML(""); //init wbxml with "" and not with precodes
         
@@ -326,12 +347,17 @@ eas.sync.Calendar = {
         
         //each TB event has an ID, which is used as EAS serverId - however there is a second UID in the ApplicationData
         //since we do not have two different IDs to use, we use the same ID
-        wbxml.atag("UID", item.id);
+        if (!(isException && asversion != "2.5")) {
+            wbxml.atag("UID", item.id);
+        }
         //IMPORTANT in EAS v16 it is no longer allowed to send a UID
+        //Only allowed in exceptions in v2.5
 
         // REQUIRED FIELDS
         let tz = eas.getEasTimezoneData(item);
-        wbxml.atag("TimeZone", tz.timezone);
+        if (!isException) {
+            wbxml.atag("TimeZone", tz.timezone);
+        }
 
         //StartTime & EndTime in UTC
         wbxml.atag("StartTime", tz.startDateUTC);
@@ -350,51 +376,61 @@ eas.sync.Calendar = {
             wbxml.otag("Categories");
                 for (let i=0; i<categories.length; i++) wbxml.atag("Category", tbSync.encode_utf8(categories[i]));
             wbxml.ctag();
-        } else {
+        }
+        // TODO: Server rejects empty category list for exceptions, how else to erase categories?
+        else if (!isException) {
             wbxml.atag("Categories");
         }
 
         //TP PRIORITY (9=LOW, 5=NORMAL, 1=HIGH) not mapable to EAS Event
         
         //Organizer
-        if (item.organizer && item.organizer.commonName) wbxml.atag("OrganizerName", item.organizer.commonName);
-        if (item.organizer && item.organizer.id) wbxml.atag("OrganizerEmail",  cal.removeMailTo(item.organizer.id));
+        if (!isException) {
+            if (item.organizer && item.organizer.commonName) wbxml.atag("OrganizerName", item.organizer.commonName);
+            if (item.organizer && item.organizer.id) wbxml.atag("OrganizerEmail",  cal.removeMailTo(item.organizer.id));
+        }
 
         //Attendees
         let TB_responseType = null;
         let countAttendees = {};
         let attendees = item.getAttendees(countAttendees);
         
-        if (countAttendees.value > 0) {
-            wbxml.otag("Attendees");
-                for (let attendee of attendees) {
-                    wbxml.otag("Attendee");
-                        wbxml.atag("Email", cal.removeMailTo(attendee.id));
-                        wbxml.atag("Name", (attendee.commonName ? attendee.commonName : cal.removeMailTo(attendee.id).split("@")[0]));
-                        if (asversion != "2.5") {
-                            //it's pointless to send AttendeeStatus, 
-                            // - if we are the owner of a meeting, TB does not have an option to actually set the attendee status (on behalf of an attendee) in the UI
-                            // - if we are an attendee (of an invite) we cannot and should not set status of other attendees and or own status must be send through a MeetingResponse
-                            // -> all changes of attendee status are send from the server to us, either via ResponseType or via AttendeeStatus
-                            //wbxml.atag("AttendeeStatus", this.MAP_TB2EAS.ATTENDEESTATUS[attendee.participationStatus]);
-                            
-                            if (attendee.userType == "RESOURCE" || attendee.userType == "ROOM" || attendee.role == "NON-PARTICIPANT") wbxml.atag("AttendeeType","3");
-                            else if (attendee.role == "REQ-PARTICIPANT" || attendee.role == "CHAIR") wbxml.atag("AttendeeType","1");
-                            else wbxml.atag("AttendeeType","2"); //leftovers are optional
-                        }
-                    wbxml.ctag();
-                }
-            wbxml.ctag();
-        } else {
-            wbxml.atag("Attendees");
+        if (!(isException && asversion == "2.5")) { //attendees are not supported in exceptions in EAS 2.5
+            if (countAttendees.value > 0) {
+                wbxml.otag("Attendees");
+                    for (let attendee of attendees) {
+                        wbxml.otag("Attendee");
+                            wbxml.atag("Email", cal.removeMailTo(attendee.id));
+                            wbxml.atag("Name", (attendee.commonName ? attendee.commonName : cal.removeMailTo(attendee.id).split("@")[0]));
+                            if (asversion != "2.5") {
+                                //it's pointless to send AttendeeStatus, 
+                                // - if we are the owner of a meeting, TB does not have an option to actually set the attendee status (on behalf of an attendee) in the UI
+                                // - if we are an attendee (of an invite) we cannot and should not set status of other attendees and or own status must be send through a MeetingResponse
+                                // -> all changes of attendee status are send from the server to us, either via ResponseType or via AttendeeStatus
+                                //wbxml.atag("AttendeeStatus", this.MAP_TB2EAS.ATTENDEESTATUS[attendee.participationStatus]);
+
+                                if (attendee.userType == "RESOURCE" || attendee.userType == "ROOM" || attendee.role == "NON-PARTICIPANT") wbxml.atag("AttendeeType","3");
+                                else if (attendee.role == "REQ-PARTICIPANT" || attendee.role == "CHAIR") wbxml.atag("AttendeeType","1");
+                                else wbxml.atag("AttendeeType","2"); //leftovers are optional
+                            }
+                        wbxml.ctag();
+                    }
+                wbxml.ctag();
+            } else {
+                wbxml.atag("Attendees");
+            }
         }
 
         //TODO: attachements (needs EAS 16.0!)
-        //TODO: exceptions to recurrence
 
         //recurrent events (implemented by Chris Allan)
-        if (item.recurrenceInfo) {
+        if (item.recurrenceInfo && !isException) {
+            let deleted = [];
             for (let recRule of item.recurrenceInfo.getRecurrenceItems({})) {
+                if (recRule.isNegative) {
+                    deleted.push(recRule);
+                    continue;
+                }
                 wbxml.otag("Recurrence");
                 let type = 0;
                 let monthDays = recRule.getComponent("BYMONTHDAY", {});
@@ -482,11 +518,33 @@ eas.sync.Calendar = {
                 }
                 // Until
                 else if (recRule.untilDate != null) {
-                    wbxml.atag("Until", recRule.untilDate.getInTimezone(cal.UTC()).icalString);
+                    wbxml.atag("Until", tbSync.eas.getEasTimeUTC(recRule.untilDate));
                 }
                 // WeekOfMonth
                 if (weeks.length) {
                     wbxml.atag("WeekOfMonth", weeks[0].toString());
+                }
+                wbxml.ctag();
+            }
+            let modifiedIds = item.recurrenceInfo.getExceptionIds({});
+            if (deleted.length || modifiedIds.length) {
+                wbxml.otag("Exceptions");
+                for (let exception of deleted) {
+                    wbxml.otag("Exception");
+                    wbxml.atag("ExceptionStartTime", tbSync.eas.getEasTimeUTC(exception.date));
+                    wbxml.atag("Deleted", "1");
+                    if (asversion == "2.5") {
+                        wbxml.atag("UID", item.id);
+                    }
+                    wbxml.ctag();
+                }
+                for (let exceptionId of modifiedIds) {
+                    let replacement = item.recurrenceInfo.getExceptionFor(exceptionId);
+                    wbxml.otag("Exception");
+                    wbxml.atag("ExceptionStartTime", tbSync.eas.getEasTimeUTC(exceptionId));
+                    wbxml.append(this.getWbxmlFromThunderbirdItem(replacement, syncdata, true));
+                    wbxml.switchpage("Calendar");
+                    wbxml.ctag();
                 }
                 wbxml.ctag();
             }
@@ -506,7 +564,9 @@ eas.sync.Calendar = {
         let description = (item.hasProperty("description")) ? tbSync.encode_utf8(item.getProperty("description")) : "";
         if (asversion == "2.5") {
             wbxml.atag("Body", description);
-        } else {
+        }
+        // TODO: This is supposed to work for exceptions, but the server rejects it
+        else if (!isException) {
             wbxml.switchpage("AirSyncBase");
             wbxml.otag("Body");
                 wbxml.atag("Type", "1");
