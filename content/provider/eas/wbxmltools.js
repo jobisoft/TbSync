@@ -110,7 +110,7 @@ var wbxmltools = {
 
     // This returns a wbxml object, which allows to add tags (using names), switch codepages, or open and close tags, it is also possible to append pure (binary) wbxml
     // If no wbxmlstring is present, default to the "init" string ( WBXML Version 1.3, unknown public identifier, UTF-8, Length of string table)
-    createWBXML: function (wbxmlstring = String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
+    createWBXML: function (wbxmlstring = String.fromCharCode(0x03, 0x01, 0x6A, 0x00), initialCodepage = "") {
         let wbxml = {
             _codepage : 0,
             _wbxml : wbxmlstring, 
@@ -164,6 +164,7 @@ var wbxmltools = {
                 return this._wbxml;
             }
         };
+	if (initialCodepage) wbxml._codepage = wbxmltools.namespaces.indexOf(initialCodepage);
         return wbxml;
     },
 
