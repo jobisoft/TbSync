@@ -310,7 +310,6 @@ eas.sync.Calendar = {
         }
 
         //TODO: attachements (needs EAS 16.0!)
-        //TODO: exceptions to recurrence
 
     },
 
@@ -326,6 +325,9 @@ eas.sync.Calendar = {
     //read TB event and return its data as WBXML
     // --------------------------------------------------------------------------- //
     getWbxmlFromThunderbirdItem: function (item, syncdata) {
+        return this.getWbxmlFromThunderbirdEvent(item, syncdata, false);
+    },
+    getWbxmlFromThunderbirdEvent: function (item, syncdata, isException) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
         let wbxml = tbSync.wbxmltools.createWBXML(""); //init wbxml with "" and not with precodes
         
@@ -338,12 +340,17 @@ eas.sync.Calendar = {
         
         //each TB event has an ID, which is used as EAS serverId - however there is a second UID in the ApplicationData
         //since we do not have two different IDs to use, we use the same ID
-        wbxml.atag("UID", item.id);
+        if (!(isException && asversion != "2.5")) {
+            wbxml.atag("UID", item.id);
+        }
         //IMPORTANT in EAS v16 it is no longer allowed to send a UID
+        //Only allowed in exceptions in v2.5
 
         // REQUIRED FIELDS
         let tz = eas.getEasTimezoneData(item);
-        wbxml.atag("TimeZone", tz.timezone);
+        if (!isException) {
+            wbxml.atag("TimeZone", tz.timezone);
+        }
 
         //StartTime & EndTime in UTC
         wbxml.atag("StartTime", tz.startDateUTC);
@@ -362,22 +369,26 @@ eas.sync.Calendar = {
             wbxml.otag("Categories");
                 for (let i=0; i<categories.length; i++) wbxml.atag("Category", tbSync.encode_utf8(categories[i]));
             wbxml.ctag();
-        } else {
+        }
+        // TODO: Server rejects empty category list for exceptions, how else to erase categories?
+        else if (!isException) {
             wbxml.atag("Categories");
         }
 
         //TP PRIORITY (9=LOW, 5=NORMAL, 1=HIGH) not mapable to EAS
         
         //Organizer
-        if (item.organizer && item.organizer.commonName) wbxml.atag("OrganizerName", item.organizer.commonName);
-        if (item.organizer && item.organizer.id) wbxml.atag("OrganizerEmail",  cal.removeMailTo(item.organizer.id));
+        if (!isException) {
+            if (item.organizer && item.organizer.commonName) wbxml.atag("OrganizerName", item.organizer.commonName);
+            if (item.organizer && item.organizer.id) wbxml.atag("OrganizerEmail",  cal.removeMailTo(item.organizer.id));
+        }
 
         //Attendees
         let TB_responseType = null;
         let countAttendees = {};
         let attendees = item.getAttendees(countAttendees);
         
-        if (countAttendees.value > 0) {
+        if (countAttendees.value > 0 && !(isException && asversion == "2.5")) {
             wbxml.otag("Attendees");
                 for (let attendee of attendees) {
                     wbxml.otag("Attendee");
@@ -397,15 +408,14 @@ eas.sync.Calendar = {
                     wbxml.ctag();
                 }
             wbxml.ctag();
-        } else {
+        } else if (!(isException && asversion == "2.5")) {
             wbxml.atag("Attendees");
         }
 
         //TODO: attachements (needs EAS 16.0!)
-        //TODO: exceptions to recurrence
 
         //recurrent events (implemented by Chris Allan)
-        if (item.recurrenceInfo) {
+        if (item.recurrenceInfo && !isException) {
             let deleted = [];
             for (let recRule of item.recurrenceInfo.getRecurrenceItems({})) {
                 if (recRule.isNegative) {
@@ -507,12 +517,24 @@ eas.sync.Calendar = {
                 }
                 wbxml.ctag();
             }
-            if (deleted.length) {
+            let modifiedIds = item.recurrenceInfo.getExceptionIds({});
+            if (deleted.length || modifiedIds.length) {
                 wbxml.otag("Exceptions");
                 for (let exception of deleted) {
                     wbxml.otag("Exception");
                     wbxml.atag("ExceptionStartTime", tbSync.eas.getEasTimeUTC(exception.date));
                     wbxml.atag("Deleted", "1");
+                    if (asversion == "2.5") {
+                        wbxml.atag("UID", item.id);
+                    }
+                    wbxml.ctag();
+                }
+                for (let exceptionId of modifiedIds) {
+                    let replacement = item.recurrenceInfo.getExceptionFor(exceptionId);
+                    wbxml.otag("Exception");
+                    wbxml.atag("ExceptionStartTime", tbSync.eas.getEasTimeUTC(exceptionId));
+                    wbxml.append(this.getWbxmlFromThunderbirdEvent(replacement, syncdata, true));
+                    wbxml.switchpage("Calendar");
                     wbxml.ctag();
                 }
                 wbxml.ctag();
@@ -533,7 +555,9 @@ eas.sync.Calendar = {
         let description = (item.hasProperty("description")) ? tbSync.encode_utf8(item.getProperty("description")) : "";
         if (asversion == "2.5") {
             wbxml.atag("Body", description);
-        } else {
+        }
+        // TODO: This is supposed to work for exceptions, but the server rejects it
+        else if (!isException) {
             wbxml.switchpage("AirSyncBase");
             wbxml.otag("Body");
                 wbxml.atag("Type", "1");
