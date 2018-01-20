@@ -33,7 +33,11 @@ eas.sync.Tasks = {
         let utc = cal.createDateTime(UtcStartDate.toBasicISOString()); //format "19800101T000000Z" - UTC
         item.entryDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[offset]));
     }
-        /*
+
+    eas.sync.Calendar.mapEasPropertyToThunderbird ("Sensitivity", "CLASS", data, item);
+    eas.sync.Calendar.mapEasPropertyToThunderbird ("Importance", "PRIORITY", data, item);
+
+    /*
 
     tasks is using extended ISO 8601 (2019-01-18T00:00:00.000Z)  instead of basic (20190118T000000Z)
 
@@ -41,9 +45,7 @@ eas.sync.Tasks = {
     var date = Components.classes["@mozilla.org/calendar/datetime;1"].createInstance(Components.interfaces.calIDateTime);
     date.icalString = "20080907T120000Z";
 
-    Importance = [1]
     Complete = [0]
-    Sensitivity = [0]
     ReminderSet = [0]
 
     ReminderTime = [2018-01-31T07:00:00.000Z]
@@ -63,6 +65,8 @@ eas.sync.Tasks = {
         wbxml.switchpage("Tasks");
         
         wbxml.atag("Subject", (item.title) ? tbSync.encode_utf8(item.title) : "");
+        wbxml.atag("Sensitivity", eas.sync.Calendar.mapThunderbirdPropertyToEas("CLASS", "Sensitivity", item));
+        wbxml.atag("Importance", eas.sync.Calendar.mapThunderbirdPropertyToEas("PRIORITY", "Importance", item));
         
         //return to AirSync code page
         wbxml.switchpage("AirSync");
