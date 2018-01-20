@@ -324,10 +324,7 @@ eas.sync.Calendar = {
     // --------------------------------------------------------------------------- //
     //read TB event and return its data as WBXML
     // --------------------------------------------------------------------------- //
-    getWbxmlFromThunderbirdItem: function (item, syncdata) {
-        return this.getWbxmlFromThunderbirdEvent(item, syncdata, false);
-    },
-    getWbxmlFromThunderbirdEvent: function (item, syncdata, isException) {
+    getWbxmlFromThunderbirdItem: function (item, syncdata, isException = false) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
         let wbxml = tbSync.wbxmltools.createWBXML(""); //init wbxml with "" and not with precodes
         
@@ -533,7 +530,7 @@ eas.sync.Calendar = {
                     let replacement = item.recurrenceInfo.getExceptionFor(exceptionId);
                     wbxml.otag("Exception");
                     wbxml.atag("ExceptionStartTime", tbSync.eas.getEasTimeUTC(exceptionId));
-                    wbxml.append(this.getWbxmlFromThunderbirdEvent(replacement, syncdata, true));
+                    wbxml.append(this.getWbxmlFromThunderbirdItem(replacement, syncdata, true));
                     wbxml.switchpage("Calendar");
                     wbxml.ctag();
                 }
