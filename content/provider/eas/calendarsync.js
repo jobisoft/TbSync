@@ -385,28 +385,30 @@ eas.sync.Calendar = {
         let countAttendees = {};
         let attendees = item.getAttendees(countAttendees);
         
-        if (countAttendees.value > 0 && !(isException && asversion == "2.5")) {
-            wbxml.otag("Attendees");
-                for (let attendee of attendees) {
-                    wbxml.otag("Attendee");
-                        wbxml.atag("Email", cal.removeMailTo(attendee.id));
-                        wbxml.atag("Name", (attendee.commonName ? attendee.commonName : cal.removeMailTo(attendee.id).split("@")[0]));
-                        if (asversion != "2.5") {
-                            //it's pointless to send AttendeeStatus, 
-                            // - if we are the owner of a meeting, TB does not have an option to actually set the attendee status (on behalf of an attendee) in the UI
-                            // - if we are an attendee (of an invite) we cannot and should not set status of other attendees and or own status must be send through a MeetingResponse
-                            // -> all changes of attendee status are send from the server to us, either via ResponseType or via AttendeeStatus
-                            //wbxml.atag("AttendeeStatus", this.MAP_TB_ATTENDEESTATUS[attendee.participationStatus]);
-                            
-                            if (attendee.userType == "RESOURCE" || attendee.userType == "ROOM" || attendee.role == "NON-PARTICIPANT") wbxml.atag("AttendeeType","3");
-                            else if (attendee.role == "REQ-PARTICIPANT" || attendee.role == "CHAIR") wbxml.atag("AttendeeType","1");
-                            else wbxml.atag("AttendeeType","2"); //leftovers are optional
-                        }
-                    wbxml.ctag();
-                }
-            wbxml.ctag();
-        } else if (!(isException && asversion == "2.5")) {
-            wbxml.atag("Attendees");
+        if (!(isException && asversion == "2.5")) { //attendees are not supported in exceptions in EAS 2.5
+            if (countAttendees.value > 0) {
+                wbxml.otag("Attendees");
+                    for (let attendee of attendees) {
+                        wbxml.otag("Attendee");
+                            wbxml.atag("Email", cal.removeMailTo(attendee.id));
+                            wbxml.atag("Name", (attendee.commonName ? attendee.commonName : cal.removeMailTo(attendee.id).split("@")[0]));
+                            if (asversion != "2.5") {
+                                //it's pointless to send AttendeeStatus, 
+                                // - if we are the owner of a meeting, TB does not have an option to actually set the attendee status (on behalf of an attendee) in the UI
+                                // - if we are an attendee (of an invite) we cannot and should not set status of other attendees and or own status must be send through a MeetingResponse
+                                // -> all changes of attendee status are send from the server to us, either via ResponseType or via AttendeeStatus
+                                //wbxml.atag("AttendeeStatus", this.MAP_TB_ATTENDEESTATUS[attendee.participationStatus]);
+
+                                if (attendee.userType == "RESOURCE" || attendee.userType == "ROOM" || attendee.role == "NON-PARTICIPANT") wbxml.atag("AttendeeType","3");
+                                else if (attendee.role == "REQ-PARTICIPANT" || attendee.role == "CHAIR") wbxml.atag("AttendeeType","1");
+                                else wbxml.atag("AttendeeType","2"); //leftovers are optional
+                            }
+                        wbxml.ctag();
+                    }
+                wbxml.ctag();
+            } else {
+                wbxml.atag("Attendees");
+            }
         }
 
         //TODO: attachements (needs EAS 16.0!)
