@@ -261,9 +261,9 @@ eas.sync.Calendar = {
 
                 //not supported in 2.5 - if attendeeStatus is missing, check if this isSelf and there is a ResponseType
                 if (att[i].AttendeeStatus)
-                    attendee["participationStatus"] = this.MAP_EAS_ATTENDEESTATUS[att[i].AttendeeStatus];
+                    attendee["participationStatus"] = this.MAP_EAS2TB.ATTENDEESTATUS[att[i].AttendeeStatus];
                 else if (isSelf && data.ResponseType) 
-                    attendee["participationStatus"] = this.MAP_EAS_ATTENDEESTATUS[data.ResponseType];
+                    attendee["participationStatus"] = this.MAP_EAS2TB.ATTENDEESTATUS[data.ResponseType];
                 else 
                     attendee["participationStatus"] = "NEEDS-ACTION";
 
