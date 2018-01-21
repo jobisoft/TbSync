@@ -164,14 +164,12 @@ eas.sync.Calendar = {
     // --------------------------------------------------------------------------- //
     getWbxmlFromThunderbirdItem: function (item, syncdata, isException = false) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
-        let wbxml = tbSync.wbxmltools.createWBXML(""); //init wbxml with "" and not with precodes
+        let wbxml = tbSync.wbxmltools.createWBXML("", syncdata.type); //init wbxml with "" and not with precodes, and set initial codepage
         
         /*
          *  We do not use ghosting, that means, if we do not include a value in CHANGE, it is removed from the server. 
          *  However, this does not seem to work on all fields. Furthermore, we need to include any (empty) container to blank its childs.
          */
-
-        wbxml.switchpage("Calendar");
         
         //each TB event has an ID, which is used as EAS serverId - however there is a second UID in the ApplicationData
         //since we do not have two different IDs to use, we use the same ID
@@ -293,8 +291,6 @@ eas.sync.Calendar = {
             }
         }
 
-        //return to AirSync code page
-        wbxml.switchpage("AirSync");
         return wbxml.getBytes();
     }
     

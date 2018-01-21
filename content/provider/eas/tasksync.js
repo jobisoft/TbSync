@@ -53,10 +53,8 @@ eas.sync.Tasks = {
     
     getWbxmlFromThunderbirdItem: function (item, syncdata) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
-        let wbxml = tbSync.wbxmltools.createWBXML(""); //init wbxml with "" and not with precodes
-        
-        wbxml.switchpage("Tasks");
-        
+        let wbxml = tbSync.wbxmltools.createWBXML("", syncdata.type); //init wbxml with "" and not with precodes, and set initial codepage
+
         wbxml.atag("Subject", (item.title) ? tbSync.encode_utf8(item.title) : "");
         wbxml.atag("Sensitivity", eas.sync.mapThunderbirdPropertyToEas("CLASS", "Sensitivity", item));
         wbxml.atag("Importance", eas.sync.mapThunderbirdPropertyToEas("PRIORITY", "Importance", item));
@@ -74,8 +72,6 @@ eas.sync.Tasks = {
         wbxml.append(eas.sync.getItemBody(item, syncdata));
         wbxml.append(eas.sync.getItemRecurrence(item, syncdata));
 
-        //return to AirSync code page
-        wbxml.switchpage("AirSync");
         return wbxml.getBytes();
     },
 }
