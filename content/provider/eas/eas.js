@@ -1110,13 +1110,14 @@ var eas = {
     },
 
     // Convert TB date into Eas UTC time string (returns compact/basic ISO 8601 or extended ISO 8601 if required)
-    getEasTimeUTC: function(origdate, requireExtendedISO = false) {
+    getEasTimeUTC: function(origdate, requireExtendedISO = false, fakeUTC = false) {
         let date = origdate.clone();
         //floating timezone cannot be converted to UTC (cause they float) - we have to overwrite it with the local timezone
         if (date.timezone.tzid == "floating") date.timezone = cal.calendarDefaultTimezone();
         //to get the UTC string we could use icalString (which does not work on allDayEvents, or calculate it from nativeTime)
         date.isDate = 0;
         let UTC = date.getInTimezone(cal.UTC());        
+        if (fakeUTC) UTC = date.clone();
         
         function pad(number) {
             if (number < 10) {
