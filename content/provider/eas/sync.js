@@ -317,9 +317,10 @@ eas.sync = {
                         wbxml.otag("Exception");
                             wbxml.atag("ExceptionStartTime", tbSync.eas.getEasTimeUTC(exception.date));
                             wbxml.atag("Deleted", "1");
-                            if (asversion == "2.5") {
-                                wbxml.atag("UID", item.id);
-                            }
+                            //Docs say it is allowed, but if present, it does not work
+                            //if (asversion == "2.5") {
+                            //    wbxml.atag("UID", item.id);
+                            //}
                         wbxml.ctag();
                     }
                     for (let exceptionId of modifiedIds) {

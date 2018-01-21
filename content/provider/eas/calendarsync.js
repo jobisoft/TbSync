@@ -173,7 +173,7 @@ eas.sync.Calendar = {
         
         //each TB event has an ID, which is used as EAS serverId - however there is a second UID in the ApplicationData
         //since we do not have two different IDs to use, we use the same ID
-        if (!(isException && asversion != "2.5")) {
+        if (!isException) { //docs say it would be allowed in exception in 2.5, but it does not work, if present
             wbxml.atag("UID", item.id);
         }
         //IMPORTANT in EAS v16 it is no longer allowed to send a UID
@@ -276,20 +276,23 @@ eas.sync.Calendar = {
         //M can be reconstructed from #of attendees (looking at the old value is not wise, since it could have been changed)
         //C can be reconstucted from TB STATUS
         //O can be reconstructed by looking at the original value, or (if not present) by comparing EAS ownerID with TB ownerID
-        if (countAttendees == 0) wbxml.atag("MeetingStatus", "0");
-        else {
-            //get owner information
-            let isReceived = false;
-            if (item.hasProperty("X-EAS-MEETINGSTATUS")) isReceived = item.getProperty("X-EAS-MEETINGSTATUS") & 0x2;
-            else isReceived = (item.organizer && item.organizer.id && cal.removeMailTo(item.organizer.id) != tbSync.db.getAccountSetting(syncdata.account, "user"));
 
-            //either 1,3,5 or 7
-            if (item.hasProperty("STATUS") && item.getProperty("STATUS") == "CANCELLED") {
-                //either 5 or 7
-                wbxml.atag("MeetingStatus", (isReceived ? "7" : "5"));
-            } else {
-                //either 1 or 3
-                wbxml.atag("MeetingStatus", (isReceived ? "3" : "1"));
+        if (!(isException && asversion == "2.5")) { //MeetingStatus is not supported in exceptions in EAS 2.5        
+            if (countAttendees == 0) wbxml.atag("MeetingStatus", "0");
+            else {
+                //get owner information
+                let isReceived = false;
+                if (item.hasProperty("X-EAS-MEETINGSTATUS")) isReceived = item.getProperty("X-EAS-MEETINGSTATUS") & 0x2;
+                else isReceived = (item.organizer && item.organizer.id && cal.removeMailTo(item.organizer.id) != tbSync.db.getAccountSetting(syncdata.account, "user"));
+
+                //either 1,3,5 or 7
+                if (item.hasProperty("STATUS") && item.getProperty("STATUS") == "CANCELLED") {
+                    //either 5 or 7
+                    wbxml.atag("MeetingStatus", (isReceived ? "7" : "5"));
+                } else {
+                    //either 1 or 3
+                    wbxml.atag("MeetingStatus", (isReceived ? "3" : "1"));
+                }
             }
         }
 
