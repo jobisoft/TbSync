@@ -199,7 +199,7 @@ eas.sync.Calendar = {
         wbxml.atag("Location", (item.hasProperty("location")) ? tbSync.encode_utf8(item.getProperty("location")) : "");
         
         //Categories
-        wbxml.append(eas.sync.getItemCategories(item, syncdata));
+        wbxml.append(eas.sync.getItemCategories(item, syncdata, isException));
 
         //TP PRIORITY (9=LOW, 5=NORMAL, 1=HIGH) not mapable to EAS Event
         
