@@ -385,7 +385,7 @@ eas.sync = {
                         wbxml.atag("SyncKey", syncdata.synckey);
                         wbxml.atag("CollectionId", syncdata.folderID);
                         wbxml.atag("DeletesAsMoves", "1");
-                        wbxml.atag("GetChanges", "");
+                        wbxml.atag("GetChanges", "1");
                         wbxml.atag("WindowSize", "100");
 
                         if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
