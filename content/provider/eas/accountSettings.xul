@@ -67,7 +67,7 @@
                         </hbox>
 
                         <checkbox id="tbsync.accountsettings.https" label="&pref.usehttps;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
-                        <checkbox id="tbsync.accountsettings.horde" label="&pref.isHordeServer;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                        <!-- checkbox id="tbsync.accountsettings.horde" label="&pref.isHordeServer;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" / -->
 
                         <hbox height="24" align="center" style="margin-top:2ex" >
                             <label flex="1" class="header" value="&pref.contactoptions;"/>

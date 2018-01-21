@@ -102,7 +102,7 @@ eas.sync = {
                 wbxml.atag("EstimatedDataSize", "" + description.length);
                 wbxml.atag("Data", description);
             wbxml.ctag();
-            //does not work with horde at the moment
+            //does not work with horde at the moment, does not work with task, does not work with exceptions
             //if (tbSync.db.getAccountSetting(syncdata.account, "horde") == "0") wbxml.atag("NativeBodyType", "1");
 
             //return to code page of this type

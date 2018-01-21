@@ -247,10 +247,8 @@ eas.sync.Calendar = {
             wbxml.append(eas.sync.getItemRecurrence(item, syncdata));
         }
         
-        //Description -- TODO: This is supposed to work for exceptions, but the server rejects it
-        if (!isException) {
-            wbxml.append(eas.sync.getItemBody(item, syncdata));
-        }
+        //Description
+        wbxml.append(eas.sync.getItemBody(item, syncdata));
 
         //TRANSP / BusyStatus
         wbxml.atag("BusyStatus", eas.sync.mapThunderbirdPropertyToEas("TRANSP", "BusyStatus", item));
