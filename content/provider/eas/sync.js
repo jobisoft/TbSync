@@ -103,7 +103,7 @@ eas.sync = {
                 wbxml.atag("Data", description);
             wbxml.ctag();
             //does not work with horde at the moment
-            if (tbSync.db.getAccountSetting(syncdata.account, "horde") == "0") wbxml.atag("NativeBodyType", "1");
+            //if (tbSync.db.getAccountSetting(syncdata.account, "horde") == "0") wbxml.atag("NativeBodyType", "1");
 
             //return to code page of this type
             wbxml.switchpage(syncdata.type);
