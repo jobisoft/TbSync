@@ -464,6 +464,9 @@ var wbxmltools = {
         },
         // Code Page 9: Tasks
         {
+            0x05: 'Body',
+            0x06: 'BodySize',
+            0x07: 'BodyTruncated',
             0x08: 'Categories',
             0x09: 'Category',
             0x0A: 'Complete',
