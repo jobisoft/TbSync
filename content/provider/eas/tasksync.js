@@ -6,10 +6,10 @@ eas.sync.Tasks = {
     let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
     item.id = id;
 
-    eas.sync.Calendar.setItemBody(item, syncdata, data);
-    eas.sync.Calendar.setItemSubject(item, syncdata, data);
-    eas.sync.Calendar.setItemCategories(item, syncdata, data);
-    eas.sync.Calendar.setItemRecurrence(item, syncdata, data);
+    eas.sync.setItemBody(item, syncdata, data);
+    eas.sync.setItemSubject(item, syncdata, data);
+    eas.sync.setItemCategories(item, syncdata, data);
+    eas.sync.setItemRecurrence(item, syncdata, data);
 
     let tzService = cal.getTimezoneService();
     if (data.DueDate && data.UtcDueDate) {
@@ -34,8 +34,8 @@ eas.sync.Tasks = {
         item.entryDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[offset]));
     }
 
-    eas.sync.Calendar.mapEasPropertyToThunderbird ("Sensitivity", "CLASS", data, item);
-    eas.sync.Calendar.mapEasPropertyToThunderbird ("Importance", "PRIORITY", data, item);
+    eas.sync.mapEasPropertyToThunderbird ("Sensitivity", "CLASS", data, item);
+    eas.sync.mapEasPropertyToThunderbird ("Importance", "PRIORITY", data, item);
 
     /*
 
@@ -65,9 +65,18 @@ eas.sync.Tasks = {
         wbxml.switchpage("Tasks");
         
         wbxml.atag("Subject", (item.title) ? tbSync.encode_utf8(item.title) : "");
-        wbxml.atag("Sensitivity", eas.sync.Calendar.mapThunderbirdPropertyToEas("CLASS", "Sensitivity", item));
-        wbxml.atag("Importance", eas.sync.Calendar.mapThunderbirdPropertyToEas("PRIORITY", "Importance", item));
+        wbxml.atag("Sensitivity", eas.sync.mapThunderbirdPropertyToEas("CLASS", "Sensitivity", item));
+        wbxml.atag("Importance", eas.sync.mapThunderbirdPropertyToEas("PRIORITY", "Importance", item));
+
+        wbxml.atag("UtcStartDate", tbSync.eas.getEasTimeUTC(item.entryDate, true));
+        wbxml.atag("StartDate", tbSync.eas.getEasTimeUTC(item.entryDate, true, true));
+        wbxml.atag("UtcDueDate", tbSync.eas.getEasTimeUTC(item.dueDate, true));
+        wbxml.atag("DueDate", tbSync.eas.getEasTimeUTC(item.dueDate, true, true));
         
+        wbxml.append(eas.sync.getItemCategories(item, syncdata));
+        wbxml.append(eas.sync.getItemBody(item, syncdata));
+        wbxml.append(eas.sync.getItemRecurrence(item, syncdata));
+
         //return to AirSync code page
         wbxml.switchpage("AirSync");
         return wbxml.getBytes();
