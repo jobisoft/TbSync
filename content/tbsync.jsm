@@ -101,8 +101,6 @@ var tbSync = {
 
         //enable
         tbSync.enabled = true;
-        
-        tbSync.debugtestflags = tbSync.prefSettings.getIntPref("debugtestflags");
 
     }),
 
@@ -364,16 +362,6 @@ var tbSync = {
         }
     },
     
-    debugTest: function(test) {
-        //the value debugtestflags is resetted on each restart by the pref value (0 default), to be able to test different elements once
-        let bit = 0x1 << test;
-        if (tbSync.debugtestflags & bit) {
-            tbSync.debugtestflags = tbSync.debugtestflags ^ bit;
-            return true;
-        }
-        return false;
-    },
-
     quickdump: function (what, aMessage) {
         tbSync.mozConsoleService.logStringMessage("[TbSync] " + what + " : " + aMessage);
     },

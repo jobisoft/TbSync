@@ -91,11 +91,6 @@ var eas = {
                     throw eas.finishSync("nouserhost", eas.flags.abortWithError);
                 }
 
-                //debug test #0
-                if (tbSync.debugTest(0)) {
-                    //throw eas.finishSync("debug trigger", eas.flags.resyncAccount);
-                }
-
                 //Is this a standard sync or an account resync ?
                 if (tbSync.db.getAccountSetting(syncdata.account, "foldersynckey") == "") {
                     //accountReSyncs == 1 is not a save method to identify initial sync, because a resync due to policy/provision 
@@ -1197,7 +1192,7 @@ var eas = {
                 tbSync.dump("PolicyKey used",tbSync.db.getAccountSetting(syncdata.account, "policykey"));
             }
 
-            syncdata.req.timeout = 30000;
+            syncdata.req.timeout = tbSync.prefSettings.getIntPref("eas.timeout");
 
             syncdata.req.ontimeout = function () {
                 reject(eas.finishSync("timeout", eas.flags.abortWithError));
