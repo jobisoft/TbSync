@@ -2,6 +2,342 @@
 
 eas.sync = {
 
+    MAP_EAS2TB : {
+        //EAS Importance: 0 = LOW | 1 = NORMAL | 2 = HIGH
+        Importance : { "0":"9", "1":"5", "2":"1"}, //to PRIORITY
+        //EAS Sensitivity :  0 = Normal  |  1 = Personal  |  2 = Private  |  3 = Confidential
+        Sensitivity : { "0":"PUBLIC", "1":"unset", "2":"PRIVATE", "3":"CONFIDENTIAL"}, //to CLASS
+        //EAS BusyStatus:  0 = Free  |  1 = Tentative  |  2 = Busy  |  3 = Work  |  4 = Elsewhere
+        BusyStatus : {"0":"TRANSPARENT", "1":"unset", "2":"OPAQUE", "3":"OPAQUE", "4":"OPAQUE"}, //to TRANSP
+        //EAS AttendeeStatus: 0 =Response unknown (but needed) |  2 = Tentative  |  3 = Accept  |  4 = Decline  |  5 = Not responded (and not needed) || 1 = Organizer in ResponseType
+        ATTENDEESTATUS : {"0": "NEEDS-ACTION", "1":"Orga", "2":"TENTATIVE", "3":"ACCEPTED", "4":"DECLINED", "5":"ACCEPTED"},
+        },
+
+    MAP_TB2EAS : {
+        //TB PRIORITY: 9 = LOW | 5 = NORMAL | 1 = HIGH
+        PRIORITY : { "9":"0", "5":"1", "1":"2","unset":"1"}, //to Importance
+        //TB CLASS: PUBLIC, PRIVATE, CONFIDENTIAL)
+        CLASS : { "PUBLIC":"0", "PRIVATE":"2", "CONFIDENTIAL":"3", "unset":"1"}, //to Sensitivity
+        //TB TRANSP : free = TRANSPARENT, busy = OPAQUE)
+        TRANSP : {"TRANSPARENT":"0", "unset":"1", "OPAQUE":"2"}, // to BusyStatus
+        //TB STATUS: NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, (DELEGATED, COMPLETED, IN-PROCESS - for todo)
+        ATTENDEESTATUS : {"NEEDS-ACTION":"0", "ACCEPTED":"3", "DECLINED":"4", "TENTATIVE":"2", "DELEGATED":"5","COMPLETED":"5", "IN-PROCESS":"5"},
+        },
+    
+    mapEasPropertyToThunderbird : function (easProp, tbProp, data, item) {
+        if (data[easProp]) {
+            //store original EAS value 
+            item.setProperty("X-EAS-" + easProp, data[easProp]);
+            //map EAS value to TB value  (use setCalItemProperty if there is one option which can unset/delete the property)
+            tbSync.setCalItemProperty(item,tbProp, this.MAP_EAS2TB[easProp][data[easProp]]);
+        }
+    },
+
+    mapThunderbirdPropertyToEas: function (tbProp, easProp, item) {
+        if (item.hasProperty("X-EAS-" + easProp) && tbSync.getCalItemProperty(item, tbProp) == this.MAP_EAS2TB[easProp][item.getProperty("X-EAS-" + easProp)]) {
+            //we can use our stored EAS value, because it still maps to the current TB value
+            return item.getProperty("X-EAS-" + easProp);
+        } else {
+            return this.MAP_TB2EAS[tbProp][tbSync.getCalItemProperty(item, tbProp)]; 
+        }
+    },
+
+
+    setItemSubject: function (item, syncdata, data) {
+        if (data.Subject) item.title = xmltools.checkString(data.Subject);
+    },
+    
+    setItemLocation: function (item, syncdata, data) {
+        if (data.Location) item.setProperty("location", xmltools.checkString(data.Location));
+    },
+
+
+    setItemCategories: function (item, syncdata, data) {
+        if (data.Categories && data.Categories.Category) {
+            let cats = [];
+            if (Array.isArray(data.Categories.Category)) cats = data.Categories.Category;
+            else cats.push(data.Categories.Category);
+            item.setCategories(cats.length, cats);
+        }
+    },
+    
+    getItemCategories: function (item, syncdata, isException = false) {
+        let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
+        let wbxml = tbSync.wbxmltools.createWBXML("", syncdata.type); //init wbxml with "" and not with precodes, also activate type codePage (Calendar, Tasks etc)
+
+        //to properly "blank" categories, we need to always include the container
+        let categories = item.getCategories({});
+        if (categories.length > 0) {
+            wbxml.otag("Categories");
+                for (let i=0; i<categories.length; i++) wbxml.atag("Category", tbSync.encode_utf8(categories[i]));
+            wbxml.ctag();
+        } else if (!isException) { //TODO: Server rejects empty category list for exceptions, how else to erase categories?
+            wbxml.atag("Categories");
+        }
+    
+        return wbxml.getBytes();
+    },
+
+
+    setItemBody: function (item, syncdata, data) {
+        let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
+        if (asversion == "2.5") {
+            if (data.Body) item.setProperty("description", xmltools.checkString(data.Body));
+        } else {
+            if (data.Body && data.Body.EstimatedDataSize > 0 && data.Body.Data) item.setProperty("description", xmltools.checkString(data.Body.Data)); //CLEAR??? DataSize>0 ?? TODO
+        }
+    },
+
+    getItemBody: function (item, syncdata) {
+        let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
+        let wbxml = tbSync.wbxmltools.createWBXML("", syncdata.type); //init wbxml with "" and not with precodes, also activate type codePage (Calendar, Tasks etc)
+
+        let description = (item.hasProperty("description")) ? tbSync.encode_utf8(item.getProperty("description")) : "";
+        if (asversion == "2.5") {
+            wbxml.atag("Body", description);
+        } else {
+            wbxml.switchpage("AirSyncBase");
+            wbxml.otag("Body");
+                wbxml.atag("Type", "1");
+                wbxml.atag("EstimatedDataSize", "" + description.length);
+                wbxml.atag("Data", description);
+            wbxml.ctag();
+            //does not work with horde at the moment
+            if (tbSync.db.getAccountSetting(syncdata.account, "horde") == "0") wbxml.atag("NativeBodyType", "1");
+
+            //return to code page of this type
+            wbxml.switchpage(syncdata.type);
+        }
+        return wbxml.getBytes();
+    },
+
+
+    setItemRecurrence: function (item, syncdata, data) {
+        if (data.Recurrence) {
+            item.recurrenceInfo = cal.createRecurrenceInfo();
+            item.recurrenceInfo.item = item;
+            let recRule = cal.createRecurrenceRule();
+            switch (data.Recurrence.Type) {
+            case "0":
+                recRule.type = "DAILY";
+                break;
+            case "1":
+                recRule.type = "WEEKLY";
+                break;
+            case "2":
+            case "3":
+                recRule.type = "MONTHLY";
+                break;
+            case "5":
+            case "6":
+                recRule.type = "YEARLY";
+                break;
+            }
+            if (data.Recurrence.CalendarType) {
+                // TODO
+            }
+            if (data.Recurrence.DayOfMonth) {
+                recRule.setComponent("BYMONTHDAY", 1, [data.Recurrence.DayOfMonth]);
+            }
+            if (data.Recurrence.DayOfWeek) {
+                let DOW = data.Recurrence.DayOfWeek;
+                if (DOW == 127) {
+                    recRule.setComponent("BYMONTHDAY", 1, [-1]);
+                }
+                else {
+                    let days = [];
+                    for (let i = 0; i < 7; ++i) {
+                        if (DOW & 1 << i) days.push(i + 1);
+                    }
+                    if (data.Recurrence.WeekOfMonth) {
+                        for (let i = 0; i < days.length; ++i) {
+                            days[i] += 8 * ((data.Recurrence.WeekOfMonth != 5) ? (data.Recurrence.WeekOfMonth - 0) : -1);
+                        }
+                    }
+                    recRule.setComponent("BYDAY", days.length, days);
+                }
+            }
+            if (data.Recurrence.FirstDayOfWeek) {
+                recRule.setComponent("WKST", 1, [data.Recurrence.FirstDayOfWeek]);
+            }
+            if (data.Recurrence.Interval) {
+                recRule.interval = data.Recurrence.Interval;
+            }
+            if (data.Recurrence.IsLeapMonth) {
+                // TODO
+            }
+            if (data.Recurrence.MonthOfYear) {
+                recRule.setComponent("BYMONTH", 1, [data.Recurrence.MonthOfYear]);
+            }
+            if (data.Recurrence.Occurrences) {
+                recRule.count = data.Recurrence.Occurrences;
+            }
+            if (data.Recurrence.Until) {
+                //time string could be in compact/basic or extended form of ISO 8601, 
+                //cal.createDateTime only supports  compact/basic, our own method takes both styles
+                recRule.untilDate = tbSync.eas.createDateTime(data.Recurrence.Until);
+            }
+            item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
+            if (data.Exceptions) {
+                // Exception could be an object or an array of objects
+                let exceptions = [].concat(data.Exceptions.Exception);
+                for (let exception of exceptions) {
+                    let dateTime = cal.createDateTime(exception.ExceptionStartTime);
+                    if (data.AllDayEvent == "1") {
+                        dateTime.isDate = true;
+                        // Pass to replacement event unless overriden
+                        if (!exception.AllDayEvent) {
+                            exception.AllDayEvent = "1";
+                        }
+                    }
+                    if (exception.Deleted == "1") {
+                        item.recurrenceInfo.removeOccurrenceAt(dateTime);
+                    }
+                    else {
+                        let replacement = item.recurrenceInfo.getOccurrenceFor(dateTime);
+                        this.setThunderbirdItemFromWbxml(replacement, exception, replacement.id, syncdata);
+                        item.recurrenceInfo.modifyException(replacement, true);
+                    }
+                }
+            }
+        }
+    },
+
+    getItemRecurrence: function (item, syncdata) {
+        let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
+        let wbxml = tbSync.wbxmltools.createWBXML("", syncdata.type); //init wbxml with "" and not with precodes, also activate type codePage (Calendar, Tasks etc)
+
+        if (item.recurrenceInfo) {
+            let deleted = [];
+            for (let recRule of item.recurrenceInfo.getRecurrenceItems({})) {
+                if (recRule.isNegative) {
+                    deleted.push(recRule);
+                    continue;
+                }
+                wbxml.otag("Recurrence");
+                let type = 0;
+                let monthDays = recRule.getComponent("BYMONTHDAY", {});
+                let weekDays  = recRule.getComponent("BYDAY", {});
+                let months    = recRule.getComponent("BYMONTH", {});
+                //proposed change by Chris Allan
+                //let weeks     = recRule.getComponent("BYWEEKNO", {});
+                let weeks     = [];
+                // Unpack 1MO style days
+                for (let i = 0; i < weekDays.length; ++i) {
+                    if (weekDays[i] > 8) {
+                        weeks[i] = Math.floor(weekDays[i] / 8);
+                        weekDays[i] = weekDays[i] % 8;
+                    }
+                    else if (weekDays[i] < -8) {
+                        // EAS only supports last week as a special value, treat
+                        // all as last week or assume every month has 5 weeks?
+                        // Change to last week
+                        //weeks[i] = 5;
+                        // Assumes 5 weeks per month for week <= -2
+                        weeks[i] = 6 - Math.floor(-weekDays[i] / 8);
+                        weekDays[i] = -weekDays[i] % 8;
+                    }
+                }
+                if (monthDays[0] && monthDays[0] == -1) {
+                    weeks = [5];
+                    weekDays = [1, 2, 3, 4, 5, 6, 7]; // 127
+                    monthDays[0] = null;
+                }
+                // Type
+                if (recRule.type == "WEEKLY") {
+                    type = 1;
+                    if (!weekDays.length) {
+                        weekDays = [item.startDate.weekday + 1];
+                    }
+                }
+                else if (recRule.type == "MONTHLY" && weeks.length) {
+                    type = 3;
+                }
+                else if (recRule.type == "MONTHLY") {
+                    type = 2;
+                    if (!monthDays.length) {
+                        monthDays = [item.startDate.day];
+                    }
+                }
+                else if (recRule.type == "YEARLY" && weeks.length) {
+                    type = 6;
+                }
+                else if (recRule.type == "YEARLY") {
+                    type = 5;
+                    if (!monthDays.length) {
+                        monthDays = [item.startDate.day];
+                    }
+                    if (!months.length) {
+                        months = [item.startDate.month + 1];
+                    }
+                }
+                wbxml.atag("Type", type.toString());
+                // TODO: CalendarType: 14.0 and up
+                // DayOfMonth
+                if (monthDays[0]) {
+                    // TODO: Multiple days of month - multiple Recurrence tags?
+                    wbxml.atag("DayOfMonth", monthDays[0].toString());
+                }
+                // DayOfWeek
+                if (weekDays.length) {
+                    let bitfield = 0;
+                    for (let day of weekDays) {
+                        bitfield |= 1 << (day - 1);
+                    }
+                    wbxml.atag("DayOfWeek", bitfield.toString());
+                }
+                // FirstDayOfWeek: 14.1 and up
+                //wbxml.atag("FirstDayOfWeek", recRule.weekStart);
+                // Interval
+                wbxml.atag("Interval", recRule.interval.toString());
+                // TODO: IsLeapMonth: 14.0 and up
+                // MonthOfYear
+                if (months.length) {
+                    wbxml.atag("MonthOfYear", months[0].toString());
+                }
+                // Occurrences
+                if (recRule.isByCount) {
+                    wbxml.atag("Occurrences", recRule.count.toString());
+                }
+                // Until
+                else if (recRule.untilDate != null) {
+                    wbxml.atag("Until", tbSync.eas.getEasTimeUTC(recRule.untilDate));
+                }
+                // WeekOfMonth
+                if (weeks.length) {
+                    wbxml.atag("WeekOfMonth", weeks[0].toString());
+                }
+                wbxml.ctag();
+            }
+            let modifiedIds = item.recurrenceInfo.getExceptionIds({});
+            if (deleted.length || modifiedIds.length) {
+                wbxml.otag("Exceptions");
+                for (let exception of deleted) {
+                    wbxml.otag("Exception");
+                    wbxml.atag("ExceptionStartTime", tbSync.eas.getEasTimeUTC(exception.date));
+                    wbxml.atag("Deleted", "1");
+                    if (asversion == "2.5") {
+                        wbxml.atag("UID", item.id);
+                    }
+                    wbxml.ctag();
+                }
+                for (let exceptionId of modifiedIds) {
+                    let replacement = item.recurrenceInfo.getExceptionFor(exceptionId);
+                    wbxml.otag("Exception");
+                    wbxml.atag("ExceptionStartTime", tbSync.eas.getEasTimeUTC(exceptionId));
+                    wbxml.append(this.getWbxmlFromThunderbirdItem(replacement, syncdata, true));
+                    wbxml.switchpage("Calendar");
+                    wbxml.ctag();
+                }
+                wbxml.ctag();
+            }
+        }
+
+        return wbxml.getBytes();
+    },
+
+
+
     createItem : function (syncdata) {
         switch (syncdata.type) {
             case "Calendar": return cal.createEvent();
