@@ -195,7 +195,7 @@ eas.sync = {
                     }
                     else {
                         let replacement = item.recurrenceInfo.getOccurrenceFor(dateTime);
-                        this.setThunderbirdItemFromWbxml(replacement, exception, replacement.id, syncdata);
+                        eas.sync.Calendar.setThunderbirdItemFromWbxml(replacement, exception, replacement.id, syncdata);
                         item.recurrenceInfo.modifyException(replacement, true);
                     }
                 }
@@ -325,7 +325,7 @@ eas.sync = {
                     let replacement = item.recurrenceInfo.getExceptionFor(exceptionId);
                     wbxml.otag("Exception");
                     wbxml.atag("ExceptionStartTime", tbSync.eas.getEasTimeUTC(exceptionId));
-                    wbxml.append(this.getWbxmlFromThunderbirdItem(replacement, syncdata, true));
+                    wbxml.append(eas.sync.Calendar.getWbxmlFromThunderbirdItem(replacement, syncdata, true));
                     wbxml.switchpage("Calendar");
                     wbxml.ctag();
                 }
