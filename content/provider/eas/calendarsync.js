@@ -196,9 +196,11 @@ eas.sync.Calendar = {
         wbxml.atag("Subject", (item.title) ? tbSync.encode_utf8(item.title) : "");
         wbxml.atag("Location", (item.hasProperty("location")) ? tbSync.encode_utf8(item.getProperty("location")) : "");
         
-        //Categories
-        wbxml.append(eas.sync.getItemCategories(item, syncdata, isException));
-
+        //Categories (see https://github.com/jobisoft/TbSync/pull/35#issuecomment-359286374)
+        if (!isException) {
+            wbxml.append(eas.sync.getItemCategories(item, syncdata));
+        }
+        
         //TP PRIORITY (9=LOW, 5=NORMAL, 1=HIGH) not mapable to EAS Event
         
         //Organizer
@@ -257,7 +259,7 @@ eas.sync.Calendar = {
         //for simplicity, we always send a value for AllDayEvent
         wbxml.atag("AllDayEvent", (item.startDate.isDate && item.endDate.isDate) ? "1" : "0");
  
-        //EAS Reminder (TB getAlarms) - at least with zarafa blanking by omitting works
+        //EAS Reminder (TB getAlarms) - at least with zpush blanking by omitting works, horde does not work
         let alarms = item.getAlarms({});
         if (alarms.length>0) wbxml.atag("Reminder", (0 - alarms[0].offset.inSeconds/60).toString());
         //https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIAlarm.idl

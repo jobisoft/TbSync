@@ -61,7 +61,7 @@ eas.sync = {
         }
     },
     
-    getItemCategories: function (item, syncdata, isException = false) {
+    getItemCategories: function (item, syncdata) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
         let wbxml = tbSync.wbxmltools.createWBXML("", syncdata.type); //init wbxml with "" and not with precodes, also activate type codePage (Calendar, Tasks etc)
 
@@ -71,10 +71,9 @@ eas.sync = {
             wbxml.otag("Categories");
                 for (let i=0; i<categories.length; i++) wbxml.atag("Category", tbSync.encode_utf8(categories[i]));
             wbxml.ctag();
-        } else if (!isException) { //TODO: Server rejects empty category list for exceptions, how else to erase categories?
+        } else {
             wbxml.atag("Categories");
         }
-    
         return wbxml.getBytes();
     },
 
