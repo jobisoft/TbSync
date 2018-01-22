@@ -246,9 +246,8 @@ var db = {
         }
         
         for (let aID in this.folders) {
-            //is this a leftover folder list of an account, whoch no longer there?
+            //is this a leftover folder list of an account, which no longer there?
             if (!this.accounts.data.hasOwnProperty(aID)) {
-              tbSync.dump("ACC",aID);
               delete (this.folders[aID]);
               this.saveFolders();
               continue;
