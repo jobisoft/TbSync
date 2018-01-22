@@ -3,70 +3,64 @@
 eas.sync.Tasks = {
 
     setThunderbirdItemFromWbxml: function (item, data, id, syncdata) {
-    let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
-    item.id = id;
+        let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
+        item.id = id;
 
-    eas.sync.setItemBody(item, syncdata, data);
-    eas.sync.setItemSubject(item, syncdata, data);
-    eas.sync.setItemCategories(item, syncdata, data);
-    eas.sync.setItemRecurrence(item, syncdata, data);
+        eas.sync.setItemBody(item, syncdata, data);
+        eas.sync.setItemSubject(item, syncdata, data);
+        eas.sync.setItemCategories(item, syncdata, data);
+        eas.sync.setItemRecurrence(item, syncdata, data);
 
-    let tzService = cal.getTimezoneService();
-    if (data.DueDate && data.UtcDueDate) {
-        //extract offset from EAS data
-        let DueDate = new Date(data.DueDate);
-        let UtcDueDate = new Date(data.UtcDueDate);
-        let offset = (UtcDueDate.getTime() - DueDate.getTime())/60000;
+        let tzService = cal.getTimezoneService();
+        if (data.DueDate && data.UtcDueDate) {
+            //extract offset from EAS data
+            let DueDate = new Date(data.DueDate);
+            let UtcDueDate = new Date(data.UtcDueDate);
+            let offset = (UtcDueDate.getTime() - DueDate.getTime())/60000;
 
-        //timezone is identified by its offset
-        let utc = cal.createDateTime(UtcDueDate.toBasicISOString()); //format "19800101T000000Z" - UTC
-        item.dueDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[offset]));
-    }
+            //timezone is identified by its offset
+            let utc = cal.createDateTime(UtcDueDate.toBasicISOString()); //format "19800101T000000Z" - UTC
+            item.dueDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[offset]));
+        }
 
-    if (data.StartDate && data.UtcStartDate) {
-        //extract offset from EAS data
-        let StartDate = new Date(data.StartDate);
-        let UtcStartDate = new Date(data.UtcStartDate);
-        let offset = (UtcStartDate.getTime() - StartDate.getTime())/60000;
+        if (data.StartDate && data.UtcStartDate) {
+            //extract offset from EAS data
+            let StartDate = new Date(data.StartDate);
+            let UtcStartDate = new Date(data.UtcStartDate);
+            let offset = (UtcStartDate.getTime() - StartDate.getTime())/60000;
 
-        //timezone is identified by its offset
-        let utc = cal.createDateTime(UtcStartDate.toBasicISOString()); //format "19800101T000000Z" - UTC
-        item.entryDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[offset]));
-    }
+            //timezone is identified by its offset
+            let utc = cal.createDateTime(UtcStartDate.toBasicISOString()); //format "19800101T000000Z" - UTC
+            item.entryDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[offset]));
+        }
 
-    eas.sync.mapEasPropertyToThunderbird ("Sensitivity", "CLASS", data, item);
-    eas.sync.mapEasPropertyToThunderbird ("Importance", "PRIORITY", data, item);
+        eas.sync.mapEasPropertyToThunderbird ("Sensitivity", "CLASS", data, item);
+        eas.sync.mapEasPropertyToThunderbird ("Importance", "PRIORITY", data, item);
 
-    item.clearAlarms();
-    if (data.ReminderSet && data.ReminderTime && data.UtcDueDate) {        
-        let UtcDueDate = tbSync.createDateTime(data.UtcDueDate);
-        let UtcAlarmDate = tbSync.createDateTime(data.ReminderTime);
-        let alarm = cal.createAlarm();
-        alarm.related = Components.interfaces.calIAlarm.ALARM_RELATED_START; //TB saves new alarms as offsets, so we add them as such as well
-        alarm.offset = UtcAlarmDate.subtractDate(UtcDueDate);
-        alarm.action = "DISPLAY";
-        item.addAlarm(alarm);
-    }
-    
-    //status/percentage cannot be mapped
-    if (data.Complete) {
-      if (data.Complete == "0") {
-        item.isCompleted = false;
-      } else {
-        item.isCompleted = true;
-        if (data.DateCompleted) item.completedDate = tbSync.createDateTime(data.DateCompleted);
-      }
-    }
-    /*
-    
-    Complete = [0]
-    Complete = [1]
-    DateCompleted = [2018-01-31T23:00:00.000Z] //UTC
+        item.clearAlarms();
+        if (data.ReminderSet && data.ReminderTime && data.UtcDueDate) {        
+            let UtcDueDate = tbSync.createDateTime(data.UtcDueDate);
+            let UtcAlarmDate = tbSync.createDateTime(data.ReminderTime);
+            let alarm = cal.createAlarm();
+            alarm.related = Components.interfaces.calIAlarm.ALARM_RELATED_START; //TB saves new alarms as offsets, so we add them as such as well
+            alarm.offset = UtcAlarmDate.subtractDate(UtcDueDate);
+            alarm.action = "DISPLAY";
+            item.addAlarm(alarm);
+        }
         
-        */        
-        
+        //status/percentage cannot be mapped
+        if (data.Complete) {
+          if (data.Complete == "0") {
+            item.isCompleted = false;
+          } else {
+            item.isCompleted = true;
+            if (data.DateCompleted) item.completedDate = tbSync.createDateTime(data.DateCompleted);
+          }
+        }            
     },
     
+
+
     getWbxmlFromThunderbirdItem: function (item, syncdata) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
         let wbxml = tbSync.wbxmltools.createWBXML("", syncdata.type); //init wbxml with "" and not with precodes, and set initial codepage
@@ -100,6 +94,13 @@ eas.sync.Tasks = {
             wbxml.atag("ReminderSet", "0");
         }
 
+        if (item.isCompleted) {
+                wbxml.atag("Complete", "1");
+                wbxml.atag("DateCompleted", tbSync.getIsoUtcString(item.completedDate, true));		
+        } else {
+                wbxml.atag("Complete", "0");
+        }
+        
         return wbxml.getBytes();
     },
 }
