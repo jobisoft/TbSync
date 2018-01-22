@@ -37,7 +37,7 @@ eas.sync.Tasks = {
     eas.sync.mapEasPropertyToThunderbird ("Sensitivity", "CLASS", data, item);
     eas.sync.mapEasPropertyToThunderbird ("Importance", "PRIORITY", data, item);
 
-   item.clearAlarms();
+    item.clearAlarms();
     if (data.ReminderSet && data.ReminderTime && data.UtcDueDate) {        
         let UtcDueDate = tbSync.createDateTime(data.UtcDueDate);
         let UtcAlarmDate = tbSync.createDateTime(data.ReminderTime);
@@ -48,6 +48,15 @@ eas.sync.Tasks = {
         item.addAlarm(alarm);
     }
     
+    //status/percentage cannot be mapped
+    if (data.Complete) {
+      if (data.Complete == "0") {
+        item.isCompleted = false;
+      } else {
+        item.isCompleted = true;
+        if (data.DateCompleted) item.completedDate = tbSync.createDateTime(data.DateCompleted);
+      }
+    }
     /*
     
     Complete = [0]
@@ -82,7 +91,7 @@ eas.sync.Tasks = {
         let alarms = item.getAlarms({});
         if (alarms.length>0) {
             wbxml.atag("ReminderSet", "1");
-            //create Date obj from dueDate by converting item.dueDate to extenden UTC ISO String, which can be parsed by Date
+            //create Date obj from dueDate by converting item.dueDate to an extended UTC ISO string, which can be parsed by Date
             let UtcDate = new Date(tbSync.getIsoUtcString(item.dueDate, true));
             //add offset
             UtcDate.setSeconds(UtcDate.getSeconds() + alarms[0].offset.inSeconds);		
