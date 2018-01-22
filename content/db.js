@@ -110,7 +110,7 @@ var db = {
 
     addAccount: function (newAccountEntry) {
         this.accounts.sequence++;
-    let id = this.accounts.sequence;
+        let id = this.accounts.sequence;
         newAccountEntry.account = id.toString(),
 
         this.accounts.data[id]=newAccountEntry;
@@ -246,6 +246,14 @@ var db = {
         }
         
         for (let aID in this.folders) {
+            //is this a leftover folder list of an account, whoch no longer there?
+            if (!this.accounts.data.hasOwnProperty(aID)) {
+              tbSync.dump("ACC",aID);
+              delete (this.folders[aID]);
+              this.saveFolders();
+              continue;
+            }
+
             //does this account match account search options?
             let accountmatch = true;
             for (let a = 0; a < accountFields.length && accountmatch; a++) {
