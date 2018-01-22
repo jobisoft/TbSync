@@ -37,11 +37,18 @@ eas.sync.Tasks = {
     eas.sync.mapEasPropertyToThunderbird ("Sensitivity", "CLASS", data, item);
     eas.sync.mapEasPropertyToThunderbird ("Importance", "PRIORITY", data, item);
 
+   item.clearAlarms();
+    if (data.ReminderSet && data.ReminderTime && data.UtcDueDate) {        
+        let UtcDueDate = eas.createDateTime(data.UtcDueDate);
+        let UtcAlarmDate = eas.createDateTime(data.ReminderTime);
+        let alarm = cal.createAlarm();
+        alarm.related = Components.interfaces.calIAlarm.ALARM_RELATED_START; //TB saves new alarms as offsets, so we add them as such as well
+        alarm.offset = UtcAlarmDate.subtractDate(UtcDueDate);
+        alarm.action = "DISPLAY";
+        item.addAlarm(alarm);
+    }
+    
     /*
-
-    ReminderSet = [0]
-    ReminderSet = [1]
-    ReminderTime = [2018-01-31T07:00:00.000Z]
     
     Complete = [0]
     Complete = [1]
@@ -72,6 +79,20 @@ eas.sync.Tasks = {
         wbxml.append(eas.sync.getItemBody(item, syncdata));
         wbxml.append(eas.sync.getItemRecurrence(item, syncdata));
 
+/*        let alarms = item.getAlarms({});
+        if (alarms.length>0) {
+            wbxml.atag("ReminderSet", "1");
+            let offset = alarms[0].offset.inSeconds;
+            //create Date obj from dueDate by converting item.dueDate to extenden UTC ISO String, which can be parsed by Date
+            let UtcDueDate = new Date(tbSync.eas.getEasTimeUTC(item.dueDate, true));
+            //get total time in seconds of alarm
+            let alarmTimeInSeconds = (UtcDueDate.getTime()/1000) - offset;
+            
+            wbxml.atag("ReminderTime", tbSync.eas.getEasTimeUTC(alarms[0].alarmDate, true));
+        } else {
+            wbxml.atag("ReminderSet", "0");
+        }
+*/
         return wbxml.getBytes();
     },
 }

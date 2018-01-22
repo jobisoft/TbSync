@@ -6,11 +6,6 @@ var EXPORTED_SYMBOLS = ["tbSync"];
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-// - https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIEvent.idl
-// - https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIItemBase.idl
-// - https://dxr.mozilla.org/comm-central/source/calendar/base/public/calICalendar.idl
-// - https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calAsyncUtils.jsm
-
 //import calUtils if avail
 if ("calICalendar" in Components.interfaces) {
     Components.utils.import("resource://calendar/modules/calUtils.jsm");
