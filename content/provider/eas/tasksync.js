@@ -79,20 +79,18 @@ eas.sync.Tasks = {
         wbxml.append(eas.sync.getItemBody(item, syncdata));
         wbxml.append(eas.sync.getItemRecurrence(item, syncdata));
 
-/*        let alarms = item.getAlarms({});
+        let alarms = item.getAlarms({});
         if (alarms.length>0) {
             wbxml.atag("ReminderSet", "1");
-            let offset = alarms[0].offset.inSeconds;
             //create Date obj from dueDate by converting item.dueDate to extenden UTC ISO String, which can be parsed by Date
-            let UtcDueDate = new Date(tbSync.getIsoUtcString(item.dueDate, true));
-            //get total time in seconds of alarm
-            let alarmTimeInSeconds = (UtcDueDate.getTime()/1000) - offset;
-            
-            wbxml.atag("ReminderTime", tbSync.getIsoUtcString(alarms[0].alarmDate, true));
+            let UtcDate = new Date(tbSync.getIsoUtcString(item.dueDate, true));
+            //add offset
+            UtcDate.setSeconds(UtcDate.getSeconds() + alarms[0].offset.inSeconds);		
+            wbxml.atag("ReminderTime", UtcDate.toISOString());
         } else {
             wbxml.atag("ReminderSet", "0");
         }
-*/
+
         return wbxml.getBytes();
     },
 }
