@@ -1029,9 +1029,9 @@ var eas = {
     //get EAS TZ data from calendar item
     getEasTimezoneData: function (item) {
         let tz = {};
-        tz.startDateUTC = tbSync.eas.getEasTimeUTC(item.startDate);
-        tz.endDateUTC = tbSync.eas.getEasTimeUTC(item.endDate);
-        tz.stampTimeUTC = tbSync.eas.getEasTimeUTC(item.stampTime);
+        tz.startDateUTC = tbSync.getIsoUtcString(item.startDate);
+        tz.endDateUTC = tbSync.getIsoUtcString(item.endDate);
+        tz.stampTimeUTC = tbSync.getIsoUtcString(item.stampTime);
 
         //tbSync.quickdump("startDate", tz.startDateUTC);
         //tbSync.quickdump("endDate", tz.endDateUTC);
@@ -1102,49 +1102,6 @@ var eas = {
         //TimeZone
         tz.timezone = easTZ.base64;
         return tz;
-    },
-
-    // Convert TB date into Eas UTC time string (returns compact/basic ISO 8601 or extended ISO 8601 if required)
-    getEasTimeUTC: function(origdate, requireExtendedISO = false, fakeUTC = false) {
-        let date = origdate.clone();
-        //floating timezone cannot be converted to UTC (cause they float) - we have to overwrite it with the local timezone
-        if (date.timezone.tzid == "floating") date.timezone = cal.calendarDefaultTimezone();
-        //to get the UTC string we could use icalString (which does not work on allDayEvents, or calculate it from nativeTime)
-        date.isDate = 0;
-        let UTC = date.getInTimezone(cal.UTC());        
-        if (fakeUTC) UTC = date.clone();
-        
-        function pad(number) {
-            if (number < 10) {
-                return '0' + number;
-            }
-            return number;
-        }
-        
-        if (requireExtendedISO) {
-            return UTC.year + 
-                    "-" + pad(UTC.month + 1 ) + 
-                    "-" + pad(UTC.day) +
-                    "T" + pad(UTC.hour) +
-                    ":" + pad(UTC.minute) + 
-                    ":" + pad(UTC.second) + 
-                    "." + "000" +
-                    "Z";            
-        } else {            
-            return UTC.icalString;
-        }
-    },
-
-    //Save replacement for cal.createDateTime, which accepts compact/basic and also extended ISO 8601, 
-    //cal.createDateTime only supports compact/basic
-    createDateTime: function(str) {
-        let datestring = str;
-        if (str.indexOf("-") == 4) {
-            //this looks like extended ISO 8601
-            let tempDate = new Date(str);
-            datestring = tempDate.toBasicISOString();
-        }
-        return cal.createDateTime(datestring);
     },
 
 

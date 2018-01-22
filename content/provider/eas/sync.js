@@ -179,7 +179,7 @@ eas.sync = {
             if (data.Recurrence.Until) {
                 //time string could be in compact/basic or extended form of ISO 8601, 
                 //cal.createDateTime only supports  compact/basic, our own method takes both styles
-                recRule.untilDate = tbSync.eas.createDateTime(data.Recurrence.Until);
+                recRule.untilDate = tbSync.createDateTime(data.Recurrence.Until);
             }
             item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
             if (data.Exceptions) {
@@ -305,7 +305,7 @@ eas.sync = {
                 }
                 // Until
                 else if (recRule.untilDate != null) {
-                    wbxml.atag("Until", tbSync.eas.getEasTimeUTC(recRule.untilDate));
+                    wbxml.atag("Until", tbSync.getIsoUtcString(recRule.untilDate));
                 }
                 // WeekOfMonth
                 if (weeks.length) {
@@ -320,7 +320,7 @@ eas.sync = {
                     wbxml.otag("Exceptions");
                     for (let exception of deleted) {
                         wbxml.otag("Exception");
-                            wbxml.atag("ExceptionStartTime", tbSync.eas.getEasTimeUTC(exception.date));
+                            wbxml.atag("ExceptionStartTime", tbSync.getIsoUtcString(exception.date));
                             wbxml.atag("Deleted", "1");
                             //Docs say it is allowed, but if present, it does not work
                             //if (asversion == "2.5") {
@@ -331,7 +331,7 @@ eas.sync = {
                     for (let exceptionId of modifiedIds) {
                         let replacement = item.recurrenceInfo.getExceptionFor(exceptionId);
                         wbxml.otag("Exception");
-                            wbxml.atag("ExceptionStartTime", tbSync.eas.getEasTimeUTC(exceptionId));
+                            wbxml.atag("ExceptionStartTime", tbSync.getIsoUtcString(exceptionId));
                             wbxml.append(eas.sync.Calendar.getWbxmlFromThunderbirdItem(replacement, syncdata, true));
                         wbxml.ctag();
                     }

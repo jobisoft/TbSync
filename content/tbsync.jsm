@@ -715,6 +715,50 @@ var tbSync = {
 
 
     // CALENDAR FUNCTIONS
+
+    // Convert TB date to UTC and return it as  basic or extended ISO 8601  String
+    getIsoUtcString: function(origdate, requireExtendedISO = false, fakeUTC = false) {
+        let date = origdate.clone();
+        //floating timezone cannot be converted to UTC (cause they float) - we have to overwrite it with the local timezone
+        if (date.timezone.tzid == "floating") date.timezone = cal.calendarDefaultTimezone();
+        //to get the UTC string we could use icalString (which does not work on allDayEvents, or calculate it from nativeTime)
+        date.isDate = 0;
+        let UTC = date.getInTimezone(cal.UTC());        
+        if (fakeUTC) UTC = date.clone();
+        
+        function pad(number) {
+            if (number < 10) {
+                return '0' + number;
+            }
+            return number;
+        }
+        
+        if (requireExtendedISO) {
+            return UTC.year + 
+                    "-" + pad(UTC.month + 1 ) + 
+                    "-" + pad(UTC.day) +
+                    "T" + pad(UTC.hour) +
+                    ":" + pad(UTC.minute) + 
+                    ":" + pad(UTC.second) + 
+                    "." + "000" +
+                    "Z";            
+        } else {            
+            return UTC.icalString;
+        }
+    },
+
+    //Save replacement for cal.createDateTime, which accepts compact/basic and also extended ISO 8601, 
+    //cal.createDateTime only supports compact/basic
+    createDateTime: function(str) {
+        let datestring = str;
+        if (str.indexOf("-") == 4) {
+            //this looks like extended ISO 8601
+            let tempDate = new Date(str);
+            datestring = tempDate.toBasicISOString();
+        }
+        return cal.createDateTime(datestring);
+    },
+
     calendarObserver : { 
         onStartBatch : function () {},
         onEndBatch : function () {},
