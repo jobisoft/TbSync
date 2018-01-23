@@ -71,12 +71,16 @@ eas.sync.Tasks = {
 
         //tasks is using extended ISO 8601 (2019-01-18T00:00:00.000Z)  instead of basic (20190118T000000Z), 
         //getIsoUtcString returns extended if true as second parameter is present
-        wbxml.atag("UtcStartDate", tbSync.getIsoUtcString(item.entryDate, true));
-        //to fake the local time as UTC, getIsoUtcString needs the third parameter to be true
-        wbxml.atag("StartDate", tbSync.getIsoUtcString(item.entryDate, true, true));
+        if (item.entryDate) {
+            wbxml.atag("UtcStartDate", tbSync.getIsoUtcString(item.entryDate, true));
+            //to fake the local time as UTC, getIsoUtcString needs the third parameter to be true
+            wbxml.atag("StartDate", tbSync.getIsoUtcString(item.entryDate, true, true));
+        }
 
-        wbxml.atag("UtcDueDate", tbSync.getIsoUtcString(item.dueDate, true));
-        wbxml.atag("DueDate", tbSync.getIsoUtcString(item.dueDate, true, true));
+        if (item.dueDate) {
+            wbxml.atag("UtcDueDate", tbSync.getIsoUtcString(item.dueDate, true));
+            wbxml.atag("DueDate", tbSync.getIsoUtcString(item.dueDate, true, true));
+        }
         
         wbxml.append(eas.sync.getItemCategories(item, syncdata));
         wbxml.append(eas.sync.getItemBody(item, syncdata));
