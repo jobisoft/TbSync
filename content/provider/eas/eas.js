@@ -158,6 +158,9 @@ var eas = {
         let folderReSyncs = 1;
         
         do {            
+            //reset syncdata statecounts
+            syncdata.statecounts = {};
+
             //any pending folders left?
             let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
             if (folders.length == 0) {
@@ -308,6 +311,7 @@ var eas = {
             }
 
             //build WBXML to acknowledge provision
+            tbSync.setSyncState("prepare.request.provision", syncdata.account);
             wbxml = wbxmltools.createWBXML();
             wbxml.switchpage("Provision");
             wbxml.otag("Provision");
@@ -331,7 +335,7 @@ var eas = {
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", "pending");
         } else {
             //scan all folders ans set the enabled ones to pending
-            tbSync.setSyncState("requestingfolders", syncdata.account); 
+            tbSync.setSyncState("prepare.request.folders", syncdata.account); 
             let foldersynckey = tbSync.db.getAccountSetting(syncdata.account, "foldersynckey");
             //legacy fallback
             if (foldersynckey == "") foldersynckey = "0";
@@ -343,7 +347,10 @@ var eas = {
                 wbxml.atag("SyncKey",foldersynckey);
             wbxml.ctag();
 
+            tbSync.setSyncState("send.request.folders", syncdata.account); 
             let response = yield eas.sendRequest(wbxml.getBytes(), "FolderSync", syncdata);
+
+            tbSync.setSyncState("eval.response.folders", syncdata.account); 
             let wbxmlData = eas.getDataFromResponse(response);
 
             eas.checkStatus(syncdata, wbxmlData,"FolderSync.Status");

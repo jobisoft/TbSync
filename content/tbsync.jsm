@@ -205,10 +205,12 @@ var tbSync = {
         let extendenState = state;
         if (account && ["prepare","send","eval"].indexOf(state.split(".")[0]) != -1) {
             let syncdata = tbSync.getSyncData(account);
-            if (!syncdata.statecounts) syncdata.statecounts = {};
-            if (!syncdata.statecounts[state]) syncdata.statecounts[state] = 0;
-            else syncdata.statecounts[state]++;
-            extendenState = state + "::" + (syncdata.statecounts[state] > 5 ? syncdata.statecounts[state] : " ") + "::" + Date.now();
+            if (!syncdata.hasOwnProperty("statecounts")) syncdata.statecounts = {};
+            if (!syncdata.statecounts.hasOwnProperty(state)) syncdata.statecounts[state] = 0;
+            else syncdata.statecounts[state] = syncdata.statecounts[state] +1;
+
+            //append details about wait state
+            extendenState = state + "||" + (syncdata.statecounts[state]>0 ? "#" + syncdata.statecounts[state] : "") + "||" + Date.now();
             msg = msg + " #" + syncdata.statecounts[state];
         }
 
@@ -318,12 +320,9 @@ var tbSync = {
     },
 
     getLocalizedMessage: function (msg, provider = "") {
+        let localized = msg;
         let parts = msg.split("::");
 
-        //create fallback string, containing only the first two fields (the third one is a timestamp)
-        let localized = parts[0];
-        if (parts.length>1 && parts[1].trim()) localized = localized + " ("+parts[1]+")";
-        
         let bundle = (provider == "") ? tbSync.bundle : tbSync[provider].bundle;
             
         try {
@@ -331,11 +330,6 @@ var tbSync = {
             if (parts.length>1) localized = bundle.GetStringFromName(parts[0]).replace("##replace##", parts[1]);
             else localized = bundle.GetStringFromName(msg);                        
         } catch (e) {}
-
-        if (parts.length>2) { //contains a time stamp
-            let diff = Date.now() - parseInt(parts[2]);
-            if (diff > 1000) localized = localized + " (" + diff + "ms)";
-        }
 
         return localized;
     },

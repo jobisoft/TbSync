@@ -1,22 +1,8 @@
-syncstate.syncing=Initialize synchronisation
-syncstate.done=Preparing next item for synchronisation
-syncstate.preparing=Preparing next item for synchronisation
-syncstate.accountdone=Finished account
-syncstate.idle=Idle
-syncstate.requestingfolders=Retrieving folders for syncronization
-syncstate.requestingprovision=Requesting provision
-syncstate.deletingfolder=Deleting folder from server
-syncstate.error=Error
-
-syncstate.serverid=Adding new serverid
-syncstate.cleaningdeleted=Cleaning up deleted items
-syncstate.sendingdeleted=Sending items to delete
-syncstate.sendingchanges=Sending changes to server
-syncstate.recievingchanges=Recieving changes from server
-syncstate.requestingchanges=Requesting changes from server
-
 state.disconnected=Connect account
 state.connected=Disconnect
+
+status.idle=Idle
+status.error=Error
 
 status.notsyncronized=Account needs to be syncronized, at least one item is out of sync.
 status.notconnected=Account is not connected, synchronisation is disabled.
@@ -34,14 +20,17 @@ status.nolightning=Lightning Add-On not installed, calendars are not supported.
 status.javascriptError=Javascript error! Check debug log for details.
 status.mailformed-xml=Could not parse XML. Please help fixing this bug by (in that order)\n - disconnect this account\n - enabling debug log (@Help)\n - restart Thunderbird\n - reconnect this account and re-trigger this error\n - send me the debug log or at least the XML and WBXML before the line marked with BAD XML   
 
+status.security=Could not establish a secure connection (##replace##).
+status.network=Could not connect to server (##replace##).
+
 status.syncing=Synchronizing ...
 status.skipped=Not yet supported, skipped
 status.aborted=Not synchronized
 status.pending=Waiting to be synchronized
 status.modified=Local modifications
 
-status.waiting=Account is scheduled to be synchronized
-status.idle=Synchronize this account
+status.resync-loop=There was an error which could not be recovered by resyncing the account. Please disconnect the account and try again. (Error: resync loop)
+
 
 status.policy.2=There is no policy for this client. Contact your server administrator or disable provisioning for this account.
 status.policy.3=Unknown PolicyType value. Contact your server administrator or disable provisioning for this account.
@@ -57,7 +46,6 @@ status.global.101=The request contains WBXML but it could not be decoded into XM
 status.global.102=The request contains WBXML but it could not be decoded into XML (Error 102).
 status.global.103=The XML provided in the request does not follow the protocol requirements (Error 103).
 
-status.resync-loop=There was an error which could not be recovered by resyncing the account. Please disconnect the account and try again. (Error: resync loop)
 
 prompt.DeleteAccount=Delete account ##accountName## for sure?
 prompt.Disconnect=Are you sure you want to disconnect this account? All local modifications, which have not been synced yet, will be lost!
@@ -65,14 +53,10 @@ prompt.Unsubscribe=Are you sure you want to unsubscribe this item? All local mod
 prompt.UnlockSettings=Changing any of the predefined server settings could lead to synchronisation errors. Are you sure you want to unlock all predefined server settings?
 prompt.Password=Please enter the password for user ##user##:
 
-
-status.security=Could not establish a secure connection (##replace##).
-status.network=Could not connect to server (##replace##).
+button.syncthis=Synchronize this account
 
 account=TbSync account [##accountname##]
 
 config.auto=ActiveSync server configuration (Autodiscover)
 config.custom=ActiveSync server configuration
 config.outlook.com=Server configuration for Outlook.com accounts
-
-error.init=TbSync did not yet finish its init sequence.

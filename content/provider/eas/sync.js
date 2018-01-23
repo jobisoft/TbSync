@@ -386,18 +386,18 @@ eas.sync = {
         wbxml.otag("GetItemEstimate");
             wbxml.otag("Collections");
                 wbxml.otag("Collection");
-                    wbxml.switchpage("AirSync");
-                    wbxml.atag("SyncKey", syncdata.synckey);
-                    wbxml.switchpage("GetItemEstimate");
-                    wbxml.atag("CollectionId", syncdata.folderID);
                     if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type); //only 2.5
                     wbxml.switchpage("AirSync");
                     if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("FilterType", "0"); //only 2.5
+                    wbxml.atag("SyncKey", syncdata.synckey);
+                    wbxml.switchpage("GetItemEstimate");
+                    wbxml.atag("CollectionId", syncdata.folderID);
+//                    wbxml.switchpage("AirSync");
 //                    wbxml.otag("Options");
 //                        wbxml.atag("FilterType", "0");
 //                        wbxml.atag("Class", syncdata.type);
 //                    wbxml.ctag();
-                    //wbxml.switchpage("GetItemEstimate");
+//                    wbxml.switchpage("GetItemEstimate");
                 wbxml.ctag();
             wbxml.ctag();
         wbxml.ctag();
@@ -406,8 +406,6 @@ eas.sync = {
         //SEND REQUEST
         tbSync.setSyncState("send.request.estimate", syncdata.account, syncdata.folderID);
         let response = yield eas.sendRequest(wbxml.getBytes(), "GetItemEstimate", syncdata);
-        //TODO Fake long response and add reload of GUI every second, to show updated times
-        //yield tbSync.sleep(5000);
 
         //VALIDATE RESPONSE
         tbSync.setSyncState("eval.response.estimate", syncdata.account, syncdata.folderID);
@@ -419,11 +417,11 @@ eas.sync = {
         let status = xmltools.getWbxmlDataField(wbxmlData, "GetItemEstimate.Response.Status");
         let estimate = xmltools.getWbxmlDataField(wbxmlData, "GetItemEstimate.Response.Collection.Estimate");
 
-        syncdata.remotetodo = -1;
+        syncdata.todo = -1;
         if (status && status == "1") { //do not throw on error, with EAS v2.5 I get error 2 for tasks and calendars ???
-            syncdata.remotetodo = estimate;
+            syncdata.todo = estimate;
         }
-        tbSync.dump(syncdata.folderID, syncdata.remotetodo);
+        tbSync.dump(syncdata.folderID, syncdata.todo);
 
     }),
     

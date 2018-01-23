@@ -8,6 +8,7 @@ var tbSyncAccountSettings = {
     init: false,
     fixedSettings: {},
     protectedSettings: ["host", "user"],
+    updateTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
     onload: function () {
         //get the selected account from the loaded URI
@@ -23,6 +24,7 @@ var tbSyncAccountSettings = {
     },
 
     onunload: function () {
+        tbSyncAccountSettings.updateTimer.cancel();
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         if (tbSyncAccountSettings.init) {
             observerService.removeObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate");
@@ -192,6 +194,8 @@ var tbSyncAccountSettings = {
 
 
     updateSyncstate: function () {        
+        tbSyncAccountSettings.updateTimer.cancel();
+
         // if this account is beeing synced, display syncstate, otherwise print status
         let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "status");
         let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connected, disconnected
@@ -204,7 +208,26 @@ var tbSyncAccountSettings = {
             if (accounts.hasOwnProperty(syncdata.account) && syncdata.folderID !== "" && syncdata.state != "done") { //if "Done" do not print folder info syncstate
                 target = " [" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "]";
             }
-            document.getElementById('syncstate').textContent = tbSync.getLocalizedMessage("syncstate." + syncdata.state) + target;
+            
+            let parts = syncdata.state.split("||");
+            let syncstate = parts[0];
+            let syncinfo = (parts.length>1 ? parts[1] : "");
+            let synctime = (parts.length>2 ? parts[2] : Date.now());
+
+            let msg = tbSync.getLocalizedMessage("syncstate." + syncstate, "eas");
+
+            let info = [];
+            if (syncinfo) info.push(syncinfo);
+            if ((Date.now() - synctime) > 2000) info.push(Math.round((Date.now() - synctime)/1000) + "s")
+            if (info.length>0) msg = msg + " ("+info.join(", ") +")";
+
+            document.getElementById('syncstate').textContent = msg + target;
+        
+            if (syncstate.split(".")[0] == "send") {
+                //re-schedule update, if this is a waiting syncstate
+                tbSyncAccountSettings.updateTimer.init(tbSyncAccountSettings.updateSyncstate, 1000, 0);
+            }
+
         } else {
             document.getElementById('syncstate').textContent = tbSync.getLocalizedMessage("status." + status);
         }
@@ -217,7 +240,8 @@ var tbSyncAccountSettings = {
         
         if (status == "syncing") document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.syncing");
         //else if (tbSync.isSyncing(tbSyncAccountSettings.selectedAccount)) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.waiting");
-        else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.idle");
+        else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.syncthis");
+    
     },
 
 

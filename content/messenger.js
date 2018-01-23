@@ -85,8 +85,8 @@ var tbSyncMessenger = {
                 }
 
                 if (idle) {
-                    if (err) label +=tbSync.getLocalizedMessage("syncstate.error");   
-                    else label += tbSync.getLocalizedMessage("syncstate.idle");   
+                    if (err) label +=tbSync.getLocalizedMessage("status.error");   
+                    else label += tbSync.getLocalizedMessage("status.idle");   
                     status.label = label;      
                     tbSyncMessenger.syncSteps = 0;                    
                 } else if ((Date.now() - tbSyncMessenger.statusLastUpdated) > 400) {

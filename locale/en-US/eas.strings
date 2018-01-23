@@ -13,3 +13,40 @@ subscribe.on=Subscribe "##replace##"
 subscribe.off=Unsubscribe "##replace##"
 
 recyclebin = Trash
+
+syncstate.syncing=Initialize synchronisation
+syncstate.preparing=Preparing next item for synchronisation
+syncstate.done=Preparing next item for synchronisation
+syncstate.accountdone=Finished account
+
+syncstate.prepare.request.folders=Sending folder list update
+syncstate.send.request.folders=Waiting for folder list update
+syncstate.eval.response.folders=Received folder list update
+
+syncstate.prepare.request.synckey=Requesting synckey
+syncstate.send.request.synckey=Waiting for synckey
+syncstate.eval.response.synckey=Received synckey
+
+syncstate.prepare.request.deletefolder=Preparing to delete folder
+syncstate.send.request.deletefolder=Waiting for folder to be deleted
+syncstate.eval.response.deletefolder=Folder deleted
+
+syncstate.prepare.request.provision=Requesting provison
+syncstate.send.request.provision=Waiting for provison
+syncstate.eval.response.provision=Received provision
+
+syncstate.prepare.request.estimate=Requesting change estimate
+syncstate.send.request.estimate=Waiting for change estimate
+syncstate.eval.response.estimate=Received change estimate
+
+syncstate.prepare.request.remotechanges=Requesting remote changes
+syncstate.send.request.remotechanges=Waiting for remote changes
+syncstate.eval.response.remotechanges=Received remote changes
+
+syncstate.prepare.request.localchanges=Gathering local changes
+syncstate.send.request.localchanges=Sending local changes
+syncstate.eval.response.localchanges=Received acknowledgement of local changes
+
+syncstate.prepare.request.localdeletes=Gathering local deletes
+syncstate.send.request.localdeletes=Sending local deletes
+syncstate.eval.response.localdeletes=Received acknowledgement of local deletes
