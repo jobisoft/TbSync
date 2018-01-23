@@ -257,6 +257,7 @@ var eas = {
 
     getPolicykey: Task.async (function* (syncdata)  {
         //build WBXML to request provision
+        tbSync.setSyncState("prepare.request.provision", syncdata.account);
         let wbxml = wbxmltools.createWBXML();
         wbxml.switchpage("Provision");
         wbxml.otag("Provision");
@@ -268,10 +269,11 @@ var eas = {
         wbxml.ctag();
 
         for (let loop=0; loop < 2; loop++) {
-            tbSync.setSyncState("requestingprovision", syncdata.account); 
+            tbSync.setSyncState("send.request.provision", syncdata.account);
             let response = yield eas.sendRequest(wbxml.getBytes(), "Provision", syncdata);
+
+            tbSync.setSyncState("eval.response.provision", syncdata.account);
             let wbxmlData = eas.getDataFromResponse(response);
-                        
             let policyStatus = xmltools.getWbxmlDataField(wbxmlData,"Provision.Policies.Policy.Status");
             let provisionStatus = xmltools.getWbxmlDataField(wbxmlData,"Provision.Status");
             if (provisionStatus === false) {
@@ -495,7 +497,8 @@ var eas = {
         }
     }),
 
-    getSynckey: Task.async (function* (syncdata)  {
+    getSynckey: Task.async (function* (syncdata) {
+        tbSync.setSyncState("prepare.request.synckey", syncdata.account);
         //build WBXML to request a new syncKey
         let wbxml = tbSync.wbxmltools.createWBXML();
         wbxml.otag("Sync");
@@ -508,7 +511,10 @@ var eas = {
             wbxml.ctag();
         wbxml.ctag();
         
+        tbSync.setSyncState("send.request.synckey", syncdata.account);
         let response = yield eas.sendRequest(wbxml.getBytes(), "Sync", syncdata);
+
+        tbSync.setSyncState("eval.response.synckey", syncdata.account);
         // get data from wbxml response
         let wbxmlData = eas.getDataFromResponse(response);
         //check status
@@ -587,7 +593,7 @@ var eas = {
             throw eas.finishSync();
         } 
         
-        tbSync.setSyncState("deletingfolder", syncdata.account); 
+        tbSync.setSyncState("prepare.request.deletefolder", syncdata.account);
         let foldersynckey = tbSync.db.getAccountSetting(syncdata.account, "foldersynckey");
         if (foldersynckey == "") foldersynckey = "0";
 
@@ -599,7 +605,11 @@ var eas = {
             wbxml.atag("ServerId", syncdata.folderID);
         wbxml.ctag();
 
+        tbSync.setSyncState("send.request.deletefolder", syncdata.account);
         let response = yield eas.sendRequest(wbxml.getBytes(), "FolderDelete", syncdata);
+
+
+        tbSync.setSyncState("eval.response.deletefolder", syncdata.account);
         let wbxmlData = eas.getDataFromResponse(response);
 
         eas.checkStatus(syncdata, wbxmlData,"FolderDelete.Status");
