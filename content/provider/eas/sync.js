@@ -369,6 +369,7 @@ eas.sync = {
         syncdata.targetId = syncdata.targetObj.id;
 
         //sync
+        yield eas.sync.getItemEstimate (syncdata);
         yield eas.sync.requestRemoteChanges (syncdata); 
         yield eas.sync.sendLocalChanges (syncdata);
         
@@ -376,12 +377,60 @@ eas.sync = {
         throw eas.finishSync();
     }),
 
+    getItemEstimate: Task.async (function* (syncdata)  {
+        tbSync.setSyncState("prepare.request.estimate", syncdata.account, syncdata.folderID);
+
+        // BUILD WBXML
+        let wbxml = tbSync.wbxmltools.createWBXML();
+        wbxml.switchpage("GetItemEstimate");
+        wbxml.otag("GetItemEstimate");
+            wbxml.otag("Collections");
+                wbxml.otag("Collection");
+                    wbxml.switchpage("AirSync");
+                    wbxml.atag("SyncKey", syncdata.synckey);
+                    wbxml.switchpage("GetItemEstimate");
+                    wbxml.atag("CollectionId", syncdata.folderID);
+                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type); //only 2.5
+                    wbxml.switchpage("AirSync");
+                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("FilterType", "0"); //only 2.5
+//                    wbxml.otag("Options");
+//                        wbxml.atag("FilterType", "0");
+//                        wbxml.atag("Class", syncdata.type);
+//                    wbxml.ctag();
+                    //wbxml.switchpage("GetItemEstimate");
+                wbxml.ctag();
+            wbxml.ctag();
+        wbxml.ctag();
 
 
+        //SEND REQUEST
+        tbSync.setSyncState("send.request.estimate", syncdata.account, syncdata.folderID);
+        let response = yield eas.sendRequest(wbxml.getBytes(), "GetItemEstimate", syncdata);
+        //TODO Fake long response and add reload of GUI every second, to show updated times
+        //yield tbSync.sleep(5000);
+
+        //VALIDATE RESPONSE
+        tbSync.setSyncState("eval.response.estimate", syncdata.account, syncdata.folderID);
+
+        // get data from wbxml response, some servers send empty response if there are no changes, which is not an error
+        let wbxmlData = eas.getDataFromResponse(response, eas.flags.allowEmptyResponse);
+        if (wbxmlData === null) return;
+
+        let status = xmltools.getWbxmlDataField(wbxmlData, "GetItemEstimate.Response.Status");
+        let estimate = xmltools.getWbxmlDataField(wbxmlData, "GetItemEstimate.Response.Collection.Estimate");
+
+        syncdata.remotetodo = -1;
+        if (status && status == "1") { //do not throw on error, with EAS v2.5 I get error 2 for tasks and calendars ???
+            syncdata.remotetodo = estimate;
+        }
+        tbSync.dump(syncdata.folderID, syncdata.remotetodo);
+
+    }),
     
     requestRemoteChanges: Task.async (function* (syncdata)  {
+        let c= 0;
         do {
-            tbSync.setSyncState("requestingchanges", syncdata.account, syncdata.folderID);
+            tbSync.setSyncState("prepare.request.remotechanges", syncdata.account, syncdata.folderID);
 
             // BUILD WBXML
             let wbxml = tbSync.wbxmltools.createWBXML();
@@ -412,12 +461,11 @@ eas.sync = {
 
 
             //SEND REQUEST
+            tbSync.setSyncState("send.request.remotechanges", syncdata.account, syncdata.folderID);
             let response = yield eas.sendRequest(wbxml.getBytes(), "Sync", syncdata);
 
-
-
             //VALIDATE RESPONSE
-            tbSync.setSyncState("recievingchanges", syncdata.account, syncdata.folderID);
+            tbSync.setSyncState("eval.response.remotechanges", syncdata.account, syncdata.folderID);
 
             // get data from wbxml response, some servers send empty response if there are no changes, which is not an error
             let wbxmlData = eas.getDataFromResponse(response, eas.flags.allowEmptyResponse);
@@ -428,8 +476,6 @@ eas.sync = {
             
             //update synckey, throw on error
             eas.updateSynckey(syncdata, wbxmlData);
-
-
 
             //PROCESS RESPONSE        
             //any commands for us to work on? If we reach this point, Sync.Collections.Collection is valid, 
@@ -508,7 +554,9 @@ eas.sync = {
             
             }
             
-            if (!wbxmlData.Sync.Collections.Collection.MoreAvailable) return;
+            //if (!wbxmlData.Sync.Collections.Collection.MoreAvailable) return;
+            c++;
+            if (c>2) return;
         } while (true);
                 
     }),
@@ -524,7 +572,7 @@ eas.sync = {
         
         //get changed items from ChangeLog
         do {
-            tbSync.setSyncState("sendingchanges", syncdata.account, syncdata.folderID);
+            tbSync.setSyncState("prepare.request.localchanges", syncdata.account, syncdata.folderID);
             let changes = db.getItemsFromChangeLog(syncdata.targetObj.id, maxnumbertosend, "_by_user");
             let c=0;
             
@@ -595,9 +643,10 @@ eas.sync = {
 
 
             //SEND REQUEST & VALIDATE RESPONSE
+            tbSync.setSyncState("send.request.localchanges", syncdata.account, syncdata.folderID);
             let response = yield eas.sendRequest(wbxml.getBytes(), "Sync", syncdata);
-
-            tbSync.setSyncState("serverid", syncdata.account, syncdata.folderID);
+            
+            tbSync.setSyncState("eval.response.localchanges", syncdata.account, syncdata.folderID);
 
             //get data from wbxml response
             let wbxmlData = eas.getDataFromResponse(response);
