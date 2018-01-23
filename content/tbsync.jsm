@@ -200,9 +200,20 @@ var tbSync = {
         let msg = "State: " + state;
         if (account !== "") msg += ", Account: " + tbSync.db.getAccountSetting(account, "accountname");
         if (folderID !== "") msg += ", Folder: " + tbSync.db.getFolderSetting(account, folderID, "name");
-        tbSync.dump("setSyncState", msg);
 
-        tbSync.setSyncData(account,"state",state);
+        //get syncdata obj
+        let extendenState = state;
+        if (account && ["prepare","send","eval"].indexOf(state.split(".")[0]) != -1) {
+            let syncdata = tbSync.getSyncData(account);
+            if (!syncdata.statecounts) syncdata.statecounts = {};
+            if (!syncdata.statecounts[state]) syncdata.statecounts[state] = 0;
+            else syncdata.statecounts[state]++;
+            extendenState = state + "::" + (syncdata.statecounts[state] > 5 ? syncdata.statecounts[state] : " ") + "::" + Date.now();
+            msg = msg + " #" + syncdata.statecounts[state];
+        }
+
+        tbSync.dump("setSyncState", msg);
+        tbSync.setSyncData(account, "state", extendenState);
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.notifyObservers(null, "tbsync.changedSyncstate", account);
@@ -307,16 +318,25 @@ var tbSync = {
     },
 
     getLocalizedMessage: function (msg, provider = "") {
-        let localized = msg;
         let parts = msg.split("::");
+
+        //create fallback string, containing only the first two fields (the third one is a timestamp)
+        let localized = parts[0];
+        if (parts.length>1 && parts[1].trim()) localized = localized + " ("+parts[1]+")";
+        
         let bundle = (provider == "") ? tbSync.bundle : tbSync[provider].bundle;
             
         try {
             //spezial treatment of strings with :: like status.httperror::403
-            if (parts.length==2) localized = bundle.GetStringFromName(parts[0]).replace("##replace##", parts[1]);
-            else localized = bundle.GetStringFromName(msg);
-            
+            if (parts.length>1) localized = bundle.GetStringFromName(parts[0]).replace("##replace##", parts[1]);
+            else localized = bundle.GetStringFromName(msg);                        
         } catch (e) {}
+
+        if (parts.length>2) { //contains a time stamp
+            let diff = Date.now() - parseInt(parts[2]);
+            if (diff > 1000) localized = localized + " (" + diff + "ms)";
+        }
+
         return localized;
     },
 
