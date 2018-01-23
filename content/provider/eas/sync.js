@@ -426,7 +426,6 @@ eas.sync = {
     }),
     
     requestRemoteChanges: Task.async (function* (syncdata)  {
-        let c= 0;
         do {
             tbSync.setSyncState("prepare.request.remotechanges", syncdata.account, syncdata.folderID);
 
@@ -552,9 +551,7 @@ eas.sync = {
             
             }
             
-            //if (!wbxmlData.Sync.Collections.Collection.MoreAvailable) return;
-            c++;
-            if (c>2) return;
+            if (!wbxmlData.Sync.Collections.Collection.MoreAvailable) return;
         } while (true);
                 
     }),
