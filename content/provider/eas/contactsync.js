@@ -128,6 +128,7 @@ eas.contactsync = {
         }
         
         //sync
+        yield eas.sync.getItemEstimate (syncdata);
         yield eas.contactsync.fromzpush (syncdata); 
         if (tbSync.db.getAccountSetting(syncdata.account, "downloadonly") != "1") {
             yield eas.contactsync.tozpush (syncdata);
@@ -143,7 +144,7 @@ eas.contactsync = {
         let moreavilable;
         do {
             moreavilable = 0;
-            tbSync.setSyncState("requestingchanges", syncdata.account, syncdata.folderID);
+            tbSync.setSyncState("prepare.request.remotechanges", syncdata.account, syncdata.folderID);
             var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
 
             var wbxmlsend = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x1E, 0x13, 0x55, 0x03, 0x31, 0x30, 0x30, 0x00, 0x01, 0x57, 0x00, 0x11, 0x45, 0x46, 0x03, 0x31, 0x00, 0x01, 0x47, 0x03, 0x32, 0x30, 0x30, 0x30, 0x30, 0x30, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01);
@@ -154,11 +155,12 @@ eas.contactsync = {
             var wbxml = wbxmlsend.replace('SyncKeyReplace', syncdata.synckey);
             wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
 
+            tbSync.setSyncState("send.request.remotechanges", syncdata.account, syncdata.folderID);
             let returnedwbxml = yield eas.sendRequest(wbxml, "Sync", syncdata);
 
+            tbSync.setSyncState("eval.response.remotechanges", syncdata.account, syncdata.folderID);
             if (returnedwbxml.length === 0) return
 
-            tbSync.setSyncState("recievingchanges", syncdata.account, syncdata.folderID);
             wbxml = returnedwbxml;
             var firstcmd = wbxml.indexOf(String.fromCharCode(0x56));
 
@@ -434,7 +436,7 @@ eas.contactsync = {
 
     tozpush: Task.async (function* (syncdata)  {
         do {
-            tbSync.setSyncState("sendingchanges", syncdata.account, syncdata.folderID);
+            tbSync.setSyncState("prepare.request.localchanges", syncdata.account, syncdata.folderID);
 
             var wbxmlouter = String.fromCharCode(0x03, 0x01, 0x6A, 0x00, 0x45, 0x5C, 0x4F, 0x4B, 0x03, 0x53, 0x79, 0x6E, 0x63, 0x4B, 0x65, 0x79, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x52, 0x03, 0x49, 0x64, 0x32, 0x52, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x00, 0x01, 0x57, 0x5B, 0x03, 0x31, 0x00, 0x01, 0x62, 0x03, 0x30, 0x00, 0x01, 0x01, 0x56, 0x72, 0x65, 0x70, 0x6C, 0x61, 0x63, 0x65, 0x68, 0x65, 0x72, 0x65, 0x01, 0x01, 0x01, 0x01);
             if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
@@ -737,8 +739,12 @@ eas.contactsync = {
             wbxml = wbxml.replace('SyncKeyReplace', syncdata.synckey);
             wbxml = wbxml.replace('Id2Replace', syncdata.folderID);
             
+
+            tbSync.setSyncState("send.request.localchanges", syncdata.account, syncdata.folderID);
             wbxml = yield eas.sendRequest(wbxml, "Sync", syncdata); 
 
+
+            tbSync.setSyncState("eval.response.localchanges", syncdata.account, syncdata.folderID);
             var firstcmd = wbxml.indexOf(String.fromCharCode(0x01, 0x46));
 
             var truncwbxml = wbxml;
@@ -758,8 +764,6 @@ eas.contactsync = {
                 tbSync.dump("wbxml status", "server error? " + wbxmlstatus);
                 throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.abortWithError);
             }
-
-            tbSync.setSyncState("serverid", syncdata.account, syncdata.folderID);
 
             syncdata.synckey = wbxmltools.FindKey(wbxml);
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
@@ -831,7 +835,7 @@ eas.contactsync = {
 
     senddel: Task.async (function* (syncdata)  {
         do {
-            tbSync.setSyncState("sendingdeleted", syncdata.account, syncdata.folderID);
+            tbSync.setSyncState("prepare.request.localdeletes", syncdata.account, syncdata.folderID);
             let addressbook = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
             
             // cardstodelete will not contain more cards than max
@@ -854,8 +858,10 @@ eas.contactsync = {
             // Send will send a request to the server, a responce will trigger callback, which will call senddel again.
             syncdata.cardstodelete = cardstodelete;
             
+            tbSync.setSyncState("send.request.localdeletes", syncdata.account, syncdata.folderID);
             let responseWbxml = yield eas.sendRequest(wbxml, "Sync", syncdata);
 
+            tbSync.setSyncState("eval.request.localdeletes", syncdata.account, syncdata.folderID);
             let firstcmd = responseWbxml.indexOf(String.fromCharCode(0x01, 0x46));
 
             let truncwbxml = responseWbxml;
@@ -876,7 +882,6 @@ eas.contactsync = {
             syncdata.synckey = wbxmltools.FindKey(responseWbxml);
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
             for (let count in syncdata.cardstodelete) {
-                tbSync.setSyncState("cleaningdeleted", syncdata.account, syncdata.folderID);
                 tbSync.db.removeItemFromChangeLog(addressbook, syncdata.cardstodelete[count].id);
             }
 
