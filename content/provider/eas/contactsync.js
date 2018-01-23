@@ -140,8 +140,9 @@ eas.contactsync = {
 	
     fromzpush: Task.async (function* (syncdata)  {
         
-        var moreavilable = 0;
+        let moreavilable;
         do {
+            moreavilable = 0;
             tbSync.setSyncState("requestingchanges", syncdata.account, syncdata.folderID);
             var card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
 
