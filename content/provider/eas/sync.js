@@ -214,10 +214,23 @@ eas.sync = {
         if (item.recurrenceInfo) {
             let deleted = [];
             for (let recRule of item.recurrenceInfo.getRecurrenceItems({})) {
-                if (recRule.isNegative) {
-                    deleted.push(recRule);
+                if (recRule.date) {
+                    if (recRule.isNegative) {
+                        // EXDATE
+                        deleted.push(recRule);
+                    }
+                    else {
+                        // RDATE
+                        tbSync.dump("Ignoring rule", recRule.icalString);
+                    }
                     continue;
                 }
+                if (recRule.isNegative) {
+                    // EXRULE
+                    tbSync.dump("Ignoring rule", recRule.icalString);
+                    continue;
+                }
+                // RRULE
                 wbxml.otag("Recurrence");
                 let type = 0;
                 let monthDays = recRule.getComponent("BYMONTHDAY", {});
