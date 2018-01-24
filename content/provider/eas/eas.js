@@ -1049,10 +1049,12 @@ var eas = {
 
     //get EAS TZ data from calendar item
     getEasTimezoneData: function (item) {
+        let nowDate = new Date();
+        
         let tz = {};
         tz.startDateUTC = tbSync.getIsoUtcString(item.startDate);
         tz.endDateUTC = tbSync.getIsoUtcString(item.endDate);
-        tz.stampTimeUTC = tbSync.getIsoUtcString(item.stampTime);
+        tz.stampTimeUTC = (item.stampTime ? tbSync.getIsoUtcString(item.stampTime) : nowDate.toBasicISOString());
 
         //tbSync.quickdump("startDate", tz.startDateUTC);
         //tbSync.quickdump("endDate", tz.endDateUTC);
