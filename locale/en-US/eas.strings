@@ -43,10 +43,10 @@ syncstate.prepare.request.remotechanges=Requesting remote changes
 syncstate.send.request.remotechanges=Waiting for remote changes
 syncstate.eval.response.remotechanges=Received remote changes
 
-syncstate.prepare.request.localchanges=Gathering local changes
-syncstate.send.request.localchanges=Sending local changes
+syncstate.prepare.request.localchanges=Sending local changes
+syncstate.send.request.localchanges=Waiting for acknowledgement of local changes
 syncstate.eval.response.localchanges=Received acknowledgement of local changes
 
-syncstate.prepare.request.localdeletes=Gathering local deletes
-syncstate.send.request.localdeletes=Sending local deletes
+syncstate.prepare.request.localdeletes=Sending local deletes
+syncstate.send.request.localdeletes=Waiting for acknowledgement of local deletes
 syncstate.eval.response.localdeletes=Received acknowledgement of local deletes
