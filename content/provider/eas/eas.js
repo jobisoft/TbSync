@@ -71,6 +71,8 @@ var eas = {
         do {
             try {
                 accountReSyncs++;
+                syncdata.todo = 0;
+                syncdata.done = 0;
 
                 // set status to syncing (so settingswindow will display syncstates instead of status) and set initial syncstate
                 tbSync.db.setAccountSetting(syncdata.account, "status", "syncing");
@@ -160,7 +162,9 @@ var eas = {
         do {            
             //reset syncdata statecounts
             syncdata.statecounts = {};
-
+            syncdata.todo = 0;
+            syncdata.done = 0;
+                
             //any pending folders left?
             let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
             if (folders.length == 0) {
@@ -1130,7 +1134,7 @@ var eas = {
 
     sendRequest: function (wbxml, command, syncdata) {
         let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;                  
-        let msg = "Sending data <" + syncdata.state + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
+        let msg = "Sending data <" + syncdata.state.split("||")[0] + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
         if (syncdata.folderID !== "") msg += " (" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + ")";
         tbSync.eas.logxml(wbxml, msg);
 
@@ -1186,7 +1190,7 @@ var eas = {
                 switch(syncdata.req.status) {
 
                     case 200: //OK
-                        let msg = "Receiving data <" + syncdata.state + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
+                        let msg = "Receiving data <" + syncdata.state.split("||")[0] + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
                         if (syncdata.folderID !== "") msg += " (" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + ")";
                         tbSync.eas.logxml(response, msg);
 

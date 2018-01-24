@@ -426,6 +426,7 @@ eas.sync = {
     }),
     
     requestRemoteChanges: Task.async (function* (syncdata)  {
+        syncdata.done = 0;
         do {
             tbSync.setSyncState("prepare.request.remotechanges", syncdata.account, syncdata.folderID);
 
@@ -508,6 +509,7 @@ eas.sync = {
                         //we MUST make sure, that our local version is send to the server
                         db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_user");
                     }
+                    syncdata.done++;
                 }
 
                 //looking for changes
@@ -530,6 +532,7 @@ eas.sync = {
                         //resync to avoid out-of-sync problems, "add" can take care of local merges
                         throw eas.finishSync("ChangeElementNotFound", eas.flags.resyncFolder);
                     }
+                    syncdata.done++;
                 }
                 
                 //looking for deletes
@@ -547,6 +550,7 @@ eas.sync = {
                         //resync to avoid out-of-sync problems
                         throw eas.finishSync("DeleteElementNotFound", eas.flags.resyncFolder);
                     }
+                    syncdata.done++;
                 }
             
             }
@@ -564,6 +568,9 @@ eas.sync = {
         //promisify calender, so it can be used together with yield
         let pcal = cal.async.promisifyCalendar(syncdata.targetObj.wrappedJSObject);
         let maxnumbertosend = tbSync.prefSettings.getIntPref("maxnumbertosend");
+
+        syncdata.done = 0;
+        syncdata.todo = db.getItemsFromChangeLog(syncdata.targetObj.id, 0, "_by_user").length;
         
         //get changed items from ChangeLog
         do {
@@ -631,15 +638,16 @@ eas.sync = {
 
             //if there was not a single local change, exit
             if (c == 0) {
-                if (changes !=0 ) tbSync.dump("noMoreChanges, but unproceccessed changes left:", changes);
+                if (changes.length !=0 ) tbSync.dump("no more changes, but unproceccessed changes left:", changes);
                 return;
             }
-
-
 
             //SEND REQUEST & VALIDATE RESPONSE
             tbSync.setSyncState("send.request.localchanges", syncdata.account, syncdata.folderID);
             let response = yield eas.sendRequest(wbxml.getBytes(), "Sync", syncdata);
+
+            //Consider what we send as done
+            syncdata.done += c;
             
             tbSync.setSyncState("eval.response.localchanges", syncdata.account, syncdata.folderID);
 

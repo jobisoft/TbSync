@@ -23,7 +23,7 @@ status.mailformed-xml=Could not parse XML. Please help fixing this bug by (in th
 status.security=Could not establish a secure connection (##replace##).
 status.network=Could not connect to server (##replace##).
 
-status.syncing=Synchronizing ...
+status.syncing=Synchronizing
 status.skipped=Not yet supported, skipped
 status.aborted=Not synchronized
 status.pending=Waiting to be synchronized

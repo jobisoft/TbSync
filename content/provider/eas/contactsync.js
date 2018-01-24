@@ -142,6 +142,8 @@ eas.contactsync = {
     fromzpush: Task.async (function* (syncdata)  {
         
         let moreavilable;
+        syncdata.done = 0;
+        
         do {
             moreavilable = 0;
             tbSync.setSyncState("prepare.request.remotechanges", syncdata.account, syncdata.folderID);
@@ -297,6 +299,8 @@ eas.contactsync = {
                             card.setProperty("PhotoURI", filePath);
                             photo = '';
                         }
+                        syncdata.done++;
+
                         if (syncdata.folderResync) {
                             //during resync, we need to check, if the "new" card we are currenty receiving, is really new, or already exists
                             let tempsid;
@@ -435,6 +439,11 @@ eas.contactsync = {
     }),
 
     tozpush: Task.async (function* (syncdata)  {
+        let addressBook = tbSync.getAddressBookObject(tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
+
+        syncdata.done = 0;
+        syncdata.todo = -1; //tozpush is not using the changelog, not able to get todo fast (will be rewritten)
+        
         do {
             tbSync.setSyncState("prepare.request.localchanges", syncdata.account, syncdata.folderID);
 
@@ -444,7 +453,6 @@ eas.contactsync = {
             }
 
             var wbxml = '';
-            var addressBook = tbSync.getAddressBookObject(tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
 
             var x;
             var birthd;
@@ -743,6 +751,8 @@ eas.contactsync = {
             tbSync.setSyncState("send.request.localchanges", syncdata.account, syncdata.folderID);
             wbxml = yield eas.sendRequest(wbxml, "Sync", syncdata); 
 
+            syncdata.done+=numofcards;
+
 
             tbSync.setSyncState("eval.response.localchanges", syncdata.account, syncdata.folderID);
             var firstcmd = wbxml.indexOf(String.fromCharCode(0x01, 0x46));
@@ -775,8 +785,6 @@ eas.contactsync = {
             }
             
             var oDOM = oParser.parseFromString(xml, "text/xml");
-            var addressBook = tbSync.getAddressBookObject(tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
-
 
             var add = oDOM.getElementsByTagName("Add");
             if (add.length !== 0) {
@@ -834,9 +842,13 @@ eas.contactsync = {
     }),
 
     senddel: Task.async (function* (syncdata)  {
+        let addressbook = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
+
+        syncdata.done = 0;
+        syncdata.todo = tbSync.db.getItemsFromChangeLog(addressbook, 0, "deleted_by_user").length;
+        
         do {
             tbSync.setSyncState("prepare.request.localdeletes", syncdata.account, syncdata.folderID);
-            let addressbook = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
             
             // cardstodelete will not contain more cards than max
             let cardstodelete = tbSync.db.getItemsFromChangeLog(addressbook, tbSync.prefSettings.getIntPref("maxnumbertosend"), "deleted_by_user");
@@ -860,6 +872,8 @@ eas.contactsync = {
             
             tbSync.setSyncState("send.request.localdeletes", syncdata.account, syncdata.folderID);
             let responseWbxml = yield eas.sendRequest(wbxml, "Sync", syncdata);
+
+            syncdata.done+=cardstodelete.length;
 
             tbSync.setSyncState("eval.request.localdeletes", syncdata.account, syncdata.folderID);
             let firstcmd = responseWbxml.indexOf(String.fromCharCode(0x01, 0x46));

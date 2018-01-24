@@ -201,21 +201,13 @@ var tbSync = {
         if (account !== "") msg += ", Account: " + tbSync.db.getAccountSetting(account, "accountname");
         if (folderID !== "") msg += ", Folder: " + tbSync.db.getFolderSetting(account, folderID, "name");
 
-        //get syncdata obj
-        let extendenState = state;
-        if (account && ["prepare","send","eval"].indexOf(state.split(".")[0]) != -1) {
-            let syncdata = tbSync.getSyncData(account);
-            if (!syncdata.hasOwnProperty("statecounts")) syncdata.statecounts = {};
-            if (!syncdata.statecounts.hasOwnProperty(state)) syncdata.statecounts[state] = 0;
-            else syncdata.statecounts[state] = syncdata.statecounts[state] +1;
-
-            //append details about wait state
-            extendenState = state + "||" + (syncdata.statecounts[state]>0 ? "#" + syncdata.statecounts[state] : "") + "||" + Date.now();
-            msg = msg + " #" + syncdata.statecounts[state];
+        if (account && state.split(".")[0] == "send") {
+            //add timestamp to be able to display timeout countdown
+            state = state + "||" + Date.now();
         }
 
+        tbSync.setSyncData(account, "state", state);
         tbSync.dump("setSyncState", msg);
-        tbSync.setSyncData(account, "state", extendenState);
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.notifyObservers(null, "tbsync.changedSyncstate", account);

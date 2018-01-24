@@ -211,15 +211,11 @@ var tbSyncAccountSettings = {
             
             let parts = syncdata.state.split("||");
             let syncstate = parts[0];
-            let syncinfo = (parts.length>1 ? parts[1] : "");
-            let synctime = (parts.length>2 ? parts[2] : Date.now());
+            let synctime = (parts.length>1 ? parts[1] : Date.now());
 
+	    let diff = Date.now() - synctime;
             let msg = tbSync.getLocalizedMessage("syncstate." + syncstate, "eas");
-
-            let info = [];
-            if (syncinfo) info.push(syncinfo);
-            if ((Date.now() - synctime) > 2000) info.push(Math.round((Date.now() - synctime)/1000) + "s")
-            if (info.length>0) msg = msg + " ("+info.join(", ") +")";
+            if (diff > 2000) msg = msg + " (" + Math.round((tbSync.prefSettings.getIntPref("eas.timeout") - diff)/1000) + "s)";
 
             document.getElementById('syncstate').textContent = msg + target;
         
@@ -390,7 +386,14 @@ var tbSyncAccountSettings = {
                             if (type == "9" || type == "14") status = tbSync.getLocalizedMessage("status." + status) + ": "+ tbSync.getAddressBookName(folders[folderIDs[i]].target);
                             break;
                         case "pending":
-                            if (folderIDs[i] == tbSync.getSyncData(tbSyncAccountSettings.selectedAccount,"folderID")) status = "syncing"; 
+                            let syncdata = tbSync.getSyncData(tbSyncAccountSettings.selectedAccount);
+                            status = tbSync.getLocalizedMessage("status." + status);
+                            if (folderIDs[i] == syncdata.folderID) {
+                                status = tbSync.getLocalizedMessage("status.syncing");
+                                if (syncdata.state.split(".")[0] == "send" && syncdata.done > 0 && !(syncdata.todo == 0)) status = status + " (" + syncdata.done + (syncdata.todo>0 ? "/" + syncdata.todo : "") + ")"; 
+                            }
+                            status = status + " ...";
+                            break;
                         default:
                             status = tbSync.getLocalizedMessage("status." + status);
                     }
