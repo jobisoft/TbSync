@@ -213,7 +213,7 @@ var tbSyncAccountSettings = {
             let syncstate = parts[0];
             let synctime = (parts.length>1 ? parts[1] : Date.now());
 
-	    let diff = Date.now() - synctime;
+            let diff = Date.now() - synctime;
             let msg = tbSync.getLocalizedMessage("syncstate." + syncstate, "eas");
             if (diff > 2000) msg = msg + " (" + Math.round((tbSync.prefSettings.getIntPref("eas.timeout") - diff)/1000) + "s)";
 
@@ -235,7 +235,6 @@ var tbSyncAccountSettings = {
         document.getElementById('tbsync.accountsettings.syncbtn').hidden = (state == "disconnected");
         
         if (status == "syncing") document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.syncing");
-        //else if (tbSync.isSyncing(tbSyncAccountSettings.selectedAccount)) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.waiting");
         else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.syncthis");
     
     },
@@ -373,7 +372,7 @@ var tbSyncAccountSettings = {
                 let status = (selected) ? folders[folderIDs[i]].status : "";
                 let name = folders[folderIDs[i]].name ;
                 if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folders[folderIDs[i]].parentID)) name = tbSync.getLocalizedMessage("recyclebin","eas")+" | "+name;
-		    
+
                 //if status OK, print target
                 if (selected) {
                     switch (status) {
@@ -532,9 +531,9 @@ var tbSyncAccountSettings = {
                         tbSyncAccountSettings.updateFolderList();
                     
                 }
+                tbSyncAccountSettings.updateSyncstate();
+                if (msg !== null) alert(msg);
             }
-            tbSyncAccountSettings.updateSyncstate();
-            if (msg !== null) alert(msg);
         }
     }
 
