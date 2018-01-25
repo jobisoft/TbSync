@@ -9,7 +9,7 @@ A quick start guide on how to use this Add-On can be found in the [wiki](https:/
 
 You can use the [issue section](https://github.com/jobisoft/TbSync/issues?q=is%3Aissue) for support or feature requests, but please take the extra minute to check, if your question has been asked and answered already.
 
-As this is still work in progress, take a look at the [detailed roadmap](https://github.com/jobisoft/TbSync/issues/2#issue-203268766), to see if a feature is scheduled to be implemented. If so, it is obviously not yet implemented. Asking me how long it will take, will not get it done any faster. A [donation](https://www.paypal.me/johnbieling) might help :-)
+As this is still work in progress, take a look at the [detailed roadmap](https://github.com/jobisoft/TbSync/wiki/Detailed-changelog-&-roadmap), to see if a feature is scheduled to be implemented. If so, it is obviously not yet implemented. Asking me how long it will take, will not get it done any faster. A [donation](https://www.paypal.me/johnbieling) might help :-)
 
 ## Icon sources
 
