@@ -213,6 +213,8 @@ eas.sync = {
 
         if (item.recurrenceInfo) {
             let deleted = [];
+            let hasRecurrence = false;
+            
             for (let recRule of item.recurrenceInfo.getRecurrenceItems({})) {
                 if (recRule.date) {
                     if (recRule.isNegative) {
@@ -221,17 +223,19 @@ eas.sync = {
                     }
                     else {
                         // RDATE
-                        tbSync.dump("Ignoring rule", recRule.icalString);
+                        tbSync.dump("Ignoring RDATE rule", recRule.icalString);
                     }
                     continue;
                 }
                 if (recRule.isNegative) {
                     // EXRULE
-                    tbSync.dump("Ignoring rule", recRule.icalString);
+                    tbSync.dump("Ignoring EXRULE rule", recRule.icalString);
                     continue;
                 }
                 // RRULE
                 wbxml.otag("Recurrence");
+                hasRecurrence = true;
+
                 let type = 0;
                 let monthDays = recRule.getComponent("BYMONTHDAY", {});
                 let weekDays  = recRule.getComponent("BYDAY", {});
@@ -327,7 +331,7 @@ eas.sync = {
                 wbxml.ctag();
             }
             
-            if (syncdata.type == "Calendar") { //Exceptions only allowed in Calendar
+            if (syncdata.type == "Calendar" && hasRecurrence) { //Exceptions only allowed in Calendar and only if a valid Recurrence was added
                 let modifiedIds = item.recurrenceInfo.getExceptionIds({});
                 if (deleted.length || modifiedIds.length) {
                     wbxml.otag("Exceptions");
