@@ -3,7 +3,7 @@
 
 ## How to get started
 
-A quick start guide on how to use this Add-On can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki/How-to-get-started) of this repository. The latest release and the latest stable beta can be found at the [release page](https://github.com/jobisoft/TbSync/releases) (beta version usually have a higher version number than the official release and have a date appended to their filename).
+A quick start guide on how to use this Add-On can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki/How-to-get-started) of this repository. The latest release and the latest stable beta can be found at the [release page](https://github.com/jobisoft/TbSync/releases) (including beta versions).
 
 ## Got a question? Maybe it has been answered already!
 
