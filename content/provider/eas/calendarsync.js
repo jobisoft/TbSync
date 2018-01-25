@@ -189,14 +189,19 @@ eas.sync.Calendar = {
         // REQUIRED FIELDS
         if (!isException) {
             let easTZ = new eas.TimeZoneDataStructure();
-            easTZ.utcOffset = item.startDate.timezoneOffset/-60;
+
+            //if there is no end and no start to extract offset from, use 0
+            let offset = 0;
+            if (item.startDate) offset = item.startDate.timezoneOffset/-60;
+            else if (item.endDate) offset = item.endDate.timezoneOffset/-60;
+
+            easTZ.utcOffset = offset;
             easTZ.standardBias = 0;
             easTZ.daylightBias = 0;
 
             //use local tzid based on offset, ignore stored tzid
-            tbSync.dump("TZ", eas.offsets[easTZ.utcOffset] + " :: " + item.startDate.timezone.tzid);
-            easTZ.standardName = eas.offsets[easTZ.utcOffset]; //item.startDate.timezone.tzid;
-            easTZ.daylightName = eas.offsets[easTZ.utcOffset]; //item.startDate.timezone.tzid;
+            easTZ.standardName = eas.offsets[easTZ.utcOffset]; //item.refDate.timezone.tzid;
+            easTZ.daylightName = eas.offsets[easTZ.utcOffset]; //item.refDate.timezone.tzid;
             //easTZ.standardDate - TODO
             //easTZ.daylightDate
                     
@@ -204,8 +209,8 @@ eas.sync.Calendar = {
         }
 
         //StartTime & EndTime in UTC
-        wbxml.atag("StartTime", tbSync.getIsoUtcString(item.startDate));
-        wbxml.atag("EndTime", tbSync.getIsoUtcString(item.endDate));
+        wbxml.atag("StartTime", item.startDate ? tbSync.getIsoUtcString(item.startDate) : nowDate.toBasicISOString());
+        wbxml.atag("EndTime", item.endDate ? tbSync.getIsoUtcString(item.endDate) : nowDate.toBasicISOString());
 
         //DtStamp
         wbxml.atag("DtStamp", item.stampTime ? tbSync.getIsoUtcString(item.stampTime) : nowDate.toBasicISOString());
@@ -275,7 +280,7 @@ eas.sync.Calendar = {
         wbxml.atag("Sensitivity", eas.sync.mapThunderbirdPropertyToEas("CLASS", "Sensitivity", item));
         
         //for simplicity, we always send a value for AllDayEvent
-        wbxml.atag("AllDayEvent", (item.startDate.isDate && item.endDate.isDate) ? "1" : "0");
+        wbxml.atag("AllDayEvent", (item.startDate && item.startDate.isDate && item.endDate && item.endDate.isDate) ? "1" : "0");
  
         //EAS Reminder (TB getAlarms) - at least with zpush blanking by omitting works, horde does not work
         let alarms = item.getAlarms({});
