@@ -20,7 +20,7 @@ eas.sync.Calendar = {
         let utcOffset =eas.defaultUtcOffset;
         if (data.TimeZone) {
             //load timezone struct into EAS TimeZone object
-            easTZ.base64 = data.TimeZone;
+            easTZ.easTimeZone64 = data.TimeZone;
             utcOffset = easTZ.utcOffset;
             tbSync.dump("Recieve TZ","Extracted UTC Offset: " + utcOffset + ", Guessed TimeZone: " + eas.offsets[utcOffset] + ", Full Received TZ: " + easTZ.toString());
         }
@@ -171,7 +171,8 @@ eas.sync.Calendar = {
     getWbxmlFromThunderbirdItem: function (item, syncdata, isException = false) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
         let wbxml = tbSync.wbxmltools.createWBXML("", syncdata.type); //init wbxml with "" and not with precodes, and set initial codepage
-        
+        let nowDate = new Date();
+
         /*
          *  We do not use ghosting, that means, if we do not include a value in CHANGE, it is removed from the server. 
          *  However, this does not seem to work on all fields. Furthermore, we need to include any (empty) container to blank its childs.
@@ -186,17 +187,28 @@ eas.sync.Calendar = {
         //Only allowed in exceptions in v2.5
 
         // REQUIRED FIELDS
-        let tz = eas.getEasTimezoneData(item);
         if (!isException) {
-            wbxml.atag("TimeZone", tz.timezone);
+            let easTZ = new eas.TimeZoneDataStructure();
+            easTZ.utcOffset = item.startDate.timezoneOffset/-60;
+            easTZ.standardBias = 0;
+            easTZ.daylightBias = 0;
+
+            //use local tzid based on offset, ignore stored tzid
+            tbSync.dump("TZ", eas.offsets[easTZ.utcOffset] + " :: " + item.startDate.timezone.tzid);
+            easTZ.standardName = eas.offsets[easTZ.utcOffset]; //item.startDate.timezone.tzid;
+            easTZ.daylightName = eas.offsets[easTZ.utcOffset]; //item.startDate.timezone.tzid;
+            //easTZ.standardDate - TODO
+            //easTZ.daylightDate
+                    
+            wbxml.atag("TimeZone", easTZ.easTimeZone64);
         }
 
         //StartTime & EndTime in UTC
-        wbxml.atag("StartTime", tz.startDateUTC);
-        wbxml.atag("EndTime", tz.endDateUTC);
+        wbxml.atag("StartTime", tbSync.getIsoUtcString(item.startDate));
+        wbxml.atag("EndTime", tbSync.getIsoUtcString(item.endDate));
 
         //DtStamp
-        wbxml.atag("DtStamp", tz.stampTimeUTC);
+        wbxml.atag("DtStamp", item.stampTime ? tbSync.getIsoUtcString(item.stampTime) : nowDate.toBasicISOString());
         
         //obmitting these, should remove them from the server - that does not work reliably, so we send blanks
         wbxml.atag("Subject", (item.title) ? tbSync.encode_utf8(item.title) : "");

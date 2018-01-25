@@ -959,7 +959,7 @@ var eas = {
         @168    daylightBias (4x8bit as 1xLONG)
         */
         
-        set base64 (b64) {
+        set easTimeZone64 (b64) {
             //clear buffer
             for (let i=0; i<172; i++) this.buf.setUint8(i, 0);
             //load content into buffer
@@ -967,7 +967,7 @@ var eas = {
             for (let i=0; i<content.length; i++) this.buf.setUint8(i, content.charCodeAt(i));
         }
         
-        get base64 () {
+        get easTimeZone64 () {
             let content = "";
             for (let i=0; i<172; i++) content += String.fromCharCode(this.buf.getUint8(i));
             return (btoa(content));
@@ -1047,85 +1047,6 @@ var eas = {
         toString () { return "[" + [this.standardName, this.daylightName, this.utcOffset, this.standardBias, this.daylightBias].join("|") + "]"; }
     },
 
-    //get EAS TZ data from calendar item
-    getEasTimezoneData: function (item) {
-        let nowDate = new Date();
-        
-        let tz = {};
-        tz.startDateUTC = tbSync.getIsoUtcString(item.startDate);
-        tz.endDateUTC = tbSync.getIsoUtcString(item.endDate);
-        tz.stampTimeUTC = (item.stampTime ? tbSync.getIsoUtcString(item.stampTime) : nowDate.toBasicISOString());
-
-        //tbSync.quickdump("startDate", tz.startDateUTC);
-        //tbSync.quickdump("endDate", tz.endDateUTC);
-        //tbSync.quickdump("stampTime", tz.stampTimeUTC);
-            
-/*
-            item.timezoneOffset();
-            let date_utc = date;
-            equal(date_utc.hour, 15);
-            equal(date_utc.icalString, "20051113T150000Z");
-
-            let utc = cal.createDateTime();
-            equal(utc.timezone.tzid, "UTC");
-            equal(utc.clone().timezone.tzid, "UTC");
-            equal(utc.timezoneOffset, 0); 
-
-            tbSync.dump("Timezone", item.startDate.timezone);
-            tbSync.dump("Timezone", item.startDate.timezoneOffset);
-
-            let newDate = item.startDate.getInTimezone(cal.calendarDefaultTimezone());
-            tbSync.dump("Timezone", newDate.timezone);
-            tbSync.dump("Timezone", newDate.timezoneOffset);
-
-            item.timezoneOffset();
-            let date_utc = date.getInTimezone(cal.UTC());
-            equal(date_utc.hour, 15);
-            equal(date_utc.icalString, "20051113T150000Z");
-
-            let utc = cal.createDateTime();
-            equal(utc.timezone.tzid, "UTC");
-            equal(utc.clone().timezone.tzid, "UTC");
-            equal(utc.timezoneOffset, 0);
-
-            equal(cal.createDateTime("20120101T120000").compare(cal.createDateTime("20120101")), 0);
-
-            Is that really needed? For UTC all is zero, but server still does not accept...
-
-            BEGIN:VTIMEZONE
-            TZID:Europe/Berlin
-            BEGIN:DAYLIGHT
-            TZOFFSETFROM:+0100
-            TZOFFSETTO:+0200
-            TZNAME:CEST
-            DTSTART:19700329T020000
-            RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3
-            END:DAYLIGHT
-            BEGIN:STANDARD
-            TZOFFSETFROM:+0200
-            TZOFFSETTO:+0100
-            TZNAME:CET
-            DTSTART:19701025T030000
-            RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10
-            END:STANDARD
-            END:VTIMEZONE
-*/
-
-        let easTZ = new eas.TimeZoneDataStructure();
-        easTZ.utcOffset = item.startDate.timezoneOffset/-60;
-        easTZ.standardBias = 0;
-        easTZ.daylightBias = 0;
-        easTZ.standardName = item.startDate.timezone.tzid;
-        easTZ.daylightName = item.startDate.timezone.tzid;
-        //easTZ.standardDate - TODO
-        //easTZ.daylightDate
-        
-        //tbSync.quickdump("Send EASTZ", easTZ.toString());
-
-        //TimeZone
-        tz.timezone = easTZ.base64;
-        return tz;
-    },
 
 
 

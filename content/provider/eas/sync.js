@@ -438,7 +438,6 @@ eas.sync = {
         if (status && status == "1") { //do not throw on error, with EAS v2.5 I get error 2 for tasks and calendars ???
             syncdata.todo = estimate;
         }
-        tbSync.dump(syncdata.folderID, syncdata.todo);
 
     }),
     
