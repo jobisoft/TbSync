@@ -593,6 +593,9 @@ eas.sync = {
             tbSync.setSyncState("prepare.request.localchanges", syncdata.account, syncdata.folderID);
             let changes = db.getItemsFromChangeLog(syncdata.targetObj.id, maxnumbertosend, "_by_user");
             let c=0;
+
+            //keep track of send items during this request
+            let changedItems = [];
             
             // BUILD WBXML
             let wbxml = tbSync.wbxmltools.createWBXML();
@@ -619,7 +622,6 @@ eas.sync = {
                                                 wbxml.switchpage("AirSync");
                                             wbxml.ctag();
                                         wbxml.ctag();
-                                        db.removeItemFromChangeLog(syncdata.targetObj.id, changes[i].id);
                                         c++;
                                         break;
                                     
@@ -633,7 +635,7 @@ eas.sync = {
                                                 wbxml.switchpage("AirSync");
                                             wbxml.ctag();
                                         wbxml.ctag();
-                                        db.removeItemFromChangeLog(syncdata.targetObj.id, changes[i].id);
+                                        changedItems.push(changes[i].id);
                                         c++;
                                         break;
                                     
@@ -641,7 +643,7 @@ eas.sync = {
                                         wbxml.otag("Delete");
                                             wbxml.atag("ServerId", changes[i].id);
                                         wbxml.ctag();
-                                        db.removeItemFromChangeLog(syncdata.targetObj.id, changes[i].id);
+                                        changedItems.push(changes[i].id);
                                         c++;
                                         break;
                                 }
@@ -661,9 +663,6 @@ eas.sync = {
             //SEND REQUEST & VALIDATE RESPONSE
             tbSync.setSyncState("send.request.localchanges", syncdata.account, syncdata.folderID);
             let response = yield eas.sendRequest(wbxml.getBytes(), "Sync", syncdata);
-
-            //Consider what we send as done
-            syncdata.done += c;
             
             tbSync.setSyncState("eval.response.localchanges", syncdata.account, syncdata.folderID);
 
@@ -676,7 +675,11 @@ eas.sync = {
             //update synckey
             eas.updateSynckey(syncdata, wbxmlData);
 
-
+            //remove all changed and acked items from changelog
+            for (let a=0; a < changedItems.length; a++) {
+                    db.removeItemFromChangeLog(syncdata.targetObj.id, changedItems[a]);
+                    syncdata.done++;
+            }
 
             //PROCESS RESPONSE        
             //any responses for us to work on?  If we reach this point, Sync.Collections.Collection is valid, 
@@ -696,8 +699,10 @@ eas.sync = {
                     if (foundItems.length > 0) {
                         let newItem = foundItems[0].clone();
                         newItem.id = add[count].ServerId;
+                        db.removeItemFromChangeLog(syncdata.targetObj.id, add[count].ClientId);
                         db.addItemToChangeLog(syncdata.targetObj.id, newItem.id, "modified_by_server");
                         yield pcal.modifyItem(newItem, foundItems[0]);
+                        syncdata.done++;
                     }
                 }
 
