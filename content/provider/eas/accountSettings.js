@@ -389,7 +389,7 @@ var tbSyncAccountSettings = {
                             status = tbSync.getLocalizedMessage("status." + status);
                             if (folderIDs[i] == syncdata.folderID) {
                                 status = tbSync.getLocalizedMessage("status.syncing");
-                                if (syncdata.state.split(".")[0] == "send" && syncdata.done > 0 && !(syncdata.todo == 0)) status = status + " (" + syncdata.done + (syncdata.todo>0 ? "/" + syncdata.todo : "") + ")"; 
+                                if (["send","eval","prepare"].includes(syncdata.state.split(".")[0]) && (syncdata.todo + syncdata.done) > 0) status = status + " (" + syncdata.done + (syncdata.todo>0 ? "/" + syncdata.todo : "") + ")"; 
                             }
                             status = status + " ...";
                             break;
