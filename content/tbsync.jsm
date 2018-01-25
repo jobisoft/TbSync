@@ -779,8 +779,16 @@ var tbSync = {
                 if (itemStatus == "added_by_server") {
                     tbSync.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);
                 } else {
-                    tbSync.setTargetModified(folders[0]);
-                    tbSync.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "added_by_user");
+            
+                    let startDate = aItem.startDate ? new Date(tbSync.getIsoUtcString(aItem.startDate, true)) : new Date();
+                    let limitDate = new Date();
+                    limitDate.setSeconds(limitDate.getSeconds() - 86400*tbSync.prefSettings.getIntPref("eas.syncdaylimit"));
+
+                    if (startDate > limitDate) {            
+                        tbSync.setTargetModified(folders[0]);
+                        tbSync.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "added_by_user");
+                    }
+
                 }
             }
         },
