@@ -279,7 +279,11 @@ eas.sync.Calendar = {
  
         //EAS Reminder (TB getAlarms) - at least with zpush blanking by omitting works, horde does not work
         let alarms = item.getAlarms({});
-        if (alarms.length>0) wbxml.atag("Reminder", (0 - alarms[0].offset.inSeconds/60).toString());
+        if (alarms.length>0) {
+            let reminder = 0 - alarms[0].offset.inSeconds/60;
+            if (reminder>=0) wbxml.atag("Reminder", reminder.toString());
+        }
+        
         //https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIAlarm.idl
         //tbSync.dump("ALARM ("+i+")", [, alarms[i].related, alarms[i].repeat, alarms[i].repeatOffset, alarms[i].repeatDate, alarms[i].action].join("|"));
 
