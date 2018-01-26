@@ -3,8 +3,8 @@ pref("extensions.tbsync.log.tofile",false);
 pref("extensions.tbsync.log.easdata",true);
 
 pref("extensions.tbsync.eas.timeout", 90000);
-pref("extensions.tbsync.eas.synclimit", 0);
-pref("extensions.tbsync.eas.maxitems", 1);
+pref("extensions.tbsync.eas.synclimit", 7);
+pref("extensions.tbsync.eas.maxitems", 100);
 
 pref("extensions.tbsync.hidephones",false);
 pref("extensions.tbsync.showanniversary",false);
