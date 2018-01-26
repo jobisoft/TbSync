@@ -409,13 +409,14 @@ eas.sync = {
                     wbxml.atag("SyncKey", syncdata.synckey);
                     wbxml.switchpage("GetItemEstimate");
                     wbxml.atag("CollectionId", syncdata.folderID);
-//                    wbxml.switchpage("AirSync");
-//                    wbxml.otag("Options");
-//                        wbxml.atag("FilterType", "0");
-//                        wbxml.atag("Class", syncdata.type);
-//                    wbxml.ctag();
-//                    wbxml.switchpage("GetItemEstimate");
-                wbxml.ctag();
+                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
+                        wbxml.switchpage("AirSync");
+                        wbxml.otag("Options");
+                            wbxml.atag("FilterType", "0"); //1, 4,5,6,7
+                        wbxml.ctag();
+                        wbxml.switchpage("GetItemEstimate");
+                    }
+                    wbxml.ctag();
             wbxml.ctag();
         wbxml.ctag();
 
@@ -460,6 +461,7 @@ eas.sync = {
 
                         if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
                             wbxml.otag("Options");
+                                if (syncdata.type == "Calendar") wbxml.atag("FilterType", "0"); //1, 4,5,6,7
                                 wbxml.switchpage("AirSyncBase");
                                 wbxml.otag("BodyPreference");
                                     wbxml.atag("Type", "1");
@@ -502,6 +504,7 @@ eas.sync = {
                 //looking for additions
                 let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Add);
                 for (let count = 0; count < add.length; count++) {
+                    yield tbSync.sleep(2);
 
                     let ServerId = add[count].ServerId;
                     let data = add[count].ApplicationData;
@@ -533,6 +536,7 @@ eas.sync = {
                 //inject custom change object for debug
                 //upd = JSON.parse('[{"ServerId":"2tjoanTeS0CJ3QTsq5vdNQAAAAABDdrY6Gp03ktAid0E7Kub3TUAAAoZy4A1","ApplicationData":{"DtStamp":"20171109T142149Z"}}]');
                 for (let count = 0; count < upd.length; count++) {
+                    yield tbSync.sleep(2);
 
                     let ServerId = upd[count].ServerId;
                     let data = upd[count].ApplicationData;
@@ -552,8 +556,9 @@ eas.sync = {
                 }
                 
                 //looking for deletes
-                let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Delete);
+                let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Delete).concat(xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.SoftDelete));
                 for (let count = 0; count < del.length; count++) {
+                    yield tbSync.sleep(2);
 
                     let ServerId = del[count].ServerId;
 
@@ -674,6 +679,7 @@ eas.sync = {
             
             //update synckey
             eas.updateSynckey(syncdata, wbxmlData);
+            yield tbSync.sleep(10);
 
             //remove all changed and acked items from changelog
             for (let a=0; a < changedItems.length; a++) {
@@ -689,6 +695,7 @@ eas.sync = {
                 //looking for additions (Add node contains, status, old ClientId and new ServerId)
                 let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Add);
                 for (let count = 0; count < add.length; count++) {
+                    yield tbSync.sleep(2);
                     
                     //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
                     eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status");
