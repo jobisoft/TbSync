@@ -3,9 +3,6 @@
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncMessenger = {
-
-    syncSteps: 0,
-    statusLastUpdated: 0,
     
     onload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
@@ -85,23 +82,13 @@ var tbSyncMessenger = {
                 }
 
                 if (idle) {
-                    if (err) label +=tbSync.getLocalizedMessage("status.error");   
-                    else label += tbSync.getLocalizedMessage("status.idle");   
-                    status.label = label;      
-                    tbSyncMessenger.syncSteps = 0;                    
-                } else if ((Date.now() - tbSyncMessenger.statusLastUpdated) > 400) {
-                    //only update if status was unchanged for 1s (otherwise progressbar "jumps")
-                    
-                    let syncLabelLength = 8;
-                    if (tbSyncMessenger.syncSteps > syncLabelLength) tbSyncMessenger.syncSteps = 0;                    
-                    for (let i = 0; !(i > syncLabelLength); i++) {
-                        if (i == tbSyncMessenger.syncSteps) label +=  ":";
-                        else label +=  ".";
-                    }                    
-                    tbSyncMessenger.syncSteps++;
-                    tbSyncMessenger.statusLastUpdated = Date.now();
-                    status.label = label;
+                    if (err) label +=tbSync.getLocalizedMessage("info.error");   
+                    else label += tbSync.getLocalizedMessage("info.idle");   
+                } else {
+                    label += tbSync.getLocalizedMessage("info.sync");
                 }
+                status.label = label;      
+                
             }
         }
     },

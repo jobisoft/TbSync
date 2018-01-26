@@ -1,8 +1,9 @@
 state.disconnected=Connect account
 state.connected=Disconnect
 
-status.idle=Idle
-status.error=Error
+info.idle=Idle
+info.error=Error
+info.sync=Syncing
 
 status.notsyncronized=Account needs to be syncronized, at least one item is out of sync.
 status.notconnected=Account is not connected, synchronisation is disabled.
