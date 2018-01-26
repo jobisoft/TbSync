@@ -405,14 +405,14 @@ eas.sync = {
                 wbxml.otag("Collection");
                     if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type); //only 2.5
                     wbxml.switchpage("AirSync");
-                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit")); //only 2.5
+                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit").toString()); //only 2.5
                     wbxml.atag("SyncKey", syncdata.synckey);
                     wbxml.switchpage("GetItemEstimate");
                     wbxml.atag("CollectionId", syncdata.folderID);
                     if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
                         wbxml.switchpage("AirSync");
                         wbxml.otag("Options");
-                            wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit")); //0, 4,5,6,7
+                            wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit").toString()); //0, 4,5,6,7
                         wbxml.ctag();
                         wbxml.switchpage("GetItemEstimate");
                     }
@@ -461,7 +461,7 @@ eas.sync = {
 
                         if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
                             wbxml.otag("Options");
-                                if (syncdata.type == "Calendar") wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit")); //0, 4,5,6,7
+                                if (syncdata.type == "Calendar") wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit").toString()); //0, 4,5,6,7
                                 wbxml.switchpage("AirSyncBase");
                                 wbxml.otag("BodyPreference");
                                     wbxml.atag("Type", "1");
@@ -614,7 +614,7 @@ eas.sync = {
                         wbxml.atag("CollectionId", syncdata.folderID);
                         if (syncdata.type == "Calendar") {
                             wbxml.otag("Options");
-                                wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit")); //0, 4,5,6,7
+                                wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit").toString()); //0, 4,5,6,7
                             wbxml.ctag();
                         }
                         wbxml.otag("Commands");
