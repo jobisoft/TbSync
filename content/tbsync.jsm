@@ -779,9 +779,7 @@ var tbSync = {
                     tbSync.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);
                 } else {
                     //if it is too old, do not add it to the changelog, so it will not be synced
-                    //this is just to reduce workload, the actual sync rejection is done via the FilterType setting by the server
-                    let provider = tbSync.db.getAccountSetting(folders[0].account, "provider")
-                    if (!tbSync[provider].eventIsToOld(aItem)) {
+                    if (!tbSync[folders[0].provider].eventIsToOld(aItem)) {
                         tbSync.setTargetModified(folders[0]);
                         tbSync.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "added_by_user");
                     }
@@ -796,11 +794,11 @@ var tbSync = {
             if (aNewItem && aNewItem.calendar && aOldItem && aOldItem.calendar) {
                 if (aNewItem.calendar.id == aOldItem.calendar.id) {
 
-                    let itemStatus = tbSync.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
                     //check, if it is an event in one of the synced calendars
-
                     let newFolders = tbSync.db.findFoldersWithSetting("target", aNewItem.calendar.id);
                     if (newFolders.length > 0) {
+                        //check if t was added by the server
+                        let itemStatus = tbSync.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
 /*
                         if (aOldItem !== null) {
 
@@ -841,7 +839,7 @@ var tbSync = {
 */                        
                         if (itemStatus == "modified_by_server") {
                             tbSync.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);
-                        } else if (itemStatus != "added_by_user") { //if it is a local unprocessed add, do not set it to modified
+                        } else if (itemStatus != "added_by_user"  && !tbSync[newFolders[0].provider].eventIsToOld(aNewItem)) { //if it is a local unprocessed add or too old, do not add it to changelog
                             //update status of target and account
                             tbSync.setTargetModified(newFolders[0]);
                             tbSync.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "modified_by_user");
@@ -857,11 +855,10 @@ var tbSync = {
         onDeleteItem : function (aDeletedItem) {
             //tbSync.dump("Info cal.onDeleteItem", aDeletedItem.id);                
             if (aDeletedItem && aDeletedItem.calendar) {
-                let itemStatus = tbSync.db.getItemStatusFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id)
-
                 //if an event in one of the synced calendars is modified, update status of target and account
                 let folders = tbSync.db.findFoldersWithSetting("target", aDeletedItem.calendar.id);
                 if (folders.length > 0) {
+                    let itemStatus = tbSync.db.getItemStatusFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id)
                     if (itemStatus == "deleted_by_server" || itemStatus == "added_by_user") {
                         //if it is a delete pushed from the server, simply acknowledge (do nothing) 
                         //a local add, which has not yet been processed (synced) is deleted -> remove all traces

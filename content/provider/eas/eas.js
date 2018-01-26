@@ -1050,6 +1050,9 @@ var eas = {
 
     //check if the given item is to old to by synced
     eventIsToOld: function (aItem) {
+        //I am not sure, if this is needed at all - we get out of sync if we ignore local items
+        return false;
+        
         //we do not limit recurring events or tasks
         if (aItem.recurrenceInfo || aItem.dueDate) return false;
 
