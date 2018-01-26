@@ -457,7 +457,7 @@ eas.sync = {
                         wbxml.atag("CollectionId", syncdata.folderID);
                         wbxml.atag("DeletesAsMoves", "1");
                         wbxml.atag("GetChanges", "1");
-                        wbxml.atag("WindowSize",  tbSync.prefSettings.getIntPref("eas.maxitems"));
+                        wbxml.atag("WindowSize",  tbSync.prefSettings.getIntPref("eas.maxitems").toString());
 
                         if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
                             wbxml.otag("Options");
