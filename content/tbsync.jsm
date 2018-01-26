@@ -118,7 +118,6 @@ var tbSync = {
         return new Promise(function(resolve, reject) {
             let event = {
                 notify: function(timer) {
-                    tbSync.dump("Done with sleeping", delay);
                     resolve();
                 }
             }            
