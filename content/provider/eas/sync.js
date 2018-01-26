@@ -405,14 +405,14 @@ eas.sync = {
                 wbxml.otag("Collection");
                     if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type); //only 2.5
                     wbxml.switchpage("AirSync");
-                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("FilterType", "0"); //only 2.5
+                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit")); //only 2.5
                     wbxml.atag("SyncKey", syncdata.synckey);
                     wbxml.switchpage("GetItemEstimate");
                     wbxml.atag("CollectionId", syncdata.folderID);
                     if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
                         wbxml.switchpage("AirSync");
                         wbxml.otag("Options");
-                            wbxml.atag("FilterType", "0"); //1, 4,5,6,7
+                            wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit")); //0, 4,5,6,7
                         wbxml.ctag();
                         wbxml.switchpage("GetItemEstimate");
                     }
@@ -461,7 +461,7 @@ eas.sync = {
 
                         if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
                             wbxml.otag("Options");
-                                if (syncdata.type == "Calendar") wbxml.atag("FilterType", "0"); //1, 4,5,6,7
+                                if (syncdata.type == "Calendar") wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit")); //0, 4,5,6,7
                                 wbxml.switchpage("AirSyncBase");
                                 wbxml.otag("BodyPreference");
                                     wbxml.atag("Type", "1");
@@ -524,9 +524,11 @@ eas.sync = {
                         }
                     } else {
                         //item exists, asuming resync
-                        tbSync.dump("Add request, but element exists already, asuming resync, local version wins.", ServerId);
                         //we MUST make sure, that our local version is send to the server
-                        db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_user");
+                        if (!eas.eventIsToOld(foundItems[0])) {
+                            tbSync.dump("Add request, but element exists already, asuming resync, local version wins.", ServerId);
+                            db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_user");
+                        }
                     }
                     syncdata.done++;
                 }
@@ -610,6 +612,11 @@ eas.sync = {
                         if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type);
                         wbxml.atag("SyncKey", syncdata.synckey);
                         wbxml.atag("CollectionId", syncdata.folderID);
+                        if (syncdata.type == "Calendar") {
+                            wbxml.otag("Options");
+                                wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit")); //0, 4,5,6,7
+                            wbxml.ctag();
+                        }
                         wbxml.otag("Commands");
 
                             for (let i=0; i<changes.length; i++) {

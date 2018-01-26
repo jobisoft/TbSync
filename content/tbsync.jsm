@@ -779,12 +779,10 @@ var tbSync = {
                 if (itemStatus == "added_by_server") {
                     tbSync.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);
                 } else {
-            
-                    let startDate = aItem.startDate ? new Date(tbSync.getIsoUtcString(aItem.startDate, true)) : new Date();
-                    let limitDate = new Date();
-                    limitDate.setSeconds(limitDate.getSeconds() - 86400*tbSync.prefSettings.getIntPref("eas.syncdaylimit"));
-
-                    if (startDate > limitDate) {            
+                    //if it is too old, do not add it to the changelog, so it will not be synced
+                    //this is just to reduce workload, the actual sync rejection is done via the FilterType setting by the server
+                    let provider = tbSync.db.getAccountSetting(folders[0].account, "provider")
+                    if (!tbSync[provider].eventIsToOld(aItem)) {
                         tbSync.setTargetModified(folders[0]);
                         tbSync.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "added_by_user");
                     }
