@@ -21,11 +21,11 @@ syncstate.accountdone=Finished account
 
 syncstate.prepare.request.folders=Sending folder list update
 syncstate.send.request.folders=Waiting for folder list update
-syncstate.eval.response.folders=Received folder list update
+syncstate.eval.response.folders=Processing folder list update
 
 syncstate.prepare.request.synckey=Requesting synckey
 syncstate.send.request.synckey=Waiting for synckey
-syncstate.eval.response.synckey=Received synckey
+syncstate.eval.response.synckey=Processing synckey
 
 syncstate.prepare.request.deletefolder=Preparing to delete folder
 syncstate.send.request.deletefolder=Waiting for folder to be deleted
@@ -33,20 +33,20 @@ syncstate.eval.response.deletefolder=Folder deleted
 
 syncstate.prepare.request.provision=Requesting provison
 syncstate.send.request.provision=Waiting for provison
-syncstate.eval.response.provision=Received provision
+syncstate.eval.response.provision=Processing provision
 
 syncstate.prepare.request.estimate=Requesting change estimate
 syncstate.send.request.estimate=Waiting for change estimate
-syncstate.eval.response.estimate=Received change estimate
+syncstate.eval.response.estimate=Processing change estimate
 
 syncstate.prepare.request.remotechanges=Requesting remote changes
 syncstate.send.request.remotechanges=Waiting for remote changes
-syncstate.eval.response.remotechanges=Received remote changes
+syncstate.eval.response.remotechanges=Processing remote changes
 
 syncstate.prepare.request.localchanges=Sending local changes
 syncstate.send.request.localchanges=Waiting for acknowledgement of local changes
-syncstate.eval.response.localchanges=Received acknowledgement of local changes
+syncstate.eval.response.localchanges=Processing acknowledgement of local changes
 
 syncstate.prepare.request.localdeletes=Sending local deletes
 syncstate.send.request.localdeletes=Waiting for acknowledgement of local deletes
-syncstate.eval.response.localdeletes=Received acknowledgement of local deletes
+syncstate.eval.response.localdeletes=Processing acknowledgement of local deletes
