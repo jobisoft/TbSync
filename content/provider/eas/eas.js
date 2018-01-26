@@ -1050,8 +1050,8 @@ var eas = {
 
     //check if the given item is to old to by synced
     eventIsToOld: function (aItem) {
-        //recurring items always win
-        if (aItem.recurrenceInfo) return false;
+        //we do not limit recurring events or tasks
+        if (aItem.recurrenceInfo || aItem.dueDate) return false;
 
         let limitDate;
         switch(tbSync.prefSettings.getIntPref("eas.synclimit")) {
