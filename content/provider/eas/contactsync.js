@@ -475,7 +475,7 @@ eas.contactsync = {
             var ambd = 0;
             var wbxmlinner;
             var card;
-            var maxnumbertosend = tbSync.prefSettings.getIntPref("maxnumbertosend");
+            var maxnumbertosend = tbSync.prefSettings.getIntPref("eas.maxitems");
             var morecards = false;
             var seperator = String.fromCharCode(tbSync.db.getAccountSetting(syncdata.account,"seperator")); // options are 44 (,) or 10 (\n)
             var cards = addressBook.childCards;
@@ -851,7 +851,7 @@ eas.contactsync = {
             tbSync.setSyncState("prepare.request.localdeletes", syncdata.account, syncdata.folderID);
             
             // cardstodelete will not contain more cards than max
-            let cardstodelete = tbSync.db.getItemsFromChangeLog(addressbook, tbSync.prefSettings.getIntPref("maxnumbertosend"), "deleted_by_user");
+            let cardstodelete = tbSync.db.getItemsFromChangeLog(addressbook, tbSync.prefSettings.getIntPref("eas.maxitems"), "deleted_by_user");
             let wbxmlinner = "";
             for (let i = 0; i < cardstodelete.length; i++) {
                 wbxmlinner = wbxmlinner + String.fromCharCode(0x49, 0x4D, 0x03) + cardstodelete[i].id + String.fromCharCode(0x00, 0x01, 0x01);

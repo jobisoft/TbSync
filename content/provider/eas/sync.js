@@ -457,7 +457,7 @@ eas.sync = {
                         wbxml.atag("CollectionId", syncdata.folderID);
                         wbxml.atag("DeletesAsMoves", "1");
                         wbxml.atag("GetChanges", "1");
-                        wbxml.atag("WindowSize", "100");
+                        wbxml.atag("WindowSize",  tbSync.prefSettings.getIntPref("eas.maxitems"));
 
                         if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
                             wbxml.otag("Options");
@@ -590,7 +590,7 @@ eas.sync = {
 
         //promisify calender, so it can be used together with yield
         let pcal = cal.async.promisifyCalendar(syncdata.targetObj.wrappedJSObject);
-        let maxnumbertosend = tbSync.prefSettings.getIntPref("maxnumbertosend");
+        let maxnumbertosend = tbSync.prefSettings.getIntPref("eas.maxitems");
 
         syncdata.done = 0;
         syncdata.todo = db.getItemsFromChangeLog(syncdata.targetObj.id, 0, "_by_user").length;
