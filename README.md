@@ -3,7 +3,11 @@
 
 ## How to get started
 
-A quick start guide on how to use this Add-On can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki/How-to-get-started) of this repository. The latest release and the latest stable beta can be found at the [release page](https://github.com/jobisoft/TbSync/releases) (including beta versions).
+A quick start guide on how to use this Add-On can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki/How-to-get-started) of this repository. The latest release and the latest stable beta can be found at the [release page](https://github.com/jobisoft/TbSync/releases).
+
+## Found a bug?
+
+In case you found a bug, first update to the latest beta of the latest [release](https://github.com/jobisoft/TbSync/releases), activate debug logging (TbSync Account Manager -> Help), try to reproduce the error and send me the debug.log.
 
 ## Got a question? Maybe it has been answered already!
 
