@@ -19,7 +19,7 @@ var wbxmltools = {
 
 
 
-    // Convert a WBXML (WAP Binary XML) to plain XML
+    // Convert a WBXML (WAP Binary XML) to plain XML - returns save xml with all special chars in the user data encoded by encodeURIComponent
     convert2xml: function (wbxml) {
 
         let num = 4; //skip the 4 first bytes which are mostly 0x03 (WBXML Version 1.3), 0x01 (unknown public identifier), 0x6A (utf-8), 0x00 (Length of string table)
@@ -55,7 +55,8 @@ var wbxmltools = {
                 
                 case 0x03: // Inline string followed by a termstr. (0x00)
                     let termpos = wbxml.indexOf(String.fromCharCode(0x00), num);
-                    xml = xml + (wbxml.substring(num + 1, termpos)).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/'/g,"&apos;").replace(/"/g,"&quot;");
+                    //encode all special chars in the user data by encodeURIComponent which does not encode the apostrophe, so we need to do that by hand
+                    xml = xml + encodeURIComponent(wbxml.substring(num + 1, termpos)).replace(/'/g, "%27");
                     num = termpos;
                     break;
                 

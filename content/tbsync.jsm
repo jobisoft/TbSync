@@ -278,6 +278,7 @@ var tbSync = {
         if (platformVer >= 50) {
             return string;
         } else {
+            //What?
             string = string.replace(/\r\n/g, "\n");
             let utf8string = "";
             for (let n = 0; n < string.length; n++) {

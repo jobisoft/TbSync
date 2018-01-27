@@ -412,6 +412,7 @@ eas.sync = {
                     if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
                         wbxml.switchpage("AirSync");
                         wbxml.otag("Options");
+                            wbxml.atag("Class", syncdata.type);
                             wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit").toString()); //0, 4,5,6,7
                         wbxml.ctag();
                         wbxml.switchpage("GetItemEstimate");

@@ -779,7 +779,8 @@ eas.contactsync = {
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
 
             var oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
-            let xml = wbxmltools.convert2xml(wbxml);
+            //convert2xml returns save xml with all user data encoded by encodeURIComponent, so we need to decode the parsed nodes
+	    let xml = wbxmltools.convert2xml(wbxml);
             if (xml === false) {
                 throw eas.finishSync("wbxml-parse-error", eas.flags.abortWithError);
             }
@@ -793,10 +794,10 @@ eas.contactsync = {
 
                     let tag = inadd.getElementsByTagName("ServerId");
                     let ServerId = "CardWasDeniedByServerRetryNextTime";
-                    if (tag.length > 0) ServerId = tag[0].childNodes[0].nodeValue;
+                    if (tag.length > 0) ServerId = decodeURIComponent(tag[0].childNodes[0].nodeValue);
 
                     tag = inadd.getElementsByTagName("ClientId");
-                    let ClientId = tag[0].childNodes[0].nodeValue;
+                    let ClientId = decodeURIComponent(tag[0].childNodes[0].nodeValue);
 
                     try {
                         let addserverid = addressBook.getCardFromProperty("localId", ClientId, false);
@@ -817,7 +818,7 @@ eas.contactsync = {
 
                     let status = "1";
                     try {
-                        status = tag[0].childNodes[0].nodeValue;
+                        status = decodeURIComponent(tag[0].childNodes[0].nodeValue);
                     } catch (e) { }
 
                     if (status !== "1") { // a CHANGE we send was not acknowledged, but we should NOT remove the id, we must RESEND our change later (do not remove it from changelog) TODO
@@ -825,7 +826,7 @@ eas.contactsync = {
 
                         /*                            try {
                             tag = inchange.getElementsByTagName("ServerId");
-                            let ServerId = tag[0].childNodes[0].nodeValue;
+                            let ServerId = decodeURIComponent(tag[0].childNodes[0].nodeValue);
                             let addserverid = addressBook.getCardFromProperty('ServerId', ServerId, false);
                             addserverid.setProperty('ServerId', '');
                             addressBook.modifyCard(addserverid);

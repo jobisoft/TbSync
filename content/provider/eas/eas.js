@@ -703,8 +703,8 @@ var eas = {
                 return;
             }
             
-            //let xml = decodeURIComponent(escape(rawxml.split('><').join('>\n<')));
-            let xml = rawxml.split('><').join('>\n<');
+            //raw xml is save xml with all special chars in user data encoded by encodeURIComponent
+            let xml = decodeURIComponent(rawxml.split('><').join('>\n<'));
             tbSync.dump(what +" (XML)", "\n" + xml);
         }
     },
@@ -1195,6 +1195,7 @@ var eas = {
             if (platformVer >= 50) {
                 syncdata.req.send(wbxml);
             } else {
+                //from each char in the string, only use the lowest 8bit - why?
                 let nBytes = wbxml.length;
                 let ui8Data = new Uint8Array(nBytes);
                 for (let nIdx = 0; nIdx < nBytes; nIdx++) {
@@ -1214,13 +1215,13 @@ var eas = {
             else throw eas.finishSync("empty-response", eas.flags.abortWithError);
         }
 
-        //convert to xml and check for parse errors
+        //convert to save xml (all special chars in user data encoded by encodeURIComponent) and check for parse errors
         let xml = wbxmltools.convert2xml(wbxml);
         if (xml === false) {
             throw eas.finishSync("wbxml-parse-error", eas.flags.abortWithError);
         }
         
-        //retrieve data and check for empty data
+        //retrieve data and check for empty data (all returned data fields are already decoded by decodeURIComponent)
         let wbxmlData = xmltools.getDataFromXMLString(xml);
         if (wbxmlData === null) {
             if (allowEmptyResponse) return null;

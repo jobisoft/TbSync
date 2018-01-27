@@ -125,7 +125,8 @@ var xmltools = {
                         //if this is an element with only one text child, do not dive, but get text childs value
                         let o;
                         if (node.childNodes.length == 1 && node.childNodes.item(0).nodeType==3) {
-                            o = node.childNodes.item(0).nodeValue;
+                            //the passed xml is a save xml with all special chars in the user data encoded by encodeURIComponent
+                            o = decodeURIComponent(node.childNodes.item(0).nodeValue);
                         } else {
                             o = this.getDataFromXML(node.childNodes);
                         }
