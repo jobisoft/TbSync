@@ -272,19 +272,6 @@ var tbSync = {
         loader.loadSubScript(file, this);
     },
 
-    decode_utf8: function (s) {
-        let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;
-        if (platformVer >= 40) {
-            return s;
-        } else {
-            try {
-                return decodeURIComponent(escape(s));
-            } catch (e) {
-                return s;
-            }
-        }
-    },
-
     encode_utf8: function (string) {
         let appInfo = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
         let platformVer = appInfo.platformVersion;

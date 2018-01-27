@@ -704,7 +704,7 @@ var eas = {
             }
             
             //let xml = decodeURIComponent(escape(rawxml.split('><').join('>\n<')));
-            let xml = tbSync.decode_utf8(rawxml.split('><').join('>\n<'));
+            let xml = rawxml.split('><').join('>\n<');
             tbSync.dump(what +" (XML)", "\n" + xml);
         }
     },
