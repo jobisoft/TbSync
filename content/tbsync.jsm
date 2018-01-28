@@ -72,6 +72,8 @@ var tbSync = {
     // GLOBAL INIT
     init: Task.async (function* ()  { 
 
+        tbSync.dump("TbSync init","start");
+
         //init DB
         yield tbSync.db.init();
 
@@ -97,6 +99,7 @@ var tbSync = {
         //enable
         tbSync.enabled = true;
 
+        tbSync.dump("TbSync init","done");
     }),
 
     unload: function () {
