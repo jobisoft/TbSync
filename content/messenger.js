@@ -36,7 +36,8 @@ var tbSyncMessenger = {
 
     popupNotEnabled: function () {
         let msg = "Oops! TbSync was not able to start!\n\n";
-
+        tbSync.dump("Oops", "Trying to open account manager, but init sequence not yet finished");
+	    
         if (!tbSync.prefSettings.getBoolPref("log.tofile")) {
             if (confirm(msg + "It is not possible to trace this error, because debug log is currently not enabled. Do you want to enable debug log now, to help fix this error?")) {
                 tbSync.prefSettings.setBoolPref("log.tofile", true);
