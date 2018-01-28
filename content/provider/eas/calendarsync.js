@@ -133,8 +133,10 @@ eas.sync.Calendar = {
             item.organizer = organizer;
         }
 
-        eas.sync.setItemRecurrence(item, syncdata, data);
-
+        if (tbSync.prefSettings.getBoolPref("eas.syncrecurringevents")) {
+            eas.sync.setItemRecurrence(item, syncdata, data);
+        }
+        
         if (data.MeetingStatus) {
             //store original EAS value 
             item.setProperty("X-EAS-MeetingStatus", data.MeetingStatus);
@@ -266,7 +268,7 @@ eas.sync.Calendar = {
         //TODO: attachements (needs EAS 16.0!)
 
         //recurrent events (implemented by Chris Allan)
-        if (!isException) {
+        if (!isException && tbSync.prefSettings.getBoolPref("eas.syncrecurringevents")) {
             wbxml.append(eas.sync.getItemRecurrence(item, syncdata));
         }
         
