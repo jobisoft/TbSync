@@ -7,7 +7,7 @@ A quick start guide on how to use this Add-On can be found in the [wiki](https:/
 
 ## Found a bug?
 
-First update to the latest beta of the latest [release](https://github.com/jobisoft/TbSync/releases) and also update your Thunderbird to the latest standard release. Please also enable debug logging (TbSync Account Manager -> Help). Can you still reproduce the bug? If so, please send me the debug.log.
+First update TbSync to the latest [release](https://github.com/jobisoft/TbSync/releases) (or the latest beta, if there is one) and also update your Thunderbird to the latest standard release. Please also enable debug logging (TbSync Account Manager -> Help). Can you still reproduce the bug? If so, please send me the debug.log.
 
 ## Got a question? Maybe it has been answered already!
 
