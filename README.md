@@ -13,7 +13,7 @@ First update TbSync to the latest [release](https://github.com/jobisoft/TbSync/r
 
 You can use the [issue section](https://github.com/jobisoft/TbSync/issues?q=is%3Aissue) for support or feature requests, but please take the extra minute to check, if your question has been asked and answered already.
 
-As this is still work in progress, take a look at the [detailed roadmap](https://github.com/jobisoft/TbSync/wiki/Detailed-changelog-&-roadmap), to see if a feature is scheduled to be implemented. If so, it is obviously not yet implemented. Asking me how long it will take, will not get it done any faster. A [donation](https://www.paypal.me/johnbieling) might help :-)
+As this is still work in progress, take a look at the [roadmap](https://github.com/jobisoft/TbSync/wiki/Roadmap), to see if a feature is scheduled to be implemented. If so, it is obviously not yet implemented. Asking me how long it will take, will not get it done any faster. A [donation](https://www.paypal.me/johnbieling) might help :-)
 
 ## Icon sources
 
