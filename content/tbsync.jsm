@@ -29,11 +29,11 @@ if (!Date.prototype.toBasicISOString) {
       if (number < 10) {
         return '0' + number;
       }
-      return number;
+      return number.toString();
     }
 
     Date.prototype.toBasicISOString = function() {
-      return this.getUTCFullYear() +
+      return pad(this.getUTCFullYear()) +
         pad(this.getUTCMonth() + 1) +
         pad(this.getUTCDate()) +
         'T' + 
