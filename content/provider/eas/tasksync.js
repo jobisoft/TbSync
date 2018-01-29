@@ -38,12 +38,12 @@ eas.sync.Tasks = {
         eas.sync.mapEasPropertyToThunderbird ("Importance", "PRIORITY", data, item);
 
         item.clearAlarms();
-        if (data.ReminderSet && data.ReminderTime && data.UtcDueDate) {        
-            let UtcDueDate = tbSync.createDateTime(data.UtcDueDate);
+        if (data.ReminderSet && data.ReminderTime && data.UtcStartDate) {        
+            let UtcDate = tbSync.createDateTime(data.UtcStartDate);
             let UtcAlarmDate = tbSync.createDateTime(data.ReminderTime);
             let alarm = cal.createAlarm();
             alarm.related = Components.interfaces.calIAlarm.ALARM_RELATED_START; //TB saves new alarms as offsets, so we add them as such as well
-            alarm.offset = UtcAlarmDate.subtractDate(UtcDueDate);
+            alarm.offset = UtcAlarmDate.subtractDate(UtcDate);
             alarm.action = "DISPLAY";
             item.addAlarm(alarm);
         }
@@ -71,15 +71,14 @@ eas.sync.Tasks = {
 
         //tasks is using extended ISO 8601 (2019-01-18T00:00:00.000Z)  instead of basic (20190118T000000Z), 
         //getIsoUtcString returns extended if true as second parameter is present
-        if (item.entryDate) {
-            wbxml.atag("UtcStartDate", tbSync.getIsoUtcString(item.entryDate, true));
+        if (item.entryDate || item.dueDate) {
+            wbxml.atag("UtcStartDate", tbSync.getIsoUtcString(item.entryDate ? item.entryDate : item.dueDate, true));
             //to fake the local time as UTC, getIsoUtcString needs the third parameter to be true
-            wbxml.atag("StartDate", tbSync.getIsoUtcString(item.entryDate, true, true));
-        }
+            wbxml.atag("StartDate", tbSync.getIsoUtcString(item.entryDate ? item.entryDate : item.dueDate, true, true));
 
-        if (item.dueDate) {
-            wbxml.atag("UtcDueDate", tbSync.getIsoUtcString(item.dueDate, true));
-            wbxml.atag("DueDate", tbSync.getIsoUtcString(item.dueDate, true, true));
+            wbxml.atag("UtcDueDate", tbSync.getIsoUtcString(item.dueDate ? item.dueDate : item.entryDate, true));
+            //to fake the local time as UTC, getIsoUtcString needs the third parameter to be true
+            wbxml.atag("DueDate", tbSync.getIsoUtcString(item.dueDate ? item.dueDate : item.entryDate, true, true));
         }
         
         wbxml.append(eas.sync.getItemCategories(item, syncdata));
@@ -87,10 +86,11 @@ eas.sync.Tasks = {
         wbxml.append(eas.sync.getItemRecurrence(item, syncdata));
 
         let alarms = item.getAlarms({});
-        if (alarms.length>0) {
+        if (alarms.length>0 && (item.entryDate || item.dueDate)) {
             wbxml.atag("ReminderSet", "1");
-            //create Date obj from dueDate by converting item.dueDate to an extended UTC ISO string, which can be parsed by Date
-            let UtcDate = new Date(tbSync.getIsoUtcString(item.dueDate, true));
+            //create Date obj from entryDate by converting item.entryDate to an extended UTC ISO string, which can be parsed by Date
+            //if entryDate is missing, the startDate of this object is set to its dueDate
+            let UtcDate = new Date(tbSync.getIsoUtcString(item.entryDate ? item.entryDate : item.dueDate, true));
             //add offset
             UtcDate.setSeconds(UtcDate.getSeconds() + alarms[0].offset.inSeconds);		
             wbxml.atag("ReminderTime", UtcDate.toISOString());
