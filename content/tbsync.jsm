@@ -769,12 +769,8 @@ var tbSync = {
                 if (itemStatus == "added_by_server") {
                     tbSync.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);
                 } else {
-                    //if it is too old, do not add it to the changelog, so it will not be synced
-                    if (!tbSync[folders[0].provider].eventIsToOld(aItem)) {
-                        tbSync.setTargetModified(folders[0]);
-                        tbSync.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "added_by_user");
-                    }
-
+                    tbSync.setTargetModified(folders[0]);
+                    tbSync.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "added_by_user");
                 }
             }
         },
@@ -830,7 +826,7 @@ var tbSync = {
 */                        
                         if (itemStatus == "modified_by_server") {
                             tbSync.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);
-                        } else if (itemStatus != "added_by_user"  && !tbSync[newFolders[0].provider].eventIsToOld(aNewItem)) { //if it is a local unprocessed add or too old, do not add it to changelog
+                        } else if (itemStatus != "added_by_user") { //if it is a local unprocessed add do not add it to changelog
                             //update status of target and account
                             tbSync.setTargetModified(newFolders[0]);
                             tbSync.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "modified_by_user");

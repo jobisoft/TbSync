@@ -1048,42 +1048,6 @@ var eas = {
     },
 
 
-    //check if the given item is to old to by synced
-    eventIsToOld: function (aItem) {
-        //I am not sure, if this is needed at all - we get out of sync if we ignore local items
-        return false;
-        
-        //we do not limit recurring events or tasks
-        if (aItem.recurrenceInfo || aItem.dueDate) return false;
-
-        let limitDate;
-        switch(tbSync.prefSettings.getIntPref("eas.synclimit")) {
-            case 4:
-                limitDate = new Date();
-                limitDate.setDate(limitDate.getDate() - 14);
-                break;
-            case 5:
-                limitDate = new Date();
-                limitDate.setMonth(limitDate.getMonth() - 1);
-                break;
-            case 6:
-                limitDate = new Date();
-                limitDate.setMonth(limitDate.getMonth() - 3);
-                break;
-            case 7:
-                limitDate = new Date();
-                limitDate.setMonth(limitDate.getMonth() - 6);
-                break;
-            default:
-                return false
-        }
-
-        let startDate = aItem.startDate ? new Date(tbSync.getIsoUtcString(aItem.startDate, true)) : new Date();
-        return (startDate < limitDate);
-    },
-
-
-
 
 
 

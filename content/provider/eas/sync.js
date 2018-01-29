@@ -526,10 +526,8 @@ eas.sync = {
                     } else {
                         //item exists, asuming resync
                         //we MUST make sure, that our local version is send to the server
-                        if (!eas.eventIsToOld(foundItems[0])) {
-                            tbSync.dump("Add request, but element exists already, asuming resync, local version wins.", ServerId);
-                            db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_user");
-                        }
+                        tbSync.dump("Add request, but element exists already, asuming resync, local version wins.", ServerId);
+                        db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_user");
                     }
                     syncdata.done++;
                 }
