@@ -17,7 +17,7 @@ eas.sync.Calendar = {
         eas.sync.setItemBody(item, syncdata, data);
 
         //timezone
-        let utcOffset =eas.defaultUtcOffset;
+        let utcOffset = eas.defaultUtcOffset;
         if (data.TimeZone) {
             //load timezone struct into EAS TimeZone object
             easTZ.easTimeZone64 = data.TimeZone;
@@ -192,10 +192,10 @@ eas.sync.Calendar = {
         if (!isException) {
             let easTZ = new eas.TimeZoneDataStructure();
 
-            //if there is no end and no start to extract offset from, use 0
-            let offset = 0;
-            if (item.startDate) offset = item.startDate.timezoneOffset/-60;
-            else if (item.endDate) offset = item.endDate.timezoneOffset/-60;
+            //if there is no end and no start (or both are floating) use eas.defaultUtcOffset as offset
+            let offset = eas.defaultUtcOffset;
+            if (item.startDate && item.startDate.timezone.tzid != "floating") offset = item.startDate.timezoneOffset/-60;
+            else if (item.endDate && item.endDate.timezone.tzid != "floating") offset = item.endDate.timezoneOffset/-60;
 
             easTZ.utcOffset = offset;
             easTZ.standardBias = 0;
