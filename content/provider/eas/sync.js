@@ -145,7 +145,7 @@ eas.sync = {
             }
             if (data.Recurrence.DayOfWeek) {
                 let DOW = data.Recurrence.DayOfWeek;
-                if (DOW == 127) {
+                if (DOW == 127 && (recRule.type == "MONTHLY" || recRule.type == "YEARLY")) {
                     recRule.setComponent("BYMONTHDAY", 1, [-1]);
                 }
                 else {
