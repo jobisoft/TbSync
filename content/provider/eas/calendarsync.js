@@ -29,20 +29,23 @@ eas.sync.Calendar = {
         if (data.StartTime) {
             let utc = cal.createDateTime(data.StartTime); //format "19800101T000000Z" - UTC
             item.startDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[utcOffset]));
+            if (data.AllDayEvent && data.AllDayEvent == "1") {
+                item.startDate.timezone = cal.floating();
+                item.startDate.isDate = true;
+            }
         }
 
         if (data.EndTime) {
             let utc = cal.createDateTime(data.EndTime);
             item.endDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[utcOffset]));
+            if (data.AllDayEvent && data.AllDayEvent == "1") {
+                item.endDate.timezone = cal.floating();
+                item.endDate.isDate = true;
+            }
         }
 
         //stamp time cannot be set and it is not needed, an updated version is only send to the server, if there was a change, so stamp will be updated
 
-        //check if alldate and fix values
-        if (data.AllDayEvent && data.AllDayEvent == "1") {
-            item.startDate.isDate = true;
-            item.endDate.isDate = true;
-        }
 
         //EAS Reminder
         item.clearAlarms();
