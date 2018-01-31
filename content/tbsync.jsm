@@ -1093,6 +1093,18 @@ var tbSync = {
 
 };
 
+
+if ("calICalendar" in Components.interfaces) {
+    cal.itip.checkAndSendOrigial = cal.itip.checkAndSend;
+    cal.itip.checkAndSend = function(aOpType, aItem, aOriginalItem) {
+        //if this item is added_by_user, do not call checkAndSend yet, because the UID is wrong, we need to sync first to get the correct ID - TODO
+        tbSync.dump("cal.checkAndSend", aOpType);
+        cal.itip.checkAndSendOrigial(aOpType, aItem, aOriginalItem);
+    }
+}
+
+
+
 //clear debug log on start
 tbSync.initFile("debug.log");
 tbSync.dump("Init","Please send this log to john.bieling@gmx.de, if you have encountered an error.");
