@@ -110,6 +110,7 @@ var eas = {
                 switch (job) {
                     case "sync":
                         //get all folders, which need to be synced
+                        yield eas.getUserInfo(syncdata);
                         yield eas.getPendingFolders(syncdata);
                         //sync all pending folders
                         yield eas.syncPendingFolders(syncdata); //inside here we throw and catch FinischFolderSync
@@ -641,6 +642,43 @@ var eas = {
     }),
 
 
+    getUserInfo: Task.async (function* (syncdata)  {
+        tbSync.setSyncState("prepare.request.getuserinfo", syncdata.account);
+
+        //request foldersync
+        let wbxml = wbxmltools.createWBXML();
+        wbxml.switchpage("Settings");
+        wbxml.otag("Settings");
+            wbxml.otag("UserInformation");
+                wbxml.atag("Get");
+            wbxml.ctag();
+        wbxml.ctag();
+
+        tbSync.setSyncState("send.request.getuserinfo", syncdata.account);
+        let response = yield eas.sendRequest(wbxml.getBytes(), "Settings", syncdata);
+
+
+        tbSync.setSyncState("eval.response.getuserinfo", syncdata.account);
+        let wbxmlData = eas.getDataFromResponse(response);
+
+        eas.checkStatus(syncdata, wbxmlData,"Settings.Status");
+
+/*        let synckey = xmltools.getWbxmlDataField(wbxmlData,"FolderDelete.SyncKey");
+        if (synckey) {
+            tbSync.db.setAccountSetting(syncdata.account, "foldersynckey", synckey);
+            //this folder is not synced, no target to take care of, just remove the folder
+            tbSync.db.deleteFolder(syncdata.account, syncdata.folderID);
+            syncdata.folderID = "";
+            //update manager gui / folder list
+            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+            observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", syncdata.account);
+            throw eas.finishSync();
+        } else {
+            throw eas.finishSync("wbxmlmissingfield::FolderDelete.SyncKey", eas.flags.abortWithError);
+        }*/
+    }),
+
+
 
 
 
@@ -1082,7 +1120,7 @@ var eas = {
             if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
                 syncdata.req.setRequestHeader("MS-ASProtocolVersion", "2.5");
             } else {
-                syncdata.req.setRequestHeader("MS-ASProtocolVersion", "14.0");
+                syncdata.req.setRequestHeader("MS-ASProtocolVersion", "14.1");
             }
             syncdata.req.setRequestHeader("Content-Length", wbxml.length);
             if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1") {
