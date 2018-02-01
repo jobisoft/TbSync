@@ -1120,7 +1120,7 @@ var eas = {
             if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
                 syncdata.req.setRequestHeader("MS-ASProtocolVersion", "2.5");
             } else {
-                syncdata.req.setRequestHeader("MS-ASProtocolVersion", "14.1");
+                syncdata.req.setRequestHeader("MS-ASProtocolVersion", "14.0");
             }
             syncdata.req.setRequestHeader("Content-Length", wbxml.length);
             if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1") {
