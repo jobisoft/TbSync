@@ -755,6 +755,14 @@ var tbSync = {
         return cal.createDateTime(datestring);
     },
 
+
+    //returns if item is todo, event or something else
+    getItemType: function (aItem) {
+        if (cal.isEvent(aItem)) return "Calendar";
+        if (cal.isToDo(aItem)) return "Tasks";
+        return "Unknown";
+    },
+    
     calendarObserver : { 
         onStartBatch : function () {},
         onEndBatch : function () {},
@@ -770,7 +778,7 @@ var tbSync = {
                     tbSync.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);
                 } else {
                     tbSync.setTargetModified(folders[0]);
-                    tbSync.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "added_by_user");
+                    tbSync.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "added_by_user", tbSync.getItemType(aItem));
                 }
             }
         },
@@ -829,7 +837,7 @@ var tbSync = {
                         } else if (itemStatus != "added_by_user") { //if it is a local unprocessed add do not add it to changelog
                             //update status of target and account
                             tbSync.setTargetModified(newFolders[0]);
-                            tbSync.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "modified_by_user");
+                            tbSync.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "modified_by_user", tbSync.getItemType(aNewItem));
                         }
                     }
                     
@@ -852,7 +860,7 @@ var tbSync = {
                         tbSync.db.removeItemFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id);
                     } else {
                         tbSync.setTargetModified(folders[0]);
-                        tbSync.db.addItemToChangeLog(aDeletedItem.calendar.id, aDeletedItem.id, "deleted_by_user");
+                        tbSync.db.addItemToChangeLog(aDeletedItem.calendar.id, aDeletedItem.id, "deleted_by_user", tbSync.getItemType(aDeletedItem));
                     }
                 }
             } else {
