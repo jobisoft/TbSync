@@ -361,6 +361,90 @@ eas.sync = {
     },
 
 
+    processCommands:  Task.async (function* (wbxmlData, syncdata)  {
+        //any commands for us to work on? If we reach this point, Sync.Collections.Collection is valid, 
+        //no need to use the save getWbxmlDataField function
+        if (wbxmlData.Sync.Collections.Collection.Commands) {
+
+            //promisify calender, so it can be used together with yield
+            let pcal = cal.async.promisifyCalendar(syncdata.targetObj.wrappedJSObject);
+        
+            //looking for additions
+            let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Add);
+            for (let count = 0; count < add.length; count++) {
+                yield tbSync.sleep(2);
+
+                let ServerId = add[count].ServerId;
+                let data = add[count].ApplicationData;
+
+                let foundItems = yield pcal.getItem(ServerId);
+                if (foundItems.length == 0) { //do NOT add, if an item with that ServerId was found
+                    //if this is a resync and this item exists in delete_log, do not add it, the follow-up delete request will remove it from the server as well
+                    if (db.getItemStatusFromChangeLog(syncdata.targetObj.id, ServerId) == "deleted_by_user") {
+                        tbSync.dump("Add request, but element is in delete_log, asuming resync, local state wins, not adding.", ServerId);
+                    } else {
+                        let newItem = eas.sync.createItem(syncdata);
+                        eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
+                        db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "added_by_server");
+                        try {
+                            yield pcal.addItem(newItem);
+                        } catch (e) {tbSync.dump("Error during Add", e);}
+                    }
+                } else {
+                    //item exists, asuming resync
+                    //we MUST make sure, that our local version is send to the server
+                    tbSync.dump("Add request, but element exists already, asuming resync, local version wins.", ServerId);
+                    db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_user");
+                }
+                syncdata.done++;
+            }
+
+            //looking for changes
+            let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Change);
+            //inject custom change object for debug
+            //upd = JSON.parse('[{"ServerId":"2tjoanTeS0CJ3QTsq5vdNQAAAAABDdrY6Gp03ktAid0E7Kub3TUAAAoZy4A1","ApplicationData":{"DtStamp":"20171109T142149Z"}}]');
+            for (let count = 0; count < upd.length; count++) {
+                yield tbSync.sleep(2);
+
+                let ServerId = upd[count].ServerId;
+                let data = upd[count].ApplicationData;
+
+                let foundItems = yield pcal.getItem(ServerId);
+                if (foundItems.length > 0) { //only update, if an item with that ServerId was found
+                    let newItem = foundItems[0].clone();
+                    eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
+                    db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_server");
+                    yield pcal.modifyItem(newItem, foundItems[0]);
+                } else {
+                    tbSync.dump("Update request, but element not found", ServerId);
+                    //resync to avoid out-of-sync problems, "add" can take care of local merges
+                    throw eas.finishSync("ChangeElementNotFound", eas.flags.resyncFolder);
+                }
+                syncdata.done++;
+            }
+            
+            //looking for deletes
+            let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Delete).concat(xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.SoftDelete));
+            for (let count = 0; count < del.length; count++) {
+                yield tbSync.sleep(2);
+
+                let ServerId = del[count].ServerId;
+
+                let foundItems = yield pcal.getItem(ServerId);
+                if (foundItems.length > 0) { //delete item with that ServerId
+                    db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "deleted_by_server");
+                    yield pcal.deleteItem(foundItems[0]);
+                } else {
+                    tbSync.dump("Delete request, but element not found", ServerId);
+                    //resync to avoid out-of-sync problems
+                    throw eas.finishSync("DeleteElementNotFound", eas.flags.resyncFolder);
+                }
+                syncdata.done++;
+            }
+        
+        }
+    }),
+
 
     createItem : function (syncdata) {
         switch (syncdata.type) {
@@ -393,6 +477,7 @@ eas.sync = {
         //if everything was OK, we still throw, to get into catch
         throw eas.finishSync();
     }),
+
 
     getItemEstimate: Task.async (function* (syncdata)  {
         tbSync.setSyncState("prepare.request.estimate", syncdata.account, syncdata.folderID);
@@ -443,6 +528,7 @@ eas.sync = {
 
     }),
     
+
     requestRemoteChanges: Task.async (function* (syncdata)  {
         syncdata.done = 0;
         do {
@@ -494,95 +580,13 @@ eas.sync = {
             //update synckey, throw on error
             eas.updateSynckey(syncdata, wbxmlData);
 
-            //PROCESS RESPONSE        
-            //any commands for us to work on? If we reach this point, Sync.Collections.Collection is valid, 
-            //no need to use the save getWbxmlDataField function
-            if (wbxmlData.Sync.Collections.Collection.Commands) {
-
-                //promisify calender, so it can be used together with yield
-                let pcal = cal.async.promisifyCalendar(syncdata.targetObj.wrappedJSObject);
-            
-                //looking for additions
-                let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Add);
-                for (let count = 0; count < add.length; count++) {
-                    yield tbSync.sleep(2);
-
-                    let ServerId = add[count].ServerId;
-                    let data = add[count].ApplicationData;
-
-                    let foundItems = yield pcal.getItem(ServerId);
-                    if (foundItems.length == 0) { //do NOT add, if an item with that ServerId was found
-                        //if this is a resync and this item exists in delete_log, do not add it, the follow-up delete request will remove it from the server as well
-                        if (db.getItemStatusFromChangeLog(syncdata.targetObj.id, ServerId) == "deleted_by_user") {
-                            tbSync.dump("Add request, but element is in delete_log, asuming resync, local state wins, not adding.", ServerId);
-                        } else {
-                            let newItem = eas.sync.createItem(syncdata);
-                            eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
-                            db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "added_by_server");
-                            try {
-                                yield pcal.addItem(newItem);
-                            } catch (e) {tbSync.dump("Error during Add", e);}
-                        }
-                    } else {
-                        //item exists, asuming resync
-                        //we MUST make sure, that our local version is send to the server
-                        tbSync.dump("Add request, but element exists already, asuming resync, local version wins.", ServerId);
-                        db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_user");
-                    }
-                    syncdata.done++;
-                }
-
-                //looking for changes
-                let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Change);
-                //inject custom change object for debug
-                //upd = JSON.parse('[{"ServerId":"2tjoanTeS0CJ3QTsq5vdNQAAAAABDdrY6Gp03ktAid0E7Kub3TUAAAoZy4A1","ApplicationData":{"DtStamp":"20171109T142149Z"}}]');
-                for (let count = 0; count < upd.length; count++) {
-                    yield tbSync.sleep(2);
-
-                    let ServerId = upd[count].ServerId;
-                    let data = upd[count].ApplicationData;
-
-                    let foundItems = yield pcal.getItem(ServerId);
-                    if (foundItems.length > 0) { //only update, if an item with that ServerId was found
-                        let newItem = foundItems[0].clone();
-                        eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
-                        db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_server");
-                        yield pcal.modifyItem(newItem, foundItems[0]);
-                    } else {
-                        tbSync.dump("Update request, but element not found", ServerId);
-                        //resync to avoid out-of-sync problems, "add" can take care of local merges
-                        throw eas.finishSync("ChangeElementNotFound", eas.flags.resyncFolder);
-                    }
-                    syncdata.done++;
-                }
-                
-                //looking for deletes
-                let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.Delete).concat(xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Commands.SoftDelete));
-                for (let count = 0; count < del.length; count++) {
-                    yield tbSync.sleep(2);
-
-                    let ServerId = del[count].ServerId;
-
-                    let foundItems = yield pcal.getItem(ServerId);
-                    if (foundItems.length > 0) { //delete item with that ServerId
-                        db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "deleted_by_server");
-                        yield pcal.deleteItem(foundItems[0]);
-                    } else {
-                        tbSync.dump("Delete request, but element not found", ServerId);
-                        //resync to avoid out-of-sync problems
-                        throw eas.finishSync("DeleteElementNotFound", eas.flags.resyncFolder);
-                    }
-                    syncdata.done++;
-                }
-            
-            }
+            //PROCESS COMMANDS        
+            yield eas.sync.processCommands(wbxmlData, syncdata);
             
             if (!wbxmlData.Sync.Collections.Collection.MoreAvailable) return;
         } while (true);
                 
     }),
-
-
 
 
     sendLocalChanges: Task.async (function* (syncdata)  {
@@ -724,13 +728,13 @@ eas.sync = {
             //PROCESS RESPONSE        
             //any responses for us to work on?  If we reach this point, Sync.Collections.Collection is valid, 
             //no need to use the save getWbxmlDataField function
-            if (wbxmlData.Sync.Collections.Collection.Responses) {                
+            if (wbxmlData.Sync.Collections.Collection.Responses) {
 
                 //looking for additions (Add node contains, status, old ClientId and new ServerId)
                 let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Add);
                 for (let count = 0; count < add.length; count++) {
                     yield tbSync.sleep(2);
-                    
+
                     //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
                     eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status");
 
@@ -762,6 +766,10 @@ eas.sync = {
                 }
                 
             }
+	    
+            //PROCESS COMMANDS        
+            yield eas.sync.processCommands(wbxmlData, syncdata);
+	    
         } while (true);
         
     })
