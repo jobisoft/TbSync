@@ -577,11 +577,11 @@ eas.sync = {
             //check status, throw on error
             eas.checkStatus(syncdata, wbxmlData,"Sync.Collections.Collection.Status");
             
-            //update synckey, throw on error
-            eas.updateSynckey(syncdata, wbxmlData);
-
             //PROCESS COMMANDS        
             yield eas.sync.processCommands(wbxmlData, syncdata);
+
+            //update synckey, throw on error
+            eas.updateSynckey(syncdata, wbxmlData);
             
             if (!wbxmlData.Sync.Collections.Collection.MoreAvailable) return;
         } while (true);
@@ -719,10 +719,7 @@ eas.sync = {
             let wbxmlData = eas.getDataFromResponse(response);
         
             //check status
-            eas.checkStatus(syncdata, wbxmlData,"Sync.Collections.Collection.Status");
-            
-            //update synckey
-            eas.updateSynckey(syncdata, wbxmlData);
+            eas.checkStatus(syncdata, wbxmlData,"Sync.Collections.Collection.Status");            
             yield tbSync.sleep(10);
 
             //remove all changed and acked items from changelog
@@ -778,6 +775,9 @@ eas.sync = {
 	    
             //PROCESS COMMANDS        
             yield eas.sync.processCommands(wbxmlData, syncdata);
+
+            //update synckey
+            eas.updateSynckey(syncdata, wbxmlData);
 	    
         } while (true);
         
