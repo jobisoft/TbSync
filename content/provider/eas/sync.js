@@ -494,11 +494,11 @@ eas.sync = {
             wbxml.otag("Collections");
                 wbxml.otag("Collection");
                     if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type); //only 2.5
+                    wbxml.atag("CollectionId", syncdata.folderID);
                     wbxml.switchpage("AirSync");
                     if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit").toString()); //only 2.5
                     wbxml.atag("SyncKey", syncdata.synckey);
                     wbxml.switchpage("GetItemEstimate");
-                    wbxml.atag("CollectionId", syncdata.folderID);
                     if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
                         wbxml.switchpage("AirSync");
                         wbxml.otag("Options");
