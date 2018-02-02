@@ -383,6 +383,9 @@ eas.sync = {
                     if (db.getItemStatusFromChangeLog(syncdata.targetObj.id, ServerId) == "deleted_by_user") {
                         tbSync.dump("Add request, but element is in delete_log, asuming resync, local state wins, not adding.", ServerId);
                     } else {
+                        //There is a corner case: A local item has been send to the server, but the ACK is missing, so a rysnc happens and the event comes back with the new ServerID.
+                        //However, as its ApplicationData UID it has the original Thunderbird UID. An item with that UID could still exist! If so, that Item needs to get the new ServerID
+                        //and the "new" item from the server is not added - TODO
                         let newItem = eas.sync.createItem(syncdata);
                         eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
                         db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "added_by_server");
