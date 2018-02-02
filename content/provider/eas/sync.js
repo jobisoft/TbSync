@@ -7,6 +7,8 @@
 
 eas.sync = {
 
+    CALTYPES : { "0":"Unknown", "1":"Calendar", "2":"Tasks" },
+    
     MAP_EAS2TB : {
         //EAS Importance: 0 = LOW | 1 = NORMAL | 2 = HIGH
         Importance : { "0":"9", "1":"5", "2":"1"}, //to PRIORITY
@@ -630,7 +632,7 @@ eas.sync = {
 
                                         items = yield pcal.getItem(changes[i].id);
                                         //filter out bad object types for this folder
-                                        if (syncdata.type == changes[i].type) {
+                                        if (syncdata.type == this.CALTYPES[changes[i].type]) {
                                             //create a temp clientId, to cope with too long or invalid clientIds (for EAS)
                                             let clientId = Date.now() + "-" + c;
                                             addedItems[clientId] = changes[i].id;
@@ -660,7 +662,7 @@ eas.sync = {
                                     case "modified_by_user":
                                         items = yield pcal.getItem(changes[i].id);
                                         //filter out bad object types for this folder
-                                        if (syncdata.type == changes[i].type) {
+                                        if (syncdata.type == this.CALTYPES[changes[i].type]) {
                                             wbxml.otag("Change");
                                             wbxml.atag("ServerId", changes[i].id);
                                                 wbxml.otag("ApplicationData");
@@ -688,7 +690,7 @@ eas.sync = {
                                     
                                     case "deleted_by_user":
                                         //filter out bad object types for this folder
-                                        if (syncdata.type == changes[i].type) {
+                                        if (syncdata.type == this.CALTYPES[changes[i].type]) {
                                             wbxml.otag("Delete");
                                                 wbxml.atag("ServerId", changes[i].id);
                                             wbxml.ctag();
