@@ -545,13 +545,18 @@ eas.sync = {
         wbxml.otag("GetItemEstimate");
             wbxml.otag("Collections");
                 wbxml.otag("Collection");
-                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type); //only 2.5
-                    wbxml.atag("CollectionId", syncdata.folderID);
-                    wbxml.switchpage("AirSync");
-                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit").toString()); //only 2.5
-                    wbxml.atag("SyncKey", syncdata.synckey);
-                    wbxml.switchpage("GetItemEstimate");
-                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
+                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+                        wbxml.atag("Class", syncdata.type); //only 2.5
+                        wbxml.atag("CollectionId", syncdata.folderID);
+                        wbxml.switchpage("AirSync");
+                        wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit").toString());
+                        wbxml.atag("SyncKey", syncdata.synckey);
+                        wbxml.switchpage("GetItemEstimate");
+                    } else {
+                        wbxml.switchpage("AirSync");
+                        wbxml.atag("SyncKey", syncdata.synckey);
+                        wbxml.switchpage("GetItemEstimate");
+                        wbxml.atag("CollectionId", syncdata.folderID);
                         wbxml.switchpage("AirSync");
                         wbxml.otag("Options");
                             wbxml.atag("Class", syncdata.type);
