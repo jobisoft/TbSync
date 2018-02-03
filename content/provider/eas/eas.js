@@ -1235,7 +1235,7 @@ var eas = {
         return wbxmlData;
     },
     
-    checkStatus : function (syncdata, wbxmlData, path, rootpath="") {
+    checkStatus : function (syncdata, wbxmlData, path, rootpath="", allowSoftFail = true) {
         //path is relative to wbxmlData
         //rootpath is the absolute path and must be specified, if wbxml is not the root node and thus path is not the rootpath	    
         let status = xmltools.getWbxmlDataField(wbxmlData,path);
@@ -1276,7 +1276,8 @@ var eas = {
             case "Sync:6":
                 //Server does not accept one of our items, we want to continue syncing, move the element to the end of the changelog
                 //and if we hit it again (everything else synced fine), abort (must be handled by caller)
-                return false;
+                if (allowSoftFail) return false;
+                break;
 		
             case "Sync:8": // Object not found - takeTargetOffline and remove folder
                 tbSync.dump("wbxml status", "Server reports <object not found> (" +  tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "), keeping local copy and removing folder.");
