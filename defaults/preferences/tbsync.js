@@ -7,6 +7,7 @@ pref("extensions.tbsync.eas.synclimit", 7);
 pref("extensions.tbsync.eas.maxitems", 50);
 
 pref("extensions.tbsync.eas.syncrecurringevents", true);
+pref("extensions.tbsync.eas.markfaileditems", false);
 
 pref("extensions.tbsync.hidephones",false);
 pref("extensions.tbsync.showanniversary",false);
