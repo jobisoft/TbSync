@@ -67,11 +67,15 @@ var db = {
         this.saveChangelog();
     },
 
-    removeItemFromChangeLog: function (parentId, itemId) {
+    removeItemFromChangeLog: function (parentId, itemId, moveToEnd = false) {
         for (let i=this.changelog.length-1; i>-1; i-- ) {
-            if (this.changelog[i].parentId == parentId && this.changelog[i].itemId == itemId) this.changelog.splice(i,1);
+            if (this.changelog[i].parentId == parentId && this.changelog[i].itemId == itemId) {
+                let row = this.changelog.splice(i,1);
+                if (moveToEnd) this.changelog.push(row[0]);
+                this.saveChangelog();
+                return;
+            }
         }
-        this.saveChangelog();
     },
 
     // Remove all cards of a parentId from ChangeLog
