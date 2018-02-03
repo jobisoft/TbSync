@@ -110,7 +110,7 @@ var eas = {
                 switch (job) {
                     case "sync":
                         //get all folders, which need to be synced
-                        yield eas.getUserInfo(syncdata);
+                        //yield eas.getUserInfo(syncdata);
                         yield eas.getPendingFolders(syncdata);
                         //sync all pending folders
                         yield eas.syncPendingFolders(syncdata); //inside here we throw and catch FinischFolderSync
