@@ -451,7 +451,7 @@ eas.sync = {
     }),
 
 
-    processResponses:  Task.async (function* (wbxmlData, syncdata)  {
+    processResponses:  Task.async (function* (wbxmlData, syncdata, pcal, addedItems)  {
             //any responses for us to work on?  If we reach this point, Sync.Collections.Collection is valid, 
             //no need to use the save getWbxmlDataField function
             if (wbxmlData.Sync.Collections.Collection.Responses) {
@@ -461,22 +461,35 @@ eas.sync = {
                 for (let count = 0; count < add.length; count++) {
                     yield tbSync.sleep(2);
 
-                    //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                    eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status");
-
                     //get the true Thunderbird UID of this added item (we created a temp clientId during add)
                     add[count].ClientId = addedItems[add[count].ClientId];
-                    
-                    //look for an item identfied by ClientId and update its id to the new id received from the server
-                    let foundItems = yield pcal.getItem(add[count].ClientId);
-                    
-                    if (foundItems.length > 0) {
-                        let newItem = foundItems[0].clone();
-                        newItem.id = add[count].ServerId;
-                        db.removeItemFromChangeLog(syncdata.targetObj.id, add[count].ClientId);
-                        db.addItemToChangeLog(syncdata.targetObj.id, newItem.id, "modified_by_server");
-                        yield pcal.modifyItem(newItem, foundItems[0]);
-                        syncdata.done++;
+
+                    //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
+                    if (!eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status")) {
+
+                        //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
+                        if (syncdata.failedItems.includes(add[count].ClientId)) {
+                            throw eas.finishSync("ServerRejectedItems::"+syncdata.failedItems.toString(), eas.flags.abortWithError);                            
+                        } else {
+                            //the extra parameter true will re-add the item to the end of the changelog
+                            db.removeItemFromChangeLog(syncdata.targetObj.id, add[count].ClientId, true);                        
+                            syncdata.failedItems.push(add[count].ClientId);
+                        }
+
+                    } else {
+                        
+                        //look for an item identfied by ClientId and update its id to the new id received from the server
+                        let foundItems = yield pcal.getItem(add[count].ClientId);
+                        
+                        if (foundItems.length > 0) {
+                            let newItem = foundItems[0].clone();
+                            newItem.id = add[count].ServerId;
+                            db.removeItemFromChangeLog(syncdata.targetObj.id, add[count].ClientId);
+                            db.addItemToChangeLog(syncdata.targetObj.id, newItem.id, "modified_by_server");
+                            yield pcal.modifyItem(newItem, foundItems[0]);
+                            syncdata.done++;
+                        }
+
                     }
                 }
 
@@ -660,6 +673,9 @@ eas.sync = {
         syncdata.done = 0;
         syncdata.todo = db.getItemsFromChangeLog(syncdata.targetObj.id, 0, "_by_user").length;
         
+        //keep track of failed items
+        syncdata.failedItems = [];
+        
         //get changed items from ChangeLog
         do {
             tbSync.setSyncState("prepare.request.localchanges", syncdata.account, syncdata.folderID);
@@ -781,7 +797,7 @@ eas.sync = {
             let wbxmlData = eas.getDataFromResponse(response);
         
             //check status
-            eas.checkStatus(syncdata, wbxmlData,"Sync.Collections.Collection.Status");            
+            eas.checkStatus(syncdata, wbxmlData, "Sync.Collections.Collection.Status");            
             yield tbSync.sleep(10);
 
             //remove all changed and acked items from changelog
@@ -791,7 +807,7 @@ eas.sync = {
             }
 
             //PROCESS RESPONSE        
-            yield eas.sync.processResponses(wbxmlData, syncdata);
+            yield eas.sync.processResponses(wbxmlData, syncdata, pcal, addedItems);
 	    
             //PROCESS COMMANDS        
             yield eas.sync.processCommands(wbxmlData, syncdata);
