@@ -451,12 +451,64 @@ eas.sync = {
     }),
 
 
+    processResponses:  Task.async (function* (wbxmlData, syncdata)  {
+            //any responses for us to work on?  If we reach this point, Sync.Collections.Collection is valid, 
+            //no need to use the save getWbxmlDataField function
+            if (wbxmlData.Sync.Collections.Collection.Responses) {
+
+                //looking for additions (Add node contains, status, old ClientId and new ServerId)
+                let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Add);
+                for (let count = 0; count < add.length; count++) {
+                    yield tbSync.sleep(2);
+
+                    //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
+                    eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status");
+
+                    //get the true Thunderbird UID of this added item (we created a temp clientId during add)
+                    add[count].ClientId = addedItems[add[count].ClientId];
+                    
+                    //look for an item identfied by ClientId and update its id to the new id received from the server
+                    let foundItems = yield pcal.getItem(add[count].ClientId);
+                    
+                    if (foundItems.length > 0) {
+                        let newItem = foundItems[0].clone();
+                        newItem.id = add[count].ServerId;
+                        db.removeItemFromChangeLog(syncdata.targetObj.id, add[count].ClientId);
+                        db.addItemToChangeLog(syncdata.targetObj.id, newItem.id, "modified_by_server");
+                        yield pcal.modifyItem(newItem, foundItems[0]);
+                        syncdata.done++;
+                    }
+                }
+
+                //looking for modifications 
+                let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
+                for (let count = 0; count < upd.length; count++) {
+                    //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
+                    eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status");
+                }
+
+                //looking for deletions 
+                let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Delete);
+                for (let count = 0; count < del.length; count++) {
+                    //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
+                    eas.checkStatus(syncdata, del[count],"Status","Sync.Collections.Collection.Responses.Delete["+count+"].Status");
+                }
+                
+            }
+    }),
+
+
     createItem : function (syncdata) {
         switch (syncdata.type) {
             case "Calendar": return cal.createEvent();
             case "Tasks": return cal.createTodo();
         }
     },
+
+
+
+
+
 
 
     start: Task.async (function* (syncdata)  {
@@ -507,7 +559,7 @@ eas.sync = {
                         wbxml.ctag();
                         wbxml.switchpage("GetItemEstimate");
                     }
-                    wbxml.ctag();
+                wbxml.ctag();
             wbxml.ctag();
         wbxml.ctag();
 
@@ -734,49 +786,7 @@ eas.sync = {
             }
 
             //PROCESS RESPONSE        
-            //any responses for us to work on?  If we reach this point, Sync.Collections.Collection is valid, 
-            //no need to use the save getWbxmlDataField function
-            if (wbxmlData.Sync.Collections.Collection.Responses) {
-
-                //looking for additions (Add node contains, status, old ClientId and new ServerId)
-                let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Add);
-                for (let count = 0; count < add.length; count++) {
-                    yield tbSync.sleep(2);
-
-                    //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                    eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status");
-
-                    //get the true Thunderbird UID of this added item (we created a temp clientId during add)
-                    add[count].ClientId = addedItems[add[count].ClientId];
-                    
-                    //look for an item identfied by ClientId and update its id to the new id received from the server
-                    let foundItems = yield pcal.getItem(add[count].ClientId);
-                    
-                    if (foundItems.length > 0) {
-                        let newItem = foundItems[0].clone();
-                        newItem.id = add[count].ServerId;
-                        db.removeItemFromChangeLog(syncdata.targetObj.id, add[count].ClientId);
-                        db.addItemToChangeLog(syncdata.targetObj.id, newItem.id, "modified_by_server");
-                        yield pcal.modifyItem(newItem, foundItems[0]);
-                        syncdata.done++;
-                    }
-                }
-
-                //looking for modifications 
-                let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
-                for (let count = 0; count < upd.length; count++) {
-                    //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                    eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status");
-                }
-
-                //looking for deletions 
-                let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Delete);
-                for (let count = 0; count < del.length; count++) {
-                    //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                    eas.checkStatus(syncdata, del[count],"Status","Sync.Collections.Collection.Responses.Delete["+count+"].Status");
-                }
-                
-            }
+            yield eas.sync.processResponses(wbxmlData, syncdata);
 	    
             //PROCESS COMMANDS        
             yield eas.sync.processCommands(wbxmlData, syncdata);
