@@ -463,7 +463,7 @@ eas.sync = {
         }
     },
 
-    processResponses:  Task.async (function* (wbxmlData, syncdata, pcal, addedItems)  {
+    processResponses:  Task.async (function* (wbxmlData, syncdata, pcal, addedItems, changedItems)  {
             //any responses for us to work on?  If we reach this point, Sync.Collections.Collection is valid, 
             //no need to use the save getWbxmlDataField function
             if (wbxmlData.Sync.Collections.Collection.Responses) {
@@ -809,18 +809,18 @@ eas.sync = {
             eas.checkStatus(syncdata, wbxmlData, "Sync.Collections.Collection.Status");            
             yield tbSync.sleep(10);
 
-            //remove all changed and acked items from changelog
-            for (let a=0; a < changedItems.length; a++) {
-                    db.removeItemFromChangeLog(syncdata.targetObj.id, changedItems[a]);
-                    syncdata.done++;
-            }
-
             //PROCESS RESPONSE        
-            yield eas.sync.processResponses(wbxmlData, syncdata, pcal, addedItems);
+            yield eas.sync.processResponses(wbxmlData, syncdata, pcal, addedItems, changedItems);
 	    
             //PROCESS COMMANDS        
             yield eas.sync.processCommands(wbxmlData, syncdata);
 
+            //remove all leftover items in changedItems from changelog (only failed changed items are explicitly listed) 
+            for (let a=0; a < changedItems.length; a++) {
+                    db.removeItemFromChangeLog(syncdata.targetObj.id, changedItems[a]);
+                    syncdata.done++;
+            }
+	    
             //update synckey
             eas.updateSynckey(syncdata, wbxmlData);
 	    
