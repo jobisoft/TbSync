@@ -451,6 +451,18 @@ eas.sync = {
     }),
 
 
+    updateFailedItems: function (syncdata, id) {
+        //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
+        if (syncdata.failedItems.includes(id)) {
+            throw eas.finishSync("ServerRejectedItems::"+syncdata.failedItems.toString(), eas.flags.abortWithError);                            
+        } else {
+            //the extra parameter true will re-add the item to the end of the changelog
+            db.removeItemFromChangeLog(syncdata.targetObj.id, id, true);                        
+            syncdata.failedItems.push(id);
+            tbSync.dump("Bad item moved to end of changelog", id);
+        }
+    },
+
     processResponses:  Task.async (function* (wbxmlData, syncdata, pcal, addedItems)  {
             //any responses for us to work on?  If we reach this point, Sync.Collections.Collection is valid, 
             //no need to use the save getWbxmlDataField function
@@ -468,13 +480,7 @@ eas.sync = {
                     if (!eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status")) {
 
                         //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
-                        if (syncdata.failedItems.includes(add[count].ClientId)) {
-                            throw eas.finishSync("ServerRejectedItems::"+syncdata.failedItems.toString(), eas.flags.abortWithError);                            
-                        } else {
-                            //the extra parameter true will re-add the item to the end of the changelog
-                            db.removeItemFromChangeLog(syncdata.targetObj.id, add[count].ClientId, true);                        
-                            syncdata.failedItems.push(add[count].ClientId);
-                        }
+                        eas.sync.updateFailedItems(syncdata, add[count].ClientId);
 
                     } else {
                         
@@ -497,7 +503,9 @@ eas.sync = {
                 let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
                 for (let count = 0; count < upd.length; count++) {
                     //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                    eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status");
+                    if (!eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status")) {
+                        eas.sync.updateFailedItems(syncdata, upd[count].ServerId);
+                    }
                 }
 
                 //looking for deletions 
