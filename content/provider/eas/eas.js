@@ -1259,7 +1259,7 @@ var eas = {
 
         //check if all is fine (not bad)
         if (status == "1") {
-            return;
+            return true;
         }
 
         tbSync.dump("wbxml status check", type + ": " + fullpath + " = " + status);
@@ -1273,6 +1273,11 @@ var eas = {
                 tbSync.dump("wbxml status", "Server reports <invalid synchronization key> (" + fullpath + " = " + status + "), resyncing.");
                 throw eas.finishSync(type+":"+status, eas.flags.resyncFolder);
             
+            case "Sync:6":
+                //Server does not accept one of our items, we want to continue syncing, move the element to the end of the changelog
+                //and if we hit it again (everything else synced fine), abort (must be handled by caller)
+                return false;
+		
             case "Sync:8": // Object not found - takeTargetOffline and remove folder
                 tbSync.dump("wbxml status", "Server reports <object not found> (" +  tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "), keeping local copy and removing folder.");
                 let folder = tbSync.db.getFolder(syncdata.account, syncdata.folderID);
