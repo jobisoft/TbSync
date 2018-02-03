@@ -476,11 +476,11 @@ eas.sync = {
                     //get the true Thunderbird UID of this added item (we created a temp clientId during add)
                     add[count].ClientId = addedItems[add[count].ClientId];
 
-                    //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                    if (!eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status")) {
+                    //Check status, stop sync if bad, allow soft fail
+                    if (!eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status", true)) {
 
-                        //Check status, stop sync if bad, allow soft fails
-                        if (!eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status", true)) {
+                        //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
+                        eas.sync.updateFailedItems(syncdata, add[count].ClientId);
 
                     } else {
                         
@@ -502,10 +502,13 @@ eas.sync = {
                 //looking for modifications 
                 let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
                 for (let count = 0; count < upd.length; count++) {
-                    //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                        if (!eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status", true)) {
+                    //Check status, stop sync if bad, allow soft fail
+                    if (!eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status", true)) {
                         //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
                         eas.sync.updateFailedItems(syncdata, upd[count].ServerId);
+                        //also remove from changedItems
+                        let p = changedItems.indexOf(upd[count].ServerId);
+                        if (p>-1) changedItems.splice(p,1);
                     }
                 }
 
