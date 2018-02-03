@@ -452,16 +452,20 @@ eas.sync = {
 
 
     updateFailedItems: function (syncdata, cause, item) {
+        //this is a special treatment for xj25vm (horde 5.1.10 does not accept titles longer than 250)
+        if (item.title && item.title.length>250 && cause == "invalid XML") cause = "title longer than 250"
+
         //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
         if (syncdata.failedItems.includes(item.id)) {
             let types = [];
-            for (let t in syncdata.failedItemTypes) types.push(syncdata.failedItemTypes[t] + "x " + t);
+            for (let t in syncdata.failedItemTypes) types.push(syncdata.failedItemTypes[t] + "x <" + t + ">");
             if (syncdata.done>0) throw eas.finishSync("ServerRejectedSomeItems::"+types.toString()+"::"+syncdata.done, eas.flags.abortWithError);                            
             throw eas.finishSync("ServerRejectedAllItems::"+types.toString(), eas.flags.abortWithError);                            
         } else {
             //the extra parameter true will re-add the item to the end of the changelog
             db.removeItemFromChangeLog(syncdata.targetObj.id, item.id, true);                        
             syncdata.failedItems.push(item.id);
+
             if (!syncdata.failedItemTypes[cause]) syncdata.failedItemTypes[cause] = 1; 
             else syncdata.failedItemTypes[cause]++;
             
