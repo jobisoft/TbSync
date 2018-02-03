@@ -385,8 +385,8 @@ eas.sync = {
                     if (db.getItemStatusFromChangeLog(syncdata.targetObj.id, ServerId) == "deleted_by_user") {
                         tbSync.dump("Add request, but element is in delete_log, asuming resync, local state wins, not adding.", ServerId);
                     } else {
-                        //There is a corner case: A local item has been send to the server, but the ACK is missing, so a rysnc happens and the event comes back with the new ServerID.
-                        //However, as its ApplicationData UID it has the original Thunderbird UID. An item with that UID could still exist! If so, that Item needs to get the new ServerID
+                        //There is a corner case: A local item has been send to the server, but the ACK is missing, so a reysnc happens and the event comes back with the new ServerID.
+                        //However, as its ApplicationData UID it has the original Thunderbird UID. An item with that UID could still exist! If so, that item needs to get the new ServerID
                         //and the "new" item from the server is not added - TODO
                         let newItem = eas.sync.createItem(syncdata);
                         eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
@@ -451,15 +451,21 @@ eas.sync = {
     }),
 
 
-    updateFailedItems: function (syncdata, id) {
+    updateFailedItems: function (syncdata, cause, item) {
         //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
-        if (syncdata.failedItems.includes(id)) {
-            throw eas.finishSync("ServerRejectedItems::"+syncdata.failedItems.length, eas.flags.abortWithError);                            
+        if (syncdata.failedItems.includes(item.id)) {
+            let types = [];
+            for (let t in syncdata.failedItemTypes) types.push(syncdata.failedItemTypes[t] + "x " + t);
+            if (syncdata.done>0) throw eas.finishSync("ServerRejectedSomeItems::"+types.toString()+"::"+syncdata.done, eas.flags.abortWithError);                            
+            throw eas.finishSync("ServerRejectedAllItems::"+types.toString(), eas.flags.abortWithError);                            
         } else {
             //the extra parameter true will re-add the item to the end of the changelog
-            db.removeItemFromChangeLog(syncdata.targetObj.id, id, true);                        
-            syncdata.failedItems.push(id);
-            tbSync.dump("Bad item moved to end of changelog", id);
+            db.removeItemFromChangeLog(syncdata.targetObj.id, item.id, true);                        
+            syncdata.failedItems.push(item.id);
+            if (!syncdata.failedItemTypes[cause]) syncdata.failedItemTypes[cause] = 1; 
+            else syncdata.failedItemTypes[cause]++;
+            
+            tbSync.dump("Bad item skipped <"+cause+">", item.icalString);
         }
     },
 
@@ -476,18 +482,15 @@ eas.sync = {
                     //get the true Thunderbird UID of this added item (we created a temp clientId during add)
                     add[count].ClientId = addedItems[add[count].ClientId];
 
-                    //Check status, stop sync if bad, allow soft fail
-                    if (!eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status", true)) {
+                    //look for an item identfied by ClientId and update its id to the new id received from the server
+                    let foundItems = yield pcal.getItem(add[count].ClientId);                    
+                    if (foundItems.length > 0) {
 
-                        //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
-                        eas.sync.updateFailedItems(syncdata, add[count].ClientId);
-
-                    } else {
-                        
-                        //look for an item identfied by ClientId and update its id to the new id received from the server
-                        let foundItems = yield pcal.getItem(add[count].ClientId);
-                        
-                        if (foundItems.length > 0) {
+                        //Check status, stop sync if bad, allow soft fail
+                        if (!eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status", true)) {
+                            //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
+                            eas.sync.updateFailedItems(syncdata, "invalid XML", foundItems[0]);
+                        } else {
                             let newItem = foundItems[0].clone();
                             newItem.id = add[count].ServerId;
                             db.removeItemFromChangeLog(syncdata.targetObj.id, add[count].ClientId);
@@ -502,13 +505,18 @@ eas.sync = {
                 //looking for modifications 
                 let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
                 for (let count = 0; count < upd.length; count++) {
-                    //Check status, stop sync if bad, allow soft fail
-                    if (!eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status", true)) {
-                        //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
-                        eas.sync.updateFailedItems(syncdata, upd[count].ServerId);
-                        //also remove from changedItems
-                        let p = changedItems.indexOf(upd[count].ServerId);
-                        if (p>-1) changedItems.splice(p,1);
+                    let foundItems = yield pcal.getItem(upd[count].ServerId);                    
+                    if (foundItems.length > 0) {
+
+                        //Check status, stop sync if bad, allow soft fail
+                        if (!eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status", true)) {
+                            //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
+                            eas.sync.updateFailedItems(syncdata, "invalid XML", foundItems[0]);
+                            //also remove from changedItems
+                            let p = changedItems.indexOf(upd[count].ServerId);
+                            if (p>-1) changedItems.splice(p,1);
+                        }
+
                     }
                 }
 
@@ -687,12 +695,14 @@ eas.sync = {
         
         //keep track of failed items
         syncdata.failedItems = [];
+        syncdata.failedItemTypes = {};
         
         //get changed items from ChangeLog
         do {
             tbSync.setSyncState("prepare.request.localchanges", syncdata.account, syncdata.folderID);
             let changes = db.getItemsFromChangeLog(syncdata.targetObj.id, maxnumbertosend, "_by_user");
             let c=0;
+            let e=0;
 
             //keep track of send items during this request
             let changedItems = [];
@@ -732,15 +742,8 @@ eas.sync = {
                                             wbxml.ctag();
                                             c++;
                                         } else {
-                                            let title = items[0].title ? items[0].title : "";
-                                            let addTitle = "Wrong item for this "+syncdata.type+" folder (not synced)! ";
-                                            tbSync.dump(addTitle, title ? title : "<no subject>");
-                                            if (!title || title.indexOf(addTitle) == -1) {
-                                                let badItem = items[0].clone();
-                                                badItem.title = addTitle + title;
-                                                yield pcal.modifyItem(badItem, items[0]);
-                                            }
-                                            db.removeItemFromChangeLog(syncdata.targetObj.id, changes[i].id);
+                                            eas.sync.updateFailedItems(syncdata, "wrong folder type", items[0]);
+                                            e++;
                                         }
                                         break;
                                     
@@ -759,22 +762,13 @@ eas.sync = {
                                             changedItems.push(changes[i].id);
                                             c++;
                                         } else {
-                                            let title = items[0].title ? items[0].title : "";
-                                            let addTitle = "Wrong item for this "+syncdata.type+" folder (not synced)! ";
-                                            tbSync.dump(addTitle, title ? title : "<no subject>");
-                                            let badItem = items[0].clone();
-                                            if (!title || title.indexOf(addTitle) == -1) {
-                                                badItem.title = addTitle + title;
-                                            } else {
-                                                badItem.title = "Again! " + title;
-                                            }
-                                            yield pcal.modifyItem(badItem, items[0]);
-                                            db.removeItemFromChangeLog(syncdata.targetObj.id, changes[i].id);
+                                            eas.sync.updateFailedItems(syncdata, "wrong folder type", items[0]);
+                                            e++;
                                         }
                                         break;
                                     
                                     case "deleted_by_user":
-                                        //filter out bad object types for this folder
+                                        //filter out bad object types for this folder - impossible to catch I think
                                         if (syncdata.type == this.CALTYPES[changes[i].type]) {
                                             wbxml.otag("Delete");
                                                 wbxml.atag("ServerId", changes[i].id);
@@ -793,39 +787,42 @@ eas.sync = {
                 wbxml.ctag(); //Collections
             wbxml.ctag(); //Sync
 
-            //if there was not a single local change, exit
-            if (c == 0) {
-                if (changes.length !=0 ) tbSync.dump("No more changes, but unproceccessed changes left:", changes.length);
-                return;
-            }
 
-            //SEND REQUEST & VALIDATE RESPONSE
-            tbSync.setSyncState("send.request.localchanges", syncdata.account, syncdata.folderID);
-            let response = yield eas.sendRequest(wbxml.getBytes(), "Sync", syncdata);
+            if (c > 0) { //if there was at least one actual local change, send request
+
+                //SEND REQUEST & VALIDATE RESPONSE
+                tbSync.setSyncState("send.request.localchanges", syncdata.account, syncdata.folderID);
+                let response = yield eas.sendRequest(wbxml.getBytes(), "Sync", syncdata);
+                
+                tbSync.setSyncState("eval.response.localchanges", syncdata.account, syncdata.folderID);
+
+                //get data from wbxml response
+                let wbxmlData = eas.getDataFromResponse(response);
             
-            tbSync.setSyncState("eval.response.localchanges", syncdata.account, syncdata.folderID);
+                //check status - do not allow softfail here
+                eas.checkStatus(syncdata, wbxmlData, "Sync.Collections.Collection.Status");            
+                yield tbSync.sleep(10);
 
-            //get data from wbxml response
-            let wbxmlData = eas.getDataFromResponse(response);
-        
-            //check status - do not allow softfail here
-            eas.checkStatus(syncdata, wbxmlData, "Sync.Collections.Collection.Status");            
-            yield tbSync.sleep(10);
+                //PROCESS RESPONSE        
+                yield eas.sync.processResponses(wbxmlData, syncdata, pcal, addedItems, changedItems);
+            
+                //PROCESS COMMANDS        
+                yield eas.sync.processCommands(wbxmlData, syncdata);
 
-            //PROCESS RESPONSE        
-            yield eas.sync.processResponses(wbxmlData, syncdata, pcal, addedItems, changedItems);
-	    
-            //PROCESS COMMANDS        
-            yield eas.sync.processCommands(wbxmlData, syncdata);
+                //remove all leftover items in changedItems from changelog (only failed changed items are explicitly listed) 
+                for (let a=0; a < changedItems.length; a++) {
+                        db.removeItemFromChangeLog(syncdata.targetObj.id, changedItems[a]);
+                        syncdata.done++;
+                }
+            
+                //update synckey
+                eas.updateSynckey(syncdata, wbxmlData);
 
-            //remove all leftover items in changedItems from changelog (only failed changed items are explicitly listed) 
-            for (let a=0; a < changedItems.length; a++) {
-                    db.removeItemFromChangeLog(syncdata.targetObj.id, changedItems[a]);
-                    syncdata.done++;
+            } else if (e==0) { //if there was no local change and also no error (which will not happen twice) return
+
+                return;
+
             }
-	    
-            //update synckey
-            eas.updateSynckey(syncdata, wbxmlData);
 	    
         } while (true);
         
