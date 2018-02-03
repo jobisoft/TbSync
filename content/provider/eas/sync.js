@@ -479,8 +479,8 @@ eas.sync = {
                     //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
                     if (!eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status")) {
 
-                        //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
-                        eas.sync.updateFailedItems(syncdata, add[count].ClientId);
+                        //Check status, stop sync if bad, allow soft fails
+                        if (!eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status", true)) {
 
                     } else {
                         
@@ -503,7 +503,7 @@ eas.sync = {
                 let upd = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Change);
                 for (let count = 0; count < upd.length; count++) {
                     //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
-                    if (!eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status")) {
+                        if (!eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status", true)) {
                         //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
                         eas.sync.updateFailedItems(syncdata, upd[count].ServerId);
                     }
@@ -806,7 +806,7 @@ eas.sync = {
             let wbxmlData = eas.getDataFromResponse(response);
         
             //check status - do not allow softfail here
-            eas.checkStatus(syncdata, wbxmlData, "Sync.Collections.Collection.Status", "", false);            
+            eas.checkStatus(syncdata, wbxmlData, "Sync.Collections.Collection.Status");            
             yield tbSync.sleep(10);
 
             //remove all changed and acked items from changelog
