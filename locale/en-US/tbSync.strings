@@ -13,16 +13,16 @@ status.timeout=Communication timeout.
 status.networkerror=Could not connect to server.
 status.401=Could not authenticate, check username and password.
 status.449=Server requests provisioning.
-status.httperror=Communication error (HTTP status ##replace##).
-status.wbxmlerror=Sync failed. Server responds with status <##replace##>.
-status.wbxmlmissingfield=ActiveSync protocol violation: Mandatory field <##replace##> is missing in server response.
+status.httperror=Communication error (HTTP status ##replace.1##).
+status.wbxmlerror=Sync failed. Server responds with status <##replace.1##>.
+status.wbxmlmissingfield=ActiveSync protocol violation: Mandatory field <##replace.1##> is missing in server response.
 status.OK=Ok
 status.nolightning=Lightning Add-On not installed, calendars are not supported.
 status.javascriptError=Javascript error! Check debug log for details.
 status.mailformed-xml=Could not parse XML. Please help fixing this bug by (in that order)\n - disconnect this account\n - enabling debug log (@Help)\n - restart Thunderbird\n - reconnect this account and re-trigger this error\n - send me the debug log or at least the XML and WBXML before the line marked with BAD XML   
 
-status.security=Could not establish a secure connection (##replace##).
-status.network=Could not connect to server (##replace##).
+status.security=Could not establish a secure connection (##replace.1##).
+status.network=Could not connect to server (##replace.1##).
 
 status.syncing=Synchronizing
 status.skipped=Not yet supported, skipped
@@ -38,7 +38,7 @@ status.policy.3=Unknown PolicyType value. Contact your server administrator or d
 status.policy.4=The policy data on the server is corrupted (possibly tampered with). Contact your server administrator or disable provisioning for this account.
 status.policy.5=The client is acknowledging the wrong policy key. Contact your server administrator or disable provisioning for this account.
 
-status.provision=Provision failed with status <##replace##>
+status.provision=Provision failed with status <##replace.1##>
 
 status.folderDelete.3=Cannot delete a system folder.
 status.folderDelete.6=Command could not be completed, an error occurred on the server.
@@ -47,7 +47,8 @@ status.global.101=The request contains WBXML but it could not be decoded into XM
 status.global.102=The request contains WBXML but it could not be decoded into XML (Error 102).
 status.global.103=The XML provided in the request does not follow the protocol requirements (Error 103).
 
-status.ServerRejectedItems=The EAS server rejected <##replace##> item(s). Check the debug log for more information.\n\nTo be able to identify failed items, you may enable <extensions.tbsync.eas.markfaileditems>, which adds a "<!>" prefix to the title of failed items.
+status.ServerRejectedSomeItems=The EAS server accepted only ##replace.2## of our items and rejected the remaining ones: ##replace.1##. \n\nCheck the debug log for more information. To be able to identify failed items, you may enable <extensions.tbsync.eas.markfaileditems>, which adds a "<!>" prefix to the title of failed items.
+status.ServerRejectedAllItems=The EAS server rejected all of your items: ##replace.1##. \n\nCheck the debug log for more information. To be able to identify failed items, you may enable <extensions.tbsync.eas.markfaileditems>, which adds a "<!>" prefix to the title of failed items.
 status.ServerRejectedRequest=The EAS Server rejected our last request. Check the debug log for more information.
 
 prompt.DeleteAccount=Delete account ##accountName## for sure?
