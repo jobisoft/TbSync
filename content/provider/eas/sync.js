@@ -454,7 +454,7 @@ eas.sync = {
     updateFailedItems: function (syncdata, id) {
         //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
         if (syncdata.failedItems.includes(id)) {
-            throw eas.finishSync("ServerRejectedItems::"+syncdata.failedItems.toString(), eas.flags.abortWithError);                            
+            throw eas.finishSync("ServerRejectedItems::"+syncdata.failedItems.length, eas.flags.abortWithError);                            
         } else {
             //the extra parameter true will re-add the item to the end of the changelog
             db.removeItemFromChangeLog(syncdata.targetObj.id, id, true);                        
