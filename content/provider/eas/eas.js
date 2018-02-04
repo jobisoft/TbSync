@@ -985,17 +985,27 @@ var eas = {
             this.buf = new DataView(new ArrayBuffer(172));
         }
         
-        /* Buffer structure:
-         @000    utcOffset (4x8bit as 1xLONG)
-        
-        @004     standardName (64x8bit as 32xWCHAR)
-        @068     standardDate (16x8 as 1xSYSTEMTIME)
-        @084     standardBias (4x8bit as 1xLONG)
-        
-        @088     daylightName (64x8bit as 32xWCHAR)
-        @152    daylightDate (16x8 as 1xSTRUCT)
-        @168    daylightBias (4x8bit as 1xLONG)
-        */
+/*
+        even O365 is not sending any values for the extra fields:
+            utcOffset: 360
+            standardName: Central America Standard Time
+            standardDate: 0-0-0, 0:0:0.0
+            standardBias: 0
+            daylightName: (UTC-06:00) Central America
+            daylightDate: 0-0-0, 0:0:0.0
+            daylightBias: 0
+		
+        Buffer structure:
+            @000    utcOffset (4x8bit as 1xLONG)
+
+            @004     standardName (64x8bit as 32xWCHAR)
+            @068     standardDate (16x8 as 1xSYSTEMTIME)
+            @084     standardBias (4x8bit as 1xLONG)
+
+            @088     daylightName (64x8bit as 32xWCHAR)
+            @152    daylightDate (16x8 as 1xSTRUCT)
+            @168    daylightBias (4x8bit as 1xLONG)
+*/
         
         set easTimeZone64 (b64) {
             //clear buffer
@@ -1053,6 +1063,7 @@ var eas = {
                 get wMinute () { return buf.getUint16(offset + 10, true); },
                 get wSecond () { return buf.getUint16(offset + 12, true); },
                 get wMilliseconds () { return buf.getUint16(offset + 14, true); },
+                toString() { return [this.wYear, this.wMonth, this.wDay].join("-") + ", " + [this.wHour,this.wMinute,this.wSecond].join(":") + "." + this.wMilliseconds},
 
                 set wYear (v) { buf.setUint16(offset + 0, v, true); },
                 set wMonth (v) { buf.setUint16(offset + 2, v, true); },
@@ -1082,7 +1093,14 @@ var eas = {
         get daylightName () {return this.getstr(88); }
         set daylightName (v) {return this.setstr(88, v); }
         
-        toString () { return "[" + [this.standardName, this.daylightName, this.utcOffset, this.standardBias, this.daylightBias].join("|") + "]"; }
+        toString () { return ["TimeZoneData =>", 
+		"utcOffset: "+ this.utcOffset,
+		"standardName: "+ this.standardName,
+		"standardDate: "+ this.standardDate.toString(),
+		"standardBias: "+ this.standardBias,
+		"daylightName: "+ this.daylightName,
+		"daylightDate: "+ this.daylightDate.toString(),
+		"daylightBias: "+ this.daylightBias].join("\n"); }
     },
 
 

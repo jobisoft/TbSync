@@ -22,7 +22,7 @@ eas.sync.Calendar = {
             //load timezone struct into EAS TimeZone object
             easTZ.easTimeZone64 = data.TimeZone;
             utcOffset = easTZ.utcOffset;
-            //tbSync.dump("Recieve TZ","Extracted UTC Offset: " + utcOffset + ", Guessed TimeZone: " + eas.offsets[utcOffset] + ", Full Received TZ: " + easTZ.toString());
+            //tbSync.dump("Recieve TZ", easTZ.toString());
         }
 
         let tzService = cal.getTimezoneService();
@@ -211,6 +211,7 @@ eas.sync.Calendar = {
             //easTZ.daylightDate
                     
             wbxml.atag("TimeZone", easTZ.easTimeZone64);
+            //tbSync.dump("Send TZ",easTZ.toString());
         }
 
         //StartTime & EndTime in UTC
