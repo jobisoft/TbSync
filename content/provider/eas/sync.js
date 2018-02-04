@@ -391,9 +391,7 @@ eas.sync = {
                         let newItem = eas.sync.createItem(syncdata);
                         eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
                         db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "added_by_server");
-                        try {
-                            yield pcal.addItem(newItem);
-                        } catch (e) {tbSync.dump("Error during Add", e);}
+                        yield pcal.adoptItem(newItem); //yield pcal.addItem(newItem); // We are not using the added item after is has been added, so we might be faster using adoptItem
                     }
                 } else {
                     //item exists, asuming resync
