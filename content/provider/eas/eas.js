@@ -1093,7 +1093,7 @@ var eas = {
         get daylightName () {return this.getstr(88); }
         set daylightName (v) {return this.setstr(88, v); }
         
-        toString () { return ["TimeZoneData =>", 
+        toString () { return ["", 
 		"utcOffset: "+ this.utcOffset,
 		"standardName: "+ this.standardName,
 		"standardDate: "+ this.standardDate.toString(),
