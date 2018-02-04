@@ -49,7 +49,7 @@ status.global.103=The XML provided in the request does not follow the protocol r
 
 status.ServerRejectedSomeItems=The EAS server accepted only ##replace.2## of your items and rejected the remaining ones for the following reasons: ##replace.1##. Check the debug log for "Bad item skipped". A rejection error of "invalid XML" could be caused by a bug in TbSync.
 status.ServerRejectedAllItems=The EAS server rejected your items for the following reasons: ##replace.1##. Check the debug log for "Bad item skipped". A rejection error of "invalid XML" could be a bug in TbSync.
-status.ServerRejectedRequest=The EAS Server rejected our last request. Check the debug log for more information.
+status.ServerRejectedRequest=The EAS Server rejected our last request. This is probably due to a bug in TbSync. Check the debug log for more information.
 
 prompt.DeleteAccount=Delete account ##accountName## for sure?
 prompt.Disconnect=Are you sure you want to disconnect this account? All local modifications, which have not been synced yet, will be lost!
