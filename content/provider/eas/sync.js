@@ -416,8 +416,10 @@ eas.sync = {
                 if (foundItems.length > 0) { //only update, if an item with that ServerId was found
                     let newItem = foundItems[0].clone();
                     eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
-                    db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_server");
+                    db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "modified_by_server"); //any local change will be lost
                     yield pcal.modifyItem(newItem, foundItems[0]);
+                } else if (db.getItemStatusFromChangeLog(syncdata.targetObj.id, ServerId) == "deleted_by_user") {
+                        tbSync.dump("Change request, but element is in delete_log, local state wins, not changing.", ServerId);
                 } else {
                     tbSync.dump("Update request, but element not found", ServerId);
                     //resync to avoid out-of-sync problems, "add" can take care of local merges
@@ -437,6 +439,9 @@ eas.sync = {
                 if (foundItems.length > 0) { //delete item with that ServerId
                     db.addItemToChangeLog(syncdata.targetObj.id, ServerId, "deleted_by_server");
                     yield pcal.deleteItem(foundItems[0]);
+                } else if (db.getItemStatusFromChangeLog(syncdata.targetObj.id, ServerId) == "deleted_by_user") {
+                        tbSync.dump("Delete request, but element is in delete_log, no action needed.", ServerId);
+                        db.removeItemFromChangeLog(syncdata.targetObj.id, ServerId);                        
                 } else {
                     tbSync.dump("Delete request, but element not found", ServerId);
                     //resync to avoid out-of-sync problems
