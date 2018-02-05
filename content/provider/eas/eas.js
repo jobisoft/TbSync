@@ -733,7 +733,7 @@ var eas = {
             let charcodes = [];
             for (let i=0; i< wbxml.length; i++) charcodes.push(wbxml.charCodeAt(i).toString(16));
             let bytestring = charcodes.join(" ");
-            tbSync.dump(what + " (WBXML)", "\n" + bytestring);
+            tbSync.dump("WBXML: " + what, "\n" + bytestring);
 
             let rawxml = tbSync.wbxmltools.convert2xml(wbxml);
             if (rawxml === false) {
@@ -741,9 +741,10 @@ var eas = {
                 return;
             }
             
-            //raw xml is save xml with all special chars in user data encoded by encodeURIComponent
-            let xml = decodeURIComponent(rawxml.split('><').join('>\n<'));
-            tbSync.dump(what +" (XML)", "\n" + xml);
+            //raw xml is save xml with all special chars in user data encoded by encodeURIComponent - KEEP that in order to be able to analyze logged XML 
+            //let xml = decodeURIComponent(rawxml.split('><').join('>\n<'));
+            let xml = rawxml.split('><').join('>\n<');
+            tbSync.dump("XML: " + what, "\n" + xml);
         }
     },
  
