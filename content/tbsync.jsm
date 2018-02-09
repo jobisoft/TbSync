@@ -256,6 +256,10 @@ var tbSync = {
         }
         return (tabmail !== null);
     },
+    
+    openFileTab: function (file) {
+        return tbSync.openTBtab(tbSync.getAbsolutePath(file));
+    },
 
     getAbsolutePath: function(filename) {
         return OS.Path.join(tbSync.storageDirectory, filename);

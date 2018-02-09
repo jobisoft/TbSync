@@ -202,7 +202,7 @@ var tbSyncEasNewAccount = {
                 }
             } else if (req.status === 401) {
                 //Report wrong password and start again
-                window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", accountdata, 
+                window.openDialog("chrome://tbsync/content/manager/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", accountdata, 
                     function() {
                         tbSyncEasNewAccount.autodiscover(accountdata, tbSync.eas.getPassword(accountdata));
                     },

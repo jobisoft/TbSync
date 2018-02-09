@@ -1,10 +1,8 @@
 "use strict";
 
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
-Components.utils.import("resource://gre/modules/osfile.jsm");
-Components.utils.import("resource://gre/modules/Task.jsm");
 
-var tbSyncAccountManager = {
+var tbSyncAccounts = {
 
     selectedAccount: null,
 
@@ -13,15 +11,14 @@ var tbSyncAccountManager = {
         //the onSelect event of the List will load the selected account
         this.updateAccountsList(); 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(tbSyncAccountManager.updateAccountSyncStateObserver, "tbsync.changedSyncstate", false);
-        observerService.addObserver(tbSyncAccountManager.updateAccountNameObserver, "tbsync.changedAccountName", false);
+        observerService.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.changedSyncstate", false);
+        observerService.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.changedAccountName", false);
     },
 
     onunload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.removeObserver(tbSyncAccountManager.updateAccountSyncStateObserver, "tbsync.changedSyncstate");
-        observerService.removeObserver(tbSyncAccountManager.updateAccountNameObserver, "tbsync.changedAccountName");
-        tbSync.prefWindowObj = null;
+        observerService.removeObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.changedSyncstate");
+        observerService.removeObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.changedAccountName");
     },
 
 
@@ -32,7 +29,7 @@ var tbSyncAccountManager = {
 
 
     deleteAccount: function () {
-        let accountsList = document.getElementById("tbSyncAccountManager.accounts");
+        let accountsList = document.getElementById("tbSyncAccounts.accounts");
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
             let nextAccount =  -1;
             if (accountsList.selectedIndex > 0) {
@@ -62,7 +59,7 @@ var tbSyncAccountManager = {
                 //limit execution to a couple of states, not all
                 let state = tbSync.getSyncData(aData,"state");
                 //if (state == "syncing" || state == "accountdone") 
-                tbSyncAccountManager.updateAccountStatus(aData);
+                tbSyncAccounts.updateAccountStatus(aData);
             }
         }
     },
@@ -112,7 +109,7 @@ var tbSyncAccountManager = {
     },
 
     updateAccountStatus: function (id) {
-        let listItem = document.getElementById("tbSyncAccountManager.accounts." + id);
+        let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
         this.setStatusImage(id, listItem.childNodes[1].firstChild);
     },
 
@@ -121,17 +118,17 @@ var tbSyncAccountManager = {
             let pos = aData.indexOf(":");
             let id = aData.substring(0, pos);
             let name = aData.substring(pos+1);
-            tbSyncAccountManager.updateAccountName (id, name);
+            tbSyncAccounts.updateAccountName (id, name);
         }
     },
 
     updateAccountName: function (id, name) {
-        let listItem = document.getElementById("tbSyncAccountManager.accounts." + id);
+        let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
         if (listItem.firstChild.getAttribute("label") != name) listItem.firstChild.setAttribute("label", name);
     },
     
     updateAccountsList: function (accountToSelect = -1) {
-        let accountsList = document.getElementById("tbSyncAccountManager.accounts");
+        let accountsList = document.getElementById("tbSyncAccounts.accounts");
         let accounts = tbSync.db.getAccounts();
 
         if (accounts.IDs.length > null) {
@@ -151,7 +148,7 @@ var tbSyncAccountManager = {
                 if (listedAccounts.indexOf(accounts.IDs[i]) == -1) {
                     //add all missing accounts (always to the end of the list)
                     let newListItem = document.createElement("richlistitem");
-                    newListItem.setAttribute("id", "tbSyncAccountManager.accounts." + accounts.IDs[i]);
+                    newListItem.setAttribute("id", "tbSyncAccounts.accounts." + accounts.IDs[i]);
                     newListItem.setAttribute("value", accounts.IDs[i]);
                     newListItem.setAttribute("label", accounts.data[accounts.IDs[i]].accountname);
 
@@ -197,24 +194,20 @@ var tbSyncAccountManager = {
             }
             
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-            document.getElementById("tbSyncAccountManager.contentFrame").webNavigation.loadURI("chrome://tbsync/content/noaccounts.xul", LOAD_FLAGS_NONE, null, null, null);
+            document.getElementById("tbSyncAccounts.contentFrame").webNavigation.loadURI("chrome://tbsync/content/manager/noaccounts.xul", LOAD_FLAGS_NONE, null, null, null);
         }
     },
 
 
     //load the pref page for the currently selected account (triggered by onSelect)
     loadSelectedAccount: function () {
-        let accountsList = document.getElementById("tbSyncAccountManager.accounts");
+        let accountsList = document.getElementById("tbSyncAccounts.accounts");
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
             //get id of selected account from value of selectedItem
             this.selectedAccount = accountsList.selectedItem.value;
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-            document.getElementById("tbSyncAccountManager.contentFrame").webNavigation.loadURI("chrome://tbsync/content/provider/"+tbSync.db.getAccountSetting(this.selectedAccount, "provider")+"/accountSettings.xul?id=" + this.selectedAccount, LOAD_FLAGS_NONE, null, null, null);
+            document.getElementById("tbSyncAccounts.contentFrame").webNavigation.loadURI("chrome://tbsync/content/provider/"+tbSync.db.getAccountSetting(this.selectedAccount, "provider")+"/accountSettings.xul?id=" + this.selectedAccount, LOAD_FLAGS_NONE, null, null, null);
         }
-    },
-
-    openFileTab: function (file) {
-        return tbSync.openTBtab(tbSync.getAbsolutePath(file));
     }
     
 };

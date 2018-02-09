@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://tbsync/content/manager/manager.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
+
+<window
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    onload="tbSyncAccounts.onload();"
+    onunload="tbSyncAccounts.onunload();"
+    title="TbSync Account Settings" >
+
+    <popupset>
+        <menupopup id="tbsync.accountmanger.ContextMenu">
+            <menuitem id="tbsync.accountmanger.ContextMenuDelete" label="&pref.DeleteAccount;" oncommand="tbSyncAccounts.deleteAccount();"/>
+        </menupopup>
+    </popupset>
+
+    <hbox flex="1" style="padding:10px">
+        <vbox width="200">
+            <richlistbox 
+                id="tbSyncAccounts.accounts"
+                flex="1"
+                seltype="single"
+                context="tbsync.accountmanger.ContextMenu"
+                onkeypress="if (event.keyCode == 46) {tbSyncAccounts.deleteAccount();}"
+                onselect="tbSyncAccounts.loadSelectedAccount();">
+                <listhead style="border-bottom: 1px solid lightgrey;">
+                    <listheader style="font-weight:bold;" label="&manager.accounts;" flex="3" />
+                    <listheader style="font-weight:bold;text-align:right;" label="&manager.status;" flex="1" />
+                </listhead>
+            </richlistbox>
+            <hbox>
+             <vbox flex="1">
+                <button 
+                  label="&pref.SyncAll;"
+                  oncommand="tbSync.syncAccount('sync');"/>
+             </vbox>
+             <hbox>                  
+                <button 
+                  style="width: 2em; min-width: 2em;"
+                  label="+"
+                  oncommand="tbSyncAccounts.addAccount();"/>
+             </hbox>                  
+            </hbox>
+        </vbox>
+        <iframe id="tbSyncAccounts.contentFrame" type="content" flex="1" />
+    </hbox>
+
+    <script type="text/javascript" src="chrome://tbsync/content/manager/accounts.js" /> 
+
+</window>

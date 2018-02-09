@@ -30,7 +30,7 @@ var tbSyncMessenger = {
     
     openAccountManager: function () {
         // check, if a window is already open and just put it in focus
-        if (tbSync.prefWindowObj === null) tbSync.prefWindowObj = window.open("chrome://tbsync/content/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen,toolbar,resizable");
+        if (tbSync.prefWindowObj === null) tbSync.prefWindowObj = window.open("chrome://tbsync/content/manager/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen");
         tbSync.prefWindowObj.focus();
     },
 
@@ -45,7 +45,7 @@ var tbSyncMessenger = {
             }
         } else {
             if (confirm(msg + "To help fix this error, you could send a debug log to the TbSync developer. Do you want to open the debug log now?")) {
-                tbSync.openTBtab(tbSync.getAbsolutePath("debug.log"));
+                tbSync.openFileTab("debug.log");
             }
         }
     },

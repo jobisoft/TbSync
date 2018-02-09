@@ -514,7 +514,7 @@ var tbSyncAccountSettings = {
                         let status = tbSync.db.getAccountSetting(account, "status");
                         switch (status) {
                             case "401":
-                                window.openDialog("chrome://tbsync/content/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.db.getAccount(account), function() {tbSync.syncAccount("sync", account);});
+                                window.openDialog("chrome://tbsync/content/manager/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.db.getAccount(account), function() {tbSync.syncAccount("sync", account);});
                                 break;
                             case "OK":
                             case "notsyncronized":
