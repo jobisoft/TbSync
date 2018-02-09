@@ -6,6 +6,7 @@
     xmlns:html="http://www.w3.org/1999/xhtml"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    onload="tbSyncAccountManager.getLogPref();"
     title="Help" >
 
     <hbox flex="1" style="padding:10px">
@@ -14,7 +15,7 @@
             <html:p>There seems to be a problem with entering birthday data in some versions of Zarafa Webaccess. It does work in the Webapp. This is why there is a check box "Send Birthday Information" in the account settings dialog. This is a bug in  Zarafa not in TbSync.</html:p>
             <html:p><html:b>Debug</html:b></html:p>
             <html:p>If you encounter bugs, you can help to fix them by sending in a debug report. Activate debug logging only as long as needed, because it slows down Thunderbird.</html:p>
-            <checkbox label="Enable debug logging to store all debug messages and the xml being sent and received by TbSync in a log file." preference="log" />                
+            <checkbox id="tbSyncAccountManager.logPrefCheckbox" label="Enable debug logging to store all debug messages and the xml being sent and received by TbSync in a log file." oncommand="tbSyncAccountManager.toggleLogPref();" />                
             <html:p> To generate a clean bug report, restart Thunderbird (which clears the log) and perform all steps needed to trigger the bug, <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openFileTab('debug.log');" style="color:blue;text-decoration: underline">open the debug report (click here)</html:span> and copy it into an email to john.bieling@gmx.de. Do not forget a short bug description.</html:p>
         </vbox>
     </hbox>
