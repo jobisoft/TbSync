@@ -4,6 +4,10 @@ Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncAccountManager = {
 
+    onload: function () {
+        tbSyncAccountManager.selectTab(0);
+    },
+    
     onunload: function () {
         tbSync.prefWindowObj = null;
         tbSync.dump("unload","now");

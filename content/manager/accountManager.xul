@@ -8,6 +8,7 @@
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
     title="&manager.title;" 
+    onload="tbSyncAccountManager.onload();"
     onunload="tbSyncAccountManager.onunload();"
     width="750" height="550" >
         
@@ -17,7 +18,7 @@
             <vbox id="tbSyncAccountManager.t2" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSyncAccountManager.selectTab(2)"><hbox flex="1" pack="center"><image src="chrome://tbsync/skin/catman32.png" style="width: 32px; height: 32px" /></hbox><label value="Category Manager" /></vbox>
             <vbox id="tbSyncAccountManager.t3" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSyncAccountManager.selectTab(3)"><hbox flex="1" pack="center"><image src="chrome://tbsync/skin/help32.png" style="width: 32px; height: 32px" /></hbox><label value="Help" /></vbox>
         </hbox>
-        <iframe id ="tbSyncAccountManager.contentWindow" src="chrome://tbsync/content/manager/accounts.xul" type="content" flex="1" />
+        <iframe id ="tbSyncAccountManager.contentWindow" type="content" flex="1" />
 
     <script type="text/javascript" src="chrome://tbsync/content/manager/accountManager.js" /> 
 
