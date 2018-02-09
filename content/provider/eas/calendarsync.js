@@ -23,6 +23,10 @@ eas.sync.Calendar = {
             easTZ.easTimeZone64 = data.TimeZone;
             utcOffset = easTZ.utcOffset;
             tbSync.dump("Recieve TZ", item.title + easTZ.toString());
+            if (data.TimeZone == "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==") {
+                utcOffset = eas.defaultUtcOffset;
+                tbSync.dump("Recieve TZ", "No timezone data received, using local default timezone.");
+            }
         }
 
         let tzService = cal.getTimezoneService();
