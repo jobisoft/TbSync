@@ -85,7 +85,7 @@ var tbSyncEasNewAccount = {
 
         //create a new EAS account and pass its id to updateAccountsList, which will select it
         //the onSelect event of the List will load the selected account
-        window.opener.tbSyncAccountManager.updateAccountsList(tbSync.db.addAccount(newAccountEntry));
+        window.opener.tbSyncAccounts.updateAccountsList(tbSync.db.addAccount(newAccountEntry));
 
         if (msg) alert(msg);
         tbSyncEasNewAccount.locked = false;
