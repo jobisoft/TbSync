@@ -1,6 +1,6 @@
 ## Before you post a new issue
 
-Please read [Support & Requests](https://github.com/jobisoft/TbSync/wiki/Support-&-Requests). If you found a bug, please send in a debug.log via e-mail and use the title of your issue as subject of the email.
+Please update TbSync to the latest release and also update your Thunderbird to the latest stable release. Please also enable debug logging (TbSync Account Manager -> Help). Can you still reproduce the bug? If so, please send me the debug.log via e-mail and use the title of your issue as subject of the email.
 
 ```
 TbSync version:
