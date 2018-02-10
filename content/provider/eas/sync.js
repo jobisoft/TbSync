@@ -457,7 +457,8 @@ eas.sync = {
     updateFailedItems: function (syncdata, cause, item) {
         //this is a special treatment for xj25vm (horde 5.1.10 does not accept titles longer than 250)
         if (item.title && item.title.length>250 && cause == "invalid XML") cause = "title longer than 250"
-
+	if (cause == "invalid XML") cause = "invalid XML (possible bug in TbSync)";
+	    
         //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
         if (syncdata.failedItems.includes(item.id)) {
             let types = [];
@@ -749,7 +750,7 @@ eas.sync = {
                                             wbxml.ctag();
                                             c++;
                                         } else {
-                                            eas.sync.updateFailedItems(syncdata, "wrong folder type", items[0]);
+                                            eas.sync.updateFailedItems(syncdata, "forbidden "+this.CALTYPES[changes[i].type]+" item in "+syncdata.type+" folder", items[0]);
                                             e++;
                                         }
                                         break;
@@ -769,7 +770,7 @@ eas.sync = {
                                             changedItems.push(changes[i].id);
                                             c++;
                                         } else {
-                                            eas.sync.updateFailedItems(syncdata, "wrong folder type", items[0]);
+                                            eas.sync.updateFailedItems(syncdata, "forbidden "+this.CALTYPES[changes[i].type]+" item in "+syncdata.type+" folder", items[0]);
                                             e++;
                                         }
                                         break;
