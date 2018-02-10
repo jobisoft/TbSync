@@ -10,7 +10,6 @@ var tbSyncAccountManager = {
     
     onunload: function () {
         tbSync.prefWindowObj = null;
-        tbSync.dump("unload","now");
     },
 
     selectTab: function (t) {

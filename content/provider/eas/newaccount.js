@@ -5,6 +5,9 @@ Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 var tbSyncEasNewAccount = {
 
     locked: true,
+    lastRequestTime: 0,
+    updateTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
+
   
     onClose: function () {
         return !tbSyncEasNewAccount.locked;
@@ -106,7 +109,12 @@ var tbSyncEasNewAccount = {
             urls.push(singleurl);
         } else {
             let parts = accountdata.user.split("@");
+
+            urls.push("http://autodiscover."+parts[1]+"/autodiscover/autodiscover.xml");
+            urls.push("http://"+parts[1]+"/autodiscover/autodiscover.xml");
             urls.push("http://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
+            urls.push("http://"+parts[1]+"/Autodiscover/Autodiscover.xml");
+
             urls.push("https://autodiscover."+parts[1]+"/autodiscover/autodiscover.xml");
             urls.push("https://"+parts[1]+"/autodiscover/autodiscover.xml");
             urls.push("https://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
@@ -117,13 +125,22 @@ var tbSyncEasNewAccount = {
 
     setAutodiscoverStatus: function (index, urls) {
         tbSync.dump("Trying EAS autodiscover", "[" + urls[index] + "]");
+        tbSyncEasNewAccount.updateQueryTimeout();
         document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = false;
         document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = false;
         document.getElementById('tbsync.newaccount.autodiscoverstatus').textContent  = urls[index] + " ("+(index+1)+"/"+urls.length+")";
     },
     
+    updateQueryTimeout: function () {
+        let msg = tbSync.getLocalizedMessage("info.AutodiscoverQuerying","eas") + " ";
+        let diff = Date.now() - tbSyncEasNewAccount.lastRequestTime;
+        if (diff > 2000) msg = msg + " (" + Math.round((15000 - diff)/1000) + "s)";      
+        document.getElementById('tbsync.newaccount.autodiscoverlabel').value  = msg;
+    },
 
     autodiscoverHTTP: function (accountdata, password, urls, index) {
+        tbSyncEasNewAccount.updateTimer.cancel();
+
         if (index>=urls.length) {
             this.autodiscoverFailed(accountdata);
             return;
@@ -146,10 +163,13 @@ var tbSyncEasNewAccount = {
         req.setRequestHeader("Content-Length", xml.length);
         req.setRequestHeader("Content-Type", "text/xml");
         req.setRequestHeader("User-Agent", "Thunderbird ActiveSync");
-        req.setRequestHeader("Authorization", "Basic " + btoa(accountdata.user + ":" + password));
+
+        let secure = (urls[index].substring(0,8) == "https://");
+        //do not send password via http
+        if (secure) req.setRequestHeader("Authorization", "Basic " + btoa(accountdata.user + ":" + password));
 
         req.timeout = 15000;
-
+        
         req.ontimeout  = function() {
             //log error and try next server
             tbSync.dump("Timeout on EAS autodiscover", urls[index]);
@@ -170,8 +190,9 @@ var tbSyncEasNewAccount = {
 
         // define response handler for our request
         req.onload = function() { 
+            tbSync.dump("EAS autodiscover with response (status: " + req.status + ")", "\n" + req.responseText);
+            
             if (req.status === 200) {
-                tbSync.dump("EAS autodiscover with response (status: 200)", "\n" + req.responseText);
                 let data = tbSync.xmltools.getDataFromXMLString(req.responseText);
         
                 if (!(data === null) && data.Autodiscover && data.Autodiscover.Response && data.Autodiscover.Response.Action) {
@@ -198,21 +219,31 @@ var tbSyncEasNewAccount = {
                     }
                 } else {
                     tbSync.dump("EAS autodiscover with invalid response, skipping.", urls[index]);
+                    tbSync.autodiscoverErrors.push(urls[index]+" =>\n\t" + "Invalid response, skipping.");
                     this.autodiscoverHTTP(accountdata, password, urls, index+1);
                 }
-            } else if (req.status === 401) {
-                //Report wrong password and start again
-                window.openDialog("chrome://tbsync/content/manager/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", accountdata, 
-                    function() {
-                        tbSyncEasNewAccount.autodiscover(accountdata, tbSync.eas.getPassword(accountdata));
-                    },
-                    function() {
-                        document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
-                        document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
-                        document.documentElement.getButton("cancel").disabled = false;
-                        document.documentElement.getButton("extra1").disabled = false;
-                    });
             } else {
+
+                if (secure && req.status === 401) {
+                    //Report wrong password and start again
+                    window.openDialog("chrome://tbsync/content/manager/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", accountdata, 
+                        function() {
+                            tbSyncEasNewAccount.autodiscover(accountdata, tbSync.eas.getPassword(accountdata));
+                        },
+                        function() {
+                            document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
+                            document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
+                            document.documentElement.getButton("cancel").disabled = false;
+                            document.documentElement.getButton("extra1").disabled = false;
+                        });
+                    tbSyncEasNewAccount.updateTimer.cancel();
+                    return;
+                }
+
+                if (!secure && req.status === 401) {
+                    tbSync.autodiscoverErrors.push(urls[index]+" =>\n\t" + "Expected 'not authenticated' (not allowed to authenticate via unsecure HTTP). Called without authentication data just to get redirect information.");
+                }
+
                 //check for redirects (301/302 are seen as 501 - WTF? --- using responseURL to check for redirects)
                 if (req.responseURL != urls[index]) {
                     let redirectURL = req.responseURL;
@@ -220,15 +251,22 @@ var tbSyncEasNewAccount = {
                     this.autodiscover(accountdata, password, redirectURL);
                 } else {
                     tbSync.dump("Error on EAS autodiscover (" + req.status + ")", (req.responseText) ? req.responseText : urls[index]);
+                    tbSync.autodiscoverErrors.push(urls[index]+" =>\n\t" + "Bad status ("+req.status+") and also no redirect information, skipping.");
                     this.autodiscoverHTTP(accountdata, password, urls, index+1);
                 }
+                
             }
         }.bind(this);
 
+        tbSyncEasNewAccount.lastRequestTime = Date.now();
+        tbSyncEasNewAccount.updateTimer.init(tbSyncEasNewAccount.updateQueryTimeout, 1000, 3);
         req.send(xml);
+        
     },
     
     autodiscoverOPTIONS: function (accountdata, password, url) {
+        tbSyncEasNewAccount.updateTimer.cancel();
+
         //send OPTIONS request to get ActiveSync Version and provision
         let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
         req.mozBackgroundRequest = true;
