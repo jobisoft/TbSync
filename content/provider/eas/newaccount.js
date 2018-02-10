@@ -131,6 +131,17 @@ var tbSyncEasNewAccount = {
         document.getElementById('tbsync.newaccount.autodiscoverstatus').textContent  = urls[index] + " ("+(index+1)+"/"+urls.length+")";
     },
     
+    initQueryTimeout: function () {
+        tbSyncEasNewAccount.lastRequestTime = Date.now();
+        tbSyncEasNewAccount.updateTimer.init(tbSyncEasNewAccount.updateQueryTimeout, 1000, 3);
+    },
+
+    cancelQueryTimeout: function () {
+        //init lastRequestTime
+        tbSyncEasNewAccount.lastRequestTime = Date.now();
+        tbSyncEasNewAccount.updateTimer.cancel();        
+    },
+    
     updateQueryTimeout: function () {
         let msg = tbSync.getLocalizedMessage("info.AutodiscoverQuerying","eas") + " ";
         let diff = Date.now() - tbSyncEasNewAccount.lastRequestTime;
@@ -139,7 +150,7 @@ var tbSyncEasNewAccount = {
     },
 
     autodiscoverHTTP: function (accountdata, password, urls, index) {
-        tbSyncEasNewAccount.updateTimer.cancel();
+        tbSyncEasNewAccount.cancelQueryTimeout();
 
         if (index>=urls.length) {
             this.autodiscoverFailed(accountdata);
@@ -168,7 +179,7 @@ var tbSyncEasNewAccount = {
         //do not send password via http
         if (secure) req.setRequestHeader("Authorization", "Basic " + btoa(accountdata.user + ":" + password));
 
-        req.timeout = 15000;
+        req.timeout = 16000;
         
         req.ontimeout  = function() {
             //log error and try next server
@@ -236,7 +247,7 @@ var tbSyncEasNewAccount = {
                             document.documentElement.getButton("cancel").disabled = false;
                             document.documentElement.getButton("extra1").disabled = false;
                         });
-                    tbSyncEasNewAccount.updateTimer.cancel();
+                    tbSyncEasNewAccount.cancelQueryTimeout();
                     return;
                 }
 
@@ -258,14 +269,13 @@ var tbSyncEasNewAccount = {
             }
         }.bind(this);
 
-        tbSyncEasNewAccount.lastRequestTime = Date.now();
-        tbSyncEasNewAccount.updateTimer.init(tbSyncEasNewAccount.updateQueryTimeout, 1000, 3);
+        tbSyncEasNewAccount.initQueryTimeout();
         req.send(xml);
         
     },
     
     autodiscoverOPTIONS: function (accountdata, password, url) {
-        tbSyncEasNewAccount.updateTimer.cancel();
+        tbSyncEasNewAccount.cancelQueryTimeout();
 
         //send OPTIONS request to get ActiveSync Version and provision
         let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
