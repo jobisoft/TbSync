@@ -712,7 +712,7 @@ var eas = {
             "user" : "",
             "servertype" : "",
             "seperator" : "10",
-            "https" : "0",
+            "https" : "1",
             "provision" : "0",
             "birthday" : "0",
             "displayoverride" : "0", 
