@@ -578,8 +578,15 @@ eas.sync = {
 
 
     getItemEstimate: Task.async (function* (syncdata)  {
+        syncdata.todo = -1;
+        
+        if (!tbSync.db.getAccountSetting(syncdata.account, "commands").split(",").includes("GetItemEstimate")) {
+            return; //do not throw, this is optional
+        }
+        
         tbSync.setSyncState("prepare.request.estimate", syncdata.account, syncdata.folderID);
 
+        
         // BUILD WBXML
         let wbxml = tbSync.wbxmltools.createWBXML();
         wbxml.switchpage("GetItemEstimate");
@@ -624,7 +631,6 @@ eas.sync = {
         let status = xmltools.getWbxmlDataField(wbxmlData, "GetItemEstimate.Response.Status");
         let estimate = xmltools.getWbxmlDataField(wbxmlData, "GetItemEstimate.Response.Collection.Estimate");
 
-        syncdata.todo = -1;
         if (status && status == "1") { //do not throw on error, with EAS v2.5 I get error 2 for tasks and calendars ???
             syncdata.todo = estimate;
         }

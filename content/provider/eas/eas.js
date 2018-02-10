@@ -102,6 +102,12 @@ var eas = {
                     syncdata.accountResync = false;
                 }
 
+                //should we recheck options/commands?
+                if ((tbSync.db.getAccountSetting(syncdata.account, "lastcommandsupdate") - Date.now()) > 86400000 ) {
+                    tbSync.dump("NOTE","We should update OPTIONS");
+                }
+                
+
                 //do we need to get a new policy key?
                 if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1" && tbSync.db.getAccountSetting(syncdata.account, "policykey") == 0) {
                     yield eas.getPolicykey(syncdata);
@@ -605,6 +611,10 @@ var eas = {
             throw eas.finishSync();
         } 
         
+        if (!tbSync.db.getAccountSetting(syncdata.account, "commands").split(",").includes("FolderDelete")) {
+            throw eas.finishSync("notsupported::FolderDelete", eas.flags.abortWithError);
+        }
+
         tbSync.setSyncState("prepare.request.deletefolder", syncdata.account);
         let foldersynckey = tbSync.db.getAccountSetting(syncdata.account, "foldersynckey");
         if (foldersynckey == "") foldersynckey = "0";
@@ -643,7 +653,11 @@ var eas = {
 
 
     getUserInfo: Task.async (function* (syncdata)  {
-        tbSync.setSyncState("prepare.request.getuserinfo", syncdata.account);
+        if (!tbSync.db.getAccountSetting(syncdata.account, "commands").split(",").includes("Settings")) {
+            return;
+        }
+
+	    tbSync.setSyncState("prepare.request.getuserinfo", syncdata.account);
 
         //request foldersync
         let wbxml = wbxmltools.createWBXML();
@@ -663,19 +677,6 @@ var eas = {
 
         eas.checkStatus(syncdata, wbxmlData,"Settings.Status");
 
-/*        let synckey = xmltools.getWbxmlDataField(wbxmlData,"FolderDelete.SyncKey");
-        if (synckey) {
-            tbSync.db.setAccountSetting(syncdata.account, "foldersynckey", synckey);
-            //this folder is not synced, no target to take care of, just remove the folder
-            tbSync.db.deleteFolder(syncdata.account, syncdata.folderID);
-            syncdata.folderID = "";
-            //update manager gui / folder list
-            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", syncdata.account);
-            throw eas.finishSync();
-        } else {
-            throw eas.finishSync("wbxmlmissingfield::FolderDelete.SyncKey", eas.flags.abortWithError);
-        }*/
     }),
 
 
@@ -718,7 +719,9 @@ var eas = {
             "displayoverride" : "0", 
             "downloadonly" : "0",
             "autosync" : "0",
-            "horde" : "0"};
+            "horde" : "0",
+            "lastcommandsupdate":"0",
+            "commands": ""};
         return row;
     },
 
