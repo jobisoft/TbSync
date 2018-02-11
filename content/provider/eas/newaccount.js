@@ -322,8 +322,9 @@ var tbSyncEasNewAccount = {
         document.documentElement.getButton("extra1").disabled = false;
         
         //update settings of user
-        if (versions.indexOf("14.0") > -1) accountdata.asversion = "14.0";
-        else if (versions.indexOf("2.5") > -1) accountdata.asversion = "2.5";
+        let allowedVersions = versions.split(",");
+        if (allowedVersions.includes("14.0")) accountdata.asversion = "14.0";
+        else if (allowedVersions.includes("2.5")) accountdata.asversion = "2.5";
         else {
             alert(tbSync.getLocalizedMessage("info.AutodiscoverBadVersion","eas").replace("##versions##", versions));
             return;
