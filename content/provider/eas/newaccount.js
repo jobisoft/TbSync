@@ -222,7 +222,8 @@ var tbSyncEasNewAccount = {
 
                         for (let count = 0; count < server.length; count++) {
                             if (server[count].Type == "MobileSync" && server[count].Url) {
-                                this.autodiscoverOPTIONS(accountdata, password, server[count].Url)
+                                this.autodiscoverSucceeded (accountdata, password, server[count].Url);
+
                                 //there is also a type CertEnroll
                                 return; //was break;
                             }
@@ -273,40 +274,7 @@ var tbSyncEasNewAccount = {
         req.send(xml);
         
     },
-    
-    autodiscoverOPTIONS: function (accountdata, password, url) {
-        tbSyncEasNewAccount.cancelQueryTimeout();
-
-        //send OPTIONS request to get ActiveSync Version and provision
-        let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-        req.mozBackgroundRequest = true;
-        req.open("OPTIONS", url, true);
-        req.setRequestHeader("User-Agent", "Thunderbird ActiveSync");
-        req.setRequestHeader("Authorization", "Basic " + btoa(accountdata.user + ":" + password));
-
-        req.timeout = 30000;
-
-        req.ontimeout  = function() {
-            this.autodiscoverFailed (accountdata);
-        }.bind(this);
-
-        req.onerror = function() {
-            this.autodiscoverFailed (accountdata);
-        }.bind(this);
-
-        // define response handler for our request
-        req.onload = function() {
-            if (req.status === 200) {
-                tbSync.dump("EAS OPTIONS with response (status: 200)", "\n[" + req.responseText + "] ["+req.getResponseHeader("MS-ASProtocolVersions")+"] ["+req.getResponseHeader("MS-ASProtocolCommands")+"]");
-                this.autodiscoverSucceeded (accountdata, password, url, req.getResponseHeader("MS-ASProtocolVersions"), req.getResponseHeader("MS-ASProtocolCommands"));
-            } else {
-                this.autodiscoverFailed (accountdata);
-            }
-        }.bind(this);
-
-        req.send();
-    },
-    
+        
     autodiscoverFailed: function (accountdata) {
         document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
         document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
@@ -315,30 +283,17 @@ var tbSyncEasNewAccount = {
         document.documentElement.getButton("extra1").disabled = false;
     },
 
-    autodiscoverSucceeded: function (accountdata, password, url, versions, commands) {
+    autodiscoverSucceeded: function (accountdata, password, url) {
         document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
         document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
         document.documentElement.getButton("cancel").disabled = false;
         document.documentElement.getButton("extra1").disabled = false;
         
-        //update settings of user
-        let allowedVersions = versions.split(",");
-        if (allowedVersions.includes("14.0")) accountdata.asversion = "14.0";
-        else if (allowedVersions.includes("2.5")) accountdata.asversion = "2.5";
-        else {
-            alert(tbSync.getLocalizedMessage("info.AutodiscoverBadVersion","eas").replace("##versions##", versions));
-            return;
-        }
-
         accountdata.host = url.split("/")[2];
         accountdata.servertype = "auto";
 
         if (url.substring(0,5) == "https") accountdata.https = "1";
         else accountdata.https = "0";
-
-        accountdata.allowedEasVersions = versions;
-        accountdata.allowedEasCommands = commands;
-        accountdata.lastEasOptionsUpdate = Date.now();
         
         tbSyncEasNewAccount.addAccount(accountdata, password, tbSync.getLocalizedMessage("info.AutodiscoverOk","eas"));
     }

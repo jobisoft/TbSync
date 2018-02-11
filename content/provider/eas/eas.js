@@ -106,7 +106,20 @@ var eas = {
                 if ((Date.now() - tbSync.db.getAccountSetting(syncdata.account, "lastEasOptionsUpdate")) > 86400000 ) {
                     yield eas.getServerOptions(syncdata);
                 }
-
+                
+                //check EAS version - "auto" means we just connected and have to find the best option avail, any other value needs to be checked agains options avail
+                let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
+                let allowed = tbSync.db.getAccountSetting(syncdata.account, "allowedEasVersions").split(",");
+                if (asversion == "auto") {
+                    if (allowed.includes("14.0")) tbSync.db.setAccountSetting(syncdata.account, "asversion","14.0");
+                    else if (allowed.includes("2.5")) tbSync.db.setAccountSetting(syncdata.account, "asversion","2.5");
+                    else {
+                        throw eas.finishSync("nosupportedeasversion::"+allowed.join(","), eas.flags.abortWithError);
+                    }
+                } else if (!allowed.includes(asversion)) {
+                    throw eas.finishSync("notsupportedeasversion::"+asversion+"::"+allowed.join(","), eas.flags.abortWithError);
+                }
+                
                 //do we need to get a new policy key?
                 if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1" && tbSync.db.getAccountSetting(syncdata.account, "policykey") == 0) {
                     yield eas.getPolicykey(syncdata);
@@ -707,7 +720,8 @@ var eas = {
             "state" : "disconnected",
             "status" : "notconnected",
             "deviceId" : tbSync.eas.getNewDeviceId(),
-            "asversion" : "14.0",
+            "asversionselected" : "auto",
+            "asversion" : "",
             "host" : "",
             "user" : "",
             "servertype" : "",
@@ -840,16 +854,14 @@ var eas = {
             case "auto":
                 settings["host"] = null;
                 settings["https"] = null;
-                settings["provision"] = null;
-                settings["asversion"] = null;
+                settings["asversionselected"] = null;
                 break;
 
             //just here for reference, if this method is going to be used again
             case "outlook.com":
                 settings["host"] = "eas.outlook.com";
                 settings["https"] = "1";
-                settings["provision"] = "0";
-                settings["asversion"] = "2.5";
+                settings["asversionselected"] = "2.5";
                 settings["seperator"] = "44";
                 break;
         }
@@ -907,6 +919,9 @@ var eas = {
         db.setAccountSetting(account, "state", "connected");
         db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
+        db.setAccountSetting(account, "asversion", db.getAccountSetting(account, "asversionselected"));
+        db.setAccountSetting(account, "lastEasOptionsUpdate", "0");
+        db.setAccountSetting(account, "lastsynctime", "0");
     },
 
     disconnectAccount: function (account) {

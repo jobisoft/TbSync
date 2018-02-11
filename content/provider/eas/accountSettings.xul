@@ -52,13 +52,14 @@
 
                         <hbox>
                             <hbox width="245"><label style="padding:1px 3px;" control="tbsync.accountsettings.host" value="&pref.ServerName;" /></hbox>
-                            <hbox flex="1"><label style="padding:1px 3px;" control="tbsync.accountsettings.asversion" value ="ActiveSync version" /></hbox>
+                            <hbox flex="1"><label style="padding:1px 3px;" control="tbsync.accountsettings.asversionselected" value ="ActiveSync version" /></hbox>
                         </hbox>
                         <hbox style="margin-bottom:1ex;">
                             <hbox width="245"><textbox flex="1" tooltiptext="&pref.ServerNameDescription;" id="tbsync.accountsettings.host" onblur="tbSyncAccountSettings.stripHost();" /></hbox>
                             <vbox flex="1">
-                                <menulist flex="1" id="tbsync.accountsettings.asversion" onblur="tbSyncAccountSettings.instantSaveSetting(this);" >
+                                <menulist flex="1" id="tbsync.accountsettings.asversionselected" onblur="tbSyncAccountSettings.instantSaveSetting(this);" >
                                     <menupopup>
+                                        <menuitem label="&autodetect;" value="auto" />
                                         <menuitem label="v2.5" value="2.5" />
                                         <menuitem label="v14.0" value="14.0" />
                                     </menupopup>

@@ -3,7 +3,6 @@ newaccount.add_auto=Autodiscover settings and add account
 
 info.AutodiscoverQuerying=Querying:
 info.AutodiscoverOk=Autodiscover completed successfully, you can now check the optional settings and connect this account.
-info.AutodiscoverBadVersion=Server does not support ActiveSync v2.5 or v14.0 (only ##versions##). TbSync will not work with this ActiveSync server.
 info.AutodiscoverFailed=Autodiscover for user <##user##> failed. The following errors were reported:\n\n##errors##\n\nHowever, this could also mean, that your ActiveSync provider does not support Autodiscover. Please choose "custom configuration" as your server configuration and enter all settings manually.
 
 deletefolder.notallowed=Please unsubscribe folder "##replace.1##" before trying to purge it from trash.
