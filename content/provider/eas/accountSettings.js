@@ -284,7 +284,7 @@ var tbSyncAccountSettings = {
             }
             
             //if a folder in trash is selected, also show ContextMenuDelete (but only if FolderDelete is allowed)
-            if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID) && tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "commands").split(",").includes("FolderDelete")) {// folder in recycle bin
+            if (tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID) && tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "allowedEasCommands").split(",").includes("FolderDelete")) {// folder in recycle bin
                 hideContextMenuDelete = false;
                 document.getElementById("tbsync.accountsettings.ContextMenuDelete").label = tbSync.getLocalizedMessage("deletefolder.menuentry::" + folder.name, "eas");
             }

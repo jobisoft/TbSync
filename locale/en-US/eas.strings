@@ -20,6 +20,10 @@ syncstate.preparing=Preparing next item for synchronisation
 syncstate.done=Preparing next item for synchronisation
 syncstate.accountdone=Finished account
 
+syncstate.prepare.request.options=Requesting server options
+syncstate.send.request.options=Waiting for server options
+syncstate.eval.response.options=Processing server options
+
 syncstate.prepare.request.folders=Sending folder list update
 syncstate.send.request.folders=Waiting for folder list update
 syncstate.eval.response.folders=Processing folder list update

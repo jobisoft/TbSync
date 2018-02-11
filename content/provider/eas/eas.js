@@ -103,10 +103,9 @@ var eas = {
                 }
 
                 //should we recheck options/commands?
-                if ((tbSync.db.getAccountSetting(syncdata.account, "lastcommandsupdate") - Date.now()) > 86400000 ) {
-                    tbSync.dump("NOTE","We should update OPTIONS");
+                if ((Date.now() - tbSync.db.getAccountSetting(syncdata.account, "lastEasOptionsUpdate")) > 86400000 ) {
+                    yield eas.getServerOptions(syncdata);
                 }
-                
 
                 //do we need to get a new policy key?
                 if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1" && tbSync.db.getAccountSetting(syncdata.account, "policykey") == 0) {
@@ -611,7 +610,7 @@ var eas = {
             throw eas.finishSync();
         } 
         
-        if (!tbSync.db.getAccountSetting(syncdata.account, "commands").split(",").includes("FolderDelete")) {
+        if (!tbSync.db.getAccountSetting(syncdata.account, "allowedEasCommands").split(",").includes("FolderDelete")) {
             throw eas.finishSync("notsupported::FolderDelete", eas.flags.abortWithError);
         }
 
@@ -653,7 +652,7 @@ var eas = {
 
 
     getUserInfo: Task.async (function* (syncdata)  {
-        if (!tbSync.db.getAccountSetting(syncdata.account, "commands").split(",").includes("Settings")) {
+        if (!tbSync.db.getAccountSetting(syncdata.account, "allowedEasCommands").split(",").includes("Settings")) {
             return;
         }
 
@@ -720,8 +719,9 @@ var eas = {
             "downloadonly" : "0",
             "autosync" : "0",
             "horde" : "0",
-            "lastcommandsupdate":"0",
-            "commands": ""};
+            "lastEasOptionsUpdate":"0",
+            "allowedEasVersions": "",
+            "allowedEasCommands": ""};
         return row;
     },
 
@@ -1110,10 +1110,69 @@ var eas = {
 
 
 
+    getServerOptions: function (syncdata) {
+        
+        tbSync.setSyncState("prepare.request.options", syncdata.account);
+        let connection = tbSync.eas.getConnection(syncdata.account);
+        let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
 
+        let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
+        if (userAgent == "") userAgent = "Thunderbird ActiveSync";
+
+        tbSync.dump("Sending", "OPTIONS " + connection.host + '/Microsoft-Server-ActiveSync');
+        
+        return new Promise(function(resolve,reject) {
+            // Create request handler
+            syncdata.req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+            syncdata.req.mozBackgroundRequest = true;
+            syncdata.req.open("OPTIONS", connection.host + '/Microsoft-Server-ActiveSync', true);
+            syncdata.req.overrideMimeType("text/plain");
+            syncdata.req.setRequestHeader("User-Agent", userAgent);
+            syncdata.req.setRequestHeader("Authorization", 'Basic ' + btoa(connection.user + ':' + password));
+
+            syncdata.req.timeout = tbSync.prefSettings.getIntPref("eas.timeout");
+
+            syncdata.req.ontimeout = function () {
+                reject(eas.finishSync("timeout", eas.flags.abortWithError));
+            };
+
+            syncdata.req.onerror = function () {
+                let error = tbSync.eas.createTCPErrorFromFailedXHR(syncdata.req);
+                if (!error) {
+                    reject(eas.finishSync("networkerror", eas.flags.abortWithError));
+                } else {
+                    reject(eas.finishSync(error, eas.flags.abortWithError));
+                }
+            };
+
+            syncdata.req.onload = function() {
+                tbSync.setSyncState("eval.request.options", syncdata.account);
+                if (syncdata.req.status === 200) {
+                    let responseData = {};
+                    responseData["MS-ASProtocolVersions"] =  syncdata.req.getResponseHeader("MS-ASProtocolVersions");
+                    responseData["MS-ASProtocolCommands"] =  syncdata.req.getResponseHeader("MS-ASProtocolCommands");                        
+                        
+                    tbSync.dump("EAS OPTIONS with response (status: 200)", "\n" +
+                    "responseText: " + syncdata.req.responseText + "\n" +
+                    "responseHeader(MS-ASProtocolVersions): " + responseData["MS-ASProtocolVersions"]+"\n" +
+                    "responseHeader(MS-ASProtocolCommands): " + responseData["MS-ASProtocolCommands"]);
+
+                    tbSync.db.setAccountSetting(syncdata.account, "allowedEasCommands", responseData["MS-ASProtocolCommands"]);
+                    tbSync.db.setAccountSetting(syncdata.account, "allowedEasVersions", responseData["MS-ASProtocolVersions"]);
+                    tbSync.db.setAccountSetting(syncdata.account, "lastEasOptionsUpdate", Date.now());
+                    resolve();
+                } else {
+                    reject(eas.finishSync(syncdata.req.status, eas.flags.abortWithError));
+                }
+            };
+            
+            tbSync.setSyncState("send.request.options", syncdata.account);
+            syncdata.req.send();
+            
+        });
+	},
 
     sendRequest: function (wbxml, command, syncdata) {
-        let platformVer = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo).platformVersion;                  
         let msg = "Sending data <" + syncdata.state.split("||")[0] + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
         if (syncdata.folderID !== "") msg += " (" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + ")";
         tbSync.eas.logxml(wbxml, msg);
@@ -1216,17 +1275,7 @@ var eas = {
                 }
             };
 
-            if (platformVer >= 50) {
-                syncdata.req.send(wbxml);
-            } else {
-                //from each char in the string, only use the lowest 8bit - why?
-                let nBytes = wbxml.length;
-                let ui8Data = new Uint8Array(nBytes);
-                for (let nIdx = 0; nIdx < nBytes; nIdx++) {
-                    ui8Data[nIdx] = wbxml.charCodeAt(nIdx) & 0xff;
-                }
-                syncdata.req.send(ui8Data);
-            }
+            syncdata.req.send(wbxml);
             
         });
     },

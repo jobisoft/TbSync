@@ -580,7 +580,7 @@ eas.sync = {
     getItemEstimate: Task.async (function* (syncdata)  {
         syncdata.todo = -1;
         
-        if (!tbSync.db.getAccountSetting(syncdata.account, "commands").split(",").includes("GetItemEstimate")) {
+        if (!tbSync.db.getAccountSetting(syncdata.account, "allowedEasCommands").split(",").includes("GetItemEstimate")) {
             return; //do not throw, this is optional
         }
         

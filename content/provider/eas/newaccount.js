@@ -335,8 +335,9 @@ var tbSyncEasNewAccount = {
         if (url.substring(0,5) == "https") accountdata.https = "1";
         else accountdata.https = "0";
 
-        accountdata.commands = commands;
-        accountdata.lastcommandsupdate = Date.now();
+        accountdata.allowedEasVersions = versions;
+        accountdata.allowedEasCommands = commands;
+        accountdata.lastEasOptionsUpdate = Date.now();
         
         tbSyncEasNewAccount.addAccount(accountdata, password, tbSync.getLocalizedMessage("info.AutodiscoverOk","eas"));
     }
