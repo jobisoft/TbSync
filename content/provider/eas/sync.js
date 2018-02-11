@@ -555,7 +555,7 @@ eas.sync = {
     start: Task.async (function* (syncdata)  {
         // skip if lightning is not installed
         if ("calICalendar" in Components.interfaces == false) {
-            throw eas.finishSync("nolightning", eas.flags.abortWithError);
+            throw eas.finishSync("nolightning");
         }
         
         // check SyncTarget
