@@ -498,12 +498,6 @@ var tbSync = {
                 //It should not be possible to link a book to two different accounts, so we just take the first target found
                 if (folders.length > 0) {
 
-                    //if this book was deleted because the account was disconnected, delete the folder
-                    if (tbSync.db.getAccountSetting(folders[0].account, "state") == "disconnected") {
-                        tbSync.db.deleteFolder(folders[0].account, folders[0].folderID);
-                        return;
-                    } 
-
                     folders[0].target="";
                     folders[0].synckey="";
                     folders[0].lastsynctime= "";
@@ -918,12 +912,6 @@ var tbSync = {
             let folders =  tbSync.db.findFoldersWithSetting("target", aCalendar.id);
             //It should not be possible to link a calendar to two different accounts, so we just take the first target found
             if (folders.length > 0) {
-
-                //if this calendar was deleted because the account was disconnected, delete the folder
-                if (tbSync.db.getAccountSetting(folders[0].account, "state") == "disconnected") {
-                    tbSync.db.deleteFolder(folders[0].account, folders[0].folderID);
-                    return;
-                } 
 
                 folders[0].target="";
                 folders[0].synckey="";

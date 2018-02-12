@@ -932,11 +932,13 @@ var eas = {
         //Delete all targets / folders
         let folders = db.getFolders(account);
         for (let i in folders) {
-            if (folders[i].target != "") {
-                //the adressbook / calendar listener will delete the folder, if the account is disconnected
-                tbSync.eas.removeTarget(folders[i].target, folders[i].type);
-            } else {
-                db.deleteFolder(account, folders[i].folderID); 
+            let folderID = folders[i].folderID;
+            let target = folders[i].target;
+            let type = folders[i].type;            
+            db.deleteFolder(account, folderID); 
+
+            if (target != "") {
+                tbSync.eas.removeTarget(target, type);
             }
         }
 
