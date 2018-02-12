@@ -598,6 +598,12 @@ var eas = {
             status = error;
             let info = tbSync.db.getAccountSetting(syncdata.account, "accountname");
             tbSync.dump("finishAccountSync(" + info + ")", tbSync.getLocalizedMessage("status." + status));
+                                    
+            //if there are no folder information, initial connect failed, disconnect
+            //does not feel right
+            //if (Object.keys(db.getFolders(syncdata.account)).length === 0) {
+            //    eas.disconnectAccount(syncdata.account);
+            //}
         }
         tbSync.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
         tbSync.db.setAccountSetting(syncdata.account, "status", status);
