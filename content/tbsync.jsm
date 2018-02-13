@@ -264,7 +264,7 @@ var tbSync = {
     getAbsolutePath: function(filename) {
         return OS.Path.join(tbSync.storageDirectory, filename);
     },
-    
+
     writeAsyncJSON: function (obj, filename) {
         let filepath = tbSync.getAbsolutePath(filename);
         Task.spawn(function* () {
@@ -918,7 +918,7 @@ var tbSync = {
                 folders[0].lastsynctime= "";
                 folders[0].status = "";
                 
-                if (folders[0].selected == "1") {                
+                if (folders[0].selected == "1") {
                     folders[0].status= "aborted";
                     tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
 
