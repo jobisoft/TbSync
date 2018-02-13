@@ -593,7 +593,7 @@ eas.sync = {
         wbxml.otag("GetItemEstimate");
             wbxml.otag("Collections");
                 wbxml.otag("Collection");
-                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
+                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") { //got order for 2.5 directly from Microsoft support
                         wbxml.atag("Class", syncdata.type); //only 2.5
                         wbxml.atag("CollectionId", syncdata.folderID);
                         wbxml.switchpage("AirSync");
@@ -607,8 +607,8 @@ eas.sync = {
                         wbxml.atag("CollectionId", syncdata.folderID);
                         wbxml.switchpage("AirSync");
                         wbxml.otag("Options");
+                            if (syncdata.type == "Calendar") wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit").toString()); //0, 4,5,6,7
                             wbxml.atag("Class", syncdata.type);
-                            wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit").toString()); //0, 4,5,6,7
                         wbxml.ctag();
                         wbxml.switchpage("GetItemEstimate");
                     }
@@ -658,6 +658,7 @@ eas.sync = {
                         if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
                             wbxml.otag("Options");
                                 if (syncdata.type == "Calendar") wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit").toString()); //0, 4,5,6,7
+                                wbxml.atag("Class", syncdata.type);
                                 wbxml.switchpage("AirSyncBase");
                                 wbxml.otag("BodyPreference");
                                     wbxml.atag("Type", "1");
