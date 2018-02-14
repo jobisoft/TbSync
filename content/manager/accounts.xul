@@ -22,7 +22,7 @@
             <richlistbox 
                 id="tbSyncAccounts.accounts"
                 flex="1"
-                style="margin-left:0"
+                style="margin-left:0; margin-right:0"
                 seltype="single"
                 context="tbsync.accountmanger.ContextMenu"
                 onkeypress="if (event.keyCode == 46) {tbSyncAccounts.deleteAccount();}"
@@ -36,7 +36,7 @@
              <vbox flex="1">
                 <button 
                   label="&pref.SyncAll;"
-                  style="margin-left:0"
+                  style="margin-left:0; margin-right:0"
                   oncommand="tbSync.syncAccount('sync');"/>
              </vbox>
              <hbox>                  
@@ -47,7 +47,7 @@
              </hbox>                  
             </hbox>
         </vbox>
-        <iframe id="tbSyncAccounts.contentFrame" type="content" flex="1" style="margin-left:12px; border:1px solid red"/>
+        <iframe id="tbSyncAccounts.contentFrame" type="content" flex="1" style="margin-left:12px;"/>
     </hbox>
 
     <script type="text/javascript" src="chrome://tbsync/content/manager/accounts.js" /> 

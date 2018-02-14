@@ -181,6 +181,7 @@ var tbSyncAccountSettings = {
         document.getElementById("tbsync.accountsettings.config.unlock").hidden = (state != "disconnected" || tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype") == "custom"); 
 
         document.getElementById("tbsync.accountsettings.options").hidden = (state != "disconnected"); 
+        document.getElementById("tbsync.accountsettings.server").hidden = (state != "disconnected"); 
         document.getElementById("tbsync.accountsettings.folders").hidden = (state == "disconnected"); 
 
         //disable all seetings field, if connected
