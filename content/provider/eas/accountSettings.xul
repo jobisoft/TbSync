@@ -24,7 +24,7 @@
 
         <grid flex="1">
            <columns>
-                <column width="120" />
+                <column width="135" />
                 <column flex="1" />
            </columns>
 
