@@ -17,11 +17,12 @@
         </menupopup>
     </popupset>
 
-    <hbox flex="1" style="padding:10px">
+    <hbox flex="1">
         <vbox width="200">
             <richlistbox 
                 id="tbSyncAccounts.accounts"
                 flex="1"
+                style="margin-left:0"
                 seltype="single"
                 context="tbsync.accountmanger.ContextMenu"
                 onkeypress="if (event.keyCode == 46) {tbSyncAccounts.deleteAccount();}"
@@ -35,17 +36,18 @@
              <vbox flex="1">
                 <button 
                   label="&pref.SyncAll;"
+                  style="margin-left:0"
                   oncommand="tbSync.syncAccount('sync');"/>
              </vbox>
              <hbox>                  
                 <button 
-                  style="width: 2em; min-width: 2em;"
+                  style="width: 2em; min-width: 2em; margin-right:0"
                   label="+"
                   oncommand="tbSyncAccounts.addAccount();"/>
              </hbox>                  
             </hbox>
         </vbox>
-        <iframe id="tbSyncAccounts.contentFrame" type="content" flex="1" />
+        <iframe id="tbSyncAccounts.contentFrame" type="content" flex="1" style="margin-left:12px; border:1px solid red"/>
     </hbox>
 
     <script type="text/javascript" src="chrome://tbsync/content/manager/accounts.js" /> 
