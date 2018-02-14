@@ -1268,6 +1268,7 @@ var eas = {
                         break;
 
                     case 401: // AuthError
+                    case 403: // Forbiddden
                         reject(eas.finishSync(syncdata.req.status, eas.flags.abortWithError));
                         break;
 
