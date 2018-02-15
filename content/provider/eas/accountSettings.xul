@@ -49,12 +49,12 @@
                     <vbox>
                         <label class="header" style="margin-left:0" value="" id="tbsync.accountsettings.config.label"/>
                         <hbox>
-                            <hbox width="245"><label style="padding:1px; margin-left:0" control="tbsync.accountsettings.host" value="&pref.ServerName;" /></hbox>
+                            <hbox width="235"><label style="padding:1px; margin-left:0" control="tbsync.accountsettings.host" value="&pref.ServerName;" /></hbox>
                             <hbox flex="1"><label style="padding:1px;; margin-left:0" control="tbsync.accountsettings.asversionselected" value ="ActiveSync version" /></hbox>
                         </hbox>
 
                         <hbox style="margin-bottom:1ex;">
-                            <hbox width="245"><textbox flex="1" style="margin-left:0; margin-right:0" tooltiptext="&pref.ServerNameDescription;" id="tbsync.accountsettings.host" onblur="tbSyncAccountSettings.stripHost();" /></hbox>
+                            <hbox width="235"><textbox flex="1" style="margin-left:0; margin-right:0" tooltiptext="&pref.ServerNameDescription;" id="tbsync.accountsettings.host" onblur="tbSyncAccountSettings.stripHost();" /></hbox>
                             <vbox flex="1">
                                 <menulist flex="1" style="margin-right:0;" id="tbsync.accountsettings.asversionselected" onblur="tbSyncAccountSettings.instantSaveSetting(this);" >
                                     <menupopup>
