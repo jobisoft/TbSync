@@ -42,6 +42,11 @@ var tbSyncEasNewAccount = {
             let servertype = this.elementServertype.value;
             let accountname = this.elementName.value;
 
+            if (user.split("@").length != 2) {
+                alert(tbSync.getLocalizedMessage("autodiscover.NeedEmail","eas"))
+                return
+            };
+
             if (servertype == "custom") {
                 tbSyncEasNewAccount.addAccount(user, password, servertype, accountname);                
             }
@@ -75,13 +80,13 @@ var tbSyncEasNewAccount = {
 
                 if (server) {
                     
-                    alert(tbSync.getLocalizedMessage("info.AutodiscoverOk","eas"));                    
+                    alert(tbSync.getLocalizedMessage("autodiscover.Ok","eas"));
                     //add account with found server url
                     tbSyncEasNewAccount.addAccount(user, password, servertype, accountname, server);                
                     
                 } else {
                     
-                    alert(tbSync.getLocalizedMessage("info.AutodiscoverFailed","eas").replace("##user##", user).replace("##errors##", errors.join("\n")));
+                    alert(tbSync.getLocalizedMessage("autodiscover.Failed","eas").replace("##user##", user).replace("##errors##", errors.join("\n")));
 
                 }
                 document.getElementById("tbsync.newaccount.name").disabled = false;
