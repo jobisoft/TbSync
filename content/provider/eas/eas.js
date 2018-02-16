@@ -1121,17 +1121,14 @@ var eas = {
         set daylightName (v) {return this.setstr(88, v); }
         
         toString () { return ["", 
-		"utcOffset: "+ this.utcOffset,
-		"standardName: "+ this.standardName,
-		"standardDate: "+ this.standardDate.toString(),
-		"standardBias: "+ this.standardBias,
-		"daylightName: "+ this.daylightName,
-		"daylightDate: "+ this.daylightDate.toString(),
-		"daylightBias: "+ this.daylightBias].join("\n"); }
+            "utcOffset: "+ this.utcOffset,
+            "standardName: "+ this.standardName,
+            "standardDate: "+ this.standardDate.toString(),
+            "standardBias: "+ this.standardBias,
+            "daylightName: "+ this.daylightName,
+            "daylightDate: "+ this.daylightDate.toString(),
+            "daylightBias: "+ this.daylightBias].join("\n"); }
     },
-
-
-
 
     getServerOptions: function (syncdata) {
         
@@ -1437,6 +1434,170 @@ var eas = {
 
         }		
     },
+
+
+
+    // AUTODISCOVER        
+    getServerUrlViaAutodiscover : Task.async (function* (user, password, maxtimeout = 40000) {
+        let urls = [];
+        let responses = []; //array of objects {url, error, server}
+        
+        let parts = user.split("@");
+
+        urls.push("http://autodiscover."+parts[1]+"/autodiscover/autodiscover.xml");
+        urls.push("http://"+parts[1]+"/autodiscover/autodiscover.xml");
+        urls.push("http://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
+        urls.push("http://"+parts[1]+"/Autodiscover/Autodiscover.xml");
+
+        urls.push("https://autodiscover."+parts[1]+"/autodiscover/autodiscover.xml");
+        urls.push("https://"+parts[1]+"/autodiscover/autodiscover.xml");
+        urls.push("https://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
+        urls.push("https://"+parts[1]+"/Autodiscover/Autodiscover.xml");
+        
+        //send requests for all our urls in parallel (with small offsets)
+        for (let i=0; i<urls.length; i++) {
+            let timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
+            timer.initWithCallback({notify : function () {tbSync.eas.getServerUrlViaAutodiscoverRequestWrapper(responses, urls[i], user, password, maxtimeout)}}, 100*i+200, 0);            
+        }
+
+        //wait for responses
+        let startDate = Date.now();
+        while ((Date.now()-startDate) < maxtimeout) {
+            yield tbSync.sleep(1000);
+
+            //if there is an answer for each request, we are done, return
+            if (responses.length == urls.length) return responses;
+            
+            //also check, if one of our request succeded, no need to wait for the others, return
+            for (let r=0; r<responses.length; r++) {
+                if (responses[r].server) return responses;
+                if (responses[r].error == "403" || responses[r].error == "401") return responses;
+            }
+        } 
+        
+        //Add error if all requests timed out
+        if (responses.length == 0) {
+            let error = "None of our requests received a response before the global timeout of " + maxtimeout + "s.";
+            tbSync.dump("autodiscover", error);
+            responses.push({"url":"", "error":error,"server":""});        
+        }
+        
+        return responses;
+        
+    }),
+
+    getServerUrlViaAutodiscoverRequestWrapper : Task.async (function* (responses, url, user, password, maxtimeout) {
+        let result;
+        do {
+            result = yield tbSync.eas.getServerUrlViaAutodiscoverRequest(url, user, password, maxtimeout);
+            if (result.error) {
+                yield tbSync.sleep(1000);
+                url = result.url;
+                user = result.user;
+            }
+        } while (result.error == "301" );
+        responses.push(result);
+    }),    
+    
+    getServerUrlViaAutodiscoverRequest: function (url, user, password, maxtimeout) {
+        
+        let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+
+        let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
+        if (userAgent == "") userAgent = "Thunderbird ActiveSync";
+        let secure = (url.substring(0,8) == "https://");
+        
+        return new Promise(function(resolve,reject) {
+            let xml = "<?xml version='1.0' encoding='utf-8'?>\r\n";
+            xml += "<Autodiscover xmlns='http://schemas.microsoft.com/exchange/autodiscover/mobilesync/requestschema/2006'>\r\n";
+            xml += "<Request>\r\n";
+            xml += "<EMailAddress>" + user + "</EMailAddress>\r\n";
+            xml += "<AcceptableResponseSchema>http://schemas.microsoft.com/exchange/autodiscover/mobilesync/responseschema/2006</AcceptableResponseSchema>\r\n";
+            xml += "</Request>\r\n";
+            xml += "</Autodiscover>\r\n";
+
+            // create request handler
+            req.mozBackgroundRequest = true;
+            req.open("POST", url, true);
+            req.setRequestHeader("Content-Length", xml.length);
+            req.setRequestHeader("Content-Type", "text/xml");
+            req.setRequestHeader("User-Agent", userAgent);
+            req.setRequestHeader("Cache-Control", "no-store");
+            req.setRequestHeader("Connection", "close");
+
+            //do not send password via http (send dummy password, because some servers do not accept requests without authorization header, for example outlook)
+            if (secure) req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + password));
+            else req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + "nopassword"));
+            
+            req.timeout = maxtimeout;
+
+            req.ontimeout = function () {
+                tbSync.dump("Timeout on EAS autodiscover", url);
+                resolve({"url":url, "error":"Timeout", "server":"", "user":user});
+            };
+           
+            req.onerror = function () {
+                let error = tbSync.eas.createTCPErrorFromFailedXHR(req);
+                if (!error) error = req.responseText;
+                tbSync.dump("Network error on EAS autodiscover ("+url+")", error);
+                resolve({"url":url, "error":error, "server":"", "user":user});
+            };
+
+            // define response handler for our request
+            req.onload = function() { 
+                tbSync.dump("EAS autodiscover with status (url: " + url + ")", req.status + "\n[" + req.responseText + "]");
+                
+                if (req.status === 200) {
+                    let data = tbSync.xmltools.getDataFromXMLString(req.responseText);
+            
+                    if (!(data === null) && data.Autodiscover && data.Autodiscover.Response && data.Autodiscover.Response.Action) {
+                        // "Redirect" or "Settings" are possible
+                        if (data.Autodiscover.Response.Action.Redirect) {
+                            // redirect, start anew with new user
+                            let newuser = action.Redirect;
+                            //password may not change
+                            resolve({"url":url, "error":"301", "server":"", "user":newuser});
+
+                        } else if (data.Autodiscover.Response.Action.Settings) {
+                            // get server settings
+                            let server = tbSync.xmltools.nodeAsArray(data.Autodiscover.Response.Action.Settings.Server);
+
+                            for (let count = 0; count < server.length; count++) {
+                                if (server[count].Type == "MobileSync" && server[count].Url) {
+                                    resolve({"url":url, "error":"", "server":server[count].Url, "user":user});
+                                }
+                            }
+                        }
+                    } else {
+                        resolve({"url":url, "error":"Invalid response. Unable to extract autodiscover information.", "server":"", "user":user});
+                    }
+                } else {
+
+                    if (secure && req.status === 401) {
+                        resolve({"url":url, "error":"401", "server":"", "user":user});
+                    }
+
+                    if (req.status === 403) {
+                        resolve({"url":url, "error":"403", "server":"", "user":user});
+                    }
+
+                    //check for redirects (301/302 are seen as 501 - WTF? --- using responseURL to check for redirects)
+                    if (req.responseURL != url) {
+                        let redirectURL = req.responseURL;
+                        resolve({"url":redirectURL, "error":"301", "server":"", "user":user});
+                    } else if (req.status === 401) { //do not confuse users with 401 error on unsecure connections (we do not send password on unsecure connections, all we want is a redirect information)
+                        resolve({"url":url, "error":"No redirect information found", "server":"", "user":user});
+                    } else{
+                        resolve({"url":url, "error":"No autodiscover information found (HTTP "+req.status+").", "server":"", "user":user});
+                    }
+                    
+                }
+            }            
+
+            req.send(xml);
+            
+        });
+	}
     
 };
     

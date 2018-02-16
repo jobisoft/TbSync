@@ -1,18 +1,14 @@
 "use strict";
 
+Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncEasNewAccount = {
 
-    locked: true,
-    lastRequestTime: 0,
-    updateTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
-
-  
     onClose: function () {
-        return !tbSyncEasNewAccount.locked;
+        return !document.documentElement.getButton("cancel").disabled;
     },
-    
+
     onLoad: function () {
         this.elementName = document.getElementById('tbsync.newaccount.name');
         this.elementUser = document.getElementById('tbsync.newaccount.user');
@@ -31,58 +27,88 @@ var tbSyncEasNewAccount = {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.notifyObservers(null, "tbsync.autodiscoverDone", tbSyncEasNewAccount.account);
     },
-    
-    onCancel: function () {
-        if (document.documentElement.getButton("cancel").disabled == false) {
-            tbSyncEasNewAccount.locked = false;
-        }
-    },
 
     onUserTextInput: function () {
-    /* No longer needed, TbSync is following HTTP redirects now and finds outlook settings by itself
-        if (this.elementServertype.value != "outlook.com" && this.elementUser.value.indexOf("@outlook.")!=-1) {
-            this.elementServertype.selectedIndex = 3;
-            this.onUserDropdown();
-        } */
         document.documentElement.getButton("extra1").disabled = (this.elementName.value == "" || this.elementUser.value == "" || this.elementPass.value == "");
     },
 
     onUserDropdown: function () {
         document.documentElement.getButton("extra1").label = tbSync.getLocalizedMessage("newaccount.add_" + this.elementServertype.value,"eas");
     },
-    
-    onAdd: function () {
+
+    onAdd: Task.async (function* () {
         if (document.documentElement.getButton("extra1").disabled == false) {
+            let user = this.elementUser.value;
+            let password = this.elementPass.value;
             let servertype = this.elementServertype.value;
-            let newAccountEntry = tbSync.eas.getNewAccountEntry();
-            
-            newAccountEntry.accountname = this.elementName.value;
-            newAccountEntry.user = this.elementUser.value;
-            newAccountEntry["servertype"] = servertype;
+            let accountname = this.elementName.value;
 
             if (servertype == "custom") {
-                tbSyncEasNewAccount.addAccount(newAccountEntry, this.elementPass.value);
+                tbSyncEasNewAccount.addAccount(user, password, servertype, accountname);                
             }
-            else if (servertype == "auto") {
+            
+            if (servertype == "auto") {
                 document.documentElement.getButton("cancel").disabled = true;
                 document.documentElement.getButton("extra1").disabled = true;
-                this.autodiscover(newAccountEntry, this.elementPass.value);
-            }
-            //just here for reference, if this method is going to be used again
-            else if (servertype == "outlook.com") {
-                let fixedSettings = tbSync.eas.getFixedServerSettings(servertype);
-                for (let prop in fixedSettings) {
-                  if( newAccountEntry.hasOwnProperty(prop) ) {
-                    newAccountEntry[prop] = fixedSettings[prop];
-                  } 
+                document.getElementById("tbsync.newaccount.name").disabled = true;
+                document.getElementById("tbsync.newaccount.user").disabled = true;
+                document.getElementById("tbsync.newaccount.password").disabled = true;
+                document.getElementById("tbsync.newaccount.servertype").disabled = true;                
+                
+                let responses = yield tbSync.eas.getServerUrlViaAutodiscover(user, password);
+
+                document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
+                document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
+
+                let errors = [];
+                let server = "";
+                for (let r=0; r<responses.length; r++) {
+                    if (responses[r].server) server = responses[r].server;
+                    else errors.push(responses[r].url + "\n\t => " + responses[r].error);
+                    
+                    //reduce error messages for some errors
+                    if (["401","403"].includes(responses[r].error)) {
+                        errors = [];
+                        errors.push(tbSync.getLocalizedMessage("status." + responses[r].error));
+                        break;
+                    }
                 }
-                tbSyncEasNewAccount.addAccount(newAccountEntry, this.elementPass.value);
-            }			
+
+                if (server) {
+                    
+                    alert(tbSync.getLocalizedMessage("info.AutodiscoverOk","eas"));                    
+                    //add account with found server url
+                    tbSyncEasNewAccount.addAccount(user, password, servertype, accountname, server);                
+                    
+                } else {
+                    
+                    alert(tbSync.getLocalizedMessage("info.AutodiscoverFailed","eas").replace("##user##", user).replace("##errors##", errors.join("\n")));
+
+                }
+                document.getElementById("tbsync.newaccount.name").disabled = false;
+                document.getElementById("tbsync.newaccount.user").disabled = false;
+                document.getElementById("tbsync.newaccount.password").disabled = false;
+                document.getElementById("tbsync.newaccount.servertype").disabled = false;
+
+                document.documentElement.getButton("cancel").disabled = false;
+                document.documentElement.getButton("extra1").disabled = false;
+            }
 
         }
-    },
-    
-    addAccount (newAccountEntry, password, msg) {
+    }),
+
+    addAccount (user, password, servertype, accountname, url = "") {
+        let newAccountEntry = tbSync.eas.getNewAccountEntry();
+        newAccountEntry.accountname = accountname;
+        newAccountEntry.user = user;
+        newAccountEntry.servertype = servertype;
+
+        if (url) {
+            newAccountEntry.host = url.split("/")[2];
+            if (url.substring(0,5) == "https") newAccountEntry.https = "1";
+            else newAccountEntry.https = "0";
+        }
+
         //also update password in PasswordManager
         tbSync.eas.setPassword (newAccountEntry, password);
 
@@ -90,211 +116,6 @@ var tbSyncEasNewAccount = {
         //the onSelect event of the List will load the selected account
         window.opener.tbSyncAccounts.updateAccountsList(tbSync.db.addAccount(newAccountEntry));
 
-        if (msg) alert(msg);
-        tbSyncEasNewAccount.locked = false;
         window.close();
-    },
-
-
-
-
-
-    //AUTODISCOVER
-    autodiscover: function (accountdata, password, singleurl = null) {
-        let urls = [];
-        tbSync.autodiscoverErrors = [];
-        
-        if (singleurl) {
-            urls.push(singleurl); //Why in the lords name do I need to request twice? The first one comes back as "invalid verb" WTF?
-            urls.push(singleurl);
-        } else {
-            let parts = accountdata.user.split("@");
-
-            urls.push("http://autodiscover."+parts[1]+"/autodiscover/autodiscover.xml");
-            urls.push("http://"+parts[1]+"/autodiscover/autodiscover.xml");
-            urls.push("http://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
-            urls.push("http://"+parts[1]+"/Autodiscover/Autodiscover.xml");
-
-            urls.push("https://autodiscover."+parts[1]+"/autodiscover/autodiscover.xml");
-            urls.push("https://"+parts[1]+"/autodiscover/autodiscover.xml");
-            urls.push("https://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
-            urls.push("https://"+parts[1]+"/Autodiscover/Autodiscover.xml");
-        }
-        this.autodiscoverHTTP(accountdata, password, urls, 0);
-    },
-
-    setAutodiscoverStatus: function (index, urls) {
-        tbSync.dump("Trying EAS autodiscover", "[" + urls[index] + "]");
-        tbSyncEasNewAccount.updateQueryTimeout();
-        document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = false;
-        document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = false;
-        document.getElementById('tbsync.newaccount.autodiscoverstatus').textContent  = urls[index] + " ("+(index+1)+"/"+urls.length+")";
-    },
-    
-    initQueryTimeout: function () {
-        tbSyncEasNewAccount.lastRequestTime = Date.now();
-        tbSyncEasNewAccount.updateTimer.init(tbSyncEasNewAccount.updateQueryTimeout, 1000, 3);
-    },
-
-    cancelQueryTimeout: function () {
-        //init lastRequestTime
-        tbSyncEasNewAccount.lastRequestTime = Date.now();
-        tbSyncEasNewAccount.updateTimer.cancel();        
-    },
-    
-    updateQueryTimeout: function () {
-        let msg = tbSync.getLocalizedMessage("info.AutodiscoverQuerying","eas") + " ";
-        let diff = Date.now() - tbSyncEasNewAccount.lastRequestTime;
-        if (diff > 2000) msg = msg + " (" + Math.round((15000 - diff)/1000) + "s)";      
-        document.getElementById('tbsync.newaccount.autodiscoverlabel').value  = msg;
-    },
-
-    autodiscoverHTTP: function (accountdata, password, urls, index) {
-        tbSyncEasNewAccount.cancelQueryTimeout();
-
-        if (index>=urls.length) {
-            this.autodiscoverFailed(accountdata);
-            return;
-        }
-
-        this.setAutodiscoverStatus(index, urls);
-        
-        let xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n";
-        xml += "<Autodiscover xmlns= \"http://schemas.microsoft.com/exchange/autodiscover/mobilesync/requestschema/2006\">\r\n";
-        xml += "<Request>\r\n";
-        xml += "<EMailAddress>"+accountdata.user+"</EMailAddress>\r\n";
-        xml += "<AcceptableResponseSchema>http://schemas.microsoft.com/exchange/autodiscover/mobilesync/responseschema/2006</AcceptableResponseSchema>\r\n";
-        xml += "</Request>\r\n";
-        xml += "</Autodiscover>";
-
-        // create request handler
-        let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-        req.mozBackgroundRequest = true;
-        req.open("POST", urls[index], true);
-        req.setRequestHeader("Content-Length", xml.length);
-        req.setRequestHeader("Content-Type", "text/xml");
-        req.setRequestHeader("User-Agent", "Thunderbird ActiveSync");
-
-        let secure = (urls[index].substring(0,8) == "https://");
-        //do not send password via http
-        if (secure) req.setRequestHeader("Authorization", "Basic " + btoa(accountdata.user + ":" + password));
-
-        req.timeout = 16000;
-        
-        req.ontimeout  = function() {
-            //log error and try next server
-            tbSync.dump("Timeout on EAS autodiscover", urls[index]);
-            tbSync.autodiscoverErrors.push(urls[index]+" =>\n\t" + "Timeout");
-            this.autodiscoverHTTP(accountdata, password, urls, index+1);
-        }.bind(this);
-
-        req.onerror = function() {
-            let error = tbSync.eas.createTCPErrorFromFailedXHR(req);
-            if (!error) {
-                tbSync.dump("Network error on EAS autodiscover ("+urls[index]+")", req.responseText);
-            } else {
-                tbSync.dump("Connection error on EAS autodiscover ("+urls[index]+")", error);
-            }
-            tbSync.autodiscoverErrors.push(urls[index]+" =>\n\t" + (error ? error : req.responseText));
-            this.autodiscoverHTTP(accountdata, password, urls, index+1); 
-        }.bind(this);
-
-        // define response handler for our request
-        req.onload = function() { 
-            tbSync.dump("EAS autodiscover with response (status: " + req.status + ")", "\n" + req.responseText);
-            
-            if (req.status === 200) {
-                let data = tbSync.xmltools.getDataFromXMLString(req.responseText);
-        
-                if (!(data === null) && data.Autodiscover && data.Autodiscover.Response && data.Autodiscover.Response.Action) {
-                    // "Redirect" or "Settings" are possible
-                    if (data.Autodiscover.Response.Action.Redirect) {
-                        // redirect, start anew with new user
-                        let newuser = action.Redirect;
-                        tbSync.dump("Redirect on EAS autodiscover", accountdata.user +" => "+ newuser);
-                        //password may not change
-                        accountdata.user = newuser;
-                        this.autodiscover(accountdata, password);
-
-                    } else if (data.Autodiscover.Response.Action.Settings) {
-                        // get server settings
-                        let server = tbSync.xmltools.nodeAsArray(data.Autodiscover.Response.Action.Settings.Server);
-
-                        for (let count = 0; count < server.length; count++) {
-                            if (server[count].Type == "MobileSync" && server[count].Url) {
-                                this.autodiscoverSucceeded (accountdata, password, server[count].Url);
-
-                                //there is also a type CertEnroll
-                                return; //was break;
-                            }
-                        }
-                    }
-                } else {
-                    tbSync.dump("EAS autodiscover with invalid response, skipping.", urls[index]);
-                    tbSync.autodiscoverErrors.push(urls[index]+" =>\n\t" + "Invalid response, skipping.");
-                    this.autodiscoverHTTP(accountdata, password, urls, index+1);
-                }
-            } else {
-
-                if (secure && req.status === 401) {
-                    //Report wrong password and start again
-                    window.openDialog("chrome://tbsync/content/manager/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", accountdata, 
-                        function() {
-                            tbSyncEasNewAccount.autodiscover(accountdata, tbSync.eas.getPassword(accountdata));
-                        },
-                        function() {
-                            document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
-                            document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
-                            document.documentElement.getButton("cancel").disabled = false;
-                            document.documentElement.getButton("extra1").disabled = false;
-                        });
-                    tbSyncEasNewAccount.cancelQueryTimeout();
-                    return;
-                }
-
-                if (!secure && req.status === 401) {
-                    tbSync.autodiscoverErrors.push(urls[index]+" =>\n\t" + "Expected 'not authenticated' (not allowed to authenticate via unsecure HTTP). Called without authentication data just to get redirect information.");
-                }
-
-                //check for redirects (301/302 are seen as 501 - WTF? --- using responseURL to check for redirects)
-                if (req.responseURL != urls[index]) {
-                    let redirectURL = req.responseURL;
-                    tbSync.dump("Autodiscover URL redirected:", "[" +redirectURL + "]");
-                    this.autodiscover(accountdata, password, redirectURL);
-                } else {
-                    tbSync.dump("Error on EAS autodiscover (" + req.status + ")", (req.responseText) ? req.responseText : urls[index]);
-                    tbSync.autodiscoverErrors.push(urls[index]+" =>\n\t" + "Bad status ("+req.status+") and also no redirect information, skipping.");
-                    this.autodiscoverHTTP(accountdata, password, urls, index+1);
-                }
-                
-            }
-        }.bind(this);
-
-        tbSyncEasNewAccount.initQueryTimeout();
-        req.send(xml);
-        
-    },
-        
-    autodiscoverFailed: function (accountdata) {
-        document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
-        document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
-        alert(tbSync.getLocalizedMessage("info.AutodiscoverFailed","eas").replace("##user##", accountdata.user).replace("##errors##", tbSync.autodiscoverErrors.join("\n")));
-        document.documentElement.getButton("cancel").disabled = false;
-        document.documentElement.getButton("extra1").disabled = false;
-    },
-
-    autodiscoverSucceeded: function (accountdata, password, url) {
-        document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
-        document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
-        document.documentElement.getButton("cancel").disabled = false;
-        document.documentElement.getButton("extra1").disabled = false;
-        
-        accountdata.host = url.split("/")[2];
-        accountdata.servertype = "auto";
-
-        if (url.substring(0,5) == "https") accountdata.https = "1";
-        else accountdata.https = "0";
-        
-        tbSyncEasNewAccount.addAccount(accountdata, password, tbSync.getLocalizedMessage("info.AutodiscoverOk","eas"));
     }
 };

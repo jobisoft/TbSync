@@ -11,7 +11,6 @@
     onload="tbSyncEasNewAccount.onLoad();"
     onunload="tbSyncEasNewAccount.onUnload();"
     onclose="return tbSyncEasNewAccount.onClose()"
-    ondialogcancel="tbSyncEasNewAccount.onCancel();"
     ondialogextra1="tbSyncEasNewAccount.onAdd();">
 
     <script type="application/javascript" src="chrome://tbsync/content/provider/eas/newaccount.js"/>
