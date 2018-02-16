@@ -1490,7 +1490,7 @@ var eas = {
         let result;
         do {
             result = yield tbSync.eas.getServerUrlViaAutodiscoverRequest(url, user, password, maxtimeout, id);
-            if (result.error && result.error == "301" && result.url != url) {
+            if (result.error && result.url != url) {
                 tbSync.dump("EAS autodiscover redirect (" + id + ")", url + "\n => " + result.url);
                 yield tbSync.sleep(1000);
                 url = result.url;
