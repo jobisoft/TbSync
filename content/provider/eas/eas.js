@@ -1488,15 +1488,18 @@ var eas = {
 
     getServerUrlViaAutodiscoverRequestWrapper : Task.async (function* (responses, url, user, password, maxtimeout, id) {
         let result;
+        let redirect;
         do {
+            redirect = false;
             result = yield tbSync.eas.getServerUrlViaAutodiscoverRequest(url, user, password, maxtimeout, id);
             if (result.error && result.url != url) {
                 tbSync.dump("EAS autodiscover redirect (" + id + ")", url + "\n => " + result.url);
                 yield tbSync.sleep(1000);
                 url = result.url;
                 user = result.user;
+                redirect = true;
             }
-        } while (result.error == "301");
+        } while (redirect);//result.error == "301");
         responses.push(result);
     }),    
     
@@ -1519,16 +1522,20 @@ var eas = {
 
             // create request handler
             req.mozBackgroundRequest = true;
-            req.open("POST", url, true);
-            req.setRequestHeader("Content-Length", xml.length);
-            req.setRequestHeader("Content-Type", "text/xml");
-            req.setRequestHeader("User-Agent", userAgent);
+            if (secure) {
+                req.open("POST", url, true);
+                req.setRequestHeader("Content-Length", xml.length);
+                req.setRequestHeader("Content-Type", "text/xml");
+                req.setRequestHeader("User-Agent", userAgent);
+            } else {
+                req.open("HEAD", url, true);
+                req.setRequestHeader("User-Agent", userAgent);
+            }
             req.setRequestHeader("Cache-Control", "no-store");
             req.setRequestHeader("Connection", "close");
 
-            //do not send password via http (send dummy password, because some servers do not accept requests without authorization header, for example outlook)
+            //do not send password via unsecure http
             if (secure) req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + password));
-            else req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + "nopassword"));
             
             req.timeout = maxtimeout;
 
@@ -1546,6 +1553,11 @@ var eas = {
 
             // define response handler for our request
             req.onload = function() { 
+                if (!secure) {
+                    resolve({"url":req.responseURL, "error":"unsecure", "server":"", "user":user});
+                    return;
+                }
+
                 tbSync.dump("EAS autodiscover status (" + id + ")",  req.status  + "\n[" + req.responseText + "]");
                 
                 if (req.status === 200) {
@@ -1566,6 +1578,7 @@ var eas = {
                             for (let count = 0; count < server.length; count++) {
                                 if (server[count].Type == "MobileSync" && server[count].Url) {
                                     resolve({"url":req.responseURL, "error":"", "server":server[count].Url, "user":user});
+                                    return;
                                 }
                             }
                         }
@@ -1574,26 +1587,28 @@ var eas = {
                     }
                 } else {
 
-                    if (secure && req.status === 401) {
+                    if (req.status === 401) {
                         resolve({"url":req.responseURL, "error":"401", "server":"", "user":user});
+                        return;
                     }
 
                     if (req.status === 403) {
                         resolve({"url":req.responseURL, "error":"403", "server":"", "user":user});
+                        return;
                     }
 
-                    //check for redirects (301/302 are seen as 501 - WTF? --- using responseURL to check for redirects)
+                    //using responseURL to check for redirects
                     if (req.responseURL != url) {
                         resolve({"url":req.responseURL, "error":"301", "server":"", "user":user});
-                    } else if (req.status === 401) { //do not confuse users with 401 error on unsecure connections (we do not send password on unsecure connections, all we want is a redirect information)
-                        resolve({"url":req.responseURL, "error":"No redirect information found", "server":"", "user":user});
                     } else{
                         resolve({"url":req.responseURL, "error":"No autodiscover information found (HTTP "+req.status+").", "server":"", "user":user});
                     }
                     
                 }
-            }            
-            req.send(xml);
+            };
+            
+            if (secure) req.send(xml);
+            else req.send();
             
         });
 	}
