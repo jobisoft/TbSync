@@ -6,6 +6,7 @@ Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 var tbSyncEasNewAccount = {
 
     onClose: function () {
+        //tbSync.dump("onClose", tbSync.addAccountWindowOpen);
         return !document.documentElement.getButton("cancel").disabled;
     },
 
@@ -24,8 +25,6 @@ var tbSyncEasNewAccount = {
     },
 
     onUnload: function () {
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tbsync.autodiscoverDone", tbSyncEasNewAccount.account);
     },
 
     onUserTextInput: function () {
