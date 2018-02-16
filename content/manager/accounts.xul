@@ -35,15 +35,17 @@
             <hbox>
              <vbox flex="1">
                 <button 
-                  label="&pref.SyncAll;"
-                  style="margin-left:0; margin-right:0"
-                  oncommand="tbSync.syncAccount('sync');"/>
+                id="tbSyncAccounts.btnSyncAll"
+                label="&pref.SyncAll;"
+                style="margin-left:0; margin-right:0"
+                oncommand="tbSync.syncAccount('sync');"/>
              </vbox>
              <hbox>                  
                 <button 
-                  style="width: 2em; min-width: 2em; margin-right:0"
-                  label="+"
-                  oncommand="tbSyncAccounts.addAccount();"/>
+                id="tbSyncAccounts.btnAddAccount"
+                style="width: 2em; min-width: 2em; margin-right:0"
+                label="+"
+                oncommand="tbSyncAccounts.addAccount();"/>
              </hbox>                  
             </hbox>
         </vbox>
