@@ -50,7 +50,7 @@
 
                 <row style="height:40px; margin-top:1ex;margin-bottom:1ex;">
                     <vbox pack="center"><label id='tbsync.newaccount.autodiscoverlabel' value="" /></vbox>
-                    <vbox pack="center"><description style="white-space: pre-wrap;" id='tbsync.newaccount.autodiscoverstatus'></description></vbox>
+                    <vbox pack="center"><label id='tbsync.newaccount.autodiscoverstatus' value="" /></vbox>
                 </row>
 
             </rows>

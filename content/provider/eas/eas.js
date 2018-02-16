@@ -1456,8 +1456,9 @@ var eas = {
         
         //send requests for all our urls in parallel (with small offsets)
         for (let i=0; i<urls.length; i++) {
+            tbSync.dump("EAS autodiscover URL ("+i+")", urls[i]);
             let timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
-            timer.initWithCallback({notify : function () {tbSync.eas.getServerUrlViaAutodiscoverRequestWrapper(responses, urls[i], user, password, maxtimeout)}}, 100*i+200, 0);            
+            timer.initWithCallback({notify : function () {tbSync.eas.getServerUrlViaAutodiscoverRequestWrapper(responses, urls[i], user, password, maxtimeout, i)}}, 100*i+200, 0);
         }
 
         //wait for responses
@@ -1468,7 +1469,7 @@ var eas = {
             //if there is an answer for each request, we are done, return
             if (responses.length == urls.length) return responses;
             
-            //also check, if one of our request succeded, no need to wait for the others, return
+            //also check, if one of our request succeded or failed hard, no need to wait for the others, return
             for (let r=0; r<responses.length; r++) {
                 if (responses[r].server) return responses;
                 if (responses[r].error == "403" || responses[r].error == "401") return responses;
@@ -1478,7 +1479,6 @@ var eas = {
         //Add error if all requests timed out
         if (responses.length == 0) {
             let error = "None of our requests received a response before the global timeout of " + maxtimeout + "s.";
-            tbSync.dump("autodiscover", error);
             responses.push({"url":"", "error":error,"server":""});        
         }
         
@@ -1486,20 +1486,21 @@ var eas = {
         
     }),
 
-    getServerUrlViaAutodiscoverRequestWrapper : Task.async (function* (responses, url, user, password, maxtimeout) {
+    getServerUrlViaAutodiscoverRequestWrapper : Task.async (function* (responses, url, user, password, maxtimeout, id) {
         let result;
         do {
-            result = yield tbSync.eas.getServerUrlViaAutodiscoverRequest(url, user, password, maxtimeout);
-            if (result.error) {
+            result = yield tbSync.eas.getServerUrlViaAutodiscoverRequest(url, user, password, maxtimeout, id);
+            if (result.error && result.error == "301" && result.url != url) {
+                tbSync.dump("EAS autodiscover redirect (" + id + ")", url + "\n => " + result.url);
                 yield tbSync.sleep(1000);
                 url = result.url;
                 user = result.user;
             }
-        } while (result.error == "301" );
+        } while (result.error == "301");
         responses.push(result);
     }),    
     
-    getServerUrlViaAutodiscoverRequest: function (url, user, password, maxtimeout) {
+    getServerUrlViaAutodiscoverRequest: function (url, user, password, maxtimeout, id) {
         
         let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
 
@@ -1532,20 +1533,20 @@ var eas = {
             req.timeout = maxtimeout;
 
             req.ontimeout = function () {
-                tbSync.dump("Timeout on EAS autodiscover", url);
-                resolve({"url":url, "error":"Timeout", "server":"", "user":user});
+                tbSync.dump("Timeout on EAS autodiscover", id);
+                resolve({"url":req.responseURL, "error":"Timeout", "server":"", "user":user});
             };
            
             req.onerror = function () {
                 let error = tbSync.eas.createTCPErrorFromFailedXHR(req);
                 if (!error) error = req.responseText;
-                tbSync.dump("Network error on EAS autodiscover ("+url+")", error);
-                resolve({"url":url, "error":error, "server":"", "user":user});
+                tbSync.dump("Network error on EAS autodiscover ("+id+")", error);
+                resolve({"url":req.responseURL, "error":error, "server":"", "user":user});
             };
 
             // define response handler for our request
             req.onload = function() { 
-                tbSync.dump("EAS autodiscover with status (url: " + url + ")", req.status + "\n[" + req.responseText + "]");
+                tbSync.dump("EAS autodiscover status (" + id + ")",  req.status  + "\n[" + req.responseText + "]");
                 
                 if (req.status === 200) {
                     let data = tbSync.xmltools.getDataFromXMLString(req.responseText);
@@ -1556,7 +1557,7 @@ var eas = {
                             // redirect, start anew with new user
                             let newuser = action.Redirect;
                             //password may not change
-                            resolve({"url":url, "error":"301", "server":"", "user":newuser});
+                            resolve({"url":req.responseURL, "error":"301", "server":"", "user":newuser});
 
                         } else if (data.Autodiscover.Response.Action.Settings) {
                             // get server settings
@@ -1564,36 +1565,34 @@ var eas = {
 
                             for (let count = 0; count < server.length; count++) {
                                 if (server[count].Type == "MobileSync" && server[count].Url) {
-                                    resolve({"url":url, "error":"", "server":server[count].Url, "user":user});
+                                    resolve({"url":req.responseURL, "error":"", "server":server[count].Url, "user":user});
                                 }
                             }
                         }
                     } else {
-                        resolve({"url":url, "error":"Invalid response. Unable to extract autodiscover information.", "server":"", "user":user});
+                        resolve({"url":req.responseURL, "error":"Invalid response. Unable to extract autodiscover information.", "server":"", "user":user});
                     }
                 } else {
 
                     if (secure && req.status === 401) {
-                        resolve({"url":url, "error":"401", "server":"", "user":user});
+                        resolve({"url":req.responseURL, "error":"401", "server":"", "user":user});
                     }
 
                     if (req.status === 403) {
-                        resolve({"url":url, "error":"403", "server":"", "user":user});
+                        resolve({"url":req.responseURL, "error":"403", "server":"", "user":user});
                     }
 
                     //check for redirects (301/302 are seen as 501 - WTF? --- using responseURL to check for redirects)
                     if (req.responseURL != url) {
-                        let redirectURL = req.responseURL;
-                        resolve({"url":redirectURL, "error":"301", "server":"", "user":user});
+                        resolve({"url":req.responseURL, "error":"301", "server":"", "user":user});
                     } else if (req.status === 401) { //do not confuse users with 401 error on unsecure connections (we do not send password on unsecure connections, all we want is a redirect information)
-                        resolve({"url":url, "error":"No redirect information found", "server":"", "user":user});
+                        resolve({"url":req.responseURL, "error":"No redirect information found", "server":"", "user":user});
                     } else{
-                        resolve({"url":url, "error":"No autodiscover information found (HTTP "+req.status+").", "server":"", "user":user});
+                        resolve({"url":req.responseURL, "error":"No autodiscover information found (HTTP "+req.status+").", "server":"", "user":user});
                     }
                     
                 }
             }            
-
             req.send(xml);
             
         });

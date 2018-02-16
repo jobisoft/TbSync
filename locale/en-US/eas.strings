@@ -1,10 +1,14 @@
 newaccount.add_custom=Add account
 newaccount.add_auto=Autodiscover settings and add account
 
-autodiscover.Querying=Querying:
+autodiscover.Querying=Searching for settings ...
 autodiscover.Ok=Autodiscover completed successfully, you can now check the optional settings and connect this account.
-autodiscover.Failed=Autodiscover for user <##user##> failed. The following errors were reported:\n\n##errors##\n\nHowever, this could also mean, that your ActiveSync provider does not support Autodiscover. In that case please choose "custom configuration" as your server configuration and enter the address of your server manually.
 autodiscover.NeedEmail=Autodiscover needs a valid email address as user name.
+
+autodiscover.Failed=Autodiscover for user <##user##> failed.
+autodiscover.FailedUnknown=Either the provided credentials where wrong or your ActiveSync provider does not support Autodiscover.
+autodiscover.FailedSecurity=Also the following certificate errors have been reported, which *might* indicate a problem with your ActiveSync provider:
+
 
 deletefolder.notallowed=Please unsubscribe folder "##replace.1##" before trying to purge it from trash.
 deletefolder.confirm=Do you really want to PERMANENTLY PURGE folder "##replace.1##" from trash?

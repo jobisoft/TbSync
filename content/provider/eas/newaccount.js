@@ -5,6 +5,9 @@ Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncEasNewAccount = {
 
+    startTime: 0,
+    maxTimeout: 30,
+
     onClose: function () {
         //tbSync.dump("onClose", tbSync.addAccountWindowOpen);
         return !document.documentElement.getButton("cancel").disabled;
@@ -57,25 +60,51 @@ var tbSyncEasNewAccount = {
                 document.getElementById("tbsync.newaccount.name").disabled = true;
                 document.getElementById("tbsync.newaccount.user").disabled = true;
                 document.getElementById("tbsync.newaccount.password").disabled = true;
-                document.getElementById("tbsync.newaccount.servertype").disabled = true;                
-                
-                let responses = yield tbSync.eas.getServerUrlViaAutodiscover(user, password);
+                document.getElementById("tbsync.newaccount.servertype").disabled = true;
+
+                let updateTimer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
+                updateTimer.initWithCallback({notify : function () {tbSyncEasNewAccount.updateAutodiscoverStatus()}}, 1000, 3);
+
+                tbSyncEasNewAccount.startTime = Date.now();
+                tbSyncEasNewAccount.updateAutodiscoverStatus();
+
+                let responses = yield tbSync.eas.getServerUrlViaAutodiscover(user, password, tbSyncEasNewAccount.maxTimeout*1000);
+                updateTimer.cancel();
 
                 document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
                 document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
 
-                let errors = [];
+                //set a default error
+                let error = tbSync.getLocalizedMessage("autodiscover.FailedUnknown","eas");
+                let certerrors = [];
                 let server = "";
+
+                /*
+                 * All requests have finished, check them for success or hard failed requests.
+                 * Fall through is a general error "nothing found".
+                 */
                 for (let r=0; r<responses.length; r++) {
-                    if (responses[r].server) server = responses[r].server;
-                    else errors.push(responses[r].url + "\n\t => " + responses[r].error);
-                    
-                    //reduce error messages for some errors
-                    if (["401","403"].includes(responses[r].error)) {
-                        errors = [];
-                        errors.push(tbSync.getLocalizedMessage("status." + responses[r].error));
+                    //if there is a positive responce, abort
+                    if (responses[r].server) {
+                        server = responses[r].server;
+                        certerrors = []; //only print hard failed errors
                         break;
                     }
+                    
+                    //report hard failed requests
+                    if (["401","403"].includes(responses[r].error)) {
+                        error = tbSync.getLocalizedMessage("status." + responses[r].error);
+                        certerrors = []; //only print hard failed errors
+                        break;
+                    }
+
+                    //look for certificate errors, which might be usefull to the user in case of a general fail
+
+                    let security_error = responses[r].error.split("::");
+                    if (security_error.length == 2 && security_error[0] == "security") {
+                        certerrors.push(responses[r].url + "\n\t => " + security_error[1]);
+                    }
+
                 }
 
                 if (server) {
@@ -86,7 +115,8 @@ var tbSyncEasNewAccount = {
                     
                 } else {
                     
-                    alert(tbSync.getLocalizedMessage("autodiscover.Failed","eas").replace("##user##", user).replace("##errors##", errors.join("\n")));
+                    if (certerrors.length>0) error = error + "\n\n" + tbSync.getLocalizedMessage("autodiscover.FailedSecurity","eas") + "\n\n" + certerrors.join("\n");
+                    alert(tbSync.getLocalizedMessage("autodiscover.Failed","eas").replace("##user##", user) + "\n\n" + error);
 
                 }
                 document.getElementById("tbsync.newaccount.name").disabled = false;
@@ -100,6 +130,14 @@ var tbSyncEasNewAccount = {
 
         }
     }),
+
+    updateAutodiscoverStatus: function () {
+        document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = false;
+        let offset = Math.round(((Date.now()-tbSyncEasNewAccount.startTime)/1000));
+        let timeout = (offset>2) ? " (" + (tbSyncEasNewAccount.maxTimeout - offset) + ")" : "";
+
+        document.getElementById('tbsync.newaccount.autodiscoverstatus').value  = tbSync.getLocalizedMessage("autodiscover.Querying","eas") + timeout;
+    },
 
     addAccount (user, password, servertype, accountname, url = "") {
         let newAccountEntry = tbSync.eas.getNewAccountEntry();
