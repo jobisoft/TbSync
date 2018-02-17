@@ -533,7 +533,7 @@ var tbSyncAccountSettings = {
                     
                 }
                 tbSyncAccountSettings.updateSyncstate();
-                if (msg !== null) alert(msg);
+                //if (msg !== null) alert(msg);
             }
         }
     }
