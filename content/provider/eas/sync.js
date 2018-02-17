@@ -651,8 +651,8 @@ eas.sync = {
                         if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type);
                         wbxml.atag("SyncKey", syncdata.synckey);
                         wbxml.atag("CollectionId", syncdata.folderID);
-                        wbxml.atag("DeletesAsMoves", "1");
-                        wbxml.atag("GetChanges", "1");
+                        wbxml.atag("DeletesAsMoves");
+                        wbxml.atag("GetChanges");
                         wbxml.atag("WindowSize",  tbSync.prefSettings.getIntPref("eas.maxitems").toString());
 
                         if (tbSync.db.getAccountSetting(syncdata.account, "asversion") != "2.5") {
