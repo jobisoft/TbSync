@@ -79,10 +79,8 @@ var tbSyncEasNewAccount = {
                 let certerrors = [];
                 let server = "";
 
-                /*
-                 * All requests have finished, check them for success or hard failed requests.
-                 * Fall through is a general error "nothing found".
-                 */
+                //All requests have finished, check them for success or hard failed requests.
+                //Fall through is a general error "nothing found".
                 for (let r=0; r<responses.length; r++) {
                     //if there is a positive responce, abort
                     if (responses[r].server) {
@@ -92,19 +90,19 @@ var tbSyncEasNewAccount = {
                     }
                     
                     //report hard failed requests
-                    if (["401","403"].includes(responses[r].error)) {
+                    if ([401,403].includes(responses[r].error)) {
                         error = tbSync.getLocalizedMessage("status." + responses[r].error);
                         certerrors = []; //only print hard failed errors
                         break;
                     }
 
                     //look for certificate errors, which might be usefull to the user in case of a general fail
-
-                    let security_error = responses[r].error.split("::");
-                    if (security_error.length == 2 && security_error[0] == "security") {
-                        certerrors.push(responses[r].url + "\n\t => " + security_error[1]);
+                    if (responses[r].error) {
+                        let security_error = responses[r].error.toString().split("::");
+                        if (security_error.length == 2 && security_error[0] == "security") {
+                            certerrors.push(responses[r].url + "\n\t => " + security_error[1]);
+                        }
                     }
-
                 }
 
                 if (server) {
