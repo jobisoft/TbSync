@@ -1449,9 +1449,11 @@ var eas = {
     getServerUrlViaAutodiscover : Task.async (function* (user, password, maxtimeout = 40000) {
 
         function logPipe (responses) {
+            let results = [];
             for (let r=0; r<responses.length; r++) {
-                tbSync.dump("EAS autodiscover results ("+r+")", responses[r].server ? responses[r].server : responses[r].error);
+                results.push(" *  "+responses[r].url+": " + (responses[r].server ? responses[r].server : responses[r].error));
             }
+            tbSync.dump("EAS autodiscover results","\n" + results.join("\n"));
             return responses;
         };
 
@@ -1468,28 +1470,33 @@ var eas = {
         urls.push("https://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
         urls.push("https://"+parts[1]+"/Autodiscover/Autodiscover.xml");
 
-
-        let redirects = [];
-        for (let i=0; i<urls.length; i++) {
-            tbSync.dump("Resolve EAS autodiscover URL ("+i+")", urls[i]);
-            let url = yield tbSync.eas.autodiscoverFollowRedirects(urls[i], 500, i);
-            if (!redirects.includes(url) && url.substring(0,8) == "https://") redirects.push(url);
-        }
-
         let responses = []; //array of objects {url, error, server}
-                for (let i=0; i<redirects.length; i++) {
-            tbSync.dump("Querry EAS autodiscover URL ("+i+")", redirects[i]);
+        let initialUrlArraySize = urls.length;
+
+        for (let i=0; i<initialUrlArraySize; i++) {
+            tbSync.dump("Querry EAS autodiscover URL ("+i+")", urls[i]);
             let timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
-            timer.initWithCallback({notify : function () {tbSync.eas.getServerUrlViaAutodiscoverRedirectWrapper(responses, redirects[i], user, password, maxtimeout, i)}}, 100*i+200, 0);
+            let url = urls[i];
+            timer.initWithCallback({notify : function () {tbSync.eas.getServerUrlViaAutodiscoverRedirectWrapper(responses, urls, url, user, password, maxtimeout)}}, 200*i, 0);
         }
 
-        //wait for responses
+        //monitor responses and url size (can increase due to redirects)
         let startDate = Date.now();
         while ((Date.now()-startDate) < maxtimeout) {
             yield tbSync.sleep(1000);
 
             //if there is an answer for each request, we are done, return
-            if (responses.length == redirects.length) return logPipe(responses);
+            if (responses.length == urls.length) return logPipe(responses);
+            
+            let i = 0;
+            while (initialUrlArraySize < urls.length) {
+                tbSync.dump("Querry EAS autodiscover URL ("+initialUrlArraySize+")", urls[initialUrlArraySize]);
+                let timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
+                let url = urls[initialUrlArraySize];
+                timer.initWithCallback({notify : function () {tbSync.eas.getServerUrlViaAutodiscoverRedirectWrapper(responses, urls, url, user, password, maxtimeout)}}, 200*i, 0);                
+                initialUrlArraySize++;
+                i++;
+            }
             
             //also check, if one of our request succeded or failed hard, no need to wait for the others, return
             for (let r=0; r<responses.length; r++) {
@@ -1506,69 +1513,39 @@ var eas = {
         
         return logPipe(responses);        
     }),
-
-     autodiscoverFollowRedirects: function (url, maxtimeout, id) {
-        
-        let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-        let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
-        if (userAgent == "") userAgent = "Thunderbird ActiveSync";
-        
-        return new Promise(function(resolve,reject) {
-            // create request handler
-            req.mozBackgroundRequest = true;
-            req.open("HEAD", url, true);
-            req.timeout = maxtimeout;
-
-            req.ontimeout = function () {
-                tbSync.dump("Timeout on EAS autodiscover", id);
-                resolve(req.responseURL);
-            };
-           
-            req.onerror = function () {
-                let error = tbSync.eas.createTCPErrorFromFailedXHR(req);
-                if (!error) error = req.responseText;
-                tbSync.dump("Network error on EAS autodiscover ("+id+")", error);
-                resolve("");
-            };
-
-            req.onload = function() { 
-                tbSync.dump("EAS autodiscover status (" + id + ")",  req.status  + "\n[" + req.responseText + "]");
-                resolve(req.responseURL);
-            };
-            
-            req.send();
-            
-        });
-	},
        
-    getServerUrlViaAutodiscoverRedirectWrapper : Task.async (function* (responses, url, user, password, maxtimeout, id) {
-        let result;
-        let redirect;
+    getServerUrlViaAutodiscoverRedirectWrapper : Task.async (function* (responses, urls, url, user, password, maxtimeout) {
         
-        do {
-            result = yield tbSync.eas.getServerUrlViaAutodiscoverRequest(url, user, password, maxtimeout, id);
-            redirect = false;
-
-            if (result.error && result.url != url) {
-                tbSync.dump("EAS autodiscover redirect (" + id + ")", result.error + "\n" + url + "\n => " + result.url);
-                url = result.url;
-                user = result.user;
-                redirect = true;
-                yield tbSync.sleep(1000);
+        //using HEAD to find URL redirects until response URL no longer changes 
+        // * XHR should follow redirects transparently, but that does not always work, POST data could get lost, so we
+        // * need to find the actual POST candidates (example: outlook.de accounts)
+        let result = {};
+        let method = "HEAD";
+            
+        do {            
+            yield tbSync.sleep(200);
+            result = yield tbSync.eas.getServerUrlViaAutodiscoverRequest(method, url, user, password, maxtimeout);
+            method = "";
+            
+            if (result.error == "redirect found") {
+                //add this url to the list, if it is new
+                if (!urls.includes(result.url)) {
+                    urls.push(result.url);
+                    tbSync.dump("EAS autodiscover URL redirect",  "\n" + url + " => \n" + result.url);
+                }
+                return;
+            } else if (result.error == "POST candidate found") {
+                method = "POST";
             }
 
-        } while (redirect);
+        } while (method == "POST");
+
         responses.push(result);
     }),    
     
-    getServerUrlViaAutodiscoverRequest: function (url, user, password, maxtimeout, id) {
-        
-        let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
-
-        let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
-        if (userAgent == "") userAgent = "Thunderbird ActiveSync";
-        
+    getServerUrlViaAutodiscoverRequest: function (method, url, user, password, maxtimeout) {
         return new Promise(function(resolve,reject) {
+            
             let xml = '<?xml version="1.0" encoding="utf-8"?>\r\n';
             xml += '<Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/mobilesync/requestschema/2006">\r\n';
             xml += '<Request>\r\n';
@@ -1577,35 +1554,57 @@ var eas = {
             xml += '</Request>\r\n';
             xml += '</Autodiscover>\r\n';
             
+            let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
+            if (userAgent == "") userAgent = "Thunderbird ActiveSync";
+
             // create request handler
+            let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
             req.mozBackgroundRequest = true;
-            req.open("POST", url, true);
-            req.setRequestHeader("Content-Length", xml.length);
-            req.setRequestHeader("Content-Type", "text/xml");
-            req.setRequestHeader("User-Agent", userAgent);
-            req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + password));                
+            req.open(method, url, true);
             req.timeout = maxtimeout;
+            req.setRequestHeader("User-Agent", userAgent);
+            
+            let secure = (url.substring(0,8).toLowerCase() == "https://");
+            
+            if (method == "POST") {
+                req.setRequestHeader("Content-Length", xml.length);
+                req.setRequestHeader("Content-Type", "text/xml");
+                if (secure) req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + password));                
+            }
 
             req.ontimeout = function () {
-                tbSync.dump("Timeout on EAS autodiscover", id);
+                tbSync.dump("EAS autodiscover with timeout", "\n" + url + " => \n" + req.responseURL);
                 resolve({"url":req.responseURL, "error":"timeout", "server":"", "user":user});
             };
            
             req.onerror = function () {
                 let error = tbSync.eas.createTCPErrorFromFailedXHR(req);
                 if (!error) error = req.responseText;
-                tbSync.dump("Network error on EAS autodiscover ("+id+")", error);
+                tbSync.dump("EAS autodiscover with error ("+error+")",  "\n" + url + " => \n" + req.responseURL);
                 resolve({"url":req.responseURL, "error":error, "server":"", "user":user});
             };
 
             req.onload = function() { 
-/*                //abort on redirects and insecure connections
-                if (req.responseURL != url || !secure) {
-                    resolve({"url":req.responseURL, "error":"skipped", "server":"", "user":user});
+                //initiate rerun on redirects
+                if (req.responseURL != url) {
+                    resolve({"url":req.responseURL, "error":"redirect found", "server":"", "user":user});
                     return;
                 }
-*/
-                tbSync.dump("EAS autodiscover status (" + id + ")",  req.status  + "\n[" + req.responseText + "]");
+
+                //initiate rerun on HEAD request without redirect (rerun and do a POST on this)
+                if (method == "HEAD") {
+                    resolve({"url":req.responseURL, "error":"POST candidate found", "server":"", "user":user});
+                    return;
+                }
+
+                //ignore POST without autherization (we just do them to get redirect information)
+                if (!secure) {
+                    resolve({"url":req.responseURL, "error":"unsecure POST", "server":"", "user":user});
+                    return;
+                }
+                
+                //evaluate secure POST requests which have not been redirected
+                tbSync.dump("EAS autodiscover POST with status (" + req.status + ")",   "\n" + url + " => \n" + req.responseURL  + "\n[" + req.responseText + "]");
                 
                 if (req.status === 200) {
                     let data = tbSync.xmltools.getDataFromXMLString(req.responseText);
@@ -1615,8 +1614,7 @@ var eas = {
                         if (data.Autodiscover.Response.Action.Redirect) {
                             // redirect, start again with new user
                             let newuser = action.Redirect;
-                            //password may not change
-                            resolve({"url":req.responseURL, "error":"301", "server":"", "user":newuser});
+                            resolve({"url":req.responseURL, "error":"redirect found", "server":"", "user":newuser});
 
                         } else if (data.Autodiscover.Response.Action.Settings) {
                             // get server settings
@@ -1637,7 +1635,8 @@ var eas = {
                 }
             };
             
-            req.send(xml);
+            if (method == "HEAD") req.send();
+            else  req.send(xml);
             
         });
 	}
