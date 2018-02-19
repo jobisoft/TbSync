@@ -256,7 +256,14 @@ var tbSync = {
         }
         return (tabmail !== null);
     },
-    
+
+    openLink: function (url) {
+        let ioservice = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);
+        let uriToOpen = ioservice.newURI(url, null, null);
+        let extps = Components.classes["@mozilla.org/uriloader/external-protocol-service;1"].getService(Components.interfaces.nsIExternalProtocolService);
+        extps.loadURI(uriToOpen, null);    
+    },
+
     openFileTab: function (file) {
         return tbSync.openTBtab(tbSync.getAbsolutePath(file));
     },

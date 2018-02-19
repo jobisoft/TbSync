@@ -13,19 +13,25 @@
     <hbox flex="1" id="mainframe">
         <vbox flex="1">
             <html:p>
-                <html:b>Birthdays</html:b><html:br/><html:br/>
-                There seems to be a problem with entering birthday data in some versions of Zarafa Webaccess. It does work in the Webapp. This is why there is a check box "Send Birthday Information" in the account settings dialog. This is a bug in  Zarafa not in TbSync.
+                <html:b>Help</html:b><html:br/><html:br/>
+                The <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/wiki');" style="color:blue;text-decoration: underline">wiki pages</html:span> of the TbSync project provide additional information, guides and detailed configuration descriptions.
             </html:p>
 
             <html:p>
-                <html:b>Debug</html:b><html:br/><html:br/>
-                If you encounter bugs, you can help to fix them by sending in a debug report. Activate debug logging only as long as needed, because it slows down Thunderbird.
+                <html:b>Beta versions</html:b><html:br/><html:br/>
+                The official version of the TbSync AddOn may not be the latest release. The latest version, including the latest beta can be found at the <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/releases');" style="color:blue;text-decoration: underline">release page</html:span> of the TbSync project.
+            </html:p>
+
+            <html:p>
+                <html:b>Bugs &amp; debug log</html:b><html:br/><html:br/>
+                If you encounter a bug, update to the latest release/beta of TbSync to check if your bug has been fixed already. If not, you can help to fix it by sending in a debug report.
             </html:p>
 
             <checkbox id="tbSyncAccountManager.logPrefCheckbox" label="Enable debug logging to store all debug messages and the xml being sent and received by TbSync in a log file." oncommand="tbSyncAccountManager.toggleLogPref();" />
                 
             <html:p> 
-                To generate a clean bug report, restart Thunderbird (which clears the log) and perform all steps needed to trigger the bug, <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openFileTab('debug.log');" style="color:blue;text-decoration: underline">open the debug report (click here)</html:span> and copy it into an email to john.bieling@gmx.de. Do not forget a short bug description.
+                To generate a clean bug report, restart Thunderbird (which clears the log) and perform all steps needed to trigger the bug, <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openFileTab('debug.log');" style="color:blue;text-decoration: underline">open the debug report (click here)</html:span> and copy it into an email to john.bieling@gmx.de. Do not forget a short bug description. <html:br/><html:br/>
+                Activate debug logging only as long as needed, because it slows down Thunderbird.
             </html:p>
         </vbox>
     </hbox>
