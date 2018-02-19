@@ -1476,7 +1476,7 @@ var eas = {
         for (let i=0; i<initialUrlArraySize; i++) {
             tbSync.dump("Querry EAS autodiscover URL ("+i+")", urls[i].url + " @ " + urls[i].user);
             let timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
-            let connection = urls[i];
+            let connection = {"url":urls[i].url, "user":urls[i].user};
             timer.initWithCallback({notify : function () {tbSync.eas.getServerUrlViaAutodiscoverRedirectWrapper(responses, urls, connection, password, maxtimeout)}}, 200*i, 0);
         }
 
@@ -1492,7 +1492,7 @@ var eas = {
             while (initialUrlArraySize < urls.length) {
                 tbSync.dump("Querry EAS autodiscover URL ("+initialUrlArraySize+")", urls[initialUrlArraySize].url + " @ " + urls[initialUrlArraySize].user);
                 let timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
-                let connection = urls[initialUrlArraySize];
+                let connection = {"url":urls[initialUrlArraySize].url, "user":urls[initialUrlArraySize].user};
                 timer.initWithCallback({notify : function () {tbSync.eas.getServerUrlViaAutodiscoverRedirectWrapper(responses, urls, connection, password, maxtimeout)}}, 200*i, 0);                
                 initialUrlArraySize++;
                 i++;
