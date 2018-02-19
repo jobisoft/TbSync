@@ -1484,7 +1484,7 @@ var eas = {
         return result.errorcode;
     }),
     
-    getServerConnectionViaAutodiscover : Task.async (function* (user, password, maxtimeout = 40000) {
+    getServerConnectionViaAutodiscover : Task.async (function* (user, password, maxtimeout) {
         let urls = [];
         let parts = user.split("@");
         
