@@ -1451,7 +1451,7 @@ var eas = {
         function logPipe (responses) {
             let results = [];
             for (let r=0; r<responses.length; r++) {
-                results.push(" *  "+responses[r].url+": " + (responses[r].server ? responses[r].server : responses[r].error));
+                results.push(" *  "+responses[r].url+" @ " + responses[r].user +" : " + (responses[r].server ? responses[r].server : responses[r].error));
             }
             tbSync.dump("EAS autodiscover results","\n" + results.join("\n"));
             return responses;
@@ -1460,24 +1460,24 @@ var eas = {
         let urls = [];
         let parts = user.split("@");
         
-        urls.push("http://autodiscover."+parts[1]+"/autodiscover/autodiscover.xml");
-        urls.push("http://"+parts[1]+"/autodiscover/autodiscover.xml");
-        urls.push("http://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
-        urls.push("http://"+parts[1]+"/Autodiscover/Autodiscover.xml");
+        urls.push({"url":"http://autodiscover."+parts[1]+"/autodiscover/autodiscover.xml", "user":user});
+        urls.push({"url":"http://"+parts[1]+"/autodiscover/autodiscover.xml", "user":user});
+        urls.push({"url":"http://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml", "user":user});
+        urls.push({"url":"http://"+parts[1]+"/Autodiscover/Autodiscover.xml", "user":user});
 
-        urls.push("https://autodiscover."+parts[1]+"/autodiscover/autodiscover.xml");
-        urls.push("https://"+parts[1]+"/autodiscover/autodiscover.xml");
-        urls.push("https://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml");
-        urls.push("https://"+parts[1]+"/Autodiscover/Autodiscover.xml");
+        urls.push({"url":"https://autodiscover."+parts[1]+"/autodiscover/autodiscover.xml", "user":user});
+        urls.push({"url":"https://"+parts[1]+"/autodiscover/autodiscover.xml", "user":user});
+        urls.push({"url":"https://autodiscover."+parts[1]+"/Autodiscover/Autodiscover.xml", "user":user});
+        urls.push({"url":"https://"+parts[1]+"/Autodiscover/Autodiscover.xml", "user":user});
 
         let responses = []; //array of objects {url, error, server}
         let initialUrlArraySize = urls.length;
 
         for (let i=0; i<initialUrlArraySize; i++) {
-            tbSync.dump("Querry EAS autodiscover URL ("+i+")", urls[i]);
+            tbSync.dump("Querry EAS autodiscover URL ("+i+")", urls[i].url + " @ " + urls[i].user);
             let timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
-            let url = urls[i];
-            timer.initWithCallback({notify : function () {tbSync.eas.getServerUrlViaAutodiscoverRedirectWrapper(responses, urls, url, user, password, maxtimeout)}}, 200*i, 0);
+            let connection = urls[i];
+            timer.initWithCallback({notify : function () {tbSync.eas.getServerUrlViaAutodiscoverRedirectWrapper(responses, urls, connection, password, maxtimeout)}}, 200*i, 0);
         }
 
         //monitor responses and url size (can increase due to redirects)
@@ -1490,10 +1490,10 @@ var eas = {
             
             let i = 0;
             while (initialUrlArraySize < urls.length) {
-                tbSync.dump("Querry EAS autodiscover URL ("+initialUrlArraySize+")", urls[initialUrlArraySize]);
+                tbSync.dump("Querry EAS autodiscover URL ("+initialUrlArraySize+")", urls[initialUrlArraySize].url + " @ " + urls[initialUrlArraySize].user);
                 let timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
-                let url = urls[initialUrlArraySize];
-                timer.initWithCallback({notify : function () {tbSync.eas.getServerUrlViaAutodiscoverRedirectWrapper(responses, urls, url, user, password, maxtimeout)}}, 200*i, 0);                
+                let connection = urls[initialUrlArraySize];
+                timer.initWithCallback({notify : function () {tbSync.eas.getServerUrlViaAutodiscoverRedirectWrapper(responses, urls, connection, password, maxtimeout)}}, 200*i, 0);                
                 initialUrlArraySize++;
                 i++;
             }
@@ -1514,7 +1514,7 @@ var eas = {
         return logPipe(responses);        
     }),
        
-    getServerUrlViaAutodiscoverRedirectWrapper : Task.async (function* (responses, urls, url, user, password, maxtimeout) {
+    getServerUrlViaAutodiscoverRedirectWrapper : Task.async (function* (responses, urls, connection, password, maxtimeout) {
         
         //using HEAD to find URL redirects until response URL no longer changes 
         // * XHR should follow redirects transparently, but that does not always work, POST data could get lost, so we
@@ -1524,14 +1524,14 @@ var eas = {
             
         do {            
             yield tbSync.sleep(200);
-            result = yield tbSync.eas.getServerUrlViaAutodiscoverRequest(method, url, user, password, maxtimeout);
+            result = yield tbSync.eas.getServerUrlViaAutodiscoverRequest(method, connection, password, maxtimeout);
             method = "";
             
             if (result.error == "redirect found") {
                 //add this url to the list, if it is new
-                if (!urls.includes(result.url)) {
-                    urls.push(result.url);
-                    tbSync.dump("EAS autodiscover URL redirect",  "\n" + url + " => \n" + result.url);
+                if (!urls.some(u => (u.url == result.url && u.user == result.user))) {
+                    urls.push({"url":result.url, "user":result.user});
+                    tbSync.dump("EAS autodiscover URL redirect",  "\n" + connection.url + " @ " + connection.user + " => \n" + result.url + " @ " + result.user);
                 }
                 return;
             } else if (result.error == "POST candidate found") {
@@ -1543,13 +1543,13 @@ var eas = {
         responses.push(result);
     }),    
     
-    getServerUrlViaAutodiscoverRequest: function (method, url, user, password, maxtimeout) {
+    getServerUrlViaAutodiscoverRequest: function (method, connection, password, maxtimeout) {
         return new Promise(function(resolve,reject) {
             
             let xml = '<?xml version="1.0" encoding="utf-8"?>\r\n';
             xml += '<Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/mobilesync/requestschema/2006">\r\n';
             xml += '<Request>\r\n';
-            xml += '<EMailAddress>' + user + '</EMailAddress>\r\n';
+            xml += '<EMailAddress>' + connection.user + '</EMailAddress>\r\n';
             xml += '<AcceptableResponseSchema>http://schemas.microsoft.com/exchange/autodiscover/mobilesync/responseschema/2006</AcceptableResponseSchema>\r\n';
             xml += '</Request>\r\n';
             xml += '</Autodiscover>\r\n';
@@ -1560,51 +1560,51 @@ var eas = {
             // create request handler
             let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
             req.mozBackgroundRequest = true;
-            req.open(method, url, true);
+            req.open(method, connection.url, true);
             req.timeout = maxtimeout;
             req.setRequestHeader("User-Agent", userAgent);
             
-            let secure = (url.substring(0,8).toLowerCase() == "https://");
+            let secure = (connection.url.substring(0,8).toLowerCase() == "https://");
             
             if (method == "POST") {
                 req.setRequestHeader("Content-Length", xml.length);
                 req.setRequestHeader("Content-Type", "text/xml");
-                if (secure) req.setRequestHeader("Authorization", "Basic " + btoa(user + ":" + password));                
+                if (secure) req.setRequestHeader("Authorization", "Basic " + btoa(connection.user + ":" + password));                
             }
 
             req.ontimeout = function () {
-                tbSync.dump("EAS autodiscover with timeout", "\n" + url + " => \n" + req.responseURL);
-                resolve({"url":req.responseURL, "error":"timeout", "server":"", "user":user});
+                tbSync.dump("EAS autodiscover with timeout", "\n" + connection.url + " => \n" + req.responseURL);
+                resolve({"url":req.responseURL, "error":"timeout", "server":"", "user":connection.user});
             };
            
             req.onerror = function () {
                 let error = tbSync.eas.createTCPErrorFromFailedXHR(req);
                 if (!error) error = req.responseText;
-                tbSync.dump("EAS autodiscover with error ("+error+")",  "\n" + url + " => \n" + req.responseURL);
-                resolve({"url":req.responseURL, "error":error, "server":"", "user":user});
+                tbSync.dump("EAS autodiscover with error ("+error+")",  "\n" + connection.url + " => \n" + req.responseURL);
+                resolve({"url":req.responseURL, "error":error, "server":"", "user":connection.user});
             };
 
             req.onload = function() { 
                 //initiate rerun on redirects
-                if (req.responseURL != url) {
-                    resolve({"url":req.responseURL, "error":"redirect found", "server":"", "user":user});
+                if (req.responseURL != connection.url) {
+                    resolve({"url":req.responseURL, "error":"redirect found", "server":"", "user":connection.user});
                     return;
                 }
 
                 //initiate rerun on HEAD request without redirect (rerun and do a POST on this)
                 if (method == "HEAD") {
-                    resolve({"url":req.responseURL, "error":"POST candidate found", "server":"", "user":user});
+                    resolve({"url":req.responseURL, "error":"POST candidate found", "server":"", "user":connection.user});
                     return;
                 }
 
                 //ignore POST without autherization (we just do them to get redirect information)
                 if (!secure) {
-                    resolve({"url":req.responseURL, "error":"unsecure POST", "server":"", "user":user});
+                    resolve({"url":req.responseURL, "error":"unsecure POST", "server":"", "user":connection.user});
                     return;
                 }
                 
                 //evaluate secure POST requests which have not been redirected
-                tbSync.dump("EAS autodiscover POST with status (" + req.status + ")",   "\n" + url + " => \n" + req.responseURL  + "\n[" + req.responseText + "]");
+                tbSync.dump("EAS autodiscover POST with status (" + req.status + ")",   "\n" + connection.url + " => \n" + req.responseURL  + "\n[" + req.responseText + "]");
                 
                 if (req.status === 200) {
                     let data = tbSync.xmltools.getDataFromXMLString(req.responseText);
@@ -1622,16 +1622,16 @@ var eas = {
 
                             for (let count = 0; count < server.length; count++) {
                                 if (server[count].Type == "MobileSync" && server[count].Url) {
-                                    resolve({"url":req.responseURL, "error":"", "server":server[count].Url, "user":user});
+                                    resolve({"url":req.responseURL, "error":"", "server":server[count].Url, "user":connection.user});
                                     return;
                                 }
                             }
                         }
                     } else {
-                        resolve({"url":req.responseURL, "error":"invalid", "server":"", "user":user});
+                        resolve({"url":req.responseURL, "error":"invalid", "server":"", "user":connection.user});
                     }
                 } else {
-                    resolve({"url":req.responseURL, "error":req.status, "server":"", "user":user});                     
+                    resolve({"url":req.responseURL, "error":req.status, "server":"", "user":connection.user});                     
                 }
             };
             

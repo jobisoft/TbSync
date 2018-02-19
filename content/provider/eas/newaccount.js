@@ -77,14 +77,14 @@ var tbSyncEasNewAccount = {
                 //set a default error
                 let error = tbSync.getLocalizedMessage("autodiscover.FailedUnknown","eas");
                 let certerrors = [];
-                let server = "";
+                let serverfound = null;
 
                 //All requests have finished, check them for success or hard failed requests.
                 //Fall through is a general error "nothing found".
                 for (let r=0; r<responses.length; r++) {
                     //if there is a positive responce, abort
                     if (responses[r].server) {
-                        server = responses[r].server;
+                        serverfound = r;
                         certerrors = []; //only print hard failed errors
                         break;
                     }
@@ -105,11 +105,11 @@ var tbSyncEasNewAccount = {
                     }
                 }
 
-                if (server) {
+                if (serverfound) {
                     
                     alert(tbSync.getLocalizedMessage("autodiscover.Ok","eas"));
                     //add account with found server url
-                    tbSyncEasNewAccount.addAccount(user, password, servertype, accountname, server);                
+                    tbSyncEasNewAccount.addAccount(responses[serverfound].user, password, servertype, accountname, responses[serverfound].server);                
                     
                 } else {
                     
