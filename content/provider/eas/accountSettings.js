@@ -168,7 +168,7 @@ var tbSyncAccountSettings = {
         observe: function (aSubject, aTopic, aData) {
             //only update if request for this account
             if (aData == tbSyncAccountSettings.selectedAccount) {
-                tbSyncAccountSettings.updateGui();
+                tbSyncAccountSettings.loadSettings();
             }
         }
     },

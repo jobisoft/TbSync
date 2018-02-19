@@ -11,7 +11,8 @@ var eas = {
         syncNextFolder: "syncNextFolder",
         resyncFolder: "resyncFolder",
         resyncAccount: "resyncAccount", 
-        abortWithError: "abortWithError"
+        abortWithError: "abortWithError",
+        abortWithServerError: "abortWithServerError",
     }),
     
     init: Task.async (function* ()  {
@@ -101,7 +102,7 @@ var eas = {
                 } else {
                     syncdata.accountResync = false;
                 }
-
+                
                 //should we recheck options/commands?
                 if ((Date.now() - tbSync.db.getAccountSetting(syncdata.account, "lastEasOptionsUpdate")) > 86400000 ) {
                     yield eas.getServerOptions(syncdata);
@@ -148,12 +149,29 @@ var eas = {
 
             } catch (report) { 
                     
+                let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
                 switch (report.type) {
                     case eas.flags.resyncAccount:
                         tbSync.dump("Account Resync", "Account: " + tbSync.db.getAccountSetting(syncdata.account, "accountname") + ", Reason: " + report.message);                        
                         tbSync.db.setAccountSetting(syncdata.account, "foldersynckey", "");
                         tbSync.db.setFolderSetting(syncdata.account, "", "synckey", "");
                         continue;
+
+                    case eas.flags.abortWithServerError: 
+                        //Could not connect to server. Can we rerun autodiscover? If not, fall through to abortWithError              
+                        if (tbSync.db.getAccountSetting(syncdata.account, "servertype") == "auto") {
+                            let errorcode = yield eas.updateServerConnectionViaAutodiscover(syncdata);
+                            switch (errorcode) {
+                                case 401:
+                                case 403: //failed to authenticate
+                                    eas.finishAccountSync(syncdata, "401");
+                                    return;                            
+                                case 200: //server and/or user was updated, retry
+                                    observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", syncdata.account);
+                                    continue;
+                                default: //autodiscover failed, fall through to abortWithError
+                            }                        
+                        }
 
                     case eas.flags.abortWithError: //fatal error, finish account sync
                     case eas.flags.syncNextFolder: //no more folders left, finish account sync
@@ -252,6 +270,7 @@ var eas = {
 
                 switch (report.type) {
                     case eas.flags.abortWithError:  //if there was a fatal error during folder sync, re-throw error to finish account sync (with error)
+                    case eas.flags.abortWithServerError:
                     case eas.flags.resyncAccount:   //if the entire account needs to be resynced, finish this folder and re-throw account (re)sync request                                                    
                         eas.finishFolderSync(syncdata, report.message);
                         throw eas.finishSync(report.message, report.type);
@@ -1159,9 +1178,9 @@ var eas = {
             syncdata.req.onerror = function () {
                 let error = tbSync.eas.createTCPErrorFromFailedXHR(syncdata.req);
                 if (!error) {
-                    reject(eas.finishSync("networkerror", eas.flags.abortWithError));
+                    reject(eas.finishSync("networkerror", eas.flags.abortWithServerError));
                 } else {
-                    reject(eas.finishSync(error, eas.flags.abortWithError));
+                    reject(eas.finishSync(error, eas.flags.abortWithServerError));
                 }
             };
 
@@ -1248,9 +1267,9 @@ var eas = {
             syncdata.req.onerror = function () {
                 let error = tbSync.eas.createTCPErrorFromFailedXHR(syncdata.req);
                 if (!error) {
-                    reject(eas.finishSync("networkerror", eas.flags.abortWithError));
+                    reject(eas.finishSync("networkerror", eas.flags.abortWithServerError));
                 } else {
-                    reject(eas.finishSync(error, eas.flags.abortWithError));
+                    reject(eas.finishSync(error, eas.flags.abortWithServerError));
                 }
             };
 
@@ -1446,17 +1465,26 @@ var eas = {
 
 
     // AUTODISCOVER        
-    getServerUrlViaAutodiscover : Task.async (function* (user, password, maxtimeout = 40000) {
+    updateServerConnectionViaAutodiscover: Task.async (function* (syncdata) {
+        tbSync.setSyncState("prepare.request.autodiscover", syncdata.account);
+        let user = tbSync.db.getAccountSetting(syncdata.account, "user");
+        let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
 
-        function logPipe (responses) {
-            let results = [];
-            for (let r=0; r<responses.length; r++) {
-                results.push(" *  "+responses[r].url+" @ " + responses[r].user +" : " + (responses[r].server ? responses[r].server : responses[r].error));
-            }
-            tbSync.dump("EAS autodiscover results","\n" + results.join("\n"));
-            return responses;
-        };
+        tbSync.setSyncState("send.request.autodiscover", syncdata.account);
+        let result = yield tbSync.eas.getServerConnectionViaAutodiscover(user, password, 30*1000);
 
+        tbSync.setSyncState("eval.response.autodiscover", syncdata.account);
+        if (result.errorcode == 200) {
+            //update account
+            tbSync.db.setAccountSetting(syncdata.account, "host", result.server.split("/")[2]);
+            tbSync.db.setAccountSetting(syncdata.account, "user", result.user);
+            tbSync.db.setAccountSetting(syncdata.account, "https", (result.server.substring(0,5) == "https") ? "1" : "0");
+        }
+
+        return result.errorcode;
+    }),
+    
+    getServerConnectionViaAutodiscover : Task.async (function* (user, password, maxtimeout = 40000) {
         let urls = [];
         let parts = user.split("@");
         
@@ -1477,45 +1505,61 @@ var eas = {
             tbSync.dump("Querry EAS autodiscover URL ("+i+")", urls[i].url + " @ " + urls[i].user);
             let timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
             let connection = {"url":urls[i].url, "user":urls[i].user};
-            timer.initWithCallback({notify : function () {tbSync.eas.getServerUrlViaAutodiscoverRedirectWrapper(responses, urls, connection, password, maxtimeout)}}, 200*i, 0);
+            timer.initWithCallback({notify : function () {tbSync.eas.getServerConnectionViaAutodiscoverRedirectWrapper(responses, urls, connection, password, maxtimeout)}}, 200*i, 0);
         }
 
         //monitor responses and url size (can increase due to redirects)
         let startDate = Date.now();
-        while ((Date.now()-startDate) < maxtimeout) {
+        let result = null;
+        
+        while ((Date.now()-startDate) < maxtimeout && result === null) {
             yield tbSync.sleep(1000);
-
-            //if there is an answer for each request, we are done, return
-            if (responses.length == urls.length) return logPipe(responses);
             
             let i = 0;
             while (initialUrlArraySize < urls.length) {
                 tbSync.dump("Querry EAS autodiscover URL ("+initialUrlArraySize+")", urls[initialUrlArraySize].url + " @ " + urls[initialUrlArraySize].user);
                 let timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
                 let connection = {"url":urls[initialUrlArraySize].url, "user":urls[initialUrlArraySize].user};
-                timer.initWithCallback({notify : function () {tbSync.eas.getServerUrlViaAutodiscoverRedirectWrapper(responses, urls, connection, password, maxtimeout)}}, 200*i, 0);                
+                timer.initWithCallback({notify : function () {tbSync.eas.getServerConnectionViaAutodiscoverRedirectWrapper(responses, urls, connection, password, maxtimeout)}}, 200*i, 0);                
                 initialUrlArraySize++;
                 i++;
             }
             
             //also check, if one of our request succeded or failed hard, no need to wait for the others, return
             for (let r=0; r<responses.length; r++) {
-                if (responses[r].server) return logPipe(responses);
-                if (responses[r].error == 403 || responses[r].error == 401) return logPipe(responses);
+                if (responses[r].server) result = {"server": responses[r].server, "user": responses[r].user, "error": "", "errorcode":200};
+                if (responses[r].error == 403 || responses[r].error == 401) result = {"server": "", "user": responses[r].user, "errorcode": responses[r].error, "error": tbSync.getLocalizedMessage("status." + responses[r].error)};
             }
+            
         } 
-        
-        //Add error if all requests timed out
-        if (responses.length == 0) {
-            let error = "None of our requests received a response before the global timeout of " + maxtimeout + "s.";
-            responses.push({"url":"", "error":error,"server":""});        
+
+        //log all responses and extract certerrors
+        let certerrors = [];
+        let log = [];
+        for (let r=0; r<responses.length; r++) {
+            log.push(" *  "+responses[r].url+" @ " + responses[r].user +" : " + (responses[r].server ? responses[r].server : responses[r].error));
+
+            //look for certificate errors, which might be usefull to the user in case of a general fail
+            if (responses[r].error) {
+                let security_error = responses[r].error.toString().split("::");
+                if (security_error.length == 2 && security_error[0] == "security") {
+                    certerrors.push(responses[r].url + "\n\t => " + security_error[1]);
+                }
+            }
         }
+        tbSync.dump("EAS autodiscover results","\n" + log.join("\n"));
         
-        return logPipe(responses);        
+        if (result === null) { 
+            let error = tbSync.getLocalizedMessage("autodiscover.FailedUnknown","eas");
+            //include certerrors
+            if (certerrors.length>0) error = error + "\n\n" + tbSync.getLocalizedMessage("autodiscover.FailedSecurity","eas") + "\n\n" + certerrors.join("\n");
+            result = {"server":"", "user":user, "error":error, "errorcode":503};
+        }
+
+        return result;        
     }),
        
-    getServerUrlViaAutodiscoverRedirectWrapper : Task.async (function* (responses, urls, connection, password, maxtimeout) {
-        
+    getServerConnectionViaAutodiscoverRedirectWrapper : Task.async (function* (responses, urls, connection, password, maxtimeout) {        
         //using HEAD to find URL redirects until response URL no longer changes 
         // * XHR should follow redirects transparently, but that does not always work, POST data could get lost, so we
         // * need to find the actual POST candidates (example: outlook.de accounts)
@@ -1524,7 +1568,7 @@ var eas = {
             
         do {            
             yield tbSync.sleep(200);
-            result = yield tbSync.eas.getServerUrlViaAutodiscoverRequest(method, connection, password, maxtimeout);
+            result = yield tbSync.eas.getServerConnectionViaAutodiscoverRequest(method, connection, password, maxtimeout);
             method = "";
             
             if (result.error == "redirect found") {
@@ -1540,10 +1584,10 @@ var eas = {
 
         } while (method == "POST");
 
-        responses.push(result);
+        if (responses && Array.isArray(responses)) responses.push(result);
     }),    
     
-    getServerUrlViaAutodiscoverRequest: function (method, connection, password, maxtimeout) {
+    getServerConnectionViaAutodiscoverRequest: function (method, connection, password, maxtimeout) {
         return new Promise(function(resolve,reject) {
             
             let xml = '<?xml version="1.0" encoding="utf-8"?>\r\n';
