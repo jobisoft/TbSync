@@ -1,21 +1,9 @@
 # TbSync
 [Thunderbird Add-On] Sync contacts, tasks and calendars to thunderbird using Exchange Active Sync (EAS). 
 
-## How to get started
+Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki) of the TbSync project.
 
-A quick start guide on how to use this Add-On can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki/How-to-get-started) of this repository. The latest release and the latest stable beta can be found at the [release page](https://github.com/jobisoft/TbSync/releases).
-
-## Found a bug?
-
-First update TbSync to the latest [release](https://github.com/jobisoft/TbSync/releases) (or the latest beta, if there is one) and also update your Thunderbird to the latest standard release. Please also enable debug logging (TbSync Account Manager -> Help). Can you still reproduce the bug? If so, please send me the debug.log.
-
-## Got a question? Maybe it has been answered already!
-
-You can use the [issue section](https://github.com/jobisoft/TbSync/issues?q=is%3Aissue) for support or feature requests, but please take the extra minute to check, if your question has been asked and answered already.
-
-As this is still work in progress, take a look at the [roadmap](https://github.com/jobisoft/TbSync/wiki/Roadmap), to see if a feature is scheduled to be implemented. If so, it is obviously not yet implemented. Asking me how long it will take, will not get it done any faster. A [donation](https://www.paypal.me/johnbieling) might help :-)
-
-## Icon sources
+### Icon sources
 
 * [tbsync.png] https://www.iconfinder.com/paomedia 
 * [discon.png] http://p.yusukekamiyamane.com/
