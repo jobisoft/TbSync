@@ -568,7 +568,7 @@ eas.sync = {
         syncdata.targetId = syncdata.targetObj.id;
 
         //sync
-        yield eas.sync.getItemEstimate (syncdata);
+        yield eas.getItemEstimate (syncdata);
         yield eas.sync.requestRemoteChanges (syncdata); 
         yield eas.sync.sendLocalChanges (syncdata);
         
@@ -577,65 +577,6 @@ eas.sync = {
     }),
 
 
-    getItemEstimate: Task.async (function* (syncdata)  {
-        syncdata.todo = -1;
-        
-        if (!tbSync.db.getAccountSetting(syncdata.account, "allowedEasCommands").split(",").includes("GetItemEstimate")) {
-            return; //do not throw, this is optional
-        }
-        
-        tbSync.setSyncState("prepare.request.estimate", syncdata.account, syncdata.folderID);
-
-        
-        // BUILD WBXML
-        let wbxml = tbSync.wbxmltools.createWBXML();
-        wbxml.switchpage("GetItemEstimate");
-        wbxml.otag("GetItemEstimate");
-            wbxml.otag("Collections");
-                wbxml.otag("Collection");
-                    if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") { //got order for 2.5 directly from Microsoft support
-                        wbxml.atag("Class", syncdata.type); //only 2.5
-                        wbxml.atag("CollectionId", syncdata.folderID);
-                        wbxml.switchpage("AirSync");
-                        wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit").toString());
-                        wbxml.atag("SyncKey", syncdata.synckey);
-                        wbxml.switchpage("GetItemEstimate");
-                    } else {
-                        wbxml.switchpage("AirSync");
-                        wbxml.atag("SyncKey", syncdata.synckey);
-                        wbxml.switchpage("GetItemEstimate");
-                        wbxml.atag("CollectionId", syncdata.folderID);
-                        wbxml.switchpage("AirSync");
-                        wbxml.otag("Options");
-                            if (syncdata.type == "Calendar") wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit").toString()); //0, 4,5,6,7
-                            wbxml.atag("Class", syncdata.type);
-                        wbxml.ctag();
-                        wbxml.switchpage("GetItemEstimate");
-                    }
-                wbxml.ctag();
-            wbxml.ctag();
-        wbxml.ctag();
-
-
-        //SEND REQUEST
-        tbSync.setSyncState("send.request.estimate", syncdata.account, syncdata.folderID);
-        let response = yield eas.sendRequest(wbxml.getBytes(), "GetItemEstimate", syncdata);
-
-        //VALIDATE RESPONSE
-        tbSync.setSyncState("eval.response.estimate", syncdata.account, syncdata.folderID);
-
-        // get data from wbxml response, some servers send empty response if there are no changes, which is not an error
-        let wbxmlData = eas.getDataFromResponse(response, eas.flags.allowEmptyResponse);
-        if (wbxmlData === null) return;
-
-        let status = xmltools.getWbxmlDataField(wbxmlData, "GetItemEstimate.Response.Status");
-        let estimate = xmltools.getWbxmlDataField(wbxmlData, "GetItemEstimate.Response.Collection.Estimate");
-
-        if (status && status == "1") { //do not throw on error, with EAS v2.5 I get error 2 for tasks and calendars ???
-            syncdata.todo = estimate;
-        }
-
-    }),
     
 
     requestRemoteChanges: Task.async (function* (syncdata)  {

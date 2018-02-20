@@ -128,7 +128,7 @@ eas.contactsync = {
         }
         
         //sync
-        yield eas.sync.getItemEstimate (syncdata);
+        yield eas.getItemEstimate (syncdata);
         yield eas.contactsync.fromzpush (syncdata); 
         if (tbSync.db.getAccountSetting(syncdata.account, "downloadonly") != "1") {
             yield eas.contactsync.tozpush (syncdata);
