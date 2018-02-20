@@ -18,12 +18,12 @@
             </html:p>
 
             <html:p>
-                <html:b>Beta versions</html:b><html:br/><html:br/>
+                <html:b>Latest release &amp; beta versions</html:b><html:br/><html:br/>
                 The official version of the TbSync AddOn may not be the latest release. The latest version, including the latest beta can be found at the <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/releases');" style="color:blue;text-decoration: underline">release page</html:span> of the TbSync project.
             </html:p>
 
             <html:p>
-                <html:b>Bugs &amp; debug log</html:b><html:br/><html:br/>
+                <html:b>Bugs &amp; debug report</html:b><html:br/><html:br/>
                 If you encounter a bug, update to the latest release/beta of TbSync to check if your bug has been fixed already. If not, you can help to fix it by sending in a debug report.
             </html:p>
 

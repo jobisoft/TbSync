@@ -455,7 +455,7 @@ eas.sync = {
 
 
     updateFailedItems: function (syncdata, cause, item) {
-        //this is a special treatment for xj25vm (horde 5.1.10 does not accept titles longer than 250)
+        //this is a special treatment for xj25vm (horde 5.1.10 does not accept titles longer than 250) - the specs do not allow titles larger than 300
         if (item.title && item.title.length>250 && cause == "invalid XML") cause = "title longer than 250"
 	if (cause == "invalid XML") cause = "invalid XML (possible bug in TbSync)";
 	    
@@ -742,7 +742,7 @@ eas.sync = {
 
                                         items = yield pcal.getItem(changes[i].id);
                                         //filter out bad object types for this folder
-                                        if (syncdata.type == this.CALTYPES[changes[i].type]) {
+                                        if (syncdata.type == this.CALTYPES[tbSync.getItemType(items[0])]) {
                                             //create a temp clientId, to cope with too long or invalid clientIds (for EAS)
                                             let clientId = Date.now() + "-" + c;
                                             addedItems[clientId] = changes[i].id;
@@ -757,7 +757,7 @@ eas.sync = {
                                             wbxml.ctag();
                                             c++;
                                         } else {
-                                            eas.sync.updateFailedItems(syncdata, "forbidden "+this.CALTYPES[changes[i].type]+" item in "+syncdata.type+" folder", items[0]);
+                                            eas.sync.updateFailedItems(syncdata, "forbidden "+this.CALTYPES[tbSync.getItemType(items[0])]+" item in "+syncdata.type+" folder", items[0]);
                                             e++;
                                         }
                                         break;
@@ -765,7 +765,7 @@ eas.sync = {
                                     case "modified_by_user":
                                         items = yield pcal.getItem(changes[i].id);
                                         //filter out bad object types for this folder
-                                        if (syncdata.type == this.CALTYPES[changes[i].type]) {
+                                        if (syncdata.type == this.CALTYPES[tbSync.getItemType(items[0])]) {
                                             wbxml.otag("Change");
                                             wbxml.atag("ServerId", changes[i].id);
                                                 wbxml.otag("ApplicationData");
@@ -777,22 +777,17 @@ eas.sync = {
                                             changedItems.push(changes[i].id);
                                             c++;
                                         } else {
-                                            eas.sync.updateFailedItems(syncdata, "forbidden "+this.CALTYPES[changes[i].type]+" item in "+syncdata.type+" folder", items[0]);
+                                            eas.sync.updateFailedItems(syncdata, "forbidden "+this.CALTYPES[tbSync.getItemType(items[0])]+" item in "+syncdata.type+" folder", items[0]);
                                             e++;
                                         }
                                         break;
                                     
                                     case "deleted_by_user":
-                                        //filter out bad object types for this folder - impossible to catch I think
-                                        if (syncdata.type == this.CALTYPES[changes[i].type]) {
-                                            wbxml.otag("Delete");
-                                                wbxml.atag("ServerId", changes[i].id);
-                                            wbxml.ctag();
-                                            changedItems.push(changes[i].id);
-                                            c++;
-                                        } else {
-                                            db.removeItemFromChangeLog(syncdata.targetObj.id, changes[i].id);
-                                        }
+                                        wbxml.otag("Delete");
+                                        wbxml.atag("ServerId", changes[i].id);
+                                        wbxml.ctag();
+                                        changedItems.push(changes[i].id);
+                                        c++;
                                         break;
                                 }
                             }

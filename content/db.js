@@ -54,14 +54,13 @@ var db = {
         return null;
     },
 
-    addItemToChangeLog: function (parentId, itemId, status, type = "") {
+    addItemToChangeLog: function (parentId, itemId, status) {
         this.removeItemFromChangeLog(parentId, itemId);
 
         let row = {
             "parentId" : parentId,
             "itemId" : itemId,
-            "status" : status,
-            "type" : type };
+            "status" : status};
         
         this.changelog.push(row);
         this.saveChangelog();
