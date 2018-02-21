@@ -274,6 +274,8 @@ eas.sync.Calendar = {
         //C can be reconstucted from TB STATUS
         //O can be reconstructed by looking at the original value, or (if not present) by comparing EAS ownerID with TB ownerID
 
+        let countAttendees = {};
+        let attendees = item.getAttendees(countAttendees);
         if (!(isException && asversion == "2.5")) { //MeetingStatus is not supported in exceptions in EAS 2.5        
             if (countAttendees == 0) wbxml.atag("MeetingStatus", "0");
             else {
@@ -294,10 +296,7 @@ eas.sync.Calendar = {
         }
         
         //Attendees
-        let TB_responseType = null;
-        let countAttendees = {};
-        let attendees = item.getAttendees(countAttendees);
-        
+        let TB_responseType = null;        
         if (!(isException && asversion == "2.5")) { //attendees are not supported in exceptions in EAS 2.5
             if (countAttendees.value > 0) {
                 wbxml.otag("Attendees");
