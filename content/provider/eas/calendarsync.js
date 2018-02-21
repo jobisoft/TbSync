@@ -186,16 +186,10 @@ eas.sync.Calendar = {
          *  We do not use ghosting, that means, if we do not include a value in CHANGE, it is removed from the server. 
          *  However, this does not seem to work on all fields. Furthermore, we need to include any (empty) container to blank its childs.
          */
-        
-        //each TB event has an ID, which is used as EAS serverId - however there is a second UID in the ApplicationData
-        //since we do not have two different IDs to use, we use the same ID
-        if (!isException) { //docs say it would be allowed in exception in 2.5, but it does not work, if present
-            wbxml.atag("UID", item.id);
-        }
-        //IMPORTANT in EAS v16 it is no longer allowed to send a UID
-        //Only allowed in exceptions in v2.5
 
-        // REQUIRED FIELDS
+        //Order of tags taken from https://msdn.microsoft.com/en-us/library/dn338917(v=exchg.80).aspx
+        
+        //timezone
         if (!isException) {
             let easTZ = new eas.TimeZoneDataStructure();
 
@@ -217,31 +211,88 @@ eas.sync.Calendar = {
             wbxml.atag("TimeZone", easTZ.easTimeZone64);
             tbSync.dump("Send TZ",item.title + easTZ.toString());
         }
+	    
+        //AllDayEvent (for simplicity, we always send a value)
+        wbxml.atag("AllDayEvent", (item.startDate && item.startDate.isDate && item.endDate && item.endDate.isDate) ? "1" : "0");
 
-        //StartTime & EndTime in UTC
-        wbxml.atag("StartTime", item.startDate ? tbSync.getIsoUtcString(item.startDate) : nowDate.toBasicISOString());
-        wbxml.atag("EndTime", item.endDate ? tbSync.getIsoUtcString(item.endDate) : nowDate.toBasicISOString());
+        //Body
+        wbxml.append(eas.sync.getItemBody(item, syncdata));
 
-        //DtStamp
-        wbxml.atag("DtStamp", item.stampTime ? tbSync.getIsoUtcString(item.stampTime) : nowDate.toBasicISOString());
-        
-        //obmitting these, should remove them from the server - that does not work reliably, so we send blanks
-        wbxml.atag("Subject", (item.title) ? tbSync.encode_utf8(item.title) : "");
-        wbxml.atag("Location", (item.hasProperty("location")) ? tbSync.encode_utf8(item.getProperty("location")) : "");
-        
-        //Categories (see https://github.com/jobisoft/TbSync/pull/35#issuecomment-359286374)
-        if (!isException) {
-            wbxml.append(eas.sync.getItemCategories(item, syncdata));
-        }
-        
-        //TP PRIORITY (9=LOW, 5=NORMAL, 1=HIGH) not mapable to EAS Event
-        
+        //BusyStatus (TRANSP)
+        wbxml.atag("BusyStatus", eas.sync.mapThunderbirdPropertyToEas("TRANSP", "BusyStatus", item));
+
         //Organizer
         if (!isException) {
             if (item.organizer && item.organizer.commonName) wbxml.atag("OrganizerName", item.organizer.commonName);
             if (item.organizer && item.organizer.id) wbxml.atag("OrganizerEmail",  cal.removeMailTo(item.organizer.id));
         }
 
+        //DtStamp in UTC
+        wbxml.atag("DtStamp", item.stampTime ? tbSync.getIsoUtcString(item.stampTime) : nowDate.toBasicISOString());
+
+        //EndTime in UTC
+        wbxml.atag("EndTime", item.endDate ? tbSync.getIsoUtcString(item.endDate) : nowDate.toBasicISOString());
+	    
+        //Location
+        wbxml.atag("Location", (item.hasProperty("location")) ? tbSync.encode_utf8(item.getProperty("location")) : "");
+
+        //EAS Reminder (TB getAlarms) - at least with zpush blanking by omitting works, horde does not work
+        let alarms = item.getAlarms({});
+        if (alarms.length>0) {
+            let reminder = 0 - alarms[0].offset.inSeconds/60;
+            if (reminder>=0) wbxml.atag("Reminder", reminder.toString());
+        }
+
+        //Sensitivity (CLASS)
+        wbxml.atag("Sensitivity", eas.sync.mapThunderbirdPropertyToEas("CLASS", "Sensitivity", item));
+
+        //Subject (obmitting these, should remove them from the server - that does not work reliably, so we send blanks)
+        wbxml.atag("Subject", (item.title) ? tbSync.encode_utf8(item.title) : "");
+
+        //StartTime in UTC
+        wbxml.atag("StartTime", item.startDate ? tbSync.getIsoUtcString(item.startDate) : nowDate.toBasicISOString());
+
+        //UID (limit to 300)
+        //each TB event has an ID, which is used as EAS serverId - however there is a second UID in the ApplicationData
+        //since we do not have two different IDs to use, we use the same ID
+        if (!isException) { //docs say it would be allowed in exception in 2.5, but it does not work, if present
+            wbxml.atag("UID", item.id);
+        }
+        //IMPORTANT in EAS v16 it is no longer allowed to send a UID
+        //Only allowed in exceptions in v2.5
+
+
+        //EAS MeetingStatus
+        // 0 (000) The event is an appointment, which has no attendees.
+        // 1 (001) The event is a meeting and the user is the meeting organizer.
+        // 3 (011) This event is a meeting, and the user is not the meeting organizer; the meeting was received from someone else.
+        // 5 (101) The meeting has been canceled and the user was the meeting organizer.
+        // 7 (111) The meeting has been canceled. The user was not the meeting organizer; the meeting was received from someone else
+
+        //there are 3 fields; Meeting, Owner, Cancelled
+        //M can be reconstructed from #of attendees (looking at the old value is not wise, since it could have been changed)
+        //C can be reconstucted from TB STATUS
+        //O can be reconstructed by looking at the original value, or (if not present) by comparing EAS ownerID with TB ownerID
+
+        if (!(isException && asversion == "2.5")) { //MeetingStatus is not supported in exceptions in EAS 2.5        
+            if (countAttendees == 0) wbxml.atag("MeetingStatus", "0");
+            else {
+                //get owner information
+                let isReceived = false;
+                if (item.hasProperty("X-EAS-MEETINGSTATUS")) isReceived = item.getProperty("X-EAS-MEETINGSTATUS") & 0x2;
+                else isReceived = (item.organizer && item.organizer.id && cal.removeMailTo(item.organizer.id) != tbSync.db.getAccountSetting(syncdata.account, "user"));
+
+                //either 1,3,5 or 7
+                if (item.hasProperty("STATUS") && item.getProperty("STATUS") == "CANCELLED") {
+                    //either 5 or 7
+                    wbxml.atag("MeetingStatus", (isReceived ? "7" : "5"));
+                } else {
+                    //either 1 or 3
+                    wbxml.atag("MeetingStatus", (isReceived ? "3" : "1"));
+                }
+            }
+        }
+        
         //Attendees
         let TB_responseType = null;
         let countAttendees = {};
@@ -273,65 +324,24 @@ eas.sync.Calendar = {
             }
         }
 
-        //TODO: attachements (needs EAS 16.0!)
+        //Categories (see https://github.com/jobisoft/TbSync/pull/35#issuecomment-359286374)
+        if (!isException) {
+            wbxml.append(eas.sync.getItemCategories(item, syncdata));
+        }
 
         //recurrent events (implemented by Chris Allan)
         if (!isException && tbSync.prefSettings.getBoolPref("eas.syncrecurringevents")) {
             wbxml.append(eas.sync.getItemRecurrence(item, syncdata));
         }
-        
-        //Description
-        wbxml.append(eas.sync.getItemBody(item, syncdata));
 
-        //TRANSP / BusyStatus
-        wbxml.atag("BusyStatus", eas.sync.mapThunderbirdPropertyToEas("TRANSP", "BusyStatus", item));
+
+	    //---------------------------
         
-        //CLASS / Sensitivity
-        wbxml.atag("Sensitivity", eas.sync.mapThunderbirdPropertyToEas("CLASS", "Sensitivity", item));
-        
-        //for simplicity, we always send a value for AllDayEvent
-        wbxml.atag("AllDayEvent", (item.startDate && item.startDate.isDate && item.endDate && item.endDate.isDate) ? "1" : "0");
- 
-        //EAS Reminder (TB getAlarms) - at least with zpush blanking by omitting works, horde does not work
-        let alarms = item.getAlarms({});
-        if (alarms.length>0) {
-            let reminder = 0 - alarms[0].offset.inSeconds/60;
-            if (reminder>=0) wbxml.atag("Reminder", reminder.toString());
-        }
+        //TP PRIORITY (9=LOW, 5=NORMAL, 1=HIGH) not mapable to EAS Event
+        //TODO: attachements (needs EAS 16.0!)
         
         //https://dxr.mozilla.org/comm-central/source/calendar/base/public/calIAlarm.idl
         //tbSync.dump("ALARM ("+i+")", [, alarms[i].related, alarms[i].repeat, alarms[i].repeatOffset, alarms[i].repeatDate, alarms[i].action].join("|"));
-
-            //EAS MeetingStatus
-        // 0 (000) The event is an appointment, which has no attendees.
-        // 1 (001) The event is a meeting and the user is the meeting organizer.
-        // 3 (011) This event is a meeting, and the user is not the meeting organizer; the meeting was received from someone else.
-        // 5 (101) The meeting has been canceled and the user was the meeting organizer.
-        // 7 (111) The meeting has been canceled. The user was not the meeting organizer; the meeting was received from someone else
-
-        //there are 3 fields; Meeting, Owner, Cancelled
-        //M can be reconstructed from #of attendees (looking at the old value is not wise, since it could have been changed)
-        //C can be reconstucted from TB STATUS
-        //O can be reconstructed by looking at the original value, or (if not present) by comparing EAS ownerID with TB ownerID
-
-        if (!(isException && asversion == "2.5")) { //MeetingStatus is not supported in exceptions in EAS 2.5        
-            if (countAttendees == 0) wbxml.atag("MeetingStatus", "0");
-            else {
-                //get owner information
-                let isReceived = false;
-                if (item.hasProperty("X-EAS-MEETINGSTATUS")) isReceived = item.getProperty("X-EAS-MEETINGSTATUS") & 0x2;
-                else isReceived = (item.organizer && item.organizer.id && cal.removeMailTo(item.organizer.id) != tbSync.db.getAccountSetting(syncdata.account, "user"));
-
-                //either 1,3,5 or 7
-                if (item.hasProperty("STATUS") && item.getProperty("STATUS") == "CANCELLED") {
-                    //either 5 or 7
-                    wbxml.atag("MeetingStatus", (isReceived ? "7" : "5"));
-                } else {
-                    //either 1 or 3
-                    wbxml.atag("MeetingStatus", (isReceived ? "3" : "1"));
-                }
-            }
-        }
 
         return wbxml.getBytes();
     }
