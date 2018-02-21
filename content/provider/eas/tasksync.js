@@ -65,8 +65,15 @@ eas.sync.Tasks = {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
         let wbxml = tbSync.wbxmltools.createWBXML("", syncdata.type); //init wbxml with "" and not with precodes, and set initial codepage
 
+        //Order of tags taken from: https://msdn.microsoft.com/en-us/library/dn338924(v=exchg.80).aspx
+        
+        //Subject
         wbxml.atag("Subject", (item.title) ? tbSync.encode_utf8(item.title) : "");
-        wbxml.atag("Sensitivity", eas.sync.mapThunderbirdPropertyToEas("CLASS", "Sensitivity", item));
+        
+        //Body
+        wbxml.append(eas.sync.getItemBody(item, syncdata));
+
+        //Importance
         wbxml.atag("Importance", eas.sync.mapThunderbirdPropertyToEas("PRIORITY", "Importance", item));
 
         //tasks is using extended ISO 8601 (2019-01-18T00:00:00.000Z)  instead of basic (20190118T000000Z), 
@@ -81,28 +88,35 @@ eas.sync.Tasks = {
             wbxml.atag("DueDate", tbSync.getIsoUtcString(item.dueDate ? item.dueDate : item.entryDate, true, true));
         }
         
+        //Categories
         wbxml.append(eas.sync.getItemCategories(item, syncdata));
-        wbxml.append(eas.sync.getItemBody(item, syncdata));
-        wbxml.append(eas.sync.getItemRecurrence(item, syncdata));
 
+        //Recurrence
+        wbxml.append(eas.sync.getItemRecurrence(item, syncdata));
+        
+        //Complete
+        if (item.isCompleted) {
+                wbxml.atag("Complete", "1");
+                wbxml.atag("DateCompleted", tbSync.getIsoUtcString(item.completedDate, true));		
+        } else {
+                wbxml.atag("Complete", "0");
+        }
+
+	    //Sensitivity
+        wbxml.atag("Sensitivity", eas.sync.mapThunderbirdPropertyToEas("CLASS", "Sensitivity", item));
+
+        //ReminderTime and ReminderSet
         let alarms = item.getAlarms({});
         if (alarms.length>0 && (item.entryDate || item.dueDate)) {
-            wbxml.atag("ReminderSet", "1");
             //create Date obj from entryDate by converting item.entryDate to an extended UTC ISO string, which can be parsed by Date
             //if entryDate is missing, the startDate of this object is set to its dueDate
             let UtcDate = new Date(tbSync.getIsoUtcString(item.entryDate ? item.entryDate : item.dueDate, true));
             //add offset
             UtcDate.setSeconds(UtcDate.getSeconds() + alarms[0].offset.inSeconds);		
             wbxml.atag("ReminderTime", UtcDate.toISOString());
+            wbxml.atag("ReminderSet", "1");
         } else {
             wbxml.atag("ReminderSet", "0");
-        }
-
-        if (item.isCompleted) {
-                wbxml.atag("Complete", "1");
-                wbxml.atag("DateCompleted", tbSync.getIsoUtcString(item.completedDate, true));		
-        } else {
-                wbxml.atag("Complete", "0");
         }
         
         return wbxml.getBytes();
