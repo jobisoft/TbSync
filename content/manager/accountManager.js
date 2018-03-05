@@ -14,7 +14,7 @@ var tbSyncAccountManager = {
 
     selectTab: function (t) {
         const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-	    let sources = ["accounts.xul", "cape.xul", "catman.xul", "help.xul"];
+	    let sources = ["accounts.xul", "cape.xul", "catman.xul", "supporter.xul", "help.xul"];
 
 	    //set active tab (css selector for background color)
         for (let i=0; i<sources.length; i++) {            

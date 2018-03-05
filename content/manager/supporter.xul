@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://tbsync/content/manager/manager.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
+
+<window 
+    xmlns:html="http://www.w3.org/1999/xhtml"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    onload="tbSyncAccountManager.getLogPref();"
+    title="Help" >
+
+    <hbox flex="1" id="mainframe">
+        <vbox flex="1">
+            <html:p>
+                <html:b>List of contributers</html:b><html:br/><html:br/>
+                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/ChrisJAllan');" style="color:blue;text-decoration: underline">Chris Allan</html:span>  (implemented support for recurring events)<html:br/>
+            </html:p>
+
+	<html:p>
+                <html:b>List of sponsors</html:b><html:br/><html:br/>
+                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://www.netcup.de');" style="color:blue;text-decoration: underline">netcup GmbH</html:span>  (providing a SOGo test account)<html:br/>
+                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://www.nethinks.com/');" style="color:blue;text-decoration: underline">nethinks GmbH</html:span>  (providing a Zarafa test account)<html:br/>
+            </html:p>
+
+        </vbox>
+    </hbox>
+    
+    <script type="text/javascript" src="chrome://tbsync/content/manager/accountManager.js" /> 
+
+</window>
