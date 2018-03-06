@@ -1290,10 +1290,14 @@ var eas = {
                         "responseHeader(MS-ASProtocolVersions): " + responseData["MS-ASProtocolVersions"]+"\n" +
                         "responseHeader(MS-ASProtocolCommands): " + responseData["MS-ASProtocolCommands"]);
 
-                        tbSync.db.setAccountSetting(syncdata.account, "allowedEasCommands", responseData["MS-ASProtocolCommands"]);
-                        tbSync.db.setAccountSetting(syncdata.account, "allowedEasVersions", responseData["MS-ASProtocolVersions"]);
-                        tbSync.db.setAccountSetting(syncdata.account, "lastEasOptionsUpdate", Date.now());
-                        resolve();
+                        if (responseData && responseData["MS-ASProtocolCommands"] && responseData["MS-ASProtocolVersions"]) {
+                            tbSync.db.setAccountSetting(syncdata.account, "allowedEasCommands", responseData["MS-ASProtocolCommands"]);
+                            tbSync.db.setAccountSetting(syncdata.account, "allowedEasVersions", responseData["MS-ASProtocolVersions"]);
+                            tbSync.db.setAccountSetting(syncdata.account, "lastEasOptionsUpdate", Date.now());
+                            resolve();
+                        } else {
+                            reject(eas.finishSync("InvalidServerOptions", eas.flags.abortWithError));
+                        }
                         break;
 
                     case 401:
