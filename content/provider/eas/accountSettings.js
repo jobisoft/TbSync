@@ -152,7 +152,8 @@ var tbSyncAccountSettings = {
             document.getElementById('tbsync.accountsettings.https').checked = false;
             tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, "https", "0");
         }
-        host = host.replace(/\//g,"");
+        
+        while (host.endsWith("/")) { host = host.slice(0,-1); }        
         document.getElementById('tbsync.accountsettings.host').value = host
         tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, "host", host);
     },

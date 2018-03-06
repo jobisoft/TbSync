@@ -110,7 +110,7 @@ var tbSyncEasNewAccount = {
         newAccountEntry.servertype = servertype;
 
         if (url) {
-            newAccountEntry.host = url.split("/")[2];
+            newAccountEntry.host = url.split("//")[1]; //cut off protocol
             if (url.substring(0,5) == "https") newAccountEntry.https = "1";
             else newAccountEntry.https = "0";
         }

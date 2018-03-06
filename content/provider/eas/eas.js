@@ -872,7 +872,13 @@ var eas = {
             protocol: (tbSync.db.getAccountSetting(account, "https") == "1") ? "https://" : "http://",
             set host(newHost) { tbSync.db.setAccountSetting(account, "host", newHost); },
             get server() { return tbSync.db.getAccountSetting(account, "host"); },
-            get host() { return this.protocol + tbSync.db.getAccountSetting(account, "host"); },
+            get host() { 
+                let h = this.protocol + tbSync.db.getAccountSetting(account, "host"); 
+                if (h.endsWith("Microsoft-Server-ActiveSync")) return h;
+                
+                while (h.endsWith("/")) { h = h.slice(0,-1); }
+                return h + "/Microsoft-Server-ActiveSync"; 
+            },
             user: tbSync.db.getAccountSetting(account, "user"),
         };
         return connection;
@@ -1244,13 +1250,13 @@ var eas = {
         let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
         if (userAgent == "") userAgent = "Thunderbird ActiveSync";
 
-        tbSync.dump("Sending", "OPTIONS " + connection.host + '/Microsoft-Server-ActiveSync');
+        tbSync.dump("Sending", "OPTIONS " + connection.host);
         
         return new Promise(function(resolve,reject) {
             // Create request handler
             syncdata.req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
             syncdata.req.mozBackgroundRequest = true;
-            syncdata.req.open("OPTIONS", connection.host + '/Microsoft-Server-ActiveSync', true);
+            syncdata.req.open("OPTIONS", connection.host, true);
             syncdata.req.overrideMimeType("text/plain");
             syncdata.req.setRequestHeader("User-Agent", userAgent);
             syncdata.req.setRequestHeader("Authorization", 'Basic ' + btoa(connection.user + ':' + password));
@@ -1322,13 +1328,13 @@ var eas = {
 
         let deviceId = tbSync.db.getAccountSetting(syncdata.account, "deviceId");
 
-        tbSync.dump("Sending (EAS v"+tbSync.db.getAccountSetting(syncdata.account, "asversion") +")", "POST " + connection.host + '/Microsoft-Server-ActiveSync?Cmd=' + command + '&User=' + encodeURIComponent(connection.user) + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
+        tbSync.dump("Sending (EAS v"+tbSync.db.getAccountSetting(syncdata.account, "asversion") +")", "POST " + connection.host + '?Cmd=' + command + '&User=' + encodeURIComponent(connection.user) + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
         
         return new Promise(function(resolve,reject) {
             // Create request handler
             syncdata.req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
             syncdata.req.mozBackgroundRequest = true;
-            syncdata.req.open("POST", connection.host + '/Microsoft-Server-ActiveSync?Cmd=' + command + '&User=' + encodeURIComponent(connection.user) + '&DeviceType=' +encodeURIComponent(deviceType) + '&DeviceId=' + deviceId, true);
+            syncdata.req.open("POST", connection.host + '?Cmd=' + command + '&User=' + encodeURIComponent(connection.user) + '&DeviceType=' +encodeURIComponent(deviceType) + '&DeviceId=' + deviceId, true);
             syncdata.req.overrideMimeType("text/plain");
             syncdata.req.setRequestHeader("User-Agent", userAgent);
             syncdata.req.setRequestHeader("Content-Type", "application/vnd.ms-sync.wbxml");
@@ -1564,7 +1570,7 @@ var eas = {
         tbSync.setSyncState("eval.response.autodiscover", syncdata.account);
         if (result.errorcode == 200) {
             //update account
-            tbSync.db.setAccountSetting(syncdata.account, "host", result.server.split("/")[2]);
+            tbSync.db.setAccountSetting(syncdata.account, "host", result.server.split("//")[1]); //cut off protocol
             tbSync.db.setAccountSetting(syncdata.account, "user", result.user);
             tbSync.db.setAccountSetting(syncdata.account, "https", (result.server.substring(0,5) == "https") ? "1" : "0");
         }

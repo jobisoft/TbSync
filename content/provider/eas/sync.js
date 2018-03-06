@@ -5,6 +5,8 @@
 // - https://dxr.mozilla.org/comm-central/source/calendar/base/public/calICalendar.idl
 // - https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calAsyncUtils.jsm
 
+// https://msdn.microsoft.com/en-us/library/dd299454(v=exchg.80).aspx
+
 eas.sync = {
 
     CALTYPES : { "0":"Unknown", "1":"Calendar", "2":"Tasks" },
