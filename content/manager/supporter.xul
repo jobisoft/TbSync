@@ -13,15 +13,32 @@
     <hbox flex="1" id="mainframe">
         <vbox flex="1">
             <html:p>
-                <html:b>List of contributers</html:b><html:br/><html:br/>
-                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/ChrisJAllan');" style="color:blue;text-decoration: underline">Chris Allan</html:span>  (implemented support for recurring events)<html:br/>
+                <html:b>Contributers</html:b><html:br/><html:br/>
+                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/ChrisJAllan');" style="color:blue;text-decoration: underline">Chris Allan</html:span>  (recurring events)<html:br/>
             </html:p>
 
-	<html:p>
-                <html:b>List of sponsors</html:b><html:br/><html:br/>
-                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://www.netcup.de');" style="color:blue;text-decoration: underline">netcup GmbH</html:span>  (providing a SOGo test account)<html:br/>
-                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://www.nethinks.com/');" style="color:blue;text-decoration: underline">nethinks GmbH</html:span>  (providing a Zarafa test account)<html:br/>
+            <html:p>
+                <html:b>Sponsors</html:b>
             </html:p>
+
+            <grid flex="1">
+                <columns>
+                    <column flex="0" />
+                    <column flex="0" />
+                </columns>
+
+                <rows>
+                    <row>
+                        <vbox><image src="chrome://tbsync/skin/sponsors/netcup.png" style='padding:1px; margin:3px; border:1px solid black' align='center' onclick="tbSync.openLink('http://www.netcup.de/');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" /></vbox>
+                        <vbox><image src="chrome://tbsync/skin/sponsors/nethinks.png" style='padding:1px; margin:3px; border:1px solid black' align='center' onclick="tbSync.openLink('http://www.nethinks.com/');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" /></vbox>
+                    </row>
+                    <row>
+                        <description style="text-align: center; width:120px">netcup GmbH is sponsoring a SOGo test account</description>
+                        <description style="text-align: center; width:120px">nethinks GmbH is sponsoring a Zarafa test account</description>
+                    </row>
+               </rows>
+
+            </grid>
 
         </vbox>
     </hbox>
