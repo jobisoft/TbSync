@@ -45,16 +45,17 @@ var tbSyncEasNewAccount = {
             let servertype = this.elementServertype.value;
             let accountname = this.elementName.value;
 
-            if (user.split("@").length != 2) {
-                alert(tbSync.getLocalizedMessage("autodiscover.NeedEmail","eas"))
-                return
-            };
-
             if (servertype == "custom") {
                 tbSyncEasNewAccount.addAccount(user, password, servertype, accountname);                
             }
             
             if (servertype == "auto") {
+
+                if (user.split("@").length != 2) {
+                    alert(tbSync.getLocalizedMessage("autodiscover.NeedEmail","eas"))
+                    return
+                }
+
                 document.documentElement.getButton("cancel").disabled = true;
                 document.documentElement.getButton("extra1").disabled = true;
                 document.getElementById("tbsync.newaccount.name").disabled = true;
