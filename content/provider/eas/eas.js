@@ -1574,13 +1574,22 @@ var eas = {
         tbSync.setSyncState("eval.response.autodiscover", syncdata.account);
         if (result.errorcode == 200) {
             //update account
-            tbSync.db.setAccountSetting(syncdata.account, "host", result.server.split("//")[1]); //cut off protocol
+            tbSync.db.setAccountSetting(syncdata.account, "host", eas.stripAutodiscoverUrl(result.server)); 
             tbSync.db.setAccountSetting(syncdata.account, "user", result.user);
             tbSync.db.setAccountSetting(syncdata.account, "https", (result.server.substring(0,5) == "https") ? "1" : "0");
         }
 
         return result.errorcode;
     }),
+    
+    stripAutodiscoverUrl: function(url) {
+        let u = url;
+        while (u.endsWith("/")) { u = u.slice(0,-1); }
+        if (u.endsWith("/Microsoft-Server-ActiveSync")) u=u.slice(0, -28);
+        else tbSync.dump("Received non-standard EAS url via autodiscover:", url);
+
+        return u.split("//")[1]; //cut off protocol
+    },
     
     getServerConnectionViaAutodiscover : Task.async (function* (user, password, maxtimeout) {
         let urls = [];

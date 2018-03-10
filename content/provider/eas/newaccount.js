@@ -110,9 +110,8 @@ var tbSyncEasNewAccount = {
         newAccountEntry.servertype = servertype;
 
         if (url) {
-            newAccountEntry.host = url.split("//")[1]; //cut off protocol
-            if (url.substring(0,5) == "https") newAccountEntry.https = "1";
-            else newAccountEntry.https = "0";
+            newAccountEntry.host = tbSync.eas.stripAutodiscoverUrl(url);
+            newAccountEntry.https = (url.substring(0,5) == "https") ? "1" : "0";
         }
 
         //also update password in PasswordManager
