@@ -17,11 +17,11 @@ eas.sync.Calendar = {
         eas.sync.setItemBody(item, syncdata, data);
 
         //timezone
-        let utcOffset = eas.defaultUtcOffset;
+        let utcOffset = eas.defaultUtcOffset; //always standard time (see top of eas.js)
         if (data.TimeZone) {
             //load timezone struct into EAS TimeZone object
             easTZ.easTimeZone64 = data.TimeZone;
-            utcOffset = easTZ.utcOffset;
+            utcOffset = easTZ.utcOffset; //also always standard time
             tbSync.dump("Recieve TZ", item.title + easTZ.toString());
             if (data.TimeZone == "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==") {
                 utcOffset = eas.defaultUtcOffset;
@@ -193,18 +193,18 @@ eas.sync.Calendar = {
         if (!isException) {
             let easTZ = new eas.TimeZoneDataStructure();
 
-            //if there is no end and no start (or both are floating) use eas.defaultUtcOffset as offset
-            let offset = eas.defaultUtcOffset;
-            if (item.startDate && item.startDate.timezone.tzid != "floating") offset = item.startDate.timezoneOffset/-60;
-            else if (item.endDate && item.endDate.timezone.tzid != "floating") offset = item.endDate.timezoneOffset/-60;
-
-            easTZ.utcOffset = offset;
+            //if there is no end and no start (or both are floating) use default timezone info - TODO: event crosses DST date
+            let tzInfo = tbSync.getTimezoneInfo();
+            if (item.startDate && item.startDate.timezone.tzid != "floating") tzInfo = tbSync.getTimezoneInfo(item.startDate);
+            else if (item.endDate && item.endDate.timezone.tzid != "floating") tzInfo = tbSync.getTimezoneInfo(item.endDate);
+            
+            easTZ.utcOffset =   tzInfo.stdOffset;
             easTZ.standardBias = 0;
-            easTZ.daylightBias = 0;
+            easTZ.daylightBias =  tzInfo.dstOffset -  tzInfo.stdOffset;
 
-            //use local tzid based on offset, ignore stored tzid
-            easTZ.standardName = eas.offsets[easTZ.utcOffset]; //item.refDate.timezone.tzid;
-            easTZ.daylightName = eas.offsets[easTZ.utcOffset]; //item.refDate.timezone.tzid;
+            easTZ.standardName = tzInfo.stdID;
+            easTZ.daylightName = tzInfo.dstID;
+
             //easTZ.standardDate - TODO
             //easTZ.daylightDate
                     

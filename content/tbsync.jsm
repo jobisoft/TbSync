@@ -762,6 +762,28 @@ var tbSync = {
         return cal.createDateTime(datestring);
     },
 
+    //extract standard and daylight timezone info from dateTimeObj
+    getTimezoneInfo: function (dateTimeObj = null) {
+        let tzInfo = {};
+        let stdDate = null;
+        let dstDate = null;
+            
+        if (dateTimeObj === null) {
+            stdDate = cal.createDateTime(); stdDate.timezone=cal.calendarDefaultTimezone();
+            dstDate = cal.createDateTime(); dstDate.timezone=cal.calendarDefaultTimezone();            
+        } else {       
+            stdDate =dateTimeObj.clone();
+            dstDate =dateTimeObj.clone();
+        }
+        
+        stdDate.month = 0; tzInfo.stdOffset = stdDate.timezoneOffset/-60;
+        dstDate.month = 5; tzInfo.dstOffset = dstDate.timezoneOffset/-60;
+        
+        tzInfo.stdID = stdDate.timezone.tzid;
+        tzInfo.dstID = dstDate.timezone.tzid;
+        
+        return tzInfo;
+    },
 
     //returns if item is todo, event or something else
     getItemType: function (aItem) {

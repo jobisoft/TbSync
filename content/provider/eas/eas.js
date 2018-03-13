@@ -1058,16 +1058,7 @@ var eas = {
             this.buf = new DataView(new ArrayBuffer(172));
         }
         
-/*
-        even O365 is not sending any values for the extra fields:
-            utcOffset: 360
-            standardName: Central America Standard Time
-            standardDate: 0-0-0, 0:0:0.0
-            standardBias: 0
-            daylightName: (UTC-06:00) Central America
-            daylightDate: 0-0-0, 0:0:0.0
-            daylightBias: 0
-		
+/*		
         Buffer structure:
             @000    utcOffset (4x8bit as 1xLONG)
 
@@ -1105,21 +1096,24 @@ var eas = {
             return str;
         }
 
-        setstr (byteoffset, str) {
+        setstr (byteoffset, str, dst) {
             //clear first
             for (let i=0;i<32;i++) this.buf.setUint16(byteoffset+i*2, 0);
 
             //add GMT Offset to string
-            if (str == "UTC") str = "(GMT+00:00) Coordinated Universal Time";
+            if (str == "UTC") str = "(+00:00) Coordinated Universal Time";
             else {
                 //offset is just the other way around
-                let GMT = (this.utcOffset<0) ? "GMT+" : "GMT-";
+                let GMT = (this.utcOffset<0) ? "+" : "-";
                 let offset = Math.abs(this.utcOffset);
+                if (dst) offset = offset - this.daylightBias;
                 
                 let m = offset % 60;
                 let h = (offset-m)/60;
                 GMT += (h<10 ? "0" :"" ) + h.toString() + ":" + (m<10 ? "0" :"" ) + m.toString();
                 str = "(" + GMT + ") " + str;
+                
+                if (dst) str = str + " (DST)";
             }
             
             //walk thru the buffer in steps of 16bit (wchars)
@@ -1162,9 +1156,9 @@ var eas = {
         set daylightBias (v) { this.buf.setInt32(168, v, true); }
         
         get standardName () {return this.getstr(4); }
-        set standardName (v) {return this.setstr(4, v); }
+        set standardName (v) {return this.setstr(4, v, false); }
         get daylightName () {return this.getstr(88); }
-        set daylightName (v) {return this.setstr(88, v); }
+        set daylightName (v) {return this.setstr(88, v, true); }
         
         toString () { return ["", 
             "utcOffset: "+ this.utcOffset,
