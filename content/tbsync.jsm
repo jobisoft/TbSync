@@ -287,29 +287,34 @@ var tbSync = {
     },
 
     encode_utf8: function (string) {
-        let appInfo = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
-        let platformVer = appInfo.platformVersion;
-        if (platformVer >= 50) {
-            return string;
-        } else {
-            //What?
-            string = string.replace(/\r\n/g, "\n");
-            let utf8string = "";
-            for (let n = 0; n < string.length; n++) {
-                let c = string.charCodeAt(n);
-                if (c < 128) {
-                    utf8string += String.fromCharCode(c);
-                } else if ((c > 127) && (c < 2048)) {
-                    utf8string += String.fromCharCode((c >> 6) | 192);
-                    utf8string += String.fromCharCode((c & 63) | 128);
-                } else {
-                    utf8string += String.fromCharCode((c >> 12) | 224);
-                    utf8string += String.fromCharCode(((c >> 6) & 63) | 128);
-                    utf8string += String.fromCharCode((c & 63) | 128);
-                }
-            }
-            return utf8string;
-        }
+        let utf8string = string;
+
+// FIRST, the test platformVer > 50 fails, because platformVer is something like 50.3.2
+// SECOND, since we EncodeUrlComponent everything, there is no need to do char transcoding
+//
+//        let appInfo = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
+//        let platformVer = appInfo.platformVersion;
+//        if (platformVer >= 50) {
+//            utf8string = string;
+//        } else {
+//            //What?
+//            string = string.replace(/\r\n/g, "\n");
+//            for (let n = 0; n < string.length; n++) {
+//                let c = string.charCodeAt(n);
+//                if (c < 128) {
+//                    utf8string += String.fromCharCode(c);
+//                } else if ((c > 127) && (c < 2048)) {
+//                    utf8string += String.fromCharCode((c >> 6) | 192);
+//                    utf8string += String.fromCharCode((c & 63) | 128);
+//                } else {
+//                    utf8string += String.fromCharCode((c >> 12) | 224);
+//                    utf8string += String.fromCharCode(((c >> 6) & 63) | 128);
+//                    utf8string += String.fromCharCode((c & 63) | 128);
+//                }
+//            }
+//        }
+
+        return utf8string;
     },
 
     getLocalizedMessage: function (msg, provider = "") {
