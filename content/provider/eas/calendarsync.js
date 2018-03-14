@@ -193,17 +193,17 @@ eas.sync.Calendar = {
         if (!isException) {
             let easTZ = new eas.TimeZoneDataStructure();
 
-            //if there is no end and no start (or both are floating) use default timezone info - TODO: event crosses DST date
+            //if there is no end and no start (or both are floating) use default timezone info
             let tzInfo = tbSync.getTimezoneInfo();
             if (item.startDate && item.startDate.timezone.tzid != "floating") tzInfo = tbSync.getTimezoneInfo(item.startDate);
             else if (item.endDate && item.endDate.timezone.tzid != "floating") tzInfo = tbSync.getTimezoneInfo(item.endDate);
             
-            easTZ.utcOffset =   tzInfo.stdOffset;
+            easTZ.utcOffset =   tzInfo.std.offset;
             easTZ.standardBias = 0;
-            easTZ.daylightBias =  tzInfo.dstOffset -  tzInfo.stdOffset;
+            easTZ.daylightBias =  tzInfo.dst.offset -  tzInfo.std.offset;
 
-            easTZ.standardName = tzInfo.stdID;
-            easTZ.daylightName = tzInfo.dstID;
+            easTZ.standardName = tzInfo.std.name;
+            easTZ.daylightName = tzInfo.dst.name;
 
             //easTZ.standardDate - TODO
             //easTZ.daylightDate

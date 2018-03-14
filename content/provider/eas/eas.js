@@ -22,19 +22,21 @@ var eas = {
             //https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calProviderUtils.jsm
             eas.offsets = {};
             let tzService = cal.getTimezoneService();
-            let dateTime = cal.createDateTime("20160101T000000Z"); //UTC
+            let dateTime = cal.createDateTime("20160101T000000Z"); //UTC - TODO: Which year?
 
             //find timezone based on utcOffset
             let enumerator = tzService.timezoneIds;
             while (enumerator.hasMore()) {
                 let id = enumerator.getNext();
                 dateTime.timezone = tzService.getTimezone(id);
-                eas.offsets[dateTime.timezoneOffset/-60] = id; //in minutes
+                let tzInfo = tbSync.getTimezoneInfo(dateTime);
+                eas.offsets[tzInfo.std.offset] = id; //standard in minutes
             }
 
-            //also try default timezone
+            //multiple TZ share the same offset, make sure the default timezone is present
             dateTime.timezone=cal.calendarDefaultTimezone();
-            eas.defaultUtcOffset = dateTime.timezoneOffset/-60
+            let tzInfo = tbSync.getTimezoneInfo(dateTime);
+            eas.defaultUtcOffset = tzInfo.std.offset;
             eas.offsets[eas.defaultUtcOffset] = dateTime.timezone.tzid;
 
             
@@ -1101,19 +1103,18 @@ var eas = {
             for (let i=0;i<32;i++) this.buf.setUint16(byteoffset+i*2, 0);
 
             //add GMT Offset to string
-            if (str == "UTC") str = "(+00:00) Coordinated Universal Time";
+            if (str == "UTC") str = "Coordinated Universal Time (UTC)";
             else {
                 //offset is just the other way around
-                let GMT = (this.utcOffset<0) ? "+" : "-";
+                let GMT = (this.utcOffset<0) ? "UTC+" : "UTC-";
                 let offset = Math.abs(this.utcOffset);
                 if (dst) offset = offset - this.daylightBias;
                 
                 let m = offset % 60;
                 let h = (offset-m)/60;
                 GMT += (h<10 ? "0" :"" ) + h.toString() + ":" + (m<10 ? "0" :"" ) + m.toString();
-                str = "(" + GMT + ") " + str;
-                
-                if (dst && this.daylightBias != this.standardBias) str = str + " (DST)";
+
+                str = str + " (" + GMT + ")";
             }
             
             //walk thru the buffer in steps of 16bit (wchars)

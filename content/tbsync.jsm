@@ -9,6 +9,7 @@ const Ci = Components.interfaces;
 //import calUtils if avail
 if ("calICalendar" in Components.interfaces) {
     Components.utils.import("resource://calendar/modules/calUtils.jsm");
+    Components.utils.import("resource://calendar/modules/ical.js");    
 }
 
 Components.utils.import("resource://gre/modules/Services.jsm");
@@ -767,6 +768,25 @@ var tbSync = {
         return cal.createDateTime(datestring);
     },
 
+    //get info for standard/daylight
+    getTimezoneInfoObject: function (dateTimeObj, standardOrDaylight) {
+        let obj = {};
+        obj.offset = dateTimeObj.timezoneOffset/-60;
+        obj.id = dateTimeObj.timezone.tzid; 
+        
+        let info = ICAL.parse("BEGIN:VCALENDAR\r\n" + dateTimeObj.timezone + "\r\nEND:VCALENDAR");
+        let comp = new ICAL.Component(info);
+        let vtimezone =comp.getFirstSubcomponent("vtimezone");
+        let zone = vtimezone.getFirstSubcomponent(standardOrDaylight);
+        if (zone) {
+            obj.name = zone.getFirstPropertyValue("tzname");
+        } else {
+            obj.name = null;
+        }
+
+        return obj;
+    },
+    
     //extract standard and daylight timezone info from dateTimeObj
     getTimezoneInfo: function (dateTimeObj = null) {
         let tzInfo = {};
@@ -787,14 +807,15 @@ var tbSync = {
         //northern hemisphere or southern hemisphere?
         if (janDate.timezoneOffset <= junDate.timezoneOffset) {
             //north
-            tzInfo.stdOffset = janDate.timezoneOffset/-60; tzInfo.stdID = janDate.timezone.tzid;
-            tzInfo.dstOffset = junDate.timezoneOffset/-60; tzInfo.dstID = junDate.timezone.tzid;
+            tzInfo.std = tbSync.getTimezoneInfoObject(janDate, "standard");
+            tzInfo.dst = tbSync.getTimezoneInfoObject(junDate, "daylight");
         } else {
             //south
-            tzInfo.stdOffset = junDate.timezoneOffset/-60; tzInfo.stdID = junDate.timezone.tzid;
-            tzInfo.dstOffset = janDate.timezoneOffset/-60; tzInfo.dstID = janDate.timezone.tzid;
+            tzInfo.std = tbSync.getTimezoneInfoObject(junDate, "standard");
+            tzInfo.dst = tbSync.getTimezoneInfoObject(janDate, "daylight");
         }
-        
+
+        if (tzInfo.dst.name === null) tzInfo.dst.name = tzInfo.std.name;
         return tzInfo;
     },
 
