@@ -1113,7 +1113,7 @@ var eas = {
                 GMT += (h<10 ? "0" :"" ) + h.toString() + ":" + (m<10 ? "0" :"" ) + m.toString();
                 str = "(" + GMT + ") " + str;
                 
-                if (dst) str = str + " (DST)";
+                if (dst && this.daylightBias != this.standardBias) str = str + " (DST)";
             }
             
             //walk thru the buffer in steps of 16bit (wchars)

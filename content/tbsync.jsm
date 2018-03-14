@@ -785,7 +785,7 @@ var tbSync = {
         junDate.month = 5;
 	
         //northern hemisphere or southern hemisphere?
-        if (janDate.timezoneOffset < junDate.timezoneOffset) {
+        if (janDate.timezoneOffset <= junDate.timezoneOffset) {
             //north
             tzInfo.stdOffset = janDate.timezoneOffset/-60; tzInfo.stdID = janDate.timezone.tzid;
             tzInfo.dstOffset = junDate.timezoneOffset/-60; tzInfo.dstID = junDate.timezone.tzid;
