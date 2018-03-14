@@ -770,22 +770,30 @@ var tbSync = {
     //extract standard and daylight timezone info from dateTimeObj
     getTimezoneInfo: function (dateTimeObj = null) {
         let tzInfo = {};
-        let stdDate = null;
-        let dstDate = null;
+        let janDate = null;
+        let junDate = null;
             
         if (dateTimeObj === null) {
-            stdDate = cal.createDateTime(); stdDate.timezone=cal.calendarDefaultTimezone();
-            dstDate = cal.createDateTime(); dstDate.timezone=cal.calendarDefaultTimezone();            
+            janDate = cal.createDateTime(); janDate.timezone=cal.calendarDefaultTimezone();
+            junDate = cal.createDateTime(); junDate.timezone=cal.calendarDefaultTimezone();            
         } else {       
-            stdDate =dateTimeObj.clone();
-            dstDate =dateTimeObj.clone();
+            janDate =dateTimeObj.clone();
+            junDate =dateTimeObj.clone();
         }
         
-        stdDate.month = 0; tzInfo.stdOffset = stdDate.timezoneOffset/-60;
-        dstDate.month = 5; tzInfo.dstOffset = dstDate.timezoneOffset/-60;
-        
-        tzInfo.stdID = stdDate.timezone.tzid;
-        tzInfo.dstID = dstDate.timezone.tzid;
+        janDate.month = 0;
+        junDate.month = 5;
+	
+        //northern hemisphere or southern hemisphere?
+        if (janDate.timezoneOffset < junDate.timezoneOffset) {
+            //north
+            tzInfo.stdOffset = janDate.timezoneOffset/-60; tzInfo.stdID = janDate.timezone.tzid;
+            tzInfo.dstOffset = junDate.timezoneOffset/-60; tzInfo.dstID = junDate.timezone.tzid;
+        } else {
+            //south
+            tzInfo.stdOffset = junDate.timezoneOffset/-60; tzInfo.stdID = junDate.timezone.tzid;
+            tzInfo.dstOffset = janDate.timezoneOffset/-60; tzInfo.dstID = janDate.timezone.tzid;
+        }
         
         return tzInfo;
     },
