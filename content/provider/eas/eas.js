@@ -22,22 +22,22 @@ var eas = {
             //https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calProviderUtils.jsm
             eas.offsets = {};
             let tzService = cal.getTimezoneService();
-            let dateTime = cal.createDateTime("20160101T000000Z"); //UTC - TODO: Which year?
 
-            //find timezone based on utcOffset
+            //cache timezones based on utcOffset
             let enumerator = tzService.timezoneIds;
             while (enumerator.hasMore()) {
                 let id = enumerator.getNext();
-                dateTime.timezone = tzService.getTimezone(id);
-                let tzInfo = tbSync.getTimezoneInfo(dateTime);
-                eas.offsets[tzInfo.std.offset] = id; //standard in minutes
+                let tzInfo = tbSync.getTimezoneInfo(tzService.getTimezone(id));
+                eas.offsets[tzInfo.std.offset] = id; //standard offset in minutes
+                //tbSync.dump("TZ ("+id + " :: " + tzInfo.std.id + " :: " + tzInfo.dst.id +  " :: " + tzInfo.std.displayname + " :: " + tzInfo.dst.displayname + " :: " + tzInfo.std.offset + " :: " + tzInfo.dst.offset + ")", tzService.getTimezone(id));
             }
 
             //multiple TZ share the same offset, make sure the default timezone is present
-            dateTime.timezone=cal.calendarDefaultTimezone();
-            let tzInfo = tbSync.getTimezoneInfo(dateTime);
+            //dateTime.timezone=cal.calendarDefaultTimezone();
+            let tzInfo = tbSync.getTimezoneInfo(cal.calendarDefaultTimezone());
             eas.defaultUtcOffset = tzInfo.std.offset;
-            eas.offsets[eas.defaultUtcOffset] = dateTime.timezone.tzid;
+            eas.offsets[eas.defaultUtcOffset] = cal.calendarDefaultTimezone().tzid;
+            //tbSync.dump("Default TZ ("+cal.calendarDefaultTimezone().tzid + " :: " + tzInfo.std.id + " :: " + tzInfo.dst.id +  " :: " + tzInfo.std.displayname + " :: " + tzInfo.dst.displayname + " :: " + tzInfo.std.offset + " :: " + tzInfo.dst.offset + ")", cal.calendarDefaultTimezone());
 
             
             //If an EAS calendar is currently NOT associated with an email identity, try to associate, 
@@ -1098,25 +1098,9 @@ var eas = {
             return str;
         }
 
-        setstr (byteoffset, str, dst) {
+        setstr (byteoffset, str) {
             //clear first
             for (let i=0;i<32;i++) this.buf.setUint16(byteoffset+i*2, 0);
-
-            //add GMT Offset to string
-            if (str == "UTC") str = "Coordinated Universal Time (UTC)";
-            else {
-                //offset is just the other way around
-                let GMT = (this.utcOffset<0) ? "UTC+" : "UTC-";
-                let offset = Math.abs(this.utcOffset);
-                if (dst) offset = offset - this.daylightBias;
-                
-                let m = offset % 60;
-                let h = (offset-m)/60;
-                GMT += (h<10 ? "0" :"" ) + h.toString() + ":" + (m<10 ? "0" :"" ) + m.toString();
-
-                str = str + " (" + GMT + ")";
-            }
-            
             //walk thru the buffer in steps of 16bit (wchars)
             for (let i=0;i<str.length && i<32; i++) this.buf.setUint16(byteoffset+i*2, str.charCodeAt(i), true);
         }
@@ -1131,7 +1115,7 @@ var eas = {
                 get wMinute () { return buf.getUint16(offset + 10, true); },
                 get wSecond () { return buf.getUint16(offset + 12, true); },
                 get wMilliseconds () { return buf.getUint16(offset + 14, true); },
-                toString() { return [this.wYear, this.wMonth, this.wDay].join("-") + ", " + [this.wHour,this.wMinute,this.wSecond].join(":") + "." + this.wMilliseconds},
+                toString() { return [this.wYear, this.wMonth, this.wDay].join("-") + ", " + this.wDayOfWeek + ", " + [this.wHour,this.wMinute,this.wSecond].join(":") + "." + this.wMilliseconds},
 
                 set wYear (v) { buf.setUint16(offset + 0, v, true); },
                 set wMonth (v) { buf.setUint16(offset + 2, v, true); },
@@ -1157,9 +1141,9 @@ var eas = {
         set daylightBias (v) { this.buf.setInt32(168, v, true); }
         
         get standardName () {return this.getstr(4); }
-        set standardName (v) {return this.setstr(4, v, false); }
+        set standardName (v) {return this.setstr(4, v); }
         get daylightName () {return this.getstr(88); }
-        set daylightName (v) {return this.setstr(88, v, true); }
+        set daylightName (v) {return this.setstr(88, v); }
         
         toString () { return ["", 
             "utcOffset: "+ this.utcOffset,

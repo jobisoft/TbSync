@@ -768,56 +768,100 @@ var tbSync = {
         return cal.createDateTime(datestring);
     },
 
-    //get info for standard/daylight
-    getTimezoneInfoObject: function (dateTimeObj, standardOrDaylight) {
-        let obj = {};
-        obj.offset = dateTimeObj.timezoneOffset/-60;
-        obj.id = dateTimeObj.timezone.tzid; 
-        
-        let info = ICAL.parse("BEGIN:VCALENDAR\r\n" + dateTimeObj.timezone + "\r\nEND:VCALENDAR");
-        let comp = new ICAL.Component(info);
-        let vtimezone =comp.getFirstSubcomponent("vtimezone");
-        let zone = vtimezone.getFirstSubcomponent(standardOrDaylight);
-        if (zone) {
-            obj.name = zone.getFirstPropertyValue("tzname");
-        } else {
-            obj.name = null;
-        }
 
-        return obj;
-    },
+
+
     
-    //extract standard and daylight timezone info from dateTimeObj
-    getTimezoneInfo: function (dateTimeObj = null) {
+    //extract standard and daylight timezone data
+    getTimezoneInfo: function (timezone) {        
         let tzInfo = {};
-        let janDate = null;
-        let junDate = null;
-            
-        if (dateTimeObj === null) {
-            janDate = cal.createDateTime(); janDate.timezone=cal.calendarDefaultTimezone();
-            junDate = cal.createDateTime(); junDate.timezone=cal.calendarDefaultTimezone();            
-        } else {       
-            janDate =dateTimeObj.clone();
-            junDate =dateTimeObj.clone();
-        }
+        tzInfo.std = tbSync.getTimezoneInfoObject(timezone, "standard");
+        tzInfo.dst = tbSync.getTimezoneInfoObject(timezone, "daylight");
         
-        janDate.month = 0;
-        junDate.month = 5;
-	
-        //northern hemisphere or southern hemisphere?
-        if (janDate.timezoneOffset <= junDate.timezoneOffset) {
-            //north
-            tzInfo.std = tbSync.getTimezoneInfoObject(janDate, "standard");
-            tzInfo.dst = tbSync.getTimezoneInfoObject(junDate, "daylight");
-        } else {
-            //south
-            tzInfo.std = tbSync.getTimezoneInfoObject(junDate, "standard");
-            tzInfo.dst = tbSync.getTimezoneInfoObject(janDate, "daylight");
-        }
-
-        if (tzInfo.dst.name === null) tzInfo.dst.name = tzInfo.std.name;
+        if (tzInfo.dst === null) tzInfo.dst  = tzInfo.std;        
         return tzInfo;
     },
+
+    //get timezone info for standard/daylight
+    getTimezoneInfoObject: function (timezone, standardOrDaylight) {       
+        
+        //we could parse the icalstring by ourself, but I wanted to use ICAL.parse
+        let info = ICAL.parse("BEGIN:VCALENDAR\r\n" + timezone + "\r\nEND:VCALENDAR");
+        let comp = new ICAL.Component(info);
+        let vtimezone =comp.getFirstSubcomponent("vtimezone");
+        let id = vtimezone.getFirstPropertyValue("tzid");
+        let zone = vtimezone.getFirstSubcomponent(standardOrDaylight);
+
+        if (zone) { 
+            let obj = {};
+            obj.id = id;
+            
+            //get offset
+            let utcOffset = zone.getFirstPropertyValue("tzoffsetto").toString();
+            let o = parseInt(utcOffset.replace(":","")); //-330 =  - 3h 30min
+            let h = Math.floor(o / 100); //-3 -> -180min
+            let m = o - (h*100) //-330 - -300 = -30
+            obj.offset = -1*((h*60) + m);
+
+            //get alternative name (CEST, CET, CAT ... )
+            obj.name = zone.getFirstPropertyValue("tzname");
+            
+            //get displayname
+            obj.displayname = /*"("+utcOffset+") " +*/ obj.id + " (" + obj.name + ")";
+                
+            //get DST switch date
+            let rrule = zone.getFirstPropertyValue("rrule");
+            let dtstart = zone.getFirstPropertyValue("dtstart");
+            if (rrule && dtstart) {
+                /*
+                    https://msdn.microsoft.com/en-us/library/windows/desktop/ms725481(v=vs.85).aspx
+
+                    To select the correct day in the month, set the wYear member to zero, the wHour and wMinute members to
+                    the transition time, the wDayOfWeek member to the appropriate weekday, and the wDay member to indicate
+                    the occurrence of the day of the week within the month (1 to 5, where 5 indicates the final occurrence during the
+                    month if that day of the week does not occur 5 times).
+
+                    Using this notation, specify 02:00 on the first Sunday in April as follows: 
+                        wHour = 2, wMonth = 4, wDayOfWeek = 0, wDay = 1. 
+                    Specify 02:00 on the last Thursday in October as follows: 
+                        wHour = 2, wMonth = 10, wDayOfWeek = 4, wDay = 5.
+                        
+                    So we have to parse the RRULE to exract wDay
+                    RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10 */         
+
+                let parts =rrule.toString().split(";");
+                let rules = {};
+                for (let i = 0; i< parts.length; i++) {
+                    let sub = parts[i].split("=");
+                    if (sub.length == 2) rules[sub[0]] = sub[1];
+                }
+                
+                if (rules.FREQ == "YEARLY" && rules.BYDAY && rules.BYMONTH && rules.BYDAY.length > 2) {
+                    obj.switchdate = {};
+                    obj.switchdate.month = parseInt(rules.BYMONTH);
+
+                    let days = ["SU","MO","TU","WE","TH","FR","SA"];
+                    obj.switchdate.dayOfWeek = days.indexOf(rules.BYDAY.substring(rules.BYDAY.length-2));                
+                    obj.switchdate.weekOfMonth = parseInt(rules.BYDAY.substring(0, rules.BYDAY.length-2));
+                    if (obj.switchdate.weekOfMonth<0 || obj.switchdate.weekOfMonth>5) obj.switchdate.weekOfMonth = 5;
+
+                    //get switch time from dtstart
+                    let dttime = cal.createDateTime(dtstart);
+                    obj.switchdate.hour = dttime.hour;
+                    obj.switchdate.minute = dttime.minute;
+                    obj.switchdate.second = dttime.second;                                    
+                }            
+            }
+
+            return obj;
+        }
+        return null;
+    },
+    
+
+
+
+
 
     //returns if item is todo, event or something else
     getItemType: function (aItem) {

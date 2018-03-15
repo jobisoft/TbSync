@@ -194,22 +194,36 @@ eas.sync.Calendar = {
             let easTZ = new eas.TimeZoneDataStructure();
 
             //if there is no end and no start (or both are floating) use default timezone info
-            let tzInfo = tbSync.getTimezoneInfo();
-            if (item.startDate && item.startDate.timezone.tzid != "floating") tzInfo = tbSync.getTimezoneInfo(item.startDate);
-            else if (item.endDate && item.endDate.timezone.tzid != "floating") tzInfo = tbSync.getTimezoneInfo(item.endDate);
+            let tzInfo = null;
+            if (item.startDate && item.startDate.timezone.tzid != "floating") tzInfo = tbSync.getTimezoneInfo(item.startDate.timezone);
+            else if (item.endDate && item.endDate.timezone.tzid != "floating") tzInfo = tbSync.getTimezoneInfo(item.endDate.timezone);
+            else tzInfo = tbSync.getTimezoneInfo(cal.calendarDefaultTimezone());
             
             easTZ.utcOffset =   tzInfo.std.offset;
             easTZ.standardBias = 0;
             easTZ.daylightBias =  tzInfo.dst.offset -  tzInfo.std.offset;
 
-            easTZ.standardName = tzInfo.std.name;
-            easTZ.daylightName = tzInfo.dst.name;
+            easTZ.standardName = tzInfo.std.displayname;
+            easTZ.daylightName = tzInfo.dst.displayname;
 
-            //easTZ.standardDate - TODO
-            //easTZ.daylightDate
-                    
+            if (tzInfo.std.switchdate && tzInfo.dst.switchdate) {
+                easTZ.standardDate.wMonth = tzInfo.std.switchdate.month;
+                easTZ.standardDate.wDay = tzInfo.std.switchdate.weekOfMonth;
+                easTZ.standardDate.wDayOfWeek = tzInfo.std.switchdate.dayOfWeek;
+                easTZ.standardDate.wHour = tzInfo.std.switchdate.hour;
+                easTZ.standardDate.wMinute = tzInfo.std.switchdate.minute;
+                easTZ.standardDate.wSecond = tzInfo.std.switchdate.second;
+                
+                easTZ.daylightDate.wMonth = tzInfo.dst.switchdate.month;
+                easTZ.daylightDate.wDay = tzInfo.dst.switchdate.weekOfMonth;
+                easTZ.daylightDate.wDayOfWeek = tzInfo.dst.switchdate.dayOfWeek;
+                easTZ.daylightDate.wHour = tzInfo.dst.switchdate.hour;
+                easTZ.daylightDate.wMinute = tzInfo.dst.switchdate.minute;
+                easTZ.daylightDate.wSecond = tzInfo.dst.switchdate.second;
+            }
+            
             wbxml.atag("TimeZone", easTZ.easTimeZone64);
-            tbSync.dump("Send TZ",item.title + easTZ.toString());
+            tbSync.dump("Send TZ", item.title + easTZ.toString());
         }
 	    
         //AllDayEvent (for simplicity, we always send a value)
