@@ -89,14 +89,16 @@ var tbSync = {
         
         //init stuff for calendar (only if lightning is installed)
         tbSync.cachedTimezoneData = null;
-        tbSync.defaultStandardUtcOffset = 0;            
+        tbSync.defaultTimezoneInfo = null;
         if ("calICalendar" in Components.interfaces) {
             //adding a global observer, or one for each "known" book?
             cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
             cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
             
+            //get timezone info of default timezone
             let tzInfo = tbSync.getTimezoneInfo(cal.calendarDefaultTimezone());
-            tbSync.defaultStandardUtcOffset = tzInfo.std.offset;            
+            tbSync.defaultTimezoneInfo = tzInfo.std;            
+
         }
 
         //init stuff for sync process
@@ -383,7 +385,7 @@ var tbSync = {
 
     initFile: function (filename) {
         let file = FileUtils.getFile("ProfD", ["TbSync",filename]);
-        //create a strem to write to that file
+        //create a stream to write to that file
         let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
         foStream.init(file, 0x02 | 0x08 | 0x20, parseInt("0666", 8), 0); // write, create, truncate
         foStream.close();
@@ -892,7 +894,6 @@ var tbSync = {
 
     //guess the IANA timezone (used by TB) based on offset and name
     guessTimezone: function(stdOffset, stdName = "") {
-
         /*                
             TbSync is sending timezone as detailed as possible using IANA and international abbreviations:
 
@@ -933,26 +934,27 @@ var tbSync = {
             if (tbSync.cachedTimezoneData === null) {
                 tbSync.cachedTimezoneData = {};
                 tbSync.cachedTimezoneData.iana = {};
-                tbSync.cachedTimezoneData.windows = {};
-                tbSync.cachedTimezoneData.windows = {};
+                tbSync.cachedTimezoneData.abbreviations = {};
                 tbSync.cachedTimezoneData.offsets = {};
                     
                 let tzService = cal.getTimezoneService();
 
-                //cache timezones based on utcOffset
+                //cache timezones data from internal IANA data
                 let enumerator = tzService.timezoneIds;
                 while (enumerator.hasMore()) {
                     let id = enumerator.getNext();
                     let tzInfo = tbSync.getTimezoneInfo(tzService.getTimezone(id));
 
-                    tbSync.cachedTimezoneData.offsets[tzInfo.std.offset] = id; //standard offset in minutes
-                    tbSync.cachedTimezoneData.iana[id] = tzInfo.std.offset; //standard offset in minutes
+                    tbSync.cachedTimezoneData.abbreviations[tzInfo.std.abbreviation] = id;
+                    tbSync.cachedTimezoneData.offsets[tzInfo.std.offset] = id;
+                    tbSync.cachedTimezoneData.iana[id] = tzInfo.std.offset;
                     
                     //tbSync.dump("TZ ("+ tzInfo.std.id + " :: " + tzInfo.dst.id +  " :: " + tzInfo.std.displayname + " :: " + tzInfo.dst.displayname + " :: " + tzInfo.std.offset + " :: " + tzInfo.dst.offset + ")", tzService.getTimezone(id));
                 }
 
-                //multiple TZ share the same offset, make sure the default timezone is present
-                tbSync.cachedTimezoneData.offsets[tbSync.defaultStandardUtcOffset] = cal.calendarDefaultTimezone().tzid;
+                //multiple TZ share the same offset and abbreviation, make sure the default timezone is present
+                tbSync.cachedTimezoneData.abbreviations[tbSync.defaultTimezoneInfo.abbreviation] = tbSync.defaultTimezoneInfo.id;
+                tbSync.cachedTimezoneData.offsets[tbSync.defaultTimezoneInfo.offset] = tbSync.defaultTimezoneInfo.id;
             }
 
             /*
@@ -965,16 +967,20 @@ var tbSync = {
             for (let i = 0; i < parts.length; i++) {
                 //check for IANA
                 if (tbSync.cachedTimezoneData.iana[parts[i]] && tbSync.cachedTimezoneData.iana[parts[i]] == stdOffset) {
-                    //tbSync.dump("MATCH IANA",parts[i]);
+                    tbSync.dump("Timezone matched via IANA", parts[i]);
                     return parts[i];
                 }
-                //check for international abbreviation (CEST, CET, ...)
-                //TODO
+
+                //check for international abbreviation for standard period (CET, CAT, ...)
+                if (tbSync.cachedTimezoneData.abbreviations[parts[i]] && tbSync.cachedTimezoneData.iana[tbSync.cachedTimezoneData.abbreviations[parts[i]]] == stdOffset) {
+                    tbSync.dump("Timezone matched via international abbreviation (" + parts[i] +")", tbSync.cachedTimezoneData.abbreviations[parts[i]]);
+                    return tbSync.cachedTimezoneData.abbreviations[parts[i]];
+                }
             }
             
             //check for windows timezone name
             if (tbSync.windowsTimezoneMap[stdName] && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]] == stdOffset ) {
-                //tbSync.dump("MATCH WINDOWS ("+stdName+")", tbSync.windowsTimezoneMap[stdName]);
+                tbSync.dump("Timezone matched via windows timezone name ("+stdName+")", tbSync.windowsTimezoneMap[stdName]);
                 return tbSync.windowsTimezoneMap[stdName];
             }
             

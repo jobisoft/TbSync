@@ -17,14 +17,14 @@ eas.sync.Calendar = {
         eas.sync.setItemBody(item, syncdata, data);
 
         //timezone
-        let utcOffset = tbSync.defaultStandardUtcOffset;
+        let utcOffset = tbSync.defaultTimezoneInfo.offset;
         if (data.TimeZone) {
             //load timezone struct into EAS TimeZone object
             easTZ.easTimeZone64 = data.TimeZone;
             utcOffset = easTZ.utcOffset; //also always standard time
             tbSync.dump("Recieve TZ", item.title + easTZ.toString());
             if (data.TimeZone == "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==") {
-                utcOffset = tbSync.defaultStandardUtcOffset;
+                utcOffset = tbSync.defaultTimezoneInfo.offset;
                 tbSync.dump("Recieve TZ", "No timezone data received, using local default timezone.");
             }
         }
