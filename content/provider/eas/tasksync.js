@@ -20,7 +20,7 @@ eas.sync.Tasks = {
 
             //timezone is identified by its offset
             let utc = cal.createDateTime(UtcDueDate.toBasicISOString()); //format "19800101T000000Z" - UTC
-            item.dueDate = utc.getInTimezone(tzService.getTimezone(tbSync.guessTimezone(offset)));
+            item.dueDate = utc.getInTimezone(tzService.getTimezone(tbSync.guessTimezoneByCurrentOffset(offset, utc)));
         }
 
         if (data.StartDate && data.UtcStartDate) {
@@ -31,7 +31,7 @@ eas.sync.Tasks = {
 
             //timezone is identified by its offset
             let utc = cal.createDateTime(UtcStartDate.toBasicISOString()); //format "19800101T000000Z" - UTC
-            item.entryDate = utc.getInTimezone(tzService.getTimezone(tbSync.guessTimezone(offset)));
+            item.entryDate = utc.getInTimezone(tzService.getTimezone(tbSync.guessTimezoneByCurrentOffset(offset, utc)));
         }
 
         eas.sync.mapEasPropertyToThunderbird ("Sensitivity", "CLASS", data, item);

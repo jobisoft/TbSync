@@ -788,7 +788,29 @@ var tbSync = {
 
 
 
-    //guess the IANA timezone (used by TB) based on offset and name
+    //guess the IANA timezone (used by TB) based on the current offset (standard or daylight)
+    guessTimezoneByCurrentOffset: function(curOffset, utcDateTime) {
+        //If we only now the current offset and the current date, we need to actually try each TZ
+        let tzService = cal.getTimezoneService();
+
+        //first try default tz
+        let test = utcDateTime.getInTimezone(tzService.getTimezone(tbSync.defaultTimezoneInfo.id));
+        tbSync.dump("TEST: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
+        if (test.timezoneOffset/-60 == curOffset) return test.timezone.tzid;
+        
+        let enumerator = tzService.timezoneIds;
+        while (enumerator.hasMore()) {
+            let id = enumerator.getNext();
+            let test = utcDateTime.getInTimezone(tzService.getTimezone(id));
+            tbSync.dump("TEST: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
+            if (test.timezoneOffset/-60 == curOffset) return test.timezone.tzid;
+        }
+        
+        //return default TZ anyhow
+        return tbSync.defaultTimezoneInfo.id;
+    },
+    
+    //guess the IANA timezone (used by TB) based on stdandard offset and standard name
     guessTimezone: function(stdOffset, stdName = "") {
         /*                
             TbSync is sending timezone as detailed as possible using IANA and international abbreviations:
