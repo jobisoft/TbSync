@@ -17,6 +17,7 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("resource://gre/modules/AddonManager.jsm");
+Components.utils.import("resource://gre/modules/NetUtil.jsm");
 
 
 
@@ -288,7 +289,34 @@ var tbSync = {
             yield OS.File.writeAtomic(filepath, tbSync.encoder.encode(JSON.stringify(obj)), {tmpPath: filepath + ".tmp"});
         }).catch(Components.utils.reportError);
     },
-    
+
+    //read file from within the XPI package
+    fetchFile: function (aURL) {
+        return new Promise((resolve, reject) => {
+            let uri = Services.io.newURI(aURL);
+            let channel = Services.io.newChannelFromURI2(uri,
+                                 null,
+                                 Services.scriptSecurityManager.getSystemPrincipal(),
+                                 null,
+                                 Components.interfaces.nsILoadInfo.SEC_REQUIRE_SAME_ORIGIN_DATA_INHERITS,
+                                 Components.interfaces.nsIContentPolicy.TYPE_OTHER);
+
+            NetUtil.asyncFetch(channel, (inputStream, status) => {
+                if (!Components.isSuccessCode(status)) {
+                    reject(status);
+                    return;
+                }
+
+                try {
+                    let data = NetUtil.readInputStreamToString(inputStream, inputStream.available());
+                    resolve(data);
+                } catch (ex) {
+                    reject(ex);
+                }
+            });
+        });
+    },
+
     includeJS: function (file) {
         let loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
         loader.loadSubScript(file, this);
