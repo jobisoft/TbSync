@@ -17,14 +17,14 @@ eas.sync.Calendar = {
         eas.sync.setItemBody(item, syncdata, data);
 
         //timezone
-        let utcOffset = eas.defaultUtcOffset; //always standard time (see top of eas.js)
+        let utcOffset = tbSync.defaultStandardUtcOffset;
         if (data.TimeZone) {
             //load timezone struct into EAS TimeZone object
             easTZ.easTimeZone64 = data.TimeZone;
             utcOffset = easTZ.utcOffset; //also always standard time
             tbSync.dump("Recieve TZ", item.title + easTZ.toString());
             if (data.TimeZone == "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==") {
-                utcOffset = eas.defaultUtcOffset;
+                utcOffset = tbSync.defaultStandardUtcOffset;
                 tbSync.dump("Recieve TZ", "No timezone data received, using local default timezone.");
             }
         }
@@ -32,7 +32,7 @@ eas.sync.Calendar = {
         let tzService = cal.getTimezoneService();
         if (data.StartTime) {
             let utc = cal.createDateTime(data.StartTime); //format "19800101T000000Z" - UTC
-            item.startDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[utcOffset]));
+            item.startDate = utc.getInTimezone(tzService.getTimezone(tbSync.guessTimezone(utcOffset, easTZ.standardName)));
             if (data.AllDayEvent && data.AllDayEvent == "1") {
                 item.startDate.timezone = cal.floating();
                 item.startDate.isDate = true;
@@ -41,7 +41,7 @@ eas.sync.Calendar = {
 
         if (data.EndTime) {
             let utc = cal.createDateTime(data.EndTime);
-            item.endDate = utc.getInTimezone(tzService.getTimezone(eas.offsets[utcOffset]));
+            item.endDate = utc.getInTimezone(tzService.getTimezone(tbSync.guessTimezone(utcOffset, easTZ.standardName)));
             if (data.AllDayEvent && data.AllDayEvent == "1") {
                 item.endDate.timezone = cal.floating();
                 item.endDate.isDate = true;

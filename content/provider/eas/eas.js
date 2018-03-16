@@ -16,30 +16,7 @@ var eas = {
     }),
     
     init: Task.async (function* ()  {
-        if ("calICalendar" in Components.interfaces) {
-            //get a list of all zones
-            //alternativly use cal.fromRFC3339 - but this is only doing this
-            //https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calProviderUtils.jsm
-            eas.offsets = {};
-            let tzService = cal.getTimezoneService();
-
-            //cache timezones based on utcOffset
-            let enumerator = tzService.timezoneIds;
-            while (enumerator.hasMore()) {
-                let id = enumerator.getNext();
-                let tzInfo = tbSync.getTimezoneInfo(tzService.getTimezone(id));
-                eas.offsets[tzInfo.std.offset] = id; //standard offset in minutes
-                //tbSync.dump("TZ ("+id + " :: " + tzInfo.std.id + " :: " + tzInfo.dst.id +  " :: " + tzInfo.std.displayname + " :: " + tzInfo.dst.displayname + " :: " + tzInfo.std.offset + " :: " + tzInfo.dst.offset + ")", tzService.getTimezone(id));
-            }
-
-            //multiple TZ share the same offset, make sure the default timezone is present
-            //dateTime.timezone=cal.calendarDefaultTimezone();
-            let tzInfo = tbSync.getTimezoneInfo(cal.calendarDefaultTimezone());
-            eas.defaultUtcOffset = tzInfo.std.offset;
-            eas.offsets[eas.defaultUtcOffset] = cal.calendarDefaultTimezone().tzid;
-            //tbSync.dump("Default TZ ("+cal.calendarDefaultTimezone().tzid + " :: " + tzInfo.std.id + " :: " + tzInfo.dst.id +  " :: " + tzInfo.std.displayname + " :: " + tzInfo.dst.displayname + " :: " + tzInfo.std.offset + " :: " + tzInfo.dst.offset + ")", cal.calendarDefaultTimezone());
-
-            
+        if ("calICalendar" in Components.interfaces) {                     
             //If an EAS calendar is currently NOT associated with an email identity, try to associate, 
             //but do not change any explicitly set association
             // - A) find email identity and accociate (which sets organizer to that user identity)

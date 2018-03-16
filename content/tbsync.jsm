@@ -86,12 +86,17 @@ var tbSync = {
         //init stuff for address book
         tbSync.addressbookListener.add();
         tbSync.scanPrefIdsOfAddressBooks();
-                
+        
         //init stuff for calendar (only if lightning is installed)
+        tbSync.cachedTimezoneData = null;
+        tbSync.defaultStandardUtcOffset = 0;            
         if ("calICalendar" in Components.interfaces) {
             //adding a global observer, or one for each "known" book?
             cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
-            cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver)
+            cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
+            
+            let tzInfo = tbSync.getTimezoneInfo(cal.calendarDefaultTimezone());
+            tbSync.defaultStandardUtcOffset = tzInfo.std.offset;            
         }
 
         //init stuff for sync process
@@ -287,6 +292,7 @@ var tbSync = {
         loader.loadSubScript(file, this);
     },
 
+    //probably obsolete
     encode_utf8: function (string) {
         let utf8string = string;
 
@@ -345,33 +351,7 @@ var tbSync = {
             tbSync.appendToFile("debug.log", "** " + now.toString() + " **\n[" + what + "] : " + aMessage + "\n\n");
         }
     },
-    
-    diffDump: function (obj1, obj2, suffix = "", depth = 0) {
-        let proptlist = [];
-        for(let propt in obj1) {
-            if (suffix.indexOf(propt) != -1) continue;
-            if (propt == "timezone") continue;
-            if (propt == "parentItem") continue;
-            if (propt.indexOf("startOf") == 0) continue;
-            if (propt.indexOf("endOf") == 0) continue;
-            
-            try {
-                if (typeof obj1[propt] == "function") continue;
-            } catch (e) {
-                continue;
-            }
-            
-            if (obj2) {
-                if (typeof obj1[propt] == "object") {
-                    if (depth<6) tbSync.diffDump(obj1[propt], obj2[propt], suffix + propt + ".", depth + 1);
-                    else tbSync.dump("DiffDump object nested to deep", suffix + propt);
-                } else {
-                    if (obj1[propt] != obj2[propt]) tbSync.dump("MODIFIED: " + suffix + propt, obj1[propt] + " vs " + obj2[propt]);
-                }
-            }
-        }
-    },
-    
+        
     quickdump: function (what, aMessage) {
         tbSync.mozConsoleService.logStringMessage("[TbSync] " + what + " : " + aMessage);
     },
@@ -770,6 +750,120 @@ var tbSync = {
 
 
 
+    //guess the IANA timezone (used by TB) based on offset and name)
+    guessTimezone: function(stdOffset, stdName = "") {
+        /*
+        
+            https://github.com/mozilla-comm/ical.js/wiki/Parsing-basic-iCalendar
+            https://stash.z-hub.io/projects/ZP/repos/z-push/browse/src/backend/kopano/mapi/class.baserecurrence.php#1473,1476,1565,1574
+            https://en.wikipedia.org/wiki/Daylight_saving_time_by_country
+        
+            TbSync is sending timezone as detailed as possible using IANA and international abbreviations:
+
+                    [Send TZ] : Test Lord Howe
+                    utcOffset: -630
+                    standardName: Australia/Lord_Howe, LHST
+                    standardDate: 0-4-1, 0, 2:0:0.0
+                    standardBias: 0
+                    daylightName: Australia/Lord_Howe, LHDT
+                    daylightDate: 0-10-1, 0, 2:0:0.0
+                    daylightBias: -30
+
+                    ** Fri Mar 16 2018 11:11:30 GMT+0100 **
+                    [Send TZ] : Test Europe/Berlin
+                    utcOffset: -60
+                    standardName: Europe/Berlin, CET
+                    standardDate: 0-10-5, 0, 3:0:0.0
+                    standardBias: 0
+                    daylightName: Europe/Berlin, CEST
+                    daylightDate: 0-3-5, 0, 2:0:0.0
+                    daylightBias: -60
+
+                This is, how it comes back from Outlook:
+                
+                    [Recieve TZ] : Test Lord Howe
+                    utcOffset: -630
+                    standardName: Lord Howe Standard Time
+                    standardDate: 0-4-1, 0, 2:0:0.0
+                    standardBias: 0
+                    daylightName: (UTC+10:30) Lord Howe Island
+                    daylightDate: 0-10-1, 0, 2:0:0.0
+                    daylightBias: -30
+
+                    ** Fri Mar 16 2018 11:14:00 GMT+0100 **
+                    [Recieve TZ] : Test Europe/Berlin
+                    utcOffset: -60
+                    standardDate: 0-10-5, 0, 3:0:0.0
+                    standardBias: 0
+                    daylightName: Customized Time Zone
+                    daylightDate: 0-3-5, 0, 2:0:0.0
+                    daylightBias: -60
+                
+                This is, how it comes back from SOGo:
+
+                    [Recieve TZ] : Test Europe/Berling
+                    utcOffset: -60
+                    standardName: 
+                    standardDate: 0-10-5, 0, 3:0:0.0
+                    standardBias: 0
+                    daylightName: 
+                    daylightDate: 0-3-5, 0, 2:0:0.0
+                    daylightBias: -60
+
+
+                    ** Fri Mar 16 2018 11:15:32 GMT+0100 **
+                    [Recieve TZ] : Test Lorde Howe
+                    utcOffset: -60
+                    standardName: 
+                    standardDate: 0-10-5, 0, 3:0:0.0
+                    standardBias: 0
+                    daylightName: 
+                    daylightDate: 0-3-5, 0, 2:0:0.0
+                    daylightBias: -60
+                    
+            */
+
+            //get a list of all zones
+            //alternativly use cal.fromRFC3339 - but this is only doing this:
+            //https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calProviderUtils.jsm
+
+            //Mapping between windows and iana:
+            //https://github.com/mj1856/TimeZoneConverter/blob/master/src/TimeZoneConverter/Data/Mapping.csv.gz
+
+            //cache timezone data on first attempt
+            if (tbSync.cachedTimezoneData === null) {
+                tbSync.cachedTimezoneData = {};
+                tbSync.cachedTimezoneData.iana = {};
+                tbSync.cachedTimezoneData.windows = {};
+                tbSync.cachedTimezoneData.windows = {};
+                tbSync.cachedTimezoneData.offsets = {};
+                    
+                let tzService = cal.getTimezoneService();
+
+                //cache timezones based on utcOffset
+                let enumerator = tzService.timezoneIds;
+                while (enumerator.hasMore()) {
+                    let id = enumerator.getNext();
+                    let tzInfo = tbSync.getTimezoneInfo(tzService.getTimezone(id));
+
+                    tbSync.cachedTimezoneData.offsets[tzInfo.std.offset] = id; //standard offset in minutes
+                    tbSync.cachedTimezoneData.iana[id] = tzInfo.std.offset; //standard offset in minutes
+                    
+                    tbSync.dump("TZ ("+ tzInfo.std.id + " :: " + tzInfo.dst.id +  " :: " + tzInfo.std.displayname + " :: " + tzInfo.dst.displayname + " :: " + tzInfo.std.offset + " :: " + tzInfo.dst.offset + ")", tzService.getTimezone(id));
+                }
+
+                //multiple TZ share the same offset, make sure the default timezone is present
+                tbSync.cachedTimezoneData.offsets[tbSync.defaultStandardUtcOffset] = cal.calendarDefaultTimezone().tzid;
+            }
+
+            /*
+                    1. Try to parse our own format, split name and test each chunk for IANA -> if found, does the stdOffset match? -> if so, done
+                    //2. Try if one of the chunks matches international code (check std and dst)-> if found, does the stdOffset match? -> if so, done
+                    3. Try to find name in Windows names and map to IANA (if multiple choices try default timezone) -> if found, does the stdOffset match? -> if so, done
+                    4. Fallback: Use just the offsets  */
+
+            return tbSync.cachedTimezoneData.offsets[stdOffset];
+    },
 
     
     //extract standard and daylight timezone data
@@ -786,7 +880,7 @@ var tbSync = {
     getTimezoneInfoObject: function (timezone, standardOrDaylight) {       
         
         //we could parse the icalstring by ourself, but I wanted to use ICAL.parse
-        let info = ICAL.parse("BEGIN:VCALENDAR\r\n" + timezone + "\r\nEND:VCALENDAR");
+        let info = ICAL.parse("BEGIN:VCALENDAR\r\n" + timezone.toString() + "\r\nEND:VCALENDAR");
         let comp = new ICAL.Component(info);
         let vtimezone =comp.getFirstSubcomponent("vtimezone");
         let id = vtimezone.getFirstPropertyValue("tzid");
@@ -803,11 +897,11 @@ var tbSync = {
             let m = o - (h*100) //-330 - -300 = -30
             obj.offset = -1*((h*60) + m);
 
-            //get alternative name (CEST, CET, CAT ... )
-            obj.name = zone.getFirstPropertyValue("tzname");
+            //get international abbreviation (CEST, CET, CAT ... )
+            obj.abbreviation = zone.getFirstPropertyValue("tzname");
             
             //get displayname
-            obj.displayname = /*"("+utcOffset+") " +*/ obj.id + " (" + obj.name + ")";
+            obj.displayname = /*"("+utcOffset+") " +*/ obj.id + ", " + obj.abbreviation;
                 
             //get DST switch date
             let rrule = zone.getFirstPropertyValue("rrule");
@@ -901,24 +995,8 @@ var tbSync = {
                     if (newFolders.length > 0) {
                         //check if t was added by the server
                         let itemStatus = tbSync.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
+
 /*
-                        if (aOldItem !== null) {
-
-                            tbSync.diffDump(aNewItem, aOldItem);
-                            
-                            let propEnum = aNewItem.propertyEnumerator;
-                            while (propEnum.hasMoreElements()) {
-                                let prop = propEnum.getNext().QueryInterface(Components.interfaces.nsIProperty);
-
-                                if (aOldItem.hasProperty(prop.name) && aNewItem.getProperty(prop.name).toString() != aOldItem.getProperty(prop.name).toString()) {
-                                  tbSync.dump("MODIFIED: " + prop.name, aNewItem.getProperty(prop.name).toString() + " vs " + aOldItem.getProperty(prop.name).toString());
-                                } else if (!aOldItem.hasProperty(prop.name)) {
-                                  tbSync.dump("MODIFIED: " + prop.name, aNewItem.getProperty(prop.name).toString() + " vs <unset>");
-                                }
-
-                            }
-                        }
-                        
                         if (cal.isInvitation(aNewItem)) { //TODO
                             //did attendee.participationStatus change?
                             //with eas 14.0 it is not possible to directly ack a meeting request (via EAS), the user has to send an email back to the organizer, 
