@@ -793,6 +793,7 @@ var tbSync = {
                     ** Fri Mar 16 2018 11:14:00 GMT+0100 **
                     [Recieve TZ] : Test Europe/Berlin
                     utcOffset: -60
+                    standardName: Europe/Berlin, CET
                     standardDate: 0-10-5, 0, 3:0:0.0
                     standardBias: 0
                     daylightName: Customized Time Zone
