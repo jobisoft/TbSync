@@ -749,15 +749,151 @@ var tbSync = {
     },
 
 
+    //Extracted from TimeZoneConverter:
+    //https://github.com/mj1856/TimeZoneConverter/blob/master/src/TimeZoneConverter/Data/Mapping.csv.gz
+    windowsTimezoneMap : {
+        "AUS Central Standard Time" : "Australia/Darwin",
+        "AUS Eastern Standard Time" : "Australia/Sydney",
+        "Afghanistan Standard Time" : "Asia/Kabul",
+        "Alaskan Standard Time" : "America/Anchorage",
+        "Aleutian Standard Time" : "America/Adak",
+        "Altai Standard Time" : "Asia/Barnaul",
+        "Arab Standard Time" : "Asia/Riyadh",
+        "Arabian Standard Time" : "Asia/Dubai",
+        "Arabic Standard Time" : "Asia/Baghdad",
+        "Argentina Standard Time" : "America/Argentina/Buenos_Aires",
+        "Astrakhan Standard Time" : "Europe/Astrakhan",
+        "Atlantic Standard Time" : "America/Halifax",
+        "Aus Central W. Standard Time" : "Australia/Eucla",
+        "Azerbaijan Standard Time" : "Asia/Baku",
+        "Azores Standard Time" : "Atlantic/Azores",
+        "Bahia Standard Time" : "America/Bahia",
+        "Bangladesh Standard Time" : "Asia/Dhaka",
+        "Belarus Standard Time" : "Europe/Minsk",
+        "Bougainville Standard Time" : "Pacific/Bougainville",
+        "Canada Central Standard Time" : "America/Regina",
+        "Cape Verde Standard Time" : "Atlantic/Cape_Verde",
+        "Caucasus Standard Time" : "Asia/Yerevan",
+        "Cen. Australia Standard Time" : "Australia/Adelaide",
+        "Central America Standard Time" : "America/Guatemala",
+        "Central Asia Standard Time" : "Asia/Almaty",
+        "Central Brazilian Standard Time" : "America/Cuiaba",
+        "Central Europe Standard Time" : "Europe/Budapest",
+        "Central European Standard Time" : "Europe/Warsaw",
+        "Central Pacific Standard Time" : "Pacific/Guadalcanal",
+        "Central Standard Time (Mexico)" : "America/Mexico_City",
+        "Central Standard Time" : "America/Chicago",
+        "Chatham Islands Standard Time" : "Pacific/Chatham",
+        "China Standard Time" : "Asia/Shanghai",
+        "Cuba Standard Time" : "America/Havana",
+        "Dateline Standard Time" : "Etc/GMT+12",
+        "E. Africa Standard Time" : "Africa/Nairobi",
+        "E. Australia Standard Time" : "Australia/Brisbane",
+        "E. Europe Standard Time" : "Europe/Chisinau",
+        "E. South America Standard Time" : "America/Sao_Paulo",
+        "Easter Island Standard Time" : "Pacific/Easter",
+        "Eastern Standard Time (Mexico)" : "America/Cancun",
+        "Eastern Standard Time" : "America/New_York",
+        "Egypt Standard Time" : "Africa/Cairo",
+        "Ekaterinburg Standard Time" : "Asia/Yekaterinburg",
+        "FLE Standard Time" : "Europe/Kiev",
+        "Fiji Standard Time" : "Pacific/Fiji",
+        "GMT Standard Time" : "Europe/London",
+        "GTB Standard Time" : "Europe/Bucharest",
+        "Georgian Standard Time" : "Asia/Tbilisi",
+        "Greenland Standard Time" : "America/Godthab",
+        "Greenwich Standard Time" : "Atlantic/Reykjavik",
+        "Haiti Standard Time" : "America/Port-au-Prince",
+        "Hawaiian Standard Time" : "Pacific/Honolulu",
+        "India Standard Time" : "Asia/Kolkata",
+        "Iran Standard Time" : "Asia/Tehran",
+        "Israel Standard Time" : "Asia/Jerusalem",
+        "Jordan Standard Time" : "Asia/Amman",
+        "Kaliningrad Standard Time" : "Europe/Kaliningrad",
+        "Kamchatka Standard Time" : "Asia/Kamchatka",
+        "Korea Standard Time" : "Asia/Seoul",
+        "Libya Standard Time" : "Africa/Tripoli",
+        "Line Islands Standard Time" : "Pacific/Kiritimati",
+        "Lord Howe Standard Time" : "Australia/Lord_Howe",
+        "Magadan Standard Time" : "Asia/Magadan",
+        "Magallanes Standard Time" : "America/Punta_Arenas",
+        "Marquesas Standard Time" : "Pacific/Marquesas",
+        "Mauritius Standard Time" : "Indian/Mauritius",
+        "Mid-Atlantic Standard Time" : "Etc/GMT+2",
+        "Middle East Standard Time" : "Asia/Beirut",
+        "Montevideo Standard Time" : "America/Montevideo",
+        "Morocco Standard Time" : "Africa/Casablanca",
+        "Mountain Standard Time (Mexico)" : "America/Chihuahua",
+        "Mountain Standard Time" : "America/Denver",
+        "Myanmar Standard Time" : "Asia/Yangon",
+        "N. Central Asia Standard Time" : "Asia/Novosibirsk",
+        "Namibia Standard Time" : "Africa/Windhoek",
+        "Nepal Standard Time" : "Asia/Kathmandu",
+        "New Zealand Standard Time" : "Pacific/Auckland",
+        "Newfoundland Standard Time" : "America/St_Johns",
+        "Norfolk Standard Time" : "Pacific/Norfolk",
+        "North Asia East Standard Time" : "Asia/Irkutsk",
+        "North Asia Standard Time" : "Asia/Krasnoyarsk",
+        "North Korea Standard Time" : "Asia/Pyongyang",
+        "Omsk Standard Time" : "Asia/Omsk",
+        "Pacific SA Standard Time" : "America/Santiago",
+        "Pacific Standard Time (Mexico)" : "America/Tijuana",
+        "Pacific Standard Time" : "America/Los_Angeles",
+        "Pakistan Standard Time" : "Asia/Karachi",
+        "Paraguay Standard Time" : "America/Asuncion",
+        "Romance Standard Time" : "Europe/Paris",
+        "Russia Time Zone 10" : "Asia/Srednekolymsk",
+        "Russia Time Zone 11" : "Asia/Kamchatka",
+        "Russia Time Zone 3" : "Europe/Samara",
+        "Russian Standard Time" : "Europe/Moscow",
+        "SA Eastern Standard Time" : "America/Cayenne",
+        "SA Pacific Standard Time" : "America/Bogota",
+        "SA Western Standard Time" : "America/La_Paz",
+        "SE Asia Standard Time" : "Asia/Bangkok",
+        "Saint Pierre Standard Time" : "America/Miquelon",
+        "Sakhalin Standard Time" : "Asia/Sakhalin",
+        "Samoa Standard Time" : "Pacific/Apia",
+        "Saratov Standard Time" : "Europe/Saratov",
+        "Singapore Standard Time" : "Asia/Singapore",
+        "South Africa Standard Time" : "Africa/Johannesburg",
+        "Sri Lanka Standard Time" : "Asia/Colombo",
+        "Sudan Standard Time" : "Africa/Khartoum",
+        "Syria Standard Time" : "Asia/Damascus",
+        "Taipei Standard Time" : "Asia/Taipei",
+        "Tasmania Standard Time" : "Australia/Hobart",
+        "Tocantins Standard Time" : "America/Araguaina",
+        "Tokyo Standard Time" : "Asia/Tokyo",
+        "Tomsk Standard Time" : "Asia/Tomsk",
+        "Tonga Standard Time" : "Pacific/Tongatapu",
+        "Transbaikal Standard Time" : "Asia/Chita",
+        "Turkey Standard Time" : "Europe/Istanbul",
+        "Turks And Caicos Standard Time" : "America/Grand_Turk",
+        "US Eastern Standard Time" : "America/Indiana/Indianapolis",
+        "US Mountain Standard Time" : "America/Phoenix",
+        "UTC+12" : "Etc/GMT-12",
+        "UTC+13" : "Etc/GMT-13",
+        "UTC" : "Etc/UTC",
+        "UTC-02" : "Etc/GMT+2",
+        "UTC-08" : "Etc/GMT+8",
+        "UTC-09" : "Etc/GMT+9",
+        "UTC-11" : "Etc/GMT+11",
+        "Ulaanbaatar Standard Time" : "Asia/Ulaanbaatar",
+        "Venezuela Standard Time" : "America/Caracas",
+        "Vladivostok Standard Time" : "Asia/Vladivostok",
+        "W. Australia Standard Time" : "Australia/Perth",
+        "W. Central Africa Standard Time" : "Africa/Lagos",
+        "W. Europe Standard Time" : "Europe/Berlin",
+        "W. Mongolia Standard Time" : "Asia/Hovd",
+        "West Asia Standard Time" : "Asia/Tashkent",
+        "West Bank Standard Time" : "Asia/Hebron",
+        "West Pacific Standard Time" : "Pacific/Port_Moresby",
+        "Yakutsk Standard Time" : "Asia/Yakutsk"
+    },
 
-    //guess the IANA timezone (used by TB) based on offset and name)
+    //guess the IANA timezone (used by TB) based on offset and name
     guessTimezone: function(stdOffset, stdName = "") {
-        /*
-        
-            https://github.com/mozilla-comm/ical.js/wiki/Parsing-basic-iCalendar
-            https://stash.z-hub.io/projects/ZP/repos/z-push/browse/src/backend/kopano/mapi/class.baserecurrence.php#1473,1476,1565,1574
-            https://en.wikipedia.org/wiki/Daylight_saving_time_by_country
-        
+
+        /*                
             TbSync is sending timezone as detailed as possible using IANA and international abbreviations:
 
                     [Send TZ] : Test Lord Howe
@@ -781,55 +917,17 @@ var tbSync = {
 
                 This is, how it comes back from Outlook:
                 
-                    [Recieve TZ] : Test Lord Howe
-                    utcOffset: -630
                     standardName: Lord Howe Standard Time
-                    standardDate: 0-4-1, 0, 2:0:0.0
-                    standardBias: 0
                     daylightName: (UTC+10:30) Lord Howe Island
-                    daylightDate: 0-10-1, 0, 2:0:0.0
-                    daylightBias: -30
 
-                    ** Fri Mar 16 2018 11:14:00 GMT+0100 **
-                    [Recieve TZ] : Test Europe/Berlin
-                    utcOffset: -60
                     standardName: Europe/Berlin, CET
-                    standardDate: 0-10-5, 0, 3:0:0.0
-                    standardBias: 0
                     daylightName: Customized Time Zone
-                    daylightDate: 0-3-5, 0, 2:0:0.0
-                    daylightBias: -60
                 
-                This is, how it comes back from SOGo:
-
-                    [Recieve TZ] : Test Europe/Berling
-                    utcOffset: -60
-                    standardName: 
-                    standardDate: 0-10-5, 0, 3:0:0.0
-                    standardBias: 0
-                    daylightName: 
-                    daylightDate: 0-3-5, 0, 2:0:0.0
-                    daylightBias: -60
-
-
-                    ** Fri Mar 16 2018 11:15:32 GMT+0100 **
-                    [Recieve TZ] : Test Lorde Howe
-                    utcOffset: -60
-                    standardName: 
-                    standardDate: 0-10-5, 0, 3:0:0.0
-                    standardBias: 0
-                    daylightName: 
-                    daylightDate: 0-3-5, 0, 2:0:0.0
-                    daylightBias: -60
+                SOGo & Horde are not sending back anything in standardName and daylightName */
                     
-            */
-
             //get a list of all zones
             //alternativly use cal.fromRFC3339 - but this is only doing this:
             //https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calProviderUtils.jsm
-
-            //Mapping between windows and iana:
-            //https://github.com/mj1856/TimeZoneConverter/blob/master/src/TimeZoneConverter/Data/Mapping.csv.gz
 
             //cache timezone data on first attempt
             if (tbSync.cachedTimezoneData === null) {
@@ -850,7 +948,7 @@ var tbSync = {
                     tbSync.cachedTimezoneData.offsets[tzInfo.std.offset] = id; //standard offset in minutes
                     tbSync.cachedTimezoneData.iana[id] = tzInfo.std.offset; //standard offset in minutes
                     
-                    tbSync.dump("TZ ("+ tzInfo.std.id + " :: " + tzInfo.dst.id +  " :: " + tzInfo.std.displayname + " :: " + tzInfo.dst.displayname + " :: " + tzInfo.std.offset + " :: " + tzInfo.dst.offset + ")", tzService.getTimezone(id));
+                    //tbSync.dump("TZ ("+ tzInfo.std.id + " :: " + tzInfo.dst.id +  " :: " + tzInfo.std.displayname + " :: " + tzInfo.dst.displayname + " :: " + tzInfo.std.offset + " :: " + tzInfo.dst.offset + ")", tzService.getTimezone(id));
                 }
 
                 //multiple TZ share the same offset, make sure the default timezone is present
@@ -859,7 +957,7 @@ var tbSync = {
 
             /*
                     1. Try to parse our own format, split name and test each chunk for IANA -> if found, does the stdOffset match? -> if so, done
-                    2. Try if one of the chunks matches international code (check std and dst)-> if found, does the stdOffset match? -> if so, done
+                    2. Try if one of the chunks matches international code -> if found, does the stdOffset match? -> if so, done
                     3. Try to find name in Windows names and map to IANA (if multiple choices try default timezone) -> if found, does the stdOffset match? -> if so, done
                     4. Fallback: Use just the offsets  */
 
@@ -870,6 +968,14 @@ var tbSync = {
                     //tbSync.dump("MATCH IANA",parts[i]);
                     return parts[i];
                 }
+                //check for international abbreviation (CEST, CET, ...)
+                //TODO
+            }
+            
+            //check for windows timezone name
+            if (tbSync.windowsTimezoneMap[stdName] && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]] == stdOffset ) {
+                //tbSync.dump("MATCH WINDOWS ("+stdName+")", tbSync.windowsTimezoneMap[stdName]);
+                return tbSync.windowsTimezoneMap[stdName];
             }
             
             //fallback to zone based on offset
