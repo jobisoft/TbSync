@@ -859,10 +859,20 @@ var tbSync = {
 
             /*
                     1. Try to parse our own format, split name and test each chunk for IANA -> if found, does the stdOffset match? -> if so, done
-                    //2. Try if one of the chunks matches international code (check std and dst)-> if found, does the stdOffset match? -> if so, done
+                    2. Try if one of the chunks matches international code (check std and dst)-> if found, does the stdOffset match? -> if so, done
                     3. Try to find name in Windows names and map to IANA (if multiple choices try default timezone) -> if found, does the stdOffset match? -> if so, done
                     4. Fallback: Use just the offsets  */
 
+            let parts = stdName.replace(/[;,()\[\]]/g," ").split(" ");
+            for (let i = 0; i < parts.length; i++) {
+                //check for IANA
+                if (tbSync.cachedTimezoneData.iana[parts[i]] && tbSync.cachedTimezoneData.iana[parts[i]] == stdOffset) {
+                    //tbSync.dump("MATCH IANA",parts[i]);
+                    return parts[i];
+                }
+            }
+            
+            //fallback to zone based on offset
             return tbSync.cachedTimezoneData.offsets[stdOffset];
     },
 
