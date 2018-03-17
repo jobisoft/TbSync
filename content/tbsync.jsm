@@ -105,7 +105,14 @@ var tbSync = {
             let csvData = yield tbSync.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
             for (let i = 0; i<csvData.length; i++) {
                 let lData = csvData[i].split(",");
-                if (lData[1] == "001") tbSync.windowsTimezoneMap[lData[0].toString().trim()] = lData[2].toString().trim();
+                if (lData.length<3) continue;
+                
+                let windowsZoneName = lData[0].toString().trim();
+                let zoneType = lData[1].toString().trim();
+                let ianaZoneName = lData[2].toString().trim();
+                
+                if (zoneType == "001") tbSync.windowsTimezoneMap[windowsZoneName] = ianaZoneName;
+                if (ianaZoneName == tbSync.defaultTimezoneInfo.id) tbSync.defaultTimezoneInfo.windowsZoneName = windowsZoneName;
             }
             
         }
@@ -790,19 +797,19 @@ var tbSync = {
 
     //guess the IANA timezone (used by TB) based on the current offset (standard or daylight)
     guessTimezoneByCurrentOffset: function(curOffset, utcDateTime) {
-        //If we only now the current offset and the current date, we need to actually try each TZ
+        //if we only now the current offset and the current date, we need to actually try each TZ.
         let tzService = cal.getTimezoneService();
 
         //first try default tz
         let test = utcDateTime.getInTimezone(tzService.getTimezone(tbSync.defaultTimezoneInfo.id));
-        tbSync.dump("TEST: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
+        tbSync.dump("Matching TZ via current offset: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
         if (test.timezoneOffset/-60 == curOffset) return test.timezone.tzid;
         
         let enumerator = tzService.timezoneIds;
         while (enumerator.hasMore()) {
             let id = enumerator.getNext();
             let test = utcDateTime.getInTimezone(tzService.getTimezone(id));
-            tbSync.dump("TEST: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
+            tbSync.dump("Matching TZ via current offset: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
             if (test.timezoneOffset/-60 == curOffset) return test.timezone.tzid;
         }
         
@@ -865,7 +872,7 @@ var tbSync = {
 
                     tbSync.cachedTimezoneData.abbreviations[tzInfo.std.abbreviation] = id;
                     tbSync.cachedTimezoneData.offsets[tzInfo.std.offset] = id;
-                    tbSync.cachedTimezoneData.iana[id] = tzInfo.std.offset;
+                    tbSync.cachedTimezoneData.iana[id] = tzInfo.std;
                     
                     //tbSync.dump("TZ ("+ tzInfo.std.id + " :: " + tzInfo.dst.id +  " :: " + tzInfo.std.displayname + " :: " + tzInfo.dst.displayname + " :: " + tzInfo.std.offset + " :: " + tzInfo.dst.offset + ")", tzService.getTimezone(id));
                 }
@@ -876,28 +883,36 @@ var tbSync = {
             }
 
             /*
-                    1. Try to parse our own format, split name and test each chunk for IANA -> if found, does the stdOffset match? -> if so, done
-                    2. Try if one of the chunks matches international code -> if found, does the stdOffset match? -> if so, done
-                    3. Try to find name in Windows names and map to IANA (if multiple choices try default timezone) -> if found, does the stdOffset match? -> if so, done
-                    4. Fallback: Use just the offsets  */
+            1. Try to parse our own format, split name and test each chunk for IANA -> if found, does the stdOffset match? -> if so, done
+            2. Try if one of the chunks matches international code -> if found, does the stdOffset match? -> if so, done
+            3. Try to find name in Windows names and map to IANA -> if found, does the stdOffset match? -> if so, done
+            4. Fallback: Use just the offsets  */
 
             let parts = stdName.replace(/[;,()\[\]]/g," ").split(" ");
             for (let i = 0; i < parts.length; i++) {
                 //check for IANA
-                if (tbSync.cachedTimezoneData.iana[parts[i]] && tbSync.cachedTimezoneData.iana[parts[i]] == stdOffset) {
+                if (tbSync.cachedTimezoneData.iana[parts[i]] && tbSync.cachedTimezoneData.iana[parts[i]].offset == stdOffset) {
                     tbSync.dump("Timezone matched via IANA", parts[i]);
                     return parts[i];
                 }
 
                 //check for international abbreviation for standard period (CET, CAT, ...)
-                if (tbSync.cachedTimezoneData.abbreviations[parts[i]] && tbSync.cachedTimezoneData.iana[tbSync.cachedTimezoneData.abbreviations[parts[i]]] == stdOffset) {
+                if (tbSync.cachedTimezoneData.abbreviations[parts[i]] && tbSync.cachedTimezoneData.iana[tbSync.cachedTimezoneData.abbreviations[parts[i]]].offset == stdOffset) {
                     tbSync.dump("Timezone matched via international abbreviation (" + parts[i] +")", tbSync.cachedTimezoneData.abbreviations[parts[i]]);
                     return tbSync.cachedTimezoneData.abbreviations[parts[i]];
                 }
             }
             
             //check for windows timezone name
-            if (tbSync.windowsTimezoneMap[stdName] && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]] == stdOffset ) {
+            if (tbSync.windowsTimezoneMap[stdName] && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].offset == stdOffset ) {
+                //the windows timezone maps multiple IANA zones to one (Berlin*, Rome, Bruessel)
+                //check the windowsZoneName of the default TZ and of the winning, if they match, use default TZ
+                //so Rome could win, even Berlin is the default IANA zone
+                if (tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].offset == tbSync.defaultTimezoneInfo.offset && stdName == tbSync.defaultTimezoneInfo.windowsZoneName) {
+                    tbSync.dump("Timezone matched via windows timezone name ("+stdName+") with default TZ overtake", tbSync.windowsTimezoneMap[stdName] + " -> " + tbSync.defaultTimezoneInfo.id);
+                    return tbSync.defaultTimezoneInfo.id;
+                }
+                
                 tbSync.dump("Timezone matched via windows timezone name ("+stdName+")", tbSync.windowsTimezoneMap[stdName]);
                 return tbSync.windowsTimezoneMap[stdName];
             }
