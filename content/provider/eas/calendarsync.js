@@ -17,22 +17,24 @@ eas.sync.Calendar = {
         eas.sync.setItemBody(item, syncdata, data);
 
         //timezone
-        let utcOffset = tbSync.defaultTimezoneInfo.offset;
+        let stdOffset = tbSync.defaultTimezoneInfo.std.offset;
+        let dstOffset = tbSync.defaultTimezoneInfo.dst.offset;
+
         if (data.TimeZone) {
-            //load timezone struct into EAS TimeZone object
-            easTZ.easTimeZone64 = data.TimeZone;
-            utcOffset = easTZ.utcOffset; //also always standard time
-            tbSync.dump("Recieve TZ", item.title + easTZ.toString());
             if (data.TimeZone == "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==") {
-                utcOffset = tbSync.defaultTimezoneInfo.offset;
                 tbSync.dump("Recieve TZ", "No timezone data received, using local default timezone.");
+            } else {
+                //load timezone struct into EAS TimeZone object
+                easTZ.easTimeZone64 = data.TimeZone;
+                tbSync.dump("Recieve TZ", item.title + easTZ.toString());
+                stdOffset = easTZ.utcOffset;
+                dstOffset = easTZ.daylightBias + easTZ.utcOffset;
             }
         }
 
-        let tzService = cal.getTimezoneService();
         if (data.StartTime) {
             let utc = cal.createDateTime(data.StartTime); //format "19800101T000000Z" - UTC
-            item.startDate = utc.getInTimezone(tzService.getTimezone(tbSync.guessTimezone(utcOffset, easTZ.standardName)));
+            item.startDate = utc.getInTimezone(tbSync.guessTimezoneByStdDstOffset(stdOffset, dstOffset, easTZ.standardName));
             if (data.AllDayEvent && data.AllDayEvent == "1") {
                 item.startDate.timezone = cal.floating();
                 item.startDate.isDate = true;
@@ -41,7 +43,7 @@ eas.sync.Calendar = {
 
         if (data.EndTime) {
             let utc = cal.createDateTime(data.EndTime);
-            item.endDate = utc.getInTimezone(tzService.getTimezone(tbSync.guessTimezone(utcOffset, easTZ.standardName)));
+            item.endDate = utc.getInTimezone(tbSync.guessTimezoneByStdDstOffset(stdOffset, dstOffset, easTZ.standardName));
             if (data.AllDayEvent && data.AllDayEvent == "1") {
                 item.endDate.timezone = cal.floating();
                 item.endDate.isDate = true;
@@ -197,7 +199,7 @@ eas.sync.Calendar = {
             let tzInfo = null;
             if (item.startDate && item.startDate.timezone.tzid != "floating") tzInfo = tbSync.getTimezoneInfo(item.startDate.timezone);
             else if (item.endDate && item.endDate.timezone.tzid != "floating") tzInfo = tbSync.getTimezoneInfo(item.endDate.timezone);
-            else tzInfo = tbSync.getTimezoneInfo(cal.calendarDefaultTimezone());
+            else tzInfo = tbSync.defaultTimezoneInfo;
             
             easTZ.utcOffset =   tzInfo.std.offset;
             easTZ.standardBias = 0;

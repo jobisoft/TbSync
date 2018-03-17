@@ -98,8 +98,7 @@ var tbSync = {
             cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
             
             //get timezone info of default timezone
-            let tzInfo = tbSync.getTimezoneInfo(cal.calendarDefaultTimezone());
-            tbSync.defaultTimezoneInfo = tzInfo.std;            
+            tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo(cal.calendarDefaultTimezone());
 
             //get windows timezone data from CSV
             let csvData = yield tbSync.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
@@ -112,7 +111,7 @@ var tbSync = {
                 let ianaZoneName = lData[2].toString().trim();
                 
                 if (zoneType == "001") tbSync.windowsTimezoneMap[windowsZoneName] = ianaZoneName;
-                if (ianaZoneName == tbSync.defaultTimezoneInfo.id) tbSync.defaultTimezoneInfo.windowsZoneName = windowsZoneName;
+                if (ianaZoneName == tbSync.defaultTimezoneInfo.std.id) tbSync.defaultTimezoneInfo.std.windowsZoneName = windowsZoneName;
             }
             
         }
@@ -754,7 +753,7 @@ var tbSync = {
     getIsoUtcString: function(origdate, requireExtendedISO = false, fakeUTC = false) {
         let date = origdate.clone();
         //floating timezone cannot be converted to UTC (cause they float) - we have to overwrite it with the local timezone
-        if (date.timezone.tzid == "floating") date.timezone = cal.calendarDefaultTimezone();
+        if (date.timezone.tzid == "floating") date.timezone = tbSync.defaultTimezoneInfo.timezone;
         //to get the UTC string we could use icalString (which does not work on allDayEvents, or calculate it from nativeTime)
         date.isDate = 0;
         let UTC = date.getInTimezone(cal.UTC());        
@@ -801,24 +800,24 @@ var tbSync = {
         let tzService = cal.getTimezoneService();
 
         //first try default tz
-        let test = utcDateTime.getInTimezone(tzService.getTimezone(tbSync.defaultTimezoneInfo.id));
+        let test = utcDateTime.getInTimezone(tbSync.defaultTimezoneInfo.timezone);
         tbSync.dump("Matching TZ via current offset: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
-        if (test.timezoneOffset/-60 == curOffset) return test.timezone.tzid;
+        if (test.timezoneOffset/-60 == curOffset) return test.timezone;
         
         let enumerator = tzService.timezoneIds;
         while (enumerator.hasMore()) {
             let id = enumerator.getNext();
             let test = utcDateTime.getInTimezone(tzService.getTimezone(id));
             tbSync.dump("Matching TZ via current offset: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
-            if (test.timezoneOffset/-60 == curOffset) return test.timezone.tzid;
+            if (test.timezoneOffset/-60 == curOffset) return test.timezone;
         }
         
-        //return default TZ anyhow
-        return tbSync.defaultTimezoneInfo.id;
+        //return default TZ as fallback
+        return tbSync.defaultTimezoneInfo.timezone;
     },
     
-    //guess the IANA timezone (used by TB) based on stdandard offset and standard name
-    guessTimezone: function(stdOffset, stdName = "") {
+    //guess the IANA timezone (used by TB) based on stdandard offset, daylight offset and standard name
+    guessTimezoneByStdDstOffset: function(stdOffset, dstOffset, stdName = "") {
         /*                
             TbSync is sending timezone as detailed as possible using IANA and international abbreviations:
 
@@ -860,7 +859,8 @@ var tbSync = {
                 tbSync.cachedTimezoneData = {};
                 tbSync.cachedTimezoneData.iana = {};
                 tbSync.cachedTimezoneData.abbreviations = {};
-                tbSync.cachedTimezoneData.offsets = {};
+                tbSync.cachedTimezoneData.stdOffset = {};
+                tbSync.cachedTimezoneData.bothOffsets = {};                    
                     
                 let tzService = cal.getTimezoneService();
 
@@ -868,77 +868,110 @@ var tbSync = {
                 let enumerator = tzService.timezoneIds;
                 while (enumerator.hasMore()) {
                     let id = enumerator.getNext();
-                    let tzInfo = tbSync.getTimezoneInfo(tzService.getTimezone(id));
+                    let timezone = tzService.getTimezone(id);
+                    let tzInfo = tbSync.getTimezoneInfo(timezone);
+
+                    tbSync.cachedTimezoneData.bothOffsets[tzInfo.std.offset+":"+tzInfo.dst.offset] = timezone;
+                    tbSync.cachedTimezoneData.stdOffset[tzInfo.std.offset] = timezone;
 
                     tbSync.cachedTimezoneData.abbreviations[tzInfo.std.abbreviation] = id;
-                    tbSync.cachedTimezoneData.offsets[tzInfo.std.offset] = id;
-                    tbSync.cachedTimezoneData.iana[id] = tzInfo.std;
+                    tbSync.cachedTimezoneData.iana[id] = tzInfo;
                     
                     //tbSync.dump("TZ ("+ tzInfo.std.id + " :: " + tzInfo.dst.id +  " :: " + tzInfo.std.displayname + " :: " + tzInfo.dst.displayname + " :: " + tzInfo.std.offset + " :: " + tzInfo.dst.offset + ")", tzService.getTimezone(id));
                 }
 
                 //multiple TZ share the same offset and abbreviation, make sure the default timezone is present
-                tbSync.cachedTimezoneData.abbreviations[tbSync.defaultTimezoneInfo.abbreviation] = tbSync.defaultTimezoneInfo.id;
-                tbSync.cachedTimezoneData.offsets[tbSync.defaultTimezoneInfo.offset] = tbSync.defaultTimezoneInfo.id;
+                tbSync.cachedTimezoneData.abbreviations[tbSync.defaultTimezoneInfo.std.abbreviation] = tbSync.defaultTimezoneInfo.std.id;
+                tbSync.cachedTimezoneData.stdOffset[tbSync.defaultTimezoneInfo.std.offset] = tbSync.defaultTimezoneInfo.timezone;
+                
+                //also make sure, that UTC timezone is there
+                tbSync.cachedTimezoneData.bothOffsets["0:0"] = cal.UTC();                
             }
 
             /*
-            1. Try to parse our own format, split name and test each chunk for IANA -> if found, does the stdOffset match? -> if so, done
-            2. Try if one of the chunks matches international code -> if found, does the stdOffset match? -> if so, done
-            3. Try to find name in Windows names and map to IANA -> if found, does the stdOffset match? -> if so, done
-            4. Fallback: Use just the offsets  */
+                1. Try to find name in Windows names and map to IANA -> if found, does the stdOffset match? -> if so, done
+                2. Try to parse our own format, split name and test each chunk for IANA -> if found, does the stdOffset match? -> if so, done
+                3. Try if one of the chunks matches international code -> if found, does the stdOffset match? -> if so, done
+                4. Fallback: Use just the offsets  */
+
 
             //check for windows timezone name
-            if (tbSync.windowsTimezoneMap[stdName] && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].offset == stdOffset ) {
+            if (tbSync.windowsTimezoneMap[stdName] && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]] && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].std.offset == stdOffset ) {
                 //the windows timezone maps multiple IANA zones to one (Berlin*, Rome, Bruessel)
                 //check the windowsZoneName of the default TZ and of the winning, if they match, use default TZ
                 //so Rome could win, even Berlin is the default IANA zone
-                if (tbSync.defaultTimezoneInfo.windowsZoneName && tbSync.windowsTimezoneMap[stdName] != tbSync.defaultTimezoneInfo.id && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].offset == tbSync.defaultTimezoneInfo.offset && stdName == tbSync.defaultTimezoneInfo.windowsZoneName) {
-                    tbSync.dump("Timezone matched via windows timezone name ("+stdName+") with default TZ overtake", tbSync.windowsTimezoneMap[stdName] + " -> " + tbSync.defaultTimezoneInfo.id);
-                    return tbSync.defaultTimezoneInfo.id;
+                if (tbSync.defaultTimezoneInfo.std.windowsZoneName && tbSync.windowsTimezoneMap[stdName] != tbSync.defaultTimezoneInfo.std.id && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].std.offset == tbSync.defaultTimezoneInfo.std.offset && stdName == tbSync.defaultTimezoneInfo.std.windowsZoneName) {
+                    tbSync.dump("Timezone matched via windows timezone name ("+stdName+") with default TZ overtake", tbSync.windowsTimezoneMap[stdName] + " -> " + tbSync.defaultTimezoneInfo.std.id);
+                    return tbSync.defaultTimezoneInfo.timezone;
                 }
                 
                 tbSync.dump("Timezone matched via windows timezone name ("+stdName+")", tbSync.windowsTimezoneMap[stdName]);
-                return tbSync.windowsTimezoneMap[stdName];
+                return tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].timezone;
             }
 
             let parts = stdName.replace(/[;,()\[\]]/g," ").split(" ");
             for (let i = 0; i < parts.length; i++) {
                 //check for IANA
-                if (tbSync.cachedTimezoneData.iana[parts[i]] && tbSync.cachedTimezoneData.iana[parts[i]].offset == stdOffset) {
+                if (tbSync.cachedTimezoneData.iana[parts[i]] && tbSync.cachedTimezoneData.iana[parts[i]].std.offset == stdOffset) {
                     tbSync.dump("Timezone matched via IANA", parts[i]);
-                    return parts[i];
+                    return tbSync.cachedTimezoneData.iana[parts[i]].timezone;
                 }
 
                 //check for international abbreviation for standard period (CET, CAT, ...)
-                if (tbSync.cachedTimezoneData.abbreviations[parts[i]] && tbSync.cachedTimezoneData.iana[tbSync.cachedTimezoneData.abbreviations[parts[i]]].offset == stdOffset) {
+                if (tbSync.cachedTimezoneData.abbreviations[parts[i]] && tbSync.cachedTimezoneData.iana[tbSync.cachedTimezoneData.abbreviations[parts[i]]].std.offset == stdOffset) {
                     tbSync.dump("Timezone matched via international abbreviation (" + parts[i] +")", tbSync.cachedTimezoneData.abbreviations[parts[i]]);
-                    return tbSync.cachedTimezoneData.abbreviations[parts[i]];
+                    return tbSync.cachedTimezoneData.iana[tbSync.cachedTimezoneData.abbreviations[parts[i]]].timezone;
                 }
             }
 
-            //fallback to zone based on offset, if we have that cached
-            if (tbSync.cachedTimezoneData.offsets[stdOffset]) return tbSync.cachedTimezoneData.offsets[stdOffset];
+            //fallback to zone based on stdOffset and dstOffset, if we have that cached
+            if (tbSync.cachedTimezoneData.bothOffsets[stdOffset+":"+dstOffset]) {
+                tbSync.dump("Timezone matched via both offsets (std:" + stdOffset +", dst:" + dstOffset + ")", tbSync.cachedTimezoneData.bothOffsets[stdOffset+":"+dstOffset].tzid);
+                return tbSync.cachedTimezoneData.bothOffsets[stdOffset+":"+dstOffset];
+            }
 
+            //fallback to zone based on stdOffset only, if we have that cached
+            if (tbSync.cachedTimezoneData.stdOffset[stdOffset]) {
+                tbSync.dump("Timezone matched via std offset (" + stdOffset +")", tbSync.cachedTimezoneData.stdOffset[stdOffset].tzid);
+                return tbSync.cachedTimezoneData.stdOffset[stdOffset];
+            }
+            
             //return default timezone, if everything else fails
-            return tbSync.defaultTimezoneInfo.id;
+            tbSync.dump("Timezone could not be matched via offsets (std:" + stdOffset +", dst:" + dstOffset + "), using default timezone", tbSync.defaultTimezoneInfo.std.id);
+            return tbSync.defaultTimezoneInfo.timezone;
     },
 
     
+
+
+
     //extract standard and daylight timezone data
     getTimezoneInfo: function (timezone) {        
         let tzInfo = {};
+
         tzInfo.std = tbSync.getTimezoneInfoObject(timezone, "standard");
         tzInfo.dst = tbSync.getTimezoneInfoObject(timezone, "daylight");
         
         if (tzInfo.dst === null) tzInfo.dst  = tzInfo.std;        
+
+        tzInfo.timezone = timezone;
         return tzInfo;
     },
 
     //get timezone info for standard/daylight
     getTimezoneInfoObject: function (timezone, standardOrDaylight) {       
         
-        //we could parse the icalstring by ourself, but I wanted to use ICAL.parse
+        //handle UTC
+        if (timezone.isUTC) {
+            let obj = {}
+            obj.id = "UTC";
+            obj.offset = 0;
+            obj.abbreviation = "UTC";
+            obj.displayname = "Coordinated Universal Time (UTC)";
+            return obj;
+        }
+                
+        //we could parse the icalstring by ourself, but I wanted to use ICAL.parse - TODO try catch
         let info = ICAL.parse("BEGIN:VCALENDAR\r\n" + timezone.toString() + "\r\nEND:VCALENDAR");
         let comp = new ICAL.Component(info);
         let vtimezone =comp.getFirstSubcomponent("vtimezone");
