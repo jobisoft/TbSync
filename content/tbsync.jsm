@@ -893,7 +893,7 @@ var tbSync = {
                 //the windows timezone maps multiple IANA zones to one (Berlin*, Rome, Bruessel)
                 //check the windowsZoneName of the default TZ and of the winning, if they match, use default TZ
                 //so Rome could win, even Berlin is the default IANA zone
-                if (tbSync.windowsTimezoneMap[stdName] != tbSync.defaultTimezoneInfo.id && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].offset == tbSync.defaultTimezoneInfo.offset && stdName == tbSync.defaultTimezoneInfo.windowsZoneName) {
+                if (tbSync.defaultTimezoneInfo.windowsZoneName && tbSync.windowsTimezoneMap[stdName] != tbSync.defaultTimezoneInfo.id && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].offset == tbSync.defaultTimezoneInfo.offset && stdName == tbSync.defaultTimezoneInfo.windowsZoneName) {
                     tbSync.dump("Timezone matched via windows timezone name ("+stdName+") with default TZ overtake", tbSync.windowsTimezoneMap[stdName] + " -> " + tbSync.defaultTimezoneInfo.id);
                     return tbSync.defaultTimezoneInfo.id;
                 }
@@ -916,10 +916,12 @@ var tbSync = {
                     return tbSync.cachedTimezoneData.abbreviations[parts[i]];
                 }
             }
-            
-            
-            //fallback to zone based on offset
-            return tbSync.cachedTimezoneData.offsets[stdOffset];
+
+            //fallback to zone based on offset, if we have that cached
+            if (tbSync.cachedTimezoneData.offsets[stdOffset]) return tbSync.cachedTimezoneData.offsets[stdOffset];
+
+            //return default timezone, if everything else fails
+            return tbSync.defaultTimezoneInfo.id;
     },
 
     
