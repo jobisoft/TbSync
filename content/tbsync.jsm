@@ -897,10 +897,10 @@ var tbSync = {
                 }
 
                 //check for international abbreviation for standard period (CET, CAT, ...)
-                if (tbSync.cachedTimezoneData.abbreviations[parts[i]] && tbSync.cachedTimezoneData.iana[tbSync.cachedTimezoneData.abbreviations[parts[i]]].offset == stdOffset) {
-                    tbSync.dump("Timezone matched via international abbreviation (" + parts[i] +")", tbSync.cachedTimezoneData.abbreviations[parts[i]]);
-                    return tbSync.cachedTimezoneData.abbreviations[parts[i]];
-                }
+                //if (tbSync.cachedTimezoneData.abbreviations[parts[i]] && tbSync.cachedTimezoneData.iana[tbSync.cachedTimezoneData.abbreviations[parts[i]]].offset == stdOffset) {
+                //    tbSync.dump("Timezone matched via international abbreviation (" + parts[i] +")", tbSync.cachedTimezoneData.abbreviations[parts[i]]);
+                //    return tbSync.cachedTimezoneData.abbreviations[parts[i]];
+                //}
             }
             
             //check for windows timezone name
@@ -908,7 +908,7 @@ var tbSync = {
                 //the windows timezone maps multiple IANA zones to one (Berlin*, Rome, Bruessel)
                 //check the windowsZoneName of the default TZ and of the winning, if they match, use default TZ
                 //so Rome could win, even Berlin is the default IANA zone
-                if (tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].offset == tbSync.defaultTimezoneInfo.offset && stdName == tbSync.defaultTimezoneInfo.windowsZoneName) {
+                if (tbSync.windowsTimezoneMap[stdName] != tbSync.defaultTimezoneInfo.id && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].offset == tbSync.defaultTimezoneInfo.offset && stdName == tbSync.defaultTimezoneInfo.windowsZoneName) {
                     tbSync.dump("Timezone matched via windows timezone name ("+stdName+") with default TZ overtake", tbSync.windowsTimezoneMap[stdName] + " -> " + tbSync.defaultTimezoneInfo.id);
                     return tbSync.defaultTimezoneInfo.id;
                 }
