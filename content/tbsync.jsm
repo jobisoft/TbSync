@@ -888,21 +888,6 @@ var tbSync = {
             3. Try to find name in Windows names and map to IANA -> if found, does the stdOffset match? -> if so, done
             4. Fallback: Use just the offsets  */
 
-            let parts = stdName.replace(/[;,()\[\]]/g," ").split(" ");
-            for (let i = 0; i < parts.length; i++) {
-                //check for IANA
-                if (tbSync.cachedTimezoneData.iana[parts[i]] && tbSync.cachedTimezoneData.iana[parts[i]].offset == stdOffset) {
-                    tbSync.dump("Timezone matched via IANA", parts[i]);
-                    return parts[i];
-                }
-
-                //check for international abbreviation for standard period (CET, CAT, ...)
-                //if (tbSync.cachedTimezoneData.abbreviations[parts[i]] && tbSync.cachedTimezoneData.iana[tbSync.cachedTimezoneData.abbreviations[parts[i]]].offset == stdOffset) {
-                //    tbSync.dump("Timezone matched via international abbreviation (" + parts[i] +")", tbSync.cachedTimezoneData.abbreviations[parts[i]]);
-                //    return tbSync.cachedTimezoneData.abbreviations[parts[i]];
-                //}
-            }
-            
             //check for windows timezone name
             if (tbSync.windowsTimezoneMap[stdName] && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].offset == stdOffset ) {
                 //the windows timezone maps multiple IANA zones to one (Berlin*, Rome, Bruessel)
@@ -916,6 +901,22 @@ var tbSync = {
                 tbSync.dump("Timezone matched via windows timezone name ("+stdName+")", tbSync.windowsTimezoneMap[stdName]);
                 return tbSync.windowsTimezoneMap[stdName];
             }
+
+            let parts = stdName.replace(/[;,()\[\]]/g," ").split(" ");
+            for (let i = 0; i < parts.length; i++) {
+                //check for IANA
+                if (tbSync.cachedTimezoneData.iana[parts[i]] && tbSync.cachedTimezoneData.iana[parts[i]].offset == stdOffset) {
+                    tbSync.dump("Timezone matched via IANA", parts[i]);
+                    return parts[i];
+                }
+
+                //check for international abbreviation for standard period (CET, CAT, ...)
+                if (tbSync.cachedTimezoneData.abbreviations[parts[i]] && tbSync.cachedTimezoneData.iana[tbSync.cachedTimezoneData.abbreviations[parts[i]]].offset == stdOffset) {
+                    tbSync.dump("Timezone matched via international abbreviation (" + parts[i] +")", tbSync.cachedTimezoneData.abbreviations[parts[i]]);
+                    return tbSync.cachedTimezoneData.abbreviations[parts[i]];
+                }
+            }
+            
             
             //fallback to zone based on offset
             return tbSync.cachedTimezoneData.offsets[stdOffset];
