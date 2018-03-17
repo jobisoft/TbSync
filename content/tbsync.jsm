@@ -880,12 +880,14 @@ var tbSync = {
                     //tbSync.dump("TZ ("+ tzInfo.std.id + " :: " + tzInfo.dst.id +  " :: " + tzInfo.std.displayname + " :: " + tzInfo.dst.displayname + " :: " + tzInfo.std.offset + " :: " + tzInfo.dst.offset + ")", tzService.getTimezone(id));
                 }
 
+                //make sure, that UTC timezone is there
+                tbSync.cachedTimezoneData.bothOffsets["0:0"] = cal.UTC();                
+
                 //multiple TZ share the same offset and abbreviation, make sure the default timezone is present
                 tbSync.cachedTimezoneData.abbreviations[tbSync.defaultTimezoneInfo.std.abbreviation] = tbSync.defaultTimezoneInfo.std.id;
+                tbSync.cachedTimezoneData.bothOffsets[tbSync.defaultTimezoneInfo.std.offset+":"+tbSync.defaultTimezoneInfo.dst.offset] = tbSync.defaultTimezoneInfo.timezone;
                 tbSync.cachedTimezoneData.stdOffset[tbSync.defaultTimezoneInfo.std.offset] = tbSync.defaultTimezoneInfo.timezone;
                 
-                //also make sure, that UTC timezone is there
-                tbSync.cachedTimezoneData.bothOffsets["0:0"] = cal.UTC();                
             }
 
             /*
