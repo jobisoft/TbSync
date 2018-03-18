@@ -3,6 +3,10 @@
 
 Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki) of the TbSync project.
 
+### External data sources
+
+* TbSync is using a [timezone map](https://github.com/mj1856/TimeZoneConverter/blob/master/src/TimeZoneConverter/Data/Mapping.csv.gz) file from [Matt Johnson](https://github.com/mj1856)
+
 ### Icon sources
 
 * [tbsync.png] https://www.iconfinder.com/paomedia 
