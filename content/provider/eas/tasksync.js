@@ -2,6 +2,14 @@
 
 eas.sync.Tasks = {
 
+    createItem : function () {
+        return cal.createTodo();
+    },
+
+
+	// --------------------------------------------------------------------------- //
+    // Read WBXML and set Thunderbird item
+    // --------------------------------------------------------------------------- //
     setThunderbirdItemFromWbxml: function (item, data, id, syncdata) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
         item.id = id;
@@ -57,9 +65,18 @@ eas.sync.Tasks = {
           }
         }            
     },
-    
 
 
+
+
+
+
+
+
+
+    // --------------------------------------------------------------------------- //
+    //read TB event and return its data as WBXML
+    // --------------------------------------------------------------------------- //
     getWbxmlFromThunderbirdItem: function (item, syncdata) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
         let wbxml = tbSync.wbxmltools.createWBXML("", syncdata.type); //init wbxml with "" and not with precodes, and set initial codepage

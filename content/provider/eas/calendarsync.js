@@ -2,7 +2,12 @@
 
 eas.sync.Calendar = {
 
-    // --------------------------------------------------------------------------- //
+    createItem : function () {
+        return cal.createEvent();
+    },
+
+
+	// --------------------------------------------------------------------------- //
     // Read WBXML and set Thunderbird item
     // --------------------------------------------------------------------------- //
     setThunderbirdItemFromWbxml: function (item, data, id, syncdata) {
@@ -161,7 +166,7 @@ eas.sync.Calendar = {
             else item.deleteProperty("STATUS");
             
             //we can also use the R information, to update our fallbackOrganizerName
-            if (!R && data.OrganizerName) syncdata.targetObj.setProperty("fallbackOrganizerName", data.OrganizerName);            
+            if (!R && data.OrganizerName) syncdata.calendarObj.setProperty("fallbackOrganizerName", data.OrganizerName);            
         }
 
         //TODO: attachements (needs EAS 16.0!)

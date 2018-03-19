@@ -1053,9 +1053,10 @@ var tbSync = {
 
     //returns if item is todo, event or something else
     getItemType: function (aItem) {
-        if (cal.isEvent(aItem)) return "1";
-        if (cal.isToDo(aItem)) return "2";
-        return "0";
+        if (cal.isEvent(aItem)) return "tb-event";
+        if (cal.isToDo(aItem)) return "tb-todo";
+        //return "tb-contact"
+        return "unknown";
     },
     
     calendarObserver : { 

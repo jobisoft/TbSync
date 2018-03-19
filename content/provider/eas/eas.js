@@ -427,6 +427,22 @@ var eas = {
                         break;
                     case "Calendar":
                     case "Tasks": 
+                        // skip if lightning is not installed
+                        if ("calICalendar" in Components.interfaces == false) {
+                            throw eas.finishSync("nolightning");
+                        }
+                        
+                        // check SyncTarget
+                        if (!tbSync.checkCalender(syncdata.account, syncdata.folderID)) {
+                            throw eas.finishSync("notargets", eas.flags.abortWithError);
+                        }
+                        
+                        //get sync target of this calendar
+                        syncdata.calendarObj = cal.getCalendarManager().getCalendarById(tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
+                        syncdata.targetId = syncdata.calendarObj.id;
+                        //promisify calender, so it can be used together with yield
+                        syncdata.targetObj = cal.async.promisifyCalendar(syncdata.calendarObj.wrappedJSObject);
+             
                         yield eas.sync.start(syncdata);
                         break;
                 }
