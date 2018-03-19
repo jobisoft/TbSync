@@ -452,7 +452,16 @@ var tbSync = {
         }
     },
 
-
+    //returns if item is todo, event, contactcard or something else
+    getItemType: function (aItem) {        
+        if (aItem instanceof Components.interfaces.nsIAbCard) {
+            return "tb-contact"
+        } else {
+            if (cal.isEvent(aItem)) return "tb-event";
+            if (cal.isToDo(aItem)) return "tb-todo";
+        }
+        return "unknown";
+    },
 
 
 
@@ -1050,14 +1059,6 @@ var tbSync = {
 
 
 
-
-    //returns if item is todo, event or something else
-    getItemType: function (aItem) {
-        if (cal.isEvent(aItem)) return "tb-event";
-        if (cal.isToDo(aItem)) return "tb-todo";
-        //return "tb-contact"
-        return "unknown";
-    },
     
     calendarObserver : { 
         onStartBatch : function () {},
