@@ -7,7 +7,7 @@ eas.sync.Calendar = {
     },
 
 
-	// --------------------------------------------------------------------------- //
+    // --------------------------------------------------------------------------- //
     // Read WBXML and set Thunderbird item
     // --------------------------------------------------------------------------- //
     setThunderbirdItemFromWbxml: function (item, data, id, syncdata) {
@@ -232,7 +232,7 @@ eas.sync.Calendar = {
             wbxml.atag("TimeZone", easTZ.easTimeZone64);
             tbSync.dump("Send TZ", item.title + easTZ.toString());
         }
-	    
+        
         //AllDayEvent (for simplicity, we always send a value)
         wbxml.atag("AllDayEvent", (item.startDate && item.startDate.isDate && item.endDate && item.endDate.isDate) ? "1" : "0");
 
@@ -253,7 +253,7 @@ eas.sync.Calendar = {
 
         //EndTime in UTC
         wbxml.atag("EndTime", item.endDate ? tbSync.getIsoUtcString(item.endDate) : nowDate.toBasicISOString());
-	    
+        
         //Location
         wbxml.atag("Location", (item.hasProperty("location")) ? tbSync.encode_utf8(item.getProperty("location")) : "");
 
@@ -355,7 +355,7 @@ eas.sync.Calendar = {
         }
 
 
-	    //---------------------------
+        //---------------------------
         
         //TP PRIORITY (9=LOW, 5=NORMAL, 1=HIGH) not mapable to EAS Event
         //TODO: attachements (needs EAS 16.0!)

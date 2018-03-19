@@ -7,7 +7,7 @@ eas.sync.Tasks = {
     },
 
 
-	// --------------------------------------------------------------------------- //
+    // --------------------------------------------------------------------------- //
     // Read WBXML and set Thunderbird item
     // --------------------------------------------------------------------------- //
     setThunderbirdItemFromWbxml: function (item, data, id, syncdata) {
@@ -118,7 +118,7 @@ eas.sync.Tasks = {
                 wbxml.atag("Complete", "0");
         }
 
-	    //Sensitivity
+        //Sensitivity
         wbxml.atag("Sensitivity", eas.sync.mapThunderbirdPropertyToEas("CLASS", "Sensitivity", item));
 
         //ReminderTime and ReminderSet

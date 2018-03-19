@@ -649,7 +649,7 @@ var eas = {
             return;
         }
 
-	    tbSync.setSyncState("prepare.request.getuserinfo", syncdata.account);
+        tbSync.setSyncState("prepare.request.getuserinfo", syncdata.account);
 
         //request foldersync
         let wbxml = wbxmltools.createWBXML();
@@ -1287,7 +1287,7 @@ var eas = {
             syncdata.req.send();
             
         });
-	},
+    },
 
     sendRequest: function (wbxml, command, syncdata) {
         let msg = "Sending data <" + syncdata.state.split("||")[0] + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
@@ -1468,7 +1468,7 @@ var eas = {
                 if (allowSoftFail) return false;
                 throw eas.finishSync("ServerRejectedRequest", eas.flags.abortWithError);                            
 
-		
+        
             case "Sync:8": // Object not found - takeTargetOffline and remove folder
                 tbSync.dump("wbxml status", "Server reports <object not found> (" +  tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "), keeping local copy and removing folder.");
                 let folder = tbSync.db.getFolder(syncdata.account, syncdata.folderID);
@@ -1762,7 +1762,7 @@ var eas = {
             else  req.send(xml);
             
         });
-	}
+    }
     
 };
     

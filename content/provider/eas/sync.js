@@ -9,7 +9,7 @@
 
 eas.sync = {
 
-	// ---------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
     // MAIN FUNCTIONS TO SYNC AN EAS FOLDER
     // ---------------------------------------------------------------------------
 
@@ -215,7 +215,7 @@ eas.sync = {
                 return;
 
             }
-	    
+        
         } while (true);
         
     }),
@@ -229,7 +229,7 @@ eas.sync = {
 
 
 
-	// ---------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
     // SUB FUNCTIONS CALLED BY  MAIN FUNCTION
     // ---------------------------------------------------------------------------
     
@@ -330,7 +330,7 @@ eas.sync = {
         //this is a special treatment for xj25vm (horde 5.1.10 does not accept titles longer than 250) - the specs do not allow titles larger than 300
         if (item.title && item.title.length>250 && cause == "invalid XML") cause = "title longer than 250"
         if (cause == "invalid XML") cause = "invalid XML (possible bug in TbSync)";
-	    
+        
         //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
         if (syncdata.failedItems.includes(item.id)) {
             let types = [];
@@ -420,7 +420,7 @@ eas.sync = {
 
 
 
-	// ---------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
     // HELPER FUNCTIONS AND DEFINITIONS
     // ---------------------------------------------------------------------------
         
@@ -485,7 +485,7 @@ eas.sync = {
 
 
 
-	// ---------------------------------------------------------------------------
+    // ---------------------------------------------------------------------------
     // LIGHTNING HELPER FUNCTIONS AND DEFINITIONS
     // These functions are needed only by tasks and events, so they
     // are placed here, even though they are not type independent,
