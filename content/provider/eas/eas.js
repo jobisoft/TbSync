@@ -1225,7 +1225,7 @@ var eas = {
         tbSync.dump("Sending", "OPTIONS " + connection.host);
         
         return new Promise(function(resolve,reject) {
-            // Create request handler
+            // Create request handler - API changed with TB60 to new XMKHttpRequest()
             syncdata.req = (Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]) ? Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest) : new XMLHttpRequest();
             syncdata.req.mozBackgroundRequest = true;
             syncdata.req.open("OPTIONS", connection.host, true);
@@ -1307,7 +1307,7 @@ var eas = {
         tbSync.dump("Sending (EAS v"+tbSync.db.getAccountSetting(syncdata.account, "asversion") +")", "POST " + connection.host + '?Cmd=' + command + '&User=' + encodeURIComponent(connection.user) + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
         
         return new Promise(function(resolve,reject) {
-            // Create request handler
+            // Create request handler - API changed with TB60 to new XMKHttpRequest()
             syncdata.req = (Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]) ? Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest) : new XMLHttpRequest();
             syncdata.req.mozBackgroundRequest = true;
             syncdata.req.open("POST", connection.host + '?Cmd=' + command + '&User=' + encodeURIComponent(connection.user) + '&DeviceType=' +encodeURIComponent(deviceType) + '&DeviceId=' + deviceId, true);
@@ -1680,7 +1680,7 @@ var eas = {
             let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
             if (userAgent == "") userAgent = "Thunderbird ActiveSync";
 
-            // create request handler
+            // Create request handler - API changed with TB60 to new XMKHttpRequest()
             let req = (Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]) ? Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest) : new XMLHttpRequest();
             req.mozBackgroundRequest = true;
             req.open(method, connection.url, true);
