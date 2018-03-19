@@ -475,7 +475,23 @@ eas.sync = {
             default: return "Unknown";
         }        
     },
-    
+
+
+
+
+
+
+
+
+
+
+	// ---------------------------------------------------------------------------
+    // LIGHTNING HELPER FUNCTIONS AND DEFINITIONS
+    // These functions are needed only by tasks and events, so they
+    // are placed here, even though they are not type independent,
+    // but I did not want to add another "lightning" sub layer.
+    // ---------------------------------------------------------------------------
+        
     setItemSubject: function (item, syncdata, data) {
         if (data.Subject) item.title = xmltools.checkString(data.Subject);
     },
@@ -543,7 +559,6 @@ eas.sync = {
         return wbxml.getBytes();
     },
 
-    //getter and setter for recurrence are only used by events and todos
     setItemRecurrence: function (item, syncdata, data) {
         if (data.Recurrence) {
             item.recurrenceInfo = cal.createRecurrenceInfo();
