@@ -1226,7 +1226,7 @@ var eas = {
         
         return new Promise(function(resolve,reject) {
             // Create request handler
-            syncdata.req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+            syncdata.req = (Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]) ? Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest) : new XMLHttpRequest();
             syncdata.req.mozBackgroundRequest = true;
             syncdata.req.open("OPTIONS", connection.host, true);
             syncdata.req.overrideMimeType("text/plain");
@@ -1308,7 +1308,7 @@ var eas = {
         
         return new Promise(function(resolve,reject) {
             // Create request handler
-            syncdata.req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+            syncdata.req = (Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]) ? Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest) : new XMLHttpRequest();
             syncdata.req.mozBackgroundRequest = true;
             syncdata.req.open("POST", connection.host + '?Cmd=' + command + '&User=' + encodeURIComponent(connection.user) + '&DeviceType=' +encodeURIComponent(deviceType) + '&DeviceId=' + deviceId, true);
             syncdata.req.overrideMimeType("text/plain");
@@ -1681,7 +1681,7 @@ var eas = {
             if (userAgent == "") userAgent = "Thunderbird ActiveSync";
 
             // create request handler
-            let req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest);
+            let req = (Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]) ? Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"].createInstance(Components.interfaces.nsIXMLHttpRequest) : new XMLHttpRequest();
             req.mozBackgroundRequest = true;
             req.open(method, connection.url, true);
             req.timeout = maxtimeout;

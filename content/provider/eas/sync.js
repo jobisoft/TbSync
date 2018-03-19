@@ -84,7 +84,6 @@ eas.sync = {
 
 
     sendLocalChanges: Task.async (function* (syncdata)  {
-
         let maxnumbertosend = tbSync.prefSettings.getIntPref("eas.maxitems");
 
         syncdata.done = 0;
