@@ -297,7 +297,8 @@ eas.sync.Calendar = {
 
         let countAttendees = {};
         let attendees = item.getAttendees(countAttendees);
-        if (!(isException && asversion == "2.5")) { //MeetingStatus is not supported in exceptions in EAS 2.5        
+        //if (!(isException && asversion == "2.5")) { //MeetingStatus is not supported in exceptions in EAS 2.5        
+        if (!isException) { //Exchange 2010 does not seem to support MeetingStatus at all in exceptions
             if (countAttendees == 0) wbxml.atag("MeetingStatus", "0");
             else {
                 //get owner information
