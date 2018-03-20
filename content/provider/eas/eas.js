@@ -421,10 +421,25 @@ var eas = {
                 //sync folder
                 syncdata.timeOfLastSync = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime") / 1000;
                 syncdata.timeOfThisSync = (Date.now() / 1000) - 1;
+                
                 switch (syncdata.type) {
                     case "Contacts": 
-                        yield eas.tzpush.start(syncdata);
+                        // check SyncTarget
+                        if (!tbSync.checkAddressbook(syncdata.account, syncdata.folderID)) {
+                            throw eas.finishSync("notargets", eas.flags.abortWithError);
+                        }
+
+                        //get sync target of this addressbook
+                        syncdata.targetId = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
+                        syncdata.addressbookObj = tbSync.getAddressBookObject(syncdata.targetId);
+
+                        //promisify addressbook, so it can be used together with yield
+                        syncdata.targetObj = eas.sync.Contacts.promisifyAddressbook(syncdata.addressbookObj);
+                        
+                        yield eas.tzpush.start(syncdata); //using tzpush code
+                        //yield eas.sync.start(syncdata);   //using pure tbsync code   
                         break;
+
                     case "Calendar":
                     case "Tasks": 
                         // skip if lightning is not installed
@@ -436,10 +451,10 @@ var eas = {
                         if (!tbSync.checkCalender(syncdata.account, syncdata.folderID)) {
                             throw eas.finishSync("notargets", eas.flags.abortWithError);
                         }
+
+                        syncdata.targetId = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
+                        syncdata.calendarObj = cal.getCalendarManager().getCalendarById(syncdata.targetId);
                         
-                        //get sync target of this calendar
-                        syncdata.calendarObj = cal.getCalendarManager().getCalendarById(tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
-                        syncdata.targetId = syncdata.calendarObj.id;
                         //promisify calender, so it can be used together with yield
                         syncdata.targetObj = cal.async.promisifyCalendar(syncdata.calendarObj.wrappedJSObject);
              
@@ -1770,4 +1785,5 @@ var eas = {
 tbSync.includeJS("chrome://tbsync/content/provider/eas/sync.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/tasksync.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/calendarsync.js");
+tbSync.includeJS("chrome://tbsync/content/provider/eas/contactsync.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/tzpush.js");
