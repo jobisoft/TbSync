@@ -423,7 +423,7 @@ var eas = {
                 syncdata.timeOfThisSync = (Date.now() / 1000) - 1;
                 switch (syncdata.type) {
                     case "Contacts": 
-                        yield eas.contactsync.start(syncdata);
+                        yield eas.tzpush.start(syncdata);
                         break;
                     case "Calendar":
                     case "Tasks": 
@@ -1770,4 +1770,4 @@ var eas = {
 tbSync.includeJS("chrome://tbsync/content/provider/eas/sync.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/tasksync.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/calendarsync.js");
-tbSync.includeJS("chrome://tbsync/content/provider/eas/contactsync.js");
+tbSync.includeJS("chrome://tbsync/content/provider/eas/tzpush.js");

@@ -2,7 +2,7 @@
    See the file LICENSE.txt for licensing information. */
 "use strict";
 
-eas.contactsync = {
+eas.tzpush = {
 
     // CONTACT SYNC
     
@@ -129,10 +129,10 @@ eas.contactsync = {
         
         //sync
         yield eas.getItemEstimate (syncdata);
-        yield eas.contactsync.fromzpush (syncdata); 
+        yield eas.tzpush.fromzpush (syncdata); 
         if (tbSync.db.getAccountSetting(syncdata.account, "downloadonly") != "1") {
-            yield eas.contactsync.tozpush (syncdata);
-            yield eas.contactsync.senddel (syncdata);
+            yield eas.tzpush.tozpush (syncdata);
+            yield eas.tzpush.senddel (syncdata);
         }
         //if everything was OK, we still throw, to get into catch
         throw eas.finishSync();
@@ -915,4 +915,4 @@ eas.contactsync = {
     
 };
 
-eas.contactsync.initFromContactsArray();
+eas.tzpush.initFromContactsArray();
