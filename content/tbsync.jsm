@@ -1004,7 +1004,7 @@ var tbSync = {
             obj.abbreviation = zone.getFirstPropertyValue("tzname");
             
             //get displayname
-            obj.displayname = /*"("+utcOffset+") " +*/ obj.id + ", " + obj.abbreviation;
+            obj.displayname = /*"("+utcOffset+") " +*/ obj.id;// + ", " + obj.abbreviation;
                 
             //get DST switch date
             let rrule = zone.getFirstPropertyValue("rrule");
