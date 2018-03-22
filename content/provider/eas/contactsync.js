@@ -6,26 +6,60 @@ eas.sync.Contacts = {
         return Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
     },
     
-    promisifyAddressbook: function (addressBook) {
+    promisifyAddressbook: function (addressbook) {
     /* 
-        Needed API: 
-            adoptItem(card);                    - add card to addressbook
-            modifyItem(newcard, existingcard)   - modify card
-            deleteItem(card);                   - remove card from addressBook
-            getItem(id)                         - return array of items matching; each item must support
-                                                    get id
-                                                    get title
-                                                    get icalString
-                                                    set id
-                                                    clone()
+        Return obj with identical interface to promisifyCalendar. But we currently do not need a promise. 
+            adoptItem(card)
+            modifyItem(newcard, existingcard)
+            deleteItem(card)
+            getItem(id)
 
         Avail API:
             addressBook.modifyCard(card);
             addressBook.getCardFromProperty("localId", ClientId, false);
             addressBook.deleteCards(cardsToDelete);
-            addressbook.addCard(card);
             card.setProperty('ServerId', ServerId);
     */
+        let apiWrapper = {
+            adoptItem: function (card) { 
+                /* add card to addressbook */
+                addressbook.addCard(card);
+            }
+
+            modifyItem: function (newcard, existingcard) {
+                /* modify card */
+                addressbook.modifyCard(newcard);
+            }
+
+            deleteItem: function (card) {
+                /* remove card from addressBook */
+                let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+                cardsToDelete.appendElement(card);
+                addressbook.deleteCards(cardsToDelete);
+            }
+
+            getItem: function (searchId) {
+                /* return array of items matching */
+                let items = [];
+                let card = addressbook.getCardFromProperty("X-EAS-ID", searchId, true); //3rd param enables case sensitivity
+                
+                if (card) {
+                    let item = {
+                        get id() {return searchId};
+                        get title() {return null};
+                        get icalString() {return null};
+                        set id(setId) {};
+                        clone: function () { return this; } //no real clone
+                    };
+                    
+                    items.push(item);
+                }
+                
+                return items;
+            }
+        };
+	
+        return apiWrapper;
     },
     
     
