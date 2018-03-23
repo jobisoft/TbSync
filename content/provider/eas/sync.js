@@ -334,8 +334,8 @@ eas.sync = {
         if (syncdata.failedItems.includes(item.id)) {
             let types = [];
             for (let t in syncdata.failedItemTypes) types.push(syncdata.failedItemTypes[t] + "x <" + t + ">");
-            if (syncdata.done>0) throw eas.finishSync("ServerRejectedSomeItems::"+types.toString()+"::"+syncdata.done, eas.flags.abortWithError);                            
-            throw eas.finishSync("ServerRejectedAllItems::"+types.toString(), eas.flags.abortWithError);                            
+            if (syncdata.done>0) throw eas.finishSync("ServerRejectedSomeItems::"+types.toString()+"::"+syncdata.done);                            
+            throw eas.finishSync("ServerRejectedAllItems::"+types.toString());                            
         } else {
             //the extra parameter true will re-add the item to the end of the changelog
             db.removeItemFromChangeLog(syncdata.targetId, item.id, true);                        

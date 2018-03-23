@@ -772,8 +772,6 @@ var eas = {
     },
 
     finishAccountSync: function (syncdata, error) {
-        let status = "OK";
-
         // set each folder with PENDING status to ABORTED
         let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
         for (let i=0; i < folders.length; i++) {
@@ -781,21 +779,22 @@ var eas = {
         }
 
         //update account status
-        if (error !== "") {
-            status = error;
-            let info = tbSync.db.getAccountSetting(syncdata.account, "accountname");
-            tbSync.dump("finishAccountSync(" + info + ")", tbSync.getLocalizedMessage("status." + status));
-                                    
-            //if there are no folder information, initial connect failed, disconnect
-            //does not feel right
-            //if (Object.keys(db.getFolders(syncdata.account)).length === 0) {
-            //    eas.disconnectAccount(syncdata.account);
-            //}
+        let status = "OK";
+        if (error != "") status = error;
+        else {
+            //search for folders with error
+            folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);
+            for (let i in folders) {
+                if (folders[i].status != "" && folders[i].status != "OK" && folders[i].status != "aborted") {
+                    status = folders[i].status;
+                    break;
+                }
+            }
         }
+        
+        //done
         tbSync.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
         tbSync.db.setAccountSetting(syncdata.account, "status", status);
-
-        //done
         tbSync.setSyncState("accountdone", syncdata.account); 
     },
     
@@ -1476,15 +1475,15 @@ var eas = {
                 throw eas.finishSync(type+":"+status, eas.flags.resyncFolder);
             
             case "Sync:4":
-                throw eas.finishSync("ServerRejectedRequest", eas.flags.abortWithError);                            
+                throw eas.finishSync("ServerRejectedRequest");                            
             
             case "Sync:5":
-                throw eas.finishSync("TempServerError", eas.flags.abortWithError);                            
+                throw eas.finishSync("TempServerError");                            
 
             case "Sync:6":
                 //Server does not accept one of our items or the entire request. IF allowSoftFail is set, continue syncing
                 if (allowSoftFail) return false;
-                throw eas.finishSync("ServerRejectedRequest", eas.flags.abortWithError);                            
+                throw eas.finishSync("ServerRejectedRequest");                            
 
         
             case "Sync:8": // Object not found - takeTargetOffline and remove folder
