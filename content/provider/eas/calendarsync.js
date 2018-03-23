@@ -147,9 +147,7 @@ eas.sync.Calendar = {
             item.organizer = organizer;
         }
 
-        if (tbSync.prefSettings.getBoolPref("eas.syncrecurringevents")) {
-            eas.sync.setItemRecurrence(item, syncdata, data);
-        }
+        eas.sync.setItemRecurrence(item, syncdata, data);
         
         if (data.MeetingStatus) {
             //store original EAS value 
@@ -351,7 +349,7 @@ eas.sync.Calendar = {
         }
 
         //recurrent events (implemented by Chris Allan)
-        if (!isException && tbSync.prefSettings.getBoolPref("eas.syncrecurringevents")) {
+        if (!isException) {
             wbxml.append(eas.sync.getItemRecurrence(item, syncdata));
         }
 

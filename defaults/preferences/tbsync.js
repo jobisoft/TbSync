@@ -6,7 +6,7 @@ pref("extensions.tbsync.eas.timeout", 90000);
 pref("extensions.tbsync.eas.synclimit", 7);
 pref("extensions.tbsync.eas.maxitems", 50);
 
-pref("extensions.tbsync.eas.syncrecurringevents", true);
+pref("extensions.tbsync.eas.usenewcontactsynccode", false);
 
 pref("extensions.tbsync.hidephones",false);
 pref("extensions.tbsync.showanniversary",false);

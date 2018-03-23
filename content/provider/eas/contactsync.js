@@ -24,19 +24,19 @@ eas.sync.Contacts = {
             adoptItem: function (card) { 
                 /* add card to addressbook */
                 addressbook.addCard(card);
-            }
+            },
 
             modifyItem: function (newcard, existingcard) {
                 /* modify card */
                 addressbook.modifyCard(newcard);
-            }
+            },
 
             deleteItem: function (card) {
                 /* remove card from addressBook */
                 let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
                 cardsToDelete.appendElement(card);
                 addressbook.deleteCards(cardsToDelete);
-            }
+            },
 
             getItem: function (searchId) {
                 /* return array of items matching */
@@ -45,10 +45,10 @@ eas.sync.Contacts = {
                 
                 if (card) {
                     let item = {
-                        get id() {return searchId};
-                        get title() {return null};
-                        get icalString() {return null};
-                        set id(setId) {};
+                        get id() {return searchId},
+                        get title() {return null},
+                        get icalString() {return null},
+                        set id(setId) {},
                         clone: function () { return this; } //no real clone
                     };
                     
