@@ -1,5 +1,5 @@
 # TbSync
-[Thunderbird Add-On] Sync contacts, tasks and events to Thunderbird using Exchange Active Sync (EAS). 
+[Thunderbird Add-On] Sync contacts, tasks and events to Thunderbird using Exchange ActiveSync (EAS). 
 
 Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki) of the TbSync project.
 
