@@ -53,6 +53,7 @@ status.global.103=The XML provided in the request does not follow the protocol r
 status.ServerRejectedSomeItems=The EAS server accepted only ##replace.2## of your items and rejected the remaining ones for the following reasons: ##replace.1##. Check the debug log for "Bad item skipped". A rejection error of "invalid XML" could be caused by a bug in TbSync.
 status.ServerRejectedAllItems=The EAS server rejected your items for the following reasons: ##replace.1##. Check the debug log for "Bad item skipped".
 status.ServerRejectedRequest=The EAS Server rejected our last request. This is probably due to a bug in TbSync. Check the debug log for more information.
+status.TempServerError=Server reported temporary system issue, or bad item. This is frequently a transient condition (try again later).
 
 status.nosupportedeasversion=Server does not support ActiveSync v2.5 or v14.0 (only ##replace.1##). TbSync will not work with this ActiveSync server.
 status.notsupportedeasversion=Server does not support selected ActiveSync v##replace.1## (only ##replace.2##).

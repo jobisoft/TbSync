@@ -1478,6 +1478,9 @@ var eas = {
             case "Sync:4":
                 throw eas.finishSync("ServerRejectedRequest", eas.flags.abortWithError);                            
             
+            case "Sync:5":
+                throw eas.finishSync("TempServerError", eas.flags.abortWithError);                            
+
             case "Sync:6":
                 //Server does not accept one of our items or the entire request. IF allowSoftFail is set, continue syncing
                 if (allowSoftFail) return false;
