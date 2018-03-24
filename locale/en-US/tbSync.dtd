@@ -14,8 +14,10 @@
 <!ENTITY pref.TbSync "TbSync">
 <!ENTITY pref.Close "Close">
 <!ENTITY pref.SettingDialog "Account Settings">
-<!ENTITY pref.DeleteAccount "Delete account">
-<!ENTITY pref.SyncAll "Synchronize all">
+<!ENTITY pref.DeleteAccount "Delete selected account">
+<!ENTITY pref.AddAccount "Add new account">
+<!ENTITY pref.SyncAll "Synchronize all accounts">
+<!ENTITY pref.AccountActions "Account actions">
 
 <!ENTITY pref.noaccounts "There have not yet been defined any accounts.">
 

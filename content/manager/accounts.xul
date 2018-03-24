@@ -35,18 +35,24 @@
             <hbox>
              <vbox flex="1">
                 <button 
-                id="tbSyncAccounts.btnSyncAll"
-                label="&pref.SyncAll;"
+                id="tbSyncAccounts.btnAccountActions"
+                label="&pref.AccountActions;"
                 style="margin-left:0; margin-right:0"
-                oncommand="tbSync.syncAccount('sync');"/>
+                type="menu">
+                        <menupopup id="accountActionsDropdown" nonpopupshowing="">
+                              <menuitem id="accountActionsAddAccount"
+                                    label="&pref.AddAccount;"
+                                    oncommand="tbSyncAccounts.addAccount();"/>
+                              <menuitem id="accountActionsDeleteAccount"
+                                    label="&pref.DeleteAccount;"
+                                    oncommand="tbSyncAccounts.deleteAccount();"/>
+                              <menuseparator id="accountActionsDropdownSep1"/>
+                              <menuitem id="accountActionsSyncAllAccounts"
+                                    label="&pref.SyncAll;"
+                                    oncommand="tbSync.syncAccount('sync');"/>
+                        </menupopup>
+                </button>
              </vbox>
-             <hbox>                  
-                <button 
-                id="tbSyncAccounts.btnAddAccount"
-                style="width: 2em; min-width: 2em; margin-right:0"
-                label="+"
-                oncommand="tbSyncAccounts.addAccount();"/>
-             </hbox>                  
             </hbox>
         </vbox>
         <iframe id="tbSyncAccounts.contentFrame" type="content" flex="1" style="margin-left:12px;"/>

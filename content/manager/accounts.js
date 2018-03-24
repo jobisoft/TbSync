@@ -25,12 +25,10 @@ var tbSyncAccounts = {
     addAccount: function () {
         //EAS hardcoded, will be made dynamic as soon as different providers are usable
         document.getElementById("tbSyncAccounts.accounts").disabled=true;
-        document.getElementById("tbSyncAccounts.btnSyncAll").disabled=true;
-        document.getElementById("tbSyncAccounts.btnAddAccount").disabled=true;
+        document.getElementById("tbSyncAccounts.btnAccountActions").disabled=true;
         window.openDialog("chrome://tbsync/content/provider/eas/newaccount.xul", "easnewaccount", "centerscreen,modal,resizable=no");
         document.getElementById("tbSyncAccounts.accounts").disabled=false;
-        document.getElementById("tbSyncAccounts.btnSyncAll").disabled=false;
-        document.getElementById("tbSyncAccounts.btnAddAccount").disabled=false;
+        document.getElementById("tbSyncAccounts.btnAccountActions").disabled=false;
     },
 
 
