@@ -202,6 +202,9 @@ var tbSyncAccountSettings = {
         let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "status");
         let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connected, disconnected
 
+        document.getElementById('syncstate_link').textContent = "";
+        document.getElementById('syncstate_link').setAttribute("dest", "");
+
         if (status == "syncing") {
             let syncdata = tbSync.getSyncData(tbSyncAccountSettings.selectedAccount);
             let accounts = tbSync.db.getAccounts().data;
@@ -227,7 +230,15 @@ var tbSyncAccountSettings = {
             }
 
         } else {
-            document.getElementById('syncstate').textContent = tbSync.getLocalizedMessage("status." + status);
+            let localized = tbSync.getLocalizedMessage("status." + status);
+
+            //check, if this localized string contains a link
+            let parts = localized.split("||");
+            document.getElementById('syncstate').textContent = parts[0];
+            if (parts.length==3) {
+                    document.getElementById('syncstate_link').setAttribute("dest", parts[1]);
+                    document.getElementById('syncstate_link').textContent = parts[2];
+            }            
         }
 
         //disable connect/disconnect btn, sync btn and folderlist during sync, also hide sync button if disconnected

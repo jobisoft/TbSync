@@ -121,7 +121,7 @@
                 </row>
                 <row>
                      <label value="&pref.syncstate;" />
-                     <label id="syncstate" style="height: 4ex; white-space: pre-line; margin-left:0"></label>
+                     <html:div style="margin-bottom: 2ex; margin-left:0"><html:span id="syncstate"></html:span> <html:span id="syncstate_link" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" dest="" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/wiki/' + this.getAttribute('dest'));" style="color:blue;text-decoration: underline"></html:span></html:div>
                 </row>
 
                 <row>
