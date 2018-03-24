@@ -377,11 +377,9 @@ var tbSync = {
         try {
             //spezial treatment of strings with :: like status.httperror::403
             localized = bundle.GetStringFromName(parts[0]);
-            if (parts.length>1) {
-                for (let i = 1; i<parts.length; i++) {
-                    let regex = new RegExp( "##replace\."+i+"##", "g");
-                    localized = localized.replace(regex, parts[i]);
-                }
+            for (let i = 0; i<parts.length; i++) {
+                let regex = new RegExp( "##replace\."+i+"##", "g");
+                localized = localized.replace(regex, parts[i]);
             }
         } catch (e) {}
 
