@@ -624,7 +624,8 @@ eas.sync = {
                 recRule.untilDate = tbSync.createDateTime(data.Recurrence.Until);
             }
             item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
-            if (data.Exceptions) {
+
+            if (data.Exceptions && syncdata.type == "Calendar") { // only events, tasks cannot have exceptions
                 // Exception could be an object or an array of objects
                 let exceptions = [].concat(data.Exceptions.Exception);
                 for (let exception of exceptions) {
@@ -649,14 +650,15 @@ eas.sync = {
         }
     },
 
-    getItemRecurrence: function (item, syncdata) {
+    getItemRecurrence: function (item, syncdata, localStartDate = null) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
         let wbxml = tbSync.wbxmltools.createWBXML("", syncdata.type); //init wbxml with "" and not with precodes, also activate type codePage (Calendar, Tasks etc)
 
-        if (item.recurrenceInfo) {
+        if (item.recurrenceInfo && (syncdata.type == "Calendar" || syncdata.type == "Tasks")) {
             let deleted = [];
             let hasRecurrence = false;
-            
+            let startDate = (syncdata.type == "Calendar") ? item.startDate : item.entryDate;
+		
             for (let recRule of item.recurrenceInfo.getRecurrenceItems({})) {
                 if (recRule.date) {
                     if (recRule.isNegative) {
@@ -674,6 +676,7 @@ eas.sync = {
                     tbSync.dump("Ignoring EXRULE rule", recRule.icalString);
                     continue;
                 }
+		
                 // RRULE
                 wbxml.otag("Recurrence");
                 hasRecurrence = true;
@@ -682,9 +685,8 @@ eas.sync = {
                 let monthDays = recRule.getComponent("BYMONTHDAY", {});
                 let weekDays  = recRule.getComponent("BYDAY", {});
                 let months    = recRule.getComponent("BYMONTH", {});
-                //proposed change by Chris Allan
-                //let weeks     = recRule.getComponent("BYWEEKNO", {});
                 let weeks     = [];
+
                 // Unpack 1MO style days
                 for (let i = 0; i < weekDays.length; ++i) {
                     if (weekDays[i] > 8) {
@@ -710,7 +712,7 @@ eas.sync = {
                 if (recRule.type == "WEEKLY") {
                     type = 1;
                     if (!weekDays.length) {
-                        weekDays = [item.startDate.weekday + 1];
+                        weekDays = [startDate.weekday + 1];
                     }
                 }
                 else if (recRule.type == "MONTHLY" && weeks.length) {
@@ -719,7 +721,7 @@ eas.sync = {
                 else if (recRule.type == "MONTHLY") {
                     type = 2;
                     if (!monthDays.length) {
-                        monthDays = [item.startDate.day];
+                        monthDays = [startDate.day];
                     }
                 }
                 else if (recRule.type == "YEARLY" && weeks.length) {
@@ -728,13 +730,17 @@ eas.sync = {
                 else if (recRule.type == "YEARLY") {
                     type = 5;
                     if (!monthDays.length) {
-                        monthDays = [item.startDate.day];
+                        monthDays = [startDate.day];
                     }
                     if (!months.length) {
-                        months = [item.startDate.month + 1];
+                        months = [startDate.month + 1];
                     }
                 }
                 wbxml.atag("Type", type.toString());
+                
+                //Tasks need a Start tag, but we cannot allow a start date different from the start of the main item (thunderbird does not support that)
+                if (localStartDate) wbxml.atag("Start", localStartDate);
+                
                 // TODO: CalendarType: 14.0 and up
                 // DayOfMonth
                 if (monthDays[0]) {
@@ -764,7 +770,8 @@ eas.sync = {
                 }
                 // Until
                 else if (recRule.untilDate != null) {
-                    wbxml.atag("Until", tbSync.getIsoUtcString(recRule.untilDate));
+                    //Events need the Until data in compact form, Tasks in the basic form
+                    wbxml.atag("Until", tbSync.getIsoUtcString(recRule.untilDate, (syncdata.type == "Tasks")));
                 }
                 // WeekOfMonth
                 if (weeks.length) {
