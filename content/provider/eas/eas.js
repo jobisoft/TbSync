@@ -383,7 +383,7 @@ var eas = {
                 else folderReSyncs = 1;
 
                 if (folderReSyncs > 3) {
-                    throw eas.finishSync("resync-loop", eas.flags.abortWithError);
+                    throw eas.finishSync("resync-loop");
                 }
 
                 syncdata.synckey = folders[0].synckey;
@@ -426,7 +426,7 @@ var eas = {
                     case "Contacts": 
                         // check SyncTarget
                         if (!tbSync.checkAddressbook(syncdata.account, syncdata.folderID)) {
-                            throw eas.finishSync("notargets", eas.flags.abortWithError);
+                            throw eas.finishSync("notargets");
                         }
 
                         //get sync target of this addressbook
@@ -449,7 +449,7 @@ var eas = {
                         
                         // check SyncTarget
                         if (!tbSync.checkCalender(syncdata.account, syncdata.folderID)) {
-                            throw eas.finishSync("notargets", eas.flags.abortWithError);
+                            throw eas.finishSync("notargets");
                         }
 
                         syncdata.targetId = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
@@ -1367,7 +1367,7 @@ var eas = {
                         //What to do on error? IS this an error? Yes!
                         if (response.length !== 0 && response.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
                             tbSync.dump("Recieved Data", "Expecting WBXML but got junk (request status = " + syncdata.req.status + ", ready state = " + syncdata.req.readyState + "\n>>>>>>>>>>\n" + response + "\n<<<<<<<<<<\n");
-                            reject(eas.finishSync("invalid", eas.flags.abortWithError));
+                            reject(eas.finishSync("invalid"));
                         } else {
                             resolve(response);
                         }
@@ -1415,20 +1415,20 @@ var eas = {
         //check for empty wbxml
         if (wbxml.length === 0) {
             if (allowEmptyResponse) return null;
-            else throw eas.finishSync("empty-response", eas.flags.abortWithError);
+            else throw eas.finishSync("empty-response");
         }
 
         //convert to save xml (all special chars in user data encoded by encodeURIComponent) and check for parse errors
         let xml = wbxmltools.convert2xml(wbxml);
         if (xml === false) {
-            throw eas.finishSync("wbxml-parse-error", eas.flags.abortWithError);
+            throw eas.finishSync("wbxml-parse-error");
         }
         
         //retrieve data and check for empty data (all returned data fields are already decoded by decodeURIComponent)
         let wbxmlData = xmltools.getDataFromXMLString(xml);
         if (wbxmlData === null) {
             if (allowEmptyResponse) return null;
-            else throw eas.finishSync("response-contains-no-data", eas.flags.abortWithError);
+            else throw eas.finishSync("response-contains-no-data");
         }
         
         //debug
@@ -1450,7 +1450,7 @@ var eas = {
             if (mainStatus === false) {
                 //both possible status fields are missing, report and abort
                 tbSync.dump("wbxml status", "Server response does not contain mandatory <"+fullpath+"> field . Error? Aborting Sync.");
-                throw eas.finishSync("wbxmlmissingfield::" + fullpath, eas.flags.abortWithError);
+                throw eas.finishSync("wbxmlmissingfield::" + fullpath);
             } else {
                 //the alternative status could be extracted
                 status = mainStatus;

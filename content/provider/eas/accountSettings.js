@@ -534,6 +534,7 @@ var tbSyncAccountSettings = {
                     
                 }
                 tbSyncAccountSettings.updateSyncstate();
+                //do not alert at all
                 //if (msg !== null) alert(msg);
             }
         }
