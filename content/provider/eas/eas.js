@@ -436,8 +436,8 @@ var eas = {
                         //promisify addressbook, so it can be used together with yield
                         syncdata.targetObj = eas.sync.Contacts.promisifyAddressbook(syncdata.addressbookObj);
                         
-                        if (tbSync.prefSettings.getBoolPref("eas.usenewcontactsynccode")) yield eas.sync.start(syncdata);   //using pure tbsync code
-                        else yield eas.tzpush.start(syncdata); //using tzpush code
+                        if (tbSync.prefSettings.getBoolPref("eas.use_tzpush_contactsync_code")) yield eas.tzpush.start(syncdata); //using old tzpush contact sync code
+                        else yield eas.sync.start(syncdata);   //using new tbsync contacts sync code
                         break;
 
                     case "Calendar":
