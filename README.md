@@ -18,4 +18,6 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [sync16.png] http://carlosjj.deviantart.com/art/Google-JFK-Icons-ICO-and-PNG-270715545
 * [calendar16.png] https://www.iconfinder.com/icons/27835/calendar_date_january_icon#size=16 / http://icons8.com/
 * [contacts16.png] http://findicons.com/icon/237992/contact?id=404946
-* [todo16] http://findicons.com/icon/237965/todo
+* [todo16.png] http://findicons.com/icon/237965/todo
+* [add16.png] https://www.awicons.com/
+* [del16.png] https://www.awicons.com/
