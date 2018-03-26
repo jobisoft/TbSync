@@ -20,6 +20,7 @@ var tbSyncAccountSettings = {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate", false);
         observerService.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui", false);
+        observerService.addObserver(tbSyncAccountSettings.toggleConnectionStateObserver, "tbsync.toggleConnectionState", false);
         tbSyncAccountSettings.init = true;
     },
 
@@ -29,6 +30,7 @@ var tbSyncAccountSettings = {
         if (tbSyncAccountSettings.init) {
             observerService.removeObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate");
             observerService.removeObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui");
+            observerService.removeObserver(tbSyncAccountSettings.toggleConnectionStateObserver, "tbsync.toggleConnectionState");
         }
     },
 
@@ -492,28 +494,43 @@ var tbSyncAccountSettings = {
         //ignore cancel request, if button is disabled or a sync is ongoing
         if (document.getElementById('tbsync.accountsettings.connectbtn').disabled || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount)) return;
 
-        let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connected, disconnected
-        if (state == "connected") {
-            //we are connected and want to disconnect
-            if (window.confirm(tbSync.getLocalizedMessage("prompt.Disconnect"))) {
-                tbSync.eas.disconnectAccount(tbSyncAccountSettings.selectedAccount);
-                tbSyncAccountSettings.updateGui();
-                let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                observerService.notifyObservers(null, "tbsync.changedSyncstate", tbSyncAccountSettings.selectedAccount);
-            }
-        } else if (state == "disconnected") {
-            //we are disconnected and want to connected
-            tbSync.eas.connectAccount(tbSyncAccountSettings.selectedAccount);
-            tbSyncAccountSettings.updateGui();
-            tbSyncAccountSettings.saveSettings();
-            tbSync.syncAccount("sync", tbSyncAccountSettings.selectedAccount);
-        }
+        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+        observerService.notifyObservers(null, "tbsync.toggleConnectionState", tbSyncAccountSettings.selectedAccount);
+        
     },
 
 
     /* * *
     * Observer to catch changing syncstate and to update the status info.
     */
+    toggleConnectionStateObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            let account = aData;            
+            
+            //only handle syncstate changes of the active account
+            if (account == tbSyncAccountSettings.selectedAccount) {
+
+                let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connected, disconnected
+                if (state == "connected") {
+                    //we are connected and want to disconnect
+                    if (window.confirm(tbSync.getLocalizedMessage("prompt.Disconnect"))) {
+                        tbSync.eas.disconnectAccount(tbSyncAccountSettings.selectedAccount);
+                        tbSyncAccountSettings.updateGui();
+                        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+                        observerService.notifyObservers(null, "tbsync.changedSyncstate", tbSyncAccountSettings.selectedAccount);
+                    }
+                } else if (state == "disconnected") {
+                    //we are disconnected and want to connected
+                    tbSync.eas.connectAccount(tbSyncAccountSettings.selectedAccount);
+                    tbSyncAccountSettings.updateGui();
+                    tbSyncAccountSettings.saveSettings();
+                    tbSync.syncAccount("sync", tbSyncAccountSettings.selectedAccount);
+                }
+                
+            }
+        }
+    },
+    
     syncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
             let account = aData;            

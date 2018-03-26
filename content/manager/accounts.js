@@ -32,6 +32,21 @@ var tbSyncAccounts = {
     },
 
 
+    disconnectAccount: function () {
+        let accountsList = document.getElementById("tbSyncAccounts.accounts");
+        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {            
+            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+            observerService.notifyObservers(null, "tbsync.toggleConnectionState", accountsList.selectedItem.value);
+        }
+    },
+
+    synchronizeAccount: function () {
+        let accountsList = document.getElementById("tbSyncAccounts.accounts");
+        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {            
+            tbSync.syncAccount('sync', accountsList.selectedItem.value);
+        }
+    },
+
     deleteAccount: function () {
         let accountsList = document.getElementById("tbSyncAccounts.accounts");
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {

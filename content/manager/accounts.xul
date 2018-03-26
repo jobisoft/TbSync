@@ -11,12 +11,6 @@
     onunload="tbSyncAccounts.onunload();"
     title="TbSync Account Settings" >
 
-    <popupset>
-        <menupopup id="tbsync.accountmanger.ContextMenu">
-            <menuitem id="tbsync.accountmanger.ContextMenuDelete" label="&pref.DeleteAccount;" oncommand="tbSyncAccounts.deleteAccount();"/>
-        </menupopup>
-    </popupset>
-
     <hbox flex="1">
         <vbox width="200">
             <richlistbox 
@@ -24,7 +18,6 @@
                 flex="1"
                 style="margin-left:0; margin-right:0"
                 seltype="single"
-                context="tbsync.accountmanger.ContextMenu"
                 onkeypress="if (event.keyCode == 46) {tbSyncAccounts.deleteAccount();}"
                 onselect="tbSyncAccounts.loadSelectedAccount();">
                 <listhead style="border-bottom: 1px solid lightgrey;">
@@ -40,16 +33,32 @@
                 style="margin-left:0; margin-right:0"
                 type="menu">
                         <menupopup id="accountActionsDropdown" nonpopupshowing="">
-                              <menuitem id="accountActionsAddAccount"
+                            <menuitem id="accountActionsAddAccount"
+                                    class="menuitem-iconic"
+                                    image="chrome://tbsync/skin/add16.png"
                                     label="&pref.AddAccount;"
                                     oncommand="tbSyncAccounts.addAccount();"/>
-                              <menuitem id="accountActionsDeleteAccount"
-                                    label="&pref.DeleteAccount;"
-                                    oncommand="tbSyncAccounts.deleteAccount();"/>
-                              <menuseparator id="accountActionsDropdownSep1"/>
-                              <menuitem id="accountActionsSyncAllAccounts"
+                            <menuitem id="accountActionsSyncAllAccounts"
+                                    class="menuitem-iconic"
+                                    image="chrome://tbsync/skin/sync16.png"
                                     label="&pref.SyncAll;"
                                     oncommand="tbSync.syncAccount('sync');"/>
+                            <menuseparator id="accountActionsDropdownSep1"/>
+                            <menuitem id="accountActionsDeleteAccount"
+                                    class="menuitem-iconic"
+                                    image="chrome://tbsync/skin/del16.png"
+                                    label="&pref.DeleteAccount;"
+                                    oncommand="tbSyncAccounts.deleteAccount();"/>
+                            <menuitem id="accountActionsToggleAccount" 
+                                    class="menuitem-iconic"
+                                    image="chrome://tbsync/skin/discon.png"
+                                    label="&pref.DisconnectAccount;" 
+                                    oncommand="tbSyncAccounts.disconnectAccount();"/>
+                            <menuitem id="accountActionsSyncAccount" 
+                                    class="menuitem-iconic"
+                                    image="chrome://tbsync/skin/sync16.png"
+                                    label="&pref.SynchronizeAccount;" 
+                                    oncommand="tbSyncAccounts.synchronizeAccount();"/>
                         </menupopup>
                 </button>
              </vbox>
