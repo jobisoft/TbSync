@@ -31,10 +31,46 @@ var tbSyncAccounts = {
         document.getElementById("tbSyncAccounts.btnAccountActions").disabled=false;
     },
 
-
-    disconnectAccount: function () {
+    updateActionsDropdown: function () {
         let accountsList = document.getElementById("tbSyncAccounts.accounts");
-        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {            
+        let selectedAccount = null;
+        let selectedAccountName = "";
+        let isSyncing = false;
+        let state = "";
+        
+        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
+            //some item is selected
+            let selectedItem = accountsList.selectedItem;
+            selectedAccount = selectedItem.value;
+            selectedAccountName = selectedItem.getAttribute("label");
+            isSyncing = tbSync.isSyncing(selectedAccount);
+            state = tbSync.db.getAccountSetting(selectedAccount, "state"); //connected, disconnected
+        }
+        
+        //hide if no accounts are avail (which is identical to no account selected)
+        document.getElementById("accountActionsSyncAllAccounts").hidden = (selectedAccount === null);
+
+        //hide if no account is selected
+        document.getElementById("accountActionsDropdownSep1").hidden = (selectedAccount === null);
+        document.getElementById("accountActionsDeleteAccount").hidden = (selectedAccount === null);
+        document.getElementById("accountActionsToggleAccount").hidden = (selectedAccount === null);
+        document.getElementById("accountActionsSyncAccount").hidden = (selectedAccount === null) || (state == "disconnected");
+
+        if (selectedAccount !== null) {
+            //disable if currently syncing (and displayed)
+            document.getElementById("accountActionsDeleteAccount").disabled = isSyncing;
+            document.getElementById("accountActionsToggleAccount").disabled = isSyncing;
+            document.getElementById("accountActionsSyncAccount").disabled = isSyncing;
+            //adjust labels
+            document.getElementById("accountActionsDeleteAccount").label = tbSync.getLocalizedMessage("accountacctions.delete").replace("##accountname##", selectedAccountName);
+            document.getElementById("accountActionsSyncAccount").label = tbSync.getLocalizedMessage("accountacctions.sync").replace("##accountname##", selectedAccountName);
+            document.getElementById("accountActionsToggleAccount").label = tbSync.getLocalizedMessage("accountacctions.is_" + state).replace("##accountname##", selectedAccountName);
+        }
+    },
+    
+    toggleConnectionState: function () {
+        let accountsList = document.getElementById("tbSyncAccounts.accounts");
+        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value) && !tbSync.isSyncing(accountsList.selectedItem.value)) {            
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
             observerService.notifyObservers(null, "tbsync.toggleConnectionState", accountsList.selectedItem.value);
         }
@@ -42,14 +78,14 @@ var tbSyncAccounts = {
 
     synchronizeAccount: function () {
         let accountsList = document.getElementById("tbSyncAccounts.accounts");
-        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {            
+        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)  && !tbSync.isSyncing(accountsList.selectedItem.value)) {            
             tbSync.syncAccount('sync', accountsList.selectedItem.value);
         }
     },
 
     deleteAccount: function () {
         let accountsList = document.getElementById("tbSyncAccounts.accounts");
-        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
+        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)  && !tbSync.isSyncing(accountsList.selectedItem.value)) {
             let nextAccount =  -1;
             if (accountsList.selectedIndex > 0) {
                 //first try to select the item after this one, otherwise take the one before

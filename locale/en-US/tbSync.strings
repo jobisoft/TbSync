@@ -70,6 +70,11 @@ button.syncthis=Synchronize this account
 
 account=TbSync account [##accountname##]
 
+accountacctions.delete=Delete account "##accountname##"
+accountacctions.sync=Synchronize account "##accountname##"
+accountacctions.is_disconnected=Connect and synchronize account "##accountname##"
+accountacctions.is_connected=Disconnect account "##accountname##" (edit settings)
+
 config.auto=ActiveSync server configuration (Autodiscover)
 config.custom=ActiveSync server configuration
 config.outlook.com=Server configuration for Outlook.com accounts

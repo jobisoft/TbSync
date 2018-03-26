@@ -18,7 +18,7 @@
 <!ENTITY pref.DisconnectAccount "Disconnect selected account">
 <!ENTITY pref.DeleteAccount "Delete selected account">
 <!ENTITY pref.AddAccount "Add new account">
-<!ENTITY pref.SyncAll "Synchronize all accounts">
+<!ENTITY pref.SyncAll "Synchronize all connected accounts">
 <!ENTITY pref.AccountActions "Account actions">
 
 <!ENTITY pref.noaccounts "There are not yet any accounts defined.">
