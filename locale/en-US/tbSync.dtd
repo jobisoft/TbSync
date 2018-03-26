@@ -21,7 +21,7 @@
 <!ENTITY pref.SyncAll "Synchronize all accounts">
 <!ENTITY pref.AccountActions "Account actions">
 
-<!ENTITY pref.noaccounts "There have not yet been defined any accounts.">
+<!ENTITY pref.noaccounts "There are not yet any accounts defined.">
 
 <!ENTITY pref.help "Help">
 <!ENTITY pref.cape "Cape">

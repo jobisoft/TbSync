@@ -5,7 +5,7 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 
 ### External data sources
 
-* TbSync is using a [timezone mapping](https://github.com/mj1856/TimeZoneConverter/blob/master/src/TimeZoneConverter/Data/Mapping.csv.gz) provided by [Matt Johnson](https://github.com/mj1856)
+* TbSync uses a [timezone mapping](https://github.com/mj1856/TimeZoneConverter/blob/master/src/TimeZoneConverter/Data/Mapping.csv.gz) provided by [Matt Johnson](https://github.com/mj1856)
 
 ### Icon sources
 
