@@ -6,7 +6,7 @@ autodiscover.Ok=Autodiscover completed successfully, you can now check the optio
 autodiscover.NeedEmail=Autodiscover needs a valid email address as user name.
 
 autodiscover.Failed=Autodiscover for user <##user##> failed.
-autodiscover.FailedUnknown=Either the provided credentials where wrong, your ActiveSync provider has a temporary issue or does not support Autodiscover.
+autodiscover.FailedUnknown=Either the provided credentials were wrong or your ActiveSync provider has a temporary issue, or does not support Autodiscover.
 autodiscover.FailedSecurity=Also the following certificate errors have been reported, which *might* indicate a problem with your ActiveSync provider:
 
 deletefolder.notallowed=Please unsubscribe folder "##replace.1##" before trying to purge it from trash.
@@ -18,9 +18,9 @@ subscribe.off=Unsubscribe "##replace.1##"
 
 recyclebin = Trash
 
-syncstate.syncing=Initialize synchronisation
-syncstate.preparing=Preparing next item for synchronisation
-syncstate.done=Preparing next item for synchronisation
+syncstate.syncing=Initialize synchronization
+syncstate.preparing=Preparing next item for synchronization
+syncstate.done=Preparing next item for synchronization
 syncstate.accountdone=Finished account
 
 syncstate.prepare.request.autodiscover=Requesting updated server settings
@@ -43,8 +43,8 @@ syncstate.prepare.request.deletefolder=Preparing to delete folder
 syncstate.send.request.deletefolder=Waiting for folder to be deleted
 syncstate.eval.response.deletefolder=Folder deleted
 
-syncstate.prepare.request.provision=Requesting provison
-syncstate.send.request.provision=Waiting for provison
+syncstate.prepare.request.provision=Requesting provision
+syncstate.send.request.provision=Waiting for provision
 syncstate.eval.response.provision=Processing provision
 
 syncstate.prepare.request.estimate=Requesting change estimate

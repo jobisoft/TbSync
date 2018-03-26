@@ -33,8 +33,8 @@
                         <vbox><image src="chrome://tbsync/skin/sponsors/nethinks.png" style='padding:1px; margin:3px; border:1px solid black' align='center' onclick="tbSync.openLink('http://www.nethinks.com/');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" /></vbox>
                     </row>
                     <row>
-                        <description style="text-align: center; width:120px">netcup GmbH is sponsoring a SOGo test account</description>
-                        <description style="text-align: center; width:120px">nethinks GmbH is sponsoring a Zarafa test account</description>
+                        <description style="text-align: center; width:120px">netcup GmbH sponsors a SOGo test account</description>
+                        <description style="text-align: center; width:120px">nethinks GmbH sponsors a Zarafa test account</description>
                     </row>
                </rows>
 
