@@ -18,7 +18,7 @@ Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("resource://gre/modules/AddonManager.jsm");
 Components.utils.import("resource://gre/modules/NetUtil.jsm");
-
+Components.utils.importGlobalProperties(["XMLHttpRequest"]);
 
 
 //Date has a toISOString method, which returns the Date obj as extended ISO 8601,
