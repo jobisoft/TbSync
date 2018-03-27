@@ -13,12 +13,14 @@ var tbSyncAccounts = {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.changedSyncstate", false);
         observerService.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.changedAccountName", false);
+        observerService.addObserver(tbSyncAccounts.toggleConnectionStateObserver, "tbsync.toggleConnectionState", false);
     },
 
     onunload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.removeObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.changedSyncstate");
         observerService.removeObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.changedAccountName");
+        observerService.removeObserver(tbSyncAccounts.toggleConnectionStateObserver, "tbsync.toggleConnectionState");
     },
 
 
@@ -104,6 +106,32 @@ var tbSyncAccounts = {
 
                 this.updateAccountsList(nextAccount);
             }
+        }
+    },
+
+
+    /* * *
+    * Observer to catch connections state toggle
+    */
+    toggleConnectionStateObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            let account = aData;                        
+            let state = tbSync.db.getAccountSetting(account, "state"); //connected, disconnected
+            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+
+            if (state == "connected") {
+                //we are connected and want to disconnect
+                if (window.confirm(tbSync.getLocalizedMessage("prompt.Disconnect"))) {
+                    tbSync[tbSync.db.getAccountSetting(account, "provider")].disconnectAccount(account);
+                    observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
+                }
+            } else if (state == "disconnected") {
+                //we are disconnected and want to connected
+                tbSync[tbSync.db.getAccountSetting(account, "provider")].connectAccount(account);
+                observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
+                tbSync.syncAccount("sync", account);
+            }
+                
         }
     },
 

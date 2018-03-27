@@ -20,7 +20,6 @@ var tbSyncAccountSettings = {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate", false);
         observerService.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui", false);
-        observerService.addObserver(tbSyncAccountSettings.toggleConnectionStateObserver, "tbsync.toggleConnectionState", false);
         tbSyncAccountSettings.init = true;
     },
 
@@ -30,7 +29,6 @@ var tbSyncAccountSettings = {
         if (tbSyncAccountSettings.init) {
             observerService.removeObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate");
             observerService.removeObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui");
-            observerService.removeObserver(tbSyncAccountSettings.toggleConnectionStateObserver, "tbsync.toggleConnectionState");
         }
     },
 
@@ -96,34 +94,6 @@ var tbSyncAccountSettings = {
     },
 
 
-    /* * *
-    * Run through all defined TbSync settings and if there is a corresponding
-    * field in the settings dialog, store its current value.
-    */
-    saveSettings: function () {
-        let settings = tbSync.eas.getAccountStorageFields();
-
-        let data = tbSync.db.getAccount(tbSyncAccountSettings.selectedAccount); //gets a reference
-        for (let i=0; i<settings.length;i++) {
-            if (document.getElementById("tbsync.accountsettings." + settings[i])) {
-                //bool fields need special treatment
-                if (document.getElementById("tbsync.accountsettings." + settings[i]).tagName == "checkbox") {
-                    //BOOL
-                    if (document.getElementById("tbsync.accountsettings." + settings[i]).checked) data[settings[i]] = "1";
-                    else data[settings[i]] = "0";
-                } else {
-                    //Not BOOL
-                    data[settings[i]] = document.getElementById("tbsync.accountsettings." + settings[i]).value;
-                }
-            }
-        }
-        
-        tbSync.db.saveAccounts(); //write modified accounts to disk
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tbsync.changedAccountName", tbSyncAccountSettings.selectedAccount + ":" + data.accountname);
-    },
-
-
     instantSaveSetting: function (field) {
         let setting = field.id.replace("tbsync.accountsettings.","");
         let value = "";
@@ -140,6 +110,7 @@ var tbSyncAccountSettings = {
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
             observerService.notifyObservers(null, "tbsync.changedAccountName", tbSyncAccountSettings.selectedAccount + ":" + field.value);
         }
+        tbSync.db.saveAccounts(); //write modified accounts to disk
     },
 
 
@@ -172,6 +143,8 @@ var tbSyncAccountSettings = {
             //only update if request for this account
             if (aData == tbSyncAccountSettings.selectedAccount) {
                 tbSyncAccountSettings.loadSettings();
+                let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+                observerService.notifyObservers(null, "tbsync.changedSyncstate", aData);
             }
         }
     },
@@ -502,35 +475,7 @@ var tbSyncAccountSettings = {
 
     /* * *
     * Observer to catch changing syncstate and to update the status info.
-    */
-    toggleConnectionStateObserver: {
-        observe: function (aSubject, aTopic, aData) {
-            let account = aData;            
-            
-            //only handle syncstate changes of the active account
-            if (account == tbSyncAccountSettings.selectedAccount) {
-
-                let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connected, disconnected
-                if (state == "connected") {
-                    //we are connected and want to disconnect
-                    if (window.confirm(tbSync.getLocalizedMessage("prompt.Disconnect"))) {
-                        tbSync.eas.disconnectAccount(tbSyncAccountSettings.selectedAccount);
-                        tbSyncAccountSettings.updateGui();
-                        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                        observerService.notifyObservers(null, "tbsync.changedSyncstate", tbSyncAccountSettings.selectedAccount);
-                    }
-                } else if (state == "disconnected") {
-                    //we are disconnected and want to connected
-                    tbSync.eas.connectAccount(tbSyncAccountSettings.selectedAccount);
-                    tbSyncAccountSettings.updateGui();
-                    tbSyncAccountSettings.saveSettings();
-                    tbSync.syncAccount("sync", tbSyncAccountSettings.selectedAccount);
-                }
-                
-            }
-        }
-    },
-    
+    */    
     syncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
             let account = aData;            

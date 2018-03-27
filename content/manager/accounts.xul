@@ -54,6 +54,12 @@
                                     image="chrome://tbsync/skin/discon.png"
                                     label="&pref.DisconnectAccount;" 
                                     oncommand="tbSyncAccounts.toggleConnectionState();"/>
+                            <menuitem id="accountActionsShowSyncLog"
+                                    class="menuitem-iconic"
+                                    image="chrome://tbsync/skin/warning16.png"
+                                    label="Show synchronization messages (todo)"
+                                    disabled="true"
+                                    noncommand=""/>
                             <menuitem id="accountActionsConnectAccount" 
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/connect.png"
