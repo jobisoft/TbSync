@@ -72,8 +72,8 @@ account=TbSync account [##accountname##]
 
 accountacctions.delete=Delete account "##accountname##"
 accountacctions.sync=Synchronize account "##accountname##"
-accountacctions.is_disconnected=Connect and synchronize account "##accountname##"
-accountacctions.is_connected=Disconnect account "##accountname##" (edit settings)
+accountacctions.is_disconnected=Lock settings and connect account "##accountname##"
+accountacctions.is_connected=Unlock settings and disconnect account "##accountname##"
 
 config.auto=ActiveSync server configuration (Autodiscover)
 config.custom=ActiveSync server configuration

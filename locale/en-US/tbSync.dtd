@@ -15,6 +15,7 @@
 <!ENTITY pref.Close "Close">
 <!ENTITY pref.SettingDialog "Account Settings">
 <!ENTITY pref.SynchronizeAccount "Synchronize selected account">
+<!ENTITY pref.ConnectAccount "Connect selected account">
 <!ENTITY pref.DisconnectAccount "Disconnect selected account">
 <!ENTITY pref.DeleteAccount "Delete selected account">
 <!ENTITY pref.AddAccount "Add new account">
