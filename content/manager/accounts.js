@@ -33,12 +33,13 @@ var tbSyncAccounts = {
         document.getElementById("tbSyncAccounts.btnAccountActions").disabled=false;
     },
 
-    updateActionsDropdown: function () {
+    updateDropdown: function (selector) {
         let accountsList = document.getElementById("tbSyncAccounts.accounts");
         let selectedAccount = null;
         let selectedAccountName = "";
         let isSyncing = false;
         let state = "";
+        let isActionsDropdown = (selector == "accountActions");
         
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
             //some item is selected
@@ -50,27 +51,34 @@ var tbSyncAccounts = {
         }
         
         //hide if no accounts are avail (which is identical to no account selected)
-        document.getElementById("accountActionsSyncAllAccounts").hidden = (selectedAccount === null);
+        if (isActionsDropdown) document.getElementById(selector + "SyncAllAccounts").hidden = (selectedAccount === null);
 
         //hide if no account is selected
-        document.getElementById("accountActionsDropdownSep1").hidden = (selectedAccount === null);
-        document.getElementById("accountActionsDeleteAccount").hidden = (selectedAccount === null);
-        document.getElementById("accountActionsDisconnectAccount").hidden = (selectedAccount === null) || (state == "disconnected");
-        document.getElementById("accountActionsConnectAccount").hidden = (selectedAccount === null) || (state == "connected");
-        document.getElementById("accountActionsSyncAccount").hidden = (selectedAccount === null) || (state == "disconnected");
+        if (isActionsDropdown) document.getElementById(selector + "Separator").hidden = (selectedAccount === null);
+        document.getElementById(selector + "DeleteAccount").hidden = (selectedAccount === null);
+        document.getElementById(selector + "DisconnectAccount").hidden = (selectedAccount === null) || (state == "disconnected");
+        document.getElementById(selector + "ConnectAccount").hidden = (selectedAccount === null) || (state == "connected");
+        document.getElementById(selector + "SyncAccount").hidden = (selectedAccount === null) || (state == "disconnected");
 
+        document.getElementById(selector + "ShowSyncLog").hidden = (selectedAccount === null) || (state == "disconnected");
+        document.getElementById(selector + "ShowSettings").hidden = (selectedAccount === null) || (state == "disconnected");        
+        //Not yet implemented
+        document.getElementById(selector + "ShowSyncLog").disabled = true;
+        document.getElementById(selector + "ShowSettings").disabled = true;
+        
         if (selectedAccount !== null) {
             //disable if currently syncing (and displayed)
-            document.getElementById("accountActionsDeleteAccount").disabled = isSyncing;
-            document.getElementById("accountActionsDisconnectAccount").disabled = isSyncing;
-            document.getElementById("accountActionsConnectAccount").disabled = isSyncing;
-            document.getElementById("accountActionsSyncAccount").disabled = isSyncing;
-            //adjust labels
-            document.getElementById("accountActionsDeleteAccount").label = tbSync.getLocalizedMessage("accountacctions.delete").replace("##accountname##", selectedAccountName);
-            document.getElementById("accountActionsSyncAccount").label = tbSync.getLocalizedMessage("accountacctions.sync").replace("##accountname##", selectedAccountName);
-            document.getElementById("accountActionsConnectAccount").label = tbSync.getLocalizedMessage("accountacctions.is_" + state).replace("##accountname##", selectedAccountName);
-            document.getElementById("accountActionsDisconnectAccount").label = tbSync.getLocalizedMessage("accountacctions.is_" + state).replace("##accountname##", selectedAccountName);
+            document.getElementById(selector + "DeleteAccount").disabled = isSyncing;
+            document.getElementById(selector + "DisconnectAccount").disabled = isSyncing;
+            document.getElementById(selector + "ConnectAccount").disabled = isSyncing;
+            document.getElementById(selector + "SyncAccount").disabled = isSyncing;
+            //adjust labels - only in global actions dropdown
+            if (isActionsDropdown) document.getElementById(selector + "DeleteAccount").label = tbSync.getLocalizedMessage("accountacctions.delete").replace("##accountname##", selectedAccountName);
+            if (isActionsDropdown) document.getElementById(selector + "SyncAccount").label = tbSync.getLocalizedMessage("accountacctions.sync").replace("##accountname##", selectedAccountName);
+            if (isActionsDropdown) document.getElementById(selector + "ConnectAccount").label = tbSync.getLocalizedMessage("accountacctions.is_" + state).replace("##accountname##", selectedAccountName);
+            if (isActionsDropdown) document.getElementById(selector + "DisconnectAccount").label = tbSync.getLocalizedMessage("accountacctions.is_" + state).replace("##accountname##", selectedAccountName);
         }
+        
     },
     
     toggleConnectionState: function () {

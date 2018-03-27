@@ -14,13 +14,17 @@
 <!ENTITY pref.TbSync "TbSync">
 <!ENTITY pref.Close "Close">
 <!ENTITY pref.SettingDialog "Account Settings">
-<!ENTITY pref.SynchronizeAccount "Synchronize this account">
-<!ENTITY pref.ConnectAccount "Connect this account (settings will be locked &amp; hidden)">
-<!ENTITY pref.DisconnectAccount "Disconnect this account and make its settings accessible again">
-<!ENTITY pref.DeleteAccount "Delete this account">
+
+<!ENTITY pref.AccountActions "Account actions">
 <!ENTITY pref.AddAccount "Add new account">
 <!ENTITY pref.SyncAll "Synchronize all connected accounts">
-<!ENTITY pref.AccountActions "Account actions">
+
+<!ENTITY pref.SynchronizeAccount "Synchronize account">
+<!ENTITY pref.ConnectAccount "Connect account">
+<!ENTITY pref.DisconnectAccount "Disconnect account">
+<!ENTITY pref.DeleteAccount "Delete account">
+<!ENTITY pref.ShowSyncLog "Show synchronization log messages">
+<!ENTITY pref.ShowSettings "Show account settings (locked while connected)">
 
 <!ENTITY pref.noaccounts "There are not yet any accounts defined.">
 
