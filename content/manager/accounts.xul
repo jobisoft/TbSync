@@ -49,9 +49,14 @@
                                     image="chrome://tbsync/skin/del16.png"
                                     label="&pref.DeleteAccount;"
                                     oncommand="tbSyncAccounts.deleteAccount();"/>
-                            <menuitem id="accountActionsToggleAccount" 
+                            <menuitem id="accountActionsDisconnectAccount" 
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/discon.png"
+                                    label="&pref.DisconnectAccount;" 
+                                    oncommand="tbSyncAccounts.toggleConnectionState();"/>
+                            <menuitem id="accountActionsConnectAccount" 
+                                    class="menuitem-iconic"
+                                    image="chrome://tbsync/skin/connect.png"
                                     label="&pref.DisconnectAccount;" 
                                     oncommand="tbSyncAccounts.toggleConnectionState();"/>
                             <menuitem id="accountActionsSyncAccount" 

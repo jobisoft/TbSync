@@ -53,18 +53,21 @@ var tbSyncAccounts = {
         //hide if no account is selected
         document.getElementById("accountActionsDropdownSep1").hidden = (selectedAccount === null);
         document.getElementById("accountActionsDeleteAccount").hidden = (selectedAccount === null);
-        document.getElementById("accountActionsToggleAccount").hidden = (selectedAccount === null);
+        document.getElementById("accountActionsDisconnectAccount").hidden = (selectedAccount === null) || (state == "disconnected");
+        document.getElementById("accountActionsConnectAccount").hidden = (selectedAccount === null) || (state == "connected");
         document.getElementById("accountActionsSyncAccount").hidden = (selectedAccount === null) || (state == "disconnected");
 
         if (selectedAccount !== null) {
             //disable if currently syncing (and displayed)
             document.getElementById("accountActionsDeleteAccount").disabled = isSyncing;
-            document.getElementById("accountActionsToggleAccount").disabled = isSyncing;
+            document.getElementById("accountActionsDisconnectAccount").disabled = isSyncing;
+            document.getElementById("accountActionsConnectAccount").disabled = isSyncing;
             document.getElementById("accountActionsSyncAccount").disabled = isSyncing;
             //adjust labels
             document.getElementById("accountActionsDeleteAccount").label = tbSync.getLocalizedMessage("accountacctions.delete").replace("##accountname##", selectedAccountName);
             document.getElementById("accountActionsSyncAccount").label = tbSync.getLocalizedMessage("accountacctions.sync").replace("##accountname##", selectedAccountName);
-            document.getElementById("accountActionsToggleAccount").label = tbSync.getLocalizedMessage("accountacctions.is_" + state).replace("##accountname##", selectedAccountName);
+            document.getElementById("accountActionsConnectAccount").label = tbSync.getLocalizedMessage("accountacctions.is_" + state).replace("##accountname##", selectedAccountName);
+            document.getElementById("accountActionsDisconnectAccount").label = tbSync.getLocalizedMessage("accountacctions.is_" + state).replace("##accountname##", selectedAccountName);
         }
     },
     
