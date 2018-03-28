@@ -151,7 +151,8 @@ var tbSyncAccountSettings = {
         let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "status");
         let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //enabled, disabled
         let numberOfFoundFolders = Object.keys(tbSync.db.getFolders(tbSyncAccountSettings.selectedAccount)).length;      
-
+        let neverLockedFields = ["autosync"];
+        
         let isConnected = (state == "enabled" && numberOfFoundFolders > 0);
         let isSyncing = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
         let hideOptions = isConnected && tbSyncAccountSettings.switchMode == "on";
@@ -167,6 +168,7 @@ var tbSyncAccountSettings = {
         let servertype = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype");
         let fixedSettings = tbSync.eas.getFixedServerSettings(servertype);
         for (let i=0; i<settings.length;i++) {
+            if (neverLockedFields.includes(settings[i])) continue;
             if (document.getElementById("tbsync.accountsettings." + settings[i])) document.getElementById("tbsync.accountsettings." + settings[i]).disabled = (isConnected || isSyncing || fixedSettings.hasOwnProperty(settings[i])); 
             if (document.getElementById("tbsync.accountsettingslabel." + settings[i])) document.getElementById("tbsync.accountsettingslabel." + settings[i]).disabled = isConnected || isSyncing; 
         }
@@ -537,6 +539,8 @@ var tbSyncAccountSettings = {
                                 msg = tbSync.getLocalizedMessage("status." + status);
                         }
                 }
+
+                if (state == "connected") tbSyncAccountSettings.switchMode = "on";
                 
                 if (state == "connected" || state == "syncing" || state == "accountdone") tbSyncAccountSettings.updateGui();
                 else {
