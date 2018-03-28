@@ -28,8 +28,6 @@
 <!ENTITY pref.EnableAccount "Enable account &amp; try to connect to server">
 <!ENTITY pref.DisableAccount "Disable this account">
 
-<!ENTITY pref.switchFoldersAndConfig "Switch between folder view and settings view.">
-
 <!ENTITY pref.ShowTrashedFolders "Show folders found in trash" >
 
 <!ENTITY pref.syncstate "SyncStatus">
@@ -47,3 +45,5 @@
 <!ENTITY servertype.auto "Automatic configuration via ActiveSync Autodiscover">
 <!ENTITY servertype.custom "Custom configuration">
 <!ENTITY servertype.unlock "Double click to unlock all predefined server settings.">
+
+<!ENTITY pref.switchFoldersAndConfig "Double click to switch between folder view and settings view.">
