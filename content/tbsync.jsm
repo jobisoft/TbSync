@@ -991,10 +991,10 @@ var tbSync = {
         }
                 
         //we could parse the icalstring by ourself, but I wanted to use ICAL.parse - TODO try catch
-        let info = ICAL.parse("BEGIN:VCALENDAR\r\n" + timezone.toString() + "\r\nEND:VCALENDAR");
+        let info = ICAL.parse("BEGIN:VCALENDAR\r\n" + timezone.icalComponent.toString() + "\r\nEND:VCALENDAR");
         let comp = new ICAL.Component(info);
         let vtimezone =comp.getFirstSubcomponent("vtimezone");
-        let id = vtimezone.getFirstPropertyValue("tzid");
+        let id = vtimezone.getFirstPropertyValue("tzid").toString();
         let zone = vtimezone.getFirstSubcomponent(standardOrDaylight);
 
         if (zone) { 
@@ -1009,7 +1009,7 @@ var tbSync = {
             obj.offset = -1*((h*60) + m);
 
             //get international abbreviation (CEST, CET, CAT ... )
-            obj.abbreviation = zone.getFirstPropertyValue("tzname");
+            obj.abbreviation = zone.getFirstPropertyValue("tzname").toString();
             
             //get displayname
             obj.displayname = /*"("+utcOffset+") " +*/ obj.id;// + ", " + obj.abbreviation;
@@ -1051,7 +1051,7 @@ var tbSync = {
                     if (obj.switchdate.weekOfMonth<0 || obj.switchdate.weekOfMonth>5) obj.switchdate.weekOfMonth = 5;
 
                     //get switch time from dtstart
-                    let dttime = cal.createDateTime(dtstart);
+                    let dttime = tbSync.createDateTime(dtstart.toString());
                     obj.switchdate.hour = dttime.hour;
                     obj.switchdate.minute = dttime.minute;
                     obj.switchdate.second = dttime.second;                                    
