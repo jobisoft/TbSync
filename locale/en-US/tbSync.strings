@@ -23,7 +23,7 @@ status.mailformed-xml=Could not parse XML. Please help fix this bug by (in this 
 status.invalid=Invalid server response (junk).
 status.InvalidServerOptions=Server responded with invalid server options. Check wether EAS is allowed for this user.
 
-status.security=Could not establish a secure connection. Are you using a self-signed or otherwise untrusted certificate without importing it into Thunderbird? (##replace.1##)||How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F||[more information]
+status.security=Could not establish a secure connection. Are you using a self-signed or otherwise untrusted certificate without importing it into Thunderbird? (##replace.1##)||How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F||[help]
 status.network=Could not connect to server (##replace.1##).
 
 status.syncing=Synchronizing
@@ -46,7 +46,7 @@ status.provision=Provisioning failed with status <##replace.1##>
 status.folderDelete.3=Cannot delete a system folder.
 status.folderDelete.6=Command could not be completed, an error occurred on the server.
 
-status.global.101=The request contains WBXML but it could not be decoded into XML (Error 101).
+status.global.101=The request contains WBXML but it could not be decoded into XML (Error 102).
 status.global.102=The request contains WBXML but it could not be decoded into XML (Error 102).
 status.global.103=The XML provided in the request does not follow the protocol requirements (Error 103).
 
@@ -66,6 +66,8 @@ prompt.Password=Please enter the password for user ##user##:
 
 button.syncthis=Synchronize this account
 button.tryagain=Try again to connect to server
+button.enableAndConnect=Enable account & try to connect to server
+button.disableAndEdit=Disable account to edit settings
 
 account=TbSync account [##accountname##]
 

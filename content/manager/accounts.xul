@@ -33,11 +33,6 @@
                     image="chrome://tbsync/skin/info16.png"
                     label="&pref.ShowSyncLog;"
                     noncommand=""/>
-            <menuitem id="contextMenuShowSettings"
-                    class="menuitem-iconic"
-                    image="chrome://tbsync/skin/lock24.png"
-                    label="&pref.ShowSettings;"
-                    noncommand=""/>
             <menuitem id="contextMenuDisableAccount" 
                     class="menuitem-iconic"
                     image="chrome://tbsync/skin/disabled.png"
@@ -95,11 +90,6 @@
                                     image="chrome://tbsync/skin/disabled.png"
                                     label="&pref.DisableAccount;" 
                                     oncommand="tbSyncAccounts.toggleEnableState();"/>
-                            <menuitem id="accountActionsShowSettings"
-                                    class="menuitem-iconic"
-                                    image="chrome://tbsync/skin/lock24.png"
-                                    label="&pref.ShowSettings;"
-                                    noncommand=""/>
                             <menuitem id="accountActionsShowSyncLog"
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/info16.png"

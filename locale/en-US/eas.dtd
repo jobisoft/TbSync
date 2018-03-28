@@ -27,6 +27,8 @@
 <!ENTITY pref.Sync "Synchronize this account">
 <!ENTITY pref.EnableAccount "Enable account &amp; try to connect to server">
 
+<!ENTITY pref.switchFoldersAndConfig "Switch between folder view and settings view.">
+
 <!ENTITY pref.ShowTrashedFolders "Show folders found in trash" >
 
 <!ENTITY pref.syncstate "SyncStatus">

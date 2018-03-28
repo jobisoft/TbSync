@@ -64,11 +64,9 @@ var tbSyncAccounts = {
         document.getElementById(selector + "SyncAccount").hidden = (selectedAccount === null) || !isConnected;
         document.getElementById(selector + "RetryConnectAccount").hidden = (selectedAccount === null) || isConnected || (state != "enabled");
 
-        document.getElementById(selector + "ShowSyncLog").hidden = (selectedAccount === null) || (state != "enabled");
-        document.getElementById(selector + "ShowSettings").hidden = (selectedAccount === null) || !isConnected;        
         //Not yet implemented
+        document.getElementById(selector + "ShowSyncLog").hidden = (selectedAccount === null) || (state != "enabled");
         document.getElementById(selector + "ShowSyncLog").disabled = true;
-        document.getElementById(selector + "ShowSettings").disabled = true;
         
         if (selectedAccount !== null) {
             //disable if currently syncing (and displayed)

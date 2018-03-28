@@ -10,7 +10,7 @@
     title="&manager.title;" 
     onload="tbSyncAccountManager.onload();"
     onunload="tbSyncAccountManager.onunload();"
-    width="750" height="550" >
+    width="750" height="600" >
         
     <vbox id="manager" flex="1">
         <hbox id="tbtoolbar">

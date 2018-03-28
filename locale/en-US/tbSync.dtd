@@ -23,7 +23,6 @@
 <!ENTITY pref.DisableAccount "Disable account">
 <!ENTITY pref.DeleteAccount "Delete account">
 <!ENTITY pref.ShowSyncLog "Show synchronization log messages">
-<!ENTITY pref.ShowSettings "Show account settings">
 <!ENTITY pref.EnableAccount "Enable account &amp; try to connect to server">
 <!ENTITY pref.RetryConnectAccount "Try again to connect to server">
 

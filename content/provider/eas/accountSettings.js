@@ -6,6 +6,7 @@ var tbSyncAccountSettings = {
 
     selectedAccount: null,
     init: false,
+    switchMode: "on",
     updateTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
     onload: function () {
@@ -153,12 +154,13 @@ var tbSyncAccountSettings = {
 
         let isConnected = (state == "enabled" && numberOfFoundFolders > 0);
         let isSyncing = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
+        let hideOptions = isConnected && tbSyncAccountSettings.switchMode == "on";
         
         //which box is to be displayed? options or folders
         document.getElementById("tbsync.accountsettings.config.unlock").hidden = (state == "enabled" || tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype") == "custom"); 
-        document.getElementById("tbsync.accountsettings.options").hidden = isConnected;
-        document.getElementById("tbsync.accountsettings.server").hidden = isConnected;
-        document.getElementById("tbsync.accountsettings.folders").hidden = !isConnected;
+        document.getElementById("tbsync.accountsettings.options").hidden = hideOptions;
+        document.getElementById("tbsync.accountsettings.server").hidden = hideOptions;
+        document.getElementById("tbsync.accountsettings.folders").hidden = !hideOptions;
 
         //disable settings if connected
         let settings = tbSync.eas.getAccountStorageFields();
@@ -190,6 +192,7 @@ var tbSyncAccountSettings = {
 
         let isSyncing = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
         let numberOfFoundFolders = Object.keys(tbSync.db.getFolders(tbSyncAccountSettings.selectedAccount)).length;
+        let isConnected = (state == "enabled" && numberOfFoundFolders > 0);
         
         if (isSyncing) {
             let syncdata = tbSync.getSyncData(tbSyncAccountSettings.selectedAccount);
@@ -218,6 +221,9 @@ var tbSyncAccountSettings = {
             //we are syncing, either still connection or indeed syncing
             if (numberOfFoundFolders > 0) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.syncing");
             else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.connecting");            
+
+            //do not display slider while syncing
+            document.getElementById('tbsync.accountsettings.slider').hidden = true;
             
         } else {
             let localized = tbSync.getLocalizedMessage("status." + status);
@@ -233,6 +239,10 @@ var tbSyncAccountSettings = {
             
             if (numberOfFoundFolders > 0) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.syncthis");            
             else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.tryagain");            
+
+            //do not display slider if not connected
+            document.getElementById('tbsync.accountsettings.slider').hidden = !isConnected;
+            document.getElementById('tbsync.accountsettings.slider').src = "chrome://tbsync/skin/slider-"+tbSyncAccountSettings.switchMode+".png";
         
         }
 
@@ -241,8 +251,11 @@ var tbSyncAccountSettings = {
         document.getElementById('tbsync.accountsettings.folderlist').disabled = isSyncing;
         document.getElementById('tbsync.accountsettings.syncbtn').disabled = isSyncing;
         
-        document.getElementById('tbsync.accountsettings.syncbtn').hidden = (state != "enabled");
-        document.getElementById('tbsync.accountsettings.enablebtn').hidden = (state == "enabled");    
+        document.getElementById('tbsync.accountsettings.syncbtn').hidden = !(state == "enabled" && tbSyncAccountSettings.switchMode == "on");
+        document.getElementById('tbsync.accountsettings.enablebtn').hidden = (state == "enabled" && tbSyncAccountSettings.switchMode == "on");
+
+        if (state == "enabled") document.getElementById('tbsync.accountsettings.enablebtn').label = tbSync.getLocalizedMessage("button.disableAndEdit");
+        else document.getElementById('tbsync.accountsettings.enablebtn').label = tbSync.getLocalizedMessage("button.enableAndConnect");
     },
 
 
@@ -476,6 +489,12 @@ var tbSyncAccountSettings = {
         }
     },
 
+    switchFoldersAndConfigView: function () {
+        if (tbSyncAccountSettings.switchMode == "on") tbSyncAccountSettings.switchMode = "off"; 
+        else tbSyncAccountSettings.switchMode = "on";
+        tbSyncAccountSettings.updateGui();
+    },
+    
     /* * *
     * This function is executed, when the user hits the enable/disable button. On disable, all
     * sync targets are deleted and the settings can be changed again. On enable, a new sync is 
