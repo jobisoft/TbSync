@@ -197,6 +197,7 @@ var tbSyncAccountSettings = {
         let isConnected = (state == "enabled" && numberOfFoundFolders > 0);
         
         if (isSyncing) {
+            tbSyncAccountSettings.switchMode = "on";
             let syncdata = tbSync.getSyncData(tbSyncAccountSettings.selectedAccount);
             let accounts = tbSync.db.getAccounts().data;
             let target = "";
@@ -539,8 +540,6 @@ var tbSyncAccountSettings = {
                                 msg = tbSync.getLocalizedMessage("status." + status);
                         }
                 }
-
-                if (state == "connected") tbSyncAccountSettings.switchMode = "on";
                 
                 if (state == "connected" || state == "syncing" || state == "accountdone") tbSyncAccountSettings.updateGui();
                 else {
