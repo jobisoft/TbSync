@@ -21,20 +21,14 @@
     </popupset>
 
     <popupset>
-        <menupopup id="tbsync.accountmanger.ContextMenu" nonpopupshowing="tbSyncAccounts.updateDropdown('contextMenu');">
-            <menuitem id="contextMenuSyncAccount" 
+        <menupopup id="tbsync.accountsettings.DisableContextMenu" onpopupshowing="tbSyncAccountSettings.updateDisableContextMenu();">
+            <menuitem id="contextMenuDisableAccount" 
                     class="menuitem-iconic"
-                    image="chrome://tbsync/skin/sync16.png"
-                    label="pref.SynchronizeAccount;" 
-                    oncommand="tbSyncAccounts.synchronizeAccount();"/>
-            <menuitem id="contextMenuDeleteAccount"
-                    class="menuitem-iconic"
-                    image="chrome://tbsync/skin/del16.png"
-                    label="pref.DeleteAccount;"
-                    oncommand="tbSyncAccounts.deleteAccount();"/>
+                    image="chrome://tbsync/skin/disabled.png"
+                    label="&pref.DisableAccount;" 
+                    oncommand="tbSyncAccountSettings.toggleEnableState();"/>
         </menupopup>
     </popupset>
-
 
     <vbox flex="1">
 
@@ -151,7 +145,7 @@
                     <vbox/>
                     <hbox flex="1" >
                         <button id="tbsync.accountsettings.enablebtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.EnableAccount;" oncommand="tbSyncAccountSettings.toggleEnableState();" />
-                        <button id="tbsync.accountsettings.syncbtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.Sync;" oncommand="tbSyncAccountSettings.requestSync();" />
+                        <button id="tbsync.accountsettings.syncbtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.Sync;" oncommand="tbSyncAccountSettings.requestSync();" context="tbsync.accountsettings.DisableContextMenu" />
                     </hbox>
                 </row>
 

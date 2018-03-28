@@ -498,6 +498,11 @@ var tbSyncAccountSettings = {
         tbSyncAccountSettings.updateGui();
     },
     
+    updateDisableContextMenu: function () {
+        let isSyncing = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
+        document.getElementById("contextMenuDisableAccount").disabled = isSyncing;
+    },
+    
     /* * *
     * This function is executed, when the user hits the enable/disable button. On disable, all
     * sync targets are deleted and the settings can be changed again. On enable, a new sync is 

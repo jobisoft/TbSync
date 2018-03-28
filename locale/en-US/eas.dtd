@@ -26,6 +26,7 @@
 <!ENTITY pref.never "0 for never">
 <!ENTITY pref.Sync "Synchronize this account">
 <!ENTITY pref.EnableAccount "Enable account &amp; try to connect to server">
+<!ENTITY pref.DisableAccount "Disable this account">
 
 <!ENTITY pref.switchFoldersAndConfig "Switch between folder view and settings view.">
 

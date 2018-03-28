@@ -65,7 +65,7 @@ var tbSyncAccounts = {
         document.getElementById(selector + "RetryConnectAccount").hidden = (selectedAccount === null) || isConnected || (state != "enabled");
 
         //Not yet implemented
-        document.getElementById(selector + "ShowSyncLog").hidden = (selectedAccount === null) || (state != "enabled");
+        document.getElementById(selector + "ShowSyncLog").hidden = true;//(selectedAccount === null) || (state != "enabled");
         document.getElementById(selector + "ShowSyncLog").disabled = true;
         
         if (selectedAccount !== null) {

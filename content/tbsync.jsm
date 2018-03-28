@@ -88,6 +88,12 @@ var tbSync = {
         tbSync.addressbookListener.add();
         tbSync.scanPrefIdsOfAddressBooks();
         
+        //convert database when migrating from connect state to enable state (keep this in 0.7 branch)
+        let accounts = tbSync.db.getAccounts();
+        for (let i = 0; i < accounts.IDs.length; i++) {
+            if (accounts.data[accounts.IDs[i]].state == "connected") accounts.data[accounts.IDs[i]].state = "enabled";
+        }
+
         //init stuff for calendar (only if lightning is installed)
         tbSync.cachedTimezoneData = null;
         tbSync.defaultTimezoneInfo = null;
