@@ -97,9 +97,10 @@ var tbSync = {
             cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
             cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
             
-            //get timezone info of default timezone
-            tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo(cal.calendarDefaultTimezone());
-
+            //get timezone info of default timezone (old cal. without dtz are depricated)
+            tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo((cal.dtz && cal.dtz.defaultTimezone) ? cal.dtz.defaultTimezone : cal.calendarDefaultTimezone());
+            tbSync.utcTimezone = (cal.dtz && cal.dtz.UTC) ? cal.dtz.UTC : cal.UTC();
+            
             //get windows timezone data from CSV
             let csvData = yield tbSync.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
             for (let i = 0; i<csvData.length; i++) {
@@ -766,7 +767,7 @@ var tbSync = {
         if (date.timezone.tzid == "floating") date.timezone = tbSync.defaultTimezoneInfo.timezone;
         //to get the UTC string we could use icalString (which does not work on allDayEvents, or calculate it from nativeTime)
         date.isDate = 0;
-        let UTC = date.getInTimezone(cal.UTC());        
+        let UTC = date.getInTimezone(tbSync.utcTimezone);        
         if (fakeUTC) UTC = date.clone();
         
         function pad(number) {
@@ -814,6 +815,12 @@ var tbSync = {
         tbSync.dump("Matching TZ via current offset: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
         if (test.timezoneOffset/-60 == curOffset) return test.timezone;
         
+        //second try UTC
+        test = utcDateTime.getInTimezone(tbSync.utcTimezone);
+        tbSync.dump("Matching TZ via current offset: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
+        if (test.timezoneOffset/-60 == curOffset) return test.timezone;
+        
+        //third try all others
         let enumerator = tzService.timezoneIds;
         while (enumerator.hasMore()) {
             let id = enumerator.getNext();
@@ -891,7 +898,7 @@ var tbSync = {
                 }
 
                 //make sure, that UTC timezone is there
-                tbSync.cachedTimezoneData.bothOffsets["0:0"] = cal.UTC();                
+                tbSync.cachedTimezoneData.bothOffsets["0:0"] = tbSync.utcTimezone;
 
                 //multiple TZ share the same offset and abbreviation, make sure the default timezone is present
                 tbSync.cachedTimezoneData.abbreviations[tbSync.defaultTimezoneInfo.std.abbreviation] = tbSync.defaultTimezoneInfo.std.id;
