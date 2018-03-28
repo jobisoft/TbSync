@@ -6,8 +6,6 @@ var tbSyncAccountSettings = {
 
     selectedAccount: null,
     init: false,
-    fixedSettings: {},
-    protectedSettings: ["host", "user"],
     updateTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
     onload: function () {
@@ -61,8 +59,7 @@ var tbSyncAccountSettings = {
     loadSettings: function () {
         let settings = tbSync.eas.getAccountStorageFields();
         let servertype = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype");
-        
-        this.fixedSettings = tbSync.eas.getFixedServerSettings(servertype);
+        let fixedSettings = tbSync.eas.getFixedServerSettings(servertype);
 
         for (let i=0; i<settings.length;i++) {
             if (document.getElementById("tbsync.accountsettings." + settings[i])) {
@@ -78,7 +75,7 @@ var tbSyncAccountSettings = {
                     
                 }
                 
-                if (this.fixedSettings.hasOwnProperty(settings[i])) document.getElementById("tbsync.accountsettings." + settings[i]).disabled = true;
+                if (fixedSettings.hasOwnProperty(settings[i])) document.getElementById("tbsync.accountsettings." + settings[i]).disabled = true;
                 else document.getElementById("tbsync.accountsettings." + settings[i]).disabled = false;
                 
             }
@@ -150,20 +147,31 @@ var tbSyncAccountSettings = {
     },
 
     updateGui: function () {
-        let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connected, disconnected
-        document.getElementById('tbsync.accountsettings.connectbtn').label = tbSync.getLocalizedMessage("state."+state); 
+        let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "status");
+        let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //enabled, disabled
+        let numberOfFoundFolders = Object.keys(tbSync.db.getFolders(tbSyncAccountSettings.selectedAccount)).length;      
+
+        let isConnected = (state == "enabled" && numberOfFoundFolders > 0);
+        let isSyncing = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
         
         //which box is to be displayed? options or folders
-        document.getElementById("tbsync.accountsettings.config.unlock").hidden = (state != "disconnected" || tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype") == "custom"); 
+        document.getElementById("tbsync.accountsettings.config.unlock").hidden = (state == "enabled" || tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype") == "custom"); 
+        document.getElementById("tbsync.accountsettings.options").hidden = isConnected;
+        document.getElementById("tbsync.accountsettings.server").hidden = isConnected;
+        document.getElementById("tbsync.accountsettings.folders").hidden = !isConnected;
 
-        document.getElementById("tbsync.accountsettings.options").hidden = (state != "disconnected"); 
-        document.getElementById("tbsync.accountsettings.server").hidden = (state != "disconnected"); 
-        document.getElementById("tbsync.accountsettings.folders").hidden = (state == "disconnected"); 
-
-        //disable all seetings field, if connected
-        for (let i=0; i<this.protectedSettings.length;i++) {
-            document.getElementById("tbsync.accountsettings." + this.protectedSettings[i]).disabled = (state != "disconnected" || this.fixedSettings.hasOwnProperty(this.protectedSettings[i]));
+        //disable settings if connected
+        let settings = tbSync.eas.getAccountStorageFields();
+        let servertype = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype");
+        let fixedSettings = tbSync.eas.getFixedServerSettings(servertype);
+        for (let i=0; i<settings.length;i++) {
+            if (document.getElementById("tbsync.accountsettings." + settings[i])) document.getElementById("tbsync.accountsettings." + settings[i]).disabled = (isConnected || isSyncing || fixedSettings.hasOwnProperty(settings[i])); 
+            if (document.getElementById("tbsync.accountsettingslabel." + settings[i])) document.getElementById("tbsync.accountsettingslabel." + settings[i]).disabled = isConnected || isSyncing; 
         }
+
+        //change color and boldness of labels, to direct users focus to the sync status
+        document.getElementById("tbsync.accountsettings.config.label").style["color"] = isConnected || isSyncing ? "darkgrey" : "black";
+        document.getElementById("tbsync.accountsettings.contacts.label").style["color"] = isConnected || isSyncing ? "darkgrey" : "black";
         
         this.updateSyncstate();
         this.updateFolderList();
@@ -175,12 +183,15 @@ var tbSyncAccountSettings = {
 
         // if this account is beeing synced, display syncstate, otherwise print status
         let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "status");
-        let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //connected, disconnected
+        let state = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "state"); //enabled, disabled
 
         document.getElementById('syncstate_link').textContent = "";
         document.getElementById('syncstate_link').setAttribute("dest", "");
 
-        if (status == "syncing") {
+        let isSyncing = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
+        let numberOfFoundFolders = Object.keys(tbSync.db.getFolders(tbSyncAccountSettings.selectedAccount)).length;
+        
+        if (isSyncing) {
             let syncdata = tbSync.getSyncData(tbSyncAccountSettings.selectedAccount);
             let accounts = tbSync.db.getAccounts().data;
             let target = "";
@@ -204,8 +215,13 @@ var tbSyncAccountSettings = {
                 tbSyncAccountSettings.updateTimer.init(tbSyncAccountSettings.updateSyncstate, 1000, 0);
             }
 
+            //we are syncing, either still connection or indeed syncing
+            if (numberOfFoundFolders > 0) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.syncing");
+            else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.connecting");            
+            
         } else {
             let localized = tbSync.getLocalizedMessage("status." + status);
+            if (state != "enabled") localized = tbSync.getLocalizedMessage("status." + "disabled");
 
             //check, if this localized string contains a link
             let parts = localized.split("||");
@@ -213,18 +229,20 @@ var tbSyncAccountSettings = {
             if (parts.length==3) {
                     document.getElementById('syncstate_link').setAttribute("dest", parts[1]);
                     document.getElementById('syncstate_link').textContent = parts[2];
-            }            
+            }
+            
+            if (numberOfFoundFolders > 0) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.syncthis");            
+            else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.tryagain");            
+        
         }
 
-        //disable connect/disconnect btn, sync btn and folderlist during sync, also hide sync button if disconnected
-        document.getElementById('tbsync.accountsettings.connectbtn').disabled = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
-        document.getElementById('tbsync.accountsettings.folderlist').disabled = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
-        document.getElementById('tbsync.accountsettings.syncbtn').disabled = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
-        document.getElementById('tbsync.accountsettings.syncbtn').hidden = (state == "disconnected");
+        //disable enable/disable btn, sync btn and folderlist during sync, also hide sync button if disabled
+        document.getElementById('tbsync.accountsettings.enablebtn').disabled = isSyncing;
+        document.getElementById('tbsync.accountsettings.folderlist').disabled = isSyncing;
+        document.getElementById('tbsync.accountsettings.syncbtn').disabled = isSyncing;
         
-        if (status == "syncing") document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.syncing");
-        else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.syncthis");
-    
+        document.getElementById('tbsync.accountsettings.syncbtn').hidden = (state != "enabled");
+        document.getElementById('tbsync.accountsettings.enablebtn').hidden = (state == "enabled");    
     },
 
 
@@ -459,16 +477,16 @@ var tbSyncAccountSettings = {
     },
 
     /* * *
-    * This function is executed, when the user hits the connect/disconnet button. On disconnect, all
-    * sync targets are deleted and the settings can be changed again. On connect, the settings are
-    * stored and a new sync is initiated.
+    * This function is executed, when the user hits the enable/disable button. On disable, all
+    * sync targets are deleted and the settings can be changed again. On enable, a new sync is 
+    * initiated.
     */
-    toggleConnectionState: function () {
+    toggleEnableState: function () {
         //ignore cancel request, if button is disabled or a sync is ongoing
-        if (document.getElementById('tbsync.accountsettings.connectbtn').disabled || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount)) return;
+        if (document.getElementById('tbsync.accountsettings.enablebtn').disabled || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount)) return;
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tbsync.toggleConnectionState", tbSyncAccountSettings.selectedAccount);
+        observerService.notifyObservers(null, "tbsync.toggleEnableState", tbSyncAccountSettings.selectedAccount);
         
     },
 
@@ -484,8 +502,8 @@ var tbSyncAccountSettings = {
             //only handle syncstate changes of the active account
             if (account == tbSyncAccountSettings.selectedAccount) {
                 
-                if (tbSync.getSyncData(account,"state") == "accountdone") {
-
+                let state = tbSync.getSyncData(account,"state");
+                if (state == "accountdone") {
                         let status = tbSync.db.getAccountSetting(account, "status");
                         switch (status) {
                             case "401":
@@ -493,22 +511,19 @@ var tbSyncAccountSettings = {
                                 break;
                             case "OK":
                             case "notsyncronized":
-                            case "notconnected":
+                            case "disabled":
                                 //do not pop alert box for these
                                 break;
                             default:
                                 msg = tbSync.getLocalizedMessage("status." + status);
                         }
-                        tbSyncAccountSettings.updateGui();
-                        
-                } else { 
-                    
-                        tbSyncAccountSettings.updateFolderList();
-                    
                 }
-                tbSyncAccountSettings.updateSyncstate();
-                //do not alert at all
-                //if (msg !== null) alert(msg);
+                
+                if (state == "connected" || state == "syncing" || state == "accountdone") tbSyncAccountSettings.updateGui();
+                else {
+                    tbSyncAccountSettings.updateFolderList();
+                    tbSyncAccountSettings.updateSyncstate();
+                }
             }
         }
     }

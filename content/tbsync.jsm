@@ -200,7 +200,7 @@ var tbSync = {
         //if no account given, loop over all accounts, otherwise only use the provided one
         let accountsToDo = [];        
         if (account == "") {
-            //add all connected accounts to the queue
+            //add all enabled accounts to the queue
             for (let i=0; i < accounts.IDs.length; i++) {
                 accountsToDo.push(accounts.IDs[i]);
             }
@@ -210,8 +210,8 @@ var tbSync = {
         
         //update gui
         for (let i = 0; i < accountsToDo.length; i++) {
-            //do not init sync if there is a sync running or account is not connected
-            if (accounts.data[accountsToDo[i]].state == "disconnected" || tbSync.isSyncing(accountsToDo[i])) continue;
+            //do not init sync if there is a sync running or account is not enabled
+            if (accounts.data[accountsToDo[i]].state != "enabled" || tbSync.isSyncing(accountsToDo[i])) continue;
 
             //create syncdata object for each account (to be able to have parallel XHR)
             tbSync.prepareSyncDataObj(accountsToDo[i], true);

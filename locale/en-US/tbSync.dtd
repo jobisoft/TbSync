@@ -17,14 +17,13 @@
 
 <!ENTITY pref.AccountActions "Account actions">
 <!ENTITY pref.AddAccount "Add new account">
-<!ENTITY pref.SyncAll "Synchronize all connected accounts">
+<!ENTITY pref.SyncAll "Synchronize all enabled accounts">
 
 <!ENTITY pref.SynchronizeAccount "Synchronize account">
-<!ENTITY pref.ConnectAccount "Connect account">
-<!ENTITY pref.DisconnectAccount "Disconnect account">
+<!ENTITY pref.DisableAccount "Disable account">
 <!ENTITY pref.DeleteAccount "Delete account">
 <!ENTITY pref.ShowSyncLog "Show synchronization log messages">
-<!ENTITY pref.ShowSettings "Show account settings (locked while connected)">
+<!ENTITY pref.ShowSettings "Show account settings">
 
 <!ENTITY pref.noaccounts "There are not yet any accounts defined.">
 

@@ -72,9 +72,9 @@ var eas = {
                     throw eas.finishSync("resync-loop", eas.flags.abortWithError);
                 }
 
-                // check if connected
-                if (tbSync.db.getAccountSetting(syncdata.account, "state") == "disconnected") {
-                    throw eas.finishSync("notconnected", eas.flags.abortWithError);
+                // check if enabled
+                if (tbSync.db.getAccountSetting(syncdata.account, "state") != "enabled") {
+                    throw eas.finishSync("disabled", eas.flags.abortWithError);
                 }
 
                 // check if connection has data
@@ -97,7 +97,7 @@ var eas = {
                     yield eas.getServerOptions(syncdata);
                 }
                 
-                //check EAS version - "auto" means we just connected and have to find the best option avail, any other value needs to be checked agains options avail
+                //check EAS version - "auto" means we just enabled and have to find the best option avail, any other value needs to be checked agains options avail
                 let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
                 let allowed = tbSync.db.getAccountSetting(syncdata.account, "allowedEasVersions").split(",");
                 if (asversion == "auto") {
@@ -353,7 +353,12 @@ var eas = {
                 if (folders[f].selected == "1") {
                     tbSync.db.setFolderSetting(folders[f].account, folders[f].folderID, "status", "pending");
                 }
-            }            
+            }
+
+            //if folders where found set syncstate to connected
+            let numberOfFolders = Object.keys(tbSync.db.getFolders(syncdata.account)).length;
+            if (numberOfFolders > 0) tbSync.setSyncState("connected", syncdata.account, syncdata.folderID);
+            
         }
     }),
 
@@ -796,6 +801,7 @@ var eas = {
         tbSync.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
         tbSync.db.setAccountSetting(syncdata.account, "status", status);
         tbSync.setSyncState("accountdone", syncdata.account); 
+	
     },
     
     updateSynckey: function (syncdata, wbxmlData) {
@@ -828,8 +834,8 @@ var eas = {
             "policykey" : 0, 
             "foldersynckey" : "0",
             "lastsynctime" : "0", 
-            "state" : "disconnected",
-            "status" : "notconnected",
+            "state" : "disabled",
+            "status" : "disabled",
             "deviceId" : tbSync.eas.getNewDeviceId(),
             "asversionselected" : "auto",
             "asversion" : "",
@@ -1032,8 +1038,8 @@ var eas = {
         }
     },
 
-    connectAccount: function (account) {
-        db.setAccountSetting(account, "state", "connected");
+    enableAccount: function (account) {
+        db.setAccountSetting(account, "state", "enabled");
         db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
         db.setAccountSetting(account, "asversion", db.getAccountSetting(account, "asversionselected"));
@@ -1041,8 +1047,8 @@ var eas = {
         db.setAccountSetting(account, "lastsynctime", "0");
     },
 
-    disconnectAccount: function (account) {
-        db.setAccountSetting(account, "state", "disconnected"); //connected or disconnected
+    disableAccount: function (account) {
+        db.setAccountSetting(account, "state", "disabled"); //enabled or disabled
         db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
 
@@ -1059,7 +1065,7 @@ var eas = {
             }
         }
 
-        db.setAccountSetting(account, "status", "notconnected");
+        db.setAccountSetting(account, "status", "disabled");
     },
 
     TimeZoneDataStructure : class {

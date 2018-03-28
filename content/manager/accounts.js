@@ -13,14 +13,14 @@ var tbSyncAccounts = {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.changedSyncstate", false);
         observerService.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.changedAccountName", false);
-        observerService.addObserver(tbSyncAccounts.toggleConnectionStateObserver, "tbsync.toggleConnectionState", false);
+        observerService.addObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.toggleEnableState", false);
     },
 
     onunload: function () {
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         observerService.removeObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.changedSyncstate");
         observerService.removeObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.changedAccountName");
-        observerService.removeObserver(tbSyncAccounts.toggleConnectionStateObserver, "tbsync.toggleConnectionState");
+        observerService.removeObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.toggleEnableState");
     },
 
 
@@ -47,7 +47,7 @@ var tbSyncAccounts = {
             selectedAccount = selectedItem.value;
             selectedAccountName = selectedItem.getAttribute("label");
             isSyncing = tbSync.isSyncing(selectedAccount);
-            state = tbSync.db.getAccountSetting(selectedAccount, "state"); //connected, disconnected
+            state = tbSync.db.getAccountSetting(selectedAccount, "state"); //enabled, disabled
         }
         
         //hide if no accounts are avail (which is identical to no account selected)
@@ -56,12 +56,12 @@ var tbSyncAccounts = {
         //hide if no account is selected
         if (isActionsDropdown) document.getElementById(selector + "Separator").hidden = (selectedAccount === null);
         document.getElementById(selector + "DeleteAccount").hidden = (selectedAccount === null);
-        document.getElementById(selector + "DisconnectAccount").hidden = (selectedAccount === null) || (state == "disconnected");
-        document.getElementById(selector + "ConnectAccount").hidden = (selectedAccount === null) || (state == "connected");
-        document.getElementById(selector + "SyncAccount").hidden = (selectedAccount === null) || (state == "disconnected");
+        document.getElementById(selector + "DisableAccount").hidden = (selectedAccount === null) || (state != "enabled");
+        document.getElementById(selector + "EnableAccount").hidden = (selectedAccount === null) || (state == "enabled");
+        document.getElementById(selector + "SyncAccount").hidden = (selectedAccount === null) || (state != "enabled");
 
-        document.getElementById(selector + "ShowSyncLog").hidden = (selectedAccount === null) || (state == "disconnected");
-        document.getElementById(selector + "ShowSettings").hidden = (selectedAccount === null) || (state == "disconnected");        
+        document.getElementById(selector + "ShowSyncLog").hidden = (selectedAccount === null) || (state != "enabled");
+        document.getElementById(selector + "ShowSettings").hidden = (selectedAccount === null) || (state != "enabled");        
         //Not yet implemented
         document.getElementById(selector + "ShowSyncLog").disabled = true;
         document.getElementById(selector + "ShowSettings").disabled = true;
@@ -69,23 +69,23 @@ var tbSyncAccounts = {
         if (selectedAccount !== null) {
             //disable if currently syncing (and displayed)
             document.getElementById(selector + "DeleteAccount").disabled = isSyncing;
-            document.getElementById(selector + "DisconnectAccount").disabled = isSyncing;
-            document.getElementById(selector + "ConnectAccount").disabled = isSyncing;
+            document.getElementById(selector + "DisableAccount").disabled = isSyncing;
+            document.getElementById(selector + "EnableAccount").disabled = isSyncing;
             document.getElementById(selector + "SyncAccount").disabled = isSyncing;
             //adjust labels - only in global actions dropdown
             if (isActionsDropdown) document.getElementById(selector + "DeleteAccount").label = tbSync.getLocalizedMessage("accountacctions.delete").replace("##accountname##", selectedAccountName);
             if (isActionsDropdown) document.getElementById(selector + "SyncAccount").label = tbSync.getLocalizedMessage("accountacctions.sync").replace("##accountname##", selectedAccountName);
-            if (isActionsDropdown) document.getElementById(selector + "ConnectAccount").label = tbSync.getLocalizedMessage("accountacctions.is_" + state).replace("##accountname##", selectedAccountName);
-            if (isActionsDropdown) document.getElementById(selector + "DisconnectAccount").label = tbSync.getLocalizedMessage("accountacctions.is_" + state).replace("##accountname##", selectedAccountName);
+            if (isActionsDropdown) document.getElementById(selector + "EnableAccount").label = tbSync.getLocalizedMessage("accountacctions.enable").replace("##accountname##", selectedAccountName);
+            if (isActionsDropdown) document.getElementById(selector + "DisableAccount").label = tbSync.getLocalizedMessage("accountacctions.disable").replace("##accountname##", selectedAccountName);
         }
         
     },
     
-    toggleConnectionState: function () {
+    toggleEnableState: function () {
         let accountsList = document.getElementById("tbSyncAccounts.accounts");
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value) && !tbSync.isSyncing(accountsList.selectedItem.value)) {            
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tbsync.toggleConnectionState", accountsList.selectedItem.value);
+            observerService.notifyObservers(null, "tbsync.toggleEnableState", accountsList.selectedItem.value);
         }
     },
 
@@ -107,8 +107,8 @@ var tbSyncAccounts = {
             }
             
             if (confirm(tbSync.getLocalizedMessage("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
-                //disconnect (removes ab, triggers changelog cleanup) 
-                tbSync[tbSync.db.getAccountSetting(accountsList.selectedItem.value, "provider")].disconnectAccount(accountsList.selectedItem.value);
+                //disable (removes ab, triggers changelog cleanup) 
+                tbSync[tbSync.db.getAccountSetting(accountsList.selectedItem.value, "provider")].disableAccount(accountsList.selectedItem.value);
                 //delete account from db
                 tbSync.db.removeAccount(accountsList.selectedItem.value);
 
@@ -119,23 +119,24 @@ var tbSyncAccounts = {
 
 
     /* * *
-    * Observer to catch connections state toggle
+    * Observer to catch enable state toggle
     */
-    toggleConnectionStateObserver: {
+    toggleEnableStateObserver: {
         observe: function (aSubject, aTopic, aData) {
             let account = aData;                        
-            let state = tbSync.db.getAccountSetting(account, "state"); //connected, disconnected
+            let state = tbSync.db.getAccountSetting(account, "state"); //enabled, disabled
             let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
 
-            if (state == "connected") {
-                //we are connected and want to disconnect
-                if (window.confirm(tbSync.getLocalizedMessage("prompt.Disconnect"))) {
-                    tbSync[tbSync.db.getAccountSetting(account, "provider")].disconnectAccount(account);
+            if (state == "enabled") {
+                //we are enabled and want to disable
+                let numberOfFoundFolders = Object.keys(tbSync.db.getFolders(account)).length;
+                if (numberOfFoundFolders == 0 || window.confirm(tbSync.getLocalizedMessage("prompt.Disable"))) {
+                    tbSync[tbSync.db.getAccountSetting(account, "provider")].disableAccount(account);
                     observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
                 }
-            } else if (state == "disconnected") {
-                //we are disconnected and want to connected
-                tbSync[tbSync.db.getAccountSetting(account, "provider")].connectAccount(account);
+            } else {
+                //we are disabled and want to enabled
+                tbSync[tbSync.db.getAccountSetting(account, "provider")].enableAccount(account);
                 observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
                 tbSync.syncAccount("sync", account);
             }
@@ -169,10 +170,11 @@ var tbSyncAccounts = {
         let src = "";   
         switch (tbSync.db.getAccountSetting(account, "status")) {
             case "OK":
-                src = "tick16.png";
+                if (tbSync.db.getAccountSetting(account, "state") == "enabled") src = "tick16.png";
+                else src = "discon.png";
                 break;
             
-            case "notconnected":
+            case "disabled":
                 src = "discon.png";
                 break;
             
@@ -245,7 +247,8 @@ var tbSyncAccounts = {
                     newListItem.setAttribute("id", "tbSyncAccounts.accounts." + accounts.IDs[i]);
                     newListItem.setAttribute("value", accounts.IDs[i]);
                     newListItem.setAttribute("label", accounts.data[accounts.IDs[i]].accountname);
-
+                    newListItem.setAttribute("ondblclick", "tbSyncAccounts.toggleEnableState();");
+                    
                     //add account name
                     let itemLabelCell = document.createElement("listcell");
                     itemLabelCell.setAttribute("class", "label");
