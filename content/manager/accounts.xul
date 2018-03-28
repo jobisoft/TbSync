@@ -13,6 +13,11 @@
 
     <popupset>
         <menupopup id="tbsync.accountmanger.ContextMenu" onpopupshowing="tbSyncAccounts.updateDropdown('contextMenu');">
+            <menuitem id="contextMenuRetryConnectAccount" 
+                    class="menuitem-iconic"
+                    image="chrome://tbsync/skin/connect.png"
+                    label="&pref.RetryConnectAccount;" 
+                    oncommand="tbSyncAccounts.synchronizeAccount();"/>
             <menuitem id="contextMenuSyncAccount" 
                     class="menuitem-iconic"
                     image="chrome://tbsync/skin/sync16.png"
@@ -35,7 +40,7 @@
                     noncommand=""/>
             <menuitem id="contextMenuDisableAccount" 
                     class="menuitem-iconic"
-                    image="chrome://tbsync/skin/discon.png"
+                    image="chrome://tbsync/skin/disabled.png"
                     label="&pref.DisableAccount;" 
                     oncommand="tbSyncAccounts.toggleEnableState();"/>
             <menuitem id="contextMenuDeleteAccount"
@@ -87,7 +92,7 @@
                                     oncommand="tbSyncAccounts.deleteAccount();"/>
                             <menuitem id="accountActionsDisableAccount" 
                                     class="menuitem-iconic"
-                                    image="chrome://tbsync/skin/discon.png"
+                                    image="chrome://tbsync/skin/disabled.png"
                                     label="&pref.DisableAccount;" 
                                     oncommand="tbSyncAccounts.toggleEnableState();"/>
                             <menuitem id="accountActionsShowSettings"
@@ -110,6 +115,11 @@
                                     image="chrome://tbsync/skin/sync16.png"
                                     label="&pref.SynchronizeAccount;" 
                                     oncommand="tbSyncAccounts.synchronizeAccount();"/>
+                            <menuitem id="accountActionsRetryConnectAccount" 
+                                    class="menuitem-iconic"
+                                    image="chrome://tbsync/skin/connect.png"
+                                    label="&pref.RetryConnectAccount;" 
+                                    oncommand="tbSyncAccounts.synchronizeAccount();"/>                                    
                         </menupopup>
                 </button>
              </vbox>

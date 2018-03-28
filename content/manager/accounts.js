@@ -53,15 +53,19 @@ var tbSyncAccounts = {
         //hide if no accounts are avail (which is identical to no account selected)
         if (isActionsDropdown) document.getElementById(selector + "SyncAllAccounts").hidden = (selectedAccount === null);
 
+        let numberOfFoundFolders = Object.keys(tbSync.db.getFolders(selectedAccount)).length;
+        let isConnected = (state == "enabled" && numberOfFoundFolders > 0);
+        
         //hide if no account is selected
         if (isActionsDropdown) document.getElementById(selector + "Separator").hidden = (selectedAccount === null);
         document.getElementById(selector + "DeleteAccount").hidden = (selectedAccount === null);
         document.getElementById(selector + "DisableAccount").hidden = (selectedAccount === null) || (state != "enabled");
         document.getElementById(selector + "EnableAccount").hidden = (selectedAccount === null) || (state == "enabled");
-        document.getElementById(selector + "SyncAccount").hidden = (selectedAccount === null) || (state != "enabled");
+        document.getElementById(selector + "SyncAccount").hidden = (selectedAccount === null) || !isConnected;
+        document.getElementById(selector + "RetryConnectAccount").hidden = (selectedAccount === null) || isConnected || (state != "enabled");
 
         document.getElementById(selector + "ShowSyncLog").hidden = (selectedAccount === null) || (state != "enabled");
-        document.getElementById(selector + "ShowSettings").hidden = (selectedAccount === null) || (state != "enabled");        
+        document.getElementById(selector + "ShowSettings").hidden = (selectedAccount === null) || !isConnected;        
         //Not yet implemented
         document.getElementById(selector + "ShowSyncLog").disabled = true;
         document.getElementById(selector + "ShowSettings").disabled = true;
@@ -175,7 +179,7 @@ var tbSyncAccounts = {
                 break;
             
             case "disabled":
-                src = "discon.png";
+                src = "disabled.png";
                 break;
             
             case "notsyncronized":

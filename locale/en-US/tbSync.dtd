@@ -5,7 +5,7 @@
 <!ENTITY menu.settingslabel "Synchronization Settings (TbSync)">
 
 <!ENTITY toolbar.label " Synchronize all TbSync accounts">
-<!ENTITY toolbar.tooltiptext "Synchronization latest changes">
+<!ENTITY toolbar.tooltiptext "Synchronize latest changes">
 
 <!ENTITY manager.accounts "Accounts">
 <!ENTITY manager.status "Status">
@@ -24,6 +24,8 @@
 <!ENTITY pref.DeleteAccount "Delete account">
 <!ENTITY pref.ShowSyncLog "Show synchronization log messages">
 <!ENTITY pref.ShowSettings "Show account settings">
+<!ENTITY pref.EnableAccount "Enable account &amp; try to connect to server">
+<!ENTITY pref.RetryConnectAccount "Try again to connect to server">
 
 <!ENTITY pref.noaccounts "There are not yet any accounts defined.">
 
