@@ -140,6 +140,15 @@ var tbSyncAccountSettings = {
         observe: function (aSubject, aTopic, aData) {
             //only update if request for this account
             if (aData == tbSyncAccountSettings.selectedAccount) {
+        
+                //if this is called while beeing disabled, clear the folderlist, so we start fresh on next re-enable
+                if (!tbSync.isEnabled(aData)) {
+                    let folderList = document.getElementById("tbsync.accountsettings.folderlist");
+                    for (let i=folderList.getRowCount()-1; i>=0; i--) {
+                        folderList.removeItemAt(i);
+                    }
+                }
+                
                 tbSyncAccountSettings.loadSettings();
                 let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
                 observerService.notifyObservers(null, "tbsync.changedSyncstate", aData);
@@ -355,12 +364,12 @@ var tbSyncAccountSettings = {
         
         let folderList = document.getElementById("tbsync.accountsettings.folderlist");
         let folders = tbSync.db.getFolders(tbSyncAccountSettings.selectedAccount);
-        
+
         //sort by specified order, trashed folders are moved to the end
         let allowedTypesOrder = ["9","14","8","13","7","15"];
         let folderIDs = Object.keys(folders).sort((a, b) => (this.getIdChain(allowedTypesOrder, tbSyncAccountSettings.selectedAccount, a).localeCompare(this.getIdChain(allowedTypesOrder, tbSyncAccountSettings.selectedAccount, b))));
 
-        //get current accounts in list and remove entries of accounts no longer there
+        //get current folders in list and remove entries of folders no longer there
         let listedfolders = [];
         for (let i=folderList.getRowCount()-1; i>=0; i--) {
             listedfolders.push(folderList.getItemAtIndex (i).value); 
