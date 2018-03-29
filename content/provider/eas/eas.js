@@ -73,7 +73,7 @@ var eas = {
                 }
 
                 // check if enabled
-                if (tbSync.db.getAccountSetting(syncdata.account, "state") != "enabled") {
+                if (!tbSync.isEnabled(syncdata.account)) {
                     throw eas.finishSync("disabled", eas.flags.abortWithError);
                 }
 

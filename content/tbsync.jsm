@@ -164,8 +164,22 @@ var tbSync = {
 
     //used by UI to find out, if this account is beeing synced
     isSyncing: function (account) {
-        let state = tbSync.getSyncData(account,"state");
-        return (state != "accountdone" && state != "");
+        //I think using the global status is more safe ???
+        //let state = tbSync.getSyncData(account,"state"); //individual syncstates
+        //return (state != "accountdone" && state != "");
+        let status = tbSync.db.getAccountSetting(account, "status"); //global state of the account
+        return (status == "syncing");
+    },
+    
+    isEnabled: function (account) {
+        let state = tbSync.db.getAccountSetting(account, "state"); //enabled, disabled
+        return  (state == "enabled");
+    },
+
+    isConnected: function (account) {
+        let state = tbSync.db.getAccountSetting(account, "state"); //enabled, disabled
+        let numberOfFoundFolders = Object.keys(tbSync.db.getFolders(account)).length;
+       return (state == "enabled" && numberOfFoundFolders > 0);
     },
     
     prepareSyncDataObj: function (account, forceResetOfSyncData = false) {
