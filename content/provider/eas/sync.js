@@ -282,13 +282,13 @@ eas.sync = {
                 if (foundItems.length > 0) { //only update, if an item with that ServerId was found
                     
                     let keys = Object.keys(data);
-                    tbSync.dump("ApplicationData", keys);
                     if (keys.length == 1 && keys[0] == "DtStamp") tbSync.dump("DtStampOnly", keys);
-                    
-                    let newItem = foundItems[0].clone();
-                    eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
-                    db.addItemToChangeLog(syncdata.targetId, ServerId, "modified_by_server"); //any local change will be lost
-                    yield syncdata.targetObj.modifyItem(newItem, foundItems[0]);
+                    else {                    
+                        let newItem = foundItems[0].clone();
+                        eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
+                        db.addItemToChangeLog(syncdata.targetId, ServerId, "modified_by_server"); //any local change will be lost
+                        yield syncdata.targetObj.modifyItem(newItem, foundItems[0]);
+                    }
                 } else if (db.getItemStatusFromChangeLog(syncdata.targetId, ServerId) == "deleted_by_user") {
                         tbSync.dump("Change request, but element is in delete_log, local state wins, not changing.", ServerId);
                 } else {
@@ -658,7 +658,7 @@ eas.sync = {
             let deleted = [];
             let hasRecurrence = false;
             let startDate = (syncdata.type == "Calendar") ? item.startDate : item.entryDate;
-		
+
             for (let recRule of item.recurrenceInfo.getRecurrenceItems({})) {
                 if (recRule.date) {
                     if (recRule.isNegative) {
@@ -676,7 +676,7 @@ eas.sync = {
                     tbSync.dump("Ignoring EXRULE rule", recRule.icalString);
                     continue;
                 }
-		
+
                 // RRULE
                 wbxml.otag("Recurrence");
                 hasRecurrence = true;
