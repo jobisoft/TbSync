@@ -1405,6 +1405,8 @@ var tbSync = {
 };
 
 
+//TODO: Invites
+/*
 if ("calICalendar" in Components.interfaces) {
     cal.itip.checkAndSendOrigial = cal.itip.checkAndSend;
     cal.itip.checkAndSend = function(aOpType, aItem, aOriginalItem) {
@@ -1413,7 +1415,7 @@ if ("calICalendar" in Components.interfaces) {
         cal.itip.checkAndSendOrigial(aOpType, aItem, aOriginalItem);
     }
 }
-
+*/
 
 
 //clear debug log on start
