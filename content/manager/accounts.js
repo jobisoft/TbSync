@@ -180,6 +180,7 @@ var tbSyncAccounts = {
             
             case "notsyncronized":
             case "nolightning":
+            case "modified":
                 src = "warning16.png";
                 break;
 

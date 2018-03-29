@@ -2,7 +2,7 @@ info.idle=Idle
 info.error=Error
 info.sync=Syncing
 
-status.notsyncronised=Account needs to be syncronized, at least one item is out of sync.
+status.notsyncronized=Account needs to be syncronized, at least one item is out of sync.
 status.disabled=Account is not enabled, synchronization is disabled.
 status.notargets=Aborting Sync, because sync targets could not be created.
 status.nouserhost=Missing username and/or server. Please provide those values.
