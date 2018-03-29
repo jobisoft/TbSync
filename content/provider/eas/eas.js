@@ -54,7 +54,7 @@ var eas = {
     //CORE SYNC LOOP FUNCTION
     start: Task.async (function* (syncdata, job, folderID = "")  {
         //set syncdata for this sync process (reference from outer object)
-        syncdata.state = "";
+        syncdata.syncstate = "";
         syncdata.folderID = folderID;
         let accountReSyncs = 0;
         
@@ -1310,7 +1310,7 @@ var eas = {
     },
 
     sendRequest: function (wbxml, command, syncdata) {
-        let msg = "Sending data <" + syncdata.state.split("||")[0] + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
+        let msg = "Sending data <" + syncdata.syncstate.split("||")[0] + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
         if (syncdata.folderID !== "") msg += " (" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + ")";
         tbSync.eas.logxml(wbxml, msg);
 
@@ -1366,7 +1366,7 @@ var eas = {
                 switch(syncdata.req.status) {
 
                     case 200: //OK
-                        let msg = "Receiving data <" + syncdata.state.split("||")[0] + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
+                        let msg = "Receiving data <" + syncdata.syncstate.split("||")[0] + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
                         if (syncdata.folderID !== "") msg += " (" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + ")";
                         tbSync.eas.logxml(response, msg);
 

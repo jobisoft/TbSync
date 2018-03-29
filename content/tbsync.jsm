@@ -165,9 +165,9 @@ var tbSync = {
     //used by UI to find out, if this account is beeing synced
     isSyncing: function (account) {
         //I think using the global status is more safe ???
-        //let state = tbSync.getSyncData(account,"state"); //individual syncstates
-        //return (state != "accountdone" && state != "");
-        let status = tbSync.db.getAccountSetting(account, "status"); //global state of the account
+        //let syncstate = tbSync.getSyncData(account,"synstate"); //individual syncstates
+        //return (syncstate != "accountdone" && syncstate != "");
+        let status = tbSync.db.getAccountSetting(account, "status"); //global status of the account
         return (status == "syncing");
     },
     
@@ -241,18 +241,18 @@ var tbSync = {
         
     },
 
-    setSyncState: function(state, account = "", folderID = "") {
-        //set new state
-        let msg = "State: " + state;
+    setSyncState: function(syncstate, account = "", folderID = "") {
+        //set new syncstate
+        let msg = "State: " + syncstate;
         if (account !== "") msg += ", Account: " + tbSync.db.getAccountSetting(account, "accountname");
         if (folderID !== "") msg += ", Folder: " + tbSync.db.getFolderSetting(account, folderID, "name");
 
-        if (account && state.split(".")[0] == "send") {
+        if (account && syncstate.split(".")[0] == "send") {
             //add timestamp to be able to display timeout countdown
-            state = state + "||" + Date.now();
+            syncstate = syncstate + "||" + Date.now();
         }
 
-        tbSync.setSyncData(account, "state", state);
+        tbSync.setSyncData(account, "syncstate", syncstate);
         tbSync.dump("setSyncState", msg);
 
         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);

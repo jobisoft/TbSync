@@ -199,11 +199,11 @@ var tbSyncAccountSettings = {
             let accounts = tbSync.db.getAccounts().data;
             let target = "";
 
-            if (accounts.hasOwnProperty(syncdata.account) && syncdata.folderID !== "" && syncdata.state != "done") { //if "Done" do not print folder info syncstate
+            if (accounts.hasOwnProperty(syncdata.account) && syncdata.folderID !== "" && syncdata.syncstate != "done") { //if "Done" do not print folder info syncstate
                 target = " [" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "]";
             }
             
-            let parts = syncdata.state.split("||");
+            let parts = syncdata.syncstate.split("||");
             let syncstate = parts[0];
             let synctime = (parts.length>1 ? parts[1] : Date.now());
 
@@ -408,7 +408,7 @@ var tbSyncAccountSettings = {
                             status = tbSync.getLocalizedMessage("status." + status);
                             if (folderIDs[i] == syncdata.folderID) {
                                 status = tbSync.getLocalizedMessage("status.syncing");
-                                if (["send","eval","prepare"].includes(syncdata.state.split(".")[0]) && (syncdata.todo + syncdata.done) > 0) status = status + " (" + syncdata.done + (syncdata.todo>0 ? "/" + syncdata.todo : "") + ")"; 
+                                if (["send","eval","prepare"].includes(syncdata.syncstate.split(".")[0]) && (syncdata.todo + syncdata.done) > 0) status = status + " (" + syncdata.done + (syncdata.todo>0 ? "/" + syncdata.todo : "") + ")"; 
                             }
                             status = status + " ...";
                             break;
@@ -526,8 +526,8 @@ var tbSyncAccountSettings = {
             //only handle syncstate changes of the active account
             if (account == tbSyncAccountSettings.selectedAccount) {
                 
-                let state = tbSync.getSyncData(account,"state");
-                if (state == "accountdone") {
+                let syncstate = tbSync.getSyncData(account,"syncstate");
+                if (syncstate == "accountdone") {
                         let status = tbSync.db.getAccountSetting(account, "status");
                         switch (status) {
                             case "401":
@@ -543,7 +543,7 @@ var tbSyncAccountSettings = {
                         }
                 }
                 
-                if (state == "connected" || state == "syncing" || state == "accountdone") tbSyncAccountSettings.updateGui();
+                if (syncstate == "connected" || syncstate == "syncing" || syncstate == "accountdone") tbSyncAccountSettings.updateGui();
                 else {
                     tbSyncAccountSettings.updateFolderList();
                     tbSyncAccountSettings.updateSyncstate();
