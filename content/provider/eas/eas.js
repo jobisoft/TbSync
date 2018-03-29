@@ -1070,9 +1070,11 @@ var eas = {
             let target = folders[i].target;
             let type = folders[i].type;            
             
-            //Cache folders instead of deleting, so we can restore selection (and target names?)
+            //Add a cached version of this folder to the database
             folders[i].cached = "1";
-            //db.deleteFolder(account, folderID); 
+            folders[i].folderID = "cached-"+folderID;
+            db.addFolder(folders[i]);
+            db.deleteFolder(account, folderID); 
 
             if (target != "") {
                 tbSync.eas.removeTarget(target, type);
