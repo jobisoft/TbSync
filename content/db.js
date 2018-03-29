@@ -185,7 +185,7 @@ var db = {
     getDefaultFolderSetting: function (account, field) {
         //THIS FUNCTION ASSUMES, THAT THE GIVEN FIELD IS VALID
         let provider = this.getAccountSetting(account, "provider");
-        return tbSync[provider].getNewFolderEntry()[name];
+        return tbSync[provider].getNewFolderEntry()[field];
     },
 
     addFolder: function(data) {
