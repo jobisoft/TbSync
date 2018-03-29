@@ -341,6 +341,12 @@ var eas = {
             //also clean up leftover folder entries in DB during resync
             let folders = tbSync.db.getFolders(syncdata.account);
             for (let f in folders) {
+                //remove all cached folders
+                if (folders[f].cached == "1") {
+                    tbSync.db.deleteFolder(syncdata.account, folders[f].folderID);
+                    continue;
+                }
+                
                 //special action dring resync: remove all folders from db, which have not been added by server (thus are no longer there)
                 if (syncdata.accountResync && !addedFolders.includes(folders[f].folderID)) {
                     //if target exists, take it offline
@@ -355,9 +361,8 @@ var eas = {
                 }
             }
 
-            //if folders where found set syncstate to connected
-            let numberOfFolders = Object.keys(tbSync.db.getFolders(syncdata.account)).length;
-            if (numberOfFolders > 0) tbSync.setSyncState("connected", syncdata.account, syncdata.folderID);
+            //if account is connected (folders found) set syncstate to connected to switch to folder view
+            if (tbSync.isConnected(syncdata.account)) tbSync.setSyncState("connected", syncdata.account, syncdata.folderID);
             
         }
     }),
@@ -966,7 +971,8 @@ var eas = {
             "selected" : "",
             "lastsynctime" : "",
             "status" : "",
-            "parentID" : ""};
+            "parentID" : "",
+            "cached" : "0"};
         return folder;
     },
 
@@ -1058,7 +1064,10 @@ var eas = {
             let folderID = folders[i].folderID;
             let target = folders[i].target;
             let type = folders[i].type;            
-            db.deleteFolder(account, folderID); 
+            
+            //Cache folders instead of deleting, so we can restore selection (and target names?)
+            folders[i].cached = "1";
+            //db.deleteFolder(account, folderID); 
 
             if (target != "") {
                 tbSync.eas.removeTarget(target, type);

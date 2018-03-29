@@ -178,8 +178,8 @@ var tbSync = {
 
     isConnected: function (account) {
         let state = tbSync.db.getAccountSetting(account, "state"); //enabled, disabled
-        let numberOfFoundFolders = Object.keys(tbSync.db.getFolders(account)).length;
-       return (state == "enabled" && numberOfFoundFolders > 0);
+        let numberOfFoundFolders = tbSync.db.findFoldersWithSetting("cached", "0", account).length;
+        return (state == "enabled" && numberOfFoundFolders > 0);
     },
     
     prepareSyncDataObj: function (account, forceResetOfSyncData = false) {

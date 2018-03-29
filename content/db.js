@@ -126,8 +126,10 @@ var db = {
         if (this.accounts.data.hasOwnProperty(account) == false ) {
             throw "Unknown account!" + "\nThrown by db.removeAccount("+account+ ")";
         } else {
-            delete(this.accounts.data[account]);
+            delete (this.accounts.data[account]);
+            delete (this.folders[account]);
             this.saveAccounts();
+            this.saveFolders();
         }
     },
 
