@@ -20,6 +20,16 @@
         </menupopup>
     </popupset>
 
+    <popupset>
+        <menupopup id="tbsync.accountsettings.DisableContextMenu" onpopupshowing="tbSyncAccountSettings.updateDisableContextMenu();">
+            <menuitem id="contextMenuDisableAccount" 
+                    class="menuitem-iconic"
+                    image="chrome://tbsync/skin/disabled.png"
+                    label="&pref.DisableAccount;" 
+                    oncommand="tbSyncAccountSettings.toggleEnableState();"/>
+        </menupopup>
+    </popupset>
+
     <vbox flex="1">
 
         <grid flex="1">
@@ -49,8 +59,8 @@
                     <vbox>
                         <label class="header" style="margin-left:0" value="" id="tbsync.accountsettings.config.label"/>
                         <hbox>
-                            <hbox width="235"><label style="padding:1px; margin-left:0" control="tbsync.accountsettings.host" value="&pref.ServerName;" /></hbox>
-                            <hbox flex="1"><label style="padding:1px;; margin-left:0" control="tbsync.accountsettings.asversionselected" value ="ActiveSync version" /></hbox>
+                            <hbox width="235"><label style="padding:1px; margin-left:0" id="tbsync.accountsettingslabel.host" control="tbsync.accountsettings.host" value="&pref.ServerName;" /></hbox>
+                            <hbox flex="1"><label style="padding:1px;; margin-left:0" id="tbsync.accountsettingslabel.asversionselected" control="tbsync.accountsettings.asversionselected" value ="ActiveSync version" /></hbox>
                         </hbox>
 
                         <hbox style="margin-bottom:1ex;">
@@ -77,7 +87,7 @@
                     <vbox style='overflow: auto;'>
 
                         <hbox height="24" align="center">
-                            <label flex="1" style="margin-left:0" class="header" value="&pref.contactoptions;"/>
+                            <label flex="1" style="margin-left:0" class="header" id="tbsync.accountsettings.contacts.label" value="&pref.contactoptions;"/>
                         </hbox>
                         <checkbox id="tbsync.accountsettings.birthday" label="&pref.birthday;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
                         <checkbox id="tbsync.accountsettings.displayoverride" label="&pref.displayoverride;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
@@ -90,14 +100,14 @@
                                     <menuitem label="&pref.seperator.comma;" value="44" />
                                 </menupopup>
                             </menulist>
-                            <label flex="1" value="&pref.seperator.description;"/>
+                            <label flex="1" id="tbsync.accountsettingslabel.seperator" value="&pref.seperator.description;"/>
                         </hbox>
                         
                     </vbox>
                 </row>
 
                 
-                <row flex="1" style="margin-top:1em;" id="tbsync.accountsettings.folders">
+                <row flex="1" style="margin-top:0em;" id="tbsync.accountsettings.folders">
                     <vbox/>
                     <richlistbox 
                         id="tbsync.accountsettings.folderlist"
@@ -117,11 +127,11 @@
 
                 <row>
                      <label value="&pref.DeviceId;" />
-                     <label style="margin-left:0" value="" disabled="true" id="deviceId" />
+                     <hbox><label style="margin-left:0; margin-bottom: 1ex;" flex="1" value="" disabled="true" id="deviceId" /><image style="margin-right:0" tooltiptext="&pref.switchFoldersAndConfig;" ondblclick="tbSyncAccountSettings.switchFoldersAndConfigView()" width="24" height="24" id="tbsync.accountsettings.slider" src="chrome://tbsync/skin/slider-on.png" /></hbox>
                 </row>
                 <row>
                      <label value="&pref.syncstate;" />
-                     <html:div style="margin-bottom: 2ex; margin-left:0"><html:span id="syncstate"></html:span> <html:span id="syncstate_link" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" dest="" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/wiki/' + this.getAttribute('dest'));" style="color:blue;text-decoration: underline"></html:span></html:div>
+                     <html:div style="margin-bottom: 1ex; margin-left:0; font-weight:bold"><html:span id="syncstate"></html:span> <html:span id="syncstate_link" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" dest="" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/wiki/' + this.getAttribute('dest'));" style="color:blue;text-decoration: underline"></html:span></html:div>
                 </row>
 
                 <row>
@@ -134,8 +144,8 @@
                 <row>
                     <vbox/>
                     <hbox flex="1" >
-                        <button flex="1" style="margin-right:0; margin-left:0" label="" id="tbsync.accountsettings.connectbtn" oncommand="tbSyncAccountSettings.toggleConnectionState();" />
-                        <button flex="4" style="margin-right:0" label="&pref.Sync;" id="tbsync.accountsettings.syncbtn" oncommand="tbSyncAccountSettings.requestSync();" />
+                        <button id="tbsync.accountsettings.enablebtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.EnableAccount;" oncommand="tbSyncAccountSettings.toggleEnableState();" />
+                        <button id="tbsync.accountsettings.syncbtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.Sync;" oncommand="tbSyncAccountSettings.requestSync();" context="tbsync.accountsettings.DisableContextMenu" />
                     </hbox>
                 </row>
 

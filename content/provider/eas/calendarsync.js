@@ -41,7 +41,7 @@ eas.sync.Calendar = {
             let utc = cal.createDateTime(data.StartTime); //format "19800101T000000Z" - UTC
             item.startDate = utc.getInTimezone(tbSync.guessTimezoneByStdDstOffset(stdOffset, dstOffset, easTZ.standardName));
             if (data.AllDayEvent && data.AllDayEvent == "1") {
-                item.startDate.timezone = cal.floating();
+                item.startDate.timezone = (cal.dtz && cal.dtz.floating) ? cal.dtz.floating : cal.floating();
                 item.startDate.isDate = true;
             }
         }
@@ -50,7 +50,7 @@ eas.sync.Calendar = {
             let utc = cal.createDateTime(data.EndTime);
             item.endDate = utc.getInTimezone(tbSync.guessTimezoneByStdDstOffset(stdOffset, dstOffset, easTZ.standardName));
             if (data.AllDayEvent && data.AllDayEvent == "1") {
-                item.endDate.timezone = cal.floating();
+                item.endDate.timezone = (cal.dtz && cal.dtz.floating) ? cal.dtz.floating : cal.floating();
                 item.endDate.isDate = true;
             }
         }

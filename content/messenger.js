@@ -72,7 +72,7 @@ var tbSyncMessenger = {
                     //check for errors
                     switch (tbSync.db.getAccountSetting(accounts.IDs[i], "status")) {
                         case "OK":
-                        case "notconnected":
+                        case "disabled":
                         case "notsyncronized":
                         case "nolightning":
                         case "syncing":
@@ -113,7 +113,7 @@ var tbSyncMessenger = {
                         let syncInterval = accounts.data[accounts.IDs[i]].autosync * 60 * 1000;
                         let lastsynctime = accounts.data[accounts.IDs[i]].lastsynctime;
                         
-                        if (accounts.data[accounts.IDs[i]].state == "connected" && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval) ) {
+                        if (accounts.data[accounts.IDs[i]].state == "enabled" && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval) ) {
                         tbSync.syncAccount("sync",accounts.IDs[i]);
                         }
                     }

@@ -1,16 +1,14 @@
-state.disconnected=Connect account
-state.connected=Disconnect
-
 info.idle=Idle
 info.error=Error
 info.sync=Syncing
 
 status.notsyncronised=Account needs to be syncronised, at least one item is out of sync.
-status.notconnected=Account is not connected, synchronization is disabled.
+status.disabled=Account is not enabled, synchronization is disabled.
 status.notargets=Aborting Sync, because sync targets could not be created.
 status.nouserhost=Missing username and/or server. Please provide those values.
 status.timeout=Communication timeout.
 status.networkerror=Could not connect to server.
+status.404=User not found (HTTP Error 404).
 status.403=Server rejected connection (forbidden).
 status.401=Could not authenticate, check username and password.
 status.449=Server requests provisioning.
@@ -26,16 +24,17 @@ status.mailformed-xml=Could not parse XML. Please help fix this bug by (in this 
 status.invalid=Invalid server response (junk).
 status.InvalidServerOptions=Server responded with invalid server options. Check wether EAS is allowed for this user.
 
-status.security=Could not establish a secure connection. Are you using a self-signed or otherwise untrusted certificate without importing it into Thunderbird? (##replace.1##)||How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F||[more information]
+status.security=Could not establish a secure connection. Are you using a self-signed or otherwise untrusted certificate without importing it into Thunderbird? (##replace.1##)||How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F||[help]
 status.network=Could not connect to server (##replace.1##).
 
 status.syncing=Synchronizing
+status.connecting=Connecting to server
 status.skipped=Not yet supported, skipped
 status.aborted=Not synchronized
 status.pending=Waiting to be synchronized
 status.modified=Local modifications
 
-status.resync-loop=There was an error which could not be recovered by resyncing the account. Please disconnect the account and try again. (Error: resync loop)
+status.resync-loop=There was an error which could not be recovered by resyncing the account. Please disable the account and try again. (Error: resync loop)
 
 
 status.policy.2=There is no policy for this client. Contact your server administrator or disable provisioning for this account.
@@ -61,14 +60,22 @@ status.nosupportedeasversion=Server does not support ActiveSync v2.5 or v14.0 (o
 status.notsupportedeasversion=Server does not support selected ActiveSync v##replace.1## (only ##replace.2##).
 
 prompt.DeleteAccount=Are you sure that you want to delete account ##accountName##?
-prompt.Disconnect=Are you sure you want to disconnect this account? All local modifications, which have not been synced yet, will be lost!
+prompt.Disable=Are you sure you want to disable this account? All local modifications, which have not been synced yet, will be lost!
 prompt.Unsubscribe=Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!
 prompt.UnlockSettings=Changing any of the predefined server settings could lead to synchronization errors. Are you sure you want to unlock all predefined server settings?
 prompt.Password=Please enter the password for user ##user##:
 
 button.syncthis=Synchronize this account
+button.tryagain=Try again to connect to server
+button.enableAndConnect=Enable account & try to connect to server
+button.disableAndEdit=Disable account to edit settings
 
 account=TbSync account [##accountname##]
+
+accountacctions.delete=Delete account "##accountname##"
+accountacctions.sync=Synchronize account "##accountname##"
+accountacctions.enable=Enable account "##accountname##" & try to connect to server
+accountacctions.disable=Disable account "##accountname##"
 
 config.auto=ActiveSync server configuration (Autodiscover)
 config.custom=ActiveSync server configuration

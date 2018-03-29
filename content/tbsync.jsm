@@ -18,7 +18,7 @@ Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("resource://gre/modules/AddonManager.jsm");
 Components.utils.import("resource://gre/modules/NetUtil.jsm");
-
+Components.utils.importGlobalProperties(["XMLHttpRequest"]);
 
 
 //Date has a toISOString method, which returns the Date obj as extended ISO 8601,
@@ -88,6 +88,12 @@ var tbSync = {
         tbSync.addressbookListener.add();
         tbSync.scanPrefIdsOfAddressBooks();
         
+        //convert database when migrating from connect state to enable state (keep this in 0.7 branch)
+        let accounts = tbSync.db.getAccounts();
+        for (let i = 0; i < accounts.IDs.length; i++) {
+            if (accounts.data[accounts.IDs[i]].state == "connected") accounts.data[accounts.IDs[i]].state = "enabled";
+        }
+
         //init stuff for calendar (only if lightning is installed)
         tbSync.cachedTimezoneData = null;
         tbSync.defaultTimezoneInfo = null;
@@ -97,9 +103,10 @@ var tbSync = {
             cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
             cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
             
-            //get timezone info of default timezone
-            tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo(cal.calendarDefaultTimezone());
-
+            //get timezone info of default timezone (old cal. without dtz are depricated)
+            tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo((cal.dtz && cal.dtz.defaultTimezone) ? cal.dtz.defaultTimezone : cal.calendarDefaultTimezone());
+            tbSync.utcTimezone = (cal.dtz && cal.dtz.UTC) ? cal.dtz.UTC : cal.UTC();
+            
             //get windows timezone data from CSV
             let csvData = yield tbSync.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
             for (let i = 0; i<csvData.length; i++) {
@@ -200,7 +207,7 @@ var tbSync = {
         //if no account given, loop over all accounts, otherwise only use the provided one
         let accountsToDo = [];        
         if (account == "") {
-            //add all connected accounts to the queue
+            //add all enabled accounts to the queue
             for (let i=0; i < accounts.IDs.length; i++) {
                 accountsToDo.push(accounts.IDs[i]);
             }
@@ -210,8 +217,8 @@ var tbSync = {
         
         //update gui
         for (let i = 0; i < accountsToDo.length; i++) {
-            //do not init sync if there is a sync running or account is not connected
-            if (accounts.data[accountsToDo[i]].state == "disconnected" || tbSync.isSyncing(accountsToDo[i])) continue;
+            //do not init sync if there is a sync running or account is not enabled
+            if (accounts.data[accountsToDo[i]].state != "enabled" || tbSync.isSyncing(accountsToDo[i])) continue;
 
             //create syncdata object for each account (to be able to have parallel XHR)
             tbSync.prepareSyncDataObj(accountsToDo[i], true);
@@ -766,7 +773,7 @@ var tbSync = {
         if (date.timezone.tzid == "floating") date.timezone = tbSync.defaultTimezoneInfo.timezone;
         //to get the UTC string we could use icalString (which does not work on allDayEvents, or calculate it from nativeTime)
         date.isDate = 0;
-        let UTC = date.getInTimezone(cal.UTC());        
+        let UTC = date.getInTimezone(tbSync.utcTimezone);        
         if (fakeUTC) UTC = date.clone();
         
         function pad(number) {
@@ -814,6 +821,12 @@ var tbSync = {
         tbSync.dump("Matching TZ via current offset: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
         if (test.timezoneOffset/-60 == curOffset) return test.timezone;
         
+        //second try UTC
+        test = utcDateTime.getInTimezone(tbSync.utcTimezone);
+        tbSync.dump("Matching TZ via current offset: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
+        if (test.timezoneOffset/-60 == curOffset) return test.timezone;
+        
+        //third try all others
         let enumerator = tzService.timezoneIds;
         while (enumerator.hasMore()) {
             let id = enumerator.getNext();
@@ -891,7 +904,7 @@ var tbSync = {
                 }
 
                 //make sure, that UTC timezone is there
-                tbSync.cachedTimezoneData.bothOffsets["0:0"] = cal.UTC();                
+                tbSync.cachedTimezoneData.bothOffsets["0:0"] = tbSync.utcTimezone;
 
                 //multiple TZ share the same offset and abbreviation, make sure the default timezone is present
                 tbSync.cachedTimezoneData.abbreviations[tbSync.defaultTimezoneInfo.std.abbreviation] = tbSync.defaultTimezoneInfo.std.id;
@@ -984,10 +997,10 @@ var tbSync = {
         }
                 
         //we could parse the icalstring by ourself, but I wanted to use ICAL.parse - TODO try catch
-        let info = ICAL.parse("BEGIN:VCALENDAR\r\n" + timezone.toString() + "\r\nEND:VCALENDAR");
+        let info = ICAL.parse("BEGIN:VCALENDAR\r\n" + timezone.icalComponent.toString() + "\r\nEND:VCALENDAR");
         let comp = new ICAL.Component(info);
         let vtimezone =comp.getFirstSubcomponent("vtimezone");
-        let id = vtimezone.getFirstPropertyValue("tzid");
+        let id = vtimezone.getFirstPropertyValue("tzid").toString();
         let zone = vtimezone.getFirstSubcomponent(standardOrDaylight);
 
         if (zone) { 
@@ -1002,7 +1015,7 @@ var tbSync = {
             obj.offset = -1*((h*60) + m);
 
             //get international abbreviation (CEST, CET, CAT ... )
-            obj.abbreviation = zone.getFirstPropertyValue("tzname");
+            obj.abbreviation = zone.getFirstPropertyValue("tzname").toString();
             
             //get displayname
             obj.displayname = /*"("+utcOffset+") " +*/ obj.id;// + ", " + obj.abbreviation;
@@ -1044,7 +1057,7 @@ var tbSync = {
                     if (obj.switchdate.weekOfMonth<0 || obj.switchdate.weekOfMonth>5) obj.switchdate.weekOfMonth = 5;
 
                     //get switch time from dtstart
-                    let dttime = cal.createDateTime(dtstart);
+                    let dttime = tbSync.createDateTime(dtstart.toString());
                     obj.switchdate.hour = dttime.hour;
                     obj.switchdate.minute = dttime.minute;
                     obj.switchdate.second = dttime.second;                                    

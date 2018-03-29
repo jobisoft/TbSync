@@ -24,7 +24,9 @@
 <!ENTITY pref.downloadonly "One-way sync (do not send local changes to the server)">
 <!ENTITY pref.autotime "AutoSync (minutes)">
 <!ENTITY pref.never "0 for never">
-<!ENTITY pref.Sync "Synchronize now!">
+<!ENTITY pref.Sync "Synchronize this account">
+<!ENTITY pref.EnableAccount "Enable account &amp; try to connect to server">
+<!ENTITY pref.DisableAccount "Disable this account">
 
 <!ENTITY pref.ShowTrashedFolders "Show folders found in trash" >
 
@@ -43,3 +45,5 @@
 <!ENTITY servertype.auto "Automatic configuration via ActiveSync Autodiscover">
 <!ENTITY servertype.custom "Custom configuration">
 <!ENTITY servertype.unlock "Double click to unlock all predefined server settings.">
+
+<!ENTITY pref.switchFoldersAndConfig "Double click to switch between folder view and settings view.">
