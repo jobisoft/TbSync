@@ -239,7 +239,12 @@ var eas = {
                         newData.parentID = add[count].ParentId;
                         newData.synckey = "";
                         newData.target = "";
-                        newData.selected = (newData.type == "9" || newData.type == "8" || newData.type == "7" ) ? "1" : "0";
+                        
+                        //if there is a cached version of this folder, take selection state from there
+                        let cachedFolders = tbSync.db.findFoldersWithSetting(["cached","name","account"], ["1", newData.name,  newData.account], "provider", "eas");
+                        if (cachedFolders && cachedFolders.length > 0) newData.selected = cachedFolders[0].selected;
+                        else newData.selected = (newData.type == "9" || newData.type == "8" || newData.type == "7" ) ? "1" : "0";
+                        
                         newData.status = "";
                         newData.lastsynctime = "";
                         tbSync.db.addFolder(newData);
