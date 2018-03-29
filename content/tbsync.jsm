@@ -232,7 +232,7 @@ var tbSync = {
         //update gui
         for (let i = 0; i < accountsToDo.length; i++) {
             //do not init sync if there is a sync running or account is not enabled
-            if (accounts.data[accountsToDo[i]].state != "enabled" || tbSync.isSyncing(accountsToDo[i])) continue;
+            if (!tbSync.isEnabled(accountsToDo[i]) || tbSync.isSyncing(accountsToDo[i])) continue;
 
             //create syncdata object for each account (to be able to have parallel XHR)
             tbSync.prepareSyncDataObj(accountsToDo[i], true);
