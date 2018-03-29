@@ -151,9 +151,8 @@ var tbSyncAccounts = {
     updateAccountSyncStateObserver: {
         observe: function (aSubject, aTopic, aData) {
             if (aData != "") {
-                //limit execution to a couple of states, not all
-                let state = tbSync.getSyncData(aData,"state");
-                //if (state == "syncing" || state == "accountdone") 
+                //since we want rotating arrows on each syncstate change, we need to run this on each syncstate
+                let syncstate = tbSync.getSyncData(aData,"syncstate");
                 tbSyncAccounts.updateAccountStatus(aData);
             }
         }
