@@ -19,6 +19,7 @@ eas.sync.Tasks = {
         eas.sync.setItemCategories(item, syncdata, data);
         eas.sync.setItemRecurrence(item, syncdata, data);
 
+        let dueDate = null;
         if (data.DueDate && data.UtcDueDate) {
             //extract offset from EAS data
             let DueDate = new Date(data.DueDate);
@@ -27,7 +28,8 @@ eas.sync.Tasks = {
 
             //timezone is identified by its offset
             let utc = cal.createDateTime(UtcDueDate.toBasicISOString()); //format "19800101T000000Z" - UTC
-            item.dueDate = utc.getInTimezone(tbSync.guessTimezoneByCurrentOffset(offset, utc));
+            dueDate = utc.getInTimezone(tbSync.guessTimezoneByCurrentOffset(offset, utc));
+            item.dueDate = dueDate;
         }
 
         if (data.StartDate && data.UtcStartDate) {
@@ -39,6 +41,16 @@ eas.sync.Tasks = {
             //timezone is identified by its offset
             let utc = cal.createDateTime(UtcStartDate.toBasicISOString()); //format "19800101T000000Z" - UTC
             item.entryDate = utc.getInTimezone(tbSync.guessTimezoneByCurrentOffset(offset, utc));
+        } else {
+            //there is no start date? if this is a recurring item, we MUST add an entryDate, otherwise Thunderbird will not display the recurring items
+            if (data.Recurrence) {
+                if (dueDate) {
+                    item.entryDate = dueDate; 
+                    tbSync.synclog("Warning","Copy task dueData to task startDate, because Thunderbird needs a startDate for recurring items.", item.icalString);
+                } else {
+                    tbSync.synclog("Critical Warning","Task without startDate and without dueDate but with recurrence info is not supported by Thunderbird. Recurrence will be lost.", item.icalString);
+                }
+            }
         }
 
         eas.sync.mapEasPropertyToThunderbird ("Sensitivity", "CLASS", data, item);
