@@ -579,6 +579,7 @@ eas.sync = {
                 recRule.type = "YEARLY";
                 break;
             }
+
             if (data.Recurrence.CalendarType) {
                 // TODO
             }
@@ -623,6 +624,10 @@ eas.sync = {
                 //cal.createDateTime only supports  compact/basic, our own method takes both styles
                 recRule.untilDate = tbSync.createDateTime(data.Recurrence.Until);
             }
+            if (data.Recurrence.Start) {
+                tbSync.synclog("Warning","Start tag in recurring task is ignored, recurrence will start with first entry.", item.icalString);
+            }
+        
             item.recurrenceInfo.insertRecurrenceItemAt(recRule, 0);
 
             if (data.Exceptions && syncdata.type == "Calendar") { // only events, tasks cannot have exceptions
@@ -667,13 +672,13 @@ eas.sync = {
                     }
                     else {
                         // RDATE
-                        tbSync.dump("Ignoring RDATE rule", recRule.icalString);
+                        tbSync.synclog("Warning","Ignoring RDATE rule", recRule.icalString);
                     }
                     continue;
                 }
                 if (recRule.isNegative) {
                     // EXRULE
-                    tbSync.dump("Ignoring EXRULE rule", recRule.icalString);
+                    tbSync.synclog("Warning","Ignoring EXRULE rule", recRule.icalString);
                     continue;
                 }
 

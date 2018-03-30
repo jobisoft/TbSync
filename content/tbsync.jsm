@@ -417,9 +417,10 @@ var tbSync = {
             tbSync.appendToFile("debug.log", "** " + now.toString() + " **\n[" + what + "] : " + aMessage + "\n\n");
         }
     },
-        
-    quickdump: function (what, aMessage) {
-        tbSync.mozConsoleService.logStringMessage("[TbSync] " + what + " : " + aMessage);
+
+    synclog: function (type, message, details) {
+	//placeholder function, until a synclog is implemented
+	tbSync.dump("SyncLog ("+type+")", message + "\n" + details);
     },
 
     getIdentityKey: function (email) {
