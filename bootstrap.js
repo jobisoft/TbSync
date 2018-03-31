@@ -160,7 +160,7 @@ function startup(data, reason) {
 
 function shutdown(data, reason) {
     //possible reasons: APP_SHUTDOWN, ADDON_DISABLE, ADDON_UNINSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE    
-    
+
     //remove our observer
     Services.obs.removeObserver(onLoadObserver, "mail-startup-done");
     Services.obs.removeObserver(openManagerObserver, "tbsync.openManager");
@@ -168,11 +168,10 @@ function shutdown(data, reason) {
 
     //remove UI elements
     if (statuspanel && window && window.document) window.document.getElementById("status-bar").removeChild(statuspanel);
-    
-    
+
     //finish pending jobs of tbSync
     tbSync.finish();
-    
+
     //remove main jsm - needs to wait for tbSync.finish!!!
     //Components.utils.unload("chrome://tbsync/content/tbsync.jsm");
 }
