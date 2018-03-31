@@ -53,7 +53,6 @@ if (!Date.prototype.toBasicISOString) {
 var tbSync = {
 
     enabled: false,
-    initjobs: 0,
 
     bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tbsync/locale/tbSync.strings"),
     mozConsoleService : Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService),
@@ -132,7 +131,7 @@ var tbSync = {
         tbSync.dump("TbSync init","done");
     }),
 
-    unload: function () {
+    finish: function () {
         if (tbSync.enabled) {
             tbSync.db.changelogTimer.cancel();
             tbSync.db.accountsTimer.cancel();
@@ -419,8 +418,8 @@ var tbSync = {
     },
 
     synclog: function (type, message, details) {
-	//placeholder function, until a synclog is implemented
-	tbSync.dump("SyncLog ("+type+")", message + "\n" + details);
+    //placeholder function, until a synclog is implemented
+    tbSync.dump("SyncLog ("+type+")", message + "\n" + details);
     },
 
     getIdentityKey: function (email) {
