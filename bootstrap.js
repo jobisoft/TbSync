@@ -59,13 +59,15 @@ let syncstateObserver = {
 
 //Observer to open the account manager
 let openManagerObserver = {
-    observe: function (aSubject, aTopic, aData) {
-        if (tbSync.enabled) {
-            // check, if a window is already open and just put it in focus
-            if (tbSync.prefWindowObj === null) tbSync.prefWindowObj = window.open("chrome://tbsync/content/manager/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen");
-            tbSync.prefWindowObj.focus();
-        } else {
-            popupNotEnabled();
+    observe: function (aSubject, aTopic, button) {
+        if (button == 0) {
+            if (tbSync.enabled) {
+                // check, if a window is already open and just put it in focus
+                if (tbSync.prefWindowObj === null) tbSync.prefWindowObj = window.open("chrome://tbsync/content/manager/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen");
+                tbSync.prefWindowObj.focus();
+            } else {
+                popupNotEnabled();
+            }
         }
     }
 }
@@ -214,7 +216,7 @@ function onLoadAction() {
         statuspanel = window.document.createElement('statusbarpanel');
         statuspanel.setAttribute("label","TbSync");
         statuspanel.setAttribute("id","tbsync.status");
-        statuspanel.setAttribute("onclick","Services.obs.notifyObservers(null, 'tbsync.openManager', null);");
+        statuspanel.onclick = function (event) {Services.obs.notifyObservers(null, 'tbsync.openManager', event.button);};
         window.document.getElementById("status-bar").appendChild(statuspanel);
         
         //if (window.document.getElementById("calendar-synchronize-button")) {
