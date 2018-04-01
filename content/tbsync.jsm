@@ -157,18 +157,6 @@ var tbSync = {
         tbSync.dump("TbSync init","done");
     }),
 
-    finish: function () {
-        if (tbSync.enabled) {
-            tbSync.db.changelogTimer.cancel();
-            tbSync.db.accountsTimer.cancel();
-            tbSync.db.foldersTimer.cancel();
-            tbSync.writeAsyncJSON(tbSync.db.accounts, tbSync.db.accountsFile);
-            tbSync.writeAsyncJSON(tbSync.db.folders, tbSync.db.foldersFile);
-            tbSync.writeAsyncJSON(tbSync.db.changelog, tbSync.db.changelogFile);
-        }
-        if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
-    },
-
 
     //example async sleep function using Promise
     sleep : function (delay) {
@@ -444,8 +432,8 @@ var tbSync = {
     },
 
     synclog: function (type, message, details) {
-    //placeholder function, until a synclog is implemented
-    tbSync.dump("SyncLog ("+type+")", message + "\n" + details);
+        //placeholder function, until a synclog is implemented
+        tbSync.dump("SyncLog ("+type+")", message + "\n" + details);
     },
 
     getIdentityKey: function (email) {
