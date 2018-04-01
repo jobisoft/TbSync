@@ -1,6 +1,8 @@
 //no need to create namespace, we are in a sandbox
 
 Components.utils.import("resource://gre/modules/Services.jsm");
+Components.utils.import("resource://gre/modules/Task.jsm");
+Components.utils.import("resource://gre/modules/osfile.jsm");
 
 let wait4startup = false;
 let statuspanel = null;
@@ -142,6 +144,9 @@ function startup(data, reason) {
 
     Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
+    //Map local writeAsyncJSON into tbSync
+    tbSync.writeAsyncJSON = writeAsyncJSON;
+    
     if (reason == APP_STARTUP) {
         //enable observer to call onLoadAction after thunderbird startup finished
         wait4startup  = true;
@@ -166,14 +171,25 @@ function shutdown(data, reason) {
     Services.obs.removeObserver(openManagerObserver, "tbsync.openManager");
     Services.obs.removeObserver(syncstateObserver, "tbsync.changedSyncstate");
 
+    //abort write timers and write current file content to disk 
+    if (tbSync.enabled) {
+        tbSync.db.changelogTimer.cancel();
+        tbSync.db.accountsTimer.cancel();
+        tbSync.db.foldersTimer.cancel();
+        writeAsyncJSON(tbSync.db.accounts, tbSync.db.accountsFile);
+        writeAsyncJSON(tbSync.db.folders, tbSync.db.foldersFile);
+        writeAsyncJSON(tbSync.db.changelog, tbSync.db.changelogFile);
+    }
+        
+    //close window (if open)
+    if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
+    
     //remove UI elements
     if (statuspanel && window && window.document) window.document.getElementById("status-bar").removeChild(statuspanel);
 
-    //finish pending jobs of tbSync
-    tbSync.finish();
-
-    //remove main jsm - needs to wait for tbSync.finish!!!
-    //Components.utils.unload("chrome://tbsync/content/tbsync.jsm");
+    //unload javascript module
+    tbSync.dump("TbSync shutdown","Unloading module.");
+    Components.utils.unload("chrome://tbsync/content/tbsync.jsm");
 }
 
 function onLoadAction() {
@@ -212,4 +228,16 @@ function popupNotEnabled () {
             tbSync.openFileTab("debug.log");
         }
     }
+}
+
+function writeAsyncJSON (obj, filename) {
+    let filepath = tbSync.getAbsolutePath(filename);
+    let storageDirectory = tbSync.storageDirectory;
+    let json = tbSync.encoder.encode(JSON.stringify(obj));
+    
+    Task.spawn(function* () {
+        //MDN states, instead of checking if dir exists, just create it and catch error on exist (but it does not even throw)
+        yield OS.File.makeDir(storageDirectory);
+        yield OS.File.writeAtomic(filepath, json, {tmpPath: filepath + ".tmp"});
+    }).catch(Components.utils.reportError);
 }

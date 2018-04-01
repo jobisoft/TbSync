@@ -329,15 +329,6 @@ var tbSync = {
         return OS.Path.join(tbSync.storageDirectory, filename);
     },
 
-    writeAsyncJSON: function (obj, filename) {
-        let filepath = tbSync.getAbsolutePath(filename);
-        Task.spawn(function* () {
-            //MDN states, instead of checking if dir exists, just create it and catch error on exist (but it does not even throw)
-            yield OS.File.makeDir(tbSync.storageDirectory);
-            yield OS.File.writeAtomic(filepath, tbSync.encoder.encode(JSON.stringify(obj)), {tmpPath: filepath + ".tmp"});
-        }).catch(Components.utils.reportError);
-    },
-
     //read file from within the XPI package
     fetchFile: function (aURL) {
         return new Promise((resolve, reject) => {
