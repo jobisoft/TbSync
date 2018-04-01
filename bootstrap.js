@@ -70,10 +70,17 @@ let openManagerObserver = {
     }
 }
 
-//function ligthningSyncRequest () {
-//    if (tbSync.enabled) tbSync.syncAccount('sync'); else popupNotEnabled();
-//}
-    
+//Observer to init sync
+let initSyncObserver = {
+    observe: function (aSubject, aTopic, aData) {
+        if (tbSync.enabled) {
+            tbSync.syncAccount('sync');
+        } else {
+            popupNotEnabled();
+        }
+    }
+}
+
 
 
 
