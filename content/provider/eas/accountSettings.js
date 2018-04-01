@@ -407,7 +407,7 @@ var tbSyncAccountSettings = {
                         case "OK":
                         case "modified":
                             if (type == "7" || type == "15" || type == "8" || type == "13") {
-                                if ("calICalendar" in Components.interfaces) status = tbSync.getLocalizedMessage("status." + status) + ": "+ tbSync.getCalendarName(folders[folderIDs[i]].target);
+                                if (tbSync.lightningIsAvailable()) status = tbSync.getLocalizedMessage("status." + status) + ": "+ tbSync.getCalendarName(folders[folderIDs[i]].target);
                                 else status = tbSync.getLocalizedMessage("status.nolightning");
                             }
                             if (type == "9" || type == "14") status = tbSync.getLocalizedMessage("status." + status) + ": "+ tbSync.getAddressBookName(folders[folderIDs[i]].target);

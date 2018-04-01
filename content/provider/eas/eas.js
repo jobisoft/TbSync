@@ -15,31 +15,33 @@ var eas = {
         abortWithServerError: "abortWithServerError",
     }),
     
+
     init: Task.async (function* ()  {
-        if ("calICalendar" in Components.interfaces) {                     
-            //If an EAS calendar is currently NOT associated with an email identity, try to associate, 
-            //but do not change any explicitly set association
-            // - A) find email identity and accociate (which sets organizer to that user identity)
-            // - B) overwrite default organizer with current best guess
-            //TODO: Do this after email accounts changed, not only on restart? 
-            let folders = tbSync.db.findFoldersWithSetting(["selected","type"], ["1","8,13"], "provider", "eas");
-            for (let f=0; f<folders.length; f++) {
-                let calendar = cal.getCalendarManager().getCalendarById(folders[f].target);
-                if (calendar && calendar.getProperty("imip.identity.key") == "") {
-                    //is there an email identity for this eas account?
-                    let key = tbSync.getIdentityKey(tbSync.db.getAccountSetting(folders[f].account, "user"));
-                    if (key === "") { //TODO: Do this even after manually switching to NONE, not only on restart?
-                        //set transient calendar organizer settings based on current best guess and 
-                        calendar.setProperty("organizerId", cal.prependMailTo(tbSync.db.getAccountSetting(folders[f].account, "user")));
-                        calendar.setProperty("organizerCN",  calendar.getProperty("fallbackOrganizerName"));
-                    } else {                      
-                        //force switch to found identity
-                        calendar.setProperty("imip.identity.key", key);
-                    }
+    }),
+
+    //this is  called, after lighning has become available - it is called by tbSync.lightningIsInstalled()
+    init4lightning: Task.async (function* () {
+        //If an EAS calendar is currently NOT associated with an email identity, try to associate, 
+        //but do not change any explicitly set association
+        // - A) find email identity and accociate (which sets organizer to that user identity)
+        // - B) overwrite default organizer with current best guess
+        //TODO: Do this after email accounts changed, not only on restart? 
+        let folders = tbSync.db.findFoldersWithSetting(["selected","type"], ["1","8,13"], "provider", "eas");
+        for (let f=0; f<folders.length; f++) {
+            let calendar = cal.getCalendarManager().getCalendarById(folders[f].target);
+            if (calendar && calendar.getProperty("imip.identity.key") == "") {
+                //is there an email identity for this eas account?
+                let key = tbSync.getIdentityKey(tbSync.db.getAccountSetting(folders[f].account, "user"));
+                if (key === "") { //TODO: Do this even after manually switching to NONE, not only on restart?
+                    //set transient calendar organizer settings based on current best guess and 
+                    calendar.setProperty("organizerId", cal.prependMailTo(tbSync.db.getAccountSetting(folders[f].account, "user")));
+                    calendar.setProperty("organizerCN",  calendar.getProperty("fallbackOrganizerName"));
+                } else {                      
+                    //force switch to found identity
+                    calendar.setProperty("imip.identity.key", key);
                 }
             }
-                    
-        }        
+        }
     }),
 
 
@@ -458,7 +460,7 @@ var eas = {
                     case "Calendar":
                     case "Tasks": 
                         // skip if lightning is not installed
-                        if ("calICalendar" in Components.interfaces == false) {
+                        if ((yield tbSync.lightningIsInstalled()) == false) {
                             throw eas.finishSync("nolightning");
                         }
                         
@@ -811,7 +813,7 @@ var eas = {
         tbSync.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
         tbSync.db.setAccountSetting(syncdata.account, "status", status);
         tbSync.setSyncState("accountdone", syncdata.account); 
-	
+    
     },
     
     updateSynckey: function (syncdata, wbxmlData) {

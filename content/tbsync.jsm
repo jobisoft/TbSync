@@ -6,12 +6,6 @@ var EXPORTED_SYMBOLS = ["tbSync"];
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-//import calUtils if avail
-if ("calICalendar" in Components.interfaces) {
-    Components.utils.import("resource://calendar/modules/calUtils.jsm");
-    Components.utils.import("resource://calendar/modules/ical.js");    
-}
-
 Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import("resource://gre/modules/osfile.jsm");
@@ -54,6 +48,11 @@ var tbSync = {
 
     enabled: false,
 
+    lightningInitDone: false,
+    cachedTimezoneData: null,
+    defaultTimezoneInfo: null,
+    windowsTimezoneMap: {},
+
     bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tbsync/locale/tbSync.strings"),
     mozConsoleService : Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService),
 
@@ -67,6 +66,62 @@ var tbSync = {
     prefSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync."),
 
     storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
+
+
+
+
+
+    lightningIsAvailable: function () {
+        //if it is known - and still valid - just return true
+        return (tbSync.lightningInitDone && typeof cal !== 'undefined');
+    },
+    
+    lightningIsInstalled: Task.async (function* ()  {
+        if (tbSync.lightningIsAvailable()) return true;
+
+        //try to import
+        if ("calICalendar" in Components.interfaces && typeof cal == 'undefined') {
+            Components.utils.import("resource://calendar/modules/calUtils.jsm");
+            Components.utils.import("resource://calendar/modules/ical.js");    
+        }
+        
+        if (typeof cal !== 'undefined') {
+            if (!tbSync.lightningInitDone) {
+                //adding a global observer, or one for each "known" book?
+                cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
+                cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
+                
+                //get timezone info of default timezone (old cal. without dtz are depricated)
+                tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo((cal.dtz && cal.dtz.defaultTimezone) ? cal.dtz.defaultTimezone : cal.calendarDefaultTimezone());
+                tbSync.utcTimezone = (cal.dtz && cal.dtz.UTC) ? cal.dtz.UTC : cal.UTC();
+                
+                //get windows timezone data from CSV
+                let csvData = yield tbSync.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
+                for (let i = 0; i<csvData.length; i++) {
+                    let lData = csvData[i].split(",");
+                    if (lData.length<3) continue;
+                    
+                    let windowsZoneName = lData[0].toString().trim();
+                    let zoneType = lData[1].toString().trim();
+                    let ianaZoneName = lData[2].toString().trim();
+                    
+                    if (zoneType == "001") tbSync.windowsTimezoneMap[windowsZoneName] = ianaZoneName;
+                    if (ianaZoneName == tbSync.defaultTimezoneInfo.std.id) tbSync.defaultTimezoneInfo.std.windowsZoneName = windowsZoneName;
+                }
+
+                //are there any other init4lightning we need to call?
+                for (let i=0;i<tbSync.syncProviderList.length;i++) {
+                    yield tbSync[tbSync.syncProviderList[i]].init4lightning();
+                }
+
+                //indicate, that we have initialized 
+                tbSync.lightningInitDone = true;
+            }
+            return true;
+        } else return false;
+    }),
+
+
 
 
 
@@ -91,35 +146,6 @@ var tbSync = {
         let accounts = tbSync.db.getAccounts();
         for (let i = 0; i < accounts.IDs.length; i++) {
             if (accounts.data[accounts.IDs[i]].state == "connected") accounts.data[accounts.IDs[i]].state = "enabled";
-        }
-
-        //init stuff for calendar (only if lightning is installed)
-        tbSync.cachedTimezoneData = null;
-        tbSync.defaultTimezoneInfo = null;
-        tbSync.windowsTimezoneMap = {};
-        if ("calICalendar" in Components.interfaces) {
-            //adding a global observer, or one for each "known" book?
-            cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
-            cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
-            
-            //get timezone info of default timezone (old cal. without dtz are depricated)
-            tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo((cal.dtz && cal.dtz.defaultTimezone) ? cal.dtz.defaultTimezone : cal.calendarDefaultTimezone());
-            tbSync.utcTimezone = (cal.dtz && cal.dtz.UTC) ? cal.dtz.UTC : cal.UTC();
-            
-            //get windows timezone data from CSV
-            let csvData = yield tbSync.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
-            for (let i = 0; i<csvData.length; i++) {
-                let lData = csvData[i].split(",");
-                if (lData.length<3) continue;
-                
-                let windowsZoneName = lData[0].toString().trim();
-                let zoneType = lData[1].toString().trim();
-                let ianaZoneName = lData[2].toString().trim();
-                
-                if (zoneType == "001") tbSync.windowsTimezoneMap[windowsZoneName] = ianaZoneName;
-                if (ianaZoneName == tbSync.defaultTimezoneInfo.std.id) tbSync.defaultTimezoneInfo.std.windowsZoneName = windowsZoneName;
-            }
-            
         }
 
         //init stuff for sync process
@@ -1241,7 +1267,7 @@ var tbSync = {
     },
 
     getCalendarName: function (id) {
-        if ("calICalendar" in Components.interfaces) {
+        if (tbSync.lightningIsAvailable()) {
             let targetCal = cal.getCalendarManager().getCalendarById(id);
             if (targetCal !== null) return targetCal.name;
             else return "";
@@ -1407,7 +1433,7 @@ var tbSync = {
 
 //TODO: Invites
 /*
-if ("calICalendar" in Components.interfaces) {
+if (yield tbSync.lightningIsInstalled()) {
     cal.itip.checkAndSendOrigial = cal.itip.checkAndSend;
     cal.itip.checkAndSend = function(aOpType, aItem, aOriginalItem) {
         //if this item is added_by_user, do not call checkAndSend yet, because the UID is wrong, we need to sync first to get the correct ID - TODO
