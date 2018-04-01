@@ -86,6 +86,10 @@ let syncTimer = {
         this.timer.initWithCallback(this.event, 60000, 3); //run timer every 60s
     },
 
+    cancel: function () {
+        this.timer.cancel();
+    },
+
     event: {
         notify: function (timer) {
             if (tbSync.enabled) {
@@ -166,7 +170,10 @@ function startup(data, reason) {
 function shutdown(data, reason) {
     //possible reasons: APP_SHUTDOWN, ADDON_DISABLE, ADDON_UNINSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE    
 
-    //remove our observer
+	//cancel sync timer
+	syncTimer.cancel();
+
+	//remove our observer
     Services.obs.removeObserver(onLoadObserver, "mail-startup-done");
     Services.obs.removeObserver(openManagerObserver, "tbsync.openManager");
     Services.obs.removeObserver(syncstateObserver, "tbsync.changedSyncstate");
