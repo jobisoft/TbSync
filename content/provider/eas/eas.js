@@ -19,7 +19,7 @@ var eas = {
     init: Task.async (function* ()  {
     }),
 
-    //this is  called, after lighning has become available - it is called by tbSync.lightningIsInstalled()
+    //this is  called, after lighning has become available - it is called by tbSync.onLightningLoad
     init4lightning: Task.async (function* () {
         //If an EAS calendar is currently NOT associated with an email identity, try to associate, 
         //but do not change any explicitly set association
@@ -44,6 +44,9 @@ var eas = {
         }
     }),
 
+    //this is  called during tbSync cleanup (if lighning is enabled)
+    cleanup4lightning: function ()  {
+    },
 
 
 
@@ -460,7 +463,7 @@ var eas = {
                     case "Calendar":
                     case "Tasks": 
                         // skip if lightning is not installed
-                        if ((yield tbSync.lightningIsInstalled()) == false) {
+                        if (tbSync.lightningIsAvailable() == false) {
                             throw eas.finishSync("nolightning");
                         }
                         

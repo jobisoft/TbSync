@@ -47,7 +47,8 @@ if (!Date.prototype.toBasicISOString) {
 var tbSync = {
 
     enabled: false,
-
+    window: null,
+    
     lightningInitDone: false,
     cachedTimezoneData: null,
     defaultTimezoneInfo: null,
@@ -71,68 +72,44 @@ var tbSync = {
 
 
 
-    lightningIsAvailable: function () {
-        //if it is known - and still valid - just return true
-        return (tbSync.lightningInitDone && typeof cal !== 'undefined');
-    },
-    
-    lightningIsInstalled: Task.async (function* ()  {
-        if (tbSync.lightningIsAvailable()) return true;
-
-        //try to import
-        if ("calICalendar" in Components.interfaces && typeof cal == 'undefined') {
-            Components.utils.import("resource://calendar/modules/calUtils.jsm");
-            Components.utils.import("resource://calendar/modules/ical.js");    
-        }
-        
-        if (typeof cal !== 'undefined') {
-            if (!tbSync.lightningInitDone) {
-                //adding a global observer, or one for each "known" book?
-                cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
-                cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
-                
-                //get timezone info of default timezone (old cal. without dtz are depricated)
-                tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo((cal.dtz && cal.dtz.defaultTimezone) ? cal.dtz.defaultTimezone : cal.calendarDefaultTimezone());
-                tbSync.utcTimezone = (cal.dtz && cal.dtz.UTC) ? cal.dtz.UTC : cal.UTC();
-                
-                //get windows timezone data from CSV
-                let csvData = yield tbSync.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
-                for (let i = 0; i<csvData.length; i++) {
-                    let lData = csvData[i].split(",");
-                    if (lData.length<3) continue;
-                    
-                    let windowsZoneName = lData[0].toString().trim();
-                    let zoneType = lData[1].toString().trim();
-                    let ianaZoneName = lData[2].toString().trim();
-                    
-                    if (zoneType == "001") tbSync.windowsTimezoneMap[windowsZoneName] = ianaZoneName;
-                    if (ianaZoneName == tbSync.defaultTimezoneInfo.std.id) tbSync.defaultTimezoneInfo.std.windowsZoneName = windowsZoneName;
-                }
-
-                //are there any other init4lightning we need to call?
-                for (let i=0;i<tbSync.syncProviderList.length;i++) {
-                    yield tbSync[tbSync.syncProviderList[i]].init4lightning();
-                }
-
-                //indicate, that we have initialized 
-                tbSync.lightningInitDone = true;
-            }
-            return true;
-        } else return false;
-    }),
-
-
-
-
-
     // GLOBAL INIT
-    init: Task.async (function* ()  { 
+    init: Task.async (function* (window)  { 
 
-        tbSync.dump("TbSync init","start");
+        tbSync.dump("TbSync init","Start");
+        tbSync.window = window;
+
+        Services.obs.addObserver(tbSync.openManagerObserver, "tbsync.openManager", false);
+        Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate", false);
+        
+        //Inject UI
+        let statuspanel = tbSync.window.document.createElement('statusbarpanel');
+        statuspanel.setAttribute("label","TbSync");
+        statuspanel.setAttribute("id","tbsync.status");
+        statuspanel.onclick = function (event) {if (event.button == 0) Services.obs.notifyObservers(null, 'tbsync.openManager', null);};
+        tbSync.window.document.getElementById("status-bar").appendChild(statuspanel);
+
+        //print information about Thunderbird version and OS
+        let appInfo =  Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
+        tbSync.dump(appInfo.name, appInfo.platformVersion + " on " + OS.Constants.Sys.Name);
+        
+        // load common subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
+        tbSync.includeJS("chrome://tbsync/content/db.js");
 
         //init DB
         yield tbSync.db.init();
 
+        //convert database when migrating from connect state to enable state (keep this in 0.7 branch)
+        let accounts = tbSync.db.getAccounts();
+        for (let i = 0; i < accounts.IDs.length; i++) {
+            if (accounts.data[accounts.IDs[i]].state == "connected") accounts.data[accounts.IDs[i]].state = "enabled";
+        }
+
+        //load provider subscripts into tbSync 
+        for (let i=0;i<tbSync.syncProviderList.length;i++) {
+            tbSync.dump("PROVIDER", tbSync.syncProviderList[i] + "::" + tbSync.syncProviderPref.getCharPref(tbSync.syncProviderList[i]));
+            tbSync.includeJS("chrome://tbsync/content/provider/"+tbSync.syncProviderList[i]+"/" + tbSync.syncProviderList[i] +".js");
+        }
+        
         //init provider 
         for (let i=0;i<tbSync.syncProviderList.length;i++) {
             yield tbSync[tbSync.syncProviderList[i]].init();
@@ -142,38 +119,256 @@ var tbSync = {
         tbSync.addressbookListener.add();
         tbSync.scanPrefIdsOfAddressBooks();
         
-        //convert database when migrating from connect state to enable state (keep this in 0.7 branch)
-        let accounts = tbSync.db.getAccounts();
-        for (let i = 0; i < accounts.IDs.length; i++) {
-            if (accounts.data[accounts.IDs[i]].state == "connected") accounts.data[accounts.IDs[i]].state = "enabled";
-        }
-
+        //init stuff for lightning (and dump any other installed AddOn)
+        AddonManager.getAllAddons(function(addons) {
+          for (let a=0; a < addons.length; a++) {
+            if (addons[a].isActive) {
+                tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
+                if (addons[a].id.toString() == "{e2fda1a4-762b-4020-b5ad-a41df1933103}") {
+                    tbSync.onLightningLoad.start()
+                }
+            }
+          }
+        });
+        //TODO: If lightning is converted to restartless, use AddonManager.addAddonListener() to get notification of enable/disable
+                
         //init stuff for sync process
         tbSync.resetSync();
 
         //enable
         tbSync.enabled = true;
+        
+        //activate sync timer
+        tbSync.syncTimer.start();
 
-        tbSync.dump("TbSync init","done");
+        tbSync.dump("TbSync init","Done");
     }),
 
+    onLightningLoad: {
+        timer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
-    //example async sleep function using Promise
-    sleep : function (delay) {
-        let timer =  Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
-        return new Promise(function(resolve, reject) {
-            let event = {
-                notify: function(timer) {
-                    resolve();
+        start: function () {
+            this.timer.cancel();
+            this.timer.initWithCallback(this.event, 2000, 0); //run timer in 2s
+        },
+
+        cancel: function () {
+            this.timer.cancel();
+        },
+
+        event: {
+            notify: Task.async (function* (timer) {
+                tbSync.dump("Check4Lightning","Start");
+
+                //try to import
+                if ("calICalendar" in Components.interfaces && typeof cal == 'undefined') {
+                    Components.utils.import("resource://calendar/modules/calUtils.jsm");
+                    Components.utils.import("resource://calendar/modules/ical.js");    
                 }
-            }            
-            timer.initWithCallback(event,delay, Components.interfaces.nsITimer.TYPE_ONE_SHOT);
-        });
+
+                if (typeof cal !== 'undefined') {
+                    //adding a global observer
+                    cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
+                    cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
+                    
+                    //get timezone info of default timezone (old cal. without dtz are depricated)
+                    tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo((cal.dtz && cal.dtz.defaultTimezone) ? cal.dtz.defaultTimezone : cal.calendarDefaultTimezone());
+                    tbSync.utcTimezone = (cal.dtz && cal.dtz.UTC) ? cal.dtz.UTC : cal.UTC();
+                    
+                    //get windows timezone data from CSV
+                    let csvData = yield tbSync.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
+                    for (let i = 0; i<csvData.length; i++) {
+                        let lData = csvData[i].split(",");
+                        if (lData.length<3) continue;
+                        
+                        let windowsZoneName = lData[0].toString().trim();
+                        let zoneType = lData[1].toString().trim();
+                        let ianaZoneName = lData[2].toString().trim();
+                        
+                        if (zoneType == "001") tbSync.windowsTimezoneMap[windowsZoneName] = ianaZoneName;
+                        if (ianaZoneName == tbSync.defaultTimezoneInfo.std.id) tbSync.defaultTimezoneInfo.std.windowsZoneName = windowsZoneName;
+                    }
+
+                    //are there any other init4lightning we need to call?
+                    for (let i=0;i<tbSync.syncProviderList.length;i++) {
+                        yield tbSync[tbSync.syncProviderList[i]].init4lightning();
+                    }
+
+                    //inject UI elements
+                    if (tbSync.window.document.getElementById("calendar-synchronize-button")) {
+                        tbSync.dump("adding");
+                        tbSync.window.document.getElementById("calendar-synchronize-button").addEventListener("click", function(event){alert("juhu")}, false);
+                    }
+                    
+                    //indicate, that we have initialized 
+                    tbSync.lightningInitDone = true;
+                    tbSync.dump("Check4Lightning","Done");                            
+                } else {
+                    tbSync.dump("Check4Lightning","Failed, re-scheduling!");
+                    this.start();
+                }
+
+            })
+        }
     },
     
+    cleanup: function() {
+        //cancel sync timer
+        tbSync.syncTimer.cancel();
+
+        //remove observer
+        Services.obs.removeObserver(tbSync.openManagerObserver, "tbsync.openManager");
+        Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate");
+
+        //close window (if open)
+        if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
+        
+        //remove UI elements
+        if (tbSync.window && tbSync.window.document && tbSync.window.document.getElementById("tbsync.status") ) tbSync.window.document.getElementById("status-bar").removeChild(tbSync.window.document.getElementById("tbsync.status"));
+
+        //remove listener
+        tbSync.addressbookListener.remove();
+
+        if (tbSync.lightningInitDone) {
+            //removing global observer
+            cal.getCalendarManager().removeCalendarObserver(tbSync.calendarObserver);
+            cal.getCalendarManager().removeObserver(tbSync.calendarManagerObserver);
+
+            //are there any other cleanup4lightning we need to call?
+            for (let i=0;i<tbSync.syncProviderList.length;i++) {
+                tbSync[tbSync.syncProviderList[i]].cleanup4lightning();
+            }
+        }
+    },
+
+    popupNotEnabled: function () {
+        let msg = "Oops! TbSync was not able to start!\n\n";
+        tbSync.dump("Oops", "Trying to open account manager, but init sequence not yet finished");
+        
+        if (!tbSync.prefSettings.getBoolPref("log.tofile")) {
+            if (tbSync.window.confirm(msg + "It is not possible to trace this error, because debug log is currently not enabled. Do you want to enable debug log now, to help fix this error?")) {
+                tbSync.prefSettings.setBoolPref("log.tofile", true);
+                tbSync.window.alert("TbSync debug log has been enabled, please restart Thunderbird and again try to open TbSync.");
+            }
+        } else {
+            if (tbSync.window.confirm(msg + "To help fix this error, you could send a debug log to the TbSync developer. Do you want to open the debug log now?")) {
+                tbSync.openFileTab("debug.log");
+            }
+        }
+    },
+
+
+
+
+    // OBSERVERS
+    
+    //Observer to catch changing syncstate and to update the status bar.
+    syncstateObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            //update status bar
+            let status = tbSync.window.document.getElementById("tbsync.status");
+            if (status) {
+
+                let label = "TbSync: ";
+
+                //check if any account is syncing, if not switch to idle
+                let accounts = tbSync.db.getAccounts();
+                let idle = true;
+                let err = false;
+                for (let i=0; i<accounts.IDs.length && idle; i++) {
+                    //set idle to false, if at least one account is syncing
+                    if (tbSync.isSyncing(accounts.IDs[i])) idle = false;
+            
+                    //check for errors
+                    switch (tbSync.db.getAccountSetting(accounts.IDs[i], "status")) {
+                        case "OK":
+                        case "disabled":
+                        case "notsyncronized":
+                        case "nolightning":
+                        case "syncing":
+                            break;
+                        default:
+                            err = true;
+                    }
+                }
+
+                if (idle) {
+                    if (err) label +=tbSync.getLocalizedMessage("info.error");   
+                    else label += tbSync.getLocalizedMessage("info.idle");   
+                } else {
+                    label += tbSync.getLocalizedMessage("info.sync");
+                }
+                status.label = label;      
+                
+            }
+        }
+    },
+
+    //Observer to open the account manager
+    openManagerObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            if (tbSync.enabled) {
+                // check, if a window is already open and just put it in focus
+                if (tbSync.prefWindowObj === null) tbSync.prefWindowObj = tbSync.window.open("chrome://tbsync/content/manager/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen");
+                tbSync.prefWindowObj.focus();
+            } else {
+                tbSync.popupNotEnabled();
+            }
+        }
+    },
+
+    //Observer to init sync
+    initSyncObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            if (tbSync.enabled) {
+                tbSync.syncAccount('sync');
+            } else {
+                tbSync.popupNotEnabled();
+            }
+        }
+    },
+
+
+
+
 
     // SYNC MANAGEMENT
     syncDataObj : {},
+
+    syncTimer: {
+        timer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
+
+        start: function () {
+            this.timer.cancel();
+            this.timer.initWithCallback(this.event, 60000, 3); //run timer every 60s
+        },
+
+        cancel: function () {
+            this.timer.cancel();
+        },
+
+        event: {
+            notify: function (timer) {
+                if (tbSync.enabled) {
+                    //get all accounts and check, which one needs sync (accounts array is without order, extract keys (ids) and loop over them)
+                    let accounts = tbSync.db.getAccounts();
+                    for (let i=0; i<accounts.IDs.length; i++) {
+                        let syncInterval = accounts.data[accounts.IDs[i]].autosync * 60 * 1000;
+                        let lastsynctime = accounts.data[accounts.IDs[i]].lastsynctime;
+                        
+                        if (tbSync.isEnabled(accounts.IDs[i]) && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval)) {
+                        tbSync.syncAccount("sync",accounts.IDs[i]);
+                        }
+                    }
+                }
+            }
+        }
+    },
+
+    lightningIsAvailable: function () {
+        //if it is known - and still valid - just return true
+        return (tbSync.lightningInitDone && typeof cal !== 'undefined');
+    },
 
     //used by UI to find out, if this account is beeing synced
     isSyncing: function (account) {
@@ -361,6 +556,19 @@ var tbSync = {
         loader.loadSubScript(file, this);
     },
 
+    //async sleep function using Promise
+    sleep : function (delay) {
+        let timer =  Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
+        return new Promise(function(resolve, reject) {
+            let event = {
+                notify: function(timer) {
+                    resolve();
+                }
+            }            
+            timer.initWithCallback(event,delay, Components.interfaces.nsITimer.TYPE_ONE_SHOT);
+        });
+    },
+
     //probably obsolete
     encode_utf8: function (string) {
         let utf8string = string;
@@ -489,6 +697,8 @@ var tbSync = {
         }
         return "unknown";
     },
+
+
 
 
 
@@ -1412,7 +1622,7 @@ var tbSync = {
 
 //TODO: Invites
 /*
-if (yield tbSync.lightningIsInstalled()) {
+if (tbSync.lightningIsAvailable()) {
     cal.itip.checkAndSendOrigial = cal.itip.checkAndSend;
     cal.itip.checkAndSend = function(aOpType, aItem, aOriginalItem) {
         //if this item is added_by_user, do not call checkAndSend yet, because the UID is wrong, we need to sync first to get the correct ID - TODO
@@ -1426,22 +1636,4 @@ if (yield tbSync.lightningIsInstalled()) {
 //clear debug log on start
 tbSync.initFile("debug.log");
 tbSync.dump("Init","Please send this log to john.bieling@gmx.de, if you have encountered an error.");
-
 tbSync.mozConsoleService.registerListener(tbSync.consoleListener);
-
-let appInfo =  Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
-tbSync.dump(appInfo.name, appInfo.platformVersion + " on " + OS.Constants.Sys.Name);
-AddonManager.getAllAddons(function(addons) {
-  for (let a=0; a < addons.length; a++) {
-    if (addons[a].isActive) tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version +")");
-  }
-});
-
-// load common subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
-tbSync.includeJS("chrome://tbsync/content/db.js");
-
-// load provider subscripts into tbSync 
-for (let i=0;i<tbSync.syncProviderList.length;i++) {
-    tbSync.dump("PROVIDER", tbSync.syncProviderList[i] + "::" + tbSync.syncProviderPref.getCharPref(tbSync.syncProviderList[i]));
-    tbSync.includeJS("chrome://tbsync/content/provider/"+tbSync.syncProviderList[i]+"/" + tbSync.syncProviderList[i] +".js");
-}
