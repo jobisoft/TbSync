@@ -44,6 +44,8 @@ if (!Date.prototype.toBasicISOString) {
 
 
 
+
+
 var tbSync = {
 
     enabled: false,
@@ -79,6 +81,7 @@ var tbSync = {
         tbSync.window = window;
 
         Services.obs.addObserver(tbSync.openManagerObserver, "tbsync.openManager", false);
+        Services.obs.addObserver(tbSync.initSyncObserver, "tbsync.initSync", false);
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate", false);
         
         //Inject UI
@@ -196,8 +199,10 @@ var tbSync = {
 
                     //inject UI elements
                     if (tbSync.window.document.getElementById("calendar-synchronize-button")) {
-                        tbSync.dump("adding");
-                        tbSync.window.document.getElementById("calendar-synchronize-button").addEventListener("click", function(event){alert("juhu")}, false);
+                        tbSync.window.document.getElementById("calendar-synchronize-button").addEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
+                    }
+                    if (tbSync.window.document.getElementById("task-synchronize-button")) {
+                        tbSync.window.document.getElementById("task-synchronize-button").addEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
                     }
                     
                     //indicate, that we have initialized 
@@ -219,6 +224,7 @@ var tbSync = {
         //remove observer
         Services.obs.removeObserver(tbSync.openManagerObserver, "tbsync.openManager");
         Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate");
+        Services.obs.removeObserver(tbSync.initSyncObserver, "tbsync.initSync");
 
         //close window (if open)
         if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
@@ -233,6 +239,14 @@ var tbSync = {
             //removing global observer
             cal.getCalendarManager().removeCalendarObserver(tbSync.calendarObserver);
             cal.getCalendarManager().removeObserver(tbSync.calendarManagerObserver);
+
+            //remove listeners on global sync buttons
+            if (tbSync.window.document.getElementById("calendar-synchronize-button")) {
+                tbSync.window.document.getElementById("calendar-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
+            }
+            if (tbSync.window.document.getElementById("task-synchronize-button")) {
+                tbSync.window.document.getElementById("task-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
+            }
 
             //are there any other cleanup4lightning we need to call?
             for (let i=0;i<tbSync.syncProviderList.length;i++) {
