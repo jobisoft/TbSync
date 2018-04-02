@@ -1555,6 +1555,7 @@ var eas = {
             case "110": //server error - resync
                 throw eas.finishSync(type+":"+status, eas.flags.resyncAccount);
 
+            case "141": // The device is not provisionable
             case "142": // DeviceNotProvisioned
             case "143": // PolicyRefresh
             case "144": // InvalidPolicyKey
