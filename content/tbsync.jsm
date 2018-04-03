@@ -145,13 +145,14 @@ var tbSync = {
         tbSync.resetSync();
 
         //get latest version info from github
-        tbSync.dump("Version Info", "installed = " + tbSync.versionInfo.installed);
         let versions = yield tbSync.fetchFile("https://raw.githubusercontent.com/jobisoft/TbSync/master/VERSION.info");
         for (let i = 0; i<versions.length; i++) {
             let parts = versions[i].split(" ");
-            if (parts.length > 1) {
-                tbSync.versionInfo[parts[0]] = parts[1];
-                tbSync.dump("Version Info", parts[0] + " = " + tbSync.versionInfo[parts[0]]);
+            if (parts.length == 3) {
+                let info = {};
+                info.number = parts[1];
+                info.url = parts[2];
+                tbSync.versionInfo[parts[0]] = info;
             }
         }
         
