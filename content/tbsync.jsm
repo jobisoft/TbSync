@@ -100,9 +100,10 @@ var tbSync = {
             taskMenuitem.setAttribute("id","tbsync.taskmenu");
             taskMenuitem.onclick = function (event) {Services.obs.notifyObservers(null, 'tbsync.openManager', null);};
 
-            let accountManagerMenuItem = tbSync.window.document.getElementById("menu_accountmgr");
-            if (accountManagerMenuItem) taskMenu.insertBefore(taskMenuitem, accountManagerMenuItem);
-            else taskMenu.appendChild(taskMenuitem);
+            //let accountManagerMenuItem = tbSync.window.document.getElementById("menu_accountmgr");
+            //if (accountManagerMenuItem) taskMenu.insertBefore(taskMenuitem, accountManagerMenuItem);
+            //else 
+            taskMenu.appendChild(taskMenuitem);
         }
         
         //Inject UI - menuitem in menu_EditPopup
