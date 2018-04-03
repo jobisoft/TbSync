@@ -50,6 +50,7 @@ var tbSync = {
 
     enabled: false,
     window: null,
+    versionInfo: {},
     
     lightningInitDone: false,
     cachedTimezoneData: null,
@@ -123,22 +124,38 @@ var tbSync = {
         tbSync.scanPrefIdsOfAddressBooks();
         
         //init stuff for lightning (and dump any other installed AddOn)
+        //TODO: If lightning is converted to restartless, use AddonManager.addAddonListener() to get notification of enable/disable
         AddonManager.getAllAddons(function(addons) {
           for (let a=0; a < addons.length; a++) {
             if (addons[a].isActive) {
                 tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
-                if (addons[a].id.toString() == "{e2fda1a4-762b-4020-b5ad-a41df1933103}") {
-                    tbSync.onLightningLoad.start()
+                if (addons[a].id.toString() == "{e2fda1a4-762b-4020-b5ad-a41df1933103}") tbSync.onLightningLoad.start()
+                if (addons[a].id.toString() == "tbsync@jobisoft.de") {
+                    tbSync.versionInfo.installed = addons[a].version.toString();
+                    tbSync.finalizeInitSequence();
                 }
             }
           }
         });
-        //TODO: If lightning is converted to restartless, use AddonManager.addAddonListener() to get notification of enable/disable
                 
+    }),
+    
+    finalizeInitSequence: Task.async (function* (timer) {
         //init stuff for sync process
         tbSync.resetSync();
 
-        //enable
+        //get latest version info from github
+        tbSync.dump("Version Info", "installed = " + tbSync.versionInfo.installed);
+        let versions = yield tbSync.fetchFile("https://raw.githubusercontent.com/jobisoft/TbSync/master/VERSION.info");
+        for (let i = 0; i<versions.length; i++) {
+            let parts = versions[i].split(" ");
+            if (parts.length > 1) {
+                tbSync.versionInfo[parts[0]] = parts[1];
+                tbSync.dump("Version Info", parts[0] + " = " + tbSync.versionInfo[parts[0]]);
+            }
+        }
+        
+        //enable TbSync
         tbSync.enabled = true;
         
         //activate sync timer
@@ -146,7 +163,7 @@ var tbSync = {
 
         tbSync.dump("TbSync init","Done");
     }),
-
+    
     onLightningLoad: {
         timer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
@@ -256,19 +273,20 @@ var tbSync = {
     },
 
     popupNotEnabled: function () {
-        let msg = "Oops! TbSync was not able to start!\n\n";
+        let msg = "TbSync has not yet finished its init sequence!";
         tbSync.dump("Oops", "Trying to open account manager, but init sequence not yet finished");
+        tbSync.window.alert(msg);
         
-        if (!tbSync.prefSettings.getBoolPref("log.tofile")) {
-            if (tbSync.window.confirm(msg + "It is not possible to trace this error, because debug log is currently not enabled. Do you want to enable debug log now, to help fix this error?")) {
-                tbSync.prefSettings.setBoolPref("log.tofile", true);
-                tbSync.window.alert("TbSync debug log has been enabled, please restart Thunderbird and again try to open TbSync.");
-            }
-        } else {
-            if (tbSync.window.confirm(msg + "To help fix this error, you could send a debug log to the TbSync developer. Do you want to open the debug log now?")) {
-                tbSync.openFileTab("debug.log");
-            }
-        }
+//        if (!tbSync.prefSettings.getBoolPref("log.tofile")) {
+//            if (tbSync.window.confirm(msg + "It is not possible to trace this error, because debug log is currently not enabled. Do you want to enable debug log now, to help fix this error?")) {
+//                tbSync.prefSettings.setBoolPref("log.tofile", true);
+//                tbSync.window.alert("TbSync debug log has been enabled, please restart Thunderbird and again try to open TbSync.");
+//            }
+//        } else {
+//            if (tbSync.window.confirm(msg + "To help fix this error, you could send a debug log to the TbSync developer. Do you want to open the debug log now?")) {
+//                tbSync.openFileTab("debug.log");
+//            }
+//        }
     },
 
 
@@ -508,14 +526,10 @@ var tbSync = {
 
     // TOOLS
     openTBtab: function (url) {
-        var tabmail = null;
-        var mail3PaneWindow =
-            Components.classes["@mozilla.org/appshell/window-mediator;1"]
-            .getService(Components.interfaces.nsIWindowMediator)
-            .getMostRecentWindow("mail:3pane");
-        if (mail3PaneWindow) {
-            tabmail = mail3PaneWindow.document.getElementById("tabmail");
-            mail3PaneWindow.focus();
+        let tabmail = null;
+        if (tbSync.window) {
+            tabmail = tbSync.window.document.getElementById("tabmail");
+            tbSync.window.focus();
             tabmail.openTab("contentTab", {
                 contentPage: url
             });
@@ -563,6 +577,23 @@ var tbSync = {
                 }
             });
         });
+    },
+
+    //taken from https://stackoverflow.com/questions/6832596/how-to-compare-software-version-number-using-js-only-number
+    cmpVersions: function (a, b) {
+        let i, diff;
+        let regExStrip0 = /(\.0+)+$/;
+        let segmentsA = a.replace(regExStrip0, '').split('.');
+        let segmentsB = b.replace(regExStrip0, '').split('.');
+        let l = Math.min(segmentsA.length, segmentsB.length);
+
+        for (i = 0; i < l; i++) {
+            diff = parseInt(segmentsA[i], 10) - parseInt(segmentsB[i], 10);
+            if (diff) {
+                return diff;
+            }
+        }
+        return segmentsA.length - segmentsB.length;
     },
 
     includeJS: function (file) {

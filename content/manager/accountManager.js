@@ -6,6 +6,11 @@ var tbSyncAccountManager = {
 
     onload: function () {
         tbSyncAccountManager.selectTab(0);
+
+        // do we need to show the update button?        
+        let updateBeta = tbSync.prefSettings.getBoolPref("notify4beta") && (tbSync.cmpVersions(tbSync.versionInfo.beta, tbSync.versionInfo.installed) > 0);
+        let updateStable = (tbSync.cmpVersions(tbSync.versionInfo.stable, tbSync.versionInfo.installed)> 0);
+        document.getElementById("tbSyncAccountManager.t5").hidden = !(updateBeta || updateStable);
     },
     
     onunload: function () {
@@ -14,7 +19,7 @@ var tbSyncAccountManager = {
 
     selectTab: function (t) {
         const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-        let sources = ["accounts.xul", "cape.xul", "catman.xul", "supporter.xul", "help.xul"];
+        let sources = ["accounts.xul", "cape.xul", "catman.xul", "supporter.xul", "help.xul", "update.xul"];
 
         //set active tab (css selector for background color)
         for (let i=0; i<sources.length; i++) {            

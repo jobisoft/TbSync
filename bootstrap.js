@@ -38,10 +38,13 @@ function startup(data, reason) {
 
     //set default prefs
     let branch = Services.prefs.getDefaultBranch("extensions.tbsync.");
-    branch.setBoolPref("enable", true);
-    branch.setBoolPref("delay", true);
-    branch.setBoolPref("block", false);
+    branch.setCharPref("clientID.type", "");
+    branch.setCharPref("clientID.useragent", "");    
+    branch.setBoolPref("notify4beta", false);
     
+    branch.setCharPref("provider.eas", "Exchange Active Sync");
+    branch.setCharPref("provider.dav", "CalDAV/CardDAV (sabre/dav, ownCloud, Nextcloud)");
+
     branch.setBoolPref("log.toconsole", false);
     branch.setBoolPref("log.tofile", false);
     branch.setBoolPref("log.easdata", true);
@@ -50,15 +53,10 @@ function startup(data, reason) {
     branch.setIntPref("eas.synclimit", 7);
     branch.setIntPref("eas.maxitems", 50);
 
+    //tzpush
     branch.setBoolPref("eas.use_tzpush_contactsync_code", true);
-
     branch.setBoolPref("hidephones", false);
     branch.setBoolPref("showanniversary", false);
-    branch.setCharPref("provider.eas", "Exchange Active Sync");
-    branch.setCharPref("provider.dav", "CalDAV/CardDAV (sabre/dav, ownCloud, Nextcloud)");
-
-    branch.setCharPref("clientID.type", "");
-    branch.setCharPref("clientID.useragent", "");    
 
     Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
