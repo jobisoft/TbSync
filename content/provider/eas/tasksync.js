@@ -78,7 +78,10 @@ eas.sync.Tasks = {
         }            
     },
 
+/*
+    Regenerate: After complete, the completed task is removed from the series and stored as an new entry. The series starts an week (as set) after complete date with one less occurence
 
+    */
 
 
 
