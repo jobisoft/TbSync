@@ -44,7 +44,10 @@
             </grid>
 
             <html:p> 
-                Each new stable release is send to Mozilla, where it needs to pass a review process to get listed as the new official version of TbSync. However, this review process can take up to several month. 
+                <label style="padding:0; margin:0; font-weight:bold" id="tbsync.recommendation" value="" />
+            </html:p>
+            <html:p> 
+                Each new stable release is send to Mozilla, where it needs to pass a review process to get listed as the new official version of TbSync. However, this review process can take up to several months. 
                 <html:br/><html:br/>
                 If you trust the developer, you can install the latest stable release directly from the github repository of the TbSync project. 
                 <html:br/><html:br/>

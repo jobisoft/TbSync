@@ -56,5 +56,13 @@ var tbSyncAccountManager = {
         document.getElementById("mozilla.version").setAttribute("href", tbSync.versionInfo.mozilla.url);
         document.getElementById("stable.version").setAttribute("href", tbSync.versionInfo.stable.url);
         document.getElementById("beta.version").setAttribute("href", tbSync.versionInfo.beta.url);
+
+        document.getElementById("mozilla.version").setAttribute("tooltiptext", tbSync.versionInfo.mozilla.url);
+        document.getElementById("stable.version").setAttribute("tooltiptext", tbSync.versionInfo.stable.url);
+        document.getElementById("beta.version").setAttribute("tooltiptext", tbSync.versionInfo.beta.url);
+        
+        if (tbSync.cmpVersions(tbSync.versionInfo.stable.number, tbSync.versionInfo.installed) > 0) document.getElementById("tbsync.recommendation").value = "Recommendation: Update to the latest stable version.";
+        else if (tbSync.cmpVersions(tbSync.versionInfo.beta.number, tbSync.versionInfo.installed) > 0) document.getElementById("tbsync.recommendation").value = "Recommendation: Update to the latest beta version.";
+        else document.getElementById("tbsync.recommendation").value = "You are running the latest version of the " +( tbSync.prefSettings.getBoolPref("notify4beta") || tbSyncAccountManager.isBeta() ? "beta" : "stable")+ " release channel.";
     }
 };
