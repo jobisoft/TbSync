@@ -21,3 +21,4 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [todo16.png] http://findicons.com/icon/237965/todo
 * [add16.png] https://www.awicons.com/
 * [del16.png] https://www.awicons.com/
+* [update.png] http://google.com/design/
