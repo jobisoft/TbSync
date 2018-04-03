@@ -85,13 +85,36 @@ var tbSync = {
         Services.obs.addObserver(tbSync.initSyncObserver, "tbsync.initSync", false);
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate", false);
         
-        //Inject UI
+        //Inject UI - statusbar
         let statuspanel = tbSync.window.document.createElement('statusbarpanel');
         statuspanel.setAttribute("label","TbSync");
         statuspanel.setAttribute("id","tbsync.status");
         statuspanel.onclick = function (event) {if (event.button == 0) Services.obs.notifyObservers(null, 'tbsync.openManager', null);};
         tbSync.window.document.getElementById("status-bar").appendChild(statuspanel);
 
+        //Inject UI - menuitem in taskPopup
+        let taskMenu = tbSync.window.document.getElementById("taskPopup");
+        if (taskMenu) {
+            let taskMenuitem = tbSync.window.document.createElement('menuitem');
+            taskMenuitem.setAttribute("label", tbSync.getLocalizedMessage("menu.settingslabel"));
+            taskMenuitem.setAttribute("id","tbsync.taskmenu");
+            taskMenuitem.onclick = function (event) {Services.obs.notifyObservers(null, 'tbsync.openManager', null);};
+
+            let accountManagerMenuItem = tbSync.window.document.getElementById("menu_accountmgr");
+            if (accountManagerMenuItem) taskMenu.insertBefore(taskMenuitem, accountManagerMenuItem);
+            else taskMenu.appendChild(taskMenuitem);
+        }
+        
+        //Inject UI - menuitem in menu_EditPopup
+        let editMenu = tbSync.window.document.getElementById("menu_EditPopup");
+        if (editMenu) {
+            let editMenuitem = tbSync.window.document.createElement('menuitem');
+            editMenuitem.setAttribute("label", tbSync.getLocalizedMessage("menu.settingslabel"));
+            editMenuitem.setAttribute("id","tbsync.editmenu");
+            editMenuitem.onclick = function (event) {Services.obs.notifyObservers(null, 'tbsync.openManager', null);};
+            editMenu.appendChild(editMenuitem);	
+        }
+        
         //print information about Thunderbird version and OS
         let appInfo =  Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
         tbSync.dump(appInfo.name, appInfo.platformVersion + " on " + OS.Constants.Sys.Name);
@@ -248,7 +271,18 @@ var tbSync = {
         if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
         
         //remove UI elements
-        if (tbSync.window && tbSync.window.document && tbSync.window.document.getElementById("tbsync.status") ) tbSync.window.document.getElementById("status-bar").removeChild(tbSync.window.document.getElementById("tbsync.status"));
+        if (tbSync.window && tbSync.window.document) {
+            //remove statuspanel
+            if (tbSync.window.document.getElementById("tbsync.status")) tbSync.window.document.getElementById("status-bar").removeChild(tbSync.window.document.getElementById("tbsync.status"));
+        
+            //remove menuitems
+            let taskMenu = tbSync.window.document.getElementById("taskPopup");
+            let taskMenuitem = tbSync.window.document.getElementById("tbsync.taskmenu");
+            let editMenu = tbSync.window.document.getElementById("menu_EditPopup");
+            let editMenuitem = tbSync.window.document.getElementById("tbsync.editmenu");
+            if (taskMenu && taskMenuitem) taskMenu.removeChild(taskMenuitem);
+            if (editMenu && editMenuitem) editMenu.removeChild(editMenuitem);
+        }
 
         //remove listener
         tbSync.addressbookListener.remove();
