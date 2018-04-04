@@ -637,8 +637,8 @@ var tbSync = {
         return (tbSync.versionInfo.installed.split(".").length > 3);
     },
 
-    updatesAvailable: function () {
-        let updateBeta = (tbSync.prefSettings.getBoolPref("notify4beta") || tbSync.isBeta()) && (tbSync.cmpVersions(tbSync.versionInfo.beta.number, tbSync.versionInfo.installed) > 0);
+    updatesAvailable: function (showBeta = tbSync.prefSettings.getBoolPref("notify4beta")) {
+        let updateBeta = (showBeta || tbSync.isBeta()) && (tbSync.cmpVersions(tbSync.versionInfo.beta.number, tbSync.versionInfo.installed) > 0);
         let updateStable = (tbSync.cmpVersions(tbSync.versionInfo.stable.number, tbSync.versionInfo.installed)> 0);
         return (updateBeta || updateStable);
     },

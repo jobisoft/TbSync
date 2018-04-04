@@ -39,6 +39,16 @@ var tbSyncAccountManager = {
         tbSync.prefSettings.setBoolPref("log.tofile", log.checked);
     },
     
+    initHelpData: function() {
+        let avail = tbSync.updatesAvailable(true); //true = check beta versions even though notify4beta is not enabled
+        document.getElementById("bugs.latestVersion").hidden = avail;
+        document.getElementById("bugs.olderVersion").hidden = !avail;
+        document.getElementById("latest.version").setAttribute("value", tbSync.versionInfo.beta.number);
+        document.getElementById("latest.version").setAttribute("href", tbSync.versionInfo.beta.url);
+        document.getElementById("latest.version").setAttribute("tooltiptext", tbSync.versionInfo.beta.url);
+        this.getLogPref();
+    },
+    
     initUpdateData: function() {
         document.getElementById("installed.version").setAttribute("value", tbSync.versionInfo.installed + (tbSync.isBeta() ? " (Beta version)" : ""));
 
