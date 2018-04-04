@@ -156,9 +156,6 @@ var tbSync = {
     }),
     
     finalizeInitSequence: Task.async (function* (timer) {
-        //init stuff for sync process
-        tbSync.resetSync();
-
         //get latest version info from github
         let versions = yield tbSync.fetchFile("https://raw.githubusercontent.com/jobisoft/TbSync/master/VERSION.info");
         for (let i = 0; i<versions.length; i++) {
@@ -170,6 +167,9 @@ var tbSync = {
                 tbSync.versionInfo[parts[0]] = info;
             }
         }
+
+        //init stuff for sync process
+        tbSync.resetSync();
         
         //enable TbSync
         tbSync.enabled = true;
@@ -353,6 +353,8 @@ var tbSync = {
                 } else {
                     label += tbSync.getLocalizedMessage("info.sync");
                 }
+                
+                if (tbSync.updatesAvailable()) label = label + " (update available)";
                 status.label = label;      
                 
             }
@@ -619,6 +621,16 @@ var tbSync = {
         return segmentsA.length - segmentsB.length;
     },
 
+    isBeta: function () {
+        return (tbSync.versionInfo.installed.split(".").length > 3);
+    },
+
+    updatesAvailable: function () {
+        let updateBeta = (tbSync.prefSettings.getBoolPref("notify4beta") || tbSync.isBeta()) && (tbSync.cmpVersions(tbSync.versionInfo.beta.number, tbSync.versionInfo.installed) > 0);
+        let updateStable = (tbSync.cmpVersions(tbSync.versionInfo.stable.number, tbSync.versionInfo.installed)> 0);
+        return (updateBeta || updateStable);
+    },
+    
     includeJS: function (file) {
         let loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
         loader.loadSubScript(file, this);

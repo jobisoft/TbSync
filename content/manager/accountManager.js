@@ -8,20 +8,13 @@ var tbSyncAccountManager = {
         tbSyncAccountManager.selectTab(0);
 
         // do we need to show the update button?        
-        let updateBeta = (tbSync.prefSettings.getBoolPref("notify4beta") || tbSyncAccountManager.isBeta()) && (tbSync.cmpVersions(tbSync.versionInfo.beta.number, tbSync.versionInfo.installed) > 0);
-        let updateStable = (tbSync.cmpVersions(tbSync.versionInfo.stable.number, tbSync.versionInfo.installed)> 0);
-        document.getElementById("tbSyncAccountManager.t5").hidden = !(updateBeta || updateStable);
+        document.getElementById("tbSyncAccountManager.t5").hidden = !tbSync.updatesAvailable();
     },
     
     onunload: function () {
         tbSync.prefWindowObj = null;
     },
 
-    
-    isBeta: function () {
-        return (tbSync.versionInfo.installed.split(".").length > 3);
-    },
-    
     selectTab: function (t) {
         const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
         let sources = ["accounts.xul", "cape.xul", "catman.xul", "supporter.xul", "help.xul", "update.xul"];
@@ -47,7 +40,7 @@ var tbSyncAccountManager = {
     },
     
     initUpdateData: function() {
-        document.getElementById("installed.version").setAttribute("value", tbSync.versionInfo.installed + (tbSyncAccountManager.isBeta() ? " (Beta version)" : ""));
+        document.getElementById("installed.version").setAttribute("value", tbSync.versionInfo.installed + (tbSync.isBeta() ? " (Beta version)" : ""));
 
         document.getElementById("mozilla.version").setAttribute("value", tbSync.versionInfo.mozilla.number + " (from Thunderbird AddOn repository)");
         document.getElementById("stable.version").setAttribute("value", tbSync.versionInfo.stable.number + " (from TbSync github repository)");
@@ -63,6 +56,6 @@ var tbSyncAccountManager = {
         
         if (tbSync.cmpVersions(tbSync.versionInfo.stable.number, tbSync.versionInfo.installed) > 0) document.getElementById("tbsync.recommendation").value = "Recommendation: Update to the latest stable version.";
         else if (tbSync.cmpVersions(tbSync.versionInfo.beta.number, tbSync.versionInfo.installed) > 0) document.getElementById("tbsync.recommendation").value = "Recommendation: Update to the latest beta version.";
-        else document.getElementById("tbsync.recommendation").value = "You are running the latest version of the " +( tbSync.prefSettings.getBoolPref("notify4beta") || tbSyncAccountManager.isBeta() ? "beta" : "stable")+ " release channel.";
+        else document.getElementById("tbsync.recommendation").value = "You are running the latest version of the " +( tbSync.prefSettings.getBoolPref("notify4beta") || tbSync.isBeta() ? "beta" : "stable")+ " release channel.";
     }
 };
