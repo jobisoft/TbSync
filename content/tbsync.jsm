@@ -92,28 +92,19 @@ var tbSync = {
         statuspanel.onclick = function (event) {if (event.button == 0) Services.obs.notifyObservers(null, 'tbsync.openManager', null);};
         tbSync.window.document.getElementById("status-bar").appendChild(statuspanel);
 
-        //Inject UI - menuitem in taskPopup
-        let taskMenu = tbSync.window.document.getElementById("taskPopup");
-        if (taskMenu) {
-            let taskMenuitem = tbSync.window.document.createElement('menuitem');
-            taskMenuitem.setAttribute("label", tbSync.getLocalizedMessage("menu.settingslabel"));
-            taskMenuitem.setAttribute("id","tbsync.taskmenu");
-            taskMenuitem.onclick = function (event) {Services.obs.notifyObservers(null, 'tbsync.openManager', null);};
+        //Inject UI - menuitem - if possible above "menu_accountmgr", wherever that is, if not found, fall back to taskPopup as container
+        let menuitem = tbSync.window.document.createElement('menuitem');
+        menuitem.setAttribute("label", tbSync.getLocalizedMessage("menu.settingslabel"));
+        menuitem.setAttribute("id","tbsync.menuitem");
+        menuitem.onclick = function (event) {Services.obs.notifyObservers(null, 'tbsync.openManager', null);};
 
-            //let accountManagerMenuItem = tbSync.window.document.getElementById("menu_accountmgr");
-            //if (accountManagerMenuItem) taskMenu.insertBefore(taskMenuitem, accountManagerMenuItem);
-            //else 
-            taskMenu.appendChild(taskMenuitem);
-        }
+        let accountManagerMenuItem = tbSync.window.document.getElementById("menu_accountmgr");
+        let taskPopup = tbSync.window.document.getElementById("taskPopup");
         
-        //Inject UI - menuitem in menu_EditPopup
-        let editMenu = tbSync.window.document.getElementById("menu_EditPopup");
-        if (editMenu) {
-            let editMenuitem = tbSync.window.document.createElement('menuitem');
-            editMenuitem.setAttribute("label", tbSync.getLocalizedMessage("menu.settingslabel"));
-            editMenuitem.setAttribute("id","tbsync.editmenu");
-            editMenuitem.onclick = function (event) {Services.obs.notifyObservers(null, 'tbsync.openManager', null);};
-            editMenu.appendChild(editMenuitem);	
+        if (accountManagerMenuItem && accountManagerMenuItem.parentNode) {
+          accountManagerMenuItem.parentNode.insertBefore(menuitem, accountManagerMenuItem);
+        } else if (taskPopup) {
+          tbSync.window.document.getElementById("taskPopup").appendChild(menuitem);	
         }
         
         //print information about Thunderbird version and OS
@@ -276,13 +267,9 @@ var tbSync = {
             //remove statuspanel
             if (tbSync.window.document.getElementById("tbsync.status")) tbSync.window.document.getElementById("status-bar").removeChild(tbSync.window.document.getElementById("tbsync.status"));
         
-            //remove menuitems
-            let taskMenu = tbSync.window.document.getElementById("taskPopup");
-            let taskMenuitem = tbSync.window.document.getElementById("tbsync.taskmenu");
-            let editMenu = tbSync.window.document.getElementById("menu_EditPopup");
-            let editMenuitem = tbSync.window.document.getElementById("tbsync.editmenu");
-            if (taskMenu && taskMenuitem) taskMenu.removeChild(taskMenuitem);
-            if (editMenu && editMenuitem) editMenu.removeChild(editMenuitem);
+            //remove menuitem
+            let menuitem = tbSync.window.document.getElementById("tbsync.menuitem");
+            if (menuitem && menuitem.parentNode) menuitem.parentNode.removeChild(menuitem);
         }
 
         //remove listener
