@@ -50,7 +50,7 @@ var tbSync = {
 
     enabled: false,
     window: null,
-    versionInfo: {},
+    versionInfo: {installed: "0.0.0", mozilla : {number: "0.0.0", url: ""}, stable : {number: "0.0.0", url: ""}, beta : {number: "0.0.0.0", url: ""}},
     
     lightningInitDone: false,
     cachedTimezoneData: null,
@@ -156,18 +156,30 @@ var tbSync = {
     }),
     
     finalizeInitSequence: Task.async (function* (timer) {
-        //get latest version info from github
-        let versions = yield tbSync.fetchFile("https://raw.githubusercontent.com/jobisoft/TbSync/master/VERSION.info");
-        for (let i = 0; i<versions.length; i++) {
-            let parts = versions[i].split(" ");
-            if (parts.length == 3) {
-                let info = {};
-                info.number = parts[1];
-                info.url = parts[2];
-                tbSync.versionInfo[parts[0]] = info;
+        let versions = null;
+        let urls = ["https://tbsync.jobisoft.de/VERSION.info", "https://raw.githubusercontent.com/jobisoft/TbSync/master/VERSION.info"];
+
+        for (let u=0; u<urls.length && versions === null; u++) {
+            try {
+                //get latest version info
+                versions = yield tbSync.fetchFile(urls[u]);
+            } catch (ex) {
+                tbSync.dump("Get version info failed!", urls[u]);
             }
         }
-
+    
+        if (versions) {
+            for (let i = 0; i<versions.length; i++) {
+                let parts = versions[i].split(" ");
+                if (parts.length == 3) {
+                    let info = {};
+                    info.number = parts[1];
+                    info.url = parts[2];
+                    tbSync.versionInfo[parts[0]] = info;
+                }
+            }
+        }
+        
         //init stuff for sync process
         tbSync.resetSync();
         
