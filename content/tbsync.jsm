@@ -803,6 +803,8 @@ var tbSync = {
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
                 let folders =  tbSync.db.findFoldersWithSetting("target", aItem.URI);
                 if (folders.length > 0) {
+                        //store current/new name of target
+                        tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetName", tbSync.getAddressBookName(folders[0].target));                         
                         //update settings window, if open
                         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
                         observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
@@ -1025,9 +1027,11 @@ var tbSync = {
         
         if (targetName !== null && targetObject !== null && targetObject instanceof Components.interfaces.nsIAbDirectory) return true;
         
-        // Get unique Name for new address book
+        // Get cached or new unique name for new address book
         let testname = folder.name + " (" + tbSync.db.getAccountSetting(account, "accountname") + ")";
-        let newname = testname;
+        let cachedName = tbSync.db.getFolderSetting(account, folderID, "targetName");                         
+
+        let newname = (cachedName == "" ? testname : cachedName);
         let count = 1;
         let unique = false;
         do {
