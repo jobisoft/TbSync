@@ -1489,15 +1489,21 @@ var tbSync = {
         //Properties of the calendar itself (name, color etc.)
         onPropertyChanged : function (aCalendar, aName, aValue, aOldValue) {
             tbSync.dump("calendarObserver::onPropertyChanged","<" + aName + "> changed from <"+aOldValue+"> to <"+aValue+">");
-            switch (aName) {
-                case "name":
-                    let folders = tbSync.db.findFoldersWithSetting("target", aCalendar.id);
-                    if (folders.length > 0) {
+            let folders = tbSync.db.findFoldersWithSetting("target", aCalendar.id);
+            if (folders.length > 0) {
+                switch (aName) {
+                    case "color":
+                        //update stored color to recover after disable
+                        tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetColor", aValue); 
+                        break;
+                    case "name":
+                        //update stored name to recover after disable
+                        tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetName", aValue);                         
                         //update settings window, if open
                         let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
                         observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
-                    }
-                    break;
+                        break;
+                }
             }
         },
 
@@ -1596,8 +1602,10 @@ var tbSync = {
         }
 
         
-        // Get unique Name for new calendar
-        let testname = folder.name + " (" + tbSync.db.getAccountSetting(account, "accountname") + ")";
+        // If there is a known/cached value, than get unique name for new calendar 
+        let cachedName = tbSync.db.getFolderSetting(account, folderID, "targetName");
+        let testname = (cachedName == "" ? folder.name + " (" + tbSync.db.getAccountSetting(account, "accountname") + ")" : cachedName);
+
         let newname = testname;
         let count = 1;
         let unique = false;
@@ -1662,7 +1670,10 @@ var tbSync = {
         
         //filter by minCount
         let freeColors = statColors.filter(item => (minCount == null || item.count == minCount));
-        let color = freeColors[0].color;        
+
+        //use cachedColor, if there is one
+        let cachedColor = tbSync.db.getFolderSetting(account, folderID, "targetColor");        
+        let color = (cachedColor == "" ? freeColors[0].color : cachedColor);
 
         //Alternative calendar, which uses calTbSyncCalendar
         //let newCalendar = calManager.createCalendar("TbSync", Services.io.newURI('tbsync-calendar://'));
@@ -1692,6 +1703,8 @@ var tbSync = {
         //store id of calendar as target in DB
         tbSync.dump("tbSync::checkCalendar("+account+", "+folderID+")", "Creating new calendar (" + newname + ")");
         tbSync.db.setFolderSetting(account, folderID, "target", newCalendar.id); 
+        tbSync.db.setFolderSetting(account, folderID, "targetName", newname); 
+        tbSync.db.setFolderSetting(account, folderID, "targetColor", color); 
         return true;
 
         /*            

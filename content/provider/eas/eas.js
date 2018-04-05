@@ -247,7 +247,11 @@ var eas = {
                         
                         //if there is a cached version of this folder, take selection state from there
                         let cachedFolders = tbSync.db.findFoldersWithSetting(["cached","name","account"], ["1", newData.name,  newData.account], "provider", "eas");
-                        if (cachedFolders && cachedFolders.length > 0) newData.selected = cachedFolders[0].selected;
+                        if (cachedFolders && cachedFolders.length > 0) {
+                            newData.selected = cachedFolders[0].selected;
+                            newData.targetName = cachedFolders[0].targetName ? cachedFolders[0].targetName : "";
+                            newData.targetColor = cachedFolders[0].targetColor ? cachedFolders[0].targetColor : "";
+                        }
                         else newData.selected = (newData.type == "9" || newData.type == "8" || newData.type == "7" ) ? "1" : "0";
                         
                         newData.status = "";
@@ -978,6 +982,8 @@ var eas = {
             "type" : "",
             "synckey" : "",
             "target" : "",
+            "targetName" : "",
+            "targetColor" : "",
             "selected" : "",
             "lastsynctime" : "",
             "status" : "",
