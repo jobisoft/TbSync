@@ -30,15 +30,15 @@
                     </row>
                     <row>
                         <label value="Current official version:" />
-                        <label id="mozilla.version" class="text-link" href="" value="" />
+                        <label id="mozilla.version" value="" />
                     </row>
                     <row>
                         <label value="Latest stable release:" />
-                        <label id="stable.version" class="text-link" href="" value="" />
+                        <label id="stable.version" value="" />
                     </row>
                     <row>
                         <label value="Latest beta release:" />
-                        <label id="beta.version" class="text-link" href="" value="" />
+                        <label id="beta.version" value="---" />
                     </row>
                 </rows>
             </grid>
