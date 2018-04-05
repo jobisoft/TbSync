@@ -46,15 +46,17 @@ var tbSyncAccountManager = {
         document.getElementById("latest.version").setAttribute("value", tbSync.versionInfo.beta.number);
         document.getElementById("latest.version").setAttribute("href", tbSync.versionInfo.beta.url);
         document.getElementById("latest.version").setAttribute("tooltiptext", tbSync.versionInfo.beta.url);
+        document.getElementById("installed.version").setAttribute("value", tbSync.versionInfo.installed);        
         this.getLogPref();
     },
     
     initUpdateData: function() {
-        document.getElementById("installed.version").setAttribute("value", tbSync.versionInfo.installed + (tbSync.isBeta() ? " (Beta version)" : ""));
+        document.getElementById("installed.version").setAttribute("value", tbSync.versionInfo.installed + (tbSync.isBeta() ? " (old beta version)" : ""));
 
         document.getElementById("mozilla.version").setAttribute("value", tbSync.versionInfo.mozilla.number + " @ Thunderbird AddOn repository");
         if (tbSync.cmpVersions(tbSync.versionInfo.mozilla.number, tbSync.versionInfo.installed) > 0) {
             document.getElementById("mozilla.version").className = "text-link";
+            document.getElementById("mozilla.version").setAttribute("style", "color: blue;");
             document.getElementById("mozilla.version").setAttribute("href", tbSync.versionInfo.mozilla.url);
             document.getElementById("mozilla.version").setAttribute("tooltiptext", tbSync.versionInfo.mozilla.url);
         }
@@ -62,12 +64,14 @@ var tbSyncAccountManager = {
         document.getElementById("stable.version").setAttribute("value", tbSync.versionInfo.stable.number + " @ TbSync github repository");
         if (tbSync.cmpVersions(tbSync.versionInfo.stable.number, tbSync.versionInfo.installed) > 0) {
             document.getElementById("stable.version").className = "text-link";
+            document.getElementById("stable.version").setAttribute("style", "color: blue;");
             document.getElementById("stable.version").setAttribute("href", tbSync.versionInfo.stable.url);
             document.getElementById("stable.version").setAttribute("tooltiptext", tbSync.versionInfo.stable.url);
         }
         
         if (tbSync.cmpVersions(tbSync.versionInfo.beta.number, tbSync.versionInfo.stable.number) > 0) {
             document.getElementById("beta.version").className = "text-link";
+            document.getElementById("beta.version").setAttribute("style", "color: blue;");
             document.getElementById("beta.version").setAttribute("value", tbSync.versionInfo.beta.number);
             document.getElementById("beta.version").setAttribute("href", tbSync.versionInfo.beta.url);
             document.getElementById("beta.version").setAttribute("tooltiptext", tbSync.versionInfo.beta.url);
@@ -75,6 +79,5 @@ var tbSyncAccountManager = {
     
         if (tbSync.cmpVersions(tbSync.versionInfo.stable.number, tbSync.versionInfo.installed) > 0) document.getElementById("tbsync.recommendation").value = "Recommendation: Update to the latest stable version.";
         else if (tbSync.cmpVersions(tbSync.versionInfo.beta.number, tbSync.versionInfo.installed) > 0) document.getElementById("tbsync.recommendation").value = "Recommendation: Update to the latest beta version.";
-        else document.getElementById("tbsync.recommendation").value = "You are running the latest version of the " +( tbSync.prefSettings.getBoolPref("notify4beta") || tbSync.isBeta() ? "beta" : "stable")+ " release channel.";
     }
 };

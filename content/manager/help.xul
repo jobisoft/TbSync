@@ -24,9 +24,9 @@
 
             <html:p id="bugs.olderVersion">
                 <html:b>Found a bug?</html:b><html:br/><html:br/>
-                <html:span>If you encounter a bug, please update to the latest available version of TbSync (<label id="latest.version" class="text-link" style="display:inline; margin:0 2px; padding:0; color:blue;" tooltiptext="" href="" value="" />), to check if your bug has been fixed already. <html:i>Never downgrade, which could corrupt your account data!</html:i></html:span>
+                <html:span>If you encounter a bug, please update to the latest available beta version <label id="latest.version" class="text-link" style="display:inline; margin:0 2px; padding:0; color:blue;" tooltiptext="" href="" value="" /> of TbSync (you are currently using <label id="installed.version" style="display:inline; margin:0 2px; padding:0;" value="" />), to check if your bug has been fixed already. <html:i>Never downgrade, which could corrupt your account data!</html:i></html:span>
                 <html:br/><html:br/>
-                <html:span>If your bug is still present in the latest available version, you can help to fix it by sending in a bug report.</html:span>
+                <html:span>If your bug is still present in the latest available beta version, you can help to fix it by sending in a bug report.</html:span>
             </html:p>
 
             <checkbox id="tbSyncAccountManager.logPrefCheckbox" label="Enable debug logging to store all debug messages and the xml being sent and received by TbSync in a log file." oncommand="tbSyncAccountManager.toggleLogPref();" />
