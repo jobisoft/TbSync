@@ -308,22 +308,20 @@ var tbSync = {
     },
 
     popupNotEnabled: function () {
-        let msg = "TbSync has not yet finished its init sequence!";
+        let msg = "Oops! TbSync was not able to start!\n\n";
         tbSync.dump("Oops", "Trying to open account manager, but init sequence not yet finished");
-        tbSync.window.alert(msg);
-        
-//        if (!tbSync.prefSettings.getBoolPref("log.tofile")) {
-//            if (tbSync.window.confirm(msg + "It is not possible to trace this error, because debug log is currently not enabled. Do you want to enable debug log now, to help fix this error?")) {
-//                tbSync.prefSettings.setBoolPref("log.tofile", true);
-//                tbSync.window.alert("TbSync debug log has been enabled, please restart Thunderbird and again try to open TbSync.");
-//            }
-//        } else {
-//            if (tbSync.window.confirm(msg + "To help fix this error, you could send a debug log to the TbSync developer. Do you want to open the debug log now?")) {
-//                tbSync.openFileTab("debug.log");
-//            }
-//        }
+	    
+        if (!tbSync.prefSettings.getBoolPref("log.tofile")) {
+            if (tbSync.window.confirm(msg + "It is not possible to trace this error, because debug log is currently not enabled. Do you want to enable debug log now, to help fix this error?")) {
+                tbSync.prefSettings.setBoolPref("log.tofile", true);
+                tbSync.window.alert("TbSync debug log has been enabled, please restart Thunderbird and again try to open TbSync.");
+            }
+        } else {
+            if (tbSync.window.confirm(msg + "To help fix this error, you could send a debug log to the TbSync developer. Do you want to open the debug log now?")) {
+                tbSync.openFileTab("debug.log");
+            }
+        }
     },
-
 
 
 
