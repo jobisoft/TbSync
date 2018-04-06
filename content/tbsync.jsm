@@ -139,35 +139,31 @@ var tbSync = {
         
         //init stuff for lightning (and dump any other installed AddOn)
         //TODO: If lightning is converted to restartless, use AddonManager.addAddonListener() to get notification of enable/disable
-        AddonManager.getAllAddons(function(addons) {
+        AddonManager.getAllAddons(Task.async (function* (addons) {
           for (let a=0; a < addons.length; a++) {
             if (addons[a].isActive) {
                 tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
                 if (addons[a].id.toString() == "{e2fda1a4-762b-4020-b5ad-a41df1933103}") tbSync.onLightningLoad.start()
                 if (addons[a].id.toString() == "tbsync@jobisoft.de") {
                     tbSync.versionInfo.installed = addons[a].version.toString();
-                    tbSync.finalizeInitSequence();
+                    //check for updates
+                    yield tbSync.check4updates();
+
+                    //init stuff for sync process
+                    tbSync.resetSync();
+                    
+                    //enable TbSync
+                    tbSync.enabled = true;
+                    
+                    //activate sync timer
+                    tbSync.syncTimer.start();
+
+                    tbSync.dump("TbSync init","Done");
                 }
             }
           }
-        });
+        }));
                 
-    }),
-    
-    finalizeInitSequence: Task.async (function* () {
-        //check for updates
-        yield tbSync.check4updates();
-
-        //init stuff for sync process
-        tbSync.resetSync();
-        
-        //enable TbSync
-        tbSync.enabled = true;
-        
-        //activate sync timer
-        tbSync.syncTimer.start();
-
-        tbSync.dump("TbSync init","Done");
     }),
     
     onLightningLoad: {
