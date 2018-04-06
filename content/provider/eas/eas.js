@@ -4,7 +4,7 @@ tbSync.includeJS("chrome://tbsync/content/provider/eas/wbxmltools.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/xmltools.js");
 
 var eas = {
-    bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tbsync/locale/eas.strings"),
+    bundle: Services.strings.createBundle("chrome://tbsync/locale/eas.strings"),
     //use flags instead of strings to avoid errors due to spelling errors
     flags : Object.freeze({
         allowEmptyResponse: true, 
@@ -143,7 +143,6 @@ var eas = {
 
             } catch (report) { 
                     
-                let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
                 switch (report.type) {
                     case eas.flags.resyncAccount:
                         tbSync.dump("Account Resync", "Account: " + tbSync.db.getAccountSetting(syncdata.account, "accountname") + ", Reason: " + report.message);                        
@@ -161,7 +160,7 @@ var eas = {
                                     eas.finishAccountSync(syncdata, "401");
                                     return;                            
                                 case 200: //server and/or user was updated, retry
-                                    observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", syncdata.account);
+                                    Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", syncdata.account);
                                     continue;
                                 default: //autodiscover failed, fall through to abortWithError
                             }                        
@@ -746,8 +745,7 @@ var eas = {
             tbSync.db.deleteFolder(syncdata.account, syncdata.folderID);
             syncdata.folderID = "";
             //update manager gui / folder list
-            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", syncdata.account);
+            Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", syncdata.account);
             throw eas.finishSync();
         } else {
             throw eas.finishSync("wbxmlmissingfield::FolderDelete.SyncKey", eas.flags.abortWithError);
@@ -929,8 +927,7 @@ var eas = {
     
     getPassword: function (accountdata) {
         let host4PasswordManager = tbSync.eas.getHost4PasswordManager(accountdata);
-        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
-        let logins = myLoginManager.findLogins({}, host4PasswordManager, null, "TbSync");
+        let logins = Services.logins.findLogins({}, host4PasswordManager, null, "TbSync");
         for (let i = 0; i < logins.length; i++) {
             if (logins[i].username == accountdata.user) {
                 return logins[i].password;
@@ -942,7 +939,6 @@ var eas = {
 
     setPassword: function (accountdata, newPassword) {
         let host4PasswordManager = tbSync.eas.getHost4PasswordManager(accountdata);
-        let myLoginManager = Components.classes["@mozilla.org/login-manager;1"].getService(Components.interfaces.nsILoginManager);
         let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
         let curPassword = tbSync.eas.getPassword(accountdata);
         
@@ -951,7 +947,7 @@ var eas = {
             //remove current login info
             let currentLoginInfo = new nsLoginInfo(host4PasswordManager, null, "TbSync", accountdata.user, curPassword, "", "");
             try {
-                myLoginManager.removeLogin(currentLoginInfo);
+                Services.logins.removeLogin(currentLoginInfo);
             } catch (e) {
                 tbSync.dump("Error removing loginInfo", e);
             }
@@ -961,7 +957,7 @@ var eas = {
         if (newPassword != "") {
             let newLoginInfo = new nsLoginInfo(host4PasswordManager, null, "TbSync", accountdata.user, newPassword, "", "");
             try {
-                myLoginManager.addLogin(newLoginInfo);
+                Services.logins.addLogin(newLoginInfo);
             } catch (e) {
                 tbSync.dump("Error adding loginInfo", e);
             }

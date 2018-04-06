@@ -57,17 +57,16 @@ var tbSync = {
     defaultTimezoneInfo: null,
     windowsTimezoneMap: {},
 
-    bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tbsync/locale/tbSync.strings"),
-    mozConsoleService : Components.classes["@mozilla.org/consoleservice;1"].getService(Components.interfaces.nsIConsoleService),
+    bundle: Services.strings.createBundle("chrome://tbsync/locale/tbSync.strings"),
 
     prefWindowObj: null,
     decoder : new TextDecoder(),
     encoder : new TextEncoder(),
 
-    syncProviderPref: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync.provider."),
-    syncProviderList: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync.provider.").getChildList("", {}),
+    prefSettings: Services.prefs.getBranch("extensions.tbsync."),
+    syncProviderPref: Services.prefs.getBranch("extensions.tbsync.provider."),
+    syncProviderList: Services.prefs.getBranch("extensions.tbsync.provider.").getChildList("", {}),
 
-    prefSettings: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService).getBranch("extensions.tbsync."),
 
     storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
 
@@ -108,8 +107,7 @@ var tbSync = {
         }
         
         //print information about Thunderbird version and OS
-        let appInfo =  Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
-        tbSync.dump(appInfo.name, appInfo.platformVersion + " on " + OS.Constants.Sys.Name);
+        tbSync.dump(Services.appinfo.name, Services.appinfo.platformVersion + " on " + OS.Constants.Sys.Name);
         
         // load common subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
         tbSync.includeJS("chrome://tbsync/content/db.js");
@@ -155,31 +153,10 @@ var tbSync = {
                 
     }),
     
-    finalizeInitSequence: Task.async (function* (timer) {
-        let versions = null;
-        let urls = ["https://tbsync.jobisoft.de/VERSION.info", "https://raw.githubusercontent.com/jobisoft/TbSync/master/VERSION.info"];
+    finalizeInitSequence: Task.async (function* () {
+        //check for updates
+        yield tbSync.check4updates();
 
-        for (let u=0; u<urls.length && versions === null; u++) {
-            try {
-                //get latest version info
-                versions = yield tbSync.fetchFile(urls[u]);
-            } catch (ex) {
-                tbSync.dump("Get version info failed!", urls[u]);
-            }
-        }
-    
-        if (versions) {
-            for (let i = 0; i<versions.length; i++) {
-                let parts = versions[i].split(" ");
-                if (parts.length == 3) {
-                    let info = {};
-                    info.number = parts[1];
-                    info.url = parts[2];
-                    tbSync.versionInfo[parts[0]] = info;
-                }
-            }
-        }
-        
         //init stuff for sync process
         tbSync.resetSync();
         
@@ -310,7 +287,7 @@ var tbSync = {
     popupNotEnabled: function () {
         let msg = "Oops! TbSync was not able to start!\n\n";
         tbSync.dump("Oops", "Trying to open account manager, but init sequence not yet finished");
-	    
+        
         if (!tbSync.prefSettings.getBoolPref("log.tofile")) {
             if (tbSync.window.confirm(msg + "It is not possible to trace this error, because debug log is currently not enabled. Do you want to enable debug log now, to help fix this error?")) {
                 tbSync.prefSettings.setBoolPref("log.tofile", true);
@@ -530,8 +507,7 @@ var tbSync = {
         tbSync.setSyncData(account, "syncstate", syncstate);
         tbSync.dump("setSyncState", msg);
 
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tbsync.changedSyncstate", account);
+        Services.obs.notifyObservers(null, "tbsync.changedSyncstate", account);
     },
     
     resetSync: function () {
@@ -587,6 +563,38 @@ var tbSync = {
         return OS.Path.join(tbSync.storageDirectory, filename);
     },
 
+    check4updates: Task.async (function* () {
+        let versions = null;
+        let urls = ["https://tbsync.jobisoft.de/VERSION.info", "https://raw.githubusercontent.com/jobisoft/TbSync/master/VERSION.info"];
+
+        //we do not want to ask the server every 60s if the request failed for some reason, so we set the lastVersionCheck on each ATTEMPT, not on each SUCCESS
+        tbSync.lastVersionCheck = Date.now();
+        
+        for (let u=0; u<urls.length && versions === null; u++) {
+            try {
+                //get latest version info
+                versions = yield tbSync.fetchFile(urls[u]);
+            } catch (ex) {
+                tbSync.dump("Get version info failed!", urls[u]);
+            }
+        }
+    
+        if (versions) {
+            for (let i = 0; i<versions.length; i++) {
+                let parts = versions[i].split(" ");
+                if (parts.length == 3) {
+                    let info = {};
+                    info.number = parts[1];
+                    info.url = parts[2];
+                    tbSync.versionInfo[parts[0]] = info;
+                }
+            }
+            //update UI
+            Services.obs.notifyObservers(null, "tbsync.changedSyncstate", null);
+            Services.obs.notifyObservers(null, "tbsync.refreshUpdateButton", null);
+        }        
+    }),
+    
     //read file from within the XPI package
     fetchFile: function (aURL) {
         return new Promise((resolve, reject) => {
@@ -642,8 +650,7 @@ var tbSync = {
     },
     
     includeJS: function (file) {
-        let loader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"].getService(Components.interfaces.mozIJSSubScriptLoader);
-        loader.loadSubScript(file, this);
+        Services.scriptloader.loadSubScript(file, this);
     },
 
     //async sleep function using Promise
@@ -659,36 +666,9 @@ var tbSync = {
         });
     },
 
-    //probably obsolete
+    //obsolete pass trough - since we EncodeUrlComponent everything, there is no need to do char transcoding
     encode_utf8: function (string) {
-        let utf8string = string;
-
-// FIRST, the test platformVer > 50 fails, because platformVer is something like 50.3.2
-// SECOND, since we EncodeUrlComponent everything, there is no need to do char transcoding
-//
-//        let appInfo = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
-//        let platformVer = appInfo.platformVersion;
-//        if (platformVer >= 50) {
-//            utf8string = string;
-//        } else {
-//            //What?
-//            string = string.replace(/\r\n/g, "\n");
-//            for (let n = 0; n < string.length; n++) {
-//                let c = string.charCodeAt(n);
-//                if (c < 128) {
-//                    utf8string += String.fromCharCode(c);
-//                } else if ((c > 127) && (c < 2048)) {
-//                    utf8string += String.fromCharCode((c >> 6) | 192);
-//                    utf8string += String.fromCharCode((c & 63) | 128);
-//                } else {
-//                    utf8string += String.fromCharCode((c >> 12) | 224);
-//                    utf8string += String.fromCharCode(((c >> 6) & 63) | 128);
-//                    utf8string += String.fromCharCode((c & 63) | 128);
-//                }
-//            }
-//        }
-
-        return utf8string;
+        return string;
     },
 
     getLocalizedMessage: function (msg, provider = "") {
@@ -711,7 +691,7 @@ var tbSync = {
 
     dump: function (what, aMessage) {
         if (tbSync.prefSettings.getBoolPref("log.toconsole")) {
-            tbSync.mozConsoleService.logStringMessage("[TbSync] " + what + " : " + aMessage);
+            Services.console.logStringMessage("[TbSync] " + what + " : " + aMessage);
         }
         
         if (tbSync.prefSettings.getBoolPref("log.tofile")) {
@@ -772,8 +752,7 @@ var tbSync = {
             tbSync.db.setAccountSetting(folder.account, "status", "notsyncronized");
             tbSync.db.setFolderSetting(folder.account, folder.folderID, "status", "modified");
             //notify settings gui to update status
-            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tbsync.changedSyncstate", folder.account);
+             Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folder.account);
         }
     },
 
@@ -804,8 +783,7 @@ var tbSync = {
                         //store current/new name of target
                         tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetName", tbSync.getAddressBookName(folders[0].target));                         
                         //update settings window, if open
-                        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                        observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+                         Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
                 }
             }
 
@@ -884,8 +862,7 @@ var tbSync = {
                         tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
 
                         //update settings window, if open
-                        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                        observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+                         Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
                     }
                     tbSync.db.saveFolders();
                     
@@ -1502,8 +1479,7 @@ var tbSync = {
                         //update stored name to recover after disable
                         tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetName", aValue);                         
                         //update settings window, if open
-                        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                        observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+                        Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
                         break;
                 }
             }
@@ -1516,8 +1492,7 @@ var tbSync = {
                     let folders = tbSync.db.findFoldersWithSetting("target", aCalendar.id);
                     if (folders.length > 0) {
                         //update settings window, if open
-                        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                        observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+                        Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
                     }
                     break;
             }
@@ -1547,8 +1522,7 @@ var tbSync = {
                     tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
 
                     //update settings window, if open
-                    let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                    observerService.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+                    Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
                 }
                 tbSync.db.saveFolders();
             }
@@ -1743,4 +1717,4 @@ if (tbSync.lightningIsAvailable()) {
 //clear debug log on start
 tbSync.initFile("debug.log");
 tbSync.dump("Init","Please send this log to john.bieling@gmx.de, if you have encountered an error.");
-tbSync.mozConsoleService.registerListener(tbSync.consoleListener);
+Services.console.registerListener(tbSync.consoleListener);

@@ -1,5 +1,6 @@
 "use strict";
 
+Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncAccounts = {
@@ -10,17 +11,15 @@ var tbSyncAccounts = {
         //scan accounts, update list and select first entry (because no id is passed to updateAccountList)
         //the onSelect event of the List will load the selected account
         this.updateAccountsList(); 
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.changedSyncstate", false);
-        observerService.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.changedAccountName", false);
-        observerService.addObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.toggleEnableState", false);
+        Services.obs.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.changedSyncstate", false);
+        Services.obs.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.changedAccountName", false);
+        Services.obs.addObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.toggleEnableState", false);
     },
 
     onunload: function () {
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.removeObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.changedSyncstate");
-        observerService.removeObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.changedAccountName");
-        observerService.removeObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.toggleEnableState");
+        Services.obs.removeObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.changedSyncstate");
+        Services.obs.removeObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.changedAccountName");
+        Services.obs.removeObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.toggleEnableState");
     },
 
 
@@ -85,8 +84,7 @@ var tbSyncAccounts = {
     toggleEnableState: function () {
         let accountsList = document.getElementById("tbSyncAccounts.accounts");
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value) && !tbSync.isSyncing(accountsList.selectedItem.value)) {            
-            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tbsync.toggleEnableState", accountsList.selectedItem.value);
+            Services.obs.notifyObservers(null, "tbsync.toggleEnableState", accountsList.selectedItem.value);
         }
     },
 
@@ -127,18 +125,17 @@ var tbSyncAccounts = {
             let account = aData;                        
             let isConnected = tbSync.isConnected(account);
             let isEnabled = tbSync.isEnabled(account);
-            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
 
             if (isEnabled) {
                 //we are enabled and want to disable (do not ask, if not connected)
                 if (!isConnected || window.confirm(tbSync.getLocalizedMessage("prompt.Disable"))) {
                     tbSync[tbSync.db.getAccountSetting(account, "provider")].disableAccount(account);
-                    observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
+                    Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
                 }
             } else {
                 //we are disabled and want to enabled
                 tbSync[tbSync.db.getAccountSetting(account, "provider")].enableAccount(account);
-                observerService.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
+                Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
                 tbSync.syncAccount("sync", account);
             }
         }

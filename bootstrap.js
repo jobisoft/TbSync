@@ -10,9 +10,7 @@ let window = null;
 let onLoadObserver = {
     observe: function(aSubject, aTopic, aData) {        
         if (window === null) {
-            window = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                                      .getService(Components.interfaces.nsIWindowMediator)
-                                      .getMostRecentWindow("mail:3pane");
+            window = Services.wm.getMostRecentWindow("mail:3pane");
             if (window) {
                 //init TbSync
                 tbSync.init(window); 
@@ -79,7 +77,7 @@ function shutdown(data, reason) {
 
     //remove startup observer
     Services.obs.removeObserver(onLoadObserver, "mail-startup-done");
-    Services.obs.removeObserver(onLoadObserver, "tbsync.init", false);
+    Services.obs.removeObserver(onLoadObserver, "tbsync.init");
 
     //call cleanup of the tbSync module
     tbSync.cleanup();

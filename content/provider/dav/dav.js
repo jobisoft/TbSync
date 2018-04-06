@@ -1,7 +1,7 @@
 "use strict";
 
 var dav = {
-    bundle: Components.classes["@mozilla.org/intl/stringbundle;1"].getService(Components.interfaces.nsIStringBundleService).createBundle("chrome://tbsync/locale/owncloud.strings"),
+    bundle: Services.strings.createBundle("chrome://tbsync/locale/dav.strings"),
 
     init: Task.async (function* ()  {        
     }),

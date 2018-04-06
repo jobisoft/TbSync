@@ -1,17 +1,26 @@
 "use strict";
 
+Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncAccountManager = {
     
+    refreshUpdateButtonObserver: {
+        observe: function(aSubject, aTopic, aData) {        
+            document.getElementById("tbSyncAccountManager.t5").hidden = !tbSync.updatesAvailable();
+        }
+    },
+
     onload: function () {
         tbSyncAccountManager.selectTab(0);
+        Services.obs.addObserver(tbSyncAccountManager.refreshUpdateButtonObserver, "tbsync.refreshUpdateButton", false);
 
         // do we need to show the update button?        
-        document.getElementById("tbSyncAccountManager.t5").hidden = !tbSync.updatesAvailable();
+        Services.obs.notifyObservers(null, "tbsync.refreshUpdateButton", null);
     },
     
     onunload: function () {
+        Services.obs.removeObserver(tbSyncAccountManager.refreshUpdateButtonObserver, "tbsync.refreshUpdateButton");
         tbSync.prefWindowObj = null;
     },
 

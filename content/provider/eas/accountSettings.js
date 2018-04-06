@@ -1,5 +1,6 @@
 "use strict";
 
+Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncAccountSettings = {
@@ -16,18 +17,16 @@ var tbSyncAccountSettings = {
 
         tbSyncAccountSettings.loadSettings();
         
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.addObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate", false);
-        observerService.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui", false);
+        Services.obs.addObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate", false);
+        Services.obs.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui", false);
         tbSyncAccountSettings.init = true;
     },
 
     onunload: function () {
         tbSyncAccountSettings.updateTimer.cancel();
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
         if (tbSyncAccountSettings.init) {
-            observerService.removeObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate");
-            observerService.removeObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui");
+            Services.obs.removeObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate");
+            Services.obs.removeObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui");
         }
     },
 
@@ -105,8 +104,7 @@ var tbSyncAccountSettings = {
         tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, setting, value);
         
         if (setting == "accountname") {
-            let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-            observerService.notifyObservers(null, "tbsync.changedAccountName", tbSyncAccountSettings.selectedAccount + ":" + field.value);
+            Services.obs.notifyObservers(null, "tbsync.changedAccountName", tbSyncAccountSettings.selectedAccount + ":" + field.value);
         }
         tbSync.db.saveAccounts(); //write modified accounts to disk
     },
@@ -150,8 +148,7 @@ var tbSyncAccountSettings = {
                 }
                 
                 tbSyncAccountSettings.loadSettings();
-                let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                observerService.notifyObservers(null, "tbsync.changedSyncstate", aData);
+                Services.obs.notifyObservers(null, "tbsync.changedSyncstate", aData);
             }
         }
     },
@@ -286,8 +283,7 @@ var tbSyncAccountSettings = {
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "selected", "1");
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.selectedAccount, fID, "status", "aborted");
                 tbSync.db.setAccountSetting(folder.account, "status", "notsyncronized");
-                let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-                observerService.notifyObservers(null, "tbsync.changedSyncstate", tbSyncAccountSettings.selectedAccount);
+                Services.obs.notifyObservers(null, "tbsync.changedSyncstate", tbSyncAccountSettings.selectedAccount);
                 this.updateSyncstate();
             }
             this.updateFolderList();
@@ -518,9 +514,7 @@ var tbSyncAccountSettings = {
         //ignore cancel request, if button is disabled or a sync is ongoing
         if (document.getElementById('tbsync.accountsettings.enablebtn').disabled || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount)) return;
 
-        let observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
-        observerService.notifyObservers(null, "tbsync.toggleEnableState", tbSyncAccountSettings.selectedAccount);
-        
+        Services.obs.notifyObservers(null, "tbsync.toggleEnableState", tbSyncAccountSettings.selectedAccount);        
     },
 
 
