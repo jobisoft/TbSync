@@ -39,6 +39,7 @@ function startup(data, reason) {
     branch.setCharPref("clientID.type", "");
     branch.setCharPref("clientID.useragent", "");    
     branch.setBoolPref("notify4beta", false);
+    branch.setIntPref("updateCheckInterval", 6);
     
     branch.setCharPref("provider.eas", "Exchange Active Sync");
     branch.setCharPref("provider.dav", "CalDAV/CardDAV (sabre/dav, ownCloud, Nextcloud)");

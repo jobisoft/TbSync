@@ -51,7 +51,8 @@ var tbSync = {
     enabled: false,
     window: null,
     versionInfo: {installed: "0.0.0", mozilla : {number: "0.0.0", url: ""}, stable : {number: "0.0.0", url: ""}, beta : {number: "0.0.0.0", url: ""}},
-    
+    lastVersionCheck: 0,
+        
     lightningInitDone: false,
     cachedTimezoneData: null,
     defaultTimezoneInfo: null,
@@ -404,6 +405,12 @@ var tbSync = {
                         tbSync.syncAccount("sync",accounts.IDs[i]);
                         }
                     }
+
+                    //also use this timer to check for updates
+                    let checkInterval = tbSync.prefSettings.getIntPref("updateCheckInterval") * 60 * 60 * 1000;
+                    if ((Date.now() - tbSync.lastVersionCheck) > checkInterval) {
+                        tbSync.check4updates();
+                    }                
                 }
             }
         }
