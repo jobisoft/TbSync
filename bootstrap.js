@@ -1,8 +1,8 @@
 //no need to create namespace, we are in a sandbox
 
-ChromeUtils.import("resource://gre/modules/Services.jsm");
-ChromeUtils.import("resource://gre/modules/Task.jsm");
-ChromeUtils.import("resource://gre/modules/osfile.jsm");
+Components.utils.import("resource://gre/modules/Services.jsm");
+Components.utils.import("resource://gre/modules/Task.jsm");
+Components.utils.import("resource://gre/modules/osfile.jsm");
 
 let window = null;
 
@@ -57,7 +57,7 @@ function startup(data, reason) {
     branch.setBoolPref("hidephones", false);
     branch.setBoolPref("showanniversary", false);
 
-    ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+    Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
     //Map local writeAsyncJSON into tbSync
     tbSync.writeAsyncJSON = writeAsyncJSON;

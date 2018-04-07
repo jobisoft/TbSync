@@ -1,6 +1,6 @@
 "use strict";
 
-ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncPassword = {
     

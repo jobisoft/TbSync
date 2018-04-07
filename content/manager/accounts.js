@@ -1,7 +1,7 @@
 "use strict";
 
-ChromeUtils.import("resource://gre/modules/Services.jsm");
-ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+Components.utils.import("resource://gre/modules/Services.jsm");
+Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncAccounts = {
 
