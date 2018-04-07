@@ -6,12 +6,12 @@ var EXPORTED_SYMBOLS = ["tbSync"];
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("resource://gre/modules/FileUtils.jsm");
-Components.utils.import("resource://gre/modules/osfile.jsm");
-Components.utils.import("resource://gre/modules/Task.jsm");
-Components.utils.import("resource://gre/modules/AddonManager.jsm");
-Components.utils.import("resource://gre/modules/NetUtil.jsm");
+ChromeUtils.import("resource://gre/modules/Services.jsm");
+ChromeUtils.import("resource://gre/modules/FileUtils.jsm");
+ChromeUtils.import("resource://gre/modules/osfile.jsm");
+ChromeUtils.import("resource://gre/modules/Task.jsm");
+ChromeUtils.import("resource://gre/modules/AddonManager.jsm");
+ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
 Components.utils.importGlobalProperties(["XMLHttpRequest"]);
 
 
@@ -184,8 +184,8 @@ var tbSync = {
 
                 //try to import
                 if ("calICalendar" in Components.interfaces && typeof cal == 'undefined') {
-                    Components.utils.import("resource://calendar/modules/calUtils.jsm");
-                    Components.utils.import("resource://calendar/modules/ical.js");    
+                    ChromeUtils.import("resource://calendar/modules/calUtils.jsm");
+                    ChromeUtils.import("resource://calendar/modules/ical.js");    
                 }
 
                 if (typeof cal !== 'undefined') {
