@@ -34,7 +34,7 @@
 
         <grid flex="1">
            <columns>
-                <column width="135" />
+                <column flex="0" style="padding-left:8px; padding-right:5px;" />
                 <column flex="1" />
            </columns>
 

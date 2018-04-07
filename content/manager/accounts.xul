@@ -115,7 +115,7 @@
              </vbox>
             </hbox>
         </vbox>
-        <iframe id="tbSyncAccounts.contentFrame" type="content" flex="1" style="margin-left:12px;"/>
+        <iframe id="tbSyncAccounts.contentFrame" type="content" flex="1" />
     </hbox>
 
     <script type="text/javascript" src="chrome://tbsync/content/manager/accounts.js" /> 
