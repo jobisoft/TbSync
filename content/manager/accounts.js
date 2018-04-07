@@ -122,6 +122,7 @@ var tbSyncAccounts = {
     */
     toggleEnableStateObserver: {
         observe: function (aSubject, aTopic, aData) {
+            tbSync.dump("OBSERVER","toggleEnableStateObserver");
             let account = aData;                        
             let isConnected = tbSync.isConnected(account);
             let isEnabled = tbSync.isEnabled(account);
@@ -147,6 +148,7 @@ var tbSyncAccounts = {
     */
     updateAccountSyncStateObserver: {
         observe: function (aSubject, aTopic, aData) {
+            tbSync.dump("OBSERVER","updateAccountSyncStateObserver");
             if (aData != "") {
                 //since we want rotating arrows on each syncstate change, we need to run this on each syncstate
                 let syncstate = tbSync.getSyncData(aData,"syncstate");
@@ -208,6 +210,7 @@ var tbSyncAccounts = {
 
     updateAccountNameObserver: {
         observe: function (aSubject, aTopic, aData) {
+            tbSync.dump("OBSERVER","updateAccountNameObserver");
             let pos = aData.indexOf(":");
             let id = aData.substring(0, pos);
             let name = aData.substring(pos+1);
