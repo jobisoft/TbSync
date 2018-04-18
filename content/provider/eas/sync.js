@@ -598,7 +598,12 @@ eas.sync = {
                     }
                     if (data.Recurrence.WeekOfMonth) {
                         for (let i = 0; i < days.length; ++i) {
-                            days[i] += 8 * ((data.Recurrence.WeekOfMonth != 5) ? (data.Recurrence.WeekOfMonth - 0) : -1);
+                            if (data.Recurrence.WeekOfMonth == 5) {
+                                days[i] = -1 * (days[i] + 8);
+                            }
+                            else {
+                                days[i] += 8 * (data.Recurrence.WeekOfMonth - 0);
+                            }
                         }
                     }
                     recRule.setComponent("BYDAY", days.length, days);
