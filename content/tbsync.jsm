@@ -1321,7 +1321,12 @@ var tbSync = {
             obj.offset = -1*((h*60) + m);
 
             //get international abbreviation (CEST, CET, CAT ... )
-            obj.abbreviation = zone.getFirstPropertyValue("tzname").toString();
+            obj.abbreviation = "";
+            try {
+                obj.abbreviation = zone.getFirstPropertyValue("tzname").toString();
+            } catch(e) {
+                tbSync.dump("Failed TZ", timezone.icalComponent.toString());
+            }
             
             //get displayname
             obj.displayname = /*"("+utcOffset+") " +*/ obj.id;// + ", " + obj.abbreviation;
