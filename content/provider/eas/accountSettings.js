@@ -183,6 +183,7 @@ var tbSyncAccountSettings = {
         //change color and boldness of labels, to direct users focus to the sync status
         document.getElementById("tbsync.accountsettings.config.label").style["color"] = isConnected || isSyncing ? "darkgrey" : "black";
         document.getElementById("tbsync.accountsettings.contacts.label").style["color"] = isConnected || isSyncing ? "darkgrey" : "black";
+        document.getElementById("tbsync.accountsettings.general.label").style["color"] = isConnected || isSyncing ? "darkgrey" : "black";
         
         this.updateSyncstate();
         this.updateFolderList();

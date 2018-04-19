@@ -18,16 +18,18 @@
 <!ENTITY pref.ServerType "Configuration Profile">
 <!ENTITY pref.usehttps "Use secure connection (connect via https)">
 <!ENTITY pref.DeviceId "Device Id">
-<!ENTITY pref.UseProvisioning "Use provisioning">
-<!ENTITY pref.isHordeServer "This is a horde groupware server">
+<!ENTITY pref.contactoptions "Contact options">
 <!ENTITY pref.birthday "Send birthday information">
 <!ENTITY pref.downloadonly "One-way sync (do not send local changes to the server)">
+<!ENTITY pref.generaloptions "General options">
+<!ENTITY pref.syncdefaultfolders "Subscribe to default folders on initial connect">
+<!ENTITY pref.provision "Enforce provisioning (Kerio needs this)">
+
 <!ENTITY pref.autotime "Sync interval (minutes)">
 <!ENTITY pref.never "A setting of 0 disables periodic sync. Push sync is no yet supported.">
 <!ENTITY pref.Sync "Synchronize this account">
 <!ENTITY pref.EnableAccount "Enable account &amp; try to connect to server">
 <!ENTITY pref.DisableAccount "Disable this account">
-
 <!ENTITY pref.ShowTrashedFolders "Show folders found in trash" >
 
 <!ENTITY pref.syncstate "Sync status">
@@ -39,7 +41,6 @@
 <!ENTITY pref.foldername "Folder">
 <!ENTITY pref.targetname "SyncTarget">
 <!ENTITY pref.status "Status">
-<!ENTITY pref.contactoptions "Contact options">
 
 <!ENTITY servertype.setup "Set up ActiveSync server configuration ...">
 <!ENTITY servertype.auto "Automatic configuration via ActiveSync Autodiscover">

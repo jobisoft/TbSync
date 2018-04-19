@@ -251,7 +251,7 @@ var eas = {
                             newData.targetName = cachedFolders[0].targetName ? cachedFolders[0].targetName : "";
                             newData.targetColor = cachedFolders[0].targetColor ? cachedFolders[0].targetColor : "";
                         }
-                        else newData.selected = (newData.type == "9" || newData.type == "8" || newData.type == "7" ) ? "1" : "0";
+                        else newData.selected = (newData.type == "9" || newData.type == "8" || newData.type == "7" ) ? tbSync.db.getAccountSetting(syncdata.account, "syncdefaultfolders") : "0";
                         
                         newData.status = "";
                         newData.lastsynctime = "";
@@ -861,6 +861,7 @@ var eas = {
             "servertype" : "",
             "seperator" : "10",
             "https" : "1",
+            "syncdefaultfolders" : "1",
             "provision" : "0",
             "birthday" : "0",
             "displayoverride" : "0", 
