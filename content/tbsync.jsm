@@ -304,7 +304,6 @@ var tbSync = {
     //Observer to catch changing syncstate and to update the status bar.
     syncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
-            tbSync.dump("OBSERVER","syncstateObserver");
             //update status bar
             let status = tbSync.window.document.getElementById("tbsync.status");
             if (status) {
@@ -349,7 +348,6 @@ var tbSync = {
     //Observer to open the account manager
     openManagerObserver: {
         observe: function (aSubject, aTopic, aData) {
-            tbSync.dump("OBSERVER","openManagerObserver");
             if (tbSync.enabled) {
                 // check, if a window is already open and just put it in focus
                 if (tbSync.prefWindowObj === null) tbSync.prefWindowObj = tbSync.window.open("chrome://tbsync/content/manager/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen");
@@ -363,7 +361,6 @@ var tbSync = {
     //Observer to init sync
     initSyncObserver: {
         observe: function (aSubject, aTopic, aData) {
-            tbSync.dump("OBSERVER","initSyncObserver");
             if (tbSync.enabled) {
                 tbSync.syncAccount('sync');
             } else {
