@@ -1,17 +1,8 @@
 <!ENTITY popup.opensettings "Open TbSync account manager">
-<!ENTITY popup.sync "Synchronize all accounts">
 <!ENTITY popup.cancelsync "Abort all pending synchronizations">
 
 <!ENTITY toolbar.label " Synchronize all TbSync accounts">
 <!ENTITY toolbar.tooltiptext "Synchronize latest changes">
-
-<!ENTITY manager.accounts "Accounts">
-<!ENTITY manager.status "Status">
-<!ENTITY manager.title "TbSync account manager">
-
-<!ENTITY pref.TbSync "TbSync">
-<!ENTITY pref.Close "Close">
-<!ENTITY pref.SettingDialog "Account Settings">
 
 <!ENTITY pref.AccountActions "Account actions">
 <!ENTITY pref.AddAccount "Add new account">
@@ -26,6 +17,33 @@
 
 <!ENTITY pref.noaccounts "There are not yet any accounts defined.">
 
-<!ENTITY pref.help "Help">
-<!ENTITY pref.cape "Cape">
-<!ENTITY pref.catman "Category Manager">
+<!ENTITY manager.title "TbSync account manager">
+<!ENTITY manager.accountsettings "Account Settings">
+<!ENTITY manager.help "Help">
+<!ENTITY manager.supporter "Supporter">
+<!ENTITY manager.update "Update TbSync">
+
+<!ENTITY manager.accounts "Accounts">
+<!ENTITY manager.status "Status">
+
+<!ENTITY manager.catman.text "TbSync also syncs contact categories.  To be able to use them in Thunderbird you can install the Category Manager Add-On. It enables you to manage overlapping contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla Add-On repository:">
+<!ENTITY manager.tzpush.line1 "This Add-On is partially based on TzPush developed by Mark Nethersole. TbSync would not have been possible without his work and I am thankful for his contributions.">
+<!ENTITY manager.tzpush.line2 "Mark is dedicated to the CAPE charity, which he introduced in TzPush with the following words:">
+
+<!ENTITY manager.supporter.contributers "Contributers">
+<!ENTITY manager.supporter.sponsors "Sponsors">
+
+<!ENTITY manager.help.needhelp "Need Help?">
+<!ENTITY manager.help.foundabug "Found a bug?">
+<!ENTITY manager.help.wiki "Open the wiki pages of the TbSync project, they provide additional information, guides and detailed configuration descriptions.">
+<!ENTITY manager.help.fixit1 "You can help to fix it by sending in a bug report.">
+<!ENTITY manager.help.pleaseupdate "Please update to the latest available version of TbSync, to check if your bug has been fixed already.">
+<!ENTITY manager.help.installedversion "You are currently using version:">
+<!ENTITY manager.help.latestversion "The latest available version is:">
+ <!ENTITY manager.help.fixit2 "If your bug is still present in the latest available version, you can help to fix it by sending in a bug report.">
+ <!ENTITY manager.help.enabledebuglog "Enable debug logging to store all debug messages and the data being sent and received by TbSync in a log file.">
+ <!ENTITY manager.help.aslongasneeded "Activate debug logging only as long as needed because it slows down Thunderbird.">
+ <!ENTITY manager.help.createbugreportinfo "To generate a clean bug report, restart Thunderbird, perform all the steps needed to trigger the bug and than click on the icon to the right to send the report to the developer.">
+ <!ENTITY manager.help.opencurrentdebuglog "Open the current debug log in a new tab.">
+ <!ENTITY manager.help.sendcurrentdebuglog "Send the current debug log to the developer.">
+

@@ -12,29 +12,45 @@
 
     <hbox flex="1" id="mainframe">
         <vbox flex="1">
+
             <html:p>
-                <html:b>Need Help?</html:b><html:br/><html:br/>
-                The <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/wiki');" style="color:blue;text-decoration: underline">wiki pages</html:span> of the TbSync project provide additional information, guides and detailed configuration descriptions.
+                <html:b>&manager.help.needhelp;</html:b><html:br/><html:br/>
+                &manager.help.wiki;
+            </html:p>
+
+            <html:p onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/wiki');" style="color:blue;text-decoration: underline;padding-left:1em;margin:0 0 24px 0">
+                https://github.com/jobisoft/TbSync/wiki
             </html:p>
 
             <html:p id="bugs.latestVersion" hidden="true">
-                <html:b>Found a bug?</html:b><html:br/><html:br/>
-                If you encounter a bug, you can help to fix it by sending in a bug report.
+                <html:b>&manager.help.foundabug;</html:b><html:br/><html:br/>
+                &manager.help.fixit1;
             </html:p>
 
             <html:p id="bugs.olderVersion">
-                <html:b>Found a bug?</html:b><html:br/><html:br/>
-                <html:span>If you encounter a bug, please update to the latest available beta version <label id="latest.version" class="text-link" style="display:inline; margin:0 2px; padding:0; color:blue;" tooltiptext="" href="" value="" /> of TbSync (you are currently using <label id="installed.version" style="display:inline; margin:0 2px; padding:0;" value="" />), to check if your bug has been fixed already. <html:i>Never downgrade, which could corrupt your account data!</html:i></html:span>
-                <html:br/><html:br/>
-                <html:span>If your bug is still present in the latest available beta version, you can help to fix it by sending in a bug report.</html:span>
+                <html:b>&manager.help.foundabug;</html:b><html:br/><html:br/>
+                <html:span>
+                    &manager.help.pleaseupdate;<html:br/>
+                    &manager.help.installedversion; <label id="installed.version" style="display:inline; margin:0 2px; padding:0;" value="" />. &manager.help.latestversion; <label id="latest.version" class="text-link" style="display:inline; margin:0 2px; padding:0; color:blue;" tooltiptext="" href="" value="" />
+                    <html:br/><html:br/>
+                </html:span>
+                <html:span>&manager.help.fixit2;</html:span>
             </html:p>
 
-            <checkbox id="tbSyncAccountManager.logPrefCheckbox" label="Enable debug logging to store all debug messages and the xml being sent and received by TbSync in a log file." oncommand="tbSyncAccountManager.toggleLogPref();" />
-                
+            <hbox style="padding:0;">
+                <checkbox flex="1" id="tbSyncAccountManager.logPrefCheckbox" label="&manager.help.enabledebuglog;" oncommand="tbSyncAccountManager.toggleLogPref();" />
+                <image  flex="0" tooltiptext="&manager.help.opencurrentdebuglog;" src="chrome://tbsync/skin/report_open.png" style='padding-left:16px' align='center' onclick="tbSync.openFileTab('debug.log');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
+            </hbox>
+            
             <html:p> 
-                To generate a clean bug report, <html:b>restart Thunderbird</html:b> (which clears the log) and <html:b>perform all the steps needed to trigger the bug</html:b>.  Then <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openFileTab('debug.log');" style="color:blue;text-decoration: underline">open the debug report (click here)</html:span> and copy it into an email to john.bieling@gmx.de. Do not forget a short bug description. <html:br/><html:br/>
-                Activate debug logging only as long as needed because it slows down Thunderbird.
+                &manager.help.aslongasneeded;
             </html:p>
+
+            <hbox style="padding:0;margin-top:24px">
+                <description flex="1" style="margin:0;padding:0;font-weight:bold">&manager.help.createbugreportinfo;</description>
+                <image  flex="0" tooltiptext="&manager.help.sendcurrentdebuglog;" src="chrome://tbsync/skin/report_send.png" style='padding-left:16px;' align='center' onclick="tbSync.createBugReport();" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
+            </hbox>
+
         </vbox>
     </hbox>
     

@@ -11,11 +11,11 @@
     <script type="application/x-javascript" src="chrome://tbsync/content/messenger.js" />
 
     <statusbar id="status-bar">
-        <statusbarpanel id="tbsync.status" label="&pref.TbSync;" context="tbsync.statusmenu" onclick="tbSyncMessenger.clickOnStatusbar(event);" />
+        <statusbarpanel id="tbsync.status" label="TbSync" context="tbsync.statusmenu" onclick="tbSyncMessenger.clickOnStatusbar(event);" />
         <popupset>
             <menupopup id="tbsync.statusmenu">
                 <menuitem label="&popup.opensettings;" oncommand="if (tbSync.enabled) tbSyncMessenger.openAccountManager(); else tbSyncMessenger.popupNotEnabled();" />
-                <menuitem label="&popup.sync;" oncommand="if (tbSync.enabled) tbSync.syncAccount('sync'); else tbSyncMessenger.popupNotEnabled();" />
+                <menuitem label="&pref.SyncAll;" oncommand="if (tbSync.enabled) tbSync.syncAccount('sync'); else tbSyncMessenger.popupNotEnabled();" />
                 <menuitem label="&popup.cancelsync;" oncommand="if (tbSync.enabled) tbSync.resetSync(); else tbSyncMessenger.popupNotEnabled();" />
             </menupopup>
         </popupset>
