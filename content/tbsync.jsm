@@ -12,6 +12,7 @@ Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("resource://gre/modules/AddonManager.jsm");
 Components.utils.import("resource://gre/modules/NetUtil.jsm");
+Components.utils.import("resource://app/modules/mailServices.js");
 Components.utils.importGlobalProperties(["XMLHttpRequest"]);
 
 
@@ -562,6 +563,27 @@ var tbSync = {
         return tbSync.openTBtab(tbSync.getAbsolutePath(file));
     },
 
+    createBugReport: function () {
+        let fields = Components.classes["@mozilla.org/messengercompose/composefields;1"].createInstance(Components.interfaces.nsIMsgCompFields); 
+        let params = Components.classes["@mozilla.org/messengercompose/composeparams;1"].createInstance(Components.interfaces.nsIMsgComposeParams); 
+
+        fields.to = "john.bieling@gmx.de"; 
+        fields.subject = "TbSync " + tbSync.versionInfo.installed + " bug report: ADD SHORT DESCRIPTION "; 
+        fields.body = "Hi John,\n\nattached you find my debug.log.\n\nBUG DESCRIPTION"; 
+
+        params.composeFields = fields; 
+        params.format = Components.interfaces.nsIMsgCompFormat.PlainText; 
+
+        let attachment = Components.classes["@mozilla.org/messengercompose/attachment;1"].createInstance(Components.interfaces.nsIMsgAttachment);
+        attachment.contentType = "text/plain";
+        attachment.url =  'file://' + tbSync.getAbsolutePath("debug.log");
+        attachment.name = "debug.log";
+        attachment.temporary = false;
+
+        params.composeFields.addAttachment(attachment);        
+        MailServices.compose.OpenComposeWindowWithParams (null, params);    
+    },
+    
     getAbsolutePath: function(filename) {
         return OS.Path.join(tbSync.storageDirectory, filename);
     },
