@@ -1,0 +1,50 @@
+<!ENTITY title "Adding an Exchange ActiveSync account to TbSync">
+
+<!ENTITY ok "Add account">
+<!ENTITY name "Account name:">
+<!ENTITY user "User name (email address):">
+<!ENTITY password "Password:">
+<!ENTITY server "Server configuration:">
+
+<!ENTITY autodetect "best available">
+
+<!ENTITY description "Please enter a name for the new TbSync account, the user name of the ActiveSync account you want to add (probably an email address) and select one of the available server configuration options. ">
+
+<!ENTITY pref.AccountName "Account name">
+<!ENTITY pref.UserName "User name">
+<!ENTITY pref.UserNameDescription "User name is usually the email address of your account.">
+<!ENTITY pref.ServerName "Server address">
+<!ENTITY pref.ServerNameDescription "e.g. mail.yourserver.com">
+<!ENTITY pref.ServerType "Configuration Profile">
+<!ENTITY pref.usehttps "Use secure connection (connect via https)">
+<!ENTITY pref.DeviceId "Device Id">
+<!ENTITY pref.contactoptions "Contact options">
+<!ENTITY pref.birthday "Send birthday information">
+<!ENTITY pref.downloadonly "One-way sync (do not send local changes to the server)">
+<!ENTITY pref.generaloptions "General options">
+<!ENTITY pref.syncdefaultfolders "Subscribe to default folders on initial connect">
+<!ENTITY pref.provision "Enforce provisioning (Kerio needs this)">
+
+<!ENTITY pref.autotime "Sync interval (minutes)">
+<!ENTITY pref.never "A setting of 0 disables periodic sync. Push sync is no yet supported.">
+<!ENTITY pref.Sync "Synchronize this account">
+<!ENTITY pref.EnableAccount "Enable account &amp; try to connect to server">
+<!ENTITY pref.DisableAccount "Disable this account">
+<!ENTITY pref.ShowTrashedFolders "Show folders found in trash" >
+
+<!ENTITY pref.syncstate "Sync status">
+<!ENTITY pref.seperator.comma "Comma">
+<!ENTITY pref.seperator.linebreak "Line break">
+<!ENTITY pref.seperator.description "Seperator for multiline address field.">
+<!ENTITY pref.displayoverride "Overide Display Name with 'First Name' + 'Second Name'">
+
+<!ENTITY pref.foldername "Folder">
+<!ENTITY pref.targetname "SyncTarget">
+<!ENTITY pref.status "Status">
+
+<!ENTITY servertype.setup "Set up ActiveSync server configuration ...">
+<!ENTITY servertype.auto "Automatic configuration via ActiveSync Autodiscover">
+<!ENTITY servertype.custom "Custom configuration">
+<!ENTITY servertype.unlock "Double click to unlock all predefined server settings.">
+
+<!ENTITY pref.switchFoldersAndConfig "Double click to switch between folder view and settings view.">

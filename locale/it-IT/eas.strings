@@ -1,0 +1,64 @@
+newaccount.add_custom=Add account
+newaccount.add_auto=Autodiscover settings and add account
+
+autodiscover.Querying=Searching for settings ...
+autodiscover.Ok=Autodiscover completed successfully, you can now check the optional settings and establish the synchronization connection.
+autodiscover.NeedEmail=Autodiscover needs a valid email address as user name.
+
+autodiscover.Failed=Autodiscover for user <##user##> failed.
+autodiscover.FailedUnknown=Either the provided credentials were wrong or your ActiveSync provider has a temporary issue, or does not support Autodiscover.
+autodiscover.FailedSecurity=Also the following certificate errors have been reported, which *might* indicate a problem with your ActiveSync provider:
+
+deletefolder.notallowed=Please unsubscribe folder "##replace.1##" before trying to purge it from trash.
+deletefolder.confirm=Do you really want to PERMANENTLY PURGE folder "##replace.1##" from trash?
+
+deletefolder.menuentry=Permanently purge folder "##replace.1##" from trash
+subscribe.on=Subscribe "##replace.1##"
+subscribe.off=Unsubscribe "##replace.1##"
+
+recyclebin = Trash
+
+syncstate.syncing=Initialize synchronization
+syncstate.preparing=Preparing next item for synchronization
+syncstate.done=Preparing next item for synchronization
+syncstate.accountdone=Finished account
+
+syncstate.prepare.request.autodiscover=Requesting updated server settings
+syncstate.send.request.autodiscover=Waiting for updated server settings
+syncstate.eval.response.autodiscover=Processing updated server settings
+
+syncstate.prepare.request.options=Requesting server options
+syncstate.send.request.options=Waiting for server options
+syncstate.eval.response.options=Processing server options
+
+syncstate.prepare.request.folders=Sending folder list update
+syncstate.send.request.folders=Waiting for folder list update
+syncstate.eval.response.folders=Processing folder list update
+
+syncstate.prepare.request.synckey=Requesting synckey
+syncstate.send.request.synckey=Waiting for synckey
+syncstate.eval.response.synckey=Processing synckey
+
+syncstate.prepare.request.deletefolder=Preparing to delete folder
+syncstate.send.request.deletefolder=Waiting for folder to be deleted
+syncstate.eval.response.deletefolder=Folder deleted
+
+syncstate.prepare.request.provision=Requesting provision
+syncstate.send.request.provision=Waiting for provision
+syncstate.eval.response.provision=Processing provision
+
+syncstate.prepare.request.estimate=Requesting change estimate
+syncstate.send.request.estimate=Waiting for change estimate
+syncstate.eval.response.estimate=Processing change estimate
+
+syncstate.prepare.request.remotechanges=Requesting remote changes
+syncstate.send.request.remotechanges=Waiting for remote changes
+syncstate.eval.response.remotechanges=Processing remote changes
+
+syncstate.prepare.request.localchanges=Sending local changes
+syncstate.send.request.localchanges=Waiting for acknowledgement of local changes
+syncstate.eval.response.localchanges=Processing acknowledgement of local changes
+
+syncstate.prepare.request.localdeletes=Sending local deletes
+syncstate.send.request.localdeletes=Waiting for acknowledgement of local deletes
+syncstate.eval.response.localdeletes=Processing acknowledgement of local deletes
