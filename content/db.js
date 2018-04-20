@@ -34,7 +34,6 @@ var db = {
 
     writeJSON : {
       observe: function(subject, topic, data) {
-        tbSync.dump("OBSERVER","writeJSON");
         switch (subject.delay) { //use delay setting to find out, which file is to be saved
             case (db.writeDelay + 1): tbSync.writeAsyncJSON(db.accounts, db.accountsFile); break;
             case (db.writeDelay + 2): tbSync.writeAsyncJSON(db.folders, db.foldersFile); break;

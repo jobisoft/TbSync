@@ -136,7 +136,6 @@ var tbSyncAccountSettings = {
 
     updateGuiObserver: {
         observe: function (aSubject, aTopic, aData) {
-            tbSync.dump("OBSERVER","updateGuiObserver");
             //only update if request for this account
             if (aData == tbSyncAccountSettings.selectedAccount) {
         
@@ -525,7 +524,6 @@ var tbSyncAccountSettings = {
     */    
     syncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
-            tbSync.dump("OBSERVER","syncstateObserver");
             let account = aData;            
             let msg = null;
             

@@ -7,7 +7,6 @@ var tbSyncAccountManager = {
     
     refreshUpdateButtonObserver: {
         observe: function(aSubject, aTopic, aData) {        
-            tbSync.dump("OBSERVER","refreshUpdateButtonObserver");
             document.getElementById("tbSyncAccountManager.t5").hidden = !tbSync.updatesAvailable();
         }
     },
