@@ -22,3 +22,6 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [add16.png] https://www.awicons.com/
 * [del16.png] https://www.awicons.com/
 * [update.png] http://google.com/design/
+* [report_send.png] https://www.iconfinder.com/icons/36365/ + https://www.iconfinder.com/icons/93180
+* [report_open.png] https://www.iconfinder.com/icons/36373
+
