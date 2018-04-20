@@ -12,7 +12,7 @@ Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("resource://gre/modules/AddonManager.jsm");
 Components.utils.import("resource://gre/modules/NetUtil.jsm");
-Components.utils.import("resource://app/modules/mailServices.js");
+Components.utils.import("resource:///modules/mailServices.js")
 Components.utils.importGlobalProperties(["XMLHttpRequest"]);
 
 
