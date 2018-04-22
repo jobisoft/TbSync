@@ -665,7 +665,7 @@ var eas = {
 
         //SEND REQUEST
         tbSync.setSyncState("send.request.estimate", syncdata.account, syncdata.folderID);
-        let response = yield eas.sendRequest(wbxml.getBytes(), "GetItemEstimate", syncdata);
+        let response = yield eas.sendRequest(wbxml.getBytes(), "GetItemEstimate", syncdata, /* allowSoftFail */ true);
 
         //VALIDATE RESPONSE
         tbSync.setSyncState("eval.response.estimate", syncdata.account, syncdata.folderID);
@@ -1333,7 +1333,7 @@ var eas = {
         });
     },
 
-    sendRequest: function (wbxml, command, syncdata) {
+    sendRequest: function (wbxml, command, syncdata, allowSoftFail = false) {
         let msg = "Sending data <" + syncdata.syncstate.split("||")[0] + "> for " + tbSync.db.getAccountSetting(syncdata.account, "accountname");
         if (syncdata.folderID !== "") msg += " (" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + ")";
         tbSync.eas.logxml(wbxml, msg);
@@ -1373,15 +1373,19 @@ var eas = {
             syncdata.req.timeout = tbSync.prefSettings.getIntPref("eas.timeout");
 
             syncdata.req.ontimeout = function () {
-                reject(eas.finishSync("timeout", eas.flags.abortWithError));
+                if (allowSoftFail) resolve("");
+                else reject(eas.finishSync("timeout", eas.flags.abortWithError));
             };
 
             syncdata.req.onerror = function () {
-                let error = tbSync.eas.createTCPErrorFromFailedXHR(syncdata.req);
-                if (!error) {
-                    reject(eas.finishSync("networkerror", eas.flags.abortWithServerError));
-                } else {
-                    reject(eas.finishSync(error, eas.flags.abortWithServerError));
+                if (allowSoftFail) resolve("");
+                else {
+                    let error = tbSync.eas.createTCPErrorFromFailedXHR(syncdata.req);
+                    if (!error) {
+                        reject(eas.finishSync("networkerror", eas.flags.abortWithServerError));
+                    } else {
+                        reject(eas.finishSync(error, eas.flags.abortWithServerError));
+                    }
                 }
             };
 
@@ -1395,7 +1399,7 @@ var eas = {
                         tbSync.eas.logxml(response, msg);
 
                         //What to do on error? IS this an error? Yes!
-                        if (response.length !== 0 && response.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
+                        if (!allowSoftFail && response.length !== 0 && response.substr(0, 4) !== String.fromCharCode(0x03, 0x01, 0x6A, 0x00)) {
                             tbSync.dump("Recieved Data", "Expecting WBXML but got junk (request status = " + syncdata.req.status + ", ready state = " + syncdata.req.readyState + "\n>>>>>>>>>>\n" + response + "\n<<<<<<<<<<\n");
                             reject(eas.finishSync("invalid"));
                         } else {
@@ -1431,7 +1435,8 @@ var eas = {
                         break;
                         
                     default:
-                        reject(eas.finishSync("httperror::" + syncdata.req.status, eas.flags.abortWithError));
+                        if (allowSoftFail) resolve("");
+                        else reject(eas.finishSync("httperror::" + syncdata.req.status, eas.flags.abortWithError));
                 }
             };
 
