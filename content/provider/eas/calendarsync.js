@@ -258,8 +258,18 @@ eas.sync.Calendar = {
         //EAS Reminder (TB getAlarms) - at least with zpush blanking by omitting works, horde does not work
         let alarms = item.getAlarms({});
         if (alarms.length>0) {
-            let reminder = 0 - alarms[0].offset.inSeconds/60;
-            if (reminder>=0) wbxml.atag("Reminder", reminder.toString());
+
+            let reminder = -1;
+            if (alarms[0].offset !== null) {
+                reminder = 0 - alarms[0].offset.inSeconds/60;
+            } else if (item.startDate) {
+                let timeDiff =item.startDate.getInTimezone(tbSync.utcTimezone).subtractDate(alarms[0].alarmDate.getInTimezone(tbSync.utcTimezone));     
+                reminder = timeDiff.inSeconds/60;
+                tbSync.synclog("Warning","Converting absolute alarm to relative alarm (not supported).", item.icalString);
+            }
+            if (reminder >= 0) wbxml.atag("Reminder", reminder.toString());
+            else tbSync.synclog("Warning","Droping alarm after start date (not supported).", item.icalString);
+
         }
 
         //Sensitivity (CLASS)
