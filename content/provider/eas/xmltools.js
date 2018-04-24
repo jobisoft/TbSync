@@ -6,9 +6,9 @@ var xmltools = {
         return (Object.prototype.toString.call(obj) === '[object String]');
     },
         
-    checkString : function(d) {
+    checkString : function(d, fallback = "") {
         if (this.isString(d)) return d;
-        else return "";
+        else return fallback;
     },	    
         
     nodeAsArray : function (node) {

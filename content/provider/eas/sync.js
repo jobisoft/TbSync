@@ -447,10 +447,11 @@ eas.sync = {
     
     mapEasPropertyToThunderbird : function (easProp, tbProp, data, item) {
         if (data[easProp]) {
-            //store original EAS value 
-            item.setProperty("X-EAS-" + easProp, data[easProp]);
+            //store original EAS value
+            let easPropValue = xmltools.checkString(data[easProp]);
+            item.setProperty("X-EAS-" + easProp, easPropValue);
             //map EAS value to TB value  (use setCalItemProperty if there is one option which can unset/delete the property)
-            tbSync.setCalItemProperty(item,tbProp, eas.sync.MAP_EAS2TB[easProp][data[easProp]]);
+            tbSync.setCalItemProperty(item, tbProp, eas.sync.MAP_EAS2TB[easProp][easPropValue]);
         }
     },
 

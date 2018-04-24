@@ -80,7 +80,7 @@ eas.sync.Calendar = {
 
         if (data.ResponseType) {
             //store original EAS value 
-            item.setProperty("X-EAS-ResponseType", data.ResponseType);
+            item.setProperty("X-EAS-ResponseType", xmltools.checkString(data.ResponseType, "0")); //some server send empty ResponseType ???
         }
 
         //Attendees - remove all Attendees and re-add the ones from XML
