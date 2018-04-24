@@ -255,9 +255,15 @@ eas.sync = {
                         //However, as its ApplicationData UID it has the original Thunderbird UID. An item with that UID could still exist! If so, that item needs to get the new ServerID
                         //and the "new" item from the server is not added - TODO
                         let newItem = eas.sync[syncdata.type].createItem();
-                        eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
-                        db.addItemToChangeLog(syncdata.targetId, ServerId, "added_by_server");
-                        yield syncdata.targetObj.adoptItem(newItem); //yield pcal.addItem(newItem); // We are not using the added item after is has been added, so we might be faster using adoptItem
+                        try {
+                            eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
+                            db.addItemToChangeLog(syncdata.targetId, ServerId, "added_by_server");
+                            yield syncdata.targetObj.adoptItem(newItem); //yield pcal.addItem(newItem); // We are not using the added item after is has been added, so we might be faster using adoptItem
+                        } catch (e) {
+                            xmltools.printXmlData(add[count]);                        
+                            tbSync.dump("Item causing javascript error", newItem.icalString);
+                            throw e;
+                        }
                     }
                 } else {
                     //item exists, asuming resync
@@ -285,9 +291,15 @@ eas.sync = {
                     if (keys.length == 1 && keys[0] == "DtStamp") tbSync.dump("DtStampOnly", keys);
                     else {                    
                         let newItem = foundItems[0].clone();
-                        eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
-                        db.addItemToChangeLog(syncdata.targetId, ServerId, "modified_by_server"); //any local change will be lost
-                        yield syncdata.targetObj.modifyItem(newItem, foundItems[0]);
+                        try {
+                            eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
+                            db.addItemToChangeLog(syncdata.targetId, ServerId, "modified_by_server"); //any local change will be lost
+                            yield syncdata.targetObj.modifyItem(newItem, foundItems[0]);
+                        } catch (e) {
+                            xmltools.printXmlData(upd[count]);                        
+                            tbSync.dump("Item causing javascript error", newItem.icalString);
+                            throw e;
+                        }
                     }
                 } else if (db.getItemStatusFromChangeLog(syncdata.targetId, ServerId) == "deleted_by_user") {
                         tbSync.dump("Change request, but element is in delete_log, local state wins, not changing.", ServerId);
