@@ -51,6 +51,10 @@ eas.sync = {
                                 wbxml.ctag();
                                 wbxml.switchpage("AirSync");
                             wbxml.ctag();
+                        } else if (syncdata.type == "Calendar") { //in 2.5 we only send it to filter Calendar
+                            wbxml.otag("Options");
+                                 wbxml.atag("FilterType", tbSync.prefSettings.getIntPref("eas.synclimit").toString()); //0, 4,5,6,7
+                            wbxml.ctag();
                         }
 
                     wbxml.ctag();
