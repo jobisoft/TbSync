@@ -265,7 +265,7 @@ eas.sync = {
                             yield syncdata.targetObj.adoptItem(newItem); //yield pcal.addItem(newItem); // We are not using the added item after is has been added, so we might be faster using adoptItem
                         } catch (e) {
                             xmltools.printXmlData(add[count]);                        
-                            tbSync.dump("Item causing javascript error", newItem.icalString);
+                            tbSync.dump("Bad item <javascript error>", newItem.icalString);
                             throw e;
                         }
                     }
@@ -301,7 +301,7 @@ eas.sync = {
                             yield syncdata.targetObj.modifyItem(newItem, foundItems[0]);
                         } catch (e) {
                             xmltools.printXmlData(upd[count]);                        
-                            tbSync.dump("Item causing javascript error", newItem.icalString);
+                            tbSync.dump("Bad item <javascript error>", newItem.icalString);
                             throw e;
                         }
                     }
@@ -497,7 +497,7 @@ eas.sync = {
             let wbxml = eas.sync[syncdata.type].getWbxmlFromThunderbirdItem(item, syncdata, isException);
             return wbxml;
         } catch (e) {
-            tbSync.dump("Bad item causing javascript error", item.icalString);
+            tbSync.dump("Bad item <javascript error>", item.icalString);
             throw e;
         }        
     },
