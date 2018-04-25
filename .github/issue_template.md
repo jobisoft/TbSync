@@ -3,7 +3,7 @@
 TbSync version:
 Thunderbird version:
 
-[ ] Yes, I have installed the latest available version from 
+[ ] Yes, I have installed the latest available (beta) version from 
 https://github.com/jobisoft/TbSync/releases 
 and my issue is not yet fixed, I can still reproduce it.
 
