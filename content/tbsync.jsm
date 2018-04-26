@@ -195,8 +195,15 @@ var tbSync = {
                     cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
                     
                     //get timezone info of default timezone (old cal. without dtz are depricated)
-                    tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo((cal.dtz && cal.dtz.defaultTimezone) ? cal.dtz.defaultTimezone : cal.calendarDefaultTimezone());
+                    tbSync.defaultTimezone = (cal.dtz && cal.dtz.defaultTimezone) ? cal.dtz.defaultTimezone : cal.calendarDefaultTimezone();
                     tbSync.utcTimezone = (cal.dtz && cal.dtz.UTC) ? cal.dtz.UTC : cal.UTC();
+                    //if default timezone is not defined, use utc as default
+                    if (tbSync.defaultTimezone.icalComponent2) {
+                        tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo(tbSync.defaultTimezone);
+                    } else {
+                        tbSync.synclog("Critical Warning","Default timezone is not defined, using UTC!");
+                        tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo(tbSync.utcTimezone);
+                    }
                     
                     //get windows timezone data from CSV
                     let csvData = yield tbSync.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
