@@ -725,9 +725,9 @@ var tbSync = {
         }
     },
 
-    synclog: function (type, message, details) {
+    synclog: function (type, message, details = null) {
         //placeholder function, until a synclog is implemented
-        tbSync.dump("SyncLog ("+type+")", message + "\n" + details);
+        tbSync.dump("SyncLog ("+type+")", message + (details !== null ? "\n" + details : ""));
     },
 
     getIdentityKey: function (email) {
