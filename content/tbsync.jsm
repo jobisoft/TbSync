@@ -198,7 +198,7 @@ var tbSync = {
                     tbSync.defaultTimezone = (cal.dtz && cal.dtz.defaultTimezone) ? cal.dtz.defaultTimezone : cal.calendarDefaultTimezone();
                     tbSync.utcTimezone = (cal.dtz && cal.dtz.UTC) ? cal.dtz.UTC : cal.UTC();
                     //if default timezone is not defined, use utc as default
-                    if (tbSync.defaultTimezone.icalComponent2) {
+                    if (tbSync.defaultTimezone.icalComponent) {
                         tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo(tbSync.defaultTimezone);
                     } else {
                         tbSync.synclog("Critical Warning","Default timezone is not defined, using UTC!");
