@@ -147,8 +147,6 @@ var tbSync = {
                 if (addons[a].id.toString() == "{e2fda1a4-762b-4020-b5ad-a41df1933103}") tbSync.onLightningLoad.start()
                 if (addons[a].id.toString() == "tbsync@jobisoft.de") {
                     tbSync.versionInfo.installed = addons[a].version.toString();
-                    //check for updates
-                    yield tbSync.check4updates();
 
                     //init stuff for sync process
                     tbSync.resetSync();
@@ -160,6 +158,9 @@ var tbSync = {
                     tbSync.syncTimer.start();
 
                     tbSync.dump("TbSync init","Done");
+
+                    //check for updates
+                    yield tbSync.check4updates();
                 }
             }
           }
