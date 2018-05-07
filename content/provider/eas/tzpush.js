@@ -279,6 +279,12 @@ eas.tzpush = {
                     } else if (x === 0x01) {
                         propname = this.ToContacts[temptoken];
                         if (data !== " ") {
+                            if (propname == "PrimaryEmail" || propname == "SecondEmail") {
+                                let olddata = data;
+                                let parsedInput = MailServices.headerParser.makeFromDisplayAddress(data);
+                                if (parsedInput && parsedInput[0] && parsedInput[0].email) data = parsedInput[0].email;
+                                tbSync.dump("Parsing email display string via RFC 2231 and RFC 2047 (" + propname + ")", olddata + " -> " + data);
+                            }
                             card.setProperty(propname, data);
                         }
                     } else if (x === 0x0C) {
