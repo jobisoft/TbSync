@@ -634,8 +634,11 @@ eas.sync = {
                 }
             }
             if (data.Recurrence.FirstDayOfWeek) {
-                recRule.setComponent("WKST", 1, [data.Recurrence.FirstDayOfWeek]);
+                //recRule.setComponent("WKST", 1, [data.Recurrence.FirstDayOfWeek]); // WKST is not a valid component
+                //recRule.weekStart = data.Recurrence.FirstDayOfWeek; // - (NS_ERROR_NOT_IMPLEMENTED) [calIRecurrenceRule.weekStart]
+                tbSync.synclog("Warning","FirstDayOfWeek tag ignored, not supported.", item.icalString);                
             }
+
             if (data.Recurrence.Interval) {
                 recRule.interval = data.Recurrence.Interval;
             }
@@ -790,7 +793,7 @@ eas.sync = {
                     wbxml.atag("DayOfWeek", bitfield.toString());
                 }
                 // FirstDayOfWeek: 14.1 and up
-                //wbxml.atag("FirstDayOfWeek", recRule.weekStart);
+                //wbxml.atag("FirstDayOfWeek", recRule.weekStart); - (NS_ERROR_NOT_IMPLEMENTED) [calIRecurrenceRule.weekStart]
                 // Interval
                 wbxml.atag("Interval", recRule.interval.toString());
                 // TODO: IsLeapMonth: 14.0 and up
