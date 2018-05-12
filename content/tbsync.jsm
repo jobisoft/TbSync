@@ -300,8 +300,8 @@ var tbSync = {
                 tbSync.window.alert("TbSync debug log has been enabled, please restart Thunderbird and again try to open TbSync.");
             }
         } else {
-            if (tbSync.window.confirm(msg + "To help fix this error, you could send a debug log to the TbSync developer. Do you want to open the debug log now?")) {
-                tbSync.openFileTab("debug.log");
+            if (tbSync.window.confirm(msg + "To help fix this error, you could send a debug log to the TbSync developer. Prepare that email now?")) {
+                tbSync.createBugReport();
             }
         }
     },
