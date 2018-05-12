@@ -1343,7 +1343,7 @@ var eas = {
 
         let deviceType = tbSync.prefSettings.getCharPref("clientID.type");
         let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
-        if (deviceType == "") deviceType = "Thunderbird";
+        if (deviceType == "") deviceType = "TbSync";
         if (userAgent == "") userAgent = "Thunderbird ActiveSync";
 
         let deviceId = tbSync.db.getAccountSetting(syncdata.account, "deviceId");
