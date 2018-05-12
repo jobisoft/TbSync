@@ -1557,11 +1557,22 @@ var eas = {
         }
         
         //handle global error (https://msdn.microsoft.com/en-us/library/ee218647(v=exchg.80).aspx)
+        let descriptions = {};
         switch(status) {
             case "101": //invalid content
             case "102": //invalid wbxml
             case "103": //invalid xml
                 throw eas.finishSync("global." + status, eas.flags.abortWithError);
+            
+            case "109": descriptions["109"]="DeviceTypeMissingOrInvalid";
+            case "112": descriptions["112"]="ActiveDirectoryAccessDenied";
+            case "126": descriptions["126"]="UserDisabledForSync";
+            case "127": descriptions["127"]="UserOnNewMailboxCannotSync";
+            case "128": descriptions["128"]="UserOnLegacyMailboxCannotSync";
+            case "129": descriptions["129"]="DeviceIsBlockedForThisUser";
+            case "130": descriptions["120"]="AccessDenied";
+            case "131": descriptions["131"]="AccountDisabled";
+                throw eas.finishSync("global.clientdenied"+ "::" + status + "::" + descriptions[status], eas.flags.abortWithError);
 
             case "110": //server error - resync
                 throw eas.finishSync(type+"::"+status, eas.flags.resyncAccount);
