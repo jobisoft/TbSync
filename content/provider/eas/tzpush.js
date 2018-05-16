@@ -178,7 +178,7 @@ eas.tzpush = {
 
             if (wbxmlstatus === '3' || wbxmlstatus === '12') {
                 tbSync.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-                throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.resyncFolder);
+                throw eas.finishSync("wbxmlError(" + wbxmlstatus +")", eas.flags.resyncFolder);
             } else if (wbxmlstatus !== '1') {
                 tbSync.dump("wbxml status", "server error? " + wbxmlstatus);
                 throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.abortWithError);
@@ -775,7 +775,7 @@ eas.tzpush = {
 
             if (wbxmlstatus === '3' || wbxmlstatus === '12') {
                 tbSync.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-                throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.resyncFolder);
+                throw eas.finishSync("wbxmlError(" + wbxmlstatus +")", eas.flags.resyncFolder);
             } else if (wbxmlstatus !== '1') {
                 tbSync.dump("wbxml status", "server error? " + wbxmlstatus);
                 throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.abortWithError);
@@ -894,7 +894,7 @@ eas.tzpush = {
 
             if (wbxmlstatus === '3' || wbxmlstatus === '12') {
                 tbSync.dump("wbxml status", "wbxml reports " + wbxmlstatus + " should be 1, resyncing");
-                throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.resyncFolder);
+                throw eas.finishSync("wbxmlError(" + wbxmlstatus +")", eas.flags.resyncFolder);
             } else if (wbxmlstatus !== '1') {
                 tbSync.dump("wbxml status", "server error? " + wbxmlstatus);
                 throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.abortWithError);

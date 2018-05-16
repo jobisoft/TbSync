@@ -1507,7 +1507,7 @@ var eas = {
                         since the last successful Sync or the client MUST add those items back to the server after completing the full resynchronization
                         */
                 tbSync.dump("wbxml status", "Server reports <invalid synchronization key> (" + fullpath + " = " + status + "), resyncing.");
-                throw eas.finishSync(type+"::"+status, eas.flags.resyncFolder);
+                throw eas.finishSync(type+"("+status+")", eas.flags.resyncFolder);
             
             case "Sync:4":
                 throw eas.finishSync("ServerRejectedRequest");                            
@@ -1541,7 +1541,7 @@ var eas = {
                         Perform a FolderSync command and then retry the Sync command. (is "resync" here)
                         */
                 tbSync.dump("wbxml status", "Server reports <folder hierarchy changed> (" + fullpath + " = " + status + "), resyncing");
-                throw eas.finishSync(type+"::"+status, eas.flags.resyncAccount);
+                throw eas.finishSync(type+"("+status+")", eas.flags.resyncAccount);
 
             
             case "FolderDelete:3": // special system folder - fatal error
@@ -1553,7 +1553,7 @@ var eas = {
             case "FolderDelete:4": // folder does not exist - resync ( we allow delete only if folder is not subscribed )
             case "FolderDelete:9": // invalid synchronization key - resync
             case "FolderSync:9": // invalid synchronization key - resync
-                throw eas.finishSync(type+"::"+status, eas.flags.resyncAccount);
+                throw eas.finishSync(type+"("+status+")", eas.flags.resyncAccount);
         }
         
         //handle global error (https://msdn.microsoft.com/en-us/library/ee218647(v=exchg.80).aspx)
@@ -1575,7 +1575,7 @@ var eas = {
                 throw eas.finishSync("global.clientdenied"+ "::" + status + "::" + descriptions[status], eas.flags.abortWithError);
 
             case "110": //server error - resync
-                throw eas.finishSync(type+"::"+status, eas.flags.resyncAccount);
+                throw eas.finishSync(type+"("+status+")", eas.flags.resyncAccount);
 
             case "141": // The device is not provisionable
             case "142": // DeviceNotProvisioned
@@ -1585,7 +1585,7 @@ var eas = {
                 tbSync.db.setAccountSetting(syncdata.account, "provision","1");
                 //reset policykey
                 tbSync.db.setAccountSetting(syncdata.account, "policykey", 0);
-                throw eas.finishSync(type+"::"+status, eas.flags.resyncAccount);
+                throw eas.finishSync(type+"("+status+")", eas.flags.resyncAccount);
             
             default:
                 tbSync.dump("wbxml status", "Server reports unhandled status <" + fullpath + " = " + status + ">. Aborting Sync.");
