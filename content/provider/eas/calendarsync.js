@@ -90,47 +90,51 @@ eas.sync.Calendar = {
             if (Array.isArray(data.Attendees.Attendee)) att = data.Attendees.Attendee;
             else att.push(data.Attendees.Attendee);
             for (let i = 0; i < att.length; i++) {
+                if (att[i].Email && att[i].Name) { //req.
 
-                let attendee = cal.createAttendee();
+                    let attendee = cal.createAttendee();
 
-                //is this attendee the local EAS user?
-                let isSelf = (att[i].Email == tbSync.db.getAccountSetting(syncdata.account, "user"));
-                
-                attendee["id"] = cal.prependMailTo(att[i].Email);
-                attendee["commonName"] = att[i].Name;
-                //default is "FALSE", only if THIS attendee isSelf, use ResponseRequested (we cannot respond for other attendee) - ResponseType is not send back to the server, it is just a local information
-                attendee["rsvp"] = (isSelf && data.ResponseRequested) ? "TRUE" : "FALSE";		
+                    //is this attendee the local EAS user?
+                    let isSelf = (att[i].Email == tbSync.db.getAccountSetting(syncdata.account, "user"));
+                    
+                    attendee["id"] = cal.prependMailTo(att[i].Email);
+                    attendee["commonName"] = att[i].Name;
+                    //default is "FALSE", only if THIS attendee isSelf, use ResponseRequested (we cannot respond for other attendee) - ResponseType is not send back to the server, it is just a local information
+                    attendee["rsvp"] = (isSelf && data.ResponseRequested) ? "TRUE" : "FALSE";		
 
-                //not supported in 2.5
-                switch (att[i].AttendeeType) {
-                    case "1": //required
-                        attendee["role"] = "REQ-PARTICIPANT";
-                        attendee["userType"] = "INDIVIDUAL";
-                        break;
-                    case "2": //optional
-                        attendee["role"] = "OPT-PARTICIPANT";
-                        attendee["userType"] = "INDIVIDUAL";
-                        break;
-                    default : //resource or unknown
-                        attendee["role"] = "NON-PARTICIPANT";
-                        attendee["userType"] = "RESOURCE";
-                        break;
+                    //not supported in 2.5
+                    switch (att[i].AttendeeType) {
+                        case "1": //required
+                            attendee["role"] = "REQ-PARTICIPANT";
+                            attendee["userType"] = "INDIVIDUAL";
+                            break;
+                        case "2": //optional
+                            attendee["role"] = "OPT-PARTICIPANT";
+                            attendee["userType"] = "INDIVIDUAL";
+                            break;
+                        default : //resource or unknown
+                            attendee["role"] = "NON-PARTICIPANT";
+                            attendee["userType"] = "RESOURCE";
+                            break;
+                    }
+
+                    //not supported in 2.5 - if attendeeStatus is missing, check if this isSelf and there is a ResponseType
+                    if (att[i].AttendeeStatus)
+                        attendee["participationStatus"] = eas.sync.MAP_EAS2TB.ATTENDEESTATUS[att[i].AttendeeStatus];
+                    else if (isSelf && data.ResponseType) 
+                        attendee["participationStatus"] = eas.sync.MAP_EAS2TB.ATTENDEESTATUS[data.ResponseType];
+                    else 
+                        attendee["participationStatus"] = "NEEDS-ACTION";
+
+                    // status  : [NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, DELEGATED, COMPLETED, IN-PROCESS]
+                    // rolemap : [REQ-PARTICIPANT, OPT-PARTICIPANT, NON-PARTICIPANT, CHAIR]
+                    // typemap : [INDIVIDUAL, GROUP, RESOURCE, ROOM]
+
+                    // Add attendee to event
+                    item.addAttendee(attendee);
+                } else {
+                    tbSync.synclog("Warning","Attendee without required name and/or email found. Skipped.");
                 }
-
-                //not supported in 2.5 - if attendeeStatus is missing, check if this isSelf and there is a ResponseType
-                if (att[i].AttendeeStatus)
-                    attendee["participationStatus"] = eas.sync.MAP_EAS2TB.ATTENDEESTATUS[att[i].AttendeeStatus];
-                else if (isSelf && data.ResponseType) 
-                    attendee["participationStatus"] = eas.sync.MAP_EAS2TB.ATTENDEESTATUS[data.ResponseType];
-                else 
-                    attendee["participationStatus"] = "NEEDS-ACTION";
-
-                // status  : [NEEDS-ACTION, ACCEPTED, DECLINED, TENTATIVE, DELEGATED, COMPLETED, IN-PROCESS]
-                // rolemap : [REQ-PARTICIPANT, OPT-PARTICIPANT, NON-PARTICIPANT, CHAIR]
-                // typemap : [INDIVIDUAL, GROUP, RESOURCE, ROOM]
-
-                // Add attendee to event
-                item.addAttendee(attendee);
             }
         }
         
