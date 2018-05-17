@@ -316,7 +316,16 @@ eas.tzpush = {
 
                             if (!addressBook.getCardFromProperty("ServerId", tempsid, false)) {
                                 //card DOES NOT exists, add new card from server to the addressbook
-                                tbSync.addNewCardFromServer(card, addressBook, syncdata.account);
+
+                                //some checks
+                                if (tbSync.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
+                                   card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
+
+                                    if (card.getProperty("DisplayName", "" ) == " " )
+                                        card.setProperty("DisplayName", card.getProperty("Company", card.getProperty("PrimaryEmail", "")));
+                                }
+                                tbSync.addNewCardFromServer(card, addressBook);
+                                
                             } else {
                                 //card DOES exists, get the local card and replace all properties with those received from server - why not simply loop over all properties of the new card?
                                 ServerId = card.getProperty("ServerId", "");
@@ -359,7 +368,15 @@ eas.tzpush = {
 
                         } else {
                             //this is not a resync and thus a new card, add it
-                            tbSync.addNewCardFromServer(card, addressBook, syncdata.account);
+
+                            //some checks
+                            if (tbSync.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
+                               card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
+
+                                if (card.getProperty("DisplayName", "" ) == " " )
+                                    card.setProperty("DisplayName", card.getProperty("Company", card.getProperty("PrimaryEmail", "")));
+                            }
+                            tbSync.addNewCardFromServer(card, addressBook);
                         }
 
                         card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);

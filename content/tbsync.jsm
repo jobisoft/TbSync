@@ -970,14 +970,7 @@ var tbSync = {
         }
     },
 
-    addNewCardFromServer: function (card, addressBook, account) {
-        if (tbSync.db.getAccountSetting(account, "displayoverride") == "1") {
-           card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
-
-        if (card.getProperty("DisplayName", "" ) == " " )
-           card.setProperty("DisplayName", card.getProperty("Company", card.getProperty("PrimaryEmail", "")));
-        }
-        
+    addNewCardFromServer: function (card, addressBook) {
         //Remove the ServerID from the card, add the card without serverId and modify the added card later on - otherwise the ServerId will be removed by the onAddItem-listener
         let curID = card.getProperty("ServerId", "");
         //preload the changelog with modified_by_server

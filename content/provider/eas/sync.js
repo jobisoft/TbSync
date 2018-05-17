@@ -481,14 +481,16 @@ eas.sync = {
     },
 
     getEasItemType(aItem) {
+        if (aItem.card) {
+            return "Contacts";
+        }
         switch (tbSync.getItemType(aItem)) {
             case "tb-event": 
                 return "Calendar";
             case "tb-todo": 
                 return "Tasks";
-            case "tb-contact": 
-                return "Contacts";
-            default: return "Unknown";
+            default:
+                return "Unknown";
         }        
     },
 
