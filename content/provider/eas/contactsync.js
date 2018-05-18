@@ -4,8 +4,8 @@ eas.sync.Contacts = {
 
     createItem : function (card = null) {
         let item = {
-            get id() {return this.card.getProperty("ServerId", "")},
-            set id(newId) {this.card.setProperty("ServerId", newId)},
+            get id() {return this.card.getProperty("EASID", "")},
+            set id(newId) {this.card.setProperty("EASID", newId)},
             get icalString() {return "CardData"},
             clone: function () { return this; } //no real clone
         };
@@ -33,7 +33,7 @@ eas.sync.Contacts = {
         let apiWrapper = {
             adoptItem: function (item) { 
                 /* add card to addressbook */
-                tbSync.addNewCardFromServer(item.card, addressbook);
+                addressbook.addCard(item.card);
             },
 
             modifyItem: function (newitem, existingitem) {
@@ -44,14 +44,14 @@ eas.sync.Contacts = {
             deleteItem: function (item) {
                 /* remove card from addressBook */
                 let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-                cardsToDelete.appendElement(item.card);
+                cardsToDelete.appendElement(item.card, "");
                 addressbook.deleteCards(cardsToDelete);
             },
 
             getItem: function (searchId) {
                 /* return array of items matching */
                 let items = [];
-                let card = addressbook.getCardFromProperty("ServerId", searchId, true); //3rd param enables case sensitivity
+                let card = addressbook.getCardFromProperty("EASID", searchId, true); //3rd param enables case sensitivity
                 
                 if (card) {
                     items.push(eas.sync.Contacts.createItem(card));
@@ -174,7 +174,7 @@ The following are the core properties that are used by TB:
     setThunderbirdItemFromWbxml: function (item, data, id, syncdata) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
 
-        item.card.setProperty("ServerId", id);
+        item.card.setProperty("EASID", id);
 
         //loop over all known TB properties which map 1-to-1
         for (let p=0; p < this.TB_properties.length; p++) {            

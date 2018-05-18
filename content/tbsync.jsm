@@ -829,19 +829,37 @@ var tbSync = {
 
                     let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
                     if (folders.length > 0) {
-                        let cardId = aItem.getProperty("ServerId", "");
+                        
+                        //THIS CODE ONLY ACTS ON TZPUSH CARDS
+                        let ServerId = aItem.getProperty("ServerId", "");
                         //Cards without ServerId have not yet been synced to the server, therefore this is a hidden modification.
                         //Next time we sync, this entire card will be added, regardless if it was modified or not
+                        if (ServerId) {
+                            //Problem: A card modified by server should not trigger a changelog entry, so they are pretagged with modified_by_server
+                            let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, ServerId);
+                            if (itemStatus == "modified_by_server") {
+                                tbSync.db.removeItemFromChangeLog(aParentDirURI, ServerId);
+                            } else {
+                                tbSync.setTargetModified(folders[0]);
+                                tbSync.db.addItemToChangeLog(aParentDirURI, ServerId, "modified_by_user");
+                            }
+                        }
+                        //END
+                        
+                        //THIS CODE ONLY ACTS ON TBSYNC CARDS
+                        let cardId = aItem.getProperty("EASID", "");
                         if (cardId) {
                             //Problem: A card modified by server should not trigger a changelog entry, so they are pretagged with modified_by_server
                             let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
                             if (itemStatus == "modified_by_server") {
                                 tbSync.db.removeItemFromChangeLog(aParentDirURI, cardId);
-                            } else {
+                            } else  if (itemStatus != "added_by_user") { //if it is a local unprocessed add do not add it to changelog
                                 tbSync.setTargetModified(folders[0]);
                                 tbSync.db.addItemToChangeLog(aParentDirURI, cardId, "modified_by_user");
                             }
                         }
+                        //END
+                        
                     }
                     
                 }
@@ -860,17 +878,38 @@ var tbSync = {
             if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
                 let folders = tbSync.db.findFoldersWithSetting("target", aParentDir.URI);
                 if (folders.length > 0) {
-                    let cardId = aItem.getProperty("ServerId", "");
+                    
+                    //THIS CODE ONLY ACTS ON TZPUSH CARDS
+                    let ServerId = aItem.getProperty("ServerId", "");
+                    if (ServerId) {
+                        //Problem: A card deleted by server should not trigger a changelog entry, so they are pretagged with deleted_by_server
+                        let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, ServerId);
+                        if (itemStatus == "deleted_by_server") {
+                            tbSync.db.removeItemFromChangeLog(aParentDir.URI, ServerId);
+                        } else {
+                            tbSync.db.addItemToChangeLog(aParentDir.URI, ServerId, "deleted_by_user");
+                            tbSync.setTargetModified(folders[0]);
+                        }
+                    }
+                    //END
+                    
+                    
+                    //THIS CODE ONLY ACTS ON TBSYNC CARDS
+                    let cardId = aItem.getProperty("EASID", "");
                     if (cardId) {
                         //Problem: A card deleted by server should not trigger a changelog entry, so they are pretagged with deleted_by_server
                         let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
-                        if (itemStatus == "deleted_by_server") {
+                        if (itemStatus == "deleted_by_server" || itemStatus == "added_by_user") {
+                            //if it is a delete pushed from the server, simply acknowledge (do nothing) 
+                            //a local add, which has not yet been processed (synced) is deleted -> remove all traces
                             tbSync.db.removeItemFromChangeLog(aParentDir.URI, cardId);
                         } else {
                             tbSync.db.addItemToChangeLog(aParentDir.URI, cardId, "deleted_by_user");
                             tbSync.setTargetModified(folders[0]);
                         }
                     }
+                    //END
+                    
                 }
             }
 
@@ -916,21 +955,41 @@ var tbSync = {
                 aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
             }
 
-            /* * *
-             * If cards get moved between books or if the user imports new cards, we always have to strip the serverID (if present). The only valid option
-             * to introduce a new card with a serverID is during sync, when the server pushes a new card. To catch this, the sync code is adjusted to 
-             * actually add the new card without serverID and modifies it right after addition, so this addressbookListener can safely strip any serverID 
-             * off added cards, because they are introduced by user actions (move, copy, import) and not by a sync. */
             if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
-                let ServerId = aItem.getProperty("ServerId", "");
 
+                //THIS CODE ONLY ACTS ON TZPUSH CARDS
+                    /* * *
+                     * If cards get moved between books or if the user imports new cards, we always have to strip the serverID (if present). The only valid option
+                     * to introduce a new card with a serverID is during sync, when the server pushes a new card. To catch this, the sync code is adjusted to 
+                     * actually add the new card without serverID and modifies it right after addition, so this addressbookListener can safely strip any serverID 
+                     * off added cards, because they are introduced by user actions (move, copy, import) and not by a sync. */
+                let ServerId = aItem.getProperty("ServerId", "");
                 if (ServerId != "") { //moved from another book or import
                     aItem.setProperty("ServerId", "");
                     aParentDir.modifyCard(aItem);
+                    //no need to update changelog, because every added tzpush card is without serverid
                 }
-                //also update target status - no need to update changelog, because every added card is without serverid
+                //END
+
+                
                 let folders = tbSync.db.findFoldersWithSetting("target", aParentDir.URI);
-                if (folders.length > 0) tbSync.setTargetModified(folders[0]);
+                if (folders.length > 0) {
+                    let cardId = aItem.getProperty("EASID", "");
+                    if (cardId) {
+                        let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
+                        if (itemStatus == "added_by_server") {
+                            tbSync.db.removeItemFromChangeLog(aParentDir.URI, cardId);
+                            return;
+                        } 
+                    }
+                    
+                    //if this point is reached, either new card (no EASID), or moved card (old EASID) -> reset EASID 
+                    tbSync.setTargetModified(folders[0]);
+                    tbSync.db.addItemToChangeLog(aParentDir.URI, aItem.localId, "added_by_user");
+                    aItem.setProperty("EASID", aItem.localId);
+                    aParentDir.modifyCard(aItem);
+                }
+                
             }
         },
 
