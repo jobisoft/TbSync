@@ -2,8 +2,18 @@
 
 eas.sync.Contacts = {
 
-    createItem : function () {
-        return Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
+    createItem : function (card = null) {
+        let item = {
+            get id() {return this.card.getProperty("ServerId", "")},
+            set id(newId) {this.card.setProperty("ServerId", newId)},
+            get icalString() {return "CardData"},
+            clone: function () { return this; } //no real clone
+        };
+        
+        //actually add the card
+        item.card = card ? card : Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);;
+                    
+        return item;
     },
     
     promisifyAddressbook: function (addressbook) {
@@ -21,20 +31,20 @@ eas.sync.Contacts = {
             card.setProperty('ServerId', ServerId);
     */
         let apiWrapper = {
-            adoptItem: function (card) { 
+            adoptItem: function (item) { 
                 /* add card to addressbook */
-                tbSync.addNewCardFromServer(card, addressbook);
+                tbSync.addNewCardFromServer(item.card, addressbook);
             },
 
-            modifyItem: function (newcard, existingcard) {
+            modifyItem: function (newitem, existingitem) {
                 /* modify card */
-                addressbook.modifyCard(newcard);
+                addressbook.modifyCard(newitem.card);
             },
 
-            deleteItem: function (card) {
+            deleteItem: function (item) {
                 /* remove card from addressBook */
                 let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-                cardsToDelete.appendElement(card);
+                cardsToDelete.appendElement(item.card);
                 addressbook.deleteCards(cardsToDelete);
             },
 
@@ -44,16 +54,7 @@ eas.sync.Contacts = {
                 let card = addressbook.getCardFromProperty("ServerId", searchId, true); //3rd param enables case sensitivity
                 
                 if (card) {
-                    let item = {
-                        get id() {return this.card.getProperty("ServerId", "")},
-                        set id(newId) {this.card.setProperty("ServerId", newId)},
-                        get icalString() {return "CardData"},
-                        clone: function () { return this; } //no real clone
-                    };
-                    
-                    //actually add the card
-                    item.card = card;
-                    items.push(item);
+                    items.push(eas.sync.Contacts.createItem(card));
                 }
                 
                 return items;
@@ -69,6 +70,7 @@ eas.sync.Contacts = {
 These need special treatment
         0x05: 'Anniversary',
         0x08: 'Birthday',
+
         0x09: 'Body',
         0x0A: 'BodySize',
         0x0B: 'BodyTruncated',
@@ -169,40 +171,68 @@ The following are the core properties that are used by TB:
     // --------------------------------------------------------------------------- //
     // Read WBXML and set Thunderbird item
     // --------------------------------------------------------------------------- //
-    setThunderbirdItemFromWbxml: function (card, data, id, syncdata) {
+    setThunderbirdItemFromWbxml: function (item, data, id, syncdata) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
 
-        card.setProperty("ServerId", id);
+        item.card.setProperty("ServerId", id);
 
-        //we loop over all known TB properties
+        //loop over all known TB properties which map 1-to-1
         for (let p=0; p < this.TB_properties.length; p++) {            
             let TB_property = this.TB_properties[p];
             let EAS_property = this.map_TB_properties_to_EAS_properties[TB_property];            
             let value = xmltools.checkString(data[EAS_property]);
-
-            //do we need to manipulate the value?
-            switch (EAS_property) {
-                case "Email1Address":
-                case "Email2Address":
-                case "Email3Address":
-                    let parsedInput = MailServices.headerParser.makeFromDisplayAddress(value);
-                    let fixedValue =  (parsedInput && parsedInput[0] && parsedInput[0].email) ? parsedInput[0].email : value;
-                    if (fixedValue != value) {
-                        tbSync.dump("Parsing email display string via RFC 2231 and RFC 2047 ("+EAS_property+")", value + " -> " + fixedValue);
-                        value = fixedValue;
-                    }
-                    break;
-            }
             
-            card.setProperty(TB_property, value);
+            //is this property part of the send data?
+            if (value) {
+                //do we need to manipulate the value?
+                switch (EAS_property) {
+                    case "Email1Address":
+                    case "Email2Address":
+                    case "Email3Address":
+                        let parsedInput = MailServices.headerParser.makeFromDisplayAddress(value);
+                        let fixedValue =  (parsedInput && parsedInput[0] && parsedInput[0].email) ? parsedInput[0].email : value;
+                        if (fixedValue != value) {
+                            tbSync.dump("Parsing email display string via RFC 2231 and RFC 2047 ("+EAS_property+")", value + " -> " + fixedValue);
+                            value = fixedValue;
+                        }
+                        break;
+                }
+                
+                item.card.setProperty(TB_property, value);
+            } else {
+                //clear
+                item.card.deleteProperty(TB_property);
+            }
+        }
+
+
+        //take care of birthday and anniversary
+        let dates = [];
+        dates.push(["Birthday", "BirthDay", "BirthMonth", "BirthYear"]);
+        dates.push(["Anniversary", "AnniversaryDay", "AnniversaryMonth", "AnniversaryYear"]);
+        
+        for (let p=0; p < dates.length; p++) {
+            let value = xmltools.checkString(data[dates[p][0]]);
+            if (value == "") {
+                //clear
+                item.card.deleteProperty(dates[p][1]);
+                item.card.deleteProperty(dates[p][2]);
+                item.card.deleteProperty(dates[p][3]);
+            } else {
+                //set
+                let dateObj = new Date(value);
+                item.card.setProperty(dates[p][3], dateObj.getFullYear().toString());
+                item.card.setProperty(dates[p][2], (dateObj.getMonth()+1).toString());
+                item.card.setProperty(dates[p][1], dateObj.getDate().toString());
+            }
         }
         
         //further manipulations
         if (tbSync.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
-           card.setProperty("DisplayName", card.getProperty("FirstName", "") + " " + card.getProperty("LastName", ""));
+           item.card.setProperty("DisplayName", item.card.getProperty("FirstName", "") + " " + item.card.getProperty("LastName", ""));
 
-            if (card.getProperty("DisplayName", "" ) == " " )
-                card.setProperty("DisplayName", card.getProperty("Company", card.getProperty("PrimaryEmail", "")));
+            if (item.card.getProperty("DisplayName", "" ) == " " )
+                item.card.setProperty("DisplayName", item.card.getProperty("Company", item.card.getProperty("PrimaryEmail", "")));
         }
         
     },
@@ -223,16 +253,36 @@ The following are the core properties that are used by TB:
         let wbxml = tbSync.wbxmltools.createWBXML("", syncdata.type); //init wbxml with "" and not with precodes, and set initial codepage
         let nowDate = new Date();
 
-        //loop over all known TB properties
+        //loop over all known TB properties which map 1-to-1 (send empty value if not set)
         for (let p=0; p < this.TB_properties.length; p++) {            
             let TB_property = this.TB_properties[p];
             let EAS_property = this.map_TB_properties_to_EAS_properties[TB_property];            
             wbxml.atag(EAS_property, item.card.getProperty(TB_property,""));
         }
 
+        //take care of birthday and anniversary
+        let dates = [];
+        dates.push(["Birthday", "BirthDay", "BirthMonth", "BirthYear"]);
+        dates.push(["Anniversary", "AnniversaryDay", "AnniversaryMonth", "AnniversaryYear"]);
+        
+        for (let p=0; p < dates.length; p++) {
+            let year = item.card.getProperty(dates[p][3], "");
+            let month = item.card.getProperty(dates[p][2], "");
+            let day = item.card.getProperty(dates[p][1], "");
+            if (year && month && day) {
+                //set
+                if (month.length<2) month="0"+month;
+                if (day.length<2) day="0"+day;
+                wbxml.atag(dates[p][0], year + "-" + month + "-" + day + "T00:00:00.000Z");
+            } else {
+                //clear ??? outlook does not like empty value
+                //wbxml.atag(dates[p][0], "");
+            }
+        }
+
         return wbxml.getBytes();
     }
-
+    
 }
 
 eas.sync.Contacts.TB_properties = Object.keys(eas.sync.Contacts.map_TB_properties_to_EAS_properties);
