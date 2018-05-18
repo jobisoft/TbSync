@@ -974,19 +974,6 @@ var tbSync = {
         }
     },
 
-    addNewCardFromServer: function (card, addressBook) {
-        //Remove the ServerID from the card, add the card without serverId and modify the added card later on - otherwise the ServerId will be removed by the onAddItem-listener
-        let curID = card.getProperty("ServerId", "");
-        //preload the changelog with modified_by_server
-        tbSync.db.addItemToChangeLog(addressBook.URI, curID, "modified_by_server");
-        
-        card.setProperty("ServerId", "");
-        let addedCard = addressBook.addCard(card);
-        
-        addedCard.setProperty("ServerId", curID);
-        addressBook.modifyCard(addedCard);
-    },
-
     getAddressBookObject: function (uri) {
         let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
         try {

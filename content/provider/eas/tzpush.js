@@ -4,8 +4,20 @@
 
 eas.tzpush = {
 
+    addNewCardFromServer: function (card, addressBook) {
+        //Remove the ServerID from the card, add the card without serverId and modify the added card later on - otherwise the ServerId will be removed by the onAddItem-listener
+        let curID = card.getProperty("ServerId", "");
+        //preload the changelog with modified_by_server
+        tbSync.db.addItemToChangeLog(addressBook.URI, curID, "modified_by_server");
+        
+        card.setProperty("ServerId", "");
+        let addedCard = addressBook.addCard(card);
+        
+        addedCard.setProperty("ServerId", curID);
+        addressBook.modifyCard(addedCard);
+    },
+    	
     // CONTACT SYNC
-    
     ToContacts: ({
         //0x89:'Anniversary',
         0x46: 'AssistantName',
@@ -324,7 +336,7 @@ eas.tzpush = {
                                     if (card.getProperty("DisplayName", "" ) == " " )
                                         card.setProperty("DisplayName", card.getProperty("Company", card.getProperty("PrimaryEmail", "")));
                                 }
-                                tbSync.addNewCardFromServer(card, addressBook);
+                                tbSync.eas.tzpush.addNewCardFromServer(card, addressBook);
                                 
                             } else {
                                 //card DOES exists, get the local card and replace all properties with those received from server - why not simply loop over all properties of the new card?
@@ -376,7 +388,7 @@ eas.tzpush = {
                                 if (card.getProperty("DisplayName", "" ) == " " )
                                     card.setProperty("DisplayName", card.getProperty("Company", card.getProperty("PrimaryEmail", "")));
                             }
-                            tbSync.addNewCardFromServer(card, addressBook);
+                            tbSync.eas.tzpush.addNewCardFromServer(card, addressBook);
                         }
 
                         card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
