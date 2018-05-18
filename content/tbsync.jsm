@@ -823,7 +823,7 @@ var tbSync = {
                 }
             }
 
-            if (aItem instanceof Components.interfaces.nsIAbCard) {
+            if (aItem instanceof Components.interfaces.nsIAbCard && !aItem.isMailList) {
                 let aParentDirURI = tbSync.getUriFromPrefId(aItem.directoryId.split("&")[0]);
                 if (aParentDirURI) { //could be undefined
 
@@ -857,7 +857,7 @@ var tbSync = {
              * If a card is removed from the addressbook we are syncing, keep track of the
              * deletions and log them to a file in the profile folder
              */
-            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory) {
+            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
                 let folders = tbSync.db.findFoldersWithSetting("target", aParentDir.URI);
                 if (folders.length > 0) {
                     let cardId = aItem.getProperty("ServerId", "");
@@ -921,9 +921,10 @@ var tbSync = {
              * to introduce a new card with a serverID is during sync, when the server pushes a new card. To catch this, the sync code is adjusted to 
              * actually add the new card without serverID and modifies it right after addition, so this addressbookListener can safely strip any serverID 
              * off added cards, because they are introduced by user actions (move, copy, import) and not by a sync. */
-            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory) {
+            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
                 let ServerId = aItem.getProperty("ServerId", "");
-                if (ServerId != "") {
+
+                if (ServerId != "") { //moved from another book or import
                     aItem.setProperty("ServerId", "");
                     aParentDir.modifyCard(aItem);
                 }
