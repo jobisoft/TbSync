@@ -7,7 +7,7 @@
         <em:bootstrap>true</em:bootstrap>
         <em:multiprocessCompatible>true</em:multiprocessCompatible>
         <em:name>TbSync (Provider for Exchange ActiveSync)</em:name>
-        <em:version>0.7.7.12</em:version>
+        <em:version>0.7.7.14</em:version>
         <em:description>Synchronize Exchange ActiveSync accounts (contacts, tasks and calendars) to Thunderbird</em:description>
         <em:creator>John Bieling</em:creator>
         <em:homepageURL>https://github.com/jobisoft/TbSync</em:homepageURL>
