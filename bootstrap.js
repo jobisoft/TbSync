@@ -21,6 +21,12 @@ let onLoadObserver = {
     }
 }
 
+let onLoadDoneObserver = {
+    observe: function(aSubject, aTopic, aData) {        
+        forEachOpenWindow(loadIntoWindow);  
+        Services.wm.addListener(WindowListener);    
+    }
+}
 
 
 
@@ -65,12 +71,16 @@ function startup(data, reason) {
     //add startup observers
     Services.obs.addObserver(onLoadObserver, "mail-startup-done", false);
     Services.obs.addObserver(onLoadObserver, "tbsync.init", false);
+    Services.obs.addObserver(onLoadDoneObserver, "tbsync.init.done", false);
 
     if (reason != APP_STARTUP) {
         //during startup, we wait until mail-startup-done fired, for all other reasons we need to fire our own init
         Services.obs.notifyObservers(null, 'tbsync.init', null)
     }
     
+    //DO NOT ADD ANYTHING HERE!
+    //The final init of TbSync was triggered by issuing a "tbsync.init". If that is done, it will issue a "tbsync.init.done".
+    //So if there is stuff to do after init is done, add it at the local onLoadDoneObserver
 }
 
 function shutdown(data, reason) {
@@ -79,8 +89,11 @@ function shutdown(data, reason) {
     //remove startup observer
     Services.obs.removeObserver(onLoadObserver, "mail-startup-done");
     Services.obs.removeObserver(onLoadObserver, "tbsync.init");
-
+    Services.obs.removeObserver(onLoadDoneObserver, "tbsync.init.done");
+	
     //call cleanup of the tbSync module
+    forEachOpenWindow(unloadFromWindow);
+    Services.wm.removeListener(WindowListener);
     tbSync.cleanup();
     
     //abort write timers and write current file content to disk 
@@ -96,7 +109,54 @@ function shutdown(data, reason) {
     //unload tbSync module
     tbSync.dump("TbSync shutdown","Unloading TbSync module.");
     Components.utils.unload("chrome://tbsync/content/tbsync.jsm");
+
+    // HACK WARNING:
+    //  - the Addon Manager does not properly clear all addon related caches on update;
+    //  - in order to fully update images and locales, their caches need clearing here
+    Services.obs.notifyObservers(null, "chrome-flush-caches", null);
+
 }
+
+
+
+
+
+function forEachOpenWindow(todo)  // Apply a function to all open windows
+{
+    var windows = Services.wm.getEnumerator(null);
+    while (windows.hasMoreElements()) {
+        todo(windows.getNext().QueryInterface(Components.interfaces.nsIDOMWindow));
+    }
+}
+
+function loadIntoWindow(window) {
+/* call/move your UI construction function here */
+    //if (window.document.getElementById("abcardWindow")) window.alert("juh");
+}
+
+function unloadFromWindow(window) {
+/* call/move your UI tear down function here */
+}
+
+var WindowListener =
+{
+    onOpenWindow: function(xulWindow)
+    {
+        var window = xulWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor).getInterface(Components.interfaces.nsIDOMWindow);
+        function onWindowLoad()
+        {
+            window.removeEventListener("load", onWindowLoad);
+            loadIntoWindow(window);
+        }
+        window.addEventListener("load", onWindowLoad);
+    },
+    onCloseWindow: function(xulWindow) { },
+    onWindowTitleChange: function(xulWindow, newTitle) { }
+};
+
+
+
+
 
 function writeAsyncJSON (obj, filename) {
     let filepath = tbSync.getAbsolutePath(filename);

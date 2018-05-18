@@ -154,6 +154,9 @@ var tbSync = {
                     //enable TbSync
                     tbSync.enabled = true;
                     
+                    //notify others about finished init of TbSync
+                    Services.obs.notifyObservers(null, 'tbsync.init.done', null)
+
                     //activate sync timer
                     tbSync.syncTimer.start();
 
