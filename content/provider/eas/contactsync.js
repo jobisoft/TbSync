@@ -77,9 +77,6 @@ These need special treatment
 The following are the core properties that are used by TB:
  *   - , FamilyName
  
- * - Other Contact:
- *   - FaxNumber, 
- *   - , 
  * - _AimScreenName
  * - WebPage2 (home)
  * - Custom1, Custom2, Custom3, Custom4
@@ -102,10 +99,10 @@ The following are the core properties that are used by TB:
         0x06: 'AssistantName',
         0x07: 'AssistantPhoneNumber',
 
-        0x08: 'Business2PhoneNumber',
         0x12: 'BusinessFaxNumber',
+        0x08: 'Business2PhoneNumber',
         0x20: 'Home2PhoneNumber',
-        0x26: 'HomeFaxNumber',
+        0x26: '',
 
         0x35: 'Suffix',
         0x36: 'Title',
@@ -143,6 +140,9 @@ The following are the core properties that are used by TB:
         WorkZipCode: 'BusinessAddressPostalCode',
         WorkState: 'BusinessAddressState',
         WorkPhone: 'BusinessPhoneNumber',
+        
+        //As in TZPUSH
+        FaxNumber: 'HomeFaxNumber'
     },
 
     
