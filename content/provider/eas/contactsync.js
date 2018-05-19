@@ -224,6 +224,11 @@ The following are the core properties that are used by TB:
                 item.card.setProperty(dates[p][1], dateObj.getDate().toString());
             }
         }
+
+        //take care of photo
+        if (data.Picture) {
+            tbSync.addphoto(id + '.jpg', item.card, data.Picture);
+        }
         
         //further manipulations
         if (tbSync.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
@@ -278,6 +283,14 @@ The following are the core properties that are used by TB:
             }
         }
 
+        //take care of photo
+        if (item.card.getProperty("PhotoType", "") == "file") {
+            wbxml.atag("Picture", tbSync.getphoto(item.card));                    
+        } else {
+            //clear
+            wbxml.atag("Picture","");        
+        }
+        
         return wbxml.getBytes();
     }
     

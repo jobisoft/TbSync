@@ -1118,24 +1118,49 @@ var tbSync = {
         return false;
     },
 
-    addphoto: function (card, data) {
-        let photo = card.getProperty("ServerId", "") + '.jpg';
-        let file = FileUtils.getFile("ProfD", ["TbSync","Photos", photo] );
+    addphoto: function (photo, card, data) {	
+        let dest = [];
+        //the TbSync storage must be set as last
+        dest.push(["Photos", photo]);
+        dest.push(["TbSync","Photos", photo]);
+        
+        let filePath = "";
+        for (let i=0; i < dest.length; i++) {
+            let file = FileUtils.getFile("ProfD",  dest[i]);
 
-        let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
-        foStream.init(file, 0x02 | 0x08 | 0x20, 0x180, 0); // write, create, truncate
-        let binary = atob(data);
-        foStream.write(binary, binary.length);
-        foStream.close();
+            let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
+            foStream.init(file, 0x02 | 0x08 | 0x20, 0x180, 0); // write, create, truncate
+            let binary = atob(data);
+            foStream.write(binary, binary.length);
+            foStream.close();
 
-        let filePath = 'file:///' + file.path.replace(/\\/g, '\/').replace(/^\s*\/?/, '').replace(/\ /g, '%20');
+            filePath = 'file:///' + file.path.replace(/\\/g, '\/').replace(/^\s*\/?/, '').replace(/\ /g, '%20');
+        }
+	
         card.setProperty("PhotoName", photo);
         card.setProperty("PhotoType", "file");
         card.setProperty("PhotoURI", filePath);
-
         return filePath;
     },
 
+    getphoto: function (card) {	
+        let photo = card.getProperty("PhotoName", "");
+        let data = "";
+
+        if (photo) {
+            let file = FileUtils.getFile("ProfD", ["Photos", photo]);
+
+            let fiStream = Components.classes["@mozilla.org/network/file-input-stream;1"].createInstance(Components.interfaces.nsIFileInputStream);
+            fiStream.init(file, -1, -1, false);
+            
+            let bstream = Components.classes["@mozilla.org/binaryinputstream;1"].createInstance(Components.interfaces.nsIBinaryInputStream);
+            bstream.setInputStream(fiStream);
+
+            data = btoa(bstream.readBytes(bstream.available()));
+            fiStream.close();
+        }
+        return data;
+    },
 
 
 

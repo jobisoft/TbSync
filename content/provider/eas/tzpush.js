@@ -238,8 +238,8 @@ eas.tzpush = {
                     num = wbxml.indexOf(String.fromCharCode(0x00), num);
 
                     if (x === 0x01 && temptoken === 0x7C) {
-                        filePath = tbSync.addphoto(card, data);
                         photo = card.getProperty("ServerId", "") + '.jpg';
+                        filePath = tbSync.addphoto(photo, card, data);
                     } else if (x === 0x01 && temptoken === 0x48) {
                         card.setProperty("Birthday", data);
                         if (data.substr(12, 1) !== "00") {
