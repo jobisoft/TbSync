@@ -91,7 +91,6 @@ The following are the core properties that are used by TB:
         DisplayName: 'FileAs',
         FirstName: 'FirstName',
         LastName: 'LastName',
-        //NickName: 'NickName',
         PrimaryEmail: 'Email1Address',
         SecondEmail: 'Email2Address',
         WebPage1: 'WebPage',
@@ -128,15 +127,6 @@ The following are the core properties that are used by TB:
         0x3A: 'YomiLastName',
         0x3B: 'CompressedRTF',
         
-        0x05: 'CustomerId',
-        0x06: 'GovernmentId',
-        0x07: 'IMAddress',
-        0x08: 'IMAddress2',
-        0x09: 'IMAddress3',
-        0x0a: 'ManagerName',
-        0x0b: 'CompanyMainPhone',
-        0x0c: 'AccountName',
-        0x0e: 'MMS',
         */
         HomeCity: 'HomeAddressCity',
         HomeCountry: 'HomeAddressCountry',
@@ -156,7 +146,19 @@ The following are the core properties that are used by TB:
     },
 
     
-    
+    map_TB_properties_to_EAS_properties2 : {
+/*        0x05: 'CustomerId',
+        0x06: 'GovernmentId',
+        0x07: 'IMAddress',
+        0x08: 'IMAddress2',
+        0x09: 'IMAddress3',
+        0x0a: 'ManagerName',
+        0x0b: 'CompanyMainPhone',
+        0x0c: 'AccountName',
+        0x0e: 'MMS',
+        */
+        NickName: 'NickName'        
+    },
 
     // --------------------------------------------------------------------------- //
     // Read WBXML and set Thunderbird item
@@ -166,35 +168,38 @@ The following are the core properties that are used by TB:
 
         item.card.setProperty("EASID", id);
 
-        //loop over all known TB properties which map 1-to-1
-        for (let p=0; p < this.TB_properties.length; p++) {            
-            let TB_property = this.TB_properties[p];
-            let EAS_property = this.map_TB_properties_to_EAS_properties[TB_property];            
-            let value = xmltools.checkString(data[EAS_property]);
-            
-            //is this property part of the send data?
-            if (value) {
-                //do we need to manipulate the value?
-                switch (EAS_property) {
-                    case "Email1Address":
-                    case "Email2Address":
-                    case "Email3Address":
-                        let parsedInput = MailServices.headerParser.makeFromDisplayAddress(value);
-                        let fixedValue =  (parsedInput && parsedInput[0] && parsedInput[0].email) ? parsedInput[0].email : value;
-                        if (fixedValue != value) {
-                            tbSync.dump("Parsing email display string via RFC 2231 and RFC 2047 ("+EAS_property+")", value + " -> " + fixedValue);
-                            value = fixedValue;
-                        }
-                        break;
-                }
+        //loop over all known TB properties which map 1-to-1 (two EAS sets Contacts and Contacts2)
+        for (let set=0; set < 2; set++) {
+            let properties = (set == 0) ? this.TB_properties : this.TB_properties2;
+
+            for (let p=0; p < properties.length; p++) {            
+                let TB_property = properties[p];
+                let EAS_property = (set == 0) ? this.map_TB_properties_to_EAS_properties[TB_property] : this.map_TB_properties_to_EAS_properties2[TB_property];            
+                let value = xmltools.checkString(data[EAS_property]);
                 
-                item.card.setProperty(TB_property, value);
-            } else {
-                //clear
-                item.card.deleteProperty(TB_property);
+                //is this property part of the send data?
+                if (value) {
+                    //do we need to manipulate the value?
+                    switch (EAS_property) {
+                        case "Email1Address":
+                        case "Email2Address":
+                        case "Email3Address":
+                            let parsedInput = MailServices.headerParser.makeFromDisplayAddress(value);
+                            let fixedValue =  (parsedInput && parsedInput[0] && parsedInput[0].email) ? parsedInput[0].email : value;
+                            if (fixedValue != value) {
+                                tbSync.dump("Parsing email display string via RFC 2231 and RFC 2047 ("+EAS_property+")", value + " -> " + fixedValue);
+                                value = fixedValue;
+                            }
+                            break;
+                    }
+                    
+                    item.card.setProperty(TB_property, value);
+                } else {
+                    //clear
+                    item.card.deleteProperty(TB_property);
+                }
             }
         }
-
 
         //take care of birthday and anniversary
         let dates = [];
@@ -340,7 +345,15 @@ The following are the core properties that are used by TB:
                 wbxml.atag("Data", description);
             wbxml.ctag();
         }
-        
+
+
+        //loop over all known TB properties of EAS group Contacts2 (send empty value if not set)
+        wbxml.switchpage("Contacts2");
+        for (let p=0; p < this.TB_properties2.length; p++) {            
+            let TB_property = this.TB_properties2[p];
+            let EAS_property = this.map_TB_properties_to_EAS_properties2[TB_property];            
+            wbxml.atag(EAS_property, item.card.getProperty(TB_property,""));
+        }
         
         return wbxml.getBytes();
     }
@@ -348,3 +361,4 @@ The following are the core properties that are used by TB:
 }
 
 eas.sync.Contacts.TB_properties = Object.keys(eas.sync.Contacts.map_TB_properties_to_EAS_properties);
+eas.sync.Contacts.TB_properties2 = Object.keys(eas.sync.Contacts.map_TB_properties_to_EAS_properties2);
