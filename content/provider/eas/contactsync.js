@@ -64,6 +64,16 @@ eas.sync.Contacts = {
         return apiWrapper;
     },
     
+    //these functions handle categories compatible to the Category Manager Add-On, which is compatible to lots of other sync tools (sogo, carddav-sync, roundcube)
+    categoriesFromString: function (catString) {
+        let catsArray = [];
+        if (catString.trim().length>0) catsArray = catString.trim().split("\u001A").filter(String);
+        return catsArray;
+    },
+
+    categoriesToString: function (catsArray) {
+        return catsArray.join("\u001A");
+    },
 
 /*
 
@@ -115,7 +125,7 @@ The following are the core properties that are used by TB:
         FaxNumber: 'HomeFaxNumber'
     },
 
-    //there are currently no fields for these values, TbSync will store (and resend) them, but will not allow to view/edit
+    //there are currently no TB fields for these values, TbSync will store (and resend) them, but will not allow to view/edit
     unused_EAS_properties: [
         'AssistantName',
         'AssistantPhoneNumber',
@@ -255,6 +265,16 @@ The following are the core properties that are used by TB:
         }
 
 
+        //take care of categories
+        if (data.Categories && data.Categories.Category) {
+            let cats = [];
+            if (Array.isArray(data.Categories.Category)) cats = data.Categories.Category;
+            else cats.push(data.Categories.Category);
+            
+            item.card.setProperty("Categories", this.categoriesToString(cats));
+        }
+
+
         //take care of unmapable EAS option (Contact and Contact2 group)
         for (let i=0; i < this.unused_EAS_properties.length; i++) {
             if (data[this.unused_EAS_properties[i]]) item.card.setProperty("EAS-" + this.unused_EAS_properties[i], data[this.unused_EAS_properties[i]]);
@@ -348,21 +368,19 @@ The following are the core properties that are used by TB:
         }
 
 
-        //take care of notes
-        let description = item.card.getProperty("Notes", "");
-        if (asversion == "2.5") {
-            wbxml.atag("Body", description);
+        //take care of categories 
+        let cats = item.card.getProperty("Categories", "");
+        if (cats) {
+            let catsArray = this.categoriesFromString(cats);
+            wbxml.otag("Categories");
+                for (let c=0; c < catsArray.length; c++) wbxml.atag("Category", catsArray[c]);
+            wbxml.ctag();            
         } else {
-            wbxml.switchpage("AirSyncBase");
-            wbxml.otag("Body");
-                wbxml.atag("Type", "1");
-                wbxml.atag("EstimatedDataSize", "" + description.length);
-                wbxml.atag("Data", description);
-            wbxml.ctag();
-        }
+                wbxml.atag("Categories");
+        };
 
 
-        //take care of Contacts2 group
+        //take care of Contacts2 group - SWITCHING TO CONTACTS2
         wbxml.switchpage("Contacts2");
 
         //loop over all known TB properties of EAS group Contacts2 (send empty value if not set)
@@ -379,6 +397,18 @@ The following are the core properties that are used by TB:
         }
 
 
+        //take care of notes - SWITCHING TO AirSyncBase
+        let description = item.card.getProperty("Notes", "");
+        if (asversion == "2.5") {
+            wbxml.atag("Body", description);
+        } else {
+            wbxml.switchpage("AirSyncBase");
+            wbxml.otag("Body");
+                wbxml.atag("Type", "1");
+                wbxml.atag("EstimatedDataSize", "" + description.length);
+                wbxml.atag("Data", description);
+            wbxml.ctag();
+        }
 
         return wbxml.getBytes();
     }
