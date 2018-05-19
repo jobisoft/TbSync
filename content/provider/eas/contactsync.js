@@ -68,9 +68,6 @@ eas.sync.Contacts = {
 /*
 
 These need special treatment
-        0x09: 'Body',
-        0x0A: 'BodySize',
-        0x0B: 'BodyTruncated',
         0x15: 'Categories',
         0x16: 'Category',
         0x17: 'Children',
@@ -117,7 +114,6 @@ The following are the core properties that are used by TB:
         0x2A: 'MiddleName',
         0x2C: 'OfficeLocation',
         0x33: 'RadioPhoneNumber',
-        0x3C: 'Picture',
         0x3D: 'Alias',
         0x3E: 'WeightedRank',
 
@@ -247,6 +243,15 @@ The following are the core properties that are used by TB:
         }
         
 
+        //take care of notes
+        if (asversion == "2.5") {
+            item.card.setProperty("Notes", xmltools.checkString(data.Body));
+        } else {
+            if (data.Body && data.Body.Data) item.card.setProperty("Notes", xmltools.checkString(data.Body.Data));
+            else item.card.setProperty("Notes", "");
+        }
+
+
         //further manipulations
         if (tbSync.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
            item.card.setProperty("DisplayName", item.card.getProperty("FirstName", "") + " " + item.card.getProperty("LastName", ""));
@@ -321,6 +326,21 @@ The following are the core properties that are used by TB:
             //clear
             wbxml.atag("Picture","");        
         }
+        
+        
+        //take care of notes
+        let description = item.card.getProperty("Notes", "");
+        if (asversion == "2.5") {
+            wbxml.atag("Body", description);
+        } else {
+            wbxml.switchpage("AirSyncBase");
+            wbxml.otag("Body");
+                wbxml.atag("Type", "1");
+                wbxml.atag("EstimatedDataSize", "" + description.length);
+                wbxml.atag("Data", description);
+            wbxml.ctag();
+        }
+        
         
         return wbxml.getBytes();
     }
