@@ -74,14 +74,14 @@ These need special treatment
         0x18: 'Child',
     
 The following are the core properties that are used by TB:
- *   - , FamilyName
- 
+ *   - , FamilyName 
  * - _AimScreenName
  * - WebPage2 (home)
  * - Custom1, Custom2, Custom3, Custom4
     
 */
     
+
     //includes all properties, which can be mapped 1-to-1
     map_TB_properties_to_EAS_properties : {
         DisplayName: 'FileAs',
@@ -94,37 +94,7 @@ The following are the core properties that are used by TB:
         SpouseName: 'Spouse',
         CellularNumber: 'MobilePhoneNumber',
 	    PagerNumber: 'PagerNumber',
-        
-/*        
-        0x06: 'AssistantName',
-        0x07: 'AssistantPhoneNumber',
 
-        0x12: 'BusinessFaxNumber',
-        0x08: 'Business2PhoneNumber',
-        0x20: 'Home2PhoneNumber',
-        0x26: '',
-
-        0x35: 'Suffix',
-        0x36: 'Title',
-        0x14: 'CarPhoneNumber',
-        0x2A: 'MiddleName',
-        0x2C: 'OfficeLocation',
-        0x33: 'RadioPhoneNumber',
-        0x3D: 'Alias',
-        0x3E: 'WeightedRank',
-
-        0x2D: 'OtherAddressCity',
-        0x2E: 'OtherAddressCountry',
-        0x2F: 'OtherAddressPostalCode',
-        0x30: 'OtherAddressState',
-        0x31: 'OtherAddressStreet',
-
-        0x38: 'YomiCompanyName',
-        0x39: 'YomiFirstName',
-        0x3A: 'YomiLastName',
-        0x3B: 'CompressedRTF',
-        
-        */
         HomeCity: 'HomeAddressCity',
         HomeCountry: 'HomeAddressCountry',
         HomeZipCode: 'HomeAddressPostalCode',
@@ -145,20 +115,48 @@ The following are the core properties that are used by TB:
         FaxNumber: 'HomeFaxNumber'
     },
 
+    //there are currently no fields for these values, TbSync will store (and resend) them, but will not allow to view/edit
+    unused_EAS_properties: [
+        'AssistantName',
+        'AssistantPhoneNumber',
+        'BusinessFaxNumber',
+        'Business2PhoneNumber',
+        'Home2PhoneNumber',
+        'Suffix',
+        'Title',
+        'CarPhoneNumber',
+        'MiddleName',
+        'OfficeLocation',
+        'RadioPhoneNumber',
+        'Alias',
+        'WeightedRank',
+        'OtherAddressCity',
+        'OtherAddressCountry',
+        'OtherAddressPostalCode',
+        'OtherAddressState',
+        'OtherAddressStreet',
+        'YomiCompanyName',
+        'YomiFirstName',
+        'YomiLastName',
+        'CompressedRTF'
+    ],
     
     map_TB_properties_to_EAS_properties2 : {
-/*        0x05: 'CustomerId',
-        0x06: 'GovernmentId',
-        0x07: 'IMAddress',
-        0x08: 'IMAddress2',
-        0x09: 'IMAddress3',
-        0x0a: 'ManagerName',
-        0x0b: 'CompanyMainPhone',
-        0x0c: 'AccountName',
-        0x0e: 'MMS',
-        */
         NickName: 'NickName'        
     },
+
+    unused_EAS_properties2: [
+        'CustomerId',
+        'GovernmentId',
+        'IMAddress',
+        'IMAddress2',
+        'IMAddress3',
+        'ManagerName',
+        'CompanyMainPhone',
+        'AccountName',
+        'MMS'
+    ],    
+
 
     // --------------------------------------------------------------------------- //
     // Read WBXML and set Thunderbird item
@@ -257,6 +255,16 @@ The following are the core properties that are used by TB:
         }
 
 
+        //take care of unmapable EAS option (Contact and Contact2 group)
+        for (let i=0; i < this.unused_EAS_properties.length; i++) {
+            if (data[this.unused_EAS_properties[i]]) item.card.setProperty("EAS-" + this.unused_EAS_properties[i], data[this.unused_EAS_properties[i]]);
+        }
+
+        for (let i=0; i < this.unused_EAS_properties2.length; i++) {
+            if (data[this.unused_EAS_properties2[i]]) item.card.setProperty("EAS-" + this.unused_EAS_properties2[i], data[this.unused_EAS_properties2[i]]);
+        }
+
+
         //further manipulations
         if (tbSync.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
            item.card.setProperty("DisplayName", item.card.getProperty("FirstName", "") + " " + item.card.getProperty("LastName", ""));
@@ -333,6 +341,13 @@ The following are the core properties that are used by TB:
         }
         
         
+        //take care of unmapable EAS option
+        for (let i=0; i < this.unused_EAS_properties.length; i++) {
+            let value = item.card.getProperty("EAS-" + this.unused_EAS_properties[i], "");
+            if (value) wbxml.atag(this.unused_EAS_properties[i], value);
+        }
+
+
         //take care of notes
         let description = item.card.getProperty("Notes", "");
         if (asversion == "2.5") {
@@ -347,14 +362,24 @@ The following are the core properties that are used by TB:
         }
 
 
-        //loop over all known TB properties of EAS group Contacts2 (send empty value if not set)
+        //take care of Contacts2 group
         wbxml.switchpage("Contacts2");
+
+        //loop over all known TB properties of EAS group Contacts2 (send empty value if not set)
         for (let p=0; p < this.TB_properties2.length; p++) {            
             let TB_property = this.TB_properties2[p];
             let EAS_property = this.map_TB_properties_to_EAS_properties2[TB_property];            
             wbxml.atag(EAS_property, item.card.getProperty(TB_property,""));
         }
         
+        //take care of unmapable EAS options of Contacts2
+        for (let i=0; i < this.unused_EAS_properties2.length; i++) {
+            let value = item.card.getProperty("EAS-" + this.unused_EAS_properties2[i], "");
+            if (value) wbxml.atag(this.unused_EAS_properties2[i], value);
+        }
+
+
+
         return wbxml.getBytes();
     }
     
