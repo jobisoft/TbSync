@@ -459,7 +459,7 @@ var eas = {
                         //promisify addressbook, so it can be used together with yield
                         syncdata.targetObj = eas.sync.Contacts.promisifyAddressbook(syncdata.addressbookObj);
                         
-                        if (tbSync.prefSettings.getBoolPref("eas.use_tzpush_contactsync_code")) yield eas.tzpush.start(syncdata); //using old tzpush contact sync code
+                        if (tbSync.db.getAccountSetting(syncdata.account, "tzpush") == "1") yield eas.tzpush.start(syncdata); //using old tzpush contact sync code
                         else yield eas.sync.start(syncdata);   //using new tbsync contacts sync code
                         break;
 
@@ -868,6 +868,7 @@ var eas = {
             "downloadonly" : "0",
             "autosync" : "0",
             "horde" : "0",
+            "tzpush" : "1",
             "lastEasOptionsUpdate":"0",
             "allowedEasVersions": "",
             "allowedEasCommands": ""};
@@ -1064,6 +1065,7 @@ var eas = {
         db.setAccountSetting(account, "asversion", db.getAccountSetting(account, "asversionselected"));
         db.setAccountSetting(account, "lastEasOptionsUpdate", "0");
         db.setAccountSetting(account, "lastsynctime", "0");
+        db.setAccountSetting(account, "tzpush", tbSync.prefSettings.getBoolPref("eas.use_tzpush_contactsync_code") ? "1" : "0");
     },
 
     disableAccount: function (account) {
