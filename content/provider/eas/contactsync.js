@@ -6,7 +6,7 @@ eas.sync.Contacts = {
         let item = {
             get id() {return this.card.getProperty("EASID", "")},
             set id(newId) {this.card.setProperty("EASID", newId)},
-            get icalString() {return "CardData"},
+            get icalString() {return this.card.displayName + " (" + this.card.firstName + ", " + this.card.lastName + ") <"+this.card.primaryEmail+">" },
             clone: function () { return this; } //no real clone
         };
         
@@ -78,8 +78,6 @@ eas.sync.Contacts = {
 /*
 
 These need special treatment
-        0x15: 'Categories',
-        0x16: 'Category',
         0x17: 'Children',
         0x18: 'Child',
     
@@ -316,7 +314,8 @@ The following are the core properties that are used by TB:
         for (let p=0; p < this.TB_properties.length; p++) {            
             let TB_property = this.TB_properties[p];
             let EAS_property = this.map_TB_properties_to_EAS_properties[TB_property];            
-            wbxml.atag(EAS_property, item.card.getProperty(TB_property,""));
+            let value = item.card.getProperty(TB_property,"");
+            if (value) wbxml.atag(EAS_property, value);
         }
 
 
@@ -333,9 +332,6 @@ The following are the core properties that are used by TB:
                 if (month.length<2) month="0"+month;
                 if (day.length<2) day="0"+day;
                 wbxml.atag(dates[p][0], year + "-" + month + "-" + day + "T00:00:00.000Z");
-            } else {
-                //clear ??? outlook does not like empty value
-                //wbxml.atag(dates[p][0], "");
             }
         }
 
@@ -346,18 +342,18 @@ The following are the core properties that are used by TB:
         streets.push(["HomeAddressStreet", "HomeAddress", "HomeAddress2"]); //EAS, TB1, TB2
         streets.push(["BusinessAddressStreet", "WorkAddress", "WorkAddress2"]);
         for (let p=0; p < streets.length; p++) {
+            let values = [];
             let s1 = item.card.getProperty(streets[p][1], "");
             let s2 = item.card.getProperty(streets[p][2], "");
-            wbxml.atag(streets[p][0], s1 + seperator + s2);            
+            if (s1) values.push(s1);
+            if (s2) values.push(s2);
+            if (values.length>0) wbxml.atag(streets[p][0], values.join(seperator));            
         }
 
 
         //take care of photo
         if (item.card.getProperty("PhotoType", "") == "file") {
             wbxml.atag("Picture", tbSync.getphoto(item.card));                    
-        } else {
-            //clear
-            wbxml.atag("Picture","");        
         }
         
         
@@ -375,9 +371,7 @@ The following are the core properties that are used by TB:
             wbxml.otag("Categories");
                 for (let c=0; c < catsArray.length; c++) wbxml.atag("Category", catsArray[c]);
             wbxml.ctag();            
-        } else {
-                wbxml.atag("Categories");
-        };
+        }
 
 
         //take care of Contacts2 group - SWITCHING TO CONTACTS2
@@ -386,8 +380,9 @@ The following are the core properties that are used by TB:
         //loop over all known TB properties of EAS group Contacts2 (send empty value if not set)
         for (let p=0; p < this.TB_properties2.length; p++) {            
             let TB_property = this.TB_properties2[p];
-            let EAS_property = this.map_TB_properties_to_EAS_properties2[TB_property];            
-            wbxml.atag(EAS_property, item.card.getProperty(TB_property,""));
+            let EAS_property = this.map_TB_properties_to_EAS_properties2[TB_property];
+            let value = item.card.getProperty(TB_property,"");
+            if (value) wbxml.atag(EAS_property, value);
         }
         
         //take care of unmapable EAS options of Contacts2
