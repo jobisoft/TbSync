@@ -79,8 +79,6 @@ These need special treatment
     
 The following are the core properties that are used by TB:
  *   - , FamilyName
- *   - HomeAddress2, 
- *   - WorkAddress2, 
  
  * - Other Contact:
  *   - FaxNumber, 
@@ -149,7 +147,6 @@ The following are the core properties that are used by TB:
         HomeZipCode: 'HomeAddressPostalCode',
         HomeState: 'HomeAddressState',
         HomePhone: 'HomePhoneNumber',
-        HomeAddress: 'HomeAddressStreet',
         
         Company: 'CompanyName',
         Department: 'Department',
@@ -160,7 +157,6 @@ The following are the core properties that are used by TB:
         WorkZipCode: 'BusinessAddressPostalCode',
         WorkState: 'BusinessAddressState',
         WorkPhone: 'BusinessPhoneNumber',
-        WorkAddress: 'BusinessAddressStreet'        
     },
 
     
@@ -206,9 +202,8 @@ The following are the core properties that are used by TB:
 
         //take care of birthday and anniversary
         let dates = [];
-        dates.push(["Birthday", "BirthDay", "BirthMonth", "BirthYear"]);
-        dates.push(["Anniversary", "AnniversaryDay", "AnniversaryMonth", "AnniversaryYear"]);
-        
+        dates.push(["Birthday", "BirthDay", "BirthMonth", "BirthYear"]); //EAS, TB1, TB2, TB3
+        dates.push(["Anniversary", "AnniversaryDay", "AnniversaryMonth", "AnniversaryYear"]);        
         for (let p=0; p < dates.length; p++) {
             let value = xmltools.checkString(data[dates[p][0]]);
             if (value == "") {
@@ -225,11 +220,33 @@ The following are the core properties that are used by TB:
             }
         }
 
+
+        //take care of multiline address fields
+        let streets = [];
+        let seperator = String.fromCharCode(tbSync.db.getAccountSetting(syncdata.account,"seperator")); // options are 44 (,) or 10 (\n)
+        streets.push(["HomeAddressStreet", "HomeAddress", "HomeAddress2"]); //EAS, TB1, TB2
+        streets.push(["BusinessAddressStreet", "WorkAddress", "WorkAddress2"]);
+        for (let p=0; p < streets.length; p++) {
+            let value = xmltools.checkString(data[streets[p][0]]);
+            if (value == "") {
+                //clear
+                item.card.deleteProperty(streets[p][1]);
+                item.card.deleteProperty(streets[p][2]);
+            } else {
+                //set
+                let lines = value.split(seperator);
+                item.card.setProperty(streets[p][1], lines.shift());
+                item.card.setProperty(streets[p][2], lines.join(seperator));
+            }
+        }
+
+
         //take care of photo
         if (data.Picture) {
             tbSync.addphoto(id + '.jpg', item.card, data.Picture);
         }
         
+
         //further manipulations
         if (tbSync.db.getAccountSetting(syncdata.account, "displayoverride") == "1") {
            item.card.setProperty("DisplayName", item.card.getProperty("FirstName", "") + " " + item.card.getProperty("LastName", ""));
@@ -256,6 +273,7 @@ The following are the core properties that are used by TB:
         let wbxml = tbSync.wbxmltools.createWBXML("", syncdata.type); //init wbxml with "" and not with precodes, and set initial codepage
         let nowDate = new Date();
 
+
         //loop over all known TB properties which map 1-to-1 (send empty value if not set)
         for (let p=0; p < this.TB_properties.length; p++) {            
             let TB_property = this.TB_properties[p];
@@ -263,11 +281,11 @@ The following are the core properties that are used by TB:
             wbxml.atag(EAS_property, item.card.getProperty(TB_property,""));
         }
 
+
         //take care of birthday and anniversary
         let dates = [];
         dates.push(["Birthday", "BirthDay", "BirthMonth", "BirthYear"]);
-        dates.push(["Anniversary", "AnniversaryDay", "AnniversaryMonth", "AnniversaryYear"]);
-        
+        dates.push(["Anniversary", "AnniversaryDay", "AnniversaryMonth", "AnniversaryYear"]);        
         for (let p=0; p < dates.length; p++) {
             let year = item.card.getProperty(dates[p][3], "");
             let month = item.card.getProperty(dates[p][2], "");
@@ -282,6 +300,19 @@ The following are the core properties that are used by TB:
                 //wbxml.atag(dates[p][0], "");
             }
         }
+
+
+        //take care of multiline address fields
+        let streets = [];
+        let seperator = String.fromCharCode(tbSync.db.getAccountSetting(syncdata.account,"seperator")); // options are 44 (,) or 10 (\n)
+        streets.push(["HomeAddressStreet", "HomeAddress", "HomeAddress2"]); //EAS, TB1, TB2
+        streets.push(["BusinessAddressStreet", "WorkAddress", "WorkAddress2"]);
+        for (let p=0; p < streets.length; p++) {
+            let s1 = item.card.getProperty(streets[p][1], "");
+            let s2 = item.card.getProperty(streets[p][2], "");
+            wbxml.atag(streets[p][0], s1 + seperator + s2);            
+        }
+
 
         //take care of photo
         if (item.card.getProperty("PhotoType", "") == "file") {
