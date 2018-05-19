@@ -72,7 +72,6 @@ These need special treatment
         0x16: 'Category',
         0x17: 'Children',
         0x18: 'Child',
-        0x1D: 'Email3Address',
     
 The following are the core properties that are used by TB:
  *   - , FamilyName
@@ -90,6 +89,7 @@ The following are the core properties that are used by TB:
         LastName: 'LastName',
         PrimaryEmail: 'Email1Address',
         SecondEmail: 'Email2Address',
+        MFFABemail1: 'Email3Address',
         WebPage1: 'WebPage',
         SpouseName: 'Spouse',
         CellularNumber: 'MobilePhoneNumber',
