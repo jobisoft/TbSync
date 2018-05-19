@@ -341,10 +341,22 @@ eas.sync = {
     }),
 
 
-    updateFailedItems: function (syncdata, cause, item) {
+    updateFailedItems: function (syncdata, cause, item, status = "") {
         //this is a special treatment for xj25vm (horde 5.1.10 does not accept titles longer than 250) - the specs do not allow titles larger than 300
         if (item.title && item.title.length>250 && cause == "invalid XML") cause = "title longer than 250"
-        if (cause == "invalid XML") cause = "invalid XML (possible bug in TbSync)";
+        
+        switch (status) {
+            case "4": 
+                cause = "Mailformed request. Bug in TbSync?";
+                break;
+            case "6":
+                cause = "Invalid item! Mandatory fields missing? Dublicate item?";
+                break;
+            case "":
+                break;
+            default:
+                cause = cause + " (status "+status+")";
+        }
         
         //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
         if (syncdata.failedItems.includes(item.id)) {
@@ -385,7 +397,7 @@ eas.sync = {
                         //Check status, stop sync if bad, allow soft fail
                         if (!eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status", true)) {
                             //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
-                            eas.sync.updateFailedItems(syncdata, "invalid XML", foundItems[0]);
+                            eas.sync.updateFailedItems(syncdata, "invalid XML", foundItems[0], add[count].Status);
                         } else {
                             let newItem = foundItems[0].clone();
                             newItem.id = add[count].ServerId;
@@ -407,7 +419,7 @@ eas.sync = {
                         //Check status, stop sync if bad, allow soft fail
                         if (!eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status", true)) {
                             //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
-                            eas.sync.updateFailedItems(syncdata, "invalid XML", foundItems[0]);
+                            eas.sync.updateFailedItems(syncdata, "invalid XML", foundItems[0], upd[count].Status);
                             //also remove from changedItems
                             let p = changedItems.indexOf(upd[count].ServerId);
                             if (p>-1) changedItems.splice(p,1);

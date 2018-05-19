@@ -22,7 +22,7 @@ status.wbxmlmissingfield=ActiveSync protocol violation: Mandatory field <##repla
 status.OK=Ok
 status.nolightning=Lightning Add-On not installed, calendars are not supported.
 status.javascriptError=Javascript error! Check debug log for details.
-status.mailformed-xml=Could not parse XML. Please help fix this bug by (in this order)\n - disconnect this account\n - enable debug log (@Help)\n - restart Thunderbird\n - reconnect this account and re-trigger this error\n - send me the debug log or at least the XML and WBXML before the line marked with BAD XML   
+status.mailformed-xml=Could not parse XML. Check debug log for details. 
 status.invalid=Invalid server response (junk).
 status.InvalidServerOptions=The server responded with invalid server options. Check wether EAS is allowed for this user.
 
@@ -53,9 +53,9 @@ status.global.102=The request contains WBXML but it could not be decoded into XM
 status.global.103=The XML provided in the request does not follow the protocol requirements (Error 103).
 status.global.clientdenied=The EAS server reports <##replace.2##> (status ##replace.1##) and does not allow TbSync to access your account.||What-if-TbSync-is-blocked-by-my-server%3F||[help]
 
-status.ServerRejectedSomeItems=The EAS server accepted only ##replace.2## of your items and rejected the remaining ones for the following reasons: ##replace.1##. Check the debug log for "Bad item skipped". A rejection error of "invalid XML" could be caused by a bug in TbSync.
+status.ServerRejectedSomeItems=The EAS server accepted only ##replace.2## of your items and rejected the remaining ones for the following reasons: ##replace.1##. Check the debug log for "Bad item skipped".
 status.ServerRejectedAllItems=The EAS server rejected your items for the following reasons: ##replace.1##. Check the debug log for "Bad item skipped".
-status.ServerRejectedRequest=The EAS Server rejected our last request. This is probably due to a bug in TbSync. Check the debug log for more information.
+status.ServerRejectedRequest=The EAS Server rejected our last request. Check the debug log for more information.
 status.TempServerError=Server reported temporary system issue, or bad item. This is frequently a transient condition (so try again later).
 
 status.nosupportedeasversion=Server does not support ActiveSync v2.5 or v14.0 (only ##replace.1##). TbSync will not work with this ActiveSync server.
