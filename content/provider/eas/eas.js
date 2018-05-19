@@ -1081,9 +1081,11 @@ var eas = {
             let type = folders[i].type;            
             
             //Add a cached version of this folder to the database
-            folders[i].cached = "1";
-            folders[i].folderID = "cached-"+folderID;
-            db.addFolder(folders[i]);
+            if (db.getAccountSetting(account, "syncdefaultfolders") == "1") {
+                folders[i].cached = "1";
+                folders[i].folderID = "cached-"+folderID;
+                db.addFolder(folders[i]);
+            }
             db.deleteFolder(account, folderID); 
 
             if (target != "") {
