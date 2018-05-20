@@ -75,19 +75,13 @@ eas.sync.Contacts = {
         return catsArray.join("\u001A");
     },
 
-/*
 
-These need special treatment
-        0x17: 'Children',
-        0x18: 'Child',
-    
-The following are the core properties that are used by TB:
- *   - , FamilyName 
- * - _AimScreenName
- * - WebPage2 (home)
- * - Custom1, Custom2, Custom3, Custom4
-    
-*/
+
+    /* The following TB properties are not yet synced anywhere:
+       - , FamilyName 
+       - _AimScreenName
+       - WebPage2 (home)
+       - Custom1, Custom2, Custom3, Custom4 */
     
 
     //includes all properties, which can be mapped 1-to-1
@@ -263,15 +257,19 @@ The following are the core properties that are used by TB:
         }
 
 
-        //take care of categories
-        if (data.Categories && data.Categories.Category) {
-            let cats = [];
-            if (Array.isArray(data.Categories.Category)) cats = data.Categories.Category;
-            else cats.push(data.Categories.Category);
-            
-            item.card.setProperty("Categories", this.categoriesToString(cats));
+        //take care of categories and children
+        let containers = [];
+        containers.push(["Categories", "Category"]);
+        containers.push(["Children", "Child"]);
+        for (let c=0; c < containers.length; c++) {
+            if (data[containers[c][0]] && data[containers[c][0]][containers[c][1]]) {
+                let cats = [];
+                if (Array.isArray(data[containers[c][0]][containers[c][1]])) cats = data[containers[c][0]][containers[c][1]];
+                else cats.push(data[containers[c][0]][containers[c][1]]);
+                
+                item.card.setProperty(containers[c][0], this.categoriesToString(cats));
+            }
         }
-
 
         //take care of unmapable EAS option (Contact and Contact2 group)
         for (let i=0; i < this.unused_EAS_properties.length; i++) {
@@ -364,15 +362,19 @@ The following are the core properties that are used by TB:
         }
 
 
-        //take care of categories 
-        let cats = item.card.getProperty("Categories", "");
-        if (cats) {
-            let catsArray = this.categoriesFromString(cats);
-            wbxml.otag("Categories");
-                for (let c=0; c < catsArray.length; c++) wbxml.atag("Category", catsArray[c]);
-            wbxml.ctag();            
+        //take care of categories and children
+        let containers = [];
+        containers.push(["Categories", "Category"]);
+        containers.push(["Children", "Child"]);
+        for (let c=0; c < containers.length; c++) {
+            let cats = item.card.getProperty(containers[c][0], "");
+            if (cats) {
+                let catsArray = this.categoriesFromString(cats);
+                wbxml.otag(containers[c][0]);
+                for (let ca=0; ca < catsArray.length; ca++) wbxml.atag(containers[c][1], catsArray[ca]);
+                wbxml.ctag();            
+            }
         }
-
 
         //take care of notes - SWITCHING TO AirSyncBase (if 2.5, we still need Contact group here!)
         let description = item.card.getProperty("Notes", "");
