@@ -95,7 +95,7 @@ eas.sync.Contacts = {
         WebPage1: 'WebPage',
         SpouseName: 'Spouse',
         CellularNumber: 'MobilePhoneNumber',
-	    PagerNumber: 'PagerNumber',
+        PagerNumber: 'PagerNumber',
 
         HomeCity: 'HomeAddressCity',
         HomeCountry: 'HomeAddressCountry',
