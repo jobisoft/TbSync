@@ -317,42 +317,44 @@ var tbSync = {
     syncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
             //update status bar
-            let status = tbSync.window.document.getElementById("tbsync.status");
-            if (status) {
+            if (tbSync) {
+                let status = tbSync.window.document.getElementById("tbsync.status");
+                if (status) {
 
-                let label = "TbSync: ";
+                    let label = "TbSync: ";
 
-                //check if any account is syncing, if not switch to idle
-                let accounts = tbSync.db.getAccounts();
-                let idle = true;
-                let err = false;
-                for (let i=0; i<accounts.IDs.length && idle; i++) {
-                    //set idle to false, if at least one account is syncing
-                    if (tbSync.isSyncing(accounts.IDs[i])) idle = false;
-            
-                    //check for errors
-                    switch (tbSync.db.getAccountSetting(accounts.IDs[i], "status")) {
-                        case "OK":
-                        case "disabled":
-                        case "notsyncronized":
-                        case "nolightning":
-                        case "syncing":
-                            break;
-                        default:
-                            err = true;
+                    //check if any account is syncing, if not switch to idle
+                    let accounts = tbSync.db.getAccounts();
+                    let idle = true;
+                    let err = false;
+                    for (let i=0; i<accounts.IDs.length && idle; i++) {
+                        //set idle to false, if at least one account is syncing
+                        if (tbSync.isSyncing(accounts.IDs[i])) idle = false;
+                
+                        //check for errors
+                        switch (tbSync.db.getAccountSetting(accounts.IDs[i], "status")) {
+                            case "OK":
+                            case "disabled":
+                            case "notsyncronized":
+                            case "nolightning":
+                            case "syncing":
+                                break;
+                            default:
+                                err = true;
+                        }
                     }
-                }
 
-                if (idle) {
-                    if (err) label +=tbSync.getLocalizedMessage("info.error");   
-                    else label += tbSync.getLocalizedMessage("info.idle");   
-                } else {
-                    label += tbSync.getLocalizedMessage("info.sync");
+                    if (idle) {
+                        if (err) label +=tbSync.getLocalizedMessage("info.error");   
+                        else label += tbSync.getLocalizedMessage("info.idle");   
+                    } else {
+                        label += tbSync.getLocalizedMessage("info.sync");
+                    }
+                    
+                    if (tbSync.updatesAvailable()) label = label + " (update available)";
+                    status.label = label;      
+                    
                 }
-                
-                if (tbSync.updatesAvailable()) label = label + " (update available)";
-                status.label = label;      
-                
             }
         }
     },
