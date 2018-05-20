@@ -330,9 +330,9 @@ eas.sync = {
                         tbSync.dump("Delete request, but element is in delete_log, no action needed.", ServerId);
                         db.removeItemFromChangeLog(syncdata.targetId, ServerId);                        
                 } else {
-                    tbSync.dump("Delete request, but element not found", ServerId);
-                    //resync to avoid out-of-sync problems
-                    throw eas.finishSync("DeleteElementNotFound", eas.flags.resyncFolder);
+                    tbSync.synclog("Warning", "Delete request for element <"+ServerId+">, but element not found! Ignoring." );
+                    //resync to avoid out-of-sync problems - but also, sometimes we do get these and than end in a resync loop
+                    //throw eas.finishSync("DeleteElementNotFound", eas.flags.resyncFolder);
                 }
                 syncdata.done++;
             }
