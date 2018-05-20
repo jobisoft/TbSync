@@ -460,7 +460,10 @@ var eas = {
                         syncdata.targetObj = eas.sync.Contacts.promisifyAddressbook(syncdata.addressbookObj);
                         
                         if (tbSync.db.getAccountSetting(syncdata.account, "tzpush") == "1") yield eas.tzpush.start(syncdata); //using old tzpush contact sync code
-                        else yield eas.sync.start(syncdata);   //using new tbsync contacts sync code
+                        else {
+                            tbSync.dump("CONTACT SYNC", "NEW SYNC METHOD!");
+                            yield eas.sync.start(syncdata);   //using new tbsync contacts sync code
+                        }
                         break;
 
                     case "Calendar":
