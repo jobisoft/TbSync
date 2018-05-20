@@ -374,6 +374,20 @@ The following are the core properties that are used by TB:
         }
 
 
+        //take care of notes - SWITCHING TO AirSyncBase (if 2.5, we still need Contact group here!)
+        let description = item.card.getProperty("Notes", "");
+        if (asversion == "2.5") {
+            wbxml.atag("Body", description);
+        } else {
+            wbxml.switchpage("AirSyncBase");
+            wbxml.otag("Body");
+                wbxml.atag("Type", "1");
+                wbxml.atag("EstimatedDataSize", "" + description.length);
+                wbxml.atag("Data", description);
+            wbxml.ctag();
+        }
+
+
         //take care of Contacts2 group - SWITCHING TO CONTACTS2
         wbxml.switchpage("Contacts2");
 
@@ -392,18 +406,6 @@ The following are the core properties that are used by TB:
         }
 
 
-        //take care of notes - SWITCHING TO AirSyncBase
-        let description = item.card.getProperty("Notes", "");
-        if (asversion == "2.5") {
-            wbxml.atag("Body", description);
-        } else {
-            wbxml.switchpage("AirSyncBase");
-            wbxml.otag("Body");
-                wbxml.atag("Type", "1");
-                wbxml.atag("EstimatedDataSize", "" + description.length);
-                wbxml.atag("Data", description);
-            wbxml.ctag();
-        }
 
         return wbxml.getBytes();
     }
