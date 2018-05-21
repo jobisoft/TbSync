@@ -28,7 +28,7 @@ var eas = {
 
             let f2 = window.document.getElementById("NameField2Container");
             if (f2) {
-                let hbox = tbSync.createXulElement(window, "hbox", {align: "center", id:"MiddleNameContainer"});
+                let hbox = tbSync.createXulElement(window, "hbox", {align: "center", id:"MiddleNameContainer", hidden:"true"});
                 let spacer = tbSync.createXulElement(window, "spacer", {flex: "1"});        
                 let label = tbSync.createXulElement(window, "label", {control: "MiddleName", value: "MiddleName"});
                 let hbox2 = tbSync.createXulElement(window, "hbox", {class: "CardEditWidth"});        
@@ -42,8 +42,8 @@ var eas = {
                 f2.parentNode.insertBefore(hbox, f2);
             }
             
-            window.RegisterLoadListener(tbSync.eas.onLoadCard);
-            window.RegisterSaveListener(tbSync.eas.onSaveCard);
+            window.RegisterLoadListener(tbSync.eas.sync.Contacts.onLoadCard);
+            window.RegisterSaveListener(tbSync.eas.sync.Contacts.onSaveCard);
             
         }
     },
@@ -55,8 +55,8 @@ var eas = {
             let fM = window.document.getElementById("MiddleNameContainer");
             if (fM) fM.parentNode.removeChild(fM);
 
-            window.UnregisterLoadListener(tbSync.eas.onLoadCard);
-            window.UnregisterSaveListener(tbSync.eas.onSaveCard);
+            window.UnregisterLoadListener(tbSync.eas.sync.Contacts.onLoadCard);
+            window.UnregisterSaveListener(tbSync.eas.sync.Contacts.onSaveCard);
         }
     },
 
@@ -90,15 +90,6 @@ var eas = {
     cleanup4lightning: function ()  {
     },
 
-    //What to do, if card is opened for edit in UI
-    onLoadCard: function (aCard, aDocument) {
-        aDocument.getElementById("MiddleName").value=aCard.getProperty("EAS-MiddleName", "");
-    },
-
-    //What to do, if card is saved in UI
-    onSaveCard: function (aCard, aDocument) {
-        aCard.setProperty("EAS-MiddleName", aDocument.getElementById("MiddleName").value);
-    },
 
 
 
