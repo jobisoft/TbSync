@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<overlay id="abcardWindow">
+
+    <hbox id="MiddleNameContainer" align="center" insertafter="NameField1Container" >
+        <spacer flex="1" />
+        <label control="MiddleName" value="Middle:" />
+        <hbox class="CardEditWidth" >
+            <textbox id="MiddleName" flex="1" class="CardEditWidth" />
+        </hbox>
+    </hbox>
+
+</overlay>
+
+
+

@@ -118,23 +118,6 @@ function shutdown(data, reason) {
 }
 
 
-function onLoadCard(aCard, aDocument) {
-    aDocument.getElementById("MiddleName").value=aCard.getProperty("EAS-MiddleName", "");
-}
-
-function onSaveCard(aCard, aDocument) {
-    aCard.setProperty("EAS-MiddleName", aDocument.getElementById("MiddleName").value);
-}
-
-function createXulElement(window, type, attributes) {
-    let element = window.document.createElement(type);
-    
-    let keys = Object.keys(attributes);
-    for (a=0; a < keys.length; a++) {
-        element.setAttribute(keys[a],attributes[keys[a]]);
-    }
-    return element;
-}
 
 
 
@@ -148,17 +131,20 @@ function forEachOpenWindow(todo)  // Apply a function to all open windows
 
 function loadIntoWindow(window) {
     /* call/move your UI construction function here */
+    for (let i=0; i < tbSync.syncProviderList.length; i++) {
+        tbSync[tbSync.syncProviderList[i]].loadIntoWindow(window);
+    }
     
     //cardEditDialog
     if (window.document.getElementById("abcardWindow")) {
 
         let f2 = window.document.getElementById("NameField2Container");
         if (f2) {
-            let hbox = createXulElement(window, "hbox", {align: "center", id:"MiddleNameContainer"});
-            let spacer = createXulElement(window, "spacer", {flex: "1"});        
-            let label = createXulElement(window, "label", {control: "MiddleName", value: "MiddleName"});
-            let hbox2 = createXulElement(window, "hbox", {class: "CardEditWidth"});        
-            let textbox = createXulElement(window, "textbox", {class: "CardEditWidth", flex:"1", id: "MiddleName"});
+            let hbox = tbSync.createXulElement(window, "hbox", {align: "center", id:"MiddleNameContainer"});
+            let spacer = tbSync.createXulElement(window, "spacer", {flex: "1"});        
+            let label = tbSync.createXulElement(window, "label", {control: "MiddleName", value: "MiddleName"});
+            let hbox2 = tbSync.createXulElement(window, "hbox", {class: "CardEditWidth"});        
+            let textbox = tbSync.createXulElement(window, "textbox", {class: "CardEditWidth", flex:"1", id: "MiddleName"});
 
             hbox2.appendChild(textbox);
             hbox.appendChild(spacer);
@@ -168,23 +154,26 @@ function loadIntoWindow(window) {
             f2.parentNode.insertBefore(hbox, f2);
         }
         
-        window.RegisterLoadListener(onLoadCard);
-        window.RegisterSaveListener(onSaveCard);
+        window.RegisterLoadListener(tbSync.eas.onLoadCard);
+        window.RegisterSaveListener(tbSync.eas.onSaveCard);
 
     }
 }
 
 function unloadFromWindow(window) {
     /* call/move your UI tear down function here */
-
+    for (let i=0; i < tbSync.syncProviderList.length;i++) {
+        tbSync[tbSync.syncProviderList[i]].unloadFromWindow(window);
+    }
+    
     //cardEditDialog
     if (window.document.getElementById("abcardWindow")) {
 
         let fM = window.document.getElementById("MiddleNameContainer");
         if (fM) fM.parentNode.removeChild(fM);
 
-        window.UnregisterLoadListener(onLoadCard);
-        window.UnregisterSaveListener(onSaveCard);
+        window.UnregisterLoadListener(tbSync.eas.onLoadCard);
+        window.UnregisterSaveListener(tbSync.eas.onSaveCard);
     }
 }
 

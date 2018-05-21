@@ -17,8 +17,18 @@ var eas = {
     
 
     init: Task.async (function* ()  {
+        eas.overlays = {};
+        eas.overlays.abcardWindow = yield tbSync.fetchFile("chrome://tbsync/content/provider/eas/overlays/abCard.xul");
     }),
 
+    //EAS specific UI injections
+    loadIntoWindow: function (window) {
+    },
+
+    unloadFromWindow: function (window) {
+    },
+
+    
     //this is  called, after lighning has become available - it is called by tbSync.onLightningLoad
     init4lightning: Task.async (function* () {
         //If an EAS calendar is currently NOT associated with an email identity, try to associate, 
@@ -48,6 +58,15 @@ var eas = {
     cleanup4lightning: function ()  {
     },
 
+    //What to do, if card is opened for edit in UI
+    onLoadCard: function (aCard, aDocument) {
+        aDocument.getElementById("MiddleName").value=aCard.getProperty("EAS-MiddleName", "");
+    },
+
+    //What to do, if card is saved in UI
+    onSaveCard: function (aCard, aDocument) {
+        aCard.setProperty("EAS-MiddleName", aDocument.getElementById("MiddleName").value);
+    },
 
 
 

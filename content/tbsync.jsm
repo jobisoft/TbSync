@@ -553,6 +553,16 @@ var tbSync = {
 
 
     // TOOLS
+    createXulElement: function (window, type, attributes) {
+        let element = window.document.createElement(type);
+        
+        let keys = Object.keys(attributes);
+        for (let a=0; a < keys.length; a++) {
+            element.setAttribute(keys[a],attributes[keys[a]]);
+        }
+        return element;
+    },
+
     openTBtab: function (url) {
         let tabmail = null;
         if (tbSync.window) {
@@ -1138,7 +1148,7 @@ var tbSync = {
 
             filePath = 'file:///' + file.path.replace(/\\/g, '\/').replace(/^\s*\/?/, '').replace(/\ /g, '%20');
         }
-	
+    
         card.setProperty("PhotoName", photo);
         card.setProperty("PhotoType", "file");
         card.setProperty("PhotoURI", filePath);
