@@ -23,9 +23,41 @@ var eas = {
 
     //EAS specific UI injections
     loadIntoWindow: function (window) {
+        //cardEditDialog
+        if (window.document.getElementById("abcardWindow")) {
+
+            let f2 = window.document.getElementById("NameField2Container");
+            if (f2) {
+                let hbox = tbSync.createXulElement(window, "hbox", {align: "center", id:"MiddleNameContainer"});
+                let spacer = tbSync.createXulElement(window, "spacer", {flex: "1"});        
+                let label = tbSync.createXulElement(window, "label", {control: "MiddleName", value: "MiddleName"});
+                let hbox2 = tbSync.createXulElement(window, "hbox", {class: "CardEditWidth"});        
+                let textbox = tbSync.createXulElement(window, "textbox", {class: "CardEditWidth", flex:"1", id: "MiddleName"});
+
+                hbox2.appendChild(textbox);
+                hbox.appendChild(spacer);
+                hbox.appendChild(label);
+                hbox.appendChild(hbox2);
+                
+                f2.parentNode.insertBefore(hbox, f2);
+            }
+            
+            window.RegisterLoadListener(tbSync.eas.onLoadCard);
+            window.RegisterSaveListener(tbSync.eas.onSaveCard);
+            
+        }
     },
 
     unloadFromWindow: function (window) {
+        //cardEditDialog
+        if (window.document.getElementById("abcardWindow")) {
+
+            let fM = window.document.getElementById("MiddleNameContainer");
+            if (fM) fM.parentNode.removeChild(fM);
+
+            window.UnregisterLoadListener(tbSync.eas.onLoadCard);
+            window.UnregisterSaveListener(tbSync.eas.onSaveCard);
+        }
     },
 
     
