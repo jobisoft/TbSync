@@ -1,0 +1,83 @@
+info.idle=Leerlauf
+info.error=Fehler
+info.sync=Synchronisation
+
+menu.settingslabel=Einstellungen Synchronisation (TbSync)
+
+status.notsyncronized=Konto muss synchronisiert werden, mindestens ein Element ist veraltetet.
+status.disabled=Konto ist deaktiviert, Synchronisation ist ausgeschaltet.
+status.notargets=Synchronisation abgebrochen da die Elemente zum Synchronisieren nicht erstellt werden konnten.
+status.nouserhost=Angabe des Benutzernamens und/oder des Servers fehlt. Bitte die korrekten Informationen eintragen.
+status.timeout=Kommunikations-Timeout.
+status.networkerror=Konnte nicht zum Server verbinden.
+status.404=Benutzer nicht gefunden (HTTP Fehler 404).
+status.403=Verbindungsannahme durch den Server verweigert (nicht erlaubt).
+status.401=Konnte nicht Authentifizieren, überprüfen Sie den Benutzernamen und das Passwort.
+status.449=Server erwartet Bereitstellung.
+status.500=Unbekannter Server Fehler (HTTP Fehler 500).
+status.503=Service nicht erreichbar.
+status.httperror=Kommunikationsfehler (HTTP Status ##replace.1##).
+status.wbxmlerror=Synchronisation fehlgeschlagen. Der Server antwortete mit dem Status <##replace.1##>.
+status.wbxmlmissingfield=Verletzung des ActiveSync Protokolls: Notwendiges Feld <##replace.1##> ist nicht in der Serverantwort enthalten.
+status.OK=Ok
+status.nolightning=Lightning Add-On nicht installiert, Kalenderfunktion dadurch nicht unterstützt.
+status.javascriptError=Javascript Fehler! Prüfen Sie bitte den Debug Log für die Details.
+status.mailformed-xml=Der XML Baum konnte nicht geparst werden. Bitte helfen Sie diesen Fehler zu korrigieren in dem Sie (in dieser Reihenfolge)\n - Das Konto vom Server trennen\n - Debug Log einschalten (@Hilfe)\n - Thunderbird neu starten\n - Das Konto wieder verbinden und den Fehler neu hervorrufen\n - Senden Sie mir den Log der Debug Ausgaben oder mindestens die XML und WBXML Daten die vor der Zeile mit dem fehlerhaften markierten XML liegen.   
+status.invalid=Ungültige Serverantwort (junk).
+status.InvalidServerOptions=Der Server antwortete mit ungültigen Server Optionen. Prüfen Sie das EAS für den Benutzer erlaubt ist.
+
+status.security=Konnte keine gesicherte Verbindung etablieren. Benutzen Sie eventuell ein selbst signiertes Zertifikat oder ein andersartiges nicht vertrauenswürdiges Zertifikat welches nicht in Thunderbird importiert ist? (##replace.1##)||How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F||[help]
+status.network=Konnte nicht mit dem Server verbinden (##replace.1##).
+
+status.syncing=Synchronisation
+status.connecting=Verbinde mit Server
+status.skipped=Noch nicht unterstützt, übersprungen
+status.aborted=Nicht synchronisiert
+status.pending=Warten zum Synchronisieren
+status.modified=Lokale Veränderungen
+
+status.resync-loop=Es ist ein Fehler aufgetreten der nicht durch wiederholtes Synchronisieren des Kontos behoben werden konnte. Bitte deaktivieren sie das Konto und wiederholen den Vorgang. (Fehler: Synchronisationsschleife)
+
+status.policy.2=Es gibt keine Regel für diesen Klient. Kontaktieren Sie Ihren Server Administrator oder deaktivieren Sie die Bereitstellung dieses Konto in TbSync.
+status.policy.3=Unbekannter Wert für den Regeltyp. Kontaktieren Sie Ihren Server Administrator oder deaktivieren Sie die Bereitstellung dieses Konto in TbSync.
+status.policy.4=Die Daten für die Regeln auf dem Server sind beschädigt (möglicherweise manipuliert). Kontaktieren Sie Ihren Server Administrator oder deaktivieren Sie die Bereitstellung dieses Konto in TbSync.
+status.policy.5=Der Klient bestätigt einen falschen Richtlinienschlüssel. Kontaktieren Sie Ihren Server Administrator oder deaktivieren Sie die Bereitstellung dieses Konto in TbSync.
+
+status.provision=Bereitstellung fehlerhaft mit folgendem Status <##replace.1##>
+
+status.folderDelete.3=Kann keinen Systemordner löschen.
+status.folderDelete.6=Das Kommando konnte nicht abgeschlossen werden, ein Fehler ist auf dem Server aufgetreten.
+
+status.global.101=Die Anforderung beinhaltet WBXML konnte aber nicht in XML dekodiert werden (Fehler 102).
+status.global.102=Die Anforderung beinhaltet WBXML konnte aber nicht in XML dekodiert werden (Fehler 102).
+status.global.103=Das XML, welches durch die Anforderung bereit gestellt worden ist, entspricht nicht den Protokollanforderungen (Fehler 103).
+
+status.ServerRejectedSomeItems=Der EAS Server akzeptierte nur ##replace.2## von Ihren Elementen und hat die verbliebenen Elemente mit den folgenden Gründen zurückgewiesen: ##replace.1##. Prüfen Sie den Debug Log auf "Bad item skipped". Eine Zurückweisung mit dem Fehler "invalid XML" könnte durch einen Fehler in TbSync verursacht sein.
+status.ServerRejectedAllItems=Der EAS Server hat Ihre Elemente wegen der folgenden Gründen zurückgewiesen : ##replace.1##. Prüfen Sie den Debug Log auf "Bad item skipped".
+status.ServerRejectedRequest=Der EAS Server hat die letzte Anforderung zurückgewiesen. Dies kann möglicher Weise ein Fehler in TbSync sein. Prüfen Sie den Debug Log für mehr Informationen.
+status.TempServerError=Der Server meldete einen temporären Systemfehler, oder ein fehlerhaftes Element. Dies ist häufig ein vorübergehender Zustand (versuchen Sie es später erneut).
+
+status.nosupportedeasversion=Der Server unterstützt kein ActiveSync v2.5 oder v14.0 (nur ##replace.1##). TbSync kann nicht mit diesem Server arbeiten.
+status.notsupportedeasversion=Der Server unterstützt nicht die ausgewählte ActiveSync Version v##replace.1## (nur ##replace.2##).
+
+prompt.DeleteAccount=Sind Sie sicher, dass Sie dieses Konto ##accountName## löschen möchten?
+prompt.Disable=Sind Sie sicher, dass Sie dieses Konto deaktivieren möchten? Alle lokalen Veränderungen, welche noch nicht synchronisiert sind, werden verloren gehen!
+prompt.Unsubscribe=Sind Sie sicher, dass Sie dieses Element abwählen möchten? Alle lokalen Veränderungen, welche noch nicht synchronisiert sind, werden verloren gehen!
+prompt.UnlockSettings=Das Ändern irgendeines der vordefinierten Servereinstellungen kann zu Synchronisationsfehlern führen. Sind Sie sicher, dass Sie alle vordefinierten Servereinstellungen entsperren wollen?
+prompt.Password=Bitte geben Sie das Passwort für den Benutzer ##user## ein:
+
+button.syncthis=Synchronisiere dieses Konto
+button.tryagain=Versuche erneut mit dem Server zu verbinden
+button.enableAndConnect=Aktiviere das Konto & Versuche den Server zu kontaktieren
+button.disableAndEdit=Deaktiviere das Konto um die Einstellungen zu verändern
+
+account=TbSync Konto [##accountname##]
+
+accountacctions.delete=Lösche Konto "##accountname##"
+accountacctions.sync=Synchronisiere Konto "##accountname##"
+accountacctions.enable=Aktiviere Konto "##accountname##" & Versuche den Server zu kontaktieren
+accountacctions.disable=Deaktiviere Konto "##accountname##"
+
+config.auto=ActiveSync Server Konfiguration (Autodiscover)
+config.custom=ActiveSync Server Konfiguration
+config.outlook.com=Server Konfiguration für Outlook.com Konten

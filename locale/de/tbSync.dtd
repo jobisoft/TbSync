@@ -1,0 +1,31 @@
+<!ENTITY popup.opensettings "Öffnen TbSync Kontoverwaltung">
+<!ENTITY popup.sync "Synchronisiere alle Konten">
+<!ENTITY popup.cancelsync "Alle noch austehenden Synchronisationen abbrechen">
+
+<!ENTITY toolbar.label " Synchronisiere alle TbSync Konten">
+<!ENTITY toolbar.tooltiptext "Synchronisiere letze Änderungen">
+
+<!ENTITY manager.accounts "Konten">
+<!ENTITY manager.status "Status">
+<!ENTITY manager.title "TbSync Kontoverwaltung">
+
+<!ENTITY pref.TbSync "TbSync">
+<!ENTITY pref.Close "Schliesen">
+<!ENTITY pref.SettingDialog "Konto Einstellungen">
+
+<!ENTITY pref.AccountActions "Konten Einstellungen">
+<!ENTITY pref.AddAccount "Neues Konto hinzufügen">
+<!ENTITY pref.SyncAll "Synchronisiere alle aktivierten Konten">
+
+<!ENTITY pref.SynchronizeAccount "Synchronisiere Konto">
+<!ENTITY pref.DisableAccount "Deaktiviere Konto">
+<!ENTITY pref.DeleteAccount "Lösche Konto">
+<!ENTITY pref.ShowSyncLog "Zeige Logmeldungen der Synchronisation">
+<!ENTITY pref.EnableAccount "Konto aktivieren &amp; Kontaktaufnahme zum Server">
+<!ENTITY pref.RetryConnectAccount "Erneute Kontaktaufnahme zum Server">
+
+<!ENTITY pref.noaccounts "Es sind aktuell noch keine Konten konfiguriert.">
+
+<!ENTITY pref.help "Hilfe">
+<!ENTITY pref.cape "Cape">
+<!ENTITY pref.catman "Kategorie Verwaltung">
