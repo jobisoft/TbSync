@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <!DOCTYPE window SYSTEM "chrome://tbsync/locale/eas.dtd">
+
 <overlay id="abcardWindow">
 
-    <hbox id="MiddleNameContainer" align="center" insertafter="NameField1Container" hidden="true" >
+    <hbox id="MiddleNameContainer" align="center" insertafter="NameField1Container" >
         <spacer flex="1" />
         <label control="MiddleName" value="&abCard.MiddleName;" />
         <hbox class="CardEditWidth" >
@@ -106,9 +107,9 @@
       <vbox id="easFields2Panel" appendto="abTabPanels" >
       <hbox align="center">
         <spacer flex="1"/>
-        <label control="OtherAddress" value="Address:"/>
+        <label control="OtherAddress" value="&abCard.OtherAddress;"/>
         <hbox class="AddressCardEditWidth">
-          <textbox id="OtherAddressStreet" flex="1" class="easProperty" />
+          <textbox id="OtherAddress" flex="1" class="easProperty" />
         </hbox>
       </hbox>
       <hbox align="center">
@@ -120,24 +121,24 @@
       </hbox>
       <hbox id="OtherCityContainer" align="center">
         <spacer flex="1"/>
-        <label control="OtherCity" value="City:"/>
+        <label control="OtherAddressCity" value="&abCard.OtherCity;"/>
         <hbox id="OtherCityFieldContainer" align="center" class="AddressCardEditWidth">
           <textbox id="OtherAddressCity" flex="1" class="easProperty" />
         </hbox>
       </hbox>
       <hbox align="center">
         <spacer flex="1"/>
-        <label control="OtherState" value="State:"/>
+        <label control="OtherAddressState" value="&abCard.OtherState;"/>
         <hbox align="center" class="AddressCardEditWidth">
           <textbox id="OtherAddressState" flex="1" class="easProperty" />
           <spacer class="stateZipSpacer"/>
-          <label control="OtherAddressPostalCode" value="ZIP/Postal Code:"/>
+          <label control="OtherAddressPostalCode" value="&abCard.OtherZip;"/>
           <textbox id="OtherAddressPostalCode" class="easProperty ZipWidth"/>
         </hbox>
       </hbox>
       <hbox align="center">
         <spacer flex="1"/>
-        <label control="OtherCountry" value="Country:"/>
+        <label control="OtherAddressCountry" value="&abCard.OtherCountry;" />
         <hbox class="AddressCardEditWidth">
           <textbox id="OtherAddressCountry" flex="1" class="easProperty" />
         </hbox>

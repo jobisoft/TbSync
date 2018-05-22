@@ -34,7 +34,6 @@ var eas = {
     onLoadCard: function (aCard, aDocument) {
         if (aCard.getProperty("EASID","")) {
             //aDocument.defaultView.console.log("read:" + aCard.getProperty("EAS-MiddleName", ""));
-            aDocument.getElementById("MiddleNameContainer").hidden=false;
             let items = aDocument.getElementsByClassName("easProperty");
             for (let i=0; i < items.length; i++)
             {

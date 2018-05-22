@@ -130,8 +130,7 @@ eas.sync.Contacts = {
         OtherAddressCity: 'OtherAddressCity',
         OtherAddressCountry: 'OtherAddressCountry',
         OtherAddressPostalCode: 'OtherAddressPostalCode',
-        OtherAddressState: 'OtherAddressState',
-        OtherAddressStreet: 'OtherAddressStreet'
+        OtherAddressState: 'OtherAddressState'
     },
 
     //there are currently no TB fields for these values, TbSync will store (and resend) them, but will not allow to view/edit
@@ -229,6 +228,7 @@ eas.sync.Contacts = {
         let seperator = String.fromCharCode(tbSync.db.getAccountSetting(syncdata.account,"seperator")); // options are 44 (,) or 10 (\n)
         streets.push(["HomeAddressStreet", "HomeAddress", "HomeAddress2"]); //EAS, TB1, TB2
         streets.push(["BusinessAddressStreet", "WorkAddress", "WorkAddress2"]);
+        streets.push(["OtherAddressStreet", "OtherAddress", "OtherAddress2"]);
         for (let p=0; p < streets.length; p++) {
             let value = xmltools.checkString(data[streets[p][0]]);
             if (value == "") {
@@ -337,6 +337,7 @@ eas.sync.Contacts = {
         let seperator = String.fromCharCode(tbSync.db.getAccountSetting(syncdata.account,"seperator")); // options are 44 (,) or 10 (\n)
         streets.push(["HomeAddressStreet", "HomeAddress", "HomeAddress2"]); //EAS, TB1, TB2
         streets.push(["BusinessAddressStreet", "WorkAddress", "WorkAddress2"]);
+        streets.push(["OtherAddressStreet", "OtherAddress", "OtherAddress2"]);        
         for (let p=0; p < streets.length; p++) {
             let values = [];
             let s1 = item.card.getProperty(streets[p][1], "");

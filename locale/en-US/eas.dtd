@@ -64,3 +64,9 @@
 <!ENTITY abCard.CarPhoneNumber "Car Phone:">
 <!ENTITY abCard.RadioPhoneNumber "Radio Phone:">
 <!ENTITY abCard.CompanyMainPhone "Work Main Phone:">
+
+<!ENTITY abCard.OtherAddress "Address:">
+<!ENTITY abCard.OtherCity "City:">
+<!ENTITY abCard.OtherCountry "Country:">
+<!ENTITY abCard.OtherZip "ZIP Code:">
+<!ENTITY abCard.OtherState "State:">
