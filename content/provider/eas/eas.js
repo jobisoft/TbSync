@@ -17,12 +17,12 @@ var eas = {
     
 
     init: Task.async (function* ()  {
-        //load overlays from xpi
+        //dynamically load overlays from xpi
         eas.overlays = {};
         let loadXUL = ["abCardWindow"];
         for (let i=0; i < loadXUL.length; i++) {            
             let xul = yield tbSync.fetchFile("chrome://tbsync/content/provider/eas/overlays/"+loadXUL[i]+".xul", "String");
-            tbSync.dump("Loaded XUL <"+loadXUL[i]+">", xul);
+            //tbSync.dump("Loaded XUL <"+loadXUL[i]+">", xul);
             eas.overlays[loadXUL[i]] = tbSync.xultools.getDataFromXULString(xul);
         }
     }),

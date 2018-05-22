@@ -48,3 +48,12 @@
 <!ENTITY servertype.unlock "Double click to unlock all predefined server settings.">
 
 <!ENTITY pref.switchFoldersAndConfig "Double click to switch between folder view and settings view.">
+
+<!ENTITY abCard.BusinessFaxNumber "Work Fax:">
+<!ENTITY abCard.Business2PhoneNumber "Work Phone 2:">
+<!ENTITY abCard.AssistantPhoneNumber "Assistant Phone:">
+<!ENTITY abCard.CarPhoneNumber "Car Phone:">
+<!ENTITY abCard.RadioPhoneNumber "Radio Phone:">
+<!ENTITY abCard.Email3Address "Additional Email 2:">
+<!ENTITY abCard.Home2PhoneNumber "Home Phone 2:">
+<!ENTITY abCard.CompanyMainPhone "Work Main Phone:">
