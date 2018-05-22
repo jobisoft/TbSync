@@ -57,7 +57,7 @@ var eas = {
     //EAS specific UI injections
     loadIntoWindow: function (window) {
         //cardEditDialog
-        if (window.document.getElementById("abcardWindow")) {
+        if (window.document.getElementById("abcardWindow") && tbSync.prefSettings.getBoolPref("eas.use_tzpush_contactsync_code") == false) {
             tbSync.xultools.insertXulOverlay(window.document, tbSync.eas.overlays.abCardWindow);
             window.RegisterLoadListener(tbSync.eas.onLoadCard);
             window.RegisterSaveListener(tbSync.eas.onSaveCard);

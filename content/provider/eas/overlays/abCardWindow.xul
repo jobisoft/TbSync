@@ -19,22 +19,22 @@
         </hbox>
     </hbox>
 
-    <tab id="easFields1Tab" label="ActiveSync Fields" appendto="abTabs" />
-    <tab id="easFields2tab" label="Other Address" appendto="abTabs" />
+    <tab id="easFields1Tab" label="&abCard.header.eas;" appendto="abTabs" />
+    <tab id="easFields2tab" label="&abCard.header.otheraddress;" appendto="abTabs" />
       
       <vbox id="easFields1Panel" appendto="abTabPanels" >
       <hbox>
         <vbox id="WorkPhoneNumbers">
           <!-- This box contains the Names and Emailnames -->
           <groupbox>
-            <caption label="Additional Work Numbers:"/>
+            <caption label="&abCard.header.worknumbers;"/>
             <hbox id="Business2PhoneNumberContainer" align="center"><spacer flex="1"/><label control="Business2PhoneNumber" value="&abCard.Business2PhoneNumber;"/><textbox id="Business2PhoneNumber" class="easProperty PhoneEditWidth" /></hbox>
             <hbox id="BusinessFaxNumberContainer" align="center" insertafter="FaxNumberContainer"><spacer flex="1"/><label control="BusinessFaxNumber" value="&abCard.BusinessFaxNumber;"/><textbox id="BusinessFaxNumber" class="easProperty PhoneEditWidth" /></hbox>
             <hbox id="CompanyMainPhoneContainer" align="center"><spacer flex="1"/><label control="CompanyMainPhone" value="&abCard.CompanyMainPhone;"/><textbox id="CompanyMainPhone" class="easProperty PhoneEditWidth" /></hbox>
             <hbox id="AssistantPhoneNumberContainer" align="center"><spacer flex="1"/><label control="AssistantPhoneNumber" value="&abCard.AssistantPhoneNumber;"/><textbox id="AssistantPhoneNumber" class="easProperty PhoneEditWidth" /></hbox>
           </groupbox>
           <groupbox>
-            <caption label="People:"/>
+            <caption label="&abCard.header.people;"/>
             <hbox id="ManagerNameField" align="center">
               <spacer flex="1"/>
               <label control="ManagerName" value="&abCard.ManagerName;"/>
@@ -63,7 +63,7 @@
         <!-- Phone Number section -->
         <vbox id="HomePhoneNumbers:">
           <groupbox>
-            <caption label="Additional Home Numbers:"/>
+            <caption label="&abCard.header.homenumbers;"/>
             <hbox id="Home2PhoneNumberContainer" align="center">
               <spacer flex="1"/>
               <label control="Home2PhoneNumber" value="&abCard.Home2PhoneNumber;"/>
@@ -71,12 +71,12 @@
             </hbox>
           </groupbox>
           <groupbox>
-            <caption label="Other Numbers:"/>
+            <caption label="&abCard.header.othernumbers;"/>
             <hbox id="CarPhoneNumberContainer" align="center"><spacer flex="1"/><label control="CarPhoneNumber" value="&abCard.CarPhoneNumber;" /><textbox id="CarPhoneNumber" class="easProperty PhoneEditWidth" /></hbox>
             <hbox id="RadioPhoneNumberContainer" align="center"><spacer flex="1"/><label control="RadioPhoneNumber" value="&abCard.RadioPhoneNumber;" /><textbox id="RadioPhoneNumber" class="easProperty PhoneEditWidth" /></hbox>
           </groupbox>
           <groupbox>
-            <caption label="Messaging:"/>
+            <caption label="&abCard.header.messaging;"/>
             <hbox id="IMAddressContainer" align="center">
               <spacer flex="1"/>
               <label control="IMAddress" value="IM Address #1:"/>

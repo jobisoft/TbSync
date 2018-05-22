@@ -70,3 +70,12 @@
 <!ENTITY abCard.OtherCountry "Country:">
 <!ENTITY abCard.OtherZip "ZIP Code:">
 <!ENTITY abCard.OtherState "State:">
+
+
+<!ENTITY abCard.header.worknumbers "Additional work numbers:">
+<!ENTITY abCard.header.homenumbers "Additional home numbers:">
+<!ENTITY abCard.header.othernumbers "Additional numbers:">
+<!ENTITY abCard.header.messaging "Messaging:">
+<!ENTITY abCard.header.people "People:">
+<!ENTITY abCard.header.eas "ActiveSync I">
+<!ENTITY abCard.header.otheraddress "ActiveSync II">
