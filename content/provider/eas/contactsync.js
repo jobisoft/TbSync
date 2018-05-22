@@ -112,6 +112,7 @@ eas.sync.Contacts = {
         WorkState: 'BusinessAddressState',
         WorkPhone: 'BusinessPhoneNumber',
         
+        //Missusing so that "Custom1" is saved to the server
         Custom1: 'OfficeLocation',
 
         //As in TZPUSH
@@ -137,16 +138,17 @@ eas.sync.Contacts = {
     unused_EAS_properties: [
         'Suffix',
         'Title',
-        'Alias',
-        'WeightedRank',
-        'YomiCompanyName',
-        'YomiFirstName',
-        'YomiLastName',
-        'CompressedRTF'
+        'Alias', //pseudo field
+        'WeightedRank', //pseudo field
+        'YomiCompanyName', //japanese phonetic equivalent
+        'YomiFirstName', //japanese phonetic equivalent
+        'YomiLastName', //japanese phonetic equivalent
+        'CompressedRTF' 
     ],
     
     map_TB_properties_to_EAS_properties2 : {
         NickName: 'NickName',
+        //Missusing so that "Custom2,3,4" is saved to the server
         Custom2: 'CustomerId',
         Custom3: 'GovernmentId',
         Custom4: 'AccountName',
