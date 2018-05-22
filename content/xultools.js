@@ -32,18 +32,18 @@ var xultools = {
             return null;
         }
         
+        tbSync.dump("Found XUL elements",xul.documentElement.children.length);
         return xul.documentElement.children;
     },
 
 
 
 
-    createXulElement: function (window, type, attributes) {
-        let element = window.document.createElement(type);
+    createXulElement: function (document, type, attributes) {
+        let element = document.createElement(type);
         if  (attributes) {
             for  (let i=0; i <attributes.length; i++) {
                 element.setAttribute(attributes[i].name, attributes[i].value);
-                tbSync.dump("Adding", attributes[i].name + " = " + attributes[i].value);
             }
         }
         return element;
@@ -52,7 +52,7 @@ var xultools = {
 
 
 
-    removeXulOverlay : function (window, nodes, parentElement = null) {
+    removeXulOverlay : function (document, nodes, parentElement = null) {
         //only scan toplevel elements and remove them
         let nodeList = [];
         if (nodes.length === undefined) nodeList.push(nodes);
@@ -63,11 +63,9 @@ var xultools = {
             let element = null;
             switch(node.nodeType) {
                 case 1: 
-                    tbSync.dump("Removing", node.nodeName);
                     if (node.hasAttribute("id")) {
-                        let element = window.document.getElementById(node.getAttribute("id"));
+                        let element = document.getElementById(node.getAttribute("id"));
                         if (element) {
-                            tbSync.dump("OK!", node.nodeName);
                             element.parentNode.removeChild(element);
                         }
                     } 
@@ -76,7 +74,7 @@ var xultools = {
         }
     },
     
-    insertXulOverlay : function (window, nodes, parentElement = null) {
+    insertXulOverlay : function (document, nodes, parentElement = null) {
         /*
              The passed nodes value could be an entire document in a single node (type 9) or a 
              single element node (type 1) as returned by getElementById. It could however also 
@@ -86,37 +84,38 @@ var xultools = {
         let nodeList = [];
         if (nodes.length === undefined) nodeList.push(nodes);
         else nodeList = nodes;
-        
+
+        if (parentElement == null) tbSync.dump("Starting to inject XUL", nodes.length);
+
         // nodelist contains all childs
         for (let node of nodeList) {
             let element = null;
+            let allOk = true;
+            let hookAfter = null;
+            let hookName = null;
+            let hookElement = null;
             switch(node.nodeType) {
                 case 1: 
                     // before processing this, check if it is top level element and if so, if it has insertafter or insertbefore AND those elements exist
-                    let allOk = true;
-                    let hookAfter = null;
-                    let hookName = null;
-                    let hookElement = null;
                     if (!parentElement && (node.hasAttribute("insertafter") || node.hasAttribute("insertbefore"))) {
                         hookAfter = node.hasAttribute("insertafter");
                         hookName = hookAfter ? node.getAttribute("insertafter") : node.getAttribute("insertbefore");
-                        hookElement = window.document.getElementById(hookName);
+                        hookElement = document.getElementById(hookName);
                         allOk = hookElement ? true : false;
                     }
                     
                     if (allOk) {
-                        tbSync.dump("Creating", node.nodeName);
-                        element = tbSync.xultools.createXulElement(window, node.nodeName, node.attributes);
-                        if (node.hasChildNodes) tbSync.xultools.insertXulOverlay(window, node.children, element);
+                        element = tbSync.xultools.createXulElement(document, node.nodeName, node.attributes);
+                        if (node.hasChildNodes) tbSync.xultools.insertXulOverlay(document, node.children, element);
 
                         if (parentElement) {
                             // this is a child level XUL element which needs to be added to to its parent
                             parentElement.appendChild(element);
                         } else {
                             // this is a toplevel element, which needs to be added at insertafter or insertbefore
-                            tbSync.dump("ADD XUL", node.nodeName + " <" + element.id + ">");
                             if (hookAfter) hookElement.parentNode.insertBefore(element, hookElement.nextSibling);
                             else  hookElement.parentNode.insertBefore(element, hookElement);
+                            tbSync.dump("Adding <"+element.id+">", document.getElementById(element.id).tagName);
                         }
                     } else {
                         tbSync.dump("BAD XUL", "Top level overlay element <"+ node.nodeName+"> does not have attribute insertbefore or insertafter, or the specified element does not exist. Skipped");

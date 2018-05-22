@@ -17,17 +17,25 @@ var eas = {
     
 
     init: Task.async (function* ()  {
+        //load overlays from xpi
         eas.overlays = {};
-        let xul = yield tbSync.fetchFile("chrome://tbsync/content/provider/eas/overlays/abCard.xul", "String");
-        eas.overlays.abcardWindow = tbSync.xultools.getDataFromXULString(xul);
+        let loadXUL = ["abCardWindow"];
+        for (let i=0; i < loadXUL.length; i++) {            
+            let xul = yield tbSync.fetchFile("chrome://tbsync/content/provider/eas/overlays/"+loadXUL[i]+".xul", "String");
+            tbSync.dump("Loaded XUL <"+loadXUL[i]+">", xul);
+            eas.overlays[loadXUL[i]] = tbSync.xultools.getDataFromXULString(xul);
+        }
     }),
+
+
+
 
     //What to do, if card is opened for edit in UI
     onLoadCard: function (aCard, aDocument) {
         if (aCard.getProperty("EASID","")) {
             //aDocument.defaultView.console.log("read:" + aCard.getProperty("EAS-MiddleName", ""));
-            aDocument.getElementById("MiddleName").setAttribute("value", aCard.getProperty("EAS-MiddleName", ""));
             aDocument.getElementById("MiddleNameContainer").hidden=false;
+            aDocument.getElementById("MiddleName").setAttribute("value", aCard.getProperty("EAS-MiddleName", ""));
         }
     },
 
@@ -43,9 +51,9 @@ var eas = {
     loadIntoWindow: function (window) {
         //cardEditDialog
         if (window.document.getElementById("abcardWindow")) {
-            tbSync.xultools.insertXulOverlay(window, eas.overlays.abcardWindow);
-            window.RegisterLoadListener(eas.onLoadCard);
-            window.RegisterSaveListener(eas.onSaveCard);
+            tbSync.xultools.insertXulOverlay(window.document, tbSync.eas.overlays.abCardWindow);
+            window.RegisterLoadListener(tbSync.eas.onLoadCard);
+            window.RegisterSaveListener(tbSync.eas.onSaveCard);
             
         }
     },
@@ -53,11 +61,14 @@ var eas = {
     unloadFromWindow: function (window) {
         //cardEditDialog
         if (window.document.getElementById("abcardWindow")) {
-            tbSync.xultools.removeXulOverlay(window, eas.overlays.abcardWindow);
-            window.UnregisterLoadListener(eas.onLoadCard);
-            window.UnregisterSaveListener(eas.onSaveCard);
+            tbSync.xultools.removeXulOverlay(window.document, eas.overlays.abCardWindow);
+            window.UnregisterLoadListener(tbSync.eas.onLoadCard);
+            window.UnregisterSaveListener(tbSync.eas.onSaveCard);
         }
     },
+
+
+
 
     
     //this is  called, after lighning has become available - it is called by tbSync.onLightningLoad
