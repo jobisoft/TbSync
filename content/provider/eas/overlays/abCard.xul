@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <overlay id="abcardWindow">
 
-    <hbox id="MiddleNameContainer" align="center" insertafter="NameField1Container" >
+    <hbox id="MiddleNameContainer" align="center" insertafter="NameField1Container" hidden="true" >
         <spacer flex="1" />
         <label control="MiddleName" value="Middle:" />
         <hbox class="CardEditWidth" >
