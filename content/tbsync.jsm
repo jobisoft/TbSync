@@ -644,7 +644,7 @@ var tbSync = {
     }),
     
     //read file from within the XPI package
-    fetchFile: function (aURL) {
+    fetchFile: function (aURL, returnType = "Array") {
         return new Promise((resolve, reject) => {
             let uri = Services.io.newURI(aURL);
             let channel = Services.io.newChannelFromURI2(uri,
@@ -661,8 +661,12 @@ var tbSync = {
                 }
 
                 try {
-                    let data = NetUtil.readInputStreamToString(inputStream, inputStream.available()).replace("\r","").split("\n");
-                    resolve(data);
+                    let data = NetUtil.readInputStreamToString(inputStream, inputStream.available());
+                    if (returnType == "Array") {
+                        resolve(data.replace("\r","").split("\n"))
+                    } else {
+                        resolve(data);
+                    }
                 } catch (ex) {
                     reject(ex);
                 }
