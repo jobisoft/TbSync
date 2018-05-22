@@ -18,32 +18,34 @@ var eas = {
 
     init: Task.async (function* ()  {
         eas.overlays = {};
-        eas.overlays.abcardWindow = yield tbSync.fetchFile("chrome://tbsync/content/provider/eas/overlays/abCard.xul");
+        let xul = yield tbSync.fetchFile("chrome://tbsync/content/provider/eas/overlays/abCard.xul", "String");
+        eas.overlays.abcardWindow = tbSync.xultools.getDataFromXULString(xul);
     }),
 
+    //What to do, if card is opened for edit in UI
+    onLoadCard: function (aCard, aDocument) {
+        if (aCard.getProperty("EASID","")) {
+            //aDocument.defaultView.console.log("read:" + aCard.getProperty("EAS-MiddleName", ""));
+            aDocument.getElementById("MiddleName").setAttribute("value", aCard.getProperty("EAS-MiddleName", ""));
+            aDocument.getElementById("MiddleNameContainer").hidden=false;
+        }
+    },
+
+    //What to do, if card is saved in UI
+    onSaveCard: function (aCard, aDocument) {
+        if (aCard.getProperty("EASID","")) {
+            //aDocument.defaultView.console.log("saved:" + aDocument.getElementById("MiddleName").value);
+            aCard.setProperty("EAS-MiddleName", aDocument.getElementById("MiddleName").value);
+        }
+    },
+    
     //EAS specific UI injections
     loadIntoWindow: function (window) {
         //cardEditDialog
         if (window.document.getElementById("abcardWindow")) {
-
-            let f2 = window.document.getElementById("NameField2Container");
-            if (f2) {
-                let hbox = tbSync.createXulElement(window, "hbox", {align: "center", id:"MiddleNameContainer", hidden:"true"});
-                let spacer = tbSync.createXulElement(window, "spacer", {flex: "1"});        
-                let label = tbSync.createXulElement(window, "label", {control: "MiddleName", value: "MiddleName"});
-                let hbox2 = tbSync.createXulElement(window, "hbox", {class: "CardEditWidth"});        
-                let textbox = tbSync.createXulElement(window, "textbox", {class: "CardEditWidth", flex:"1", id: "MiddleName"});
-
-                hbox2.appendChild(textbox);
-                hbox.appendChild(spacer);
-                hbox.appendChild(label);
-                hbox.appendChild(hbox2);
-                
-                f2.parentNode.insertBefore(hbox, f2);
-            }
-            
-            window.RegisterLoadListener(tbSync.eas.sync.Contacts.onLoadCard);
-            window.RegisterSaveListener(tbSync.eas.sync.Contacts.onSaveCard);
+            tbSync.xultools.insertXulOverlay(window, eas.overlays.abcardWindow);
+            window.RegisterLoadListener(eas.onLoadCard);
+            window.RegisterSaveListener(eas.onSaveCard);
             
         }
     },
@@ -51,12 +53,9 @@ var eas = {
     unloadFromWindow: function (window) {
         //cardEditDialog
         if (window.document.getElementById("abcardWindow")) {
-
-            let fM = window.document.getElementById("MiddleNameContainer");
-            if (fM) fM.parentNode.removeChild(fM);
-
-            window.UnregisterLoadListener(tbSync.eas.sync.Contacts.onLoadCard);
-            window.UnregisterSaveListener(tbSync.eas.sync.Contacts.onSaveCard);
+            tbSync.xultools.removeXulOverlay(window, eas.overlays.abcardWindow);
+            window.UnregisterLoadListener(eas.onLoadCard);
+            window.UnregisterSaveListener(eas.onSaveCard);
         }
     },
 

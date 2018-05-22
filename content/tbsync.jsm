@@ -113,6 +113,7 @@ var tbSync = {
         
         // load common subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
         tbSync.includeJS("chrome://tbsync/content/db.js");
+        tbSync.includeJS("chrome://tbsync/content/xultools.js");
 
         //init DB
         yield tbSync.db.init();

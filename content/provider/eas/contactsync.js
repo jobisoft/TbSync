@@ -16,22 +16,6 @@ eas.sync.Contacts = {
         return item;
     },
 
-
-    //What to do, if card is opened for edit in UI
-    onLoadCard: function (aCard, aDocument) {
-        if (aCard.getProperty("EASID","")) {
-            aDocument.getElementById("MiddleName").value=aCard.getProperty("EAS-MiddleName", "");
-            aDocument.getElementById("MiddleNameContainer").hidden=false;
-        }
-    },
-
-    //What to do, if card is saved in UI
-    onSaveCard: function (aCard, aDocument) {
-        if (aCard.getProperty("EASID","")) {
-            aCard.setProperty("EAS-MiddleName", aDocument.getElementById("MiddleName").value);
-        }
-    },
-
     
     promisifyAddressbook: function (addressbook) {
     /* 
@@ -91,7 +75,6 @@ eas.sync.Contacts = {
     categoriesToString: function (catsArray) {
         return catsArray.join("\u001A");
     },
-
 
 
     /* The following TB properties are not yet synced anywhere:
