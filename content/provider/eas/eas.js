@@ -35,7 +35,11 @@ var eas = {
         if (aCard.getProperty("EASID","")) {
             //aDocument.defaultView.console.log("read:" + aCard.getProperty("EAS-MiddleName", ""));
             aDocument.getElementById("MiddleNameContainer").hidden=false;
-            aDocument.getElementById("MiddleName").setAttribute("value", aCard.getProperty("EAS-MiddleName", ""));
+            let items = aDocument.getElementsByClassName("easProperty");
+            for (let i=0; i < items.length; i++)
+            {
+                items[i].setAttribute("value", aCard.getProperty(items[i].id, ""));
+            }
         }
     },
 
@@ -43,7 +47,11 @@ var eas = {
     onSaveCard: function (aCard, aDocument) {
         if (aCard.getProperty("EASID","")) {
             //aDocument.defaultView.console.log("saved:" + aDocument.getElementById("MiddleName").value);
-            aCard.setProperty("EAS-MiddleName", aDocument.getElementById("MiddleName").value);
+            let items = aDocument.getElementsByClassName("easProperty");
+            for (let i=0; i < items.length; i++)
+            {
+                aCard.setProperty(items[i].id, items[i].value);
+            }
         }
     },
     

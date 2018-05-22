@@ -81,8 +81,7 @@ eas.sync.Contacts = {
        - , FamilyName 
        - _AimScreenName
        - WebPage2 (home)
-       - Custom1, Custom2, Custom3, Custom4 */
-    
+*/    
 
     //includes all properties, which can be mapped 1-to-1
     map_TB_properties_to_EAS_properties : {
@@ -91,7 +90,7 @@ eas.sync.Contacts = {
         LastName: 'LastName',
         PrimaryEmail: 'Email1Address',
         SecondEmail: 'Email2Address',
-        MFFABemail1: 'Email3Address',
+        Email3Address: 'Email3Address',
         WebPage1: 'WebPage',
         SpouseName: 'Spouse',
         CellularNumber: 'MobilePhoneNumber',
@@ -113,30 +112,33 @@ eas.sync.Contacts = {
         WorkState: 'BusinessAddressState',
         WorkPhone: 'BusinessPhoneNumber',
         
+        Custom1: 'OfficeLocation',
+
         //As in TZPUSH
-        FaxNumber: 'HomeFaxNumber'
+        FaxNumber: 'HomeFaxNumber',
+    
+        //Custom fields added to UI
+        AssistantName: 'AssistantName',
+        AssistantPhoneNumber: 'AssistantPhoneNumber',
+        BusinessFaxNumber: 'BusinessFaxNumber',
+        Business2PhoneNumber: 'Business2PhoneNumber',
+        Home2PhoneNumber: 'Home2PhoneNumber',
+        CarPhoneNumber: 'CarPhoneNumber',
+        MiddleName: 'MiddleName',
+        RadioPhoneNumber: 'RadioPhoneNumber',
+        OtherAddressCity: 'OtherAddressCity',
+        OtherAddressCountry: 'OtherAddressCountry',
+        OtherAddressPostalCode: 'OtherAddressPostalCode',
+        OtherAddressState: 'OtherAddressState',
+        OtherAddressStreet: 'OtherAddressStreet'
     },
 
     //there are currently no TB fields for these values, TbSync will store (and resend) them, but will not allow to view/edit
     unused_EAS_properties: [
-        'AssistantName',
-        'AssistantPhoneNumber',
-        'BusinessFaxNumber',
-        'Business2PhoneNumber',
-        'Home2PhoneNumber',
         'Suffix',
         'Title',
-        'CarPhoneNumber',
-        'MiddleName',
-        'OfficeLocation',
-        'RadioPhoneNumber',
         'Alias',
         'WeightedRank',
-        'OtherAddressCity',
-        'OtherAddressCountry',
-        'OtherAddressPostalCode',
-        'OtherAddressState',
-        'OtherAddressStreet',
         'YomiCompanyName',
         'YomiFirstName',
         'YomiLastName',
@@ -144,20 +146,18 @@ eas.sync.Contacts = {
     ],
     
     map_TB_properties_to_EAS_properties2 : {
-        NickName: 'NickName'        
+        NickName: 'NickName',
+        Custom2: 'CustomerId',
+        Custom3: 'GovernmentId',
+        Custom4: 'AccountName',
+        //custom fields added to UI
+        IMAddress: 'IMAddress',
+        IMAddress2: 'IMAddress2',
+        IMAddress3: 'IMAddress3',
+        ManagerName: 'ManagerName',
+        CompanyMainPhone: 'CompanyMainPhone',
+        MMS: 'MMS'
     },
-
-    unused_EAS_properties2: [
-        'CustomerId',
-        'GovernmentId',
-        'IMAddress',
-        'IMAddress2',
-        'IMAddress3',
-        'ManagerName',
-        'CompanyMainPhone',
-        'AccountName',
-        'MMS'
-    ],    
 
 
     // --------------------------------------------------------------------------- //
@@ -271,13 +271,9 @@ eas.sync.Contacts = {
             }
         }
 
-        //take care of unmapable EAS option (Contact and Contact2 group)
+        //take care of unmapable EAS option (Contact)
         for (let i=0; i < this.unused_EAS_properties.length; i++) {
             if (data[this.unused_EAS_properties[i]]) item.card.setProperty("EAS-" + this.unused_EAS_properties[i], data[this.unused_EAS_properties[i]]);
-        }
-
-        for (let i=0; i < this.unused_EAS_properties2.length; i++) {
-            if (data[this.unused_EAS_properties2[i]]) item.card.setProperty("EAS-" + this.unused_EAS_properties2[i], data[this.unused_EAS_properties2[i]]);
         }
 
 
@@ -400,13 +396,6 @@ eas.sync.Contacts = {
             let value = item.card.getProperty(TB_property,"");
             if (value) wbxml.atag(EAS_property, value);
         }
-        
-        //take care of unmapable EAS options of Contacts2
-        for (let i=0; i < this.unused_EAS_properties2.length; i++) {
-            let value = item.card.getProperty("EAS-" + this.unused_EAS_properties2[i], "");
-            if (value) wbxml.atag(this.unused_EAS_properties2[i], value);
-        }
-
 
 
         return wbxml.getBytes();

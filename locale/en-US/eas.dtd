@@ -49,11 +49,18 @@
 
 <!ENTITY pref.switchFoldersAndConfig "Double click to switch between folder view and settings view.">
 
-<!ENTITY abCard.BusinessFaxNumber "Work Fax:">
-<!ENTITY abCard.Business2PhoneNumber "Work Phone 2:">
-<!ENTITY abCard.AssistantPhoneNumber "Assistant Phone:">
-<!ENTITY abCard.CarPhoneNumber "Car Phone:">
-<!ENTITY abCard.RadioPhoneNumber "Radio Phone:">
+<!ENTITY abCard.MiddleName "Middle name:">
 <!ENTITY abCard.Email3Address "Additional Email 2:">
 <!ENTITY abCard.Home2PhoneNumber "Home Phone 2:">
+<!ENTITY abCard.Business2PhoneNumber "Work Phone 2:">
+<!ENTITY abCard.BusinessFaxNumber "Work Fax:">
+
+<!ENTITY abCard.ManagerName "Manager:">
+<!ENTITY abCard.AssistantPhoneNumber "Assistant Phone:">
+<!ENTITY abCard.AssistantName "Assistant:">
+<!ENTITY abCard.Spouse "Spouse:">
+<!ENTITY abCard.Anniversary "Anniversary:">
+
+<!ENTITY abCard.CarPhoneNumber "Car Phone:">
+<!ENTITY abCard.RadioPhoneNumber "Radio Phone:">
 <!ENTITY abCard.CompanyMainPhone "Work Main Phone:">
