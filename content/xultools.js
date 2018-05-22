@@ -91,15 +91,17 @@ var xultools = {
         for (let node of nodeList) {
             let element = null;
             let allOk = true;
-            let hookAfter = null;
+            let hookMode = null;
             let hookName = null;
             let hookElement = null;
             switch(node.nodeType) {
                 case 1: 
                     // before processing this, check if it is top level element and if so, if it has insertafter or insertbefore AND those elements exist
-                    if (!parentElement && (node.hasAttribute("insertafter") || node.hasAttribute("insertbefore"))) {
-                        hookAfter = node.hasAttribute("insertafter");
-                        hookName = hookAfter ? node.getAttribute("insertafter") : node.getAttribute("insertbefore");
+                    if (!parentElement && (node.hasAttribute("insertafter") || node.hasAttribute("insertbefore") || node.hasAttribute("appendto"))) {
+                        if (node.hasAttribute("appendto")) hookMode = "appendto";
+                        if (node.hasAttribute("insertbefore")) hookMode ="insertbefore";
+                        if (node.hasAttribute("insertafter")) hookMode = "insertafter";
+                        hookName = node.getAttribute(hookMode);
                         hookElement = document.getElementById(hookName);
                         allOk = hookElement ? true : false;
                     }
@@ -113,12 +115,20 @@ var xultools = {
                             parentElement.appendChild(element);
                         } else {
                             // this is a toplevel element, which needs to be added at insertafter or insertbefore
-                            if (hookAfter) hookElement.parentNode.insertBefore(element, hookElement.nextSibling);
-                            else  hookElement.parentNode.insertBefore(element, hookElement);
-                            tbSync.dump("Adding <"+element.id+">", document.getElementById(element.id).tagName);
+                            switch (hookMode) {
+                                case "appendto": 
+                                    hookElement.appendChild(element);
+                                    break;
+                                case "insertbefore":
+                                    hookElement.parentNode.insertBefore(element, hookElement);
+                                    break;
+                                default:
+                                    hookElement.parentNode.insertBefore(element, hookElement.nextSibling);
+                            }
+                            tbSync.dump("Adding <"+element.id+"> " + hookMode + " <" + hookName + ">", document.getElementById(element.id).tagName);
                         }
                     } else {
-                        tbSync.dump("BAD XUL", "Top level overlay element <"+ node.nodeName+"> does not have attribute insertbefore or insertafter, or the specified element does not exist. Skipped");
+                        tbSync.dump("BAD XUL", "Top level overlay element <"+ node.nodeName+"> does not have attribute insertbefore, insertafter or appendto, or the specified element does not exist. Skipped");
                     }                    
                     break;
             }
