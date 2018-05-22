@@ -50,7 +50,7 @@
 <!ENTITY pref.switchFoldersAndConfig "Double click to switch between folder view and settings view.">
 
 <!ENTITY abCard.MiddleName "Middle name:">
-<!ENTITY abCard.Email3Address "Additional Email 2:">
+<!ENTITY abCard.Email3Address "Alternative Email:">
 <!ENTITY abCard.Home2PhoneNumber "Home Phone 2:">
 <!ENTITY abCard.Business2PhoneNumber "Work Phone 2:">
 <!ENTITY abCard.BusinessFaxNumber "Work Fax:">
