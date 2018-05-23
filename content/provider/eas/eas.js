@@ -37,7 +37,7 @@ var eas = {
             let items = aDocument.getElementsByClassName("easProperty");
             for (let i=0; i < items.length; i++)
             {
-                items[i].setAttribute("value", aCard.getProperty(items[i].id, ""));
+                items[i].value = aCard.getProperty(items[i].id, "");
             }
         }
     },
