@@ -39,11 +39,15 @@ var xultools = {
 
 
 
-    createXulElement: function (document, type, attributes) {
-        let element = document.createElement(type);
-        if  (attributes) {
-            for  (let i=0; i <attributes.length; i++) {
-                element.setAttribute(attributes[i].name, attributes[i].value);
+    createXulElement: function (document, node) {
+        //check for namespace
+        let typedef = node.nodeName.split(":");
+        if (typedef.length == 2) typedef[0] = node.lookupNamespaceURI(typedef[0]);
+        
+        let element = (typedef.length==2) ? document.createElementNS(typedef[0], typedef[1]) : document.createElement(typedef[0]);
+        if  (node.attributes) {
+            for  (let i=0; i <node.attributes.length; i++) {
+                element.setAttribute(node.attributes[i].name, node.attributes[i].value);
             }
         }
         return element;
@@ -107,7 +111,7 @@ var xultools = {
                     }
                     
                     if (allOk) {
-                        element = tbSync.xultools.createXulElement(document, node.nodeName, node.attributes);
+                        element = tbSync.xultools.createXulElement(document, node);
                         if (node.hasChildNodes) tbSync.xultools.insertXulOverlay(document, node.children, element);
 
                         if (parentElement) {
