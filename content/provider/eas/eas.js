@@ -19,7 +19,7 @@ var eas = {
     init: Task.async (function* ()  {
         //dynamically load overlays from xpi
         eas.overlays = {};
-        let loadXUL = ["abCardWindow"];
+        let loadXUL = ["abCardWindow", "addressbookoverlay"];
         for (let i=0; i < loadXUL.length; i++) {            
             let xul = yield tbSync.fetchFile("chrome://tbsync/content/provider/eas/overlays/"+loadXUL[i]+".xul", "String");
             //tbSync.dump("Loaded XUL <"+loadXUL[i]+">", xul);
@@ -45,7 +45,6 @@ var eas = {
     //What to do, if card is saved in UI
     onSaveCard: function (aCard, aDocument) {
         if (aCard.getProperty("EASID","")) {
-            //aDocument.defaultView.console.log("saved:" + aDocument.getElementById("MiddleName").value);
             let items = aDocument.getElementsByClassName("easProperty");
             for (let i=0; i < items.length; i++)
             {
@@ -54,6 +53,7 @@ var eas = {
         }
     },
     
+    
     //EAS specific UI injections
     loadIntoWindow: function (window) {
         //cardEditDialog
@@ -61,7 +61,24 @@ var eas = {
             tbSync.xultools.insertXulOverlay(window.document, tbSync.eas.overlays.abCardWindow);
             window.RegisterLoadListener(tbSync.eas.onLoadCard);
             window.RegisterSaveListener(tbSync.eas.onSaveCard);
-            
+	    }
+
+        //ab view pane
+        if (window.document.getElementById("cvbContact") && tbSync.prefSettings.getBoolPref("eas.use_tzpush_contactsync_code") == false) {
+            tbSync.xultools.insertXulOverlay(window.document, tbSync.eas.overlays.addressbookoverlay);            
+
+            //append our acction to DisplayCardViewPane()
+            if (window.DisplayCardViewPane) {
+                tbSync.eas.DisplayCardViewPane_ORIG = window.DisplayCardViewPane;
+                window.DisplayCardViewPane = function(card) {
+                    tbSync.eas.DisplayCardViewPane_ORIG(card);
+                    let email3Value = card.getProperty("Email3Address","");
+                    let email3Box = window.document.getElementById("cvEmail3Box");
+                    let email3Element = window.document.getElementById("cvEmail3");
+                    
+                    window.HandleLink(email3Element, window.zSecondaryEmail, email3Value, email3Box, "mailto:" + email3Value);
+                }
+            }
         }
     },
 
@@ -71,6 +88,11 @@ var eas = {
             tbSync.xultools.removeXulOverlay(window.document, eas.overlays.abCardWindow);
             window.UnregisterLoadListener(tbSync.eas.onLoadCard);
             window.UnregisterSaveListener(tbSync.eas.onSaveCard);
+        }
+
+        //ab view pane
+        if (window.document.getElementById("cvbContact")) {
+            tbSync.xultools.removeXulOverlay(window.document, tbSync.eas.overlays.addressbookoverlay);            
         }
     },
 

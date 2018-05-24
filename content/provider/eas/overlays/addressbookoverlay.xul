@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<overlay id="AddressbookOverlay"
+     xmlns:html="http://www.w3.org/1999/xhtml">
+
+    <description class="CardViewLink" id="cvEmail3Box" insertafter="cvEmail2Box">
+        <html:a href="" id="cvEmail3" />
+    </description>
+
+</overlay>        
