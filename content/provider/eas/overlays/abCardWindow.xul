@@ -3,7 +3,7 @@
 
 <overlay id="abCardWindow" xmlns:html="http://www.w3.org/1999/xhtml">
 	
-   <script type="application/javascript" chrome="chrome://tbsync/content/provider/eas/overlays/abCardWindow.js" />
+   <script type="application/javascript" src="chrome://tbsync/content/provider/eas/overlays/abCardWindow.js" />
 
     <hbox id="MiddleNameContainer" align="center" insertafter="NameField1Container" >
         <spacer flex="1" />

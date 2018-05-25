@@ -23,11 +23,10 @@ let onLoadObserver = {
 
 let onLoadDoneObserver = {
     observe: function(aSubject, aTopic, aData) {        
-        forEachOpenWindow(loadIntoWindow);  
+        //forEachOpenWindow(loadIntoWindow);  
         Services.wm.addListener(WindowListener);    
     }
 }
-
 
 
 
@@ -73,6 +72,8 @@ function startup(data, reason) {
     Services.obs.addObserver(onLoadObserver, "tbsync.init", false);
     Services.obs.addObserver(onLoadDoneObserver, "tbsync.init.done", false);
 
+    tbSync.addonData = data;
+
     if (reason != APP_STARTUP) {
         //during startup, we wait until mail-startup-done fired, for all other reasons we need to fire our own init
         Services.obs.notifyObservers(null, 'tbsync.init', null)
@@ -90,7 +91,7 @@ function shutdown(data, reason) {
     Services.obs.removeObserver(onLoadObserver, "mail-startup-done");
     Services.obs.removeObserver(onLoadObserver, "tbsync.init");
     Services.obs.removeObserver(onLoadDoneObserver, "tbsync.init.done");
-	
+    
     //call cleanup of the tbSync module
     forEachOpenWindow(unloadFromWindow);
     Services.wm.removeListener(WindowListener);
@@ -130,16 +131,16 @@ function forEachOpenWindow(todo)  // Apply a function to all open windows
 }
 
 function loadIntoWindow(window) {
-    /* call/move your UI construction function here */
-    for (let i=0; i < tbSync.syncProviderList.length; i++) {
-        tbSync[tbSync.syncProviderList[i]].loadIntoWindow.call(this,window);
+    if (tbSync.xultools.hasRegisteredOverlays(window)) {
+        window.tbSync = tbSync;
+        tbSync.xultools.injectAllOverlays(window);
     }
 }
-
+    
 function unloadFromWindow(window) {
-    /* call/move your UI tear down function here */
-    for (let i=0; i < tbSync.syncProviderList.length;i++) {
-        tbSync[tbSync.syncProviderList[i]].unloadFromWindow.call(this,window);
+    if (tbSync.xultools.hasRegisteredOverlays(window)) {
+        tbSync.xultools.removeAllOverlays(window);
+        window.tbSync = null;
     }
 }
 
@@ -159,6 +160,11 @@ var WindowListener =
     onWindowTitleChange: function(xulWindow, newTitle) { }
 };
 
+/* 
+ could be replaced in TB61:
+  - https://dxr.mozilla.org/comm-central/rev/18881dd127e3b0c0d3f97390c9094e309d4dd9c1/mail/test/resources/jsbridge/jsbridge/extension/bootstrap.js#17
+  - https://dxr.mozilla.org/comm-central/rev/18881dd127e3b0c0d3f97390c9094e309d4dd9c1/common/src/extensionSupport.jsm#151
+*/
 
 
 

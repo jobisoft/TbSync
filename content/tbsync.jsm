@@ -141,7 +141,7 @@ var tbSync = {
         
         //init stuff for lightning (and dump any other installed AddOn)
         //TODO: If lightning is converted to restartless, use AddonManager.addAddonListener() to get notification of enable/disable
-        AddonManager.getAllAddons(Task.async (function* (addons) {
+        AddonManager.getAllAddons(Task.async (function* (addons) { //returns a promise as off TB61
           for (let a=0; a < addons.length; a++) {
             if (addons[a].isActive) {
                 tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
@@ -554,16 +554,6 @@ var tbSync = {
 
 
     // TOOLS
-    createXulElement: function (window, type, attributes) {
-        let element = window.document.createElement(type);
-        
-        let keys = Object.keys(attributes);
-        for (let a=0; a < keys.length; a++) {
-            element.setAttribute(keys[a],attributes[keys[a]]);
-        }
-        return element;
-    },
-
     openTBtab: function (url) {
         let tabmail = null;
         if (tbSync.window) {

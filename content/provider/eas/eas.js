@@ -18,88 +18,11 @@ var eas = {
 
     init: Task.async (function* ()  {
         //dynamically load overlays from xpi
-        eas.overlays = {};
-        let loadXUL = ["abCardWindow", "addressbookoverlay"];
-        for (let i=0; i < loadXUL.length; i++) {            
-            let xul = yield tbSync.fetchFile("chrome://tbsync/content/provider/eas/overlays/"+loadXUL[i]+".xul", "String");
-            //tbSync.dump("Loaded XUL <"+loadXUL[i]+">", xul);
-            eas.overlays[loadXUL[i]] = tbSync.xultools.getDataFromXULString(xul);
-        }
+        yield tbSync.xultools.registerOverlay("chrome://messenger/content/addressbook/abEditCardDialog.xul", "/content/provider/eas/overlays/abCardWindow.xul");
+        yield tbSync.xultools.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "/content/provider/eas/overlays/addressbookoverlay.xul");
     }),
 
 
-
-
-    //What to do, if card is opened for edit in UI
-    onLoadCard: function (aCard, aDocument) {
-        if (aCard.getProperty("EASID","")) {
-            //aDocument.defaultView.console.log("read:" + aCard.getProperty("EAS-MiddleName", ""));
-            let items = aDocument.getElementsByClassName("easProperty");
-            for (let i=0; i < items.length; i++)
-            {
-                items[i].value = aCard.getProperty(items[i].id, "");
-            }
-        }
-    },
-
-    //What to do, if card is saved in UI
-    onSaveCard: function (aCard, aDocument) {
-        if (aCard.getProperty("EASID","")) {
-            let items = aDocument.getElementsByClassName("easProperty");
-            for (let i=0; i < items.length; i++)
-            {
-                aCard.setProperty(items[i].id, items[i].value);
-            }
-        }
-    },
-    
-    
-    //EAS specific UI injections
-    loadIntoWindow: function (window) {
-        //cardEditDialog
-        if (window.document.getElementById("abcardWindow") && tbSync.prefSettings.getBoolPref("eas.use_tzpush_contactsync_code") == false) {
-            tbSync.xultools.insertXulOverlay(window.document, tbSync.eas.overlays.abCardWindow);
-            window.RegisterLoadListener(tbSync.eas.onLoadCard);
-            window.RegisterSaveListener(tbSync.eas.onSaveCard);
-	    }
-
-        //ab view pane
-        if (window.document.getElementById("cvbContact") && tbSync.prefSettings.getBoolPref("eas.use_tzpush_contactsync_code") == false) {
-            tbSync.xultools.insertXulOverlay(window.document, tbSync.eas.overlays.addressbookoverlay);            
-
-            //append our acction to DisplayCardViewPane()
-            if (window.DisplayCardViewPane) {
-                tbSync.eas.DisplayCardViewPane_ORIG = window.DisplayCardViewPane;
-                window.DisplayCardViewPane = function(card) {
-                    tbSync.eas.DisplayCardViewPane_ORIG(card);
-                    let email3Value = card.getProperty("Email3Address","");
-                    let email3Box = window.document.getElementById("cvEmail3Box");
-                    let email3Element = window.document.getElementById("cvEmail3");
-                    
-                    window.HandleLink(email3Element, window.zSecondaryEmail, email3Value, email3Box, "mailto:" + email3Value);
-                }
-            }
-        }
-    },
-
-    unloadFromWindow: function (window) {
-        //cardEditDialog
-        if (window.document.getElementById("abcardWindow")) {
-            tbSync.xultools.removeXulOverlay(window.document, eas.overlays.abCardWindow);
-            window.UnregisterLoadListener(tbSync.eas.onLoadCard);
-            window.UnregisterSaveListener(tbSync.eas.onSaveCard);
-        }
-
-        //ab view pane
-        if (window.document.getElementById("cvbContact")) {
-            tbSync.xultools.removeXulOverlay(window.document, tbSync.eas.overlays.addressbookoverlay);            
-        }
-    },
-
-
-
-
-    
     //this is  called, after lighning has become available - it is called by tbSync.onLightningLoad
     init4lightning: Task.async (function* () {
         //If an EAS calendar is currently NOT associated with an email identity, try to associate, 

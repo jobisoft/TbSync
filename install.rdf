@@ -5,6 +5,7 @@
         <em:id>tbsync@jobisoft.de</em:id>
         <em:type>2</em:type> <!-- type=extension --> 
         <em:bootstrap>true</em:bootstrap>
+        <em:unpack>true</em:unpack>
         <em:multiprocessCompatible>true</em:multiprocessCompatible>
         <em:name>TbSync (Provider for Exchange ActiveSync)</em:name>
         <em:version>0.7.7.17</em:version>

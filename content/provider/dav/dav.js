@@ -6,13 +6,6 @@ var dav = {
     init: Task.async (function* ()  {        
     }),
 
-    //DAV specific UI injections
-    loadIntoWindow: function (window) {
-    },
-
-    unloadFromWindow: function (window) {
-    },
-
     //this is  called, after lighning has become available - it is called by tbSync.onLightningLoad
     init4lightning: Task.async (function* ()  {
     }),
