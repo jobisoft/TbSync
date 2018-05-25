@@ -4,40 +4,71 @@ var xultools = {
 
     registeredOverlays: {},
     overlays: {},
-
-    hasRegisteredOverlays: function (window) {
-        return xultools.registeredOverlays.hasOwnProperty(window.location.href);
-    },
-
-    injectAllOverlays: function (window) {
-        for (let i=0; i < xultools.registeredOverlays[window.location.href].length; i++) {
-            window.console.log("Injecting:", xultools.registeredOverlays[window.location.href][i]);
-            xultools.insertXulOverlay(window, xultools.overlays[xultools.registeredOverlays[window.location.href][i]]);
-        }
+    addonData: null,
+    decoder: null,
+        
+    init: function(data) {
+        xultools.registeredOverlays = {};
+        xultools.overlays = {};
+        xultools.addonData = data;
+        //xultools.decoder = new TextDecoder();
     },
     
-    removeAllOverlays: function (window) {
-        for (let i=0; i < xultools.registeredOverlays[window.location.href].length; i++) {
-            window.console.log("Removing:", xultools.registeredOverlays[window.location.href][i]);
-            xultools.removeXulOverlay(window, xultools.overlays[xultools.registeredOverlays[window.location.href][i]]);
-        }
+    hasRegisteredOverlays: function (window) {
+        return xultools.registeredOverlays.hasOwnProperty(window.location.href);
     },
 
     registerOverlay: Task.async (function* (dst, overlay) {
         if (!xultools.registeredOverlays[dst]) xultools.registeredOverlays[dst] = [];
         xultools.registeredOverlays[dst].push(overlay);
 
-        //let xul = yield tbSync.fetchFile(overlay, "String");
-	    let xuldata = yield OS.File.read(tbSync.addonData.installPath.path + overlay);
+        let xul = yield tbSync.fetchFile(overlay, "String");
+	    //let xuldata = yield OS.File.read(xultools.addonData.installPath.path + overlay);        
+        //let xul = xultools.decoder.decode(xuldata);
         
-        let decoder = new TextDecoder();        // This decoder can be reused for several reads
-        let xul = decoder.decode(xuldata);
-        
-        tbSync.dump(tbSync.addonData.installPath.path + overlay, xul);
-        xultools.overlays[overlay] = xultools.getDataFromXULString(xul);
-        tbSync.window.console.log("Found", xultools.overlays[overlay].length);
+        xultools.overlays[overlay] = xul;
     }),  
-	
+
+    injectAllOverlays: function (window) {
+        for (let i=0; i < xultools.registeredOverlays[window.location.href].length; i++) {
+            window.console.log("Injecting:", xultools.registeredOverlays[window.location.href][i]);
+
+            let overlayNode = xultools.getDataFromXULString(xultools.overlays[xultools.registeredOverlays[window.location.href][i]]);
+            let scripts = xultools.insertXulOverlay(window, overlayNode.children);
+
+            //load scripts
+            for (let i=0; i < scripts.length; i++){
+                window.console.log("Loading", scripts[i]);
+                Services.scriptloader.loadSubScript(scripts[i], window);
+            }
+            
+            //execute oninject
+            if (overlayNode.hasAttribute("oninject")) {
+                let oninject = overlayNode.getAttribute("oninject");
+                window.console.log("Executing", oninject);
+                // the source for this eval is part of this XPI, cannot be changed by user. If I do not mess things up, this does not impose a security issue
+                window.eval(oninject);
+            }
+        }
+    },
+    
+    removeAllOverlays: function (window) {
+        for (let i=0; i < xultools.registeredOverlays[window.location.href].length; i++) {
+            window.console.log("Removing:", xultools.registeredOverlays[window.location.href][i]);
+            
+            let overlayNode = xultools.getDataFromXULString(xultools.overlays[xultools.registeredOverlays[window.location.href][i]]);
+
+            if (overlayNode.hasAttribute("onremove")) {
+                let onremove = overlayNode.getAttribute("onremove");
+                window.console.log("Executing", onremove);
+                // the source for this eval is part of this XPI, cannot be changed by user. If I do not mess things up, this does not impose a security issue
+                window.eval(onremove);
+            }
+
+            xultools.removeXulOverlay(window, overlayNode.children);
+        }
+    },
+
     getDataFromXULString: function (str) {
         let data = null;
         let xul = "";        
@@ -64,7 +95,7 @@ var xultools = {
             throw "BAD XUL: A provided XUL file does not look like an overlay (root node is not overlay).\n" + str;
         }
         
-        return xul.documentElement.children;
+        return xul.documentElement;
     },
 
 
@@ -117,6 +148,9 @@ var xultools = {
         if (nodes.length === undefined) nodeList.push(nodes);
         else nodeList = nodes;
 
+        //collect all toplevel scripts and execute at the end
+        let scripts = [];
+        
         // nodelist contains all childs
         for (let node of nodeList) {
             let element = null;
@@ -129,8 +163,7 @@ var xultools = {
                 switch (node.getAttribute("type")) {
                     case "text/javascript":
                     case "application/javascript":
-                        window.console.log("src: ", node.getAttribute("src"));
-                        Services.scriptloader.loadSubScript(node.getAttribute("src"), window);
+                        if (node.hasAttribute("src")) scripts.push(node.getAttribute("src"));
                         break;
                 }
             } else if (node.nodeName == "toolbarpalette") {
@@ -176,6 +209,8 @@ var xultools = {
                 }                
             }            
         }
+        
+        return scripts;
     }
     
 };

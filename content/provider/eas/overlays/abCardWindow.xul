@@ -1,7 +1,10 @@
 <?xml version="1.0"?>
 <!DOCTYPE window SYSTEM "chrome://tbsync/locale/eas.dtd">
 
-<overlay id="abCardWindow" xmlns:html="http://www.w3.org/1999/xhtml">
+<overlay 
+	id="abCardWindow" 
+	oninject="tbSync.eas.onInjectIntoCardEditWindow(window)"
+	xmlns:html="http://www.w3.org/1999/xhtml">
 	
    <script type="application/javascript" src="chrome://tbsync/content/provider/eas/overlays/abCardWindow.js" />
 

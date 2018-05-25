@@ -113,7 +113,6 @@ var tbSync = {
         
         // load common subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
         tbSync.includeJS("chrome://tbsync/content/db.js");
-        tbSync.includeJS("chrome://tbsync/content/xultools.js");
 
         //init DB
         yield tbSync.db.init();
@@ -1831,3 +1830,5 @@ if (tbSync.lightningIsAvailable()) {
 tbSync.initFile("debug.log");
 tbSync.dump("Init","Please send this log to john.bieling@gmx.de, if you have encountered an error.");
 Services.console.registerListener(tbSync.consoleListener);
+
+tbSync.includeJS("chrome://tbsync/content/xultools.js");

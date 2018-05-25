@@ -23,7 +23,7 @@ let onLoadObserver = {
 
 let onLoadDoneObserver = {
     observe: function(aSubject, aTopic, aData) {        
-        //forEachOpenWindow(loadIntoWindow);  
+        forEachOpenWindow(loadIntoWindow);  
         Services.wm.addListener(WindowListener);    
     }
 }
@@ -73,6 +73,7 @@ function startup(data, reason) {
     Services.obs.addObserver(onLoadDoneObserver, "tbsync.init.done", false);
 
     tbSync.addonData = data;
+    tbSync.xultools.init(data);
 
     if (reason != APP_STARTUP) {
         //during startup, we wait until mail-startup-done fired, for all other reasons we need to fire our own init
@@ -110,7 +111,7 @@ function shutdown(data, reason) {
     //unload tbSync module
     tbSync.dump("TbSync shutdown","Unloading TbSync module.");
     Components.utils.unload("chrome://tbsync/content/tbsync.jsm");
-
+    
     // HACK WARNING:
     //  - the Addon Manager does not properly clear all addon related caches on update;
     //  - in order to fully update images and locales, their caches need clearing here
