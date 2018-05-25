@@ -11,7 +11,6 @@ Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("resource://gre/modules/AddonManager.jsm");
-Components.utils.import("resource://gre/modules/NetUtil.jsm");
 Components.utils.import("resource:///modules/mailServices.js")
 Components.utils.importGlobalProperties(["XMLHttpRequest"]);
 
@@ -210,7 +209,7 @@ var tbSync = {
                     }
                     
                     //get windows timezone data from CSV
-                    let csvData = yield tbSync.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
+                    let csvData = yield tbSync.xultools.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
                     for (let i = 0; i<csvData.length; i++) {
                         let lData = csvData[i].split(",");
                         if (lData.length<3) continue;
@@ -611,7 +610,7 @@ var tbSync = {
         for (let u=0; u<urls.length && versions === null; u++) {
             try {
                 //get latest version info
-                versions = yield tbSync.fetchFile(urls[u]);
+                versions = yield tbSync.xultools.fetchFile(urls[u]);
             } catch (ex) {
                 tbSync.dump("Get version info failed!", urls[u]);
             }
@@ -633,37 +632,6 @@ var tbSync = {
         }        
     }),
     
-    //read file from within the XPI package
-    fetchFile: function (aURL, returnType = "Array") {
-        return new Promise((resolve, reject) => {
-            let uri = Services.io.newURI(aURL);
-            let channel = Services.io.newChannelFromURI2(uri,
-                                 null,
-                                 Services.scriptSecurityManager.getSystemPrincipal(),
-                                 null,
-                                 Components.interfaces.nsILoadInfo.SEC_REQUIRE_SAME_ORIGIN_DATA_INHERITS,
-                                 Components.interfaces.nsIContentPolicy.TYPE_OTHER);
-
-            NetUtil.asyncFetch(channel, (inputStream, status) => {
-                if (!Components.isSuccessCode(status)) {
-                    reject(status);
-                    return;
-                }
-
-                try {
-                    let data = NetUtil.readInputStreamToString(inputStream, inputStream.available());
-                    if (returnType == "Array") {
-                        resolve(data.replace("\r","").split("\n"))
-                    } else {
-                        resolve(data);
-                    }
-                } catch (ex) {
-                    reject(ex);
-                }
-            });
-        });
-    },
-
     //taken from https://stackoverflow.com/questions/6832596/how-to-compare-software-version-number-using-js-only-number
     cmpVersions: function (a, b) {
         let i, diff;

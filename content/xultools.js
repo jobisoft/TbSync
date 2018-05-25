@@ -1,5 +1,8 @@
 "use strict";
 
+Components.utils.import("resource://gre/modules/NetUtil.jsm");
+Components.utils.import("resource://gre/modules/Services.jsm");
+
 var xultools = {
 
     registeredOverlays: {},
@@ -22,7 +25,7 @@ var xultools = {
         if (!xultools.registeredOverlays[dst]) xultools.registeredOverlays[dst] = [];
         xultools.registeredOverlays[dst].push(overlay);
 
-        let xul = yield tbSync.fetchFile(overlay, "String");
+        let xul = yield xultools.fetchFile(overlay, "String");
 	    //let xuldata = yield OS.File.read(xultools.addonData.installPath.path + overlay);        
         //let xul = xultools.decoder.decode(xuldata);
         
@@ -211,6 +214,37 @@ var xultools = {
         }
         
         return scripts;
-    }
+    },
+
+    //read file from within the XPI package
+    fetchFile: function (aURL, returnType = "Array") {
+        return new Promise((resolve, reject) => {
+            let uri = Services.io.newURI(aURL);
+            let channel = Services.io.newChannelFromURI2(uri,
+                                 null,
+                                 Services.scriptSecurityManager.getSystemPrincipal(),
+                                 null,
+                                 Components.interfaces.nsILoadInfo.SEC_REQUIRE_SAME_ORIGIN_DATA_INHERITS,
+                                 Components.interfaces.nsIContentPolicy.TYPE_OTHER);
+
+            NetUtil.asyncFetch(channel, (inputStream, status) => {
+                if (!Components.isSuccessCode(status)) {
+                    reject(status);
+                    return;
+                }
+
+                try {
+                    let data = NetUtil.readInputStreamToString(inputStream, inputStream.available());
+                    if (returnType == "Array") {
+                        resolve(data.replace("\r","").split("\n"))
+                    } else {
+                        resolve(data);
+                    }
+                } catch (ex) {
+                    reject(ex);
+                }
+            });
+        });
+    }    
     
 };
