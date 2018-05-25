@@ -37,20 +37,31 @@ var xultools = {
             window.console.log("Injecting:", xultools.registeredOverlays[window.location.href][i]);
 
             let overlayNode = xultools.getDataFromXULString(xultools.overlays[xultools.registeredOverlays[window.location.href][i]]);
-            let scripts = xultools.insertXulOverlay(window, overlayNode.children);
 
-            //load scripts
+            //get and load scripts
+            let scripts = xultools.getScripts(overlayNode.children);
             for (let i=0; i < scripts.length; i++){
                 window.console.log("Loading", scripts[i]);
                 Services.scriptloader.loadSubScript(scripts[i], window);
             }
-            
-            //execute oninject
-            if (overlayNode.hasAttribute("oninject")) {
-                let oninject = overlayNode.getAttribute("oninject");
-                window.console.log("Executing", oninject);
-                // the source for this eval is part of this XPI, cannot be changed by user. If I do not mess things up, this does not impose a security issue
-                window.eval(oninject);
+
+            //eval onbeforeinject, if that returns false, inject is aborted
+            let inject = true;
+            if (overlayNode.hasAttribute("onbeforeinject")) {
+                let onbeforeinject = overlayNode.getAttribute("onbeforeinject");
+                window.console.log("Executing", onbeforeinject);
+                inject = window.eval(onbeforeinject);
+            }
+
+            if (inject) {
+                xultools.insertXulOverlay(window, overlayNode.children);
+                //execute oninject
+                if (overlayNode.hasAttribute("oninject")) {
+                    let oninject = overlayNode.getAttribute("oninject");
+                    window.console.log("Executing", oninject);
+                    // the source for this eval is part of this XPI, cannot be changed by user. If I do not mess things up, this does not impose a security issue
+                    window.eval(oninject);
+                }
             }
         }
     },
@@ -150,9 +161,6 @@ var xultools = {
         let nodeList = [];
         if (nodes.length === undefined) nodeList.push(nodes);
         else nodeList = nodes;
-
-        //collect all toplevel scripts and execute at the end
-        let scripts = [];
         
         // nodelist contains all childs
         for (let node of nodeList) {
@@ -162,13 +170,7 @@ var xultools = {
             let hookElement = null;
 
             if (node.nodeName == "script") {
-                // handle script tags
-                switch (node.getAttribute("type")) {
-                    case "text/javascript":
-                    case "application/javascript":
-                        if (node.hasAttribute("src")) scripts.push(node.getAttribute("src"));
-                        break;
-                }
+                // ignore script tags
             } else if (node.nodeName == "toolbarpalette") {
                 // handle toolbarpalette tags
             } else if (node.nodeType == 1) {
@@ -211,6 +213,35 @@ var xultools = {
                     window.console.log("Adding <"+element.id+"> ("+window.document.getElementById(element.id).tagName+")  " + hookMode + " <" + hookName + ">");
                 }                
             }            
+        }
+    },
+
+    getScripts: function (nodes) {
+        /*
+             The passed nodes value could be an entire window.document in a single node (type 9) or a 
+             single element node (type 1) as returned by getElementById. It could however also 
+             be an array of nodes as returned by getElementsByTagName or a nodeList as returned
+             by childNodes. In that case node.length is defined.
+         */
+        let nodeList = [];
+        if (nodes.length === undefined) nodeList.push(nodes);
+        else nodeList = nodes;
+
+        //collect all toplevel scripts and execute at the end
+        let scripts = [];
+        
+        // nodelist contains all childs
+        for (let node of nodeList) {
+
+            if (node.nodeName == "script") {
+                // handle script tags
+                switch (node.getAttribute("type")) {
+                    case "text/javascript":
+                    case "application/javascript":
+                        if (node.hasAttribute("src")) scripts.push(node.getAttribute("src"));
+                        break;
+                }
+            }
         }
         
         return scripts;
