@@ -1,45 +1,40 @@
 "use strict";
 
+var EXPORTED_SYMBOLS = ["OverlayManager"];
+
 Components.utils.import("resource://gre/modules/NetUtil.jsm");
 Components.utils.import("resource://gre/modules/Services.jsm");
+Components.utils.import("resource://gre/modules/Task.jsm");
 
-var xultools = {
-
-    registeredOverlays: {},
-    overlays: {},
-    addonData: null,
-    decoder: null,
+function OverlayManager(addonData) {
+    this.addonData = addonData;
+    this.registeredOverlays = {};
+    this.overlays =  {};
+    this.decoder = new TextDecoder();
         
-    init: function(data) {
-        xultools.registeredOverlays = {};
-        xultools.overlays = {};
-        xultools.addonData = data;
-        //xultools.decoder = new TextDecoder();
-    },
-    
-    hasRegisteredOverlays: function (window) {
-        return xultools.registeredOverlays.hasOwnProperty(window.location.href);
-    },
+    this.hasRegisteredOverlays = function (window) {
+        return this.registeredOverlays.hasOwnProperty(window.location.href);
+    };
 
-    registerOverlay: Task.async (function* (dst, overlay) {
-        if (!xultools.registeredOverlays[dst]) xultools.registeredOverlays[dst] = [];
-        xultools.registeredOverlays[dst].push(overlay);
+    this.registerOverlay = Task.async (function* (dst, overlay) {
+        if (!this.registeredOverlays[dst]) this.registeredOverlays[dst] = [];
+        this.registeredOverlays[dst].push(overlay);
 
-        let xul = yield xultools.fetchFile(overlay, "String");
-	    //let xuldata = yield OS.File.read(xultools.addonData.installPath.path + overlay);        
-        //let xul = xultools.decoder.decode(xuldata);
+        let xul = yield this.fetchFile(overlay, "String");
+	    //let xuldata = yield OS.File.read(this.addonData.installPath.path + overlay);        
+        //let xul = this.decoder.decode(xuldata);
         
-        xultools.overlays[overlay] = xul;
-    }),  
+        this.overlays[overlay] = xul;
+    });  
 
-    injectAllOverlays: function (window) {
-        for (let i=0; i < xultools.registeredOverlays[window.location.href].length; i++) {
-            window.console.log("Injecting:", xultools.registeredOverlays[window.location.href][i]);
+    this.injectAllOverlays = function (window) {
+        for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
+            window.console.log("Injecting:", this.registeredOverlays[window.location.href][i]);
 
-            let overlayNode = xultools.getDataFromXULString(xultools.overlays[xultools.registeredOverlays[window.location.href][i]]);
+            let overlayNode = this.getDataFromXULString(this.overlays[this.registeredOverlays[window.location.href][i]]);
 
             //get and load scripts
-            let scripts = xultools.getScripts(overlayNode.children);
+            let scripts = this.getScripts(overlayNode.children);
             for (let i=0; i < scripts.length; i++){
                 window.console.log("Loading", scripts[i]);
                 Services.scriptloader.loadSubScript(scripts[i], window);
@@ -54,7 +49,7 @@ var xultools = {
             }
 
             if (inject) {
-                xultools.insertXulOverlay(window, overlayNode.children);
+                this.insertXulOverlay(window, overlayNode.children);
                 //execute oninject
                 if (overlayNode.hasAttribute("oninject")) {
                     let oninject = overlayNode.getAttribute("oninject");
@@ -64,13 +59,13 @@ var xultools = {
                 }
             }
         }
-    },
+    };
     
-    removeAllOverlays: function (window) {
-        for (let i=0; i < xultools.registeredOverlays[window.location.href].length; i++) {
-            window.console.log("Removing:", xultools.registeredOverlays[window.location.href][i]);
+    this.removeAllOverlays = function (window) {
+        for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
+            window.console.log("Removing:", this.registeredOverlays[window.location.href][i]);
             
-            let overlayNode = xultools.getDataFromXULString(xultools.overlays[xultools.registeredOverlays[window.location.href][i]]);
+            let overlayNode = this.getDataFromXULString(this.overlays[this.registeredOverlays[window.location.href][i]]);
 
             if (overlayNode.hasAttribute("onremove")) {
                 let onremove = overlayNode.getAttribute("onremove");
@@ -79,11 +74,11 @@ var xultools = {
                 window.eval(onremove);
             }
 
-            xultools.removeXulOverlay(window, overlayNode.children);
+            this.removeXulOverlay(window, overlayNode.children);
         }
-    },
+    };
 
-    getDataFromXULString: function (str) {
+    this.getDataFromXULString = function (str) {
         let data = null;
         let xul = "";        
         if (str == "") {
@@ -110,10 +105,10 @@ var xultools = {
         }
         
         return xul.documentElement;
-    },
+    };
 
 
-    createXulElement: function (window, node) {
+    this.createXulElement = function (window, node) {
         //check for namespace
         let typedef = node.nodeName.split(":");
         if (typedef.length == 2) typedef[0] = node.lookupNamespaceURI(typedef[0]);
@@ -125,10 +120,10 @@ var xultools = {
             }
         }
         return element;
-    },
+    };
 
 
-    removeXulOverlay: function (window, nodes, parentElement = null) {
+    this.removeXulOverlay = function (window, nodes, parentElement = null) {
         //only scan toplevel elements and remove them
         let nodeList = [];
         if (nodes.length === undefined) nodeList.push(nodes);
@@ -148,10 +143,10 @@ var xultools = {
                     break;
             }
         }
-    },
+    };
     
 
-    insertXulOverlay: function (window, nodes, parentElement = null) {
+    this.insertXulOverlay = function (window, nodes, parentElement = null) {
         /*
              The passed nodes value could be an entire window.document in a single node (type 9) or a 
              single element node (type 1) as returned by getElementById. It could however also 
@@ -188,8 +183,8 @@ var xultools = {
                     }
                 }
                 
-                element = xultools.createXulElement(window, node);
-                if (node.hasChildNodes) xultools.insertXulOverlay(window, node.children, element);
+                element = this.createXulElement(window, node);
+                if (node.hasChildNodes) this.insertXulOverlay(window, node.children, element);
 
                 if (parentElement) {
                     // this is a child level XUL element which needs to be added to to its parent
@@ -214,9 +209,9 @@ var xultools = {
                 }                
             }            
         }
-    },
+    };
 
-    getScripts: function (nodes) {
+    this.getScripts = function (nodes) {
         /*
              The passed nodes value could be an entire window.document in a single node (type 9) or a 
              single element node (type 1) as returned by getElementById. It could however also 
@@ -245,10 +240,10 @@ var xultools = {
         }
         
         return scripts;
-    },
+    };
 
     //read file from within the XPI package
-    fetchFile: function (aURL, returnType = "Array") {
+    this.fetchFile = function (aURL, returnType = "Array") {
         return new Promise((resolve, reject) => {
             let uri = Services.io.newURI(aURL);
             let channel = Services.io.newChannelFromURI2(uri,
@@ -276,6 +271,6 @@ var xultools = {
                 }
             });
         });
-    }    
-    
-};
+    };
+        
+}

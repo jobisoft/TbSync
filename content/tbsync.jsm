@@ -209,7 +209,7 @@ var tbSync = {
                     }
                     
                     //get windows timezone data from CSV
-                    let csvData = yield tbSync.xultools.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
+                    let csvData = yield tbSync.overlayManager.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
                     for (let i = 0; i<csvData.length; i++) {
                         let lData = csvData[i].split(",");
                         if (lData.length<3) continue;
@@ -610,7 +610,7 @@ var tbSync = {
         for (let u=0; u<urls.length && versions === null; u++) {
             try {
                 //get latest version info
-                versions = yield tbSync.xultools.fetchFile(urls[u]);
+                versions = yield tbSync.overlayManager.fetchFile(urls[u]);
             } catch (ex) {
                 tbSync.dump("Get version info failed!", urls[u]);
             }
@@ -1798,5 +1798,3 @@ if (tbSync.lightningIsAvailable()) {
 tbSync.initFile("debug.log");
 tbSync.dump("Init","Please send this log to john.bieling@gmx.de, if you have encountered an error.");
 Services.console.registerListener(tbSync.consoleListener);
-
-tbSync.includeJS("chrome://tbsync/content/xultools.js");

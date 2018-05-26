@@ -63,6 +63,7 @@ function startup(data, reason) {
     branch.setBoolPref("showanniversary", false);
 
     Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+    Components.utils.import("chrome://tbsync/content/OverlayManager.jsm");
 
     //Map local writeAsyncJSON into tbSync
     tbSync.writeAsyncJSON = writeAsyncJSON;
@@ -73,7 +74,7 @@ function startup(data, reason) {
     Services.obs.addObserver(onLoadDoneObserver, "tbsync.init.done", false);
 
     tbSync.addonData = data;
-    tbSync.xultools.init(data);
+    tbSync.overlayManager = new OverlayManager(data);
 
     if (reason != APP_STARTUP) {
         //during startup, we wait until mail-startup-done fired, for all other reasons we need to fire our own init
@@ -111,6 +112,7 @@ function shutdown(data, reason) {
     //unload tbSync module
     tbSync.dump("TbSync shutdown","Unloading TbSync module.");
     Components.utils.unload("chrome://tbsync/content/tbsync.jsm");
+    Components.utils.unload("chrome://tbsync/content/OverlayManager.jsm");
     
     // HACK WARNING:
     //  - the Addon Manager does not properly clear all addon related caches on update;
@@ -132,15 +134,15 @@ function forEachOpenWindow(todo)  // Apply a function to all open windows
 }
 
 function loadIntoWindow(window) {
-    if (tbSync.xultools.hasRegisteredOverlays(window)) {
+    if (tbSync.overlayManager.hasRegisteredOverlays(window)) {
         window.tbSync = tbSync;
-        tbSync.xultools.injectAllOverlays(window);
+        tbSync.overlayManager.injectAllOverlays(window);
     }
 }
     
 function unloadFromWindow(window) {
-    if (tbSync.xultools.hasRegisteredOverlays(window)) {
-        tbSync.xultools.removeAllOverlays(window);
+    if (tbSync.overlayManager.hasRegisteredOverlays(window)) {
+        tbSync.overlayManager.removeAllOverlays(window);
         window.tbSync = null;
     }
 }
