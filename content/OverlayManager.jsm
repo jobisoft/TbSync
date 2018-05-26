@@ -134,7 +134,19 @@ function OverlayManager(addonData, options = {}) {
                 element.setAttribute(node.attributes[i].name, node.attributes[i].value);
             }
         }
-        return element;
+
+		//add text child nodes as textContent
+		if (node.hasChildNodes) {
+			let textContent = "";
+			for (let child of node.childNodes) {
+				if (child.nodeType == "3") {
+					textContent += child.nodeValue;
+				}
+			}
+			if (textContent) element.textContent = textContent
+		}
+
+		return element;
     };
 
 
@@ -203,7 +215,6 @@ function OverlayManager(addonData, options = {}) {
                     //check for style
                     if (node.nodeName == "style") {
                         let element = this.createXulElement(window, node, "html:style"); //force as html:style
-                        if (node.hasChildNodes) element.textContent = node.childNodes[0].nodeValue;
                         window.document.documentElement.appendChild(element);
                         continue;
                     }
