@@ -10,7 +10,7 @@ function OverlayManager(addonData, options = {}) {
     this.addonData = addonData;
     this.registeredOverlays = {};
     this.overlays =  {};
-    this.decoder = new TextDecoder();
+    //this.decoder = new TextDecoder();
     this.options = {verbose: false};
     
     let userOptions = Object.keys(options);
@@ -27,12 +27,12 @@ function OverlayManager(addonData, options = {}) {
         this.registeredOverlays[dst].push(overlay);
         if (overlay.startsWith("chrome://")) {
             let xul = yield this.readOverlayFile(overlay);
-            //let xuldata = yield OS.File.read(this.addonData.installPath.path + overlay);        
+            //let xuldata = yield OS.File.read(this.addonData.installPath.path + overlay);
             //let xul = this.decoder.decode(xuldata);
             
             this.overlays[overlay] = xul;
         } else {
-            throw "Only chrome:// URI can be registered as overlays."
+            throw "Only chrome:// URIs can be registered as overlays."
         }
     });  
 
@@ -180,7 +180,7 @@ function OverlayManager(addonData, options = {}) {
             let hookElement = null;
 
             if (node.nodeName == "script") {
-                // ignore script tags
+                // ignore script tags here, they will be extracted by getScripts()
             } else if (node.nodeName == "toolbarpalette") {
                 // handle toolbarpalette tags
             } else if (node.nodeType == 1) {
