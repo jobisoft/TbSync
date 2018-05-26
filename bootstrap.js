@@ -13,6 +13,7 @@ let onLoadObserver = {
             window = Services.wm.getMostRecentWindow("mail:3pane");
             if (window) {
                 //init TbSync
+                window.tbSync = tbSync;
                 tbSync.init(window); 
             } else {
                 tbSync.dump("FAIL", "Could not init TbSync, because mail:3pane window not found.");
@@ -134,7 +135,9 @@ function forEachOpenWindow(todo)  // Apply a function to all open windows
 }
 
 function loadIntoWindow(window) {
-    if (tbSync.overlayManager.hasRegisteredOverlays(window)) {
+    //do not inject into main window, because we have done that in tbSync.init() to provide an option to the user to get the Ooops message, 
+    //in case something went wrong during init (and we do not reach this point)
+    if (window.location.href != "chrome://messenger/content/messenger.xul" && tbSync.overlayManager.hasRegisteredOverlays(window)) {
         window.tbSync = tbSync;
         tbSync.overlayManager.injectAllOverlays(window);
     }

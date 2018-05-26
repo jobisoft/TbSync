@@ -185,17 +185,30 @@ function OverlayManager(addonData, options = {}) {
                 // handle toolbarpalette tags
             } else if (node.nodeType == 1) {
 
-                if (!parentElement) {
+                if (!parentElement) { //misleading: if it does not have a parentElement, it is a top level element
+                    //Adding top level elements without id is not allowed, because we need to be able to remove them!
+                    if (!node.hasAttribute("id")) {
+                        if (this.options.verbose) window.console.log("BAD XUL: A top level <" + node.nodeName+ "> element does not have an ID. Skipped");
+                        continue;
+                    }
+
                     if (node.hasAttribute("appendto")) hookMode = "appendto";
                     if (node.hasAttribute("insertbefore")) hookMode ="insertbefore";
                     if (node.hasAttribute("insertafter")) hookMode = "insertafter";
-                    hookName = node.getAttribute(hookMode);
-                    hookElement = window.document.getElementById(hookName);
                     
-                    if (!hookElement) {
-                        if (this.options.verbose) window.console.log("BAD XUL", "The hook element <"+hookName+"> of top level overlay element <"+ node.nodeName+"> does not exist. Skipped");
-                        continue;
-                    }
+                    if (hookMode) {
+                        hookName = node.getAttribute(hookMode);
+                        hookElement = window.document.getElementById(hookName);
+                    
+                        if (!hookElement) {
+                            if (this.options.verbose) window.console.log("BAD XUL: The hook element <"+hookName+"> of top level overlay element <"+ node.nodeName+"> does not exist. Skipped");
+                            continue;
+                        }
+                    } else {
+                        hookMode = "appendto";
+                        hookName = "ROOT";
+                        hookElement = window.document.documentElement;
+                    }                    
                 }
                 
                 element = this.createXulElement(window, node);
@@ -217,10 +230,10 @@ function OverlayManager(addonData, options = {}) {
                             hookElement.parentNode.insertBefore(element, hookElement.nextSibling);
                             break;
                         default:
-                            if (this.options.verbose) window.console.log("BAD XUL", "Top level overlay element <"+ node.nodeName+"> uses unknown hook type <"+hookMode+">. Skipped.");
+                            if (this.options.verbose) window.console.log("BAD XUL: Top level overlay element <"+ node.nodeName+"> uses unknown hook type <"+hookMode+">. Skipped.");
                             continue;
                     }
-                    if (this.options.verbose) window.console.log("Adding <"+element.id+"> ("+window.document.getElementById(element.id).tagName+")  " + hookMode + " <" + hookName + ">");
+                    if (this.options.verbose) window.console.log("Adding <"+element.id+"> ("+element.tagName+")  " + hookMode + " <" + hookName + ">");
                 }                
             }            
         }

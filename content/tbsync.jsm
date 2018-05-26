@@ -82,33 +82,12 @@ var tbSync = {
         tbSync.dump("TbSync init","Start");
         tbSync.window = window;
 
-        Services.obs.addObserver(tbSync.openManagerObserver, "tbsync.openManager", false);
         Services.obs.addObserver(tbSync.initSyncObserver, "tbsync.initSync", false);
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate", false);
         
-        //Inject UI - statusbar
-        let statuspanel = tbSync.window.document.createElement('statusbarpanel');
-        statuspanel.setAttribute("label","TbSync");
-        statuspanel.setAttribute("id","tbsync.status");
-        statuspanel.onclick = function (event) {if (event.button == 0) Services.obs.notifyObservers(null, 'tbsync.openManager', null);};
-        tbSync.window.document.getElementById("status-bar").appendChild(statuspanel);
-
-        //Inject UI - menuitem - if possible above "menu_accountmgr", wherever that is, if not found, fall back to taskPopup as container
-        let menuitem = tbSync.window.document.createElement('menuitem');
-        menuitem.setAttribute("label", tbSync.getLocalizedMessage("menu.settingslabel"));
-        menuitem.setAttribute("id","tbsync.menuitem");
-        menuitem.onclick = function (event) {Services.obs.notifyObservers(null, 'tbsync.openManager', null);};
-
-        let accountManagerMenuItem = tbSync.window.document.getElementById("menu_accountmgr");
-        let taskPopup = tbSync.window.document.getElementById("taskPopup");
-        
-        if (accountManagerMenuItem && accountManagerMenuItem.parentNode) {
-          accountManagerMenuItem.parentNode.insertBefore(menuitem, accountManagerMenuItem);
-        } else if (taskPopup) {
-          tbSync.window.document.getElementById("taskPopup").appendChild(menuitem);	
-        }
-        
-        
+        // Inject UI before init finished, to give user the option to see Oops message and report bug
+        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/messenger/messenger.xul");        
+        tbSync.overlayManager.injectAllOverlays(tbSync.window);
         
         //print information about Thunderbird version and OS
         tbSync.dump(Services.appinfo.name, Services.appinfo.platformVersion + " on " + OS.Constants.Sys.Name);
@@ -255,23 +234,12 @@ var tbSync = {
         tbSync.syncTimer.cancel();
 
         //remove observer
-        Services.obs.removeObserver(tbSync.openManagerObserver, "tbsync.openManager");
         Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate");
         Services.obs.removeObserver(tbSync.initSyncObserver, "tbsync.initSync");
 
         //close window (if open)
         if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
         
-        //remove UI elements
-        if (tbSync.window && tbSync.window.document) {
-            //remove statuspanel
-            if (tbSync.window.document.getElementById("tbsync.status")) tbSync.window.document.getElementById("status-bar").removeChild(tbSync.window.document.getElementById("tbsync.status"));
-        
-            //remove menuitem
-            let menuitem = tbSync.window.document.getElementById("tbsync.menuitem");
-            if (menuitem && menuitem.parentNode) menuitem.parentNode.removeChild(menuitem);
-        }
-
         //remove listener
         tbSync.addressbookListener.remove();
 
@@ -291,6 +259,18 @@ var tbSync = {
             //are there any other cleanup4lightning we need to call?
             for (let i=0;i<tbSync.syncProviderList.length;i++) {
                 tbSync[tbSync.syncProviderList[i]].cleanup4lightning();
+            }
+        }
+    },
+
+    openManagerWindow: function(event) {
+        if (event.button == 0) {
+            if (tbSync.enabled) {
+                // check, if a window is already open and just put it in focus
+                if (tbSync.prefWindowObj === null) tbSync.prefWindowObj = tbSync.window.open("chrome://tbsync/content/manager/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen");
+                tbSync.prefWindowObj.focus();
+            } else {
+                tbSync.popupNotEnabled();
             }
         }
     },
@@ -360,20 +340,7 @@ var tbSync = {
             }
         }
     },
-
-    //Observer to open the account manager
-    openManagerObserver: {
-        observe: function (aSubject, aTopic, aData) {
-            if (tbSync.enabled) {
-                // check, if a window is already open and just put it in focus
-                if (tbSync.prefWindowObj === null) tbSync.prefWindowObj = tbSync.window.open("chrome://tbsync/content/manager/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen");
-                tbSync.prefWindowObj.focus();
-            } else {
-                tbSync.popupNotEnabled();
-            }
-        }
-    },
-
+    
     //Observer to init sync
     initSyncObserver: {
         observe: function (aSubject, aTopic, aData) {

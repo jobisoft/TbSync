@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
+
+<overlay 
+	id="messengeroverlay" 
+	xmlns:html="http://www.w3.org/1999/xhtml">
+
+    <toolbarpalette id="MailToolbarPalette">
+        <toolbarbutton 
+            id ="tbsync-toolbarbutton" 
+            class="toolbarbutton"
+            label="&toolbar.label;" 
+            tooltiptext="&toolbar.tooltiptext;"	    
+            oncommand="if (tbSync.enabled) tbSync.syncAccount('sync'); else tbSyncMessenger.popupNotEnabled();"/>
+    </toolbarpalette>
+
+    <menupopup id="tbsync.statusmenu">
+        <menuitem label="&popup.opensettings;" onclick="tbSync.openManagerWindow(event);" />
+    </menupopup>
+    
+    <statusbarpanel id="tbsync.status" appendto="status-bar" label="TbSync" context="tbsync.statusmenu" onclick="tbSync.openManagerWindow(event);" />
+
+    <!--menuitem id="tbsync.taskPopupEntry" label="&menu.settingslabel;" appendto="taskPopup" onclick="tbSync.openManagerWindow(event);" / -->
+    <menuitem id="tbsync.accountmgrEntry" label="&menu.settingslabel;" insertbefore="menu_accountmgr" onclick="tbSync.openManagerWindow(event);" />
+
+</overlay>        
