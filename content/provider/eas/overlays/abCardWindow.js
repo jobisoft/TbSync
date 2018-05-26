@@ -1,6 +1,5 @@
 tbSync.eas.onBeforeInjectIntoCardEditWindow = function (window) {
     //is this NewCard or EditCard?
-    window.console.log(window.location.href);
     if (window.location.href=="chrome://messenger/content/addressbook/abNewCardDialog.xul") {
         return true;
     } else {    

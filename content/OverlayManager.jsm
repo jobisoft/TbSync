@@ -6,12 +6,18 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
 Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 
-function OverlayManager(addonData) {
+function OverlayManager(addonData, options = {}) {
     this.addonData = addonData;
     this.registeredOverlays = {};
     this.overlays =  {};
     this.decoder = new TextDecoder();
-        
+    this.options = {verbose: false};
+    
+    let userOptions = Object.keys(options);
+    for (let i=0; i < userOptions.length; i++) {
+        this.options[userOptions[i]] = options[userOptions[i]];
+    }
+    
     this.hasRegisteredOverlays = function (window) {
         return this.registeredOverlays.hasOwnProperty(window.location.href);
     };
@@ -19,43 +25,48 @@ function OverlayManager(addonData) {
     this.registerOverlay = Task.async (function* (dst, overlay) {
         if (!this.registeredOverlays[dst]) this.registeredOverlays[dst] = [];
         this.registeredOverlays[dst].push(overlay);
-
-        let xul = yield this.fetchFile(overlay, "String");
-	    //let xuldata = yield OS.File.read(this.addonData.installPath.path + overlay);        
-        //let xul = this.decoder.decode(xuldata);
-        
-        this.overlays[overlay] = xul;
+        if (overlay.startsWith("chrome://")) {
+            let xul = yield this.readOverlayFile(overlay);
+            //let xuldata = yield OS.File.read(this.addonData.installPath.path + overlay);        
+            //let xul = this.decoder.decode(xuldata);
+            
+            this.overlays[overlay] = xul;
+        } else {
+            throw "Only chrome:// URI can be registered as overlays."
+        }
     });  
 
     this.injectAllOverlays = function (window) {
         for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
-            window.console.log("Injecting:", this.registeredOverlays[window.location.href][i]);
+            if (this.options.verbose) window.console.log("Injecting:", this.registeredOverlays[window.location.href][i]);
 
-            let overlayNode = this.getDataFromXULString(this.overlays[this.registeredOverlays[window.location.href][i]]);
+            let overlayNode = this.getDataFromXULString(window, this.overlays[this.registeredOverlays[window.location.href][i]]);
+            if (overlayNode) {
+                //get and load scripts
+                let scripts = this.getScripts(overlayNode.children);
+                for (let i=0; i < scripts.length; i++){
+                    if (this.options.verbose) window.console.log("Loading", scripts[i]);
+                    Services.scriptloader.loadSubScript(scripts[i], window);
+                }
 
-            //get and load scripts
-            let scripts = this.getScripts(overlayNode.children);
-            for (let i=0; i < scripts.length; i++){
-                window.console.log("Loading", scripts[i]);
-                Services.scriptloader.loadSubScript(scripts[i], window);
-            }
+                //eval onbeforeinject, if that returns false, inject is aborted
+                let inject = true;
+                if (overlayNode.hasAttribute("onbeforeinject")) {
+                    let onbeforeinject = overlayNode.getAttribute("onbeforeinject");
+                    if (this.options.verbose) window.console.log("Executing", onbeforeinject);
+                    // the source for this eval is part of this XPI, cannot be changed by user.
+                    inject = window.eval(onbeforeinject);
+                }
 
-            //eval onbeforeinject, if that returns false, inject is aborted
-            let inject = true;
-            if (overlayNode.hasAttribute("onbeforeinject")) {
-                let onbeforeinject = overlayNode.getAttribute("onbeforeinject");
-                window.console.log("Executing", onbeforeinject);
-                inject = window.eval(onbeforeinject);
-            }
-
-            if (inject) {
-                this.insertXulOverlay(window, overlayNode.children);
-                //execute oninject
-                if (overlayNode.hasAttribute("oninject")) {
-                    let oninject = overlayNode.getAttribute("oninject");
-                    window.console.log("Executing", oninject);
-                    // the source for this eval is part of this XPI, cannot be changed by user. If I do not mess things up, this does not impose a security issue
-                    window.eval(oninject);
+                if (inject) {
+                    this.insertXulOverlay(window, overlayNode.children);
+                    //execute oninject
+                    if (overlayNode.hasAttribute("oninject")) {
+                        let oninject = overlayNode.getAttribute("oninject");
+                        if (this.options.verbose) window.console.log("Executing", oninject);
+                        // the source for this eval is part of this XPI, cannot be changed by user.
+                        window.eval(oninject);
+                    }
                 }
             }
         }
@@ -63,14 +74,14 @@ function OverlayManager(addonData) {
     
     this.removeAllOverlays = function (window) {
         for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
-            window.console.log("Removing:", this.registeredOverlays[window.location.href][i]);
+            if (this.options.verbose) window.console.log("Removing:", this.registeredOverlays[window.location.href][i]);
             
-            let overlayNode = this.getDataFromXULString(this.overlays[this.registeredOverlays[window.location.href][i]]);
+            let overlayNode = this.getDataFromXULString(window, this.overlays[this.registeredOverlays[window.location.href][i]]);
 
             if (overlayNode.hasAttribute("onremove")) {
                 let onremove = overlayNode.getAttribute("onremove");
-                window.console.log("Executing", onremove);
-                // the source for this eval is part of this XPI, cannot be changed by user. If I do not mess things up, this does not impose a security issue
+                if (this.options.verbose) window.console.log("Executing", onremove);
+                // the source for this eval is part of this XPI, cannot be changed by user.
                 window.eval(onremove);
             }
 
@@ -78,11 +89,12 @@ function OverlayManager(addonData) {
         }
     };
 
-    this.getDataFromXULString = function (str) {
+    this.getDataFromXULString = function (window, str) {
         let data = null;
         let xul = "";        
         if (str == "") {
-            throw "BAD XUL: A provided XUL file is empty!";
+            if (this.options.verbose) window.console.log("BAD XUL: A provided XUL file is empty!");
+            return null;
         }
         
         let oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser); //TB61 new DOMParser(); //
@@ -92,16 +104,19 @@ function OverlayManager(addonData) {
             //however, domparser does not throw an error, it returns an error document
             //https://developer.mozilla.org/de/docs/Web/API/DOMParser
             //just in case
-            throw "BAD XUL: A provided XUL file could not be parsed correctly, something is wrong.\n" + str;
+            if (this.options.verbose) window.console.log("BAD XUL: A provided XUL file could not be parsed correctly, something is wrong.\n" + str);
+            return null;
         }
 
         //check if xul is error document
         if (xul.documentElement.nodeName == "parsererror") {
-            throw "BAD XUL: A provided XUL file could not be parsed correctly, something is wrong.\n" + str;
+            if (this.options.verbose) window.console.log("BAD XUL: A provided XUL file could not be parsed correctly, something is wrong.\n" + str);
+            return null;
         }
         
         if (xul.documentElement.nodeName != "overlay") {
-            throw "BAD XUL: A provided XUL file does not look like an overlay (root node is not overlay).\n" + str;
+            if (this.options.verbose) window.console.log("BAD XUL: A provided XUL file does not look like an overlay (root node is not overlay).\n" + str);
+            return null;
         }
         
         return xul.documentElement;
@@ -178,7 +193,7 @@ function OverlayManager(addonData) {
                     hookElement = window.document.getElementById(hookName);
                     
                     if (!hookElement) {
-                        window.console.log("BAD XUL", "The hook element <"+hookName+"> of top level overlay element <"+ node.nodeName+"> does not exist. Skipped");
+                        if (this.options.verbose) window.console.log("BAD XUL", "The hook element <"+hookName+"> of top level overlay element <"+ node.nodeName+"> does not exist. Skipped");
                         continue;
                     }
                 }
@@ -202,10 +217,10 @@ function OverlayManager(addonData) {
                             hookElement.parentNode.insertBefore(element, hookElement.nextSibling);
                             break;
                         default:
-                            window.console.log("BAD XUL", "Top level overlay element <"+ node.nodeName+"> uses unknown hook type <"+hookMode+">. Skipped.");
+                            if (this.options.verbose) window.console.log("BAD XUL", "Top level overlay element <"+ node.nodeName+"> uses unknown hook type <"+hookMode+">. Skipped.");
                             continue;
                     }
-                    window.console.log("Adding <"+element.id+"> ("+window.document.getElementById(element.id).tagName+")  " + hookMode + " <" + hookName + ">");
+                    if (this.options.verbose) window.console.log("Adding <"+element.id+"> ("+window.document.getElementById(element.id).tagName+")  " + hookMode + " <" + hookName + ">");
                 }                
             }            
         }
@@ -243,7 +258,7 @@ function OverlayManager(addonData) {
     };
 
     //read file from within the XPI package
-    this.fetchFile = function (aURL, returnType = "Array") {
+    this.readOverlayFile = function (aURL) {
         return new Promise((resolve, reject) => {
             let uri = Services.io.newURI(aURL);
             let channel = Services.io.newChannelFromURI2(uri,
@@ -261,11 +276,7 @@ function OverlayManager(addonData) {
 
                 try {
                     let data = NetUtil.readInputStreamToString(inputStream, inputStream.available());
-                    if (returnType == "Array") {
-                        resolve(data.replace("\r","").split("\n"))
-                    } else {
-                        resolve(data);
-                    }
+                    resolve(data);
                 } catch (ex) {
                     reject(ex);
                 }
