@@ -123,9 +123,9 @@ function OverlayManager(addonData, options = {}) {
     };
 
 
-    this.createXulElement = function (window, node) {
+    this.createXulElement = function (window, node, forcedNodeName = null) {
         //check for namespace
-        let typedef = node.nodeName.split(":");
+        let typedef = forcedNodeName ? forcedNodeName.split(":") : node.nodeName.split(":");
         if (typedef.length == 2) typedef[0] = node.lookupNamespaceURI(typedef[0]);
         
         let element = (typedef.length==2) ? window.document.createElementNS(typedef[0], typedef[1]) : window.document.createElement(typedef[0]);
@@ -192,6 +192,22 @@ function OverlayManager(addonData, options = {}) {
                         continue;
                     }
 
+                    //check for link
+                    if (node.nodeName == "link" && node.hasAttribute("rel") && node.getAttribute("rel") == "stylesheet" && node.hasAttribute("type") && node.getAttribute("type") == "text/css"  && node.hasAttribute("href")) {
+                        let element = this.createXulElement(window, node, "html:style"); //force as html:style
+                        element.textContent = node.getAttribute("href");
+                        window.document.documentElement.appendChild(element);
+                        continue;
+                    }
+
+                    //check for style
+                    if (node.nodeName == "style") {
+                        let element = this.createXulElement(window, node, "html:style"); //force as html:style
+                        if (node.hasChildNodes) element.textContent = node.childNodes[0].nodeValue;
+                        window.document.documentElement.appendChild(element);
+                        continue;
+                    }
+                    
                     if (node.hasAttribute("appendto")) hookMode = "appendto";
                     if (node.hasAttribute("insertbefore")) hookMode ="insertbefore";
                     if (node.hasAttribute("insertafter")) hookMode = "insertafter";
