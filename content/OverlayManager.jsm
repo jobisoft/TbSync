@@ -10,6 +10,7 @@ function OverlayManager(addonData, options = {}) {
     this.addonData = addonData;
     this.registeredOverlays = {};
     this.overlays =  {};
+    this.stylesheets = {};
     //this.decoder = new TextDecoder();
     this.options = {verbose: 0};
     
@@ -17,7 +18,16 @@ function OverlayManager(addonData, options = {}) {
     for (let i=0; i < userOptions.length; i++) {
         this.options[userOptions[i]] = options[userOptions[i]];
     }
-    
+
+
+
+
+
+
+
+
+
+
     this.hasRegisteredOverlays = function (window) {
         return this.registeredOverlays.hasOwnProperty(window.location.href);
     };
@@ -26,68 +36,24 @@ function OverlayManager(addonData, options = {}) {
         if (!this.registeredOverlays[dst]) this.registeredOverlays[dst] = [];
         this.registeredOverlays[dst].push(overlay);
         if (overlay.startsWith("chrome://")) {
-            let xul = yield this.readOverlayFile(overlay);
+            let xul = yield this.readChromeFile(overlay);
             //let xuldata = yield OS.File.read(this.addonData.installPath.path + overlay);
             //let xul = this.decoder.decode(xuldata);
+            let rootNode = this.getDataFromXULString(null, xul);
+    
+            //get urls of stylesheets to load them
+            let styleSheetUrls = this.getStyleSheetUrls(rootNode);
+            for (let i=0; i<styleSheetUrls.length; i++) {
+                if (!this.stylesheets.hasOwnProperty(styleSheetUrls[i])) {
+                    this.stylesheets[styleSheetUrls[i]] = yield this.readChromeFile(styleSheetUrls[i]);
+                }
+            }
             
-            this.overlays[overlay] = xul;
+            this.overlays[overlay] = rootNode;
         } else {
             throw "Only chrome:// URIs can be registered as overlays."
         }
     });  
-
-    this.injectAllOverlays = function (window) {
-        for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
-            if (this.options.verbose>2) window.console.log("Injecting:", this.registeredOverlays[window.location.href][i]);
-
-            let overlayNode = this.getDataFromXULString(window, this.overlays[this.registeredOverlays[window.location.href][i]]);
-            if (overlayNode) {
-                //get and load scripts
-                let scripts = this.getScripts(overlayNode.children);
-                for (let i=0; i < scripts.length; i++){
-                    if (this.options.verbose>3) window.console.log("Loading", scripts[i]);
-                    Services.scriptloader.loadSubScript(scripts[i], window);
-                }
-
-                //eval onbeforeinject, if that returns false, inject is aborted
-                let inject = true;
-                if (overlayNode.hasAttribute("onbeforeinject")) {
-                    let onbeforeinject = overlayNode.getAttribute("onbeforeinject");
-                    if (this.options.verbose>3) window.console.log("Executing", onbeforeinject);
-                    // the source for this eval is part of this XPI, cannot be changed by user.
-                    inject = window.eval(onbeforeinject);
-                }
-
-                if (inject) {
-                    this.insertXulOverlay(window, overlayNode.children);
-                    //execute oninject
-                    if (overlayNode.hasAttribute("oninject")) {
-                        let oninject = overlayNode.getAttribute("oninject");
-                        if (this.options.verbose>3) window.console.log("Executing", oninject);
-                        // the source for this eval is part of this XPI, cannot be changed by user.
-                        window.eval(oninject);
-                    }
-                }
-            }
-        }
-    };
-    
-    this.removeAllOverlays = function (window) {
-        for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
-            if (this.options.verbose>2) window.console.log("Removing:", this.registeredOverlays[window.location.href][i]);
-            
-            let overlayNode = this.getDataFromXULString(window, this.overlays[this.registeredOverlays[window.location.href][i]]);
-
-            if (overlayNode.hasAttribute("onremove")) {
-                let onremove = overlayNode.getAttribute("onremove");
-                if (this.options.verbose>3) window.console.log("Executing", onremove);
-                // the source for this eval is part of this XPI, cannot be changed by user.
-                window.eval(onremove);
-            }
-
-            this.removeXulOverlay(window, overlayNode.children);
-        }
-    };
 
     this.getDataFromXULString = function (window, str) {
         let data = null;
@@ -119,8 +85,145 @@ function OverlayManager(addonData, options = {}) {
             return null;
         }
         
-        return xul.documentElement;
+        return xul;
     };
+
+
+
+
+
+
+
+
+
+
+    this.injectAllOverlays = function (window) {
+        for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
+            if (this.options.verbose>2) window.console.log("Injecting:", this.registeredOverlays[window.location.href][i]);
+
+//            let rootNode = this.getDataFromXULString(window, this.overlays[this.registeredOverlays[window.location.href][i]]);
+            let rootNode = this.overlays[this.registeredOverlays[window.location.href][i]];
+
+            if (rootNode) {
+                let overlayNode = rootNode.documentElement;
+                if (overlayNode) {
+                    //get and load scripts
+                    let scripts = this.getScripts(rootNode, overlayNode);
+                    for (let i=0; i < scripts.length; i++){
+                        if (this.options.verbose>3) window.console.log("Loading", scripts[i]);
+                        Services.scriptloader.loadSubScript(scripts[i], window);
+                    }
+
+                    //eval onbeforeinject, if that returns false, inject is aborted
+                    let inject = true;
+                    if (overlayNode.hasAttribute("onbeforeinject")) {
+                        let onbeforeinject = overlayNode.getAttribute("onbeforeinject");
+                        if (this.options.verbose>3) window.console.log("Executing", onbeforeinject);
+                        // the source for this eval is part of this XPI, cannot be changed by user.
+                        inject = window.eval(onbeforeinject);
+                    }
+
+                    if (inject) {
+                        this.insertXulOverlay(window, overlayNode.children);
+                        
+                        //get urls of stylesheets to add preloaded files
+                        let styleSheetUrls = this.getStyleSheetUrls(rootNode);
+                        for (let i=0; i<styleSheetUrls.length; i++) {
+                            let namespace = overlayNode.lookupNamespaceURI("html");
+                            let element = window.document.createElementNS(namespace, "style");
+                            element.id = styleSheetUrls[i];
+                            element.textContent = this.stylesheets[styleSheetUrls[i]];
+                            window.document.documentElement.appendChild(element);
+                            if (this.options.verbose>3) window.console.log("Stylesheet", styleSheetUrls[i]);
+                        }                        
+                        
+                        //execute oninject
+                        if (overlayNode.hasAttribute("oninject")) {
+                            let oninject = overlayNode.getAttribute("oninject");
+                            if (this.options.verbose>3) window.console.log("Executing", oninject);
+                            // the source for this eval is part of this XPI, cannot be changed by user.
+                            window.eval(oninject);
+                        }
+                    }
+                }
+            }
+        }
+    };
+    
+    this.removeAllOverlays = function (window) {
+        for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
+            if (this.options.verbose>2) window.console.log("Removing:", this.registeredOverlays[window.location.href][i]);
+            
+//            let rootNode = this.getDataFromXULString(window, this.overlays[this.registeredOverlays[window.location.href][i]]);
+            let rootNode = this.overlays[this.registeredOverlays[window.location.href][i]];
+            let overlayNode = rootNode.documentElement;
+            
+            if (overlayNode.hasAttribute("onremove")) {
+                let onremove = overlayNode.getAttribute("onremove");
+                if (this.options.verbose>3) window.console.log("Executing", onremove);
+                // the source for this eval is part of this XPI, cannot be changed by user.
+                window.eval(onremove);
+            }
+
+            this.removeXulOverlay(window, overlayNode.children);
+
+            //get urls of stylesheets to remove styte tag
+            let styleSheetUrls = this.getStyleSheetUrls(rootNode);
+            for (let i=0; i<styleSheetUrls.length; i++) {
+                let element = window.document.getElementById(styleSheetUrls[i]);
+                if (element) {
+                    element.parentNode.removeChild(element);
+                }
+            }
+        }
+    };
+
+
+
+
+
+
+
+
+
+
+    this.getStyleSheetUrls = function (rootNode) {
+        let sheetsIterator = rootNode.evaluate("processing-instruction('xml-stylesheet')", rootNode, null, 0, null); //PathResult.ANY_TYPE = 0
+        let urls = [];
+        
+        let sheet;
+        while (sheet = sheetsIterator.iterateNext()) { //returns object XMLStylesheetProcessingInstruction]
+            let attr=sheet.data.split(" ");
+            for (let a=0; a < attr.length; a++) {
+                if (attr[a].startsWith("href=")) urls.push(attr[a].substring(6,attr[a].length-1));
+            }
+        }
+        return urls;
+    };
+    
+    this.getScripts = function(rootNode, overlayNode) {
+        let nodeIterator = rootNode.evaluate("./script", overlayNode, null, 0, null); //PathResult.ANY_TYPE = 0
+        let scripts = [];
+
+        let node;
+        while (node = nodeIterator.iterateNext()) {
+            switch (node.getAttribute("type")) {
+                case "text/javascript":
+                case "application/javascript":
+                    if (node.hasAttribute("src")) scripts.push(node.getAttribute("src"));
+                    break;
+            }
+        } 
+        return scripts;
+    };
+
+
+
+
+
+
+
+
 
 
     this.createXulElement = function (window, node, forcedNodeName = null) {
@@ -149,30 +252,6 @@ function OverlayManager(addonData, options = {}) {
 		return element;
     };
 
-
-    this.removeXulOverlay = function (window, nodes, parentElement = null) {
-        //only scan toplevel elements and remove them
-        let nodeList = [];
-        if (nodes.length === undefined) nodeList.push(nodes);
-        else nodeList = nodes;
-        
-        // nodelist contains all childs
-        for (let node of nodeList) {
-            let element = null;
-            switch(node.nodeType) {
-                case 1: 
-                    if (node.hasAttribute("id")) {
-                        let element = window.document.getElementById(node.getAttribute("id"));
-                        if (element) {
-                            element.parentNode.removeChild(element);
-                        }
-                    } 
-                    break;
-            }
-        }
-    };
-    
-
     this.insertXulOverlay = function (window, nodes, parentElement = null) {
         /*
              The passed nodes value could be an entire window.document in a single node (type 9) or a 
@@ -190,9 +269,9 @@ function OverlayManager(addonData, options = {}) {
             let hookMode = null;
             let hookName = null;
             let hookElement = null;
-
-            if (node.nodeName == "script") {
-                // ignore script tags here, they will be extracted by getScripts()
+            
+            if (node.nodeName == "script" && node.hasAttribute("src")) {
+                //skip, since they are handled by getScripts()
             } else if (node.nodeName == "toolbarpalette") {
                 // handle toolbarpalette tags
             } else if (node.nodeType == 1) {
@@ -204,15 +283,14 @@ function OverlayManager(addonData, options = {}) {
                         continue;
                     }
 
-                    //check for link
-                    if (node.nodeName == "link" && node.hasAttribute("rel") && node.getAttribute("rel") == "stylesheet" && node.hasAttribute("type") && node.getAttribute("type") == "text/css"  && node.hasAttribute("href")) {
-                        let element = this.createXulElement(window, node, "html:style"); //force as html:style
-                        element.textContent = node.getAttribute("href");
+                    //check for inline script tags
+                    if (node.nodeName == "script") {
+                        let element = this.createXulElement(window, node, "html:script"); //force as html:script
                         window.document.documentElement.appendChild(element);
-                        continue;
+                        continue;                        
                     }
-
-                    //check for style
+                    
+                    //check for inline style
                     if (node.nodeName == "style") {
                         let element = this.createXulElement(window, node, "html:style"); //force as html:style
                         window.document.documentElement.appendChild(element);
@@ -266,39 +344,39 @@ function OverlayManager(addonData, options = {}) {
         }
     };
 
-    this.getScripts = function (nodes) {
-        /*
-             The passed nodes value could be an entire window.document in a single node (type 9) or a 
-             single element node (type 1) as returned by getElementById. It could however also 
-             be an array of nodes as returned by getElementsByTagName or a nodeList as returned
-             by childNodes. In that case node.length is defined.
-         */
+    this.removeXulOverlay = function (window, nodes, parentElement = null) {
+        //only scan toplevel elements and remove them
         let nodeList = [];
         if (nodes.length === undefined) nodeList.push(nodes);
         else nodeList = nodes;
-
-        //collect all toplevel scripts and execute at the end
-        let scripts = [];
         
         // nodelist contains all childs
         for (let node of nodeList) {
-
-            if (node.nodeName == "script") {
-                // handle script tags
-                switch (node.getAttribute("type")) {
-                    case "text/javascript":
-                    case "application/javascript":
-                        if (node.hasAttribute("src")) scripts.push(node.getAttribute("src"));
-                        break;
-                }
+            let element = null;
+            switch(node.nodeType) {
+                case 1: 
+                    if (node.hasAttribute("id")) {
+                        let element = window.document.getElementById(node.getAttribute("id"));
+                        if (element) {
+                            element.parentNode.removeChild(element);
+                        }
+                    } 
+                    break;
             }
         }
-        
-        return scripts;
     };
 
+
+
+
+
+
+
+
+
+
     //read file from within the XPI package
-    this.readOverlayFile = function (aURL) {
+    this.readChromeFile = function (aURL) {
         return new Promise((resolve, reject) => {
             let uri = Services.io.newURI(aURL);
             let channel = Services.io.newChannelFromURI2(uri,
