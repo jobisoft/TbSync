@@ -123,9 +123,7 @@ function OverlayManager(addonData, options = {}) {
                         inject = window.eval(onbeforeinject);
                     }
 
-                    if (inject) {
-                        this.insertXulOverlay(window, overlayNode.children);
-                        
+                    if (inject) {                        
                         //get urls of stylesheets to add preloaded files
                         let styleSheetUrls = this.getStyleSheetUrls(rootNode);
                         for (let i=0; i<styleSheetUrls.length; i++) {
@@ -136,6 +134,8 @@ function OverlayManager(addonData, options = {}) {
                             window.document.documentElement.appendChild(element);
                             if (this.options.verbose>3) window.console.log("Stylesheet", styleSheetUrls[i]);
                         }                        
+
+                        this.insertXulOverlay(window, overlayNode.children);
                         
                         //execute oninject
                         if (overlayNode.hasAttribute("oninject")) {
