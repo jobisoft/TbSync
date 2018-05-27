@@ -11,7 +11,7 @@ function OverlayManager(addonData, options = {}) {
     this.registeredOverlays = {};
     this.overlays =  {};
     //this.decoder = new TextDecoder();
-    this.options = {verbose: false};
+    this.options = {verbose: 0};
     
     let userOptions = Object.keys(options);
     for (let i=0; i < userOptions.length; i++) {
@@ -38,14 +38,14 @@ function OverlayManager(addonData, options = {}) {
 
     this.injectAllOverlays = function (window) {
         for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
-            if (this.options.verbose) window.console.log("Injecting:", this.registeredOverlays[window.location.href][i]);
+            if (this.options.verbose>2) window.console.log("Injecting:", this.registeredOverlays[window.location.href][i]);
 
             let overlayNode = this.getDataFromXULString(window, this.overlays[this.registeredOverlays[window.location.href][i]]);
             if (overlayNode) {
                 //get and load scripts
                 let scripts = this.getScripts(overlayNode.children);
                 for (let i=0; i < scripts.length; i++){
-                    if (this.options.verbose) window.console.log("Loading", scripts[i]);
+                    if (this.options.verbose>3) window.console.log("Loading", scripts[i]);
                     Services.scriptloader.loadSubScript(scripts[i], window);
                 }
 
@@ -53,7 +53,7 @@ function OverlayManager(addonData, options = {}) {
                 let inject = true;
                 if (overlayNode.hasAttribute("onbeforeinject")) {
                     let onbeforeinject = overlayNode.getAttribute("onbeforeinject");
-                    if (this.options.verbose) window.console.log("Executing", onbeforeinject);
+                    if (this.options.verbose>3) window.console.log("Executing", onbeforeinject);
                     // the source for this eval is part of this XPI, cannot be changed by user.
                     inject = window.eval(onbeforeinject);
                 }
@@ -63,7 +63,7 @@ function OverlayManager(addonData, options = {}) {
                     //execute oninject
                     if (overlayNode.hasAttribute("oninject")) {
                         let oninject = overlayNode.getAttribute("oninject");
-                        if (this.options.verbose) window.console.log("Executing", oninject);
+                        if (this.options.verbose>3) window.console.log("Executing", oninject);
                         // the source for this eval is part of this XPI, cannot be changed by user.
                         window.eval(oninject);
                     }
@@ -74,13 +74,13 @@ function OverlayManager(addonData, options = {}) {
     
     this.removeAllOverlays = function (window) {
         for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
-            if (this.options.verbose) window.console.log("Removing:", this.registeredOverlays[window.location.href][i]);
+            if (this.options.verbose>2) window.console.log("Removing:", this.registeredOverlays[window.location.href][i]);
             
             let overlayNode = this.getDataFromXULString(window, this.overlays[this.registeredOverlays[window.location.href][i]]);
 
             if (overlayNode.hasAttribute("onremove")) {
                 let onremove = overlayNode.getAttribute("onremove");
-                if (this.options.verbose) window.console.log("Executing", onremove);
+                if (this.options.verbose>3) window.console.log("Executing", onremove);
                 // the source for this eval is part of this XPI, cannot be changed by user.
                 window.eval(onremove);
             }
@@ -93,7 +93,7 @@ function OverlayManager(addonData, options = {}) {
         let data = null;
         let xul = "";        
         if (str == "") {
-            if (this.options.verbose) window.console.log("BAD XUL: A provided XUL file is empty!");
+            if (this.options.verbose>1) window.console.log("BAD XUL: A provided XUL file is empty!");
             return null;
         }
         
@@ -104,18 +104,18 @@ function OverlayManager(addonData, options = {}) {
             //however, domparser does not throw an error, it returns an error document
             //https://developer.mozilla.org/de/docs/Web/API/DOMParser
             //just in case
-            if (this.options.verbose) window.console.log("BAD XUL: A provided XUL file could not be parsed correctly, something is wrong.\n" + str);
+            if (this.options.verbose>1) window.console.log("BAD XUL: A provided XUL file could not be parsed correctly, something is wrong.\n" + str);
             return null;
         }
 
         //check if xul is error document
         if (xul.documentElement.nodeName == "parsererror") {
-            if (this.options.verbose) window.console.log("BAD XUL: A provided XUL file could not be parsed correctly, something is wrong.\n" + str);
+            if (this.options.verbose>1) window.console.log("BAD XUL: A provided XUL file could not be parsed correctly, something is wrong.\n" + str);
             return null;
         }
         
         if (xul.documentElement.nodeName != "overlay") {
-            if (this.options.verbose) window.console.log("BAD XUL: A provided XUL file does not look like an overlay (root node is not overlay).\n" + str);
+            if (this.options.verbose>1) window.console.log("BAD XUL: A provided XUL file does not look like an overlay (root node is not overlay).\n" + str);
             return null;
         }
         
@@ -200,7 +200,7 @@ function OverlayManager(addonData, options = {}) {
                 if (!parentElement) { //misleading: if it does not have a parentElement, it is a top level element
                     //Adding top level elements without id is not allowed, because we need to be able to remove them!
                     if (!node.hasAttribute("id")) {
-                        if (this.options.verbose) window.console.log("BAD XUL: A top level <" + node.nodeName+ "> element does not have an ID. Skipped");
+                        if (this.options.verbose>1) window.console.log("BAD XUL: A top level <" + node.nodeName+ "> element does not have an ID. Skipped");
                         continue;
                     }
 
@@ -228,7 +228,7 @@ function OverlayManager(addonData, options = {}) {
                         hookElement = window.document.getElementById(hookName);
                     
                         if (!hookElement) {
-                            if (this.options.verbose) window.console.log("BAD XUL: The hook element <"+hookName+"> of top level overlay element <"+ node.nodeName+"> does not exist. Skipped");
+                            if (this.options.verbose>1) window.console.log("BAD XUL: The hook element <"+hookName+"> of top level overlay element <"+ node.nodeName+"> does not exist. Skipped");
                             continue;
                         }
                     } else {
@@ -257,10 +257,10 @@ function OverlayManager(addonData, options = {}) {
                             hookElement.parentNode.insertBefore(element, hookElement.nextSibling);
                             break;
                         default:
-                            if (this.options.verbose) window.console.log("BAD XUL: Top level overlay element <"+ node.nodeName+"> uses unknown hook type <"+hookMode+">. Skipped.");
+                            if (this.options.verbose>1) window.console.log("BAD XUL: Top level overlay element <"+ node.nodeName+"> uses unknown hook type <"+hookMode+">. Skipped.");
                             continue;
                     }
-                    if (this.options.verbose) window.console.log("Adding <"+element.id+"> ("+element.tagName+")  " + hookMode + " <" + hookName + ">");
+                    if (this.options.verbose>3) window.console.log("Adding <"+element.id+"> ("+element.tagName+")  " + hookMode + " <" + hookName + ">");
                 }                
             }            
         }
