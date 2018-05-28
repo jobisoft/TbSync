@@ -59,7 +59,7 @@ var xmltools = {
         let xml = "";        
         if (str == "") return data;
         
-        let oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
+        let oParser = (Services.vc.compare(Services.appinfo.platformVersion, "61.*") >= 0) ? new DOMParser() : Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
         try {
             xml = oParser.parseFromString(str, "application/xml");
         } catch (e) {
