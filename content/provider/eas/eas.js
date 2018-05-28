@@ -250,8 +250,8 @@ var eas = {
                         newData.target = "";
                         
                         //if there is a cached version of this folder, take selection state from there
-                        let cachedFolders = tbSync.db.findFoldersWithSetting(["cached","name","account"], ["1", newData.name,  newData.account], "provider", "eas");
-                        if (cachedFolders && cachedFolders.length > 0) {
+                        let cachedFolders = tbSync.db.findFoldersWithSetting(["cached","name","account","type"], ["1", newData.name,  newData.account, newData.type], "provider", "eas");
+                        if (cachedFolders && cachedFolders.length == 1) {
                             newData.selected = cachedFolders[0].selected;
                             newData.targetName = cachedFolders[0].targetName ? cachedFolders[0].targetName : "";
                             newData.targetColor = cachedFolders[0].targetColor ? cachedFolders[0].targetColor : "";
