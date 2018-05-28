@@ -2,23 +2,6 @@
 
 var wbxmltools = {
 
-    // extract sync key from wbxml
-    FindKey: function (wbxml) {
-        let x = String.fromCharCode(0x4b, 0x03); //<SyncKey> Code Page 0
-        if (wbxml.substr(5, 1) === String.fromCharCode(0x07)) {
-            x = String.fromCharCode(0x52, 0x03); //<SyncKey> Code Page 7
-        }
-
-        let start = wbxml.indexOf(x) + 2;
-        let end = wbxml.indexOf(String.fromCharCode(0x00), start);
-        return wbxml.substring(start, end);
-    },
-    
-
-
-
-
-
     // Convert a WBXML (WAP Binary XML) to plain XML - returns save xml with all special chars in the user data encoded by encodeURIComponent
     convert2xml: function (wbxml) {
 

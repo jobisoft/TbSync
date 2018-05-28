@@ -4,6 +4,18 @@
 
 eas.tzpush = {
 
+    // extract sync key from wbxml
+    FindKey: function (wbxml) {
+        let x = String.fromCharCode(0x4b, 0x03); //<SyncKey> Code Page 0
+        if (wbxml.substr(5, 1) === String.fromCharCode(0x07)) {
+            x = String.fromCharCode(0x52, 0x03); //<SyncKey> Code Page 7
+        }
+
+        let start = wbxml.indexOf(x) + 2;
+        let end = wbxml.indexOf(String.fromCharCode(0x00), start);
+        return wbxml.substring(start, end);
+    },
+    
     addNewCardFromServer: function (card, addressBook) {
         //Remove the ServerID from the card, add the card without serverId and modify the added card later on - otherwise the ServerId will be removed by the onAddItem-listener
         let curID = card.getProperty("ServerId", "");
@@ -196,7 +208,7 @@ eas.tzpush = {
                 throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.abortWithError);
             }
 
-            syncdata.synckey = wbxmltools.FindKey(wbxml);
+            syncdata.synckey = eas.tzpush.FindKey(wbxml);
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
             //this is contact sync, so we can simply request the target object
             var addressBook = tbSync.getAddressBookObject(tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target"));
@@ -810,7 +822,7 @@ eas.tzpush = {
                 throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.abortWithError);
             }
 
-            syncdata.synckey = wbxmltools.FindKey(wbxml);
+            syncdata.synckey = eas.tzpush.FindKey(wbxml);
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
 
             var oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
@@ -929,7 +941,7 @@ eas.tzpush = {
                 throw eas.finishSync("wbxmlerror::" + wbxmlstatus, eas.flags.abortWithError);
             }
 
-            syncdata.synckey = wbxmltools.FindKey(responseWbxml);
+            syncdata.synckey = eas.tzpush.FindKey(responseWbxml);
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", syncdata.synckey);
             for (let count in syncdata.cardstodelete) {
                 tbSync.db.removeItemFromChangeLog(addressbook, syncdata.cardstodelete[count].id);
