@@ -11,7 +11,6 @@ function OverlayManager(addonData, options = {}) {
     this.registeredOverlays = {};
     this.overlays =  {};
     this.stylesheets = {};
-    //this.decoder = new TextDecoder();
     this.options = {verbose: 0};
     
     let userOptions = Object.keys(options);
@@ -35,8 +34,6 @@ function OverlayManager(addonData, options = {}) {
     this.registerOverlay = Task.async (function* (dst, overlay) {
         if (overlay.startsWith("chrome://")) {
             let xul = yield this.readChromeFile(overlay);
-            //let xuldata = yield OS.File.read(this.addonData.installPath.path + overlay);
-            //let xul = this.decoder.decode(xuldata);
             let rootNode = this.getDataFromXULString(null, xul);
     
             //get urls of stylesheets to load them
@@ -62,8 +59,8 @@ function OverlayManager(addonData, options = {}) {
             if (this.options.verbose>1) window.console.log("BAD XUL: A provided XUL file is empty!");
             return null;
         }
-        
-        let oParser = Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser); //TB61 new DOMParser(); //
+
+        let oParser = (Services.vc.compare(Services.appinfo.platformVersion, "61.*") >= 0) ? new DOMParser() : Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
         try {
             xul = oParser.parseFromString(str, "application/xml");
         } catch (e) {
@@ -238,18 +235,18 @@ function OverlayManager(addonData, options = {}) {
             }
         }
 
-		//add text child nodes as textContent
-		if (node.hasChildNodes) {
-			let textContent = "";
-			for (let child of node.childNodes) {
-				if (child.nodeType == "3") {
-					textContent += child.nodeValue;
-				}
-			}
-			if (textContent) element.textContent = textContent
-		}
+        //add text child nodes as textContent
+        if (node.hasChildNodes) {
+            let textContent = "";
+            for (let child of node.childNodes) {
+                if (child.nodeType == "3") {
+                    textContent += child.nodeValue;
+                }
+            }
+            if (textContent) element.textContent = textContent
+        }
 
-		return element;
+        return element;
     };
 
     this.insertXulOverlay = function (window, nodes, parentElement = null) {

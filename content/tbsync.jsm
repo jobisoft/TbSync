@@ -121,38 +121,104 @@ var tbSync = {
         
         //init stuff for lightning (and dump any other installed AddOn)
         //TODO: If lightning is converted to restartless, use AddonManager.addAddonListener() to get notification of enable/disable
-        AddonManager.getAllAddons(Task.async (function* (addons) { //returns a promise as off TB61
-          for (let a=0; a < addons.length; a++) {
-            if (addons[a].isActive) {
-                tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
-                if (addons[a].id.toString() == "{e2fda1a4-762b-4020-b5ad-a41df1933103}") tbSync.onLightningLoad.start()
-                if (addons[a].id.toString() == "tbsync@jobisoft.de") {
-                    tbSync.versionInfo.installed = addons[a].version.toString();
-
-                    //init stuff for sync process
-                    tbSync.resetSync();
-                    
-                    //enable TbSync
-                    tbSync.enabled = true;
-                    
-                    //notify others about finished init of TbSync
-                    Services.obs.notifyObservers(null, 'tbsync.init.done', null)
-
-                    //activate sync timer
-                    tbSync.syncTimer.start();
-
-                    tbSync.dump("TbSync init","Done");
-
-                    //check for updates
-                    yield tbSync.check4updates();
-                }
-            }
-          }
-        }));
+        if (Services.vc.compare(Services.appinfo.platformVersion, "61.*") >= 0)  {
+            let addons = yield AddonManager.getAllAddons();
+            yield tbSync.finalizeInitByWaitingForAddons(addons);
+        } else {
+            AddonManager.getAllAddons(tbSync.finalizeInitByWaitingForAddons);
+        }
                 
     }),
+        
+    finalizeInitByWaitingForAddons: Task.async (function* (addons) {
+        let lightning = false;
+        for (let a=0; a < addons.length; a++) {
+            if (addons[a].isActive) {
+                tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
+                if (addons[a].id.toString() == "{e2fda1a4-762b-4020-b5ad-a41df1933103}") lightning = true;
+                if (addons[a].id.toString() == "tbsync@jobisoft.de") tbSync.versionInfo.installed = addons[a].version.toString();
+            }
+        }
+
+        if (lightning) {
+            tbSync.dump("Check4Lightning","Start");
+
+            //try to import
+            if ("calICalendar" in Components.interfaces && typeof cal == 'undefined') {
+                Components.utils.import("resource://calendar/modules/calUtils.jsm");
+                Components.utils.import("resource://calendar/modules/ical.js");    
+            }
+
+            if (typeof cal !== 'undefined') {
+                //adding a global observer
+                cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
+                cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
+                
+                //get timezone info of default timezone (old cal. without dtz are depricated)
+                tbSync.defaultTimezone = (cal.dtz && cal.dtz.defaultTimezone) ? cal.dtz.defaultTimezone : cal.calendarDefaultTimezone();
+                tbSync.utcTimezone = (cal.dtz && cal.dtz.UTC) ? cal.dtz.UTC : cal.UTC();
+                //if default timezone is not defined, use utc as default
+                if (tbSync.defaultTimezone.icalComponent) {
+                    tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo(tbSync.defaultTimezone);
+                } else {
+                    tbSync.synclog("Critical Warning","Default timezone is not defined, using UTC!");
+                    tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo(tbSync.utcTimezone);
+                }
+                
+                //get windows timezone data from CSV
+                let csvData = yield tbSync.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
+                for (let i = 0; i<csvData.length; i++) {
+                    let lData = csvData[i].split(",");
+                    if (lData.length<3) continue;
+                    
+                    let windowsZoneName = lData[0].toString().trim();
+                    let zoneType = lData[1].toString().trim();
+                    let ianaZoneName = lData[2].toString().trim();
+                    
+                    if (zoneType == "001") tbSync.windowsTimezoneMap[windowsZoneName] = ianaZoneName;
+                    if (ianaZoneName == tbSync.defaultTimezoneInfo.std.id) tbSync.defaultTimezoneInfo.std.windowsZoneName = windowsZoneName;
+                }
+
+                //are there any other init4lightning we need to call?
+                for (let i=0;i<tbSync.syncProviderList.length;i++) {
+                    yield tbSync[tbSync.syncProviderList[i]].init4lightning();
+                }
+
+                //inject UI elements
+                if (tbSync.window.document.getElementById("calendar-synchronize-button")) {
+                    tbSync.window.document.getElementById("calendar-synchronize-button").addEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
+                }
+                if (tbSync.window.document.getElementById("task-synchronize-button")) {
+                    tbSync.window.document.getElementById("task-synchronize-button").addEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
+                }
+                
+                //indicate, that we have initialized 
+                tbSync.lightningInitDone = true;
+                tbSync.dump("Check4Lightning","Done");                            
+            } else {
+                tbSync.dump("Check4Lightning","Failed!");
+            }
+        }
+        
+        //init stuff for sync process
+        tbSync.resetSync();
+
+        //enable TbSync
+        tbSync.enabled = true;
+
+        //notify others about finished init of TbSync
+        Services.obs.notifyObservers(null, 'tbsync.init.done', null)
+
+        //activate sync timer
+        tbSync.syncTimer.start();
+
+        tbSync.dump("TbSync init","Done");
+
+        //check for updates
+        yield tbSync.check4updates();
+    }),
     
-    onLightningLoad: {
+/*    onLightningLoad: {
         timer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
         start: function () {
@@ -166,68 +232,10 @@ var tbSync = {
 
         event: {
             notify: Task.async (function* (timer) {
-                tbSync.dump("Check4Lightning","Start");
-
-                //try to import
-                if ("calICalendar" in Components.interfaces && typeof cal == 'undefined') {
-                    Components.utils.import("resource://calendar/modules/calUtils.jsm");
-                    Components.utils.import("resource://calendar/modules/ical.js");    
-                }
-
-                if (typeof cal !== 'undefined') {
-                    //adding a global observer
-                    cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
-                    cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
-                    
-                    //get timezone info of default timezone (old cal. without dtz are depricated)
-                    tbSync.defaultTimezone = (cal.dtz && cal.dtz.defaultTimezone) ? cal.dtz.defaultTimezone : cal.calendarDefaultTimezone();
-                    tbSync.utcTimezone = (cal.dtz && cal.dtz.UTC) ? cal.dtz.UTC : cal.UTC();
-                    //if default timezone is not defined, use utc as default
-                    if (tbSync.defaultTimezone.icalComponent) {
-                        tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo(tbSync.defaultTimezone);
-                    } else {
-                        tbSync.synclog("Critical Warning","Default timezone is not defined, using UTC!");
-                        tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo(tbSync.utcTimezone);
-                    }
-                    
-                    //get windows timezone data from CSV
-                    let csvData = yield tbSync.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
-                    for (let i = 0; i<csvData.length; i++) {
-                        let lData = csvData[i].split(",");
-                        if (lData.length<3) continue;
-                        
-                        let windowsZoneName = lData[0].toString().trim();
-                        let zoneType = lData[1].toString().trim();
-                        let ianaZoneName = lData[2].toString().trim();
-                        
-                        if (zoneType == "001") tbSync.windowsTimezoneMap[windowsZoneName] = ianaZoneName;
-                        if (ianaZoneName == tbSync.defaultTimezoneInfo.std.id) tbSync.defaultTimezoneInfo.std.windowsZoneName = windowsZoneName;
-                    }
-
-                    //are there any other init4lightning we need to call?
-                    for (let i=0;i<tbSync.syncProviderList.length;i++) {
-                        yield tbSync[tbSync.syncProviderList[i]].init4lightning();
-                    }
-
-                    //inject UI elements
-                    if (tbSync.window.document.getElementById("calendar-synchronize-button")) {
-                        tbSync.window.document.getElementById("calendar-synchronize-button").addEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
-                    }
-                    if (tbSync.window.document.getElementById("task-synchronize-button")) {
-                        tbSync.window.document.getElementById("task-synchronize-button").addEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
-                    }
-                    
-                    //indicate, that we have initialized 
-                    tbSync.lightningInitDone = true;
-                    tbSync.dump("Check4Lightning","Done");                            
-                } else {
-                    tbSync.dump("Check4Lightning","Failed, re-scheduling!");
-                    this.start();
-                }
 
             })
         }
-    },
+    },*/
     
     cleanup: function() {
         //cancel sync timer
