@@ -33,8 +33,6 @@ function OverlayManager(addonData, options = {}) {
     };
 
     this.registerOverlay = Task.async (function* (dst, overlay) {
-        if (!this.registeredOverlays[dst]) this.registeredOverlays[dst] = [];
-        this.registeredOverlays[dst].push(overlay);
         if (overlay.startsWith("chrome://")) {
             let xul = yield this.readChromeFile(overlay);
             //let xuldata = yield OS.File.read(this.addonData.installPath.path + overlay);
@@ -49,6 +47,8 @@ function OverlayManager(addonData, options = {}) {
                 }
             }
             
+            if (!this.registeredOverlays[dst]) this.registeredOverlays[dst] = [];
+            this.registeredOverlays[dst].push(overlay);
             this.overlays[overlay] = rootNode;
         } else {
             throw "Only chrome:// URIs can be registered as overlays."
