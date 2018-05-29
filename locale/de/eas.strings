@@ -1,0 +1,64 @@
+newaccount.add_custom=Konto hinzufügen
+newaccount.add_auto=Einstellungen Autodiscover und Hinzufügen des Kontos
+
+autodiscover.Querying=Suche nach Einstellungen ...
+autodiscover.Ok=Autodiscover war erfolgreich, Sie können nun die optionalen Einstellungen überprüfen und die Synchronisationsverbindung aktivieren.
+autodiscover.NeedEmail=Autodiscover benötigt eine gültige E-Mail Adresse als Benutzername.
+
+autodiscover.Failed=Autodiscover für den Benutzer <##user##> war nicht erfolgreich.
+autodiscover.FailedUnknown=Entweder war das Passwort nicht korrekt, Ihr ActiveSync Server hat ein temporäres Problem oder unterstützt kein Autodiscover.
+autodiscover.FailedSecurity=Folgende Zertifikatsfehler sind aufgetreten was *möglicher* Weise auf ein Problem mit Ihrem ActiveSync Provider hindeuten kann:
+
+deletefolder.notallowed=Bitte tragen Sie zuvor den Ordner "##replace.1##" aus bevor Sie diesen im Papierkorb entfernen wollen.
+deletefolder.confirm=Möchten Sie wirklich den Ordner "##replace.1##" ENDGÜLTIG aus dem Papierkorb ENTFERNEN?
+
+deletefolder.menuentry=Den Ordner "##replace.1##" endgültig aus dem Papierkorb entfernen
+subscribe.on=Eintragen "##replace.1##"
+subscribe.off=Austragen "##replace.1##"
+
+recyclebin = Papierkorb
+
+syncstate.syncing=Initiiere Synchronisation
+syncstate.preparing=Vorbereiten des nächsten Elementes für die Synchronisation
+syncstate.done=Vorbereiten des nächsten Elementes für die Synchronisation
+syncstate.accountdone=Kontobearbeitung abgeschlossen
+
+syncstate.prepare.request.autodiscover=Anfordern aktualisierte Servereinstellungen
+syncstate.send.request.autodiscover=Warten auf aktualisierte Servereinstellungen
+syncstate.eval.response.autodiscover=Bearbeiten aktualisierte Servereinstellungen
+
+syncstate.prepare.request.options=Anfordern der Serveroptionen
+syncstate.send.request.options=Warten auf Serveroptionen
+syncstate.eval.response.options=Bearbeiten Serveroptionen
+
+syncstate.prepare.request.folders=Senden aktualisierte Ordnerliste
+syncstate.send.request.folders=Warten auf aktualisierte Ordnerliste
+syncstate.eval.response.folders=Bearbeiten aktualisierte Ordnerliste
+
+syncstate.prepare.request.synckey=Anfordern Synchronisationsschlüssel
+syncstate.send.request.synckey=Warten auf Synchronisationsschlüssel
+syncstate.eval.response.synckey=Bearbeiten Synchronisationsschlüssel
+
+syncstate.prepare.request.deletefolder=Vorbereiten zum Löschen des Ordners
+syncstate.send.request.deletefolder=Warten auf zu löschenden Ordner
+syncstate.eval.response.deletefolder=Ordner gelöscht
+
+syncstate.prepare.request.provision=Anfordern der Bereitstellung
+syncstate.send.request.provision=Warten auf Bereitstellung
+syncstate.eval.response.provision=Bearbeiten der Bereitstellung
+
+syncstate.prepare.request.estimate=Anfordern Abschätzung Änderungsaufwand
+syncstate.send.request.estimate=Warten auf Abschätzung Änderungsaufwand
+syncstate.eval.response.estimate=Bearbeiten Abschätzung Änderungsaufwand
+
+syncstate.prepare.request.remotechanges=Anfordern der entfernten Änderungen
+syncstate.send.request.remotechanges=Warten auf die entfernten Änderungen
+syncstate.eval.response.remotechanges=Bearbeiten der entfernten Änderungen
+
+syncstate.prepare.request.localchanges=Senden der lokal Änderungen
+syncstate.send.request.localchanges=Warten auf Bestätigung der lokalen Änderungen
+syncstate.eval.response.localchanges=Bearbeiten der Bestätigung der lokalen Änderungen
+
+syncstate.prepare.request.localdeletes=Senden der lokal gelöschten Elemente
+syncstate.send.request.localdeletes=Warten auf Bestätigung der lokal gelöschten Elemente
+syncstate.eval.response.localdeletes=Bearbeiten der Bestätigung der lokal gelöschten Elemente
