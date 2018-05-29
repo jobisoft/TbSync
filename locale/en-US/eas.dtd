@@ -42,7 +42,6 @@
 <!ENTITY pref.targetname "SyncTarget">
 <!ENTITY pref.status "Status">
 
-<!ENTITY servertype.setup "Set up ActiveSync server configuration ...">
 <!ENTITY servertype.auto "Automatic configuration via ActiveSync Autodiscover">
 <!ENTITY servertype.custom "Custom configuration">
 <!ENTITY servertype.unlock "Double click to unlock all predefined server settings.">

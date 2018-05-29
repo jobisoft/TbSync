@@ -1,28 +1,28 @@
-<!ENTITY popup.opensettings "Öffnen TbSync Kontoverwaltung">
+<!ENTITY popup.opensettings "TbSync Kontoverwaltung öffnen">
 <!ENTITY popup.cancelsync "Alle noch austehenden Synchronisationen abbrechen">
-<!ENTITY menu.settingslabel "Synchronization Settings (TbSync)">
+<!ENTITY menu.settingslabel "Synchronisationseinstellungen (TbSync)">
 
 <!ENTITY toolbar.label " Synchronisiere alle TbSync Konten">
-<!ENTITY toolbar.tooltiptext "Synchronisiere letze Änderungen">
+<!ENTITY toolbar.tooltiptext "Gleiche alle TbSync Konten mit den Servern ab">
 
-<!ENTITY pref.AccountActions "Konten Einstellungen">
+<!ENTITY pref.AccountActions "Konto Aktionen">
 <!ENTITY pref.AddAccount "Neues Konto hinzufügen">
 <!ENTITY pref.SyncAll "Synchronisiere alle aktivierten Konten">
 
-<!ENTITY pref.SynchronizeAccount "Synchronisiere Konto">
-<!ENTITY pref.DisableAccount "Deaktiviere Konto">
-<!ENTITY pref.DeleteAccount "Lösche Konto">
+<!ENTITY pref.SynchronizeAccount "Konto synchronisieren">
+<!ENTITY pref.DisableAccount "Konto deaktivieren">
+<!ENTITY pref.DeleteAccount "Konto löschen">
 <!ENTITY pref.ShowSyncLog "Zeige Logmeldungen der Synchronisation">
-<!ENTITY pref.EnableAccount "Konto aktivieren &amp; Kontaktaufnahme zum Server">
-<!ENTITY pref.RetryConnectAccount "Erneute Kontaktaufnahme zum Server">
+<!ENTITY pref.EnableAccount "Konto aktivieren &amp; mit dem Server verbinden">
+<!ENTITY pref.RetryConnectAccount "Erneut versuchen mit dem  Server zu verbinden">
 
 <!ENTITY pref.noaccounts "Es sind aktuell noch keine Konten konfiguriert.">
 
 <!ENTITY manager.title "TbSync Kontoverwaltung">
-<!ENTITY manager.accountsettings "Account Settings">
-<!ENTITY manager.help "Help">
-<!ENTITY manager.supporter "Supporter">
-<!ENTITY manager.update "Update TbSync">
+<!ENTITY manager.accountsettings "Kontoeinstellungen">
+<!ENTITY manager.help "Hilfe">
+<!ENTITY manager.supporter "Unterstützer">
+<!ENTITY manager.update "TbSync aktualisieren">
 
 <!ENTITY manager.accounts "Konten">
 <!ENTITY manager.status "Status">
@@ -31,8 +31,8 @@
 <!ENTITY manager.tzpush.line1 "This Add-On is partially based on TzPush developed by Mark Nethersole. TbSync would not have been possible without his work and I am thankful for his contributions.">
 <!ENTITY manager.tzpush.line2 "Mark is dedicated to the CAPE charity, which he introduced in TzPush with the following words:">
 
-<!ENTITY manager.supporter.contributers "Contributers">
-<!ENTITY manager.supporter.sponsors "Sponsors">
+<!ENTITY manager.supporter.contributers "Mitwirkende">
+<!ENTITY manager.supporter.sponsors "Sponsoren">
 
 <!ENTITY manager.help.needhelp "Need Help?">
 <!ENTITY manager.help.foundabug "Found a bug?">

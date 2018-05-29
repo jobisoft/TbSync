@@ -1,5 +1,5 @@
 newaccount.add_custom=Konto hinzufügen
-newaccount.add_auto=Einstellungen Autodiscover und Hinzufügen des Kontos
+newaccount.add_auto=Einstellungen suchen und Konto hinzufügen
 
 autodiscover.Querying=Suche nach Einstellungen ...
 autodiscover.Ok=Autodiscover war erfolgreich, Sie können nun die optionalen Einstellungen überprüfen und die Synchronisationsverbindung aktivieren.
@@ -9,7 +9,7 @@ autodiscover.Failed=Autodiscover für den Benutzer <##user##> war nicht erfolgre
 autodiscover.FailedUnknown=Entweder war das Passwort nicht korrekt, Ihr ActiveSync Server hat ein temporäres Problem oder unterstützt kein Autodiscover.
 autodiscover.FailedSecurity=Folgende Zertifikatsfehler sind aufgetreten was *möglicher* Weise auf ein Problem mit Ihrem ActiveSync Provider hindeuten kann:
 
-deletefolder.notallowed=Bitte tragen Sie zuvor den Ordner "##replace.1##" aus bevor Sie diesen im Papierkorb entfernen wollen.
+deletefolder.notallowed=Bitte tragen Sie zuvor den Ordner "##replace.1##" aus bevor Sie diesen aus dem Papierkorb entfernen wollen.
 deletefolder.confirm=Möchten Sie wirklich den Ordner "##replace.1##" ENDGÜLTIG aus dem Papierkorb ENTFERNEN?
 
 deletefolder.menuentry=Den Ordner "##replace.1##" endgültig aus dem Papierkorb entfernen
@@ -23,9 +23,9 @@ syncstate.preparing=Vorbereiten des nächsten Elementes für die Synchronisation
 syncstate.done=Vorbereiten des nächsten Elementes für die Synchronisation
 syncstate.accountdone=Kontobearbeitung abgeschlossen
 
-syncstate.prepare.request.autodiscover=Anfordern aktualisierte Servereinstellungen
-syncstate.send.request.autodiscover=Warten auf aktualisierte Servereinstellungen
-syncstate.eval.response.autodiscover=Bearbeiten aktualisierte Servereinstellungen
+syncstate.prepare.request.autodiscover=Aktualisierte Servereinstellungen anfordern
+syncstate.send.request.autodiscover=Warte auf aktualisierte Servereinstellungen
+syncstate.eval.response.autodiscover=Aktualisierte Servereinstellungen werden verarbeitet
 
 syncstate.prepare.request.options=Anfordern der Serveroptionen
 syncstate.send.request.options=Warten auf Serveroptionen
