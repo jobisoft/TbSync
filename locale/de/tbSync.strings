@@ -2,8 +2,6 @@ info.idle=Leerlauf
 info.error=Fehler
 info.sync=Synchronisation
 
-menu.settingslabel=Einstellungen Synchronisation (TbSync)
-
 status.notsyncronized=Konto muss synchronisiert werden, mindestens ein Element ist veraltetet.
 status.disabled=Konto ist deaktiviert, Synchronisation ist ausgeschaltet.
 status.notargets=Synchronisation abgebrochen da die Elemente zum Synchronisieren nicht erstellt werden konnten.
@@ -51,6 +49,7 @@ status.folderDelete.6=Das Kommando konnte nicht abgeschlossen werden, ein Fehler
 status.global.101=Die Anforderung beinhaltet WBXML konnte aber nicht in XML dekodiert werden (Fehler 102).
 status.global.102=Die Anforderung beinhaltet WBXML konnte aber nicht in XML dekodiert werden (Fehler 102).
 status.global.103=Das XML, welches durch die Anforderung bereit gestellt worden ist, entspricht nicht den Protokollanforderungen (Fehler 103).
+status.global.clientdenied=The EAS server reports <##replace.2##> (status ##replace.1##) and does not allow TbSync to access your account.||What-if-TbSync-is-blocked-by-my-server%3F||[help]
 
 status.ServerRejectedSomeItems=Der EAS Server akzeptierte nur ##replace.2## von Ihren Elementen und hat die verbliebenen Elemente mit den folgenden Gründen zurückgewiesen: ##replace.1##. Prüfen Sie den Debug Log auf "Bad item skipped". Eine Zurückweisung mit dem Fehler "invalid XML" könnte durch einen Fehler in TbSync verursacht sein.
 status.ServerRejectedAllItems=Der EAS Server hat Ihre Elemente wegen der folgenden Gründen zurückgewiesen : ##replace.1##. Prüfen Sie den Debug Log auf "Bad item skipped".

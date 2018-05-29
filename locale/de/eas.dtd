@@ -18,16 +18,18 @@
 <!ENTITY pref.ServerType "Konfigurationsprofil">
 <!ENTITY pref.usehttps "Benutzen einer sicheren Verbindung (Verbindung via https)">
 <!ENTITY pref.DeviceId "Geräte-ID">
-<!ENTITY pref.UseProvisioning "Benutze Provisionierung">
-<!ENTITY pref.isHordeServer "Dies ist ein Horde Groupware Server">
+<!ENTITY pref.contactoptions "Kontakt Optionen">
 <!ENTITY pref.birthday "Sende Geburtstagsinformation">
 <!ENTITY pref.downloadonly "Einweg Synchronisierung (Sende keine lokalen Änderungen an den Server)">
+<!ENTITY pref.generaloptions "General options">
+<!ENTITY pref.syncdefaultfolders "Subscribe to default folders on initial connect">
+<!ENTITY pref.provision "Erzwinge Provisionierung (wird von Kerio benötigt)">
+
 <!ENTITY pref.autotime "Synchronisationsintervall (Minuten)">
 <!ENTITY pref.never "Eine Einstellung von 0 deaktiviert periodische Synchronisation. Push Synchronisation wird noch nicht unterstützt.">
 <!ENTITY pref.Sync "Dieses Konto synchronisieren">
 <!ENTITY pref.EnableAccount "Konto aktivieren &amp; und versuchen mit dem Server zu verbinden">
 <!ENTITY pref.DisableAccount "Deaktivieren dieses Kontos">
-
 <!ENTITY pref.ShowTrashedFolders "Zeige Ordner die im Papierkorb gefunden worden sind" >
 
 <!ENTITY pref.syncstate "Synchronisationsstatus">
@@ -39,7 +41,6 @@
 <!ENTITY pref.foldername "Ordner">
 <!ENTITY pref.targetname "Synchronisationsziel">
 <!ENTITY pref.status "Status">
-<!ENTITY pref.contactoptions "Kontakt Optionen">
 
 <!ENTITY servertype.setup "Einstellen der ActiveSync Server Konfiguration ...">
 <!ENTITY servertype.auto "Automatische Konfiguration via ActiveSync Autodiscover">
@@ -47,3 +48,34 @@
 <!ENTITY servertype.unlock "Doppelklick um alle vordefinierten Servereinstellungen zu entsperren.">
 
 <!ENTITY pref.switchFoldersAndConfig "Doppelklick um zwischen der Ordneransicht und der Anzeige der Einstellungen zu wechseln.">
+
+<!ENTITY abCard.MiddleName "Middle name:">
+<!ENTITY abCard.Email3Address "Alternative Email:">
+<!ENTITY abCard.Home2PhoneNumber "Home Phone 2:">
+<!ENTITY abCard.Business2PhoneNumber "Work Phone 2:">
+<!ENTITY abCard.BusinessFaxNumber "Work Fax:">
+
+<!ENTITY abCard.ManagerName "Manager:">
+<!ENTITY abCard.AssistantPhoneNumber "Assistant Phone:">
+<!ENTITY abCard.AssistantName "Assistant:">
+<!ENTITY abCard.Spouse "Spouse:">
+<!ENTITY abCard.Anniversary "Anniversary:">
+
+<!ENTITY abCard.CarPhoneNumber "Car Phone:">
+<!ENTITY abCard.RadioPhoneNumber "Radio Phone:">
+<!ENTITY abCard.CompanyMainPhone "Work Main Phone:">
+
+<!ENTITY abCard.OtherAddress "Address:">
+<!ENTITY abCard.OtherCity "City:">
+<!ENTITY abCard.OtherCountry "Country:">
+<!ENTITY abCard.OtherZip "ZIP Code:">
+<!ENTITY abCard.OtherState "State:">
+
+
+<!ENTITY abCard.header.worknumbers "Additional work numbers:">
+<!ENTITY abCard.header.homenumbers "Additional home numbers:">
+<!ENTITY abCard.header.othernumbers "Additional numbers:">
+<!ENTITY abCard.header.messaging "Messaging:">
+<!ENTITY abCard.header.people "People:">
+<!ENTITY abCard.header.eas "Other Fields (EAS)">
+<!ENTITY abCard.header.otheraddress "Other Address (EAS)">
