@@ -15,13 +15,13 @@
         <em:iconURL>chrome://tbsync/skin/tbsync.png</em:iconURL>
 
         <em:targetApplication>
-           <!-- Thunderbird -->
-           <Description>
-                <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
-                <em:minVersion>50.0</em:minVersion>
-                <em:maxVersion>61.*</em:maxVersion>
-           </Description>
-
+          <!-- Thunderbird -->
+          <Description>
+            <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id>
+            <em:minVersion>50.0</em:minVersion>
+            <em:maxVersion>61.*</em:maxVersion>
+          </Description>
         </em:targetApplication>
+
     </Description>
 </RDF>
