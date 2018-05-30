@@ -1,5 +1,5 @@
 <!ENTITY popup.opensettings "TbSync Kontoverwaltung öffnen">
-<!ENTITY popup.cancelsync "Alle noch austehenden Synchronisationen abbrechen">
+<!ENTITY popup.cancelsync "Alle noch ausstehenden Synchronisationen abbrechen">
 <!ENTITY menu.settingslabel "Synchronisationseinstellungen (TbSync)">
 
 <!ENTITY toolbar.label " Synchronisiere alle TbSync Konten">
@@ -27,24 +27,24 @@
 <!ENTITY manager.accounts "Konten">
 <!ENTITY manager.status "Status">
 
-<!ENTITY manager.catman.text "TbSync also syncs contact categories.  To be able to use them in Thunderbird you can install the Category Manager Add-On. It enables you to manage overlapping contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla Add-On repository:">
-<!ENTITY manager.tzpush.line1 "This Add-On is partially based on TzPush developed by Mark Nethersole. TbSync would not have been possible without his work and I am thankful for his contributions.">
-<!ENTITY manager.tzpush.line2 "Mark is dedicated to the CAPE charity, which he introduced in TzPush with the following words:">
+<!ENTITY manager.catman.text "TbSync kann auch auch Kontaktkategorien synchronisieren.  Um diese in Thunderbird benutzen zu können müssen Sie das Add-On 'Category Manager' installieren. Dieses Add-On ermöglicht es Ihnen überlappende Kontaktgruppen zu verwalten und eine Reihe anderer kategoriespezifischer Funktionen bereitstellen. Es kann im offiziellen Mozilla Add-On Repository gefunden werden:">
+<!ENTITY manager.tzpush.line1 "Dieses Add-On beruht auf Teilen von TzPush welches von Mark Nethersole entwickelt worden ist. TbSync wäre nicht möglich gewesen ohne dessen Arbeit und ich bin sehr dankbar für seine Beiträge.">
+<!ENTITY manager.tzpush.line2 "Mark ist der CAPE Stiftung verbunden, die er in TzPush mit den folgenden Worten einführte:">
 
 <!ENTITY manager.supporter.contributers "Mitwirkende">
 <!ENTITY manager.supporter.sponsors "Sponsoren">
 
-<!ENTITY manager.help.needhelp "Need Help?">
-<!ENTITY manager.help.foundabug "Found a bug?">
-<!ENTITY manager.help.wiki "Open the wiki pages of the TbSync project, they provide additional information, guides and detailed configuration descriptions.">
-<!ENTITY manager.help.fixit1 "You can help to fix it by sending in a bug report.">
-<!ENTITY manager.help.pleaseupdate "Please update to the latest available version of TbSync, to check if your bug has been fixed already.">
-<!ENTITY manager.help.installedversion "You are currently using version:">
-<!ENTITY manager.help.latestversion "The latest available version is:">
- <!ENTITY manager.help.fixit2 "If your bug is still present in the latest available version, you can help to fix it by sending in a bug report.">
- <!ENTITY manager.help.enabledebuglog "Enable debug logging to store all debug messages and the data being sent and received by TbSync in a log file.">
- <!ENTITY manager.help.aslongasneeded "Activate debug logging only as long as needed because it slows down Thunderbird.">
- <!ENTITY manager.help.createbugreportinfo "To generate a clean bug report, restart Thunderbird, perform all the steps needed to trigger the bug and than click on the icon to the right to send the report to the developer.">
- <!ENTITY manager.help.opencurrentdebuglog "Open the current debug log in a new tab.">
- <!ENTITY manager.help.sendcurrentdebuglog "Send the current debug log to the developer.">
+<!ENTITY manager.help.needhelp "Benötigen Sie Hilfe?">
+<!ENTITY manager.help.foundabug "Sie haben einen Fehler gefunden?">
+<!ENTITY manager.help.wiki "Öffnet die Wikiseiten des TbSync Projektes, dieses beinhaltet zusätzliche Informationen, Benutzeranleitungen und detaillierte Konfigurationsbeschreibungen.">
+<!ENTITY manager.help.fixit1 "Sie können helfen dies zu korrigieren indem Sie einen Fehlerreport versenden.">
+<!ENTITY manager.help.pleaseupdate "Bitte aktualisieren Sie auf die zuletzt veröffentlichte Version von TbSync, um zu prüfen ob der Fehler schon beseitigt worden ist.">
+<!ENTITY manager.help.installedversion "Sie benutzen momentan die Version:">
+<!ENTITY manager.help.latestversion "Die aktuellste Version ist:">
+<!ENTITY manager.help.fixit2 "Wenn der Fehler immer noch in der aktuellsten Version auftritt können Sie helfen diesen zu beseitigen indem Sie einen Fehlerreport senden.">
+<!ENTITY manager.help.enabledebuglog "Schalten das Mitschneiden von Debug Meldungen ein um alle Programmmeldungen aufzuzeichnen als auch die Meldungen die TbSync empfängt und versendet.">
+<!ENTITY manager.help.aslongasneeded "Aktivieren Sie die Debug Meldungen nur so lange wie benötigt, andernfalls wird Thunderbird signifikant langsamer arbeiten.">
+<!ENTITY manager.help.createbugreportinfo "Um einen neuen Bugreport zu erstellen schließen und öffnen Sie Thunderbird wieder, wiederholen die Schritte um das fehlerhafte Verhalten zu provozieren und klicken dann auf das Icon auf der rechten Seite um den Fehlerreport an den Entwickler zu verschicken.">
+<!ENTITY manager.help.opencurrentdebuglog "Öffnet den aktuellen Debug Log in einem neuen Reiter.">
+<!ENTITY manager.help.sendcurrentdebuglog "Sendet den aktuellen Debug Log an den Entwickler.">
 
