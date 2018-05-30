@@ -22,7 +22,7 @@
 <!ENTITY pref.birthday "Sende Geburtstagsinformation">
 <!ENTITY pref.downloadonly "Einweg Synchronisierung (Sende keine lokalen Änderungen an den Server)">
 <!ENTITY pref.generaloptions "Allgemeine Optionen">
-<!ENTITY pref.syncdefaultfolders "Subscribe to default folders on initial connect">
+<!ENTITY pref.syncdefaultfolders "Abonnieren der Standardordner während des Erstabgleichs">
 <!ENTITY pref.provision "Erzwinge Provisionierung (wird von Kerio benötigt)">
 
 <!ENTITY pref.autotime "Synchronisationsintervall">
@@ -48,33 +48,33 @@
 
 <!ENTITY pref.switchFoldersAndConfig "Doppelklick um zwischen der Ordneransicht und der Anzeige der Einstellungen zu wechseln.">
 
-<!ENTITY abCard.MiddleName "Middle name:">
-<!ENTITY abCard.Email3Address "Alternative Email:">
-<!ENTITY abCard.Home2PhoneNumber "Home Phone 2:">
-<!ENTITY abCard.Business2PhoneNumber "Work Phone 2:">
-<!ENTITY abCard.BusinessFaxNumber "Work Fax:">
+<!ENTITY abCard.MiddleName "Zweiter Vorname:">
+<!ENTITY abCard.Email3Address "Alternative E-Mail:">
+<!ENTITY abCard.Home2PhoneNumber "Telefon 2 zu Hause:">
+<!ENTITY abCard.Business2PhoneNumber "Telefon 2 Arbeit:">
+<!ENTITY abCard.BusinessFaxNumber "Fax Arbeit:">
 
 <!ENTITY abCard.ManagerName "Manager:">
-<!ENTITY abCard.AssistantPhoneNumber "Assistant Phone:">
-<!ENTITY abCard.AssistantName "Assistant:">
-<!ENTITY abCard.Spouse "Spouse:">
-<!ENTITY abCard.Anniversary "Anniversary:">
+<!ENTITY abCard.AssistantPhoneNumber "Assistententelefon:">
+<!ENTITY abCard.AssistantName "Assistent:">
+<!ENTITY abCard.Spouse "Ehepartner:">
+<!ENTITY abCard.Anniversary "Jubiläum:">
 
-<!ENTITY abCard.CarPhoneNumber "Car Phone:">
-<!ENTITY abCard.RadioPhoneNumber "Radio Phone:">
-<!ENTITY abCard.CompanyMainPhone "Work Main Phone:">
+<!ENTITY abCard.CarPhoneNumber "Telefon Auto:">
+<!ENTITY abCard.RadioPhoneNumber "Funktelefon:">
+<!ENTITY abCard.CompanyMainPhone "Haupttelefon Arbeit:">
 
-<!ENTITY abCard.OtherAddress "Address:">
-<!ENTITY abCard.OtherCity "City:">
-<!ENTITY abCard.OtherCountry "Country:">
-<!ENTITY abCard.OtherZip "ZIP Code:">
-<!ENTITY abCard.OtherState "State:">
+<!ENTITY abCard.OtherAddress "Adresse:">
+<!ENTITY abCard.OtherCity "Stadt:">
+<!ENTITY abCard.OtherCountry "Land:">
+<!ENTITY abCard.OtherZip "Postleitzahl:">
+<!ENTITY abCard.OtherState "Bundesland:">
 
 
-<!ENTITY abCard.header.worknumbers "Additional work numbers:">
-<!ENTITY abCard.header.homenumbers "Additional home numbers:">
-<!ENTITY abCard.header.othernumbers "Additional numbers:">
-<!ENTITY abCard.header.messaging "Messaging:">
-<!ENTITY abCard.header.people "People:">
-<!ENTITY abCard.header.eas "Other Fields (EAS)">
-<!ENTITY abCard.header.otheraddress "Other Address (EAS)">
+<!ENTITY abCard.header.worknumbers "Zusätzliche Nummern Arbeit:">
+<!ENTITY abCard.header.homenumbers "Zusätzliche Nummern zu Hause:">
+<!ENTITY abCard.header.othernumbers "Zusätzliche Nummern:">
+<!ENTITY abCard.header.messaging "Nachrichten:">
+<!ENTITY abCard.header.people "Menschen:">
+<!ENTITY abCard.header.eas "Andere Felder (EAS)">
+<!ENTITY abCard.header.otheraddress "Andere Adresse (EAS)">
