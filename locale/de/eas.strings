@@ -1,20 +1,20 @@
 newaccount.add_custom=Konto hinzufügen
 newaccount.add_auto=Einstellungen suchen und Konto hinzufügen
 
-autodiscover.Querying=Suche nach Einstellungen ...
+autodiscover.Querying=Einstellungen werden gesucht ...
 autodiscover.Ok=Autodiscover war erfolgreich, Sie können nun die optionalen Einstellungen überprüfen und die Synchronisationsverbindung aktivieren.
 autodiscover.NeedEmail=Autodiscover benötigt eine gültige E-Mail Adresse als Benutzername.
 
 autodiscover.Failed=Autodiscover für den Benutzer <##user##> war nicht erfolgreich.
 autodiscover.FailedUnknown=Entweder war das Passwort nicht korrekt, Ihr ActiveSync Server hat ein temporäres Problem oder unterstützt kein Autodiscover.
-autodiscover.FailedSecurity=Folgende Zertifikatsfehler sind aufgetreten was *möglicher* Weise auf ein Problem mit Ihrem ActiveSync Provider hindeuten kann:
+autodiscover.FailedSecurity=Folgende Zertifikatsfehler sind aufgetreten was *eventuell* auf ein Problem mit Ihrem ActiveSync Provider hindeuten kann:
 
-deletefolder.notallowed=Bitte tragen Sie zuvor den Ordner "##replace.1##" aus bevor Sie diesen aus dem Papierkorb entfernen wollen.
-deletefolder.confirm=Möchten Sie wirklich den Ordner "##replace.1##" ENDGÜLTIG aus dem Papierkorb ENTFERNEN?
+deletefolder.notallowed=Bitte beenden Sie zunächst das Abbonement des Ordner "##replace.1##", bevor Sie diesen aus dem Papierkorb entfernen wollen.
+deletefolder.confirm=Möchten Sie den Ordner "##replace.1##" wirklich ENDGÜLTIG aus dem Papierkorb ENTFERNEN?
 
 deletefolder.menuentry=Den Ordner "##replace.1##" endgültig aus dem Papierkorb entfernen
-subscribe.on=Abonnieren "##replace.1##"
-subscribe.off=Austragen "##replace.1##"
+subscribe.on="##replace.1##" abbonieren
+subscribe.off="##replace.1##" nicht länger abbonieren
 
 recyclebin = Papierkorb
 
@@ -25,40 +25,40 @@ syncstate.accountdone=Kontobearbeitung abgeschlossen
 
 syncstate.prepare.request.autodiscover=Aktualisierte Servereinstellungen anfordern
 syncstate.send.request.autodiscover=Warte auf aktualisierte Servereinstellungen
-syncstate.eval.response.autodiscover=Aktualisierte Servereinstellungen werden verarbeitet
+syncstate.eval.response.autodiscover=Verarbeite aktualisierte Servereinstellungen
 
-syncstate.prepare.request.options=Anfordern der Serveroptionen
-syncstate.send.request.options=Warten auf Serveroptionen
-syncstate.eval.response.options=Bearbeiten Serveroptionen
+syncstate.prepare.request.options=Aktualisierte Serveroptionen anfordern
+syncstate.send.request.options=Warte auf Serveroptionen
+syncstate.eval.response.options=Verarbeite Serveroptionen
 
 syncstate.prepare.request.folders=Senden aktualisierte Ordnerliste
-syncstate.send.request.folders=Warten auf aktualisierte Ordnerliste
-syncstate.eval.response.folders=Bearbeiten aktualisierte Ordnerliste
+syncstate.send.request.folders=Warte auf aktualisierte Ordnerliste
+syncstate.eval.response.folders=Verarbeite aktualisierte Ordnerliste
 
 syncstate.prepare.request.synckey=Anfordern Synchronisationsschlüssel
-syncstate.send.request.synckey=Warten auf Synchronisationsschlüssel
-syncstate.eval.response.synckey=Bearbeiten Synchronisationsschlüssel
+syncstate.send.request.synckey=Warte auf Synchronisationsschlüssel
+syncstate.eval.response.synckey=Verarbeite Synchronisationsschlüssel
 
 syncstate.prepare.request.deletefolder=Vorbereiten zum Löschen des Ordners
-syncstate.send.request.deletefolder=Warten auf zu löschenden Ordner
+syncstate.send.request.deletefolder=Warte auf zu löschenden Ordner
 syncstate.eval.response.deletefolder=Ordner gelöscht
 
 syncstate.prepare.request.provision=Anfordern der Bereitstellung
-syncstate.send.request.provision=Warten auf Bereitstellung
-syncstate.eval.response.provision=Bearbeiten der Bereitstellung
+syncstate.send.request.provision=Warte auf Bereitstellung
+syncstate.eval.response.provision=Verarbeite der Bereitstellung
 
 syncstate.prepare.request.estimate=Anfordern Abschätzung Änderungsaufwand
-syncstate.send.request.estimate=Warten auf Abschätzung Änderungsaufwand
-syncstate.eval.response.estimate=Bearbeiten Abschätzung Änderungsaufwand
+syncstate.send.request.estimate=Warte auf Abschätzung Änderungsaufwand
+syncstate.eval.response.estimate=Verarbeite Abschätzung Änderungsaufwand
 
 syncstate.prepare.request.remotechanges=Anfordern der entfernten Änderungen
-syncstate.send.request.remotechanges=Warten auf die entfernten Änderungen
-syncstate.eval.response.remotechanges=Bearbeiten der entfernten Änderungen
+syncstate.send.request.remotechanges=Warte auf die entfernten Änderungen
+syncstate.eval.response.remotechanges=Verarbeiten der entfernten Änderungen
 
 syncstate.prepare.request.localchanges=Senden der lokal Änderungen
-syncstate.send.request.localchanges=Warten auf Bestätigung der lokalen Änderungen
-syncstate.eval.response.localchanges=Bearbeiten der Bestätigung der lokalen Änderungen
+syncstate.send.request.localchanges=Warte auf Bestätigung der lokalen Änderungen
+syncstate.eval.response.localchanges=Verarbeite die Bestätigung der lokalen Änderungen
 
 syncstate.prepare.request.localdeletes=Senden der lokal gelöschten Elemente
-syncstate.send.request.localdeletes=Warten auf Bestätigung der lokal gelöschten Elemente
-syncstate.eval.response.localdeletes=Bearbeiten der Bestätigung der lokal gelöschten Elemente
+syncstate.send.request.localdeletes=Warte auf Bestätigung der lokal gelöschten Elemente
+syncstate.eval.response.localdeletes=Verarbeite die Bestätigung der lokal gelöschten Elemente

@@ -15,7 +15,6 @@
 <!ENTITY pref.UserNameDescription "User name is usually the email address of your account.">
 <!ENTITY pref.ServerName "Server address">
 <!ENTITY pref.ServerNameDescription "e.g. mail.yourserver.com">
-<!ENTITY pref.ServerType "Configuration Profile">
 <!ENTITY pref.usehttps "Use secure connection (connect via https)">
 <!ENTITY pref.DeviceId "Device Id">
 <!ENTITY pref.contactoptions "Contact options">

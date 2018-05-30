@@ -7,10 +7,10 @@ status.disabled=Konto ist deaktiviert, Synchronisation ist ausgeschaltet.
 status.notargets=Synchronisation abgebrochen da die Elemente zum Synchronisieren nicht erstellt werden konnten.
 status.nouserhost=Angabe des Benutzernamens und/oder des Servers fehlt. Bitte die korrekten Informationen eintragen.
 status.timeout=Kommunikations-Timeout.
-status.networkerror=Konnte nicht zum Server verbinden.
-status.404=Benutzer nicht gefunden (HTTP Fehler 404).
-status.403=Verbindungsannahme durch den Server verweigert (nicht erlaubt).
-status.401=Konnte nicht Authentifizieren, überprüfen Sie den Benutzernamen und das Passwort.
+status.networkerror=Verbindung zum Server fehlgeschlagen.
+status.404=Unbekanner Benutzer (HTTP Fehler 404).
+status.403=Verbindung vom Server abgelehnt (nicht erlaubt).
+status.401=Authentifizierung fehlgeschlagen, überprüfen Sie den Benutzernamen und das Passwort.
 status.449=Server erwartet Provisionierung.
 status.500=Unbekannter Server Fehler (HTTP Fehler 500).
 status.503=Service nicht erreichbar.
@@ -24,15 +24,15 @@ status.mailformed-xml=Der XML Baum konnte nicht geparst werden. Prüfen Sie bitt
 status.invalid=Ungültige Serverantwort.
 status.InvalidServerOptions=Der Server antwortete mit ungültigen Server Optionen. Bitte prüfen, ob EAS für den Benutzer erlaubt ist.
 
-status.security=Konnte keine gesicherte Verbindung herstellen. Benutzen Sie eventuell ein selbst signiertes Zertifikat oder ein andersartiges nicht vertrauenswürdiges Zertifikat welches nicht in Thunderbird importiert ist? (##replace.1##)||How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F||[help]
-status.network=Konnte nicht mit dem Server verbinden (##replace.1##).
+status.security=Fehler beim Aufbau einer sicherern Verbindung. Benutzen Sie eventuell ein selbst signiertes Zertifikat oder ein andersartiges nicht vertrauenswürdiges Zertifikat welches nicht in Thunderbird importiert ist? (##replace.1##)||How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F||[help]
+status.network=Verbindung zum Server fehlgeschlagen (##replace.1##).
 
 status.syncing=Synchronisierung
-status.connecting=Verbindung mit Server wird hergestellt
-status.skipped=nicht unterstützt, übersprungen
-status.aborted=nicht synchronisiert
-status.pending=warten auf Synchronisation
-status.modified=lokale Änderungen
+status.connecting=Verbindungsaufbau
+status.skipped=Nicht unterstützt
+status.aborted=Nicht synchronisiert
+status.pending=Warten auf Synchronisation
+status.modified=Lokale Änderungen
 
 status.resync-loop=Es ist ein Fehler aufgetreten, der nicht durch wiederholtes Synchronisieren des Kontos behoben werden konnte. Bitte deaktivieren sie das Konto und wiederholen den Vorgang. (Fehler: Synchronisationsschleife)
 
@@ -46,10 +46,10 @@ status.provision=Provisionierung fehlerhaft mit folgendem Status <##replace.1##>
 status.folderDelete.3=Systemordner können nicht gelöscht werden.
 status.folderDelete.6=Das Kommando konnte nicht abgeschlossen werden, auf dem Server ist ein Fehler aufgetreten.
 
-status.global.101=Die Anfrage beinhaltet WBXML, das jedoch nicht in gültiges XML dekodiert werden konnte (Fehler 101).
-status.global.102=Die Anfrage beinhaltet WBXML, das jedoch nicht in gültiges XML dekodiert werden konnte (Fehler 102).
+status.global.101=Das WBXML der Anfrage konnte nicht in gültiges XML dekodiert werden (Fehler 101).
+status.global.102=Das WBXML der Anfrage konnte nicht in gültiges XML dekodiert werden (Fehler 102).
 status.global.103=Das XML der Anfrage entspricht nicht den Protokollanforderungen (Fehler 103).
-status.global.clientdenied=The EAS server reports <##replace.2##> (status ##replace.1##) and does not allow TbSync to access your account.||What-if-TbSync-is-blocked-by-my-server%3F||[help]
+status.global.clientdenied=Der EAS Server antwortet mit <##replace.2##> (status ##replace.1##) und verweigert TbSync den Zugriff auf Ihr Konto.||What-if-TbSync-is-blocked-by-my-server%3F||[help]
 
 status.ServerRejectedSomeItems=Der EAS Server akzeptierte nur ##replace.2## von Ihren Elementen und hat die verbliebenen Elemente mit den folgenden Gründen zurückgewiesen: ##replace.1##. Prüfen Sie den Debug Log auf "Bad item skipped". Eine Zurückweisung mit dem Fehler "invalid XML" könnte durch einen Fehler in TbSync verursacht sein.
 status.ServerRejectedAllItems=Der EAS Server hat Ihre Elemente wegen der folgenden Gründen zurückgewiesen : ##replace.1##. Prüfen Sie den Debug Log auf "Bad item skipped".
@@ -61,7 +61,7 @@ status.notsupportedeasversion=Der Server unterstützt nicht die ausgewählte Act
 
 prompt.DeleteAccount=Sind Sie sicher, dass Sie dieses Konto ##accountName## löschen möchten?
 prompt.Disable=Sind Sie sicher, dass Sie dieses Konto deaktivieren möchten? Alle lokalen Veränderungen, welche noch nicht synchronisiert sind, werden verloren gehen!
-prompt.Unsubscribe=Sind Sie sicher, dass Sie dieses Element abwählen möchten? Alle lokalen Veränderungen, welche noch nicht synchronisiert sind, werden verloren gehen!
+prompt.Unsubscribe=Sind Sie sicher, dass Sie dieses Element nicht länger abbonieren möchten? Alle lokalen Veränderungen, welche noch nicht synchronisiert sind, werden verloren gehen!
 prompt.UnlockSettings=Das Ändern der vordefinierten Servereinstellungen kann zu Synchronisationsfehlern führen. Sind Sie sicher, dass Sie die vordefinierten Servereinstellungen entsperren wollen?
 prompt.Password=Bitte geben Sie das Passwort für den Benutzer ##user## ein:
 

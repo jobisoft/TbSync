@@ -15,22 +15,21 @@
 <!ENTITY pref.UserNameDescription "Der Benutzername ist meistens die E-Mail Adresse Ihres Kontos.">
 <!ENTITY pref.ServerName "Server Adresse">
 <!ENTITY pref.ServerNameDescription "z.B. mail.meinserver.com">
-<!ENTITY pref.ServerType "Konfigurationsprofil">
 <!ENTITY pref.usehttps "Sichere Verbindungen verwenden (Verbindung via https)">
 <!ENTITY pref.DeviceId "Geräte-ID">
 <!ENTITY pref.contactoptions "Kontakt Optionen">
 <!ENTITY pref.birthday "Sende Geburtstagsinformation">
 <!ENTITY pref.downloadonly "Einweg Synchronisierung (Sende keine lokalen Änderungen an den Server)">
 <!ENTITY pref.generaloptions "Allgemeine Optionen">
-<!ENTITY pref.syncdefaultfolders "Abonnieren der Standardordner während des Erstabgleichs">
-<!ENTITY pref.provision "Erzwinge Provisionierung (wird von Kerio benötigt)">
+<!ENTITY pref.syncdefaultfolders "Vor dem ersten Abgleich alle Standardordner abonnieren">
+<!ENTITY pref.provision "Provisionierung erzwingen (wird von Kerio benötigt)">
 
 <!ENTITY pref.autotime "Synchronisationsintervall">
 <!ENTITY pref.never "Angabe in Minuten. Eine Einstellung von 0 deaktiviert periodische Synchronisation. Push Synchronisation wird noch nicht unterstützt.">
-<!ENTITY pref.Sync "Dieses Konto synchronisieren">
+<!ENTITY pref.Sync "Konto synchronisieren">
 <!ENTITY pref.EnableAccount "Konto aktivieren &amp; und mit dem Server verbinden">
-<!ENTITY pref.DisableAccount "Dieses Konto deaktivieren">
-<!ENTITY pref.ShowTrashedFolders "Zeige Ordner, die im Papierkorb gefunden wurden" >
+<!ENTITY pref.DisableAccount "Konto deaktivieren">
+<!ENTITY pref.ShowTrashedFolders "Im Papierkorb gefundene Ordner anzeigen" >
 
 <!ENTITY pref.syncstate "Synchronisationsstatus">
 <!ENTITY pref.seperator.comma "Komma">
@@ -75,6 +74,6 @@
 <!ENTITY abCard.header.homenumbers "Zusätzliche Nummern zu Hause:">
 <!ENTITY abCard.header.othernumbers "Zusätzliche Nummern:">
 <!ENTITY abCard.header.messaging "Nachrichten:">
-<!ENTITY abCard.header.people "Menschen:">
-<!ENTITY abCard.header.eas "Andere Felder (EAS)">
-<!ENTITY abCard.header.otheraddress "Andere Adresse (EAS)">
+<!ENTITY abCard.header.people "Personen:">
+<!ENTITY abCard.header.eas "Weitere Felder (EAS)">
+<!ENTITY abCard.header.otheraddress "Weitere Adresse (EAS)">

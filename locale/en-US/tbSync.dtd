@@ -1,5 +1,4 @@
 <!ENTITY popup.opensettings "Open TbSync account manager">
-<!ENTITY popup.cancelsync "Abort all pending synchronizations">
 <!ENTITY menu.settingslabel "Synchronization Settings (TbSync)">
 
 <!ENTITY toolbar.label " Synchronize all TbSync accounts">
