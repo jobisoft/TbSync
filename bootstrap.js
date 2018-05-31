@@ -59,9 +59,7 @@ function startup(data, reason) {
     branch.setIntPref("eas.maxitems", 50);
 
     //tzpush
-    branch.setBoolPref("eas.use_tzpush_contactsync_code", true);
-    branch.setBoolPref("hidephones", false);
-    branch.setBoolPref("showanniversary", false);
+    branch.setBoolPref("eas.use_tzpush_contactsync_code", false);
 
     Components.utils.import("chrome://tbsync/content/tbsync.jsm");
     Components.utils.import("chrome://tbsync/content/OverlayManager.jsm");
