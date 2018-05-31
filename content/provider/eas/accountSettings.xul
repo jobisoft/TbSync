@@ -82,7 +82,7 @@
                     </vbox>
                 </row>
 
-                <row flex="1" style="margin-top:1em" id="tbsync.accountsettings.options">
+                <row flex="1" style="margin-top:1em; margin-bottom: 1em;" id="tbsync.accountsettings.options">
                     <vbox/>
                     <vbox style='overflow: auto;'>
 
@@ -137,7 +137,7 @@
                 </row>
                 <row>
                      <label  style="text-align:left" value="&pref.syncstate;" />
-                     <html:div style="min-height:3em; margin-bottom: 1ex; margin-left:0; font-weight:bold"><html:span id="syncstate"></html:span> <html:span id="syncstate_link" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" dest="" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/wiki/' + this.getAttribute('dest'));" style="color:blue;text-decoration: underline"></html:span></html:div>
+                     <html:div style="margin-bottom: 1ex; margin-left:0; font-weight:bold"><html:span id="syncstate"></html:span> <html:span id="syncstate_link" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" dest="" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/wiki/' + this.getAttribute('dest'));" style="color:blue;text-decoration: underline"></html:span></html:div>
                 </row>
 
                 <row>

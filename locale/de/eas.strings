@@ -9,12 +9,12 @@ autodiscover.Failed=Autodiscover für den Benutzer <##user##> war nicht erfolgre
 autodiscover.FailedUnknown=Entweder war das Passwort nicht korrekt, Ihr ActiveSync Server hat ein temporäres Problem oder unterstützt kein Autodiscover.
 autodiscover.FailedSecurity=Folgende Zertifikatsfehler sind aufgetreten was *eventuell* auf ein Problem mit Ihrem ActiveSync Provider hindeuten kann:
 
-deletefolder.notallowed=Bitte beenden Sie zunächst das Abbonement des Ordner "##replace.1##", bevor Sie diesen aus dem Papierkorb entfernen.
+deletefolder.notallowed=Bitte beenden Sie zunächst das Abonement des Ordner "##replace.1##", bevor Sie diesen aus dem Papierkorb entfernen.
 deletefolder.confirm=Möchten Sie den Ordner "##replace.1##" wirklich ENDGÜLTIG aus dem Papierkorb ENTFERNEN?
 
 deletefolder.menuentry=Den Ordner "##replace.1##" endgültig aus dem Papierkorb entfernen
-subscribe.on="##replace.1##" abbonieren
-subscribe.off="##replace.1##" nicht länger abbonieren
+subscribe.on="##replace.1##" abonieren
+subscribe.off="##replace.1##" nicht länger abonieren
 
 recyclebin = Papierkorb
 

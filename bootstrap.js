@@ -73,7 +73,7 @@ function startup(data, reason) {
     Services.obs.addObserver(onLoadDoneObserver, "tbsync.init.done", false);
 
     tbSync.addonData = data;
-    tbSync.overlayManager = new OverlayManager(data, {verbose:9});
+    tbSync.overlayManager = new OverlayManager(data, {verbose:0});
 
     if (reason != APP_STARTUP) {
         //during startup, we wait until mail-startup-done fired, for all other reasons we need to fire our own init

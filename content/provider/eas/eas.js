@@ -250,13 +250,15 @@ var eas = {
                         newData.target = "";
                         
                         //if there is a cached version of this folder, take selection state from there
-                        let cachedFolders = tbSync.db.findFoldersWithSetting(["cached","name","account","type"], ["1", newData.name,  newData.account, newData.type], "provider", "eas");
-                        if (cachedFolders && cachedFolders.length == 1) {
-                            newData.selected = cachedFolders[0].selected;
-                            newData.targetName = cachedFolders[0].targetName ? cachedFolders[0].targetName : "";
-                            newData.targetColor = cachedFolders[0].targetColor ? cachedFolders[0].targetColor : "";
-                        }
-                        else newData.selected = (newData.type == "9" || newData.type == "8" || newData.type == "7" ) ? tbSync.db.getAccountSetting(syncdata.account, "syncdefaultfolders") : "0";
+                        if (tbSync.db.getAccountSetting(syncdata.account, "syncdefaultfolders") == "1") {
+                            let cachedFolders = tbSync.db.findFoldersWithSetting(["cached","name","account","type"], ["1", newData.name,  newData.account, newData.type], "provider", "eas");
+                            if (cachedFolders && cachedFolders.length == 1) {
+                                newData.selected = cachedFolders[0].selected;
+                                newData.targetName = cachedFolders[0].targetName ? cachedFolders[0].targetName : "";
+                                newData.targetColor = cachedFolders[0].targetColor ? cachedFolders[0].targetColor : "";
+                            }
+                            else newData.selected = (newData.type == "9" || newData.type == "8" || newData.type == "7" ) ? "1" : "0";
+                        } else newData.selected = "0";
                         
                         newData.status = "";
                         newData.lastsynctime = "";
@@ -1092,9 +1094,11 @@ var eas = {
             let type = folders[i].type;            
             
             //Add a cached version of this folder to the database
-            folders[i].cached = "1";
-            folders[i].folderID = "cached-"+folderID;
-            db.addFolder(folders[i]);
+            if (tbSync.db.getAccountSetting(account, "syncdefaultfolders") == "1") {
+                folders[i].cached = "1";
+                folders[i].folderID = "cached-"+folderID;
+                db.addFolder(folders[i]);
+            }
             db.deleteFolder(account, folderID); 
 
             if (target != "") {
