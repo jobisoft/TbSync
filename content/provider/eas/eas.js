@@ -888,13 +888,16 @@ var eas = {
     },
     
     logxml : function (wbxml, what) {
-        if (tbSync.prefSettings.getBoolPref("log.toconsole") || tbSync.prefSettings.getBoolPref("log.tofile")) {
+        //include xml in log, if userdatalevel 2 or greater
+        if ((tbSync.prefSettings.getBoolPref("log.toconsole") || tbSync.prefSettings.getBoolPref("log.tofile")) && tbSync.prefSettings.getIntPref("log.userdatalevel")>1) {
 
-            //log wbxml
-            let charcodes = [];
-            for (let i=0; i< wbxml.length; i++) charcodes.push(wbxml.charCodeAt(i).toString(16));
-            let bytestring = charcodes.join(" ");
-            tbSync.dump("WBXML: " + what, "\n" + bytestring);
+            //log aw wbxml if userdatalevel is 3 or greater
+            if (tbSync.prefSettings.getIntPref("log.userdatalevel")>2) {
+                let charcodes = [];
+                for (let i=0; i< wbxml.length; i++) charcodes.push(wbxml.charCodeAt(i).toString(16));
+                let bytestring = charcodes.join(" ");
+                tbSync.dump("WBXML: " + what, "\n" + bytestring);
+            }
 
             let rawxml = tbSync.wbxmltools.convert2xml(wbxml);
             if (rawxml === false) {
@@ -1477,7 +1480,7 @@ var eas = {
         }
         
         //debug
-        xmltools.printXmlData(wbxmlData);
+        xmltools.printXmlData(wbxmlData, false); //do not include ApplicationData in log
         return wbxmlData;
     },
     

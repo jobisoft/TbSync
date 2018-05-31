@@ -267,7 +267,7 @@ eas.sync = {
                             db.addItemToChangeLog(syncdata.targetId, ServerId, "added_by_server");
                             yield syncdata.targetObj.adoptItem(newItem); //yield pcal.addItem(newItem); // We are not using the added item after is has been added, so we might be faster using adoptItem
                         } catch (e) {
-                            xmltools.printXmlData(add[count]);                        
+                            xmltools.printXmlData(add[count], true); //include application data in log                  
                             tbSync.dump("Bad item <javascript error>", newItem.icalString);
                             throw e;
                         }
@@ -303,7 +303,7 @@ eas.sync = {
                             db.addItemToChangeLog(syncdata.targetId, ServerId, "modified_by_server"); //any local change will be lost
                             yield syncdata.targetObj.modifyItem(newItem, foundItems[0]);
                         } catch (e) {
-                            xmltools.printXmlData(upd[count]);                        
+                            xmltools.printXmlData(upd[count], true);  //include application data in log                   
                             tbSync.dump("Bad item <javascript error>", newItem.icalString);
                             throw e;
                         }

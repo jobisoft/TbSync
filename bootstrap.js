@@ -52,7 +52,7 @@ function startup(data, reason) {
 
     branch.setBoolPref("log.toconsole", false);
     branch.setBoolPref("log.tofile", false);
-    branch.setBoolPref("log.easdata", true);
+    branch.setIntPref("log.userdatalevel", 0); //0 - metadata (no incomming xml/wbxml, only parsed data without userdata (except failing items))   1 - including userdata,  2 - raw xml , 3 - raw wbxml
 
     branch.setIntPref("eas.timeout", 90000);
     branch.setIntPref("eas.synclimit", 7);
