@@ -35,15 +35,15 @@
 
 <!ENTITY manager.help.needhelp "Benötigen Sie Hilfe?">
 <!ENTITY manager.help.foundabug "Sie haben einen Fehler gefunden?">
-<!ENTITY manager.help.wiki "Öffnet die Wikiseiten des TbSync Projektes, dieses beinhaltet zusätzliche Informationen, Benutzeranleitungen und detaillierte Konfigurationsbeschreibungen.">
+<!ENTITY manager.help.wiki "Besuchen Sie die Wikiseiten des TbSync Projektes, dieses beinhaltet zusätzliche Informationen, Benutzeranleitungen und detaillierte Konfigurationsbeschreibungen.">
 <!ENTITY manager.help.fixit1 "Sie können helfen den Fehler zu korrigieren, indem Sie dem Entwickler einen Fehlerbericht zusenden.">
 <!ENTITY manager.help.pleaseupdate "Bitte aktualisieren Sie auf die zuletzt veröffentlichte Version von TbSync, um zu prüfen ob der Fehler schon beseitigt worden ist.">
 <!ENTITY manager.help.installedversion "Sie benutzen momentan die Version:">
 <!ENTITY manager.help.latestversion "Die aktuellste Version ist:">
 <!ENTITY manager.help.fixit2 "Wenn der Fehler in der aktuellsten Version immernoch auftritt, können Sie helfen diesen zu beseitigen, indem Sie dem Entwickler einen Fehlerbericht zusenden.">
-<!ENTITY manager.help.enabledebuglog "Die Protokollierung von Debug-Meldungen aktivieren, um einen aussagekräigen Fehlerbericht erstellen zu können. Dabei werden alle Programmmeldungen als auch die Meldungen die TbSync empfängt und versendet, aufgezeichnet.">
+<!ENTITY manager.help.enabledebuglog "Die Protokollierung von Debug-Meldungen aktivieren, um einen aussagekräftigen Fehlerbericht erstellen zu können. Dabei werden alle Programmmeldungen als auch die Meldungen die TbSync empfängt und versendet, aufgezeichnet.">
 <!ENTITY manager.help.aslongasneeded "Aktivieren Sie die Protokollierung der Debug-Meldungen nur so lange wie nötig, da Thunderbird dadurch signifikant langsamer arbeiten.">
-<!ENTITY manager.help.createbugreportinfo "Um einen neuen Fehlerbericht zu erstellen: Starten Sie Thunderbird neu und wiederholen Sie alle Schritte um das fehlerhafte Verhalten zu reproduzieren und klicken dann auf das Icon auf der rechten Seite um den Fehlerbericht an den Entwickler zu verschicken.">
+<!ENTITY manager.help.createbugreportinfo "Um einen neuen Fehlerbericht zu erstellen: Starten Sie Thunderbird neu und wiederholen Sie alle Schritte um das fehlerhafte Verhalten zu reproduzieren und klicken Sie anschließend auf das Icon auf der rechten Seite um den Fehlerbericht an den Entwickler zu verschicken.">
 <!ENTITY manager.help.opencurrentdebuglog "Öffnet den aktuellen Fehlerbericht in einem neuen Reiter.">
 <!ENTITY manager.help.sendcurrentdebuglog "Sendet den aktuellen Fehlerbericht an den Entwickler.">
 
