@@ -20,8 +20,8 @@ status.wbxmlerror=Synchronisation fehlgeschlagen. Der Server antwortete mit dem 
 status.wbxmlmissingfield=Verletzung des ActiveSync Protokolls: Notwendiges Feld <##replace.1##> ist nicht in der Serverantwort enthalten.
 status.OK=Ok
 status.nolightning=Lightning Add-On nicht installiert, Kalenderfunktion dadurch nicht unterstützt.
-status.javascriptError=Javascript Fehler! Prüfen Sie bitte den Debug Log für weitere Details.
-status.mailformed-xml=Der XML Baum konnte nicht geparst werden. Prüfen Sie bitte den Debug Log für weitere Details.  
+status.javascriptError=Javascript Fehler! Prüfen Sie bitte den Fehlerbericht für weitere Details.
+status.mailformed-xml=Der XML Baum konnte nicht geparst werden. Prüfen Sie bitte den Fehlerbericht für weitere Details.  
 status.invalid=Ungültige Serverantwort.
 status.InvalidServerOptions=Der Server antwortete mit ungültigen Server Optionen. Bitte prüfen, ob EAS für den Benutzer erlaubt ist.
 
@@ -52,9 +52,9 @@ status.global.102=Das WBXML der Anfrage konnte nicht in gültiges XML dekodiert 
 status.global.103=Das XML der Anfrage entspricht nicht den Protokollanforderungen (Fehler 103).
 status.global.clientdenied=Der EAS Server antwortet mit <##replace.2##> (status ##replace.1##) und verweigert TbSync den Zugriff auf Ihr Konto.||What-if-TbSync-is-blocked-by-my-server%3F||[help]
 
-status.ServerRejectedSomeItems=Der EAS Server akzeptierte nur ##replace.2## von Ihren Elementen und hat die verbliebenen Elemente mit den folgenden Gründen zurückgewiesen: ##replace.1##. Prüfen Sie den Debug Log auf "Bad item skipped". Eine Zurückweisung mit dem Fehler "invalid XML" könnte durch einen Fehler in TbSync verursacht sein.
-status.ServerRejectedAllItems=Der EAS Server hat Ihre Elemente wegen der folgenden Gründen zurückgewiesen : ##replace.1##. Prüfen Sie den Debug Log auf "Bad item skipped".
-status.ServerRejectedRequest=Der EAS Server hat die letzte Anforderung zurückgewiesen. Prüfen Sie den Debug Log für weitere Informationen.
+status.ServerRejectedSomeItems=Der EAS Server akzeptierte nur ##replace.2## von Ihren Elementen und hat die verbliebenen Elemente mit den folgenden Gründen zurückgewiesen: ##replace.1##. Prüfen Sie den Fehlerbericht auf "Bad item skipped". Eine Zurückweisung mit dem Fehler "invalid XML" könnte durch einen Fehler in TbSync verursacht sein.
+status.ServerRejectedAllItems=Der EAS Server hat Ihre Elemente wegen der folgenden Gründen zurückgewiesen : ##replace.1##. Prüfen Sie den Fehlerbericht auf "Bad item skipped".
+status.ServerRejectedRequest=Der EAS Server hat die letzte Anforderung zurückgewiesen. Prüfen Sie den Fehlerbericht für weitere Informationen.
 status.TempServerError=Der Server meldete einen temporären Systemfehler, oder ein fehlerhaftes Element. Dies ist häufig ein vorübergehender Zustand (versuchen Sie es später erneut).
 
 status.nosupportedeasversion=Der Server unterstützt kein ActiveSync v2.5 oder v14.0 (nur ##replace.1##). TbSync kann nicht mit diesem Server arbeiten.
