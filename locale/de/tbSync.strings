@@ -60,9 +60,9 @@ status.TempServerError=Der Server meldete einen temporären Systemfehler, oder e
 status.nosupportedeasversion=Der Server unterstützt kein ActiveSync v2.5 oder v14.0 (nur ##replace.1##). TbSync kann nicht mit diesem Server arbeiten.
 status.notsupportedeasversion=Der Server unterstützt nicht die ausgewählte ActiveSync Version v##replace.1## (nur ##replace.2##).
 
-prompt.DeleteAccount=Sind Sie sicher, dass Sie dieses Konto ##accountName## löschen möchten?
-prompt.Disable=Sind Sie sicher, dass Sie dieses Konto deaktivieren möchten? Alle lokalen Veränderungen, welche noch nicht synchronisiert sind, werden verloren gehen!
-prompt.Unsubscribe=Sind Sie sicher, dass Sie dieses Element nicht länger abbonieren möchten? Alle lokalen Veränderungen, welche noch nicht synchronisiert sind, werden verloren gehen!
+prompt.DeleteAccount=Sind Sie sicher, dass Sie das Konto ##accountName## löschen möchten?
+prompt.Disable=Sind Sie sicher, dass Sie dieses Konto deaktivieren möchten? Alle lokalen Veränderungen, die noch nicht synchronisiert wurden, gehen dabei verloren!
+prompt.Unsubscribe=Sind Sie sicher, dass Sie dieses Element nicht länger abbonieren möchten? Alle lokalen Veränderungen, die noch nicht synchronisiert wurden, gehen dabei verloren!
 prompt.UnlockSettings=Das Ändern der vordefinierten Servereinstellungen kann zu Synchronisationsfehlern führen. Sind Sie sicher, dass Sie die vordefinierten Servereinstellungen entsperren wollen?
 prompt.Password=Bitte geben Sie das Passwort für den Benutzer ##user## ein:
 

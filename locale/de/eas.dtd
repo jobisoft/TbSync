@@ -24,14 +24,14 @@
 <!ENTITY pref.syncdefaultfolders "Vor dem ersten Abgleich alle Standardordner abonnieren">
 <!ENTITY pref.provision "Provisionierung erzwingen (wird von Kerio benötigt)">
 
-<!ENTITY pref.autotime "Synchronisationsintervall">
-<!ENTITY pref.never "Angabe in Minuten. Eine Einstellung von 0 deaktiviert periodische Synchronisation. Push Synchronisation wird noch nicht unterstützt.">
+<!ENTITY pref.autotime "Sync Intervall (in Minuten)">
+<!ENTITY pref.never "Eine Einstellung von 0 deaktiviert periodische Synchronisation. Push Synchronisation wird noch nicht unterstützt.">
 <!ENTITY pref.Sync "Konto synchronisieren">
 <!ENTITY pref.EnableAccount "Konto aktivieren &amp; und mit dem Server verbinden">
 <!ENTITY pref.DisableAccount "Konto deaktivieren">
 <!ENTITY pref.ShowTrashedFolders "Im Papierkorb gefundene Ordner anzeigen" >
 
-<!ENTITY pref.syncstate "Synchronisationsstatus">
+<!ENTITY pref.syncstate "Sync Status">
 <!ENTITY pref.seperator.comma "Komma">
 <!ENTITY pref.seperator.linebreak "Zeilenumbruch">
 <!ENTITY pref.seperator.description "Separator für mehrzeilige Adressfelder.">

@@ -35,7 +35,7 @@
 
 <!ENTITY manager.help.needhelp "Benötigen Sie Hilfe?">
 <!ENTITY manager.help.foundabug "Sie haben einen Fehler gefunden?">
-<!ENTITY manager.help.wiki "Besuchen Sie die Wikiseiten des TbSync Projektes, dieses beinhaltet zusätzliche Informationen, Benutzeranleitungen und detaillierte Konfigurationsbeschreibungen.">
+<!ENTITY manager.help.wiki "Besuchen Sie die Wikiseiten des TbSync Projektes, diese beinhalten zusätzliche Informationen, Benutzeranleitungen und detaillierte Konfigurationsbeschreibungen.">
 <!ENTITY manager.help.fixit1 "Sie können helfen den Fehler zu korrigieren, indem Sie dem Entwickler einen Fehlerbericht zusenden.">
 <!ENTITY manager.help.pleaseupdate "Bitte aktualisieren Sie auf die zuletzt veröffentlichte Version von TbSync, um zu prüfen ob der Fehler schon beseitigt worden ist.">
 <!ENTITY manager.help.installedversion "Sie benutzen momentan die Version:">

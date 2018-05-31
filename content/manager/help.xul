@@ -39,7 +39,7 @@
 
             <hbox style="padding:0;">
                 <checkbox flex="1" id="tbSyncAccountManager.logPrefCheckbox" label="&manager.help.enabledebuglog;" oncommand="tbSyncAccountManager.toggleLogPref();" />
-                <image  flex="0" tooltiptext="&manager.help.opencurrentdebuglog;" src="chrome://tbsync/skin/report_open.png" style='padding-left:16px' align='center' onclick="tbSync.openFileTab('debug.log');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
+                <vbox flex="0"><image tooltiptext="&manager.help.opencurrentdebuglog;" src="chrome://tbsync/skin/report_open.png" style='padding-left:16px' align='center' onclick="tbSync.openFileTab('debug.log');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" /></vbox>
             </hbox>
             
             <html:p> 
@@ -48,7 +48,7 @@
 
             <hbox style="padding:0;margin-top:24px">
                 <description flex="1" style="margin:0;padding:0;font-weight:bold">&manager.help.createbugreportinfo;</description>
-                <image  flex="0" tooltiptext="&manager.help.sendcurrentdebuglog;" src="chrome://tbsync/skin/report_send.png" style='padding-left:16px;' align='center' onclick="tbSync.createBugReport();" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
+                <vbox flex="0"><image tooltiptext="&manager.help.sendcurrentdebuglog;"  src="chrome://tbsync/skin/report_send.png" style='padding-left:16px;' align='center' onclick="tbSync.createBugReport();" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" /></vbox>
             </hbox>
 
         </vbox>
