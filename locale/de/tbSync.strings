@@ -3,6 +3,7 @@ info.error=Fehler
 info.sync=Synchronisation
 
 status.notsyncronized=Konto muss synchronisiert werden.
+status.needtorevert=Konto muss synchronisiert werden, um lokale Änderungen rückgängig zu machen (one-way-sync).
 status.disabled=Konto ist deaktiviert, Synchronisation ist ausgeschaltet.
 status.notargets=Synchronisation abgebrochen da die Elemente zum Synchronisieren nicht erstellt werden konnten.
 status.nouserhost=Angabe des Benutzernamens und/oder des Servers fehlt. Bitte die korrekten Informationen eintragen.

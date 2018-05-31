@@ -174,6 +174,7 @@ var tbSyncAccounts = {
                 src = "disabled.png";
                 break;
             
+            case "needtorevert":
             case "notsyncronized":
             case "nolightning":
             case "modified":

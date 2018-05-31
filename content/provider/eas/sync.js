@@ -88,6 +88,9 @@ eas.sync = {
 
 
     sendLocalChanges: Task.async (function* (syncdata)  {
+        if (tbSync.db.getAccountSetting(syncdata.account, "downloadonly") == "1") 
+            return;
+        
         let maxnumbertosend = tbSync.prefSettings.getIntPref("eas.maxitems");
 
         syncdata.done = 0;
