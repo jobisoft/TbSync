@@ -1527,13 +1527,15 @@ var eas = {
                 throw eas.finishSync(type+"("+status+")", eas.flags.resyncFolder);
             
             case "Sync:4":
+                if (allowSoftFail) return false;
                 throw eas.finishSync("ServerRejectedRequest");                            
             
             case "Sync:5":
+                if (allowSoftFail) return false;
                 throw eas.finishSync("TempServerError");                            
 
             case "Sync:6":
-                //Server does not accept one of our items or the entire request. IF allowSoftFail is set, continue syncing
+                //Server does not accept one of our items or the entire request. If allowSoftFail is set, continue syncing
                 if (allowSoftFail) return false;
                 throw eas.finishSync("ServerRejectedRequest");                            
 

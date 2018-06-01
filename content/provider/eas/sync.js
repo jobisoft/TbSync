@@ -80,11 +80,11 @@ eas.sync = {
             //check status, throw on error
             eas.checkStatus(syncdata, wbxmlData,"Sync.Collections.Collection.Status");
             
+            //update synckey must be called BEFORE process functions, because they can throw on rejected items
+            eas.updateSynckey(syncdata, wbxmlData);
+
             //PROCESS COMMANDS        
             yield eas.sync.processCommands(wbxmlData, syncdata);
-
-            //update synckey, throw on error
-            eas.updateSynckey(syncdata, wbxmlData);
             
             if (!wbxmlData.Sync.Collections.Collection.MoreAvailable) return;
         } while (true);
@@ -203,6 +203,9 @@ eas.sync = {
                 eas.checkStatus(syncdata, wbxmlData, "Sync.Collections.Collection.Status");            
                 yield tbSync.sleep(10);
 
+                //update synckey must be called BEFORE process functions, because they can throw on rejected items
+                eas.updateSynckey(syncdata, wbxmlData);
+
                 //PROCESS RESPONSE        
                 yield eas.sync.processResponses(wbxmlData, syncdata, addedItems, changedItems);
             
@@ -215,8 +218,6 @@ eas.sync = {
                         syncdata.done++;
                 }
             
-                //update synckey
-                eas.updateSynckey(syncdata, wbxmlData);
 
             } else if (e==0) { //if there was no local change and also no error (which will not happen twice) return
 
@@ -332,11 +333,11 @@ eas.sync = {
                     //should not happen, throw
                 }
                             
+                //update synckey must be called BEFORE process functions, because they can throw on rejected items
+                eas.updateSynckey(syncdata, wbxmlData);
+
                 //PROCESS COMMANDS        
                 yield eas.sync.processCommands(wbxmlData, syncdata);
-
-                //update synckey
-                eas.updateSynckey(syncdata, wbxmlData);
 
             } else { //if there was no more local change we need to revert, return
 
@@ -469,6 +470,9 @@ eas.sync = {
         switch (status) {
             case "4": 
                 cause = "Mailformed request. Bug in TbSync?";
+                break;
+            case "5": 
+                cause = "Temporary server issues or invalid item";
                 break;
             case "6":
                 cause = "Invalid item! Mandatory fields missing? Dublicate item?";
