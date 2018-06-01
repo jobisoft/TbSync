@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
 <?xml-stylesheet href="chrome://tbsync/content/manager/manager.css" type="text/css"?>
-<!DOCTYPE window SYSTEM "chrome://tbsync/locale/eas.dtd">
+<!DOCTYPE window [
+  <!ENTITY % commonDTD SYSTEM "chrome://tbsync/locale/tbSync.dtd">
+  %commonDTD;
+  <!ENTITY % easDTD SYSTEM "chrome://tbsync/locale/eas.dtd">
+  %easDTD;
+]>
 
 <window id="tbsync.accountsettings" 
     xmlns:html="http://www.w3.org/1999/xhtml"
@@ -63,7 +68,7 @@
                             <hbox flex="1"><label style="padding:1px;; margin-left:0" id="tbsync.accountsettingslabel.asversionselected" control="tbsync.accountsettings.asversionselected" value ="ActiveSync version" /></hbox>
                         </hbox>
 
-                        <hbox style="margin-bottom:1ex;">
+                        <hbox>
                             <hbox width="235"><textbox flex="1" style="margin-left:0; margin-right:0" tooltiptext="&pref.ServerNameDescription;" id="tbsync.accountsettings.host" onblur="tbSyncAccountSettings.stripHost();" /></hbox>
                             <vbox flex="1">
                                 <menulist flex="1" style="margin-right:0;" id="tbsync.accountsettings.asversionselected" onblur="tbSyncAccountSettings.instantSaveSetting(this);" >
@@ -77,8 +82,6 @@
                             <image style="margin-left:5px; margin-right:0" tooltiptext="&servertype.unlock;" ondblclick="tbSyncAccountSettings.unlockSettings()" width="24" height="24" id="tbsync.accountsettings.config.unlock" src="chrome://tbsync/skin/lock24.png" />
                         </hbox>
 
-                        <checkbox id="tbsync.accountsettings.https" label="&pref.usehttps;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
-                        <!-- checkbox id="tbsync.accountsettings.horde" label="&pref.isHordeServer;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" / -->
                     </vbox>
                 </row>
 
@@ -89,6 +92,8 @@
                         <hbox height="24" align="center">
                             <label flex="1" style="margin-left:0" class="header" id="tbsync.accountsettings.general.label" value="&pref.generaloptions;"/>
                         </hbox>
+                        <checkbox id="tbsync.accountsettings.https" label="&pref.usehttps;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                        <!-- checkbox id="tbsync.accountsettings.horde" label="&pref.isHordeServer;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" / -->
                         <checkbox id="tbsync.accountsettings.downloadonly" label="&pref.downloadonly;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
                         <checkbox id="tbsync.accountsettings.provision" label="&pref.provision;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
                         <checkbox id="tbsync.accountsettings.syncdefaultfolders" label="&pref.syncdefaultfolders;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
@@ -151,7 +156,7 @@
                     <vbox/>
                     <hbox flex="1" >
                         <button id="tbsync.accountsettings.enablebtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.EnableAccount;" oncommand="tbSyncAccountSettings.toggleEnableState();" />
-                        <button id="tbsync.accountsettings.syncbtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.Sync;" oncommand="tbSyncAccountSettings.requestSync();" context="tbsync.accountsettings.DisableContextMenu" />
+                        <button id="tbsync.accountsettings.syncbtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.SynchronizeAccount;" oncommand="tbSyncAccountSettings.requestSync();" context="tbsync.accountsettings.DisableContextMenu" />
                     </hbox>
                 </row>
 

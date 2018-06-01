@@ -14,7 +14,7 @@
         <vbox flex="1">
 
             <html:p>
-                The following version information were collected during the last start of Thunderbird:
+                &manager.update.intro;
             </html:p>
 
             <grid style="font-style: italic; padding:1em 0 1em 2em">
@@ -25,19 +25,19 @@
 
                 <rows>
                     <row style="margin-bottom:1ex">
-                        <label value="Installed version:" />
+                        <label value="&manager.update.installed;" />
                         <label id="installed.version" value="" />
                     </row>
                     <row>
-                        <label value="Current official version:" />
+                        <label value="&manager.update.amo_stable;" />
                         <label id="mozilla.version" value="" />
                     </row>
                     <row>
-                        <label value="Latest stable release:" />
+                        <label value="&manager.update.github_stable;" />
                         <label id="stable.version" value="" />
                     </row>
                     <row>
-                        <label value="Latest beta release:" />
+                        <label value="&manager.update.github_beta;" />
                         <label id="beta.version" value="---" />
                     </row>
                 </rows>
@@ -47,13 +47,20 @@
                 <label style="padding:0; margin:0; font-weight:bold" id="tbsync.recommendation" value="" />
             </html:p>
             <html:p> 
-                Each new stable release is send to Mozilla, where it needs to pass a review process to get listed as the new official version of TbSync. However, this review process can take up to several months. 
+                &manager.update.desc1; &manager.update.desc2;                 
                 <html:br/><html:br/>
-                If you trust the developer, you can install the latest stable release directly from the github repository of the TbSync project. 
+                &manager.update.desc3; 
+               <html:br/><html:br/>
+                <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/wiki/What-is-the-beta-release-channel%3F');" style="color:blue;text-decoration: underline;padding-left:1em;">
+                    https://github.com/jobisoft/TbSync/wiki/What-is-the-beta-release-channel%3F
+                </html:span>
                 <html:br/><html:br/>
-                Furthermore, if you install a beta version, you will get update notifications for each new beta release until the next stable version has been released. If you want to remain on the beta release channel even accross different stable releases, you can set the <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/wiki/Advanced-configurations');" style="color:blue;text-decoration: underline">notify4beta setting</html:span> in the advanced Thunderbird settings. 
-                <html:br/><html:br/>
-                A detailed change log can be found on the <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/releases');" style="color:blue;text-decoration: underline">release page</html:span> of the TbSync project.
+                &manager.update.desc4;
+               <html:br/><html:br/>
+                <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/releases');" style="color:blue;text-decoration: underline;padding-left:1em;">
+                   https://github.com/jobisoft/TbSync/releases
+                </html:span>
+		
             </html:p>
          
         </vbox>            

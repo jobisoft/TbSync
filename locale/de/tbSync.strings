@@ -81,3 +81,10 @@ accountacctions.disable=Konto "##accountname##" deaktivieren
 config.auto=ActiveSync Server Konfiguration (Autodiscover)
 config.custom=ActiveSync Server Konfiguration
 config.outlook.com=Server Konfiguration für Outlook.com Konten
+
+update_available=Update verfügbar
+old_beta_version=ältere Test-Version
+amo_repository=Thunderbird AddOn Verzeichnis
+github_repository=TbSync Github Verzeichnis
+update_to_stable=Empfehlung: Installieren Sie die aktuelle Standard-Version.
+update_to_beta=Empfehlung: Installieren Sie die aktuelle Test-Version.

@@ -47,3 +47,12 @@
  <!ENTITY manager.help.opencurrentdebuglog "Open the current debug log in a new tab.">
  <!ENTITY manager.help.sendcurrentdebuglog "Send the current debug log to the developer.">
 
+ <!ENTITY manager.update.intro "The following version information were collected during the last start of Thunderbird:">
+ <!ENTITY manager.update.installed "Installed version:">
+<!ENTITY manager.update.amo_stable "Current official version:">
+<!ENTITY manager.update.github_stable "Latest stable release:">
+<!ENTITY manager.update.github_beta "Latest beta release:">
+<!ENTITY manager.update.desc1 "Each new stable release is send to Mozilla, where it needs to pass a review process to get listed as the new official version of TbSync. However, this review process can take up to several months. ">
+<!ENTITY manager.update.desc2 "If you trust the developer, you can install the latest stable release directly from the github repository of the TbSync project.">
+<!ENTITY manager.update.desc3 "Furthermore, you may install the latest beta version to test new features. Keep in mind, that beta releases will probably have more bugs than stable releases. More information regarding beta releases and the so called beta-release-channel can be found here:">
+<!ENTITY manager.update.desc4 "A detailed change log can be found here:">

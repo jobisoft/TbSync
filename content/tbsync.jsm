@@ -341,7 +341,7 @@ var tbSync = {
                         label += tbSync.getLocalizedMessage("info.sync");
                     }
                     
-                    if (tbSync.updatesAvailable()) label = label + " (update available)";
+                    if (tbSync.updatesAvailable()) label = label + " (" + tbSync.getLocalizedMessage("update_available") + ")";
                     status.label = label;      
                     
                 }

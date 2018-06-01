@@ -26,9 +26,6 @@
 
 <!ENTITY pref.autotime "Sync interval (minutes)">
 <!ENTITY pref.never "A setting of 0 disables periodic sync. Push sync is no yet supported.">
-<!ENTITY pref.Sync "Synchronize this account">
-<!ENTITY pref.EnableAccount "Enable account &amp; try to connect to server">
-<!ENTITY pref.DisableAccount "Disable this account">
 <!ENTITY pref.ShowTrashedFolders "Show folders found in trash" >
 
 <!ENTITY pref.syncstate "Sync status">

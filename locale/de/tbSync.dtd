@@ -47,3 +47,12 @@
 <!ENTITY manager.help.opencurrentdebuglog "Öffnet den aktuellen Fehlerbericht in einem neuen Reiter.">
 <!ENTITY manager.help.sendcurrentdebuglog "Sendet den aktuellen Fehlerbericht an den Entwickler.">
 
+<!ENTITY manager.update.intro "Die folgenden Informationen wurden beim letzten Start von Thunderbird gesammelt:">
+ <!ENTITY manager.update.installed "Installierte Version:">
+<!ENTITY manager.update.amo_stable "Offizielle Version:">
+<!ENTITY manager.update.github_stable "Aktuelle Standard-Version (stable):">
+<!ENTITY manager.update.github_beta "Aktuelle Test-Version (beta):">
+<!ENTITY manager.update.desc1 "Jede neue Standard-Version wird zu Mozilla geschickt, wo sie eine finale Prüfung durchlaufen muss, bevor sie als die neue offizielle Version von TbSync geführt wird. Dieser Prozess kann aber leider mehrere Wochen dauern. ">
+<!ENTITY manager.update.desc2 "Wenn Sie dem Entwickler von TbSync vertrauen, dann können Sie die aktuelle Standard-Version auch direkt aus dem Github Verzeichnis von TbSync beziehen.">
+<!ENTITY manager.update.desc3 "Weiterhin können Sie auch die aktuelle Test-Version mit den neusten Funktionen installieren, wobei die Möglichkeit von Fehlern aber natürlich größer als bei der Standard-Version ist. Weitere Informationen zu den Test-Versionen und dem sog. Beta-Release-Channel finden Sie hier:">
+<!ENTITY manager.update.desc4 "Ein detailiertes Änderungsprotokoll finden Sie hier:">

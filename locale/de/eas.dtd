@@ -15,20 +15,17 @@
 <!ENTITY pref.UserNameDescription "Der Benutzername ist meistens die E-Mail Adresse Ihres Kontos.">
 <!ENTITY pref.ServerName "Server Adresse">
 <!ENTITY pref.ServerNameDescription "z.B. mail.meinserver.com">
-<!ENTITY pref.usehttps "Sichere Verbindungen verwenden (Verbindung via https)">
+<!ENTITY pref.usehttps "Sichere Verbindungen verwenden (via https://)">
 <!ENTITY pref.DeviceId "Geräte-ID">
 <!ENTITY pref.contactoptions "Kontakt Optionen">
 <!ENTITY pref.birthday "Sende Geburtstagsinformation">
-<!ENTITY pref.downloadonly "Lokale Änderungen nicht zum Server senden (one-way-sync)">
+<!ENTITY pref.downloadonly "Lokale Änderungen verwerfen (one-way-sync)">
 <!ENTITY pref.generaloptions "Allgemeine Optionen">
 <!ENTITY pref.syncdefaultfolders "Nach Herstellen der Verbindung alle Standard-Ordner bzw. alle ehemals abonierten Ordner synchronisieren">
 <!ENTITY pref.provision "Provisionierung erzwingen (wird von Kerio benötigt)">
 
 <!ENTITY pref.autotime "Sync Intervall (in Minuten)">
 <!ENTITY pref.never "Eine Einstellung von 0 deaktiviert periodische Synchronisation. Push Synchronisation wird noch nicht unterstützt.">
-<!ENTITY pref.Sync "Konto synchronisieren">
-<!ENTITY pref.EnableAccount "Konto aktivieren &amp; und mit dem Server verbinden">
-<!ENTITY pref.DisableAccount "Konto deaktivieren">
 <!ENTITY pref.ShowTrashedFolders "Im Papierkorb gefundene Ordner anzeigen" >
 
 <!ENTITY pref.syncstate "Sync Status">
