@@ -19,7 +19,7 @@
 <!ENTITY pref.DeviceId "Geräte-ID">
 <!ENTITY pref.contactoptions "Kontakt Optionen">
 <!ENTITY pref.birthday "Sende Geburtstagsinformation">
-<!ENTITY pref.downloadonly "Lokale Änderungen verwerfen (one-way-sync)">
+<!ENTITY pref.downloadonly "Lokale Änderungen verwerfen (one-way sync)">
 <!ENTITY pref.generaloptions "Allgemeine Optionen">
 <!ENTITY pref.syncdefaultfolders "Nach Herstellen der Verbindung alle Standard-Ordner bzw. alle ehemals abonierten Ordner synchronisieren">
 <!ENTITY pref.provision "Provisionierung erzwingen (wird von Kerio benötigt)">

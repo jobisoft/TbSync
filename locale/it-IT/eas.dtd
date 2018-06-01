@@ -19,7 +19,7 @@
 <!ENTITY pref.DeviceId "Device Id">
 <!ENTITY pref.contactoptions "Contact options">
 <!ENTITY pref.birthday "Send birthday information">
-<!ENTITY pref.downloadonly "One-way sync (do not send local changes to the server)">
+<!ENTITY pref.downloadonly "Revert local changes (one-way sync)">
 <!ENTITY pref.generaloptions "General options">
 <!ENTITY pref.syncdefaultfolders "Synchronize default or formaly subscribed folders right after server connection has been established">
 <!ENTITY pref.provision "Enforce provisioning (Kerio needs this)">

@@ -3,7 +3,7 @@ info.error=Fehler
 info.sync=Synchronisation
 
 status.notsyncronized=Konto muss synchronisiert werden.
-status.needtorevert=Konto muss synchronisiert werden, um lokale Änderungen rückgängig zu machen (one-way-sync).
+status.needtorevert=Konto muss synchronisiert werden, um lokale Änderungen rückgängig zu machen (one-way sync).
 status.disabled=Konto ist deaktiviert, Synchronisation ist ausgeschaltet.
 status.notargets=Synchronisation abgebrochen da die Elemente zum Synchronisieren nicht erstellt werden konnten.
 status.nouserhost=Angabe des Benutzernamens und/oder des Servers fehlt. Bitte die korrekten Informationen eintragen.
@@ -19,7 +19,7 @@ status.httperror=Kommunikationsfehler (HTTP Status ##replace.1##).
 status.wbxmlerror=Synchronisation fehlgeschlagen. Der Server antwortete mit dem Status <##replace.1##>.
 status.wbxmlmissingfield=Verletzung des ActiveSync Protokolls: Notwendiges Feld <##replace.1##> ist nicht in der Serverantwort enthalten.
 status.OK=Ok
-status.nolightning=Lightning Add-On nicht installiert, Kalenderfunktion dadurch nicht unterstützt.
+status.nolightning=Lightning Add-On nicht installiert, Kalender nicht nutzbar.
 status.javascriptError=Javascript Fehler! Prüfen Sie bitte den Fehlerbericht für weitere Details.
 status.mailformed-xml=Der XML Baum konnte nicht geparst werden. Prüfen Sie bitte den Fehlerbericht für weitere Details.  
 status.invalid=Ungültige Serverantwort.

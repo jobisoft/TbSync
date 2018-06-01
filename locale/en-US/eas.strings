@@ -59,6 +59,10 @@ syncstate.prepare.request.localchanges=Sending local changes
 syncstate.send.request.localchanges=Waiting for acknowledgement of local changes
 syncstate.eval.response.localchanges=Processing acknowledgement of local changes
 
+syncstate.prepare.request.revertlocalchanges=Collecting local changes
+syncstate.send.request.revertlocalchanges=Waiting for most recent versions
+syncstate.eval.response.revertlocalchanges=Reverting local changes
+
 syncstate.prepare.request.localdeletes=Sending local deletes
 syncstate.send.request.localdeletes=Waiting for acknowledgement of local deletes
 syncstate.eval.response.localdeletes=Processing acknowledgement of local deletes

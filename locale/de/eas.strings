@@ -55,10 +55,14 @@ syncstate.prepare.request.remotechanges=Sende Anfrage bzgl. Änderungen
 syncstate.send.request.remotechanges=Warte auf aktualisierte Elemente
 syncstate.eval.response.remotechanges=Verarbeite aktualisierte Elemente
 
-syncstate.prepare.request.localchanges=Senden der lokal Änderungen
+syncstate.prepare.request.localchanges=Sende lokale Änderungen
 syncstate.send.request.localchanges=Warte auf Bestätigung der lokalen Änderungen
 syncstate.eval.response.localchanges=Verarbeite Bestätigung der lokalen Änderungen
 
+syncstate.prepare.request.revertlocalchanges=Prüfe lokale Änderungen
+syncstate.send.request.revertlocalchanges=Warte auf aktuelle Versionen
+syncstate.eval.response.revertlocalchanges=Lokale Änderungen werden verworfen
+
 syncstate.prepare.request.localdeletes=Sende die lokal gelöschten Elemente
-syncstate.send.request.localdeletes=Warte auf Bestätigung der lokal gelöschten Elemente
-syncstate.eval.response.localdeletes=Verarbeite die Bestätigung der lokal gelöschten Elemente
+syncstate.send.request.localdeletes=Warte auf Bestätigung lokal gelöschten Elemente
+syncstate.eval.response.localdeletes=Verarbeite Bestätigung lokal gelöschten Elemente

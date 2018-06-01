@@ -3,7 +3,7 @@ info.error=Error
 info.sync=Syncing
 
 status.notsyncronized=Account needs to be syncronized, at least one item is out of sync.
-status.needtorevert=Account needs to be syncronized to revert local changes (one-way-sync).
+status.needtorevert=Account needs to be syncronized to revert local changes (one-way sync).
 status.disabled=Account is not enabled, synchronization is disabled.
 status.notargets=Aborting Sync, because sync targets could not be created.
 status.nouserhost=Missing username and/or server. Please provide those values.
