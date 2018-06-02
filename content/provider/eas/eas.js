@@ -21,6 +21,7 @@ var eas = {
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abEditCardDialog.xul", "chrome://tbsync/content/provider/eas/overlays/abCardWindow.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/provider/eas/overlays/abCardWindow.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/provider/eas/overlays/addressbookoverlay.xul");
+        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messengercompose/messengercompose.xul", "chrome://tbsync/content/provider/eas/overlays/abContactPanelOverlay.xul");
     }),
 
 
@@ -699,7 +700,6 @@ var eas = {
 
         tbSync.setSyncState("prepare.request.getuserinfo", syncdata.account);
 
-        //request foldersync
         let wbxml = wbxmltools.createWBXML();
         wbxml.switchpage("Settings");
         wbxml.otag("Settings");
@@ -716,6 +716,36 @@ var eas = {
         let wbxmlData = eas.getDataFromResponse(response);
 
         eas.checkStatus(syncdata, wbxmlData,"Settings.Status");
+    }),
+
+    searchGAL: Task.async (function* (account, currentQuery)  {
+        if (!tbSync.db.getAccountSetting(account, "allowedEasCommands").split(",").includes("Search")) {
+            return null;
+        }
+
+        let wbxml = wbxmltools.createWBXML();
+        wbxml.switchpage("Search");
+        wbxml.otag("Search");
+            wbxml.otag("Store");
+                wbxml.atag("Name", "GAL");
+                wbxml.atag("Query", currentQuery);
+                wbxml.otag("Options");
+                    wbxml.atag("DeepTraversal");
+                    wbxml.atag("RebuildResults");
+                wbxml.ctag();
+            wbxml.ctag();
+        wbxml.ctag();
+
+        let syncdata = {};
+        syncdata.account = account;
+        syncdata.folderID = "";
+        syncdata.syncstate = "SearchingGAL";
+        
+            
+        let response = yield eas.sendRequest(wbxml.getBytes(), "Search", syncdata);
+        let wbxmlData = eas.getDataFromResponse(response);
+
+        return xmltools.nodeAsArray(wbxmlData.Search.Response.Store.Result);
     }),
 
     deleteFolder: Task.async (function* (syncdata)  {

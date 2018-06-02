@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<overlay 
+	id="addressbookoverlay" 
+	oninject="tbSync.eas.onInjectIntoContactPanel(window)"
+	onremove="tbSync.eas.onRemoveFromContactPanel(window)"
+	xmlns:html="http://www.w3.org/1999/xhtml">
+
+   <script type="application/javascript" src="chrome://tbsync/content/provider/eas/overlays/addressbookoverlay.js" />
+
+</overlay>        
