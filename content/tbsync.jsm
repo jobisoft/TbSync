@@ -43,8 +43,51 @@ if (!Date.prototype.toBasicISOString) {
   }());
 }
 
+//https://gist.github.com/eligrey/384583
+// object.watch
+if (!Object.prototype.watch) {
+	Object.defineProperty(Object.prototype, "watch", {
+		  enumerable: false
+		, configurable: true
+		, writable: false
+		, value: function (prop, handler) {
+			var
+			  oldval = this[prop]
+			, newval = oldval
+			, getter = function () {
+				return newval;
+			}
+			, setter = function (val) {
+				oldval = newval;
+				return newval = handler.call(this, prop, oldval, val);
+			}
+			;
+			
+			if (delete this[prop]) { // can't watch constants
+				Object.defineProperty(this, prop, {
+					  get: getter
+					, set: setter
+					, enumerable: true
+					, configurable: true
+				});
+			}
+		}
+	});
+}
 
-
+// object.unwatch
+if (!Object.prototype.unwatch) {
+	Object.defineProperty(Object.prototype, "unwatch", {
+		  enumerable: false
+		, configurable: true
+		, writable: false
+		, value: function (prop) {
+			var val = this[prop];
+			delete this[prop]; // remove accessors
+			this[prop] = val;
+		}
+	});
+}
 
 
 var tbSync = {
@@ -957,6 +1000,11 @@ var tbSync = {
                 
                 let folders = tbSync.db.findFoldersWithSetting("target", aParentDir.URI);
                 if (folders.length > 0) {
+
+                    //check if this is a temp search result card and ignore add
+                    let searchResultProvider = aItem.getProperty("X-Server-Searchresult", "");
+                    if (searchResultProvider) return;
+
                     let cardId = aItem.getProperty("EASID", "");
                     if (cardId) {
                         let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);

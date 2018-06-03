@@ -45,21 +45,32 @@ tbSync.eas.onBeforeInjectIntoAddressbook = function (window) {
 }
 
 tbSync.eas.onInjectIntoAddressbook = function (target, sidebar = false) {
-	if (target.document.getElementById("peopleSearchInput")) {
-        target.document.getElementById("peopleSearchInput").addEventListener("input", tbSync.eas.onSearchInputChanged, false);
-        target.document.getElementById("peopleSearchInput").addEventListener("blur", tbSync.eas.onSearchInputChanged, false);
+    let searchbox =  target.document.getElementById("peopleSearchInput");
+    if (searchbox) {
+        searchbox.addEventListener("input", tbSync.eas.onSearchInputChanged, false);
+        //let clearIcon = target.document.getAnonymousElementByAttribute(searchbox, "class", "textbox-search-clear");
+        //if (clearIcon) clearIcon.addEventListener("click", tbSync.eas.clearServerSearchResults, false);
+
+        //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/watch
+	searchbox.watch("value", function (id, oldv, newv) {if (newv == "") tbSync.eas.clearServerSearchResults(); return newv;});
     }
+         
     if (!sidebar) {
         if (target.document.getElementById("abResultsTree")) target.document.getElementById("abResultsTree").addEventListener("select", tbSync.eas.onResultsPaneSelectionChanged, false);
         tbSync.eas.onResultsPaneSelectionChanged();
     }
+    
 }
 
 tbSync.eas.onRemoveFromAddressbook = function (target, sidebar = false) {
-    if (target.document.getElementById("peopleSearchInput")) {
-        target.document.getElementById("peopleSearchInput").removeEventListener("input", tbSync.eas.onSearchInputChanged, false);
-        target.document.getElementById("peopleSearchInput").removeEventListener("blur", tbSync.eas.onSearchInputChanged, false);
+    let searchbox =  target.document.getElementById("peopleSearchInput");
+    if (searchbox) {
+        searchbox.removeEventListener("input", tbSync.eas.onSearchInputChanged, false);
+        //let clearIcon = target.document.getAnonymousElementByAttribute(searchbox, "class", "textbox-search-clear");
+        //if (clearIcon) clearIcon.removeEventListener("click", tbSync.eas.clearServerSearchResults, false);
+	searchbox.unwatch("value");
     }
+
     if (!sidebar) {
         if (target.document.getElementById("abResultsTree")) target.document.getElementById("abResultsTree").removeEventListener("select", tbSync.eas.onResultsPaneSelectionChanged, false);
     }
@@ -89,12 +100,33 @@ tbSync.eas.onResultsPaneSelectionChanged = function () {
     email3Box.hidden = true;
 }
 
-tbSync.eas.onSearchInputChanged = Task.async (function* () {
-    let targetWindow = window.document.getElementById("sidebar") ? window.document.getElementById("sidebar").contentWindow.wrappedJSObject : window;
+tbSync.eas.clearServerSearchResultsIfNeeded = function () {
+    let targetWindow = window.document.getElementById("sidebar") ? window.document.getElementById("sidebar").contentWindow.wrappedJSObject : window;    
+    let searchbox =  targetWindow.document.getElementById("peopleSearchInput");
+    tbSync.window.console.log('* CHANGE TO : '+searchbox.value+' **************************************************************');
+    if (searchbox && searchbox.value == "") tbSync.eas.clearServerSearchResults();
+}
 
+tbSync.eas.clearServerSearchResults = function () {
+    tbSync.window.console.log('* CLEARING **************************************************************');
+    let targetWindow = window.document.getElementById("sidebar") ? window.document.getElementById("sidebar").contentWindow.wrappedJSObject : window;
     let target = targetWindow.GetSelectedDirectory();
     let addressbook = tbSync.getAddressBookObject(target);
-    let query = targetWindow.document.getElementById("peopleSearchInput").value;
+    let oldresults = addressbook.getCardsFromProperty("X-Server-Searchresult", "EAS", true);
+    let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+    while (oldresults.hasMoreElements()) {
+        cardsToDelete.appendElement(oldresults.getNext(), "");
+    }
+    addressbook.deleteCards(cardsToDelete);    
+}
+
+tbSync.eas.onSearchInputChanged = Task.async (function* () {
+    let targetWindow = window.document.getElementById("sidebar") ? window.document.getElementById("sidebar").contentWindow.wrappedJSObject : window;
+    let searchbox =  targetWindow.document.getElementById("peopleSearchInput");
+    let query = searchbox.value;
+        
+    let target = targetWindow.GetSelectedDirectory();
+    let addressbook = tbSync.getAddressBookObject(target);
     
     let folders = tbSync.db.findFoldersWithSetting("target", target);
     if (folders.length>0) {
@@ -102,14 +134,8 @@ tbSync.eas.onSearchInputChanged = Task.async (function* () {
         if (tbSync.db.getAccountSetting(account, "allowedEasCommands").split(",").includes("Search")) {
 
             if (query.length<3) {
-                tbSync.window.console.log('* CLEAR **************************************************************');
                 //delete all old results
-                let oldresults = addressbook.getCardsFromProperty("X-Server-Searchresult", "EAS", true);
-                let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-                while (oldresults.hasMoreElements()) {
-                    cardsToDelete.appendElement(oldresults.getNext(), "");
-                }
-                addressbook.deleteCards(cardsToDelete);
+                tbSync.eas.clearServerSearchResults();
                 targetWindow.onEnterInSearchBar();
             } else {
                 nextQuery = query;                
@@ -122,16 +148,10 @@ tbSync.eas.onSearchInputChanged = Task.async (function* () {
                         nextQuery = "";
                         let results = yield tbSync.eas.searchGAL (account, currentQuery);
 
-                        tbSync.window.console.log('* CLEAR **************************************************************');
                         //delete all old results
-                        let oldresults = addressbook.getCardsFromProperty("X-Server-Searchresult", "EAS", true);
-                        let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-                        while (oldresults.hasMoreElements()) {
-                            cardsToDelete.appendElement(oldresults.getNext(), "");
-                        }
-                        addressbook.deleteCards(cardsToDelete);
+                        tbSync.eas.clearServerSearchResults();
 
-                        tbSync.window.console.log('* ADD **************************************************************');
+                        tbSync.window.console.log('* ADDING **************************************************************');
                         for (let count = 0; count < results.length; count++) {
                             if (results[count].Properties) {
                                 tbSync.window.console.log('Found contact:' + results[count].Properties.DisplayName);
