@@ -45,7 +45,10 @@ tbSync.eas.onBeforeInjectIntoAddressbook = function (window) {
 }
 
 tbSync.eas.onInjectIntoAddressbook = function (target, sidebar = false) {
-	if (target.document.getElementById("peopleSearchInput")) target.document.getElementById("peopleSearchInput").addEventListener("input", tbSync.eas.onSearchInputChanged, false);
+	if (target.document.getElementById("peopleSearchInput")) {
+        target.document.getElementById("peopleSearchInput").addEventListener("input", tbSync.eas.onSearchInputChanged, false);
+        target.document.getElementById("peopleSearchInput").addEventListener("blur", tbSync.eas.onSearchInputChanged, false);
+    }
     if (!sidebar) {
         if (target.document.getElementById("abResultsTree")) target.document.getElementById("abResultsTree").addEventListener("select", tbSync.eas.onResultsPaneSelectionChanged, false);
         tbSync.eas.onResultsPaneSelectionChanged();
@@ -53,7 +56,10 @@ tbSync.eas.onInjectIntoAddressbook = function (target, sidebar = false) {
 }
 
 tbSync.eas.onRemoveFromAddressbook = function (target, sidebar = false) {
-    if (target.document.getElementById("peopleSearchInput")) target.document.getElementById("peopleSearchInput").removeEventListener("input", tbSync.eas.onSearchInputChanged, false);
+    if (target.document.getElementById("peopleSearchInput")) {
+        target.document.getElementById("peopleSearchInput").removeEventListener("input", tbSync.eas.onSearchInputChanged, false);
+        target.document.getElementById("peopleSearchInput").removeEventListener("blur", tbSync.eas.onSearchInputChanged, false);
+    }
     if (!sidebar) {
         if (target.document.getElementById("abResultsTree")) target.document.getElementById("abResultsTree").removeEventListener("select", tbSync.eas.onResultsPaneSelectionChanged, false);
     }
@@ -87,49 +93,75 @@ tbSync.eas.onSearchInputChanged = Task.async (function* () {
     let targetWindow = window.document.getElementById("sidebar") ? window.document.getElementById("sidebar").contentWindow.wrappedJSObject : window;
 
     let target = targetWindow.GetSelectedDirectory();
+    let addressbook = tbSync.getAddressBookObject(target);
     let query = targetWindow.document.getElementById("peopleSearchInput").value;
+    
     let folders = tbSync.db.findFoldersWithSetting("target", target);
     if (folders.length>0) {
         let account = folders[0].account;
         if (tbSync.db.getAccountSetting(account, "allowedEasCommands").split(",").includes("Search")) {
 
-            if (query == "") {
-                //remove all gal entries from addressbooks
-            } else if (query.length>2) {
+            if (query.length<3) {
+                tbSync.window.console.log('* CLEAR **************************************************************');
+                //delete all old results
+                let oldresults = addressbook.getCardsFromProperty("X-Server-Searchresult", "EAS", true);
+                let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+                while (oldresults.hasMoreElements()) {
+                    cardsToDelete.appendElement(oldresults.getNext(), "");
+                }
+                addressbook.deleteCards(cardsToDelete);
+                targetWindow.onEnterInSearchBar();
+            } else {
                 nextQuery = query;                
                 if (!busy) {
                     busy = true;
                     while (busy) {
+
                         yield tbSync.sleep(1000);
                         let currentQuery = nextQuery;
                         nextQuery = "";
+                        let results = yield tbSync.eas.searchGAL (account, currentQuery);
 
-        /*
-gal:DisplayName
-gal:Phone
-gal:Office
-gal:Title
-gal:Company
-gal:Alias
-gal:FirstName
-gal:LastName
-gal:HomePhone
-gal:MobilePhone
-gal:EmailAddress
-gal:Picture
-gal:Data
-        */
-                        //let newItem = eas.sync[syncdata.type].createItem();
+                        tbSync.window.console.log('* CLEAR **************************************************************');
+                        //delete all old results
+                        let oldresults = addressbook.getCardsFromProperty("X-Server-Searchresult", "EAS", true);
+                        let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+                        while (oldresults.hasMoreElements()) {
+                            cardsToDelete.appendElement(oldresults.getNext(), "");
+                        }
+                        addressbook.deleteCards(cardsToDelete);
 
-
-                        let results = yield tbSync.eas.searchGAL (account, currentQuery); 
-                        tbSync.window.console.log('***************************************************************');
+                        tbSync.window.console.log('* ADD **************************************************************');
                         for (let count = 0; count < results.length; count++) {
                             if (results[count].Properties) {
-                                //add[count].ClientId
                                 tbSync.window.console.log('Found contact:' + results[count].Properties.DisplayName);
+                                let newItem = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
+                                newItem.setProperty("X-Server-Searchresult", "EAS");
+                                newItem.setProperty("FirstName", results[count].Properties.FirstName);
+                                newItem.setProperty("LastName", results[count].Properties.LastName);
+                                newItem.setProperty("DisplayName", results[count].Properties.DisplayName + " (Result)");
+                                newItem.setProperty("PrimaryEmail", results[count].Properties.EmailAddress);
+
+                                newItem.setProperty("CellularNumber", results[count].Properties.MobilePhone);
+                                newItem.setProperty("HomePhone", results[count].Properties.HomePhone);
+                                newItem.setProperty("WorkPhone", results[count].Properties.Phone);
+                                newItem.setProperty("Company", results[count].Properties.Company);
+                                newItem.setProperty("Department", results[count].Properties.Title);
+                                newItem.setProperty("JobTitle", results[count].Properties.Office);
+
+                                /* unmapped:
+                                                        gal:
+                                                        gal:Office
+                                                        gal:Title
+                                                        gal:Company
+                                                        gal:Picture
+                                                        gal:Data
+                                            */
+
+                                addressbook.addCard(newItem);
                             }
                         }   
+                        targetWindow.onEnterInSearchBar();
                         if (nextQuery == "") busy = false;
                     }
                 }
