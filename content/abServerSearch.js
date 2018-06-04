@@ -17,7 +17,10 @@ serverSearch.eventHandlerWindowReference = function (window) {
         switch(event.type) {
             case 'input':
                 serverSearch.onSearchInputChanged(this.window);
-            break;
+                break;
+            case "select":
+                serverSearch.clearServerSearchResults(this.window);
+                break;
         }
     };
     return this;
@@ -27,21 +30,31 @@ serverSearch.eventHandlerWindowReference = function (window) {
 //in the window scope -> window.tbSync_XY
 
 serverSearch.onInjectIntoAddressbook = function (window) {
+    window.tbSync_eventHandler = serverSearch.eventHandlerWindowReference(window);
+    
     let searchbox =  window.document.getElementById("peopleSearchInput");
     if (searchbox) {
-        window.tbSync_eventHandler = serverSearch.eventHandlerWindowReference(window);
-        window.tbSync_eventHandler.addEventListener(searchbox, "input",false);
-        
+        window.tbSync_eventHandler.addEventListener(searchbox, "input", false);
         //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/watch
         searchbox.watch("value", function (id, oldv, newv) {if (newv == "") serverSearch.clearServerSearchResults(window); return newv;});
+    }
+    
+    let dirtree = window.document.getElementById("dirTree");
+    if (dirtree) {
+        window.tbSync_eventHandler.addEventListener(dirtree, "select", false);        
     }
 }
 
 serverSearch.onRemoveFromAddressbook = function (window) {
     let searchbox =  window.document.getElementById("peopleSearchInput");
     if (searchbox) {
-        window.tbSync_eventHandler.removeEventListener(searchbox, "input",false);
+        window.tbSync_eventHandler.removeEventListener(searchbox, "input", false);
         searchbox.unwatch("value");
+    }
+
+    let dirtree = window.document.getElementById("dirTree");
+    if (dirtree) {
+        window.tbSync_eventHandler.removeEventListener(dirtree, "select", false);        
     }
 }
 
@@ -67,7 +80,7 @@ serverSearch.onSearchInputChanged = Task.async (function* (window) {
     if (folders.length>0) {
         let account = folders[0].account;
         let provider = tbSync.db.getAccountSetting(account, "provider");
-        if (tbSync.db.getAccountSetting(account, "allowedEasCommands").split(",").includes("Search") && tbSync[provider].abServerSearch) {
+        if (tbSync[provider].abServerSearch) {
 
             if (query.length<3) {
                 //delete all old results
