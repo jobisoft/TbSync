@@ -48,7 +48,7 @@ serverSearch.onRemoveFromAddressbook = function (window) {
 serverSearch.clearServerSearchResults = function (window) {
     let target = window.GetSelectedDirectory();
     let addressbook = tbSync.getAddressBookObject(target);
-    let oldresults = addressbook.getCardsFromProperty("X-Server-Searchresult", "EAS", true);
+    let oldresults = addressbook.getCardsFromProperty("X-Server-Searchresult", "TbSync", true);
     let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
     while (oldresults.hasMoreElements()) {
         cardsToDelete.appendElement(oldresults.getNext(), "");
@@ -66,7 +66,8 @@ serverSearch.onSearchInputChanged = Task.async (function* (window) {
     let folders = tbSync.db.findFoldersWithSetting("target", target);
     if (folders.length>0) {
         let account = folders[0].account;
-        if (tbSync.db.getAccountSetting(account, "allowedEasCommands").split(",").includes("Search")) {
+        let provider = tbSync.db.getAccountSetting(account, "provider");
+        if (tbSync.db.getAccountSetting(account, "allowedEasCommands").split(",").includes("Search") && tbSync[provider].abServerSearch) {
 
             if (query.length<3) {
                 //delete all old results
@@ -82,7 +83,7 @@ serverSearch.onSearchInputChanged = Task.async (function* (window) {
                         yield tbSync.sleep(1000);
                         let currentQuery = window.tbSync_serverSearchNextQuery;
                         window.tbSync_serverSearchNextQuery = "";
-                        let results = yield tbSync.eas.searchGAL (account, currentQuery);
+                        let results = yield tbSync[provider].abServerSearch (account, currentQuery);
 
                         //delete all old results
                         serverSearch.clearServerSearchResults(window);
@@ -91,7 +92,7 @@ serverSearch.onSearchInputChanged = Task.async (function* (window) {
                             if (results[count].Properties) {
                                 //tbSync.window.console.log('Found contact:' + results[count].Properties.DisplayName);
                                 let newItem = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-                                newItem.setProperty("X-Server-Searchresult", "EAS");
+                                newItem.setProperty("X-Server-Searchresult", "TbSync");
                                 newItem.setProperty("FirstName", results[count].Properties.FirstName);
                                 newItem.setProperty("LastName", results[count].Properties.LastName);
                                 newItem.setProperty("DisplayName", results[count].Properties.DisplayName + " (Result)");

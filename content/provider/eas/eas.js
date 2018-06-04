@@ -717,7 +717,7 @@ var eas = {
         eas.checkStatus(syncdata, wbxmlData,"Settings.Status");
     }),
 
-    searchGAL: Task.async (function* (account, currentQuery)  {
+    abServerSearch: Task.async (function* (account, currentQuery)  {
         if (!tbSync.db.getAccountSetting(account, "allowedEasCommands").split(",").includes("Search")) {
             return null;
         }
