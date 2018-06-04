@@ -15,12 +15,12 @@
     </toolbarpalette>
 
     <menupopup id="tbsync.statusmenu">
-        <menuitem label="&popup.opensettings;" onclick="tbSync.openManagerWindow(event);" />
+        <menuitem label="&popup.opensettings;" oncommand="tbSync.openManagerWindow(event);" />
     </menupopup>
     
     <statusbarpanel id="tbsync.status" appendto="status-bar" label="TbSync" context="tbsync.statusmenu" onclick="tbSync.openManagerWindow(event);" />
 
     <!--menuitem id="tbsync.taskPopupEntry" label="&menu.settingslabel;" appendto="taskPopup" onclick="tbSync.openManagerWindow(event);" / -->
-    <menuitem id="tbsync.accountmgrEntry" label="&menu.settingslabel;" insertbefore="menu_accountmgr" onclick="tbSync.openManagerWindow(event);" />
+    <menuitem id="tbsync.accountmgrEntry" label="&menu.settingslabel;" insertbefore="menu_accountmgr" oncommand="tbSync.openManagerWindow(event);" />
 
 </overlay>        
