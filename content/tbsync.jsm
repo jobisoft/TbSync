@@ -129,7 +129,10 @@ var tbSync = {
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate", false);
         
         // Inject UI before init finished, to give user the option to see Oops message and report bug
-        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/messenger/messenger.xul");        
+        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
+        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messengercompose/messengercompose.xul", "chrome://tbsync/content/overlays/messengercompose.xul");
+        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/abServerSearch.xul");
+        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abContactsPanel.xul", "chrome://tbsync/content/overlays/abServerSearch.xul");
         tbSync.overlayManager.injectAllOverlays(tbSync.window);
         
         //print information about Thunderbird version and OS
@@ -137,6 +140,7 @@ var tbSync = {
         
         // load common subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
         tbSync.includeJS("chrome://tbsync/content/db.js");
+        tbSync.includeJS("chrome://tbsync/content/abServerSearch.js");
 
         //init DB
         yield tbSync.db.init();

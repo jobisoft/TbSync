@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <overlay 
-	id="addressbookoverlay" 
-	onbeforeinject="tbSync.eas.onBeforeInjectIntoAddressbook(window)"
+	id="abOverlay" 
 	oninject="tbSync.eas.onInjectIntoAddressbook(window)"
 	onremove="tbSync.eas.onRemoveFromAddressbook(window)"
 	xmlns:html="http://www.w3.org/1999/xhtml">

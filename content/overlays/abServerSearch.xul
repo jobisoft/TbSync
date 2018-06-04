@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<overlay 
+	id="abServerSearchOverlay" 
+	oninject="tbSync.serverSearch.onInjectIntoAddressbook(window)"
+	onremove="tbSync.serverSearch.onRemoveFromAddressbook(window)"
+	xmlns:html="http://www.w3.org/1999/xhtml">
+
+</overlay>        
