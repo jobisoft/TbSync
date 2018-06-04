@@ -80,6 +80,7 @@ serverSearch.onSearchInputChanged = Task.async (function* (window) {
     if (folders.length>0) {
         let account = folders[0].account;
         let provider = tbSync.db.getAccountSetting(account, "provider");
+        let accountname = tbSync.db.getAccountSetting(account, "accountname");
         if (tbSync[provider].abServerSearch) {
 
             if (query.length<3) {
@@ -108,7 +109,7 @@ serverSearch.onSearchInputChanged = Task.async (function* (window) {
                                 newItem.setProperty("X-Server-Searchresult", "TbSync");
                                 newItem.setProperty("FirstName", results[count].Properties.FirstName);
                                 newItem.setProperty("LastName", results[count].Properties.LastName);
-                                newItem.setProperty("DisplayName", results[count].Properties.DisplayName + " (Result)");
+                                newItem.setProperty("DisplayName", results[count].Properties.DisplayName + " ("+ accountname +")");
                                 newItem.setProperty("PrimaryEmail", results[count].Properties.EmailAddress);
 
                                 newItem.setProperty("CellularNumber", results[count].Properties.MobilePhone);
