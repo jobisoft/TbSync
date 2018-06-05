@@ -14,7 +14,7 @@ let onLoadObserver = {
             if (window) {
                 //init TbSync
                 window.tbSync = tbSync;
-                tbSync.init(window); 
+                breakpoint(tbSync.prefSettings, 9);tbSync.init(window); 
             } else {
                 tbSync.dump("FAIL", "Could not init TbSync, because mail:3pane window not found.");
             }
@@ -24,12 +24,16 @@ let onLoadObserver = {
 
 let onLoadDoneObserver = {
     observe: function(aSubject, aTopic, aData) {        
-        forEachOpenWindow(loadIntoWindow);  
-        Services.wm.addListener(WindowListener);    
+        breakpoint(tbSync.prefSettings, 10);forEachOpenWindow(loadIntoWindow);  
+        breakpoint(tbSync.prefSettings, 11);Services.wm.addListener(WindowListener);
+        breakpoint(tbSync.prefSettings, 12);        
     }
 }
 
-
+function breakpoint(branch, v) {
+    let u = branch.getIntPref("debug.breakpoint");
+    if (u>0 && v>=u) throw "TbSync: Aborted after breakpoint <"+v+">";
+}
 
 function install(data, reason) {
 }
@@ -50,6 +54,8 @@ function startup(data, reason) {
     branch.setCharPref("provider.eas", "Exchange Active Sync");
     branch.setCharPref("provider.dav", "CalDAV/CardDAV (sabre/dav, ownCloud, Nextcloud)");
 
+    branch.setIntPref("debug.breakpoint", 0);
+
     branch.setBoolPref("log.toconsole", false);
     branch.setBoolPref("log.tofile", false);
     branch.setIntPref("log.userdatalevel", 0); //0 - metadata (no incomming xml/wbxml, only parsed data without userdata (except failing items))   1 - including userdata,  2 - raw xml , 3 - raw wbxml
@@ -61,19 +67,19 @@ function startup(data, reason) {
     //tzpush
     branch.setBoolPref("eas.use_tzpush_contactsync_code", false);
 
-    Components.utils.import("chrome://tbsync/content/tbsync.jsm");
-    Components.utils.import("chrome://tbsync/content/OverlayManager.jsm");
+    breakpoint(Services.prefs.getBranch("extensions.tbsync."), 1);Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+    breakpoint(tbSync.prefSettings, 2);Components.utils.import("chrome://tbsync/content/OverlayManager.jsm");
 
     //Map local writeAsyncJSON into tbSync
-    tbSync.writeAsyncJSON = writeAsyncJSON;
+    breakpoint(tbSync.prefSettings, 3);tbSync.writeAsyncJSON = writeAsyncJSON;
     
     //add startup observers
-    Services.obs.addObserver(onLoadObserver, "mail-startup-done", false);
-    Services.obs.addObserver(onLoadObserver, "tbsync.init", false);
-    Services.obs.addObserver(onLoadDoneObserver, "tbsync.init.done", false);
+    breakpoint(tbSync.prefSettings, 4);Services.obs.addObserver(onLoadObserver, "mail-startup-done", false);
+    breakpoint(tbSync.prefSettings, 5);Services.obs.addObserver(onLoadObserver, "tbsync.init", false);
+    breakpoint(tbSync.prefSettings, 6);Services.obs.addObserver(onLoadDoneObserver, "tbsync.init.done", false);
 
-    tbSync.addonData = data;
-    tbSync.overlayManager = new OverlayManager(data, {verbose:0});
+    breakpoint(tbSync.prefSettings, 7);tbSync.addonData = data;
+    breakpoint(tbSync.prefSettings, 8);tbSync.overlayManager = new OverlayManager(data, {verbose:0});
 
     if (reason != APP_STARTUP) {
         //during startup, we wait until mail-startup-done fired, for all other reasons we need to fire our own init
