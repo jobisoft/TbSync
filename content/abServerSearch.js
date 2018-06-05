@@ -69,12 +69,14 @@ serverSearch.onRemoveFromAddressbook = function (window) {
 serverSearch.clearServerSearchResults = function (window) {
     let target = window.GetSelectedDirectory();
     let addressbook = tbSync.getAddressBookObject(target);
-    let oldresults = addressbook.getCardsFromProperty("X-Server-Searchresult", "TbSync", true);
-    let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-    while (oldresults.hasMoreElements()) {
-        cardsToDelete.appendElement(oldresults.getNext(), "");
+    if (addressbook) {
+        let oldresults = addressbook.getCardsFromProperty("X-Server-Searchresult", "TbSync", true);
+        let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+        while (oldresults.hasMoreElements()) {
+            cardsToDelete.appendElement(oldresults.getNext(), "");
+        }
+        addressbook.deleteCards(cardsToDelete);
     }
-    addressbook.deleteCards(cardsToDelete);    
 }
 
 serverSearch.onSearchInputChanged = Task.async (function* (window) {
