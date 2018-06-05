@@ -23,6 +23,19 @@ var xmltools = {
         return a;
     },
 
+    hasWbxmlDataField: function(wbxmlData, path) {
+        if (wbxmlData) {		
+            let pathElements = path.split(".");
+            let data = wbxmlData;
+            for (let x = 0; x < pathElements.length; x++) {
+                if (data[pathElements[x]]) data = data[pathElements[x]];
+                else return false;
+            }
+            return true;
+        }
+        return false;
+    },
+
     getWbxmlDataField: function(wbxmlData,path) {
         if (wbxmlData) {		
             let pathElements = path.split(".");
