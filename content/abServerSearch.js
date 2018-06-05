@@ -1,5 +1,8 @@
 Components.utils.import("resource://gre/modules/Task.jsm");
 
+//this is used in multiple places (addressbook + contactsidebar) so we cannot use objects of tbSync to store states, but need to store distinct variables
+//in the window scope -> window.tbSync_XY
+
 var serverSearch = {};
 
 serverSearch.eventHandlerWindowReference = function (window) {
@@ -26,17 +29,22 @@ serverSearch.eventHandlerWindowReference = function (window) {
     return this;
 }
 
-//this is used in multiple places (addressbook + contactsidebar) so we cannot use objects of tbSync to store states, but need to store distinct variables
-//in the window scope -> window.tbSync_XY
+serverSearch.searchValuePoll = function (window, searchbox) {
+    let value = searchbox.value;
+    if (window.tbSync_searchValue != "" && value == "") {
+        serverSearch.clearServerSearchResults(window);
+    }
+    window.tbSync_searchValue = value;
+}
 
 serverSearch.onInjectIntoAddressbook = function (window) {
     window.tbSync_eventHandler = serverSearch.eventHandlerWindowReference(window);
-    
+	
     let searchbox =  window.document.getElementById("peopleSearchInput");
     if (searchbox) {
+        window.tbSync_searchValue = searchbox.value;
+        window.tbSync_searchValuePollHandler = window.setInterval(function(){serverSearch.searchValuePoll(window, searchbox)}, 200);
         window.tbSync_eventHandler.addEventListener(searchbox, "input", false);
-        //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/watch
-        searchbox.watch("value", function (id, oldv, newv) {if (newv == "") serverSearch.clearServerSearchResults(window); return newv;});
     }
     
     let dirtree = window.document.getElementById("dirTree");
@@ -49,7 +57,7 @@ serverSearch.onRemoveFromAddressbook = function (window) {
     let searchbox =  window.document.getElementById("peopleSearchInput");
     if (searchbox) {
         window.tbSync_eventHandler.removeEventListener(searchbox, "input", false);
-        searchbox.unwatch("value");
+        window.clearInterval(window.tbSync_searchValuePollHandler);
     }
 
     let dirtree = window.document.getElementById("dirTree");
