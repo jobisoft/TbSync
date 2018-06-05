@@ -69,7 +69,7 @@ serverSearch.onRemoveFromAddressbook = function (window) {
 serverSearch.clearServerSearchResults = function (window) {
     let target = window.GetSelectedDirectory();
     let addressbook = tbSync.getAddressBookObject(target);
-    if (addressbook) {
+    if (addressbook && addressbook.getCardsFromProperty) {
         let oldresults = addressbook.getCardsFromProperty("X-Server-Searchresult", "TbSync", true);
         let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
         while (oldresults.hasMoreElements()) {
