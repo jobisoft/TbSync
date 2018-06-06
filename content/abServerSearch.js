@@ -68,26 +68,33 @@ serverSearch.onRemoveFromAddressbook = function (window) {
 
 serverSearch.clearServerSearchResults = function (window) {
     let target = window.GetSelectedDirectory();
+    if (target == "moz-abdirectory://?") return; //global search not yet(?) supported
+    
     let addressbook = tbSync.getAddressBookObject(target);
-    if (addressbook && addressbook.getCardsFromProperty) {
-        let oldresults = addressbook.getCardsFromProperty("X-Server-Searchresult", "TbSync", true);
-        let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-        while (oldresults.hasMoreElements()) {
-            cardsToDelete.appendElement(oldresults.getNext(), "");
+    if (addressbook) {
+        try {
+            let oldresults = addressbook.getCardsFromProperty("X-Server-Searchresult", "TbSync", true);
+            let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+            while (oldresults.hasMoreElements()) {
+                cardsToDelete.appendElement(oldresults.getNext(), "");
+            }
+            addressbook.deleteCards(cardsToDelete);
+        } catch (e) {
+            //if  getCardsFromProperty is not implemented, do nothing
         }
-        addressbook.deleteCards(cardsToDelete);
     }
 }
 
 serverSearch.onSearchInputChanged = Task.async (function* (window) {
-    let searchbox =  window.document.getElementById("peopleSearchInput");
-    let query = searchbox.value;
-        
     let target = window.GetSelectedDirectory();
-    let addressbook = tbSync.getAddressBookObject(target);
-    
+    if (target == "moz-abdirectory://?") return; //global search not yet(?) supported
+	
     let folders = tbSync.db.findFoldersWithSetting("target", target);
     if (folders.length>0) {
+        let searchbox =  window.document.getElementById("peopleSearchInput");
+        let query = searchbox.value;        
+        let addressbook = tbSync.getAddressBookObject(target);
+
         let account = folders[0].account;
         let provider = tbSync.db.getAccountSetting(account, "provider");
         let accountname = tbSync.db.getAccountSetting(account, "accountname");
