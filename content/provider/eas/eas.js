@@ -1541,7 +1541,7 @@ var eas = {
 
         //check if all is fine (not bad)
         if (status == "1") {
-            return true;
+            return "";
         }
 
         tbSync.dump("wbxml status check", type + ": " + fullpath + " = " + status);
@@ -1556,18 +1556,20 @@ var eas = {
                 throw eas.finishSync(type+"("+status+")", eas.flags.resyncFolder);
             
             case "Sync:4":
-                if (allowSoftFail) return false;
+                if (allowSoftFail) return "Mailformed request. Bug in TbSync?";
                 throw eas.finishSync("ServerRejectedRequest");                            
             
             case "Sync:5":
-                if (allowSoftFail) return false;
+                if (allowSoftFail) return "Temporary server issues or invalid item";
                 throw eas.finishSync("TempServerError");                            
 
             case "Sync:6":
                 //Server does not accept one of our items or the entire request. If allowSoftFail is set, continue syncing
-                if (allowSoftFail) return false;
+                if (allowSoftFail) return "Invalid item! Mandatory fields missing? Dublicate item?";
                 throw eas.finishSync("ServerRejectedRequest");                            
 
+            case "Sync:7": //The client has changed an item for which the conflict policy indicates that the server's changes take precedence.
+                return "";
         
             case "Sync:8": // Object not found - takeTargetOffline and remove folder
                 tbSync.dump("wbxml status", "Server reports <object not found> (" +  tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "), keeping local copy and removing folder.");
@@ -1584,6 +1586,9 @@ var eas = {
                     syncdata.folderID = "";
                 }
                 throw eas.finishSync();
+
+            case "Sync:9": //User account could be out of disk space, also send if no write permission (TODO)
+                return "";
 
             case "Sync:12": /*
                         Perform a FolderSync command and then retry the Sync command. (is "resync" here)
@@ -1637,6 +1642,7 @@ var eas = {
             
             default:
                 tbSync.dump("wbxml status", "Server reports unhandled status <" + fullpath + " = " + status + ">. Aborting Sync.");
+                if (allowSoftFail) return "Server reports unhandled status <" + fullpath + " = " + status + ">";
                 throw eas.finishSync("wbxmlerror::" + fullpath + " = " + status, eas.flags.abortWithError);
 
         }		

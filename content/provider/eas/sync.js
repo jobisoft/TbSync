@@ -147,7 +147,7 @@ eas.sync = {
                                             wbxml.ctag();
                                             c++;
                                         } else {
-                                            eas.sync.updateFailedItems(syncdata, "forbidden " + eas.sync.getEasItemType(items[0]) +" item in " + syncdata.type + " folder", items[0]);
+                                            eas.sync.updateFailedItems(syncdata, "forbidden " + eas.sync.getEasItemType(items[0]) +" item in " + syncdata.type + " folder", items[0].id, items[0].icalString);
                                             e++;
                                         }
                                         break;
@@ -167,7 +167,7 @@ eas.sync = {
                                             changedItems.push(changes[i].id);
                                             c++;
                                         } else {
-                                            eas.sync.updateFailedItems(syncdata, "forbidden " + eas.sync.getEasItemType(items[0]) + " item in " + syncdata.type + " folder", items[0]);
+                                            eas.sync.updateFailedItems(syncdata, "forbidden " + eas.sync.getEasItemType(items[0]) + " item in " + syncdata.type + " folder", items[0].id, items[0].icalString);
                                             e++;
                                         }
                                         break;
@@ -463,41 +463,22 @@ eas.sync = {
     }),
 
 
-    updateFailedItems: function (syncdata, cause, item, status = "") {
-        //this is a special treatment for xj25vm (horde 5.1.10 does not accept titles longer than 250) - the specs do not allow titles larger than 300
-        if (item.title && item.title.length>250 && cause == "invalid XML") cause = "title longer than 250"
-        
-        switch (status) {
-            case "4": 
-                cause = "Mailformed request. Bug in TbSync?";
-                break;
-            case "5": 
-                cause = "Temporary server issues or invalid item";
-                break;
-            case "6":
-                cause = "Invalid item! Mandatory fields missing? Dublicate item?";
-                break;
-            case "":
-                break;
-            default:
-                cause = cause + " (status "+status+")";
-        }
-        
+    updateFailedItems: function (syncdata, cause, id, data) {                
         //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
-        if (syncdata.failedItems.includes(item.id)) {
+        if (syncdata.failedItems.includes(id)) {
             let types = [];
             for (let t in syncdata.failedItemTypes) types.push(syncdata.failedItemTypes[t] + "x <" + t + ">");
             if (syncdata.done>0) throw eas.finishSync("ServerRejectedSomeItems::"+types.toString()+"::"+syncdata.done);                            
             throw eas.finishSync("ServerRejectedAllItems::"+types.toString());                            
         } else {
             //the extra parameter true will re-add the item to the end of the changelog
-            db.removeItemFromChangeLog(syncdata.targetId, item.id, true);                        
-            syncdata.failedItems.push(item.id);
+            db.removeItemFromChangeLog(syncdata.targetId, id, true);                        
+            syncdata.failedItems.push(id);
 
             if (!syncdata.failedItemTypes[cause]) syncdata.failedItemTypes[cause] = 1; 
             else syncdata.failedItemTypes[cause]++;
             
-            tbSync.dump("Bad item skipped <"+cause+">", item.icalString);
+            tbSync.dump("Bad item skipped <"+cause+">", "\n" + data);
         }
     },
 
@@ -520,9 +501,10 @@ eas.sync = {
                     if (foundItems.length > 0) {
 
                         //Check status, stop sync if bad, allow soft fail
-                        if (!eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status", true)) {
+                        let errorcause = eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status", true);
+                        if (errorcause !== "") {
                             //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
-                            eas.sync.updateFailedItems(syncdata, "invalid XML", foundItems[0], add[count].Status);
+                            eas.sync.updateFailedItems(syncdata, errorcause, foundItems[0].id, foundItems[0].icalString);
                         } else {
                             let newItem = foundItems[0].clone();
                             newItem.id = add[count].ServerId;
@@ -542,9 +524,10 @@ eas.sync = {
                     if (foundItems.length > 0) {
 
                         //Check status, stop sync if bad, allow soft fail
-                        if (!eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status", true)) {
+                        let errorcause = eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status", true);
+                        if (errorcause !== "") {
                             //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
-                            eas.sync.updateFailedItems(syncdata, "invalid XML", foundItems[0], upd[count].Status);
+                            eas.sync.updateFailedItems(syncdata, errorcause, foundItems[0].id, foundItems[0].icalString);
                             //also remove from changedItems
                             let p = changedItems.indexOf(upd[count].ServerId);
                             if (p>-1) changedItems.splice(p,1);
@@ -556,7 +539,7 @@ eas.sync = {
                 //looking for deletions 
                 let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Delete);
                 for (let count = 0; count < del.length; count++) {
-                    //Check status, stop sync if bad (statusIsBad will initiate a resync or finish the sync properly)
+                    //What can we do about failed deletes? For now, throw and invalidate sync status (TODO)
                     eas.checkStatus(syncdata, del[count],"Status","Sync.Collections.Collection.Responses.Delete["+count+"].Status");
                 }
                 
