@@ -148,8 +148,8 @@ var tbSyncAccountSettings = {
                 }
                 
                 tbSyncAccountSettings.loadSettings();
-                Services.obs.notifyObservers(null, "tbsync.changedSyncstate", aData);
             }
+            Services.obs.notifyObservers(null, "tbsync.changedSyncstate", aData);
         }
     },
 
