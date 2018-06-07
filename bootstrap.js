@@ -14,7 +14,8 @@ let onLoadObserver = {
             if (window) {
                 //init TbSync
                 window.tbSync = tbSync;
-                breakpoint(tbSync.prefSettings, 9);tbSync.init(window); 
+                tbSync.breakpoint(9);
+                tbSync.init(window); 
             } else {
                 tbSync.dump("FAIL", "Could not init TbSync, because mail:3pane window not found.");
             }
@@ -24,15 +25,9 @@ let onLoadObserver = {
 
 let onLoadDoneObserver = {
     observe: function(aSubject, aTopic, aData) {        
-        breakpoint(tbSync.prefSettings, 10);forEachOpenWindow(loadIntoWindow);  
-        breakpoint(tbSync.prefSettings, 11);Services.wm.addListener(WindowListener);
-        breakpoint(tbSync.prefSettings, 12);        
+        forEachOpenWindow(loadIntoWindow);  
+        Services.wm.addListener(WindowListener);
     }
-}
-
-function breakpoint(branch, v) {
-    let u = branch.getIntPref("debug.breakpoint");
-    if (u>0 && v>=u) throw "TbSync: Aborted after breakpoint <"+v+">";
 }
 
 function install(data, reason) {
@@ -68,19 +63,19 @@ function startup(data, reason) {
     //tzpush
     branch.setBoolPref("eas.use_tzpush_contactsync_code", false);
 
-    breakpoint(Services.prefs.getBranch("extensions.tbsync."), 1);Components.utils.import("chrome://tbsync/content/tbsync.jsm");
-    breakpoint(tbSync.prefSettings, 2);Components.utils.import("chrome://tbsync/content/OverlayManager.jsm");
+    Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+    Components.utils.import("chrome://tbsync/content/OverlayManager.jsm");
 
     //Map local writeAsyncJSON into tbSync
-    breakpoint(tbSync.prefSettings, 3);tbSync.writeAsyncJSON = writeAsyncJSON;
+    tbSync.writeAsyncJSON = writeAsyncJSON;
     
     //add startup observers
-    breakpoint(tbSync.prefSettings, 4);Services.obs.addObserver(onLoadObserver, "mail-startup-done", false);
-    breakpoint(tbSync.prefSettings, 5);Services.obs.addObserver(onLoadObserver, "tbsync.init", false);
-    breakpoint(tbSync.prefSettings, 6);Services.obs.addObserver(onLoadDoneObserver, "tbsync.init.done", false);
+    Services.obs.addObserver(onLoadObserver, "mail-startup-done", false);
+    Services.obs.addObserver(onLoadObserver, "tbsync.init", false);
+    Services.obs.addObserver(onLoadDoneObserver, "tbsync.init.done", false);
 
-    breakpoint(tbSync.prefSettings, 7);tbSync.addonData = data;
-    breakpoint(tbSync.prefSettings, 8);tbSync.overlayManager = new OverlayManager(data, {verbose:0});
+    tbSync.addonData = data;
+    tbSync.overlayManager = new OverlayManager(data, {verbose:0});
 
     if (reason != APP_STARTUP) {
         //during startup, we wait until mail-startup-done fired, for all other reasons we need to fire our own init
