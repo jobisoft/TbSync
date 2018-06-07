@@ -11,7 +11,7 @@ eas.sync.Contacts = {
         };
         
         //actually add the card
-        item.card = card ? card : Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);;
+        item.card = card ? card : Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
                     
         return item;
     },

@@ -55,6 +55,7 @@ function startup(data, reason) {
     branch.setCharPref("provider.dav", "CalDAV/CardDAV (sabre/dav, ownCloud, Nextcloud)");
 
     branch.setIntPref("debug.breakpoint", 0);
+    branch.setBoolPref("debug.testoptions", false);
 
     branch.setBoolPref("log.toconsole", false);
     branch.setBoolPref("log.tofile", false);

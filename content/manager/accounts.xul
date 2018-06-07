@@ -80,6 +80,27 @@
                                     label="&pref.SyncAll;"
                                     oncommand="tbSync.syncAccount('sync');"/>
                             <menuseparator id="accountActionsSeparator"/>
+                            <menuitem id="accountActionsDebugToggleAll"
+                                    class="menuitem-iconic"
+                                    label="Debug Toggle All"
+                                    hidden="true"
+                                    oncommand="tbSyncAccounts.debugToggleAll();"/>
+                            <menuitem id="accountActionsDebugAdd1"
+                                    class="menuitem-iconic"
+                                    label="Debug Add 1"
+                                    hidden="true"
+                                    oncommand="tbSyncAccounts.debugAdd(1);"/>
+                            <menuitem id="accountActionsDebugAdd10"
+                                    class="menuitem-iconic"
+                                    label="Debug Add 10"
+                                    hidden="true"
+                                    oncommand="tbSyncAccounts.debugAdd(10);"/>
+                            <menuitem id="accountActionsDebugMod"
+                                    class="menuitem-iconic"
+                                    label="Debug Mod"
+                                    hidden="true"
+                                    oncommand="tbSyncAccounts.debugMod();"/>
+                            <menuseparator id="accountActionsSeparatorDebug" hidden="true"/>
                             <menuitem id="accountActionsDeleteAccount"
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/del16.png"

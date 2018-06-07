@@ -196,7 +196,7 @@ var eas = {
             //just set the specified folder to pending
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", "pending");
         } else {
-            //scan all folders ans set the enabled ones to pending
+            //scan all folders and set the enabled ones to pending
             tbSync.setSyncState("prepare.request.folders", syncdata.account); 
             let foldersynckey = tbSync.db.getAccountSetting(syncdata.account, "foldersynckey");
             //legacy fallback

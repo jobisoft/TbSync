@@ -439,7 +439,7 @@ var tbSync = {
             tbSync.syncDataObj[account] = {};
         }
     
-    tbSync.syncDataObj[account].account = account;
+        tbSync.syncDataObj[account].account = account;
     },
     
     getSyncData: function (account, field = "") {
@@ -643,7 +643,7 @@ var tbSync = {
         });
     },
 
-	//taken from https://stackoverflow.com/questions/6832596/how-to-compare-software-version-number-using-js-only-number
+    //taken from https://stackoverflow.com/questions/6832596/how-to-compare-software-version-number-using-js-only-number
     cmpVersions: function (a, b) {
         let i, diff;
         let regExStrip0 = /(\.0+)+$/;
