@@ -25,7 +25,7 @@ var tbSyncAccounts = {
     debugToggleAll: function () {
         let accounts = tbSync.db.getAccounts();
         for (let i=0; i < accounts.IDs.length; i++) {
-            Services.obs.notifyObservers(null, "tbsync.toggleEnableState", accounts.IDs[i]);
+            tbSyncAccounts.toggleEnableStateObserver.observe(null, "tbsync.toggleEnableState", accounts.IDs[i], true);
         }
     },
     
@@ -45,9 +45,9 @@ var tbSyncAccounts = {
                                 for (let m=0; m < max; m++) {
                                     let newItem = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
                                     let properties = {
-                                        DisplayName: 'DebugContact',
-                                        FirstName: 'FirstName',
-                                        LastName: 'LastName',
+                                        DisplayName: 'Debug Contact ' + Date.now(),
+                                        FirstName: 'Debug',
+                                        LastName: 'Contact ' + Date.now(),
                                         PrimaryEmail: 'Email1@Address.net',
                                         SecondEmail: 'Email2@Address.net',
                                         Email3Address: 'Email@3Address.net',
@@ -102,14 +102,14 @@ var tbSyncAccounts = {
                                         Categories: tbSync.eas.sync.Contacts.categoriesToString(["Cat1","Cat2"]),
                                         Cildren: tbSync.eas.sync.Contacts.categoriesToString(["Child1","Child2"]),
                                         BirthDay: "15",
-                                        BirthMonth: "5",
+                                        BirthMonth: "05",
                                         BirthYear: "1980",
                                         AnniversaryDay: "27",
                                         AnniversaryMonth: "6",
                                         AnniversaryYear: "2009"                                    
                                     };
                                     for (let p in properties) {
-                                        newItem.setProperty(p, properties[p] + m.toString());
+                                        newItem.setProperty(p, properties[p]);
                                     }
                                     addressbook.addCard(newItem);
                                 }
@@ -236,14 +236,14 @@ var tbSyncAccounts = {
     * Observer to catch enable state toggle
     */
     toggleEnableStateObserver: {
-        observe: function (aSubject, aTopic, aData) {
+        observe: function (aSubject, aTopic, aData, doNotAsk = false) {
             let account = aData;                        
             let isConnected = tbSync.isConnected(account);
             let isEnabled = tbSync.isEnabled(account);
 
             if (isEnabled) {
                 //we are enabled and want to disable (do not ask, if not connected)
-                if (!isConnected || window.confirm(tbSync.getLocalizedMessage("prompt.Disable"))) {
+                if (doNotAsk || !isConnected || window.confirm(tbSync.getLocalizedMessage("prompt.Disable"))) {
                     tbSync[tbSync.db.getAccountSetting(account, "provider")].disableAccount(account);
                     Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
                 }
