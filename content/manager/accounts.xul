@@ -100,6 +100,11 @@
                                     label="Debug Mod"
                                     hidden="true"
                                     oncommand="tbSyncAccounts.debugMod();"/>
+                            <menuitem id="accountActionsDebugDel"
+                                    class="menuitem-iconic"
+                                    label="Debug Del"
+                                    hidden="true"
+                                    oncommand="tbSyncAccounts.debugDel();"/>
                             <menuseparator id="accountActionsSeparatorDebug" hidden="true"/>
                             <menuitem id="accountActionsDeleteAccount"
                                     class="menuitem-iconic"

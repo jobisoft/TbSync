@@ -29,6 +29,79 @@ var tbSyncAccounts = {
         }
     },
     
+    debugMod: function () { 
+        let accounts = tbSync.db.getAccounts();
+        for (let i=0; i < accounts.IDs.length; i++) {
+            if (tbSync.isEnabled(accounts.IDs[i])) {
+                let folders = tbSync.db.getFolders(accounts.IDs[i]);
+                for (let f in folders) {
+                    if (folders[f].selected == "1") {
+                        switch (folders[f].type) {
+                            case "9": 
+                            case "14": 
+                                //"Contacts";
+                                let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
+                                let addressbook = tbSync.getAddressBookObject(targetId);
+                                let oldresults = addressbook.getCardsFromProperty("PrimaryEmail", "debugcontact@inter.net", true);
+                                while (oldresults.hasMoreElements()) {
+                                    let card = oldresults.getNext();
+                                    card.setProperty("DisplayName", "Debug Contact " + Date.now());
+                                    card.setProperty("LastName", "Contact " + Date.now());
+                                    addressbook.modifyCard(newitem.card);
+                                }
+                                
+                                break;
+                            case "8":
+                            case "13":
+                                //"Calendar";
+                                break;
+                            case "7":
+                            case "15":
+                                //"Tasks";
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    },
+
+    debugDel: function () { 
+        let accounts = tbSync.db.getAccounts();
+        for (let i=0; i < accounts.IDs.length; i++) {
+            if (tbSync.isEnabled(accounts.IDs[i])) {
+                let folders = tbSync.db.getFolders(accounts.IDs[i]);
+                for (let f in folders) {
+                    if (folders[f].selected == "1") {
+                        switch (folders[f].type) {
+                            case "9": 
+                            case "14": 
+                                //"Contacts";
+                                let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
+                                let addressbook = tbSync.getAddressBookObject(targetId);
+                                let oldresults = addressbook.getCardsFromProperty("PrimaryEmail", "debugcontact@inter.net", true);
+                                let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+                                while (oldresults.hasMoreElements()) {
+                                    cardsToDelete.appendElement(oldresults.getNext(), "");
+                                }
+                                addressbook.deleteCards(cardsToDelete);
+                                
+                                break;
+                            case "8":
+                            case "13":
+                                //"Calendar";
+                                break;
+                            case "7":
+                            case "15":
+                                //"Tasks";
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    },
+
     debugAdd: function (max) { 
         let accounts = tbSync.db.getAccounts();
         for (let i=0; i < accounts.IDs.length; i++) {
@@ -48,9 +121,9 @@ var tbSyncAccounts = {
                                         DisplayName: 'Debug Contact ' + Date.now(),
                                         FirstName: 'Debug',
                                         LastName: 'Contact ' + Date.now(),
-                                        PrimaryEmail: 'Email1@Address.net',
-                                        SecondEmail: 'Email2@Address.net',
-                                        Email3Address: 'Email@3Address.net',
+                                        PrimaryEmail: 'debugcontact@inter.net',
+                                        SecondEmail: 'debugcontact2@inter.net',
+                                        Email3Address: 'debugcontact3@inter.net',
                                         WebPage1: 'WebPage',
                                         SpouseName: 'Spouse',
                                         CellularNumber: '0123',
@@ -192,6 +265,7 @@ var tbSyncAccounts = {
             document.getElementById("accountActionsDebugAdd1").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
             document.getElementById("accountActionsDebugAdd10").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
             document.getElementById("accountActionsDebugMod").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
+            document.getElementById("accountActionsDebugDel").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
             document.getElementById("accountActionsSeparatorDebug").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
         }
     },
