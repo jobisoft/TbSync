@@ -23,8 +23,7 @@ var wbxmltools = {
             switch(token) {
                 case 0x00: // switch of codepage (new codepage is next byte)
                     num = num + 1;
-                    codepage = (wbxml.substr(num, 1)).charCodeAt(0);
-                    codepage = (codepage > 0xFF) ? (~codepage) & 0xFF : codepage & 0xFF; //hotmail sends inverted codepage sometimes
+                    codepage = (wbxml.substr(num, 1)).charCodeAt(0) & 0xFF;
                     break;
                     
                 case 0x01: // Indicates the end of an attribute list or the end of an element
@@ -65,23 +64,22 @@ var wbxmltools = {
                     break;
                     
                 default:
-                    if (this.codepages[codepage] && token in this.codepages[codepage]) {
-                        // if this code page is not the mainCodePage (or mainCodePage is not yet set =  very first tag), add codePageTag with current codepage
-                        let codePageTag = (codepage != mainCodePage) ? " xmlns='" + this.namespaces[codepage] + "'" : "";
+                    // if this code page is not the mainCodePage (or mainCodePage is not yet set =  very first tag), add codePageTag with current codepage
+                    let codePageTag = (codepage != mainCodePage) ? " xmlns='" + this.getNamespace(codepage) + "'" : "";
 
-                        // if no mainCodePage has been defined yet, use the current codepage, which is either the initialized/default value of codepage or a value set by SWITCH_PAGE
-                        if (mainCodePage === null) mainCodePage = codepage;
+                    // if no mainCodePage has been defined yet, use the current codepage, which is either the initialized/default value of codepage or a value set by SWITCH_PAGE
+                    if (mainCodePage === null) mainCodePage = codepage;
 
-                        if (!tokenHasContent) {
-                            xml = xml + "<" + this.codepages[codepage][token] + codePageTag + "/>";
-                        } else {
-                            xml = xml + "<" +this.codepages[codepage][token] + codePageTag +">";
-                            //add the closing tag to the stack, so it can get properly closed later
-                            tagStack.push("</" +this.codepages[codepage][token] + ">");
-                        }
+                    if (!tokenHasContent) {
+                        xml = xml + "<" + this. getCodepageToken(codepage, token) + codePageTag + "/>";
                     } else {
-                        tbSync.dump("wbxml", "Unknown token <" + token + "> for codepage <"+codepage+">. Decoded XML so far:\n" + xml.split("><").join(">\n<"));
-                        return false;
+                        xml = xml + "<" +this. getCodepageToken(codepage, token) + codePageTag +">";
+                        //add the closing tag to the stack, so it can get properly closed later
+                        tagStack.push("</" +this. getCodepageToken(codepage, token) + ">");
+                    }
+
+                    if (this.isUnknownToken(codepage, token)) {
+                        tbSync.synclog("Warning", "WBXML: Unknown token <" + token + "> for codepage <"+codepage+">.");
                     }
             }
             num = num + 1;
@@ -89,9 +87,18 @@ var wbxmltools = {
         return (xml == "") ? "" : '<?xml version="1.0"?>' + xml;
     },
 
+    isUnknownToken: function (codepage, token) {
+        if (this.codepages[codepage] && token in this.codepages[codepage]) return false;
+        else return true;
+    },
+    
+    getNamespace: function (codepage) {
+        return (this.namespaces[codepage]) ? this.namespaces[codepage] : "UnknownCodePage" + codepage ;
+    },
 
-
-
+    getCodepageToken: function (codepage, token) {
+        return this.isUnknownToken(codepage, token) ? "Unknown." + codepage + "." + token : this.codepages[codepage][token];   
+    },
 
     // This returns a wbxml object, which allows to add tags (using names), switch codepages, or open and close tags, it is also possible to append pure (binary) wbxml
     // If no wbxmlstring is present, default to the "init" string ( WBXML Version 1.3, unknown public identifier, UTF-8, Length of string table)
