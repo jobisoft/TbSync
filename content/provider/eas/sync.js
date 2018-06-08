@@ -531,7 +531,7 @@ eas.sync = {
                 } else {
                     tbSync.synclog("Warning", "Delete request for element <"+ServerId+">, but element not found! Ignoring." );
                     //resync to avoid out-of-sync problems
-                    throw eas.finishSync("DeleteElementNotFound", eas.flags.resyncFolder);
+                    //throw eas.finishSync("DeleteElementNotFound", eas.flags.resyncFolder);
                 }
                 syncdata.done++;
             }
