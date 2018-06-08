@@ -24,6 +24,7 @@ var wbxmltools = {
                 case 0x00: // switch of codepage (new codepage is next byte)
                     num = num + 1;
                     codepage = (wbxml.substr(num, 1)).charCodeAt(0);
+                    codepage = (codepage > 0xFF) ? (~codepage) & 0xFF : codepage & 0xFF; //hotmail sends inverted codepage sometimes
                     break;
                     
                 case 0x01: // Indicates the end of an attribute list or the end of an element
@@ -64,7 +65,7 @@ var wbxmltools = {
                     break;
                     
                 default:
-                    if (token in this.codepages[codepage]) {
+                    if (this.codepages[codepage] && token in this.codepages[codepage]) {
                         // if this code page is not the mainCodePage (or mainCodePage is not yet set =  very first tag), add codePageTag with current codepage
                         let codePageTag = (codepage != mainCodePage) ? " xmlns='" + this.namespaces[codepage] + "'" : "";
 
@@ -79,7 +80,7 @@ var wbxmltools = {
                             tagStack.push("</" +this.codepages[codepage][token] + ">");
                         }
                     } else {
-                        tbSync.dump("wbxml", "Unknown token <" + token + "> for codepage <"+codepage+">");
+                        tbSync.dump("wbxml", "Unknown token <" + token + "> for codepage <"+codepage+">. Decoded XML so far:\n" + xml.split("><").join(">\n<"));
                         return false;
                     }
             }
