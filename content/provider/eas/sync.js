@@ -82,13 +82,13 @@ eas.sync = {
         
             //check status, throw on error
             eas.checkStatus(syncdata, wbxmlData,"Sync.Collections.Collection.Status");
-            
-            //update synckey
-            eas.updateSynckey(syncdata, wbxmlData);
 
             //PROCESS COMMANDS        
             yield eas.sync.processCommands(wbxmlData, syncdata);
-            
+
+            //update synckey
+            eas.updateSynckey(syncdata, wbxmlData);
+
             if (!xmltools.hasWbxmlDataField(wbxmlData,"Sync.Collections.Collection.MoreAvailable")) return;
         } while (true);
                 
@@ -208,9 +208,6 @@ eas.sync = {
                 eas.checkStatus(syncdata, wbxmlData, "Sync.Collections.Collection.Status");            
                 yield tbSync.sleep(10);
 
-                //update synckey
-                eas.updateSynckey(syncdata, wbxmlData);
-
                 //PROCESS RESPONSE        
                 yield eas.sync.processResponses(wbxmlData, syncdata, addedItems, changedItems);
             
@@ -222,8 +219,10 @@ eas.sync = {
                         db.removeItemFromChangeLog(syncdata.targetId, changedItems[a]);
                         syncdata.done++;
                 }
-            
 
+                //update synckey
+                eas.updateSynckey(syncdata, wbxmlData);
+            
             } else if (e==0) { //if there was no local change and also no error (which will not happen twice) finish
 
                 done = true;
