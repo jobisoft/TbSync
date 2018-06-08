@@ -14,7 +14,6 @@ let onLoadObserver = {
             if (window) {
                 //init TbSync
                 window.tbSync = tbSync;
-                tbSync.breakpoint(9);
                 tbSync.init(window); 
             } else {
                 tbSync.dump("FAIL", "Could not init TbSync, because mail:3pane window not found.");

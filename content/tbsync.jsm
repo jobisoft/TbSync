@@ -79,48 +79,47 @@ var tbSync = {
 
         tbSync.dump("TbSync init","Start");
         tbSync.window = window;
-tbSync.breakpoint(10);
         Services.obs.addObserver(tbSync.initSyncObserver, "tbsync.initSync", false);
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate", false);
-tbSync.breakpoint(11);        
+
         // Inject UI before init finished, to give user the option to see Oops message and report bug
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messengercompose/messengercompose.xul", "chrome://tbsync/content/overlays/messengercompose.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/abServerSearch.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abContactsPanel.xul", "chrome://tbsync/content/overlays/abServerSearch.xul");
         tbSync.overlayManager.injectAllOverlays(tbSync.window);
-tbSync.breakpoint(12);        
+
         //print information about Thunderbird version and OS
         tbSync.dump(Services.appinfo.name, Services.appinfo.platformVersion + " on " + OS.Constants.Sys.Name);
-tbSync.breakpoint(13);        
+
         // load common subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
         tbSync.includeJS("chrome://tbsync/content/db.js");
         tbSync.includeJS("chrome://tbsync/content/abServerSearch.js");
-tbSync.breakpoint(14);
+
         //init DB
         yield tbSync.db.init();
-tbSync.breakpoint(15);
+
         //convert database when migrating from connect state to enable state (keep this in 0.7 branch)
         let accounts = tbSync.db.getAccounts();
         for (let i = 0; i < accounts.IDs.length; i++) {
             if (accounts.data[accounts.IDs[i]].state == "connected") accounts.data[accounts.IDs[i]].state = "enabled";
         }
-tbSync.breakpoint(16);
+
         //load provider subscripts into tbSync 
         for (let i=0;i<tbSync.syncProviderList.length;i++) {
             tbSync.dump("PROVIDER", tbSync.syncProviderList[i] + "::" + tbSync.syncProviderPref.getCharPref(tbSync.syncProviderList[i]));
             tbSync.includeJS("chrome://tbsync/content/provider/"+tbSync.syncProviderList[i]+"/" + tbSync.syncProviderList[i] +".js");
         }
-tbSync.breakpoint(17);        
+
         //init provider 
         for (let i=0;i<tbSync.syncProviderList.length;i++) {
             yield tbSync[tbSync.syncProviderList[i]].init();
         }
-tbSync.breakpoint(18);
+
         //init stuff for address book
         tbSync.addressbookListener.add();
         tbSync.scanPrefIdsOfAddressBooks();
-tbSync.breakpoint(19);        
+
         //init stuff for lightning (and dump any other installed AddOn)
         //TODO: If lightning is converted to restartless, use AddonManager.addAddonListener() to get notification of enable/disable
         if (Services.vc.compare(Services.appinfo.platformVersion, "61.*") >= 0)  {
@@ -133,7 +132,6 @@ tbSync.breakpoint(19);
     }),
         
     finalizeInitByWaitingForAddons: Task.async (function* (addons) {
-tbSync.breakpoint(20);
         let lightning = false;
         for (let a=0; a < addons.length; a++) {
             if (addons[a].isActive) {
@@ -142,7 +140,7 @@ tbSync.breakpoint(20);
                 if (addons[a].id.toString() == "tbsync@jobisoft.de") tbSync.versionInfo.installed = addons[a].version.toString();
             }
         }
-tbSync.breakpoint(21);
+
         if (lightning) {
             tbSync.dump("Check4Lightning","Start");
 
@@ -202,27 +200,23 @@ tbSync.breakpoint(21);
                 tbSync.dump("Check4Lightning","Failed!");
             }
         }
-tbSync.breakpoint(22);        
+
         //init stuff for sync process
         tbSync.resetSync();
-tbSync.breakpoint(23);
+
         //enable TbSync
         tbSync.enabled = true;
-tbSync.breakpoint(24);
+
         //notify others about finished init of TbSync
         Services.obs.notifyObservers(null, 'tbsync.init.done', null)
-tbSync.breakpoint(25);
 
         //activate sync timer
         tbSync.syncTimer.start();
-tbSync.breakpoint(26);
 
         tbSync.dump("TbSync init","Done");
-tbSync.breakpoint(27);
 
         //check for updates
         yield tbSync.check4updates();
-tbSync.breakpoint(28);
     }),
     
 /*    onLightningLoad: {
