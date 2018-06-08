@@ -15,12 +15,15 @@ eas.sync = {
 
     start: Task.async (function* (syncdata)  {
         //sync
+
+        if (tbSync.db.getAccountSetting(syncdata.account, "downloadonly") == "1") {		
+            yield eas.sync.revertLocalChangesViaItemOperations (syncdata);
+        }
+
         yield eas.getItemEstimate (syncdata);
         yield eas.sync.requestRemoteChanges (syncdata); 
 
-        if (tbSync.db.getAccountSetting(syncdata.account, "downloadonly") == "1") {		
-            yield eas.sync.revertLocalChanges (syncdata);
-        } else {
+        if (tbSync.db.getAccountSetting(syncdata.account, "downloadonly") != "1") {		
             yield eas.sync.sendLocalChanges (syncdata);
         }
 
@@ -231,7 +234,135 @@ eas.sync = {
 
 
 
-    revertLocalChanges: Task.async (function* (syncdata)  {       
+
+    revertLocalChangesViaItemOperations: Task.async (function* (syncdata)  {       
+        let maxnumbertosend = tbSync.prefSettings.getIntPref("eas.maxitems");
+        syncdata.done = 0;
+        syncdata.todo = db.getItemsFromChangeLog(syncdata.targetId, 0, "_by_user").length;
+        if (syncdata.todo == 0) {
+            return;
+        }
+
+        if (!tbSync.db.getAccountSetting(syncdata.account, "allowedEasCommands").split(",").includes("ItemOperations")) {
+            //throws at the end
+            yield eas.sync.revertLocalChangesViaResync(syncdata);
+            return;
+        }
+
+        //get changed items from ChangeLog
+        do {
+            tbSync.setSyncState("prepare.request.revertlocalchanges", syncdata.account, syncdata.folderID);
+            let changes = db.getItemsFromChangeLog(syncdata.targetId, maxnumbertosend, "_by_user");
+            let c=0;
+                        
+            // BUILD WBXML
+            let wbxml = tbSync.wbxmltools.createWBXML();
+            wbxml.switchpage("ItemOperations");
+            wbxml.otag("ItemOperations");
+
+                            for (let i=0; i<changes.length; i++) {
+                                let items = null;
+                                let ServerId = changes[i].id;
+                                let foundItems = yield syncdata.targetObj.getItem(ServerId);
+                                if (foundItems.length > 0) { //delete item with that ServerId
+                                    db.addItemToChangeLog(syncdata.targetId, ServerId, "deleted_by_server");
+                                    yield syncdata.targetObj.deleteItem(foundItems[0]);
+                                }
+
+                                switch (changes[i].status) {
+                                    case "added_by_user": //ignore, it has been delete, done
+                                        db.removeItemFromChangeLog(syncdata.targetId, ServerId);
+                                    break;
+                                    
+                                    case "modified_by_user":
+                                    case "deleted_by_user":
+                                        wbxml.otag("Fetch");
+                                            wbxml.atag("Store", "Mailbox");
+                                            wbxml.switchpage("AirSync");
+                                            wbxml.atag("CollectionId", syncdata.folderID);
+                                            wbxml.atag("ServerId", ServerId);
+                                            wbxml.switchpage("ItemOperations");
+                                            wbxml.otag("Options");
+                                                wbxml.switchpage("AirSyncBase");
+                                                wbxml.otag("BodyPreference");
+                                                    wbxml.atag("Type","1");
+                                                wbxml.ctag();
+                                                wbxml.switchpage("ItemOperations");
+                                            wbxml.ctag();
+                                        wbxml.ctag();
+                                        c++;
+                                        break;
+                                }
+                            }
+
+            wbxml.ctag(); //ItemOperations
+
+
+            if (c > 0) { //if there was at least one actual local change, send request
+
+                //SEND REQUEST & VALIDATE RESPONSE
+                tbSync.setSyncState("send.request.revertlocalchanges", syncdata.account, syncdata.folderID);
+                let response = yield eas.sendRequest(wbxml.getBytes(), "ItemOperations", syncdata);
+                
+                tbSync.setSyncState("eval.response.revertlocalchanges", syncdata.account, syncdata.folderID);
+
+                //get data from wbxml response
+                let wbxmlData = eas.getDataFromResponse(response);
+            
+                //check status - do not allow softfail here
+                eas.checkStatus(syncdata, wbxmlData, "ItemOperations.Status");            
+                yield tbSync.sleep(10);
+
+                if (xmltools.hasWbxmlDataField(wbxmlData, "ItemOperations.Response.Fetch")) {
+                
+                    //looking for additions
+                    let add = xmltools.nodeAsArray(wbxmlData.ItemOperations.Response.Fetch);
+                    for (let count = 0; count < add.length; count++) {
+                        yield tbSync.sleep(2);
+
+                        let ServerId = add[count].ServerId;
+                        let data = add[count].Properties;
+
+                        if (data) {
+                            let foundItems = yield syncdata.targetObj.getItem(ServerId);
+                            if (foundItems.length == 0) { //do NOT add, if an item with that ServerId was found
+                                    let newItem = eas.sync[syncdata.type].createItem();
+                                    try {
+                                        eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
+                                        db.addItemToChangeLog(syncdata.targetId, ServerId, "added_by_server");
+                                        yield syncdata.targetObj.adoptItem(newItem);
+                                    } catch (e) {
+                                        xmltools.printXmlData(add[count], true); //include application data in log                  
+                                        tbSync.dump("Bad item <javascript error>", newItem.icalString);
+                                        throw e;
+                                    }
+                            } else {
+                                //should not happen, throw
+                                db.removeItemFromChangeLog(syncdata.targetId, ServerId);
+                            }
+                            syncdata.done++;
+                        } else {
+                            //assuming Fetch via Item ItemOperations does not work, fallback to resync
+                            yield eas.sync.revertLocalChangesViaResync(syncdata);
+                            return;
+                        }
+                    }
+                } else {
+                    //should not happen, throw
+                    db.removeItemFromChangeLog(syncdata.targetId, ServerId);
+                }
+                            
+            } else { //if there was no more local change we need to revert, return
+
+                return;
+
+            }
+        
+        } while (true);
+        
+    }),
+
+    revertLocalChangesViaFetch: Task.async (function* (syncdata)  {       
         let maxnumbertosend = tbSync.prefSettings.getIntPref("eas.maxitems");
 
         syncdata.done = 0;
@@ -349,7 +480,27 @@ eas.sync = {
         
     }),
 
-
+    revertLocalChangesViaResync: Task.async (function* (syncdata) {
+        tbSync.synclog("Warning", "Server does not support ItemOperations, must revert via resync.");
+        let changes = db.getItemsFromChangeLog(syncdata.targetId, 0, "_by_user");
+        syncdata.done = 0;
+        syncdata.todo = changes.length;
+        tbSync.setSyncState("prepare.request.revertlocalchanges", syncdata.account, syncdata.folderID);
+        
+        for (let i=0; i<changes.length; i++) {
+            let items = null;
+            let ServerId = changes[i].id;
+            let foundItems = yield syncdata.targetObj.getItem(ServerId);
+            if (foundItems.length > 0) { //delete item with that ServerId
+                db.addItemToChangeLog(syncdata.targetId, ServerId, "deleted_by_server");
+                yield syncdata.targetObj.deleteItem(foundItems[0]);
+            } else {
+                db.removeItemFromChangeLog(syncdata.targetId, ServerId);
+            }
+            syncdata.done++;
+        }
+        throw tbSync.eas.finishSync("CannotRevertViaItemOperations", eas.flags.resyncFolder);
+    }),
 
 
 
@@ -393,9 +544,11 @@ eas.sync = {
                     }
                 } else {
                     //item exists, asuming resync
-                    //we MUST make sure, that our local version is send to the server
-                    tbSync.dump("Add request, but element exists already, asuming resync, local version wins.", ServerId);
-                    db.addItemToChangeLog(syncdata.targetId, ServerId, "modified_by_user");
+                    //we MUST make sure, that our local version is send to the server (not in read-only of course)
+                    if (tbSync.db.getAccountSetting(syncdata.account, "downloadonly") != "1") {
+                        tbSync.dump("Add request, but element exists already, asuming resync, local version wins.", ServerId);
+                        db.addItemToChangeLog(syncdata.targetId, ServerId, "modified_by_user");
+                    }
                 }
                 syncdata.done++;
             }
