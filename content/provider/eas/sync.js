@@ -83,7 +83,7 @@ eas.sync = {
             //check status, throw on error
             eas.checkStatus(syncdata, wbxmlData,"Sync.Collections.Collection.Status");
             
-            //update synckey must be called BEFORE process functions, because they can throw on rejected items
+            //update synckey
             eas.updateSynckey(syncdata, wbxmlData);
 
             //PROCESS COMMANDS        
@@ -208,7 +208,7 @@ eas.sync = {
                 eas.checkStatus(syncdata, wbxmlData, "Sync.Collections.Collection.Status");            
                 yield tbSync.sleep(10);
 
-                //update synckey must be called BEFORE process functions, because they can throw on rejected items
+                //update synckey
                 eas.updateSynckey(syncdata, wbxmlData);
 
                 //PROCESS RESPONSE        
@@ -367,7 +367,7 @@ eas.sync = {
                                     } catch (e) {
                                         xmltools.printXmlData(add[count], true); //include application data in log                  
                                         tbSync.dump("Bad item <javascript error>", newItem.icalString);
-                                        throw e;
+                                        throw e; // unable to add item to Thunderbird - fatal error
                                     }
                             } else {
                                 //should not happen, since we deleted that item beforehand
@@ -463,7 +463,7 @@ eas.sync = {
                         } catch (e) {
                             xmltools.printXmlData(add[count], true); //include application data in log                  
                             tbSync.dump("Bad item <javascript error>", newItem.icalString);
-                            throw e;
+                            throw e; // unable to add item to Thunderbird - fatal error
                         }
                     }
                 } else {
@@ -499,9 +499,9 @@ eas.sync = {
                             db.addItemToChangeLog(syncdata.targetId, ServerId, "modified_by_server"); //any local change will be lost
                             yield syncdata.targetObj.modifyItem(newItem, foundItems[0]);
                         } catch (e) {
-                            xmltools.printXmlData(upd[count], true);  //include application data in log                   
                             tbSync.dump("Bad item <javascript error>", newItem.icalString);
-                            throw e;
+                            xmltools.printXmlData(upd[count], true);  //include application data in log                   
+                            throw e; // unable to mod item to Thunderbird - fatal error
                         }
                     }
                 } else if (db.getItemStatusFromChangeLog(syncdata.targetId, ServerId) == "deleted_by_user") {
@@ -530,8 +530,8 @@ eas.sync = {
                         db.removeItemFromChangeLog(syncdata.targetId, ServerId);                        
                 } else {
                     tbSync.synclog("Warning", "Delete request for element <"+ServerId+">, but element not found! Ignoring." );
-                    //resync to avoid out-of-sync problems - but also, sometimes we do get these and than end in a resync loop
-                    //throw eas.finishSync("DeleteElementNotFound", eas.flags.resyncFolder);
+                    //resync to avoid out-of-sync problems
+                    throw eas.finishSync("DeleteElementNotFound", eas.flags.resyncFolder);
                 }
                 syncdata.done++;
             }
@@ -541,7 +541,7 @@ eas.sync = {
 
 
     updateFailedItems: function (syncdata, cause, id, data) {                
-        //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
+        //something is wrong with this item, move it to the end of changelog and go on
         if (!syncdata.failedItems.includes(id)) {
             //the extra parameter true will re-add the item to the end of the changelog
             db.removeItemFromChangeLog(syncdata.targetId, id, true);                        
@@ -611,8 +611,8 @@ eas.sync = {
                 //looking for deletions 
                 let del = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Delete);
                 for (let count = 0; count < del.length; count++) {
-                    //What can we do about failed deletes? For now, throw and invalidate sync status (TODO)
-                    eas.checkStatus(syncdata, del[count],"Status","Sync.Collections.Collection.Responses.Delete["+count+"].Status");
+                    //What can we do about failed deletes? SyncLog
+                    eas.checkStatus(syncdata, del[count],"Status","Sync.Collections.Collection.Responses.Delete["+count+"].Status", true);
                 }
                 
             }
@@ -692,7 +692,7 @@ eas.sync = {
             return wbxml;
         } catch (e) {
             tbSync.dump("Bad item <javascript error>", item.icalString);
-            throw e;
+            throw e; // unable to read item from Thunderbird - fatal error
         }        
     },
 

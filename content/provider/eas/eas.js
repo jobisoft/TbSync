@@ -1530,7 +1530,7 @@ var eas = {
             let mainStatus = xmltools.getWbxmlDataField(wbxmlData, type + "." + elements[elements.length-1]);
             if (mainStatus === false) {
                 //both possible status fields are missing, report and abort
-                tbSync.dump("wbxml status", "Server response does not contain mandatory <"+fullpath+"> field . Error? Aborting Sync.");
+                tbSync.synclog("Warning", "WBXML: Server response does not contain mandatory <"+fullpath+"> field . Error? Aborting Sync.");
                 throw eas.finishSync("wbxmlmissingfield::" + fullpath);
             } else {
                 //the alternative status could be extracted
@@ -1552,7 +1552,7 @@ var eas = {
                         MUST return to SyncKey element value of 0 for the collection. The client SHOULD either delete any items that were added 
                         since the last successful Sync or the client MUST add those items back to the server after completing the full resynchronization
                         */
-                tbSync.dump("wbxml status", "Server reports <invalid synchronization key> (" + fullpath + " = " + status + "), resyncing.");
+                tbSync.synclog("Warning", "WBXML: Server reports <invalid synchronization key> (" + fullpath + " = " + status + "), resyncing.");
                 throw eas.finishSync(type+"("+status+")", eas.flags.resyncFolder);
             
             case "Sync:4":
@@ -1564,7 +1564,7 @@ var eas = {
                 throw eas.finishSync("TempServerError");                            
 
             case "Sync:6":
-                //Server does not accept one of our items or the entire request. If allowSoftFail is set, continue syncing
+                //Server does not accept one of our items or the entire request.
                 if (allowSoftFail) return "Invalid item! Mandatory fields missing? Dublicate item?";
                 throw eas.finishSync("ServerRejectedRequest");                            
 
@@ -1572,7 +1572,7 @@ var eas = {
                 return "";
         
             case "Sync:8": // Object not found - takeTargetOffline and remove folder
-                tbSync.dump("wbxml status", "Server reports <object not found> (" +  tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "), keeping local copy and removing folder.");
+                tbSync.synclog("Warning", "WBXML: Server reports <object not found> (" +  tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "), keeping local copy and removing folder.");
                 let folder = tbSync.db.getFolder(syncdata.account, syncdata.folderID);
                 if (folder !== null) {
                     let target = folder.target;
@@ -1593,7 +1593,7 @@ var eas = {
             case "Sync:12": /*
                         Perform a FolderSync command and then retry the Sync command. (is "resync" here)
                         */
-                tbSync.dump("wbxml status", "Server reports <folder hierarchy changed> (" + fullpath + " = " + status + "), resyncing");
+                tbSync.synclog("Warning", "WBXML: Server reports <folder hierarchy changed> (" + fullpath + " = " + status + "), resyncing");
                 throw eas.finishSync(type+"("+status+")", eas.flags.resyncAccount);
 
             
@@ -1641,7 +1641,7 @@ var eas = {
                 throw eas.finishSync(type+"("+status+")", eas.flags.resyncAccount);
             
             default:
-                tbSync.dump("wbxml status", "Server reports unhandled status <" + fullpath + " = " + status + ">. Aborting Sync.");
+                tbSync.synclog("Warning", "WBXML: Server reports unhandled status <" + fullpath + " = " + status + ">. Aborting Sync.");
                 if (allowSoftFail) return "Server reports unhandled status <" + fullpath + " = " + status + ">";
                 throw eas.finishSync("wbxmlerror::" + fullpath + " = " + status, eas.flags.abortWithError);
 
