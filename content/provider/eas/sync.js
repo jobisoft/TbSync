@@ -89,7 +89,7 @@ eas.sync = {
             //PROCESS COMMANDS        
             yield eas.sync.processCommands(wbxmlData, syncdata);
             
-            if (!wbxmlData.Sync.Collections.Collection.MoreAvailable) return;
+            if (!xmltools.hasWbxmlDataField(wbxmlData,"Sync.Collections.Collection.MoreAvailable")) return;
         } while (true);
                 
     }),
@@ -105,9 +105,11 @@ eas.sync = {
         syncdata.failedItems = [];
         syncdata.failedItemTypes = {};
         
-        //get changed items from ChangeLog
+        let done = false;
         do {
             tbSync.setSyncState("prepare.request.localchanges", syncdata.account, syncdata.folderID);
+
+            //get changed items from ChangeLog
             let changes = db.getItemsFromChangeLog(syncdata.targetId, maxnumbertosend, "_by_user");
             let c=0;
             let e=0;
@@ -126,7 +128,7 @@ eas.sync = {
                         wbxml.atag("CollectionId", syncdata.folderID);
                         wbxml.otag("Commands");
 
-                            for (let i=0; i<changes.length; i++) {
+                            for (let i=0; i<changes.length; i++) if (!syncdata.failedItems.includes(changes[i].id)) {
                                 //tbSync.dump("CHANGES",(i+1) + "/" + changes.length + " ("+changes[i].status+"," + changes[i].id + ")");
                                 let items = null;
                                 switch (changes[i].status) {
@@ -215,20 +217,28 @@ eas.sync = {
                 //PROCESS COMMANDS        
                 yield eas.sync.processCommands(wbxmlData, syncdata);
 
-                //remove all leftover items in changedItems from changelog (only failed changed items are explicitly listed) 
+                //remove all items from changelog that did not fail
                 for (let a=0; a < changedItems.length; a++) {
                         db.removeItemFromChangeLog(syncdata.targetId, changedItems[a]);
                         syncdata.done++;
                 }
             
 
-            } else if (e==0) { //if there was no local change and also no error (which will not happen twice) return
+            } else if (e==0) { //if there was no local change and also no error (which will not happen twice) finish
 
-                return;
+                done = true;
 
             }
         
-        } while (true);
+        } while (!done);
+        
+        //was there an error?
+        if (syncdata.failedItems.length > 0) {
+            let types = [];
+            for (let t in syncdata.failedItemTypes) types.push(syncdata.failedItemTypes[t] + "x <" + t + ">");
+            if (syncdata.done>0) throw eas.finishSync("ServerRejectedSomeItems::"+types.toString()+"::"+syncdata.done);                            
+            throw eas.finishSync("ServerRejectedAllItems::"+types.toString());               
+        }
         
     }),
 
@@ -532,12 +542,7 @@ eas.sync = {
 
     updateFailedItems: function (syncdata, cause, id, data) {                
         //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
-        if (syncdata.failedItems.includes(id)) {
-            let types = [];
-            for (let t in syncdata.failedItemTypes) types.push(syncdata.failedItemTypes[t] + "x <" + t + ">");
-            if (syncdata.done>0) throw eas.finishSync("ServerRejectedSomeItems::"+types.toString()+"::"+syncdata.done);                            
-            throw eas.finishSync("ServerRejectedAllItems::"+types.toString());                            
-        } else {
+        if (!syncdata.failedItems.includes(id)) {
             //the extra parameter true will re-add the item to the end of the changelog
             db.removeItemFromChangeLog(syncdata.targetId, id, true);                        
             syncdata.failedItems.push(id);
@@ -570,7 +575,7 @@ eas.sync = {
                         //Check status, stop sync if bad, allow soft fail
                         let errorcause = eas.checkStatus(syncdata, add[count],"Status","Sync.Collections.Collection.Responses.Add["+count+"].Status", true);
                         if (errorcause !== "") {
-                            //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
+                            //something is wrong with this item, move it to the end of changelog and go on
                             eas.sync.updateFailedItems(syncdata, errorcause, foundItems[0].id, foundItems[0].icalString);
                         } else {
                             let newItem = foundItems[0].clone();
@@ -593,7 +598,7 @@ eas.sync = {
                         //Check status, stop sync if bad, allow soft fail
                         let errorcause = eas.checkStatus(syncdata, upd[count],"Status","Sync.Collections.Collection.Responses.Change["+count+"].Status", true);
                         if (errorcause !== "") {
-                            //something is wrong with this item, move it to the end of changelog and go on - OR - if we saw this item already, throw
+                            //something is wrong with this item, move it to the end of changelog and go on
                             eas.sync.updateFailedItems(syncdata, errorcause, foundItems[0].id, foundItems[0].icalString);
                             //also remove from changedItems
                             let p = changedItems.indexOf(upd[count].ServerId);
