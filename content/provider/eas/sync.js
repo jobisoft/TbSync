@@ -17,7 +17,7 @@ eas.sync = {
         //sync
 
         if (tbSync.db.getAccountSetting(syncdata.account, "downloadonly") == "1") {		
-            yield eas.sync.revertLocalChangesViaItemOperations (syncdata);
+            yield eas.sync.revertLocalChanges (syncdata);
         }
 
         yield eas.getItemEstimate (syncdata);
@@ -235,7 +235,7 @@ eas.sync = {
 
 
 
-    revertLocalChangesViaItemOperations: Task.async (function* (syncdata)  {       
+    revertLocalChanges: Task.async (function* (syncdata)  {       
         let maxnumbertosend = tbSync.prefSettings.getIntPref("eas.maxitems");
         syncdata.done = 0;
         syncdata.todo = db.getItemsFromChangeLog(syncdata.targetId, 0, "_by_user").length;
@@ -243,11 +243,7 @@ eas.sync = {
             return;
         }
 
-        if (!tbSync.db.getAccountSetting(syncdata.account, "allowedEasCommands").split(",").includes("ItemOperations")) {
-            //throws at the end
-            yield eas.sync.revertLocalChangesViaResync(syncdata);
-            return;
-        }
+        let viaItemOperations = (tbSync.db.getAccountSetting(syncdata.account, "allowedEasCommands").split(",").includes("ItemOperations"));
 
         //get changed items from ChangeLog
         do {
@@ -255,75 +251,102 @@ eas.sync = {
             let changes = db.getItemsFromChangeLog(syncdata.targetId, maxnumbertosend, "_by_user");
             let c=0;
                         
+            
             // BUILD WBXML
             let wbxml = tbSync.wbxmltools.createWBXML();
-            wbxml.switchpage("ItemOperations");
-            wbxml.otag("ItemOperations");
+            if (viaItemOperations) {
+                wbxml.switchpage("ItemOperations");
+                wbxml.otag("ItemOperations");
+            } else {
+                wbxml.otag("Sync");
+                    wbxml.otag("Collections");
+                        wbxml.otag("Collection");
+                            if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type);
+                            wbxml.atag("SyncKey", syncdata.synckey);
+                            wbxml.atag("CollectionId", syncdata.folderID);
+                            wbxml.otag("Commands");
+            }
 
-                            for (let i=0; i<changes.length; i++) {
-                                let items = null;
-                                let ServerId = changes[i].id;
-                                let foundItems = yield syncdata.targetObj.getItem(ServerId);
-                                if (foundItems.length > 0) { //delete item with that ServerId
-                                    db.addItemToChangeLog(syncdata.targetId, ServerId, "deleted_by_server");
-                                    yield syncdata.targetObj.deleteItem(foundItems[0]);
-                                }
+            for (let i=0; i<changes.length; i++) {
+                let items = null;
+                let ServerId = changes[i].id;
+                let foundItems = yield syncdata.targetObj.getItem(ServerId);
+                if (foundItems.length > 0) { //delete item with that ServerId
+                    db.addItemToChangeLog(syncdata.targetId, ServerId, "deleted_by_server");
+                    yield syncdata.targetObj.deleteItem(foundItems[0]);
+                }
 
-                                switch (changes[i].status) {
-                                    case "added_by_user": //ignore, it has been delete, done
-                                        db.removeItemFromChangeLog(syncdata.targetId, ServerId);
-                                    break;
-                                    
-                                    case "modified_by_user":
-                                    case "deleted_by_user":
-                                        wbxml.otag("Fetch");
-                                            wbxml.atag("Store", "Mailbox");
-                                            wbxml.switchpage("AirSync");
-                                            wbxml.atag("CollectionId", syncdata.folderID);
-                                            wbxml.atag("ServerId", ServerId);
-                                            wbxml.switchpage("ItemOperations");
-                                            wbxml.otag("Options");
-                                                wbxml.switchpage("AirSyncBase");
-                                                wbxml.otag("BodyPreference");
-                                                    wbxml.atag("Type","1");
-                                                wbxml.ctag();
-                                                wbxml.switchpage("ItemOperations");
-                                            wbxml.ctag();
-                                        wbxml.ctag();
-                                        c++;
-                                        break;
-                                }
-                            }
+                switch (changes[i].status) {
+                    case "added_by_user": //ignore, it has been delete, done
+                        db.removeItemFromChangeLog(syncdata.targetId, ServerId);
+                    break;
+                    
+                    case "modified_by_user":
+                    case "deleted_by_user":
+                        if (viaItemOperations) {
+                            wbxml.otag("Fetch");
+                                wbxml.atag("Store", "Mailbox");
+                                wbxml.switchpage("AirSync");
+                                wbxml.atag("CollectionId", syncdata.folderID);
+                                wbxml.atag("ServerId", ServerId);
+                                wbxml.switchpage("ItemOperations");
+                                wbxml.otag("Options");
+                                    wbxml.switchpage("AirSyncBase");
+                                    wbxml.otag("BodyPreference");
+                                        wbxml.atag("Type","1");
+                                    wbxml.ctag();
+                                    wbxml.switchpage("ItemOperations");
+                                wbxml.ctag();
+                            wbxml.ctag();
+                        } else {
+                            wbxml.otag("Fetch");
+                                wbxml.atag("ServerId", ServerId);
+                            wbxml.ctag();
+                        }
+                        c++;
+                        break;
+                }
+            }
 
-            wbxml.ctag(); //ItemOperations
-
+            if (viaItemOperations) {
+                wbxml.ctag(); //ItemOperations
+            } else {
+                            wbxml.ctag(); //Commands
+                        wbxml.ctag(); //Collection
+                    wbxml.ctag(); //Collections
+                wbxml.ctag(); //Sync
+            }
 
             if (c > 0) { //if there was at least one actual local change, send request
 
                 //SEND REQUEST & VALIDATE RESPONSE
                 tbSync.setSyncState("send.request.revertlocalchanges", syncdata.account, syncdata.folderID);
-                let response = yield eas.sendRequest(wbxml.getBytes(), "ItemOperations", syncdata);
+                let response = yield eas.sendRequest(wbxml.getBytes(), (viaItemOperations) ? "ItemOperations" : "Sync", syncdata);
                 
                 tbSync.setSyncState("eval.response.revertlocalchanges", syncdata.account, syncdata.folderID);
 
                 //get data from wbxml response
                 let wbxmlData = eas.getDataFromResponse(response);
-            
-                //check status - do not allow softfail here
-                eas.checkStatus(syncdata, wbxmlData, "ItemOperations.Status");            
-                yield tbSync.sleep(10);
 
-                if (xmltools.hasWbxmlDataField(wbxmlData, "ItemOperations.Response.Fetch")) {
+                //no need to check status, we fall back to other methods if any kind of error
+                //let statusPath = (viaItemOperations) ? "ItemOperations.Status" : "Sync.Collections.Collection.Status";                
+                //check status - do not allow softfail here
+                //eas.checkStatus(syncdata, wbxmlData, statusPath);            
+                //yield tbSync.sleep(10);
+                
+                let error = false;
+                let fetchPath = (viaItemOperations) ? "ItemOperations.Response.Fetch" : "Sync.Collections.Collection.Responses.Fetch";
+                if (xmltools.hasWbxmlDataField(wbxmlData, fetchPath)) {
                 
                     //looking for additions
-                    let add = xmltools.nodeAsArray(wbxmlData.ItemOperations.Response.Fetch);
+                    let add = xmltools.nodeAsArray(xmltools.getWbxmlDataField(wbxmlData, fetchPath));
                     for (let count = 0; count < add.length; count++) {
                         yield tbSync.sleep(2);
 
                         let ServerId = add[count].ServerId;
-                        let data = add[count].Properties;
-
-                        if (data) {
+                        let data = (viaItemOperations) ? add[count].Properties : add[count].ApplicationData;
+                        
+                        if (data && ServerId) {
                             let foundItems = yield syncdata.targetObj.getItem(ServerId);
                             if (foundItems.length == 0) { //do NOT add, if an item with that ServerId was found
                                     let newItem = eas.sync[syncdata.type].createItem();
@@ -337,139 +360,30 @@ eas.sync = {
                                         throw e;
                                     }
                             } else {
-                                //should not happen, throw
+                                //should not happen, since we deleted that item beforehand
                                 db.removeItemFromChangeLog(syncdata.targetId, ServerId);
                             }
                             syncdata.done++;
                         } else {
-                            //assuming Fetch via Item ItemOperations does not work, fallback to resync
-                            yield eas.sync.revertLocalChangesViaResync(syncdata);
-                            return;
+                            error = true;
+                            break;
                         }
                     }
                 } else {
-                    //should not happen, throw
-                    db.removeItemFromChangeLog(syncdata.targetId, ServerId);
+                    error = true;
                 }
-                            
-            } else { //if there was no more local change we need to revert, return
-
-                return;
-
-            }
-        
-        } while (true);
-        
-    }),
-
-    revertLocalChangesViaFetch: Task.async (function* (syncdata)  {       
-        let maxnumbertosend = tbSync.prefSettings.getIntPref("eas.maxitems");
-
-        syncdata.done = 0;
-        syncdata.todo = db.getItemsFromChangeLog(syncdata.targetId, 0, "_by_user").length;
                 
-        //get changed items from ChangeLog
-        do {
-            tbSync.setSyncState("prepare.request.revertlocalchanges", syncdata.account, syncdata.folderID);
-            let changes = db.getItemsFromChangeLog(syncdata.targetId, maxnumbertosend, "_by_user");
-            let c=0;
-            
-            let revertedItems = [];
-            
-            // BUILD WBXML
-            let wbxml = tbSync.wbxmltools.createWBXML();
-            wbxml.otag("Sync");
-                wbxml.otag("Collections");
-                    wbxml.otag("Collection");
-                        if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") wbxml.atag("Class", syncdata.type);
-                        wbxml.atag("SyncKey", syncdata.synckey);
-                        wbxml.atag("CollectionId", syncdata.folderID);
-                        wbxml.otag("Commands");
-
-                            for (let i=0; i<changes.length; i++) {
-                                let items = null;
-                                let ServerId = changes[i].id;
-                                let foundItems = yield syncdata.targetObj.getItem(ServerId);
-                                if (foundItems.length > 0) { //delete item with that ServerId
-                                    db.addItemToChangeLog(syncdata.targetId, ServerId, "deleted_by_server");
-                                    yield syncdata.targetObj.deleteItem(foundItems[0]);
-                                }
-
-                                switch (changes[i].status) {
-                                    case "added_by_user": //ignore, it has been delete, done
-                                        db.removeItemFromChangeLog(syncdata.targetId, ServerId);
-                                    break;
-                                    
-                                    case "modified_by_user":
-                                    case "deleted_by_user":
-                                        wbxml.otag("Fetch");
-                                        wbxml.atag("ServerId", ServerId);
-                                        wbxml.ctag();
-                                        revertedItems.push(ServerId);
-                                        c++;
-                                        break;
-                                }
-                            }
-
-                        wbxml.ctag(); //Commands
-                    wbxml.ctag(); //Collection
-                wbxml.ctag(); //Collections
-            wbxml.ctag(); //Sync
-
-
-            if (c > 0) { //if there was at least one actual local change, send request
-
-                //SEND REQUEST & VALIDATE RESPONSE
-                tbSync.setSyncState("send.request.revertlocalchanges", syncdata.account, syncdata.folderID);
-                let response = yield eas.sendRequest(wbxml.getBytes(), "Sync", syncdata);
-                
-                tbSync.setSyncState("eval.response.revertlocalchanges", syncdata.account, syncdata.folderID);
-
-                //get data from wbxml response
-                let wbxmlData = eas.getDataFromResponse(response);
-            
-                //check status - do not allow softfail here
-                eas.checkStatus(syncdata, wbxmlData, "Sync.Collections.Collection.Status");            
-                yield tbSync.sleep(10);
-
-                if (wbxmlData.Sync.Collections.Collection.Responses) {
-                
-                    //looking for additions
-                    let add = xmltools.nodeAsArray(wbxmlData.Sync.Collections.Collection.Responses.Fetch);
-                    for (let count = 0; count < add.length; count++) {
-                        yield tbSync.sleep(2);
-
-                        let ServerId = add[count].ServerId;
-                        let data = add[count].ApplicationData;
-
-                        let foundItems = yield syncdata.targetObj.getItem(ServerId);
-                        if (foundItems.length == 0) { //do NOT add, if an item with that ServerId was found
-                                let newItem = eas.sync[syncdata.type].createItem();
-                                try {
-                                    eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
-                                    db.addItemToChangeLog(syncdata.targetId, ServerId, "added_by_server");
-                                    yield syncdata.targetObj.adoptItem(newItem);
-                                } catch (e) {
-                                    xmltools.printXmlData(add[count], true); //include application data in log                  
-                                    tbSync.dump("Bad item <javascript error>", newItem.icalString);
-                                    throw e;
-                                }
-                        } else {
-                            //should not happen, throw
-                        }
-                        db.removeItemFromChangeLog(syncdata.targetId, ServerId);
-                        syncdata.done++;
+                if (error) {
+                    //if ItemOperations.Fetch fails, fall back to Sync.Fetch, if that fails, fall back to resync
+                    if (viaItemOperations) {
+                        viaItemOperations = false;
+                        tbSync.synclog("Warning", "Server returned error during ItemOperations.Fetch, falling back to Sync.Fetch.");
+                    } else {
+                        yield eas.sync.revertLocalChangesViaResync(syncdata);
+                        return;
                     }
-                } else {
-                    //should not happen, throw
                 }
                             
-                //update synckey must be called BEFORE process functions, because they can throw on rejected items
-                eas.updateSynckey(syncdata, wbxmlData);
-
-                //PROCESS COMMANDS        
-                yield eas.sync.processCommands(wbxmlData, syncdata);
-
             } else { //if there was no more local change we need to revert, return
 
                 return;
@@ -481,7 +395,7 @@ eas.sync = {
     }),
 
     revertLocalChangesViaResync: Task.async (function* (syncdata) {
-        tbSync.synclog("Warning", "Server does not support ItemOperations, must revert via resync.");
+        tbSync.synclog("Warning", "Server does not support ItemOperations.Fetch and/or Sync.Fetch, must revert via resync.");
         let changes = db.getItemsFromChangeLog(syncdata.targetId, 0, "_by_user");
         syncdata.done = 0;
         syncdata.todo = changes.length;
@@ -544,7 +458,7 @@ eas.sync = {
                     }
                 } else {
                     //item exists, asuming resync
-                    //we MUST make sure, that our local version is send to the server (not in read-only of course)
+                    //we MUST make sure, that our local version is send to the server (not if read-only of course)
                     if (tbSync.db.getAccountSetting(syncdata.account, "downloadonly") != "1") {
                         tbSync.dump("Add request, but element exists already, asuming resync, local version wins.", ServerId);
                         db.addItemToChangeLog(syncdata.targetId, ServerId, "modified_by_user");
