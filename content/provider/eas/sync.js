@@ -280,17 +280,19 @@ eas.sync = {
                 let items = null;
                 let ServerId = changes[i].id;
                 let foundItems = yield syncdata.targetObj.getItem(ServerId);
-                if (foundItems.length > 0) { //delete item with that ServerId
-                    db.addItemToChangeLog(syncdata.targetId, ServerId, "deleted_by_server");
-                    yield syncdata.targetObj.deleteItem(foundItems[0]);
-                }
 
                 switch (changes[i].status) {
-                    case "added_by_user": //ignore, it has been delete, done
-                        db.removeItemFromChangeLog(syncdata.targetId, ServerId);
+                    case "added_by_user": //remove
+                        if (foundItems.length > 0) {
+                            db.addItemToChangeLog(syncdata.targetId, ServerId, "deleted_by_server"); //this changelog entry will be removed by the listener
+                            yield syncdata.targetObj.deleteItem(foundItems[0]);
+                        }
                     break;
                     
                     case "modified_by_user":
+                        if (foundItems.length > 0) { //delete item so it can be replaced with a fresh copy, the changelog entry will be changed from modified to deleted
+                            yield syncdata.targetObj.deleteItem(foundItems[0]);
+                        }
                     case "deleted_by_user":
                         if (viaItemOperations) {
                             wbxml.otag("Fetch");
@@ -327,23 +329,22 @@ eas.sync = {
             }
 
             if (c > 0) { //if there was at least one actual local change, send request
-
-                //SEND REQUEST & VALIDATE RESPONSE
-                tbSync.setSyncState("send.request.revertlocalchanges", syncdata.account, syncdata.folderID);
-                let response = yield eas.sendRequest(wbxml.getBytes(), (viaItemOperations) ? "ItemOperations" : "Sync", syncdata);
-                
-                tbSync.setSyncState("eval.response.revertlocalchanges", syncdata.account, syncdata.folderID);
-
-                //get data from wbxml response
-                let wbxmlData = eas.getDataFromResponse(response);
-
-                //no need to check status, we fall back to other methods if any kind of error
-                //let statusPath = (viaItemOperations) ? "ItemOperations.Status" : "Sync.Collections.Collection.Status";                
-                //check status - do not allow softfail here
-                //eas.checkStatus(syncdata, wbxmlData, statusPath);            
-                //yield tbSync.sleep(10);
-                
                 let error = false;
+                let wbxmlData = "";
+                
+                //SEND REQUEST & VALIDATE RESPONSE
+                try {
+                    tbSync.setSyncState("send.request.revertlocalchanges", syncdata.account, syncdata.folderID);
+                    let response = yield eas.sendRequest(wbxml.getBytes(), (viaItemOperations) ? "ItemOperations" : "Sync", syncdata);
+                        
+                    tbSync.setSyncState("eval.response.revertlocalchanges", syncdata.account, syncdata.folderID);
+
+                    //get data from wbxml response
+                    wbxmlData = eas.getDataFromResponse(response);
+                } catch (e) {
+                    //we do not handle errors, IF there was an error, wbxmlData is empty and will trigger the fallback
+                }
+                
                 let fetchPath = (viaItemOperations) ? "ItemOperations.Response.Fetch" : "Sync.Collections.Collection.Responses.Fetch";
                 if (xmltools.hasWbxmlDataField(wbxmlData, fetchPath)) {
                 
