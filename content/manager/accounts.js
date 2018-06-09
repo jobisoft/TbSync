@@ -2,6 +2,10 @@
 
 Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+if ("calICalendar" in Components.interfaces && typeof cal == 'undefined') {
+    Components.utils.import("resource://calendar/modules/calUtils.jsm");
+    Components.utils.import("resource://calendar/modules/ical.js");    
+}
 
 var tbSyncAccounts = {
 
@@ -113,88 +117,165 @@ var tbSyncAccounts = {
                         switch (folders[f].type) {
                             case "9": 
                             case "14": 
-                                //"Contacts";
-                                let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                let addressbook = tbSync.getAddressBookObject(targetId);
-                                for (let m=0; m < max; m++) {
-                                    let newItem = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-                                    let properties = {
-                                        DisplayName: 'Debug Contact ' + Date.now(),
-                                        FirstName: 'Debug',
-                                        LastName: 'Contact ' + Date.now(),
-                                        PrimaryEmail: 'debugcontact@inter.net',
-                                        SecondEmail: 'debugcontact2@inter.net',
-                                        Email3Address: 'debugcontact3@inter.net',
-                                        WebPage1: 'WebPage',
-                                        SpouseName: 'Spouse',
-                                        CellularNumber: '0123',
-                                        PagerNumber: '4567',
-                                        HomeCity: 'HomeAddressCity',
-                                        HomeCountry: 'HomeAddressCountry',
-                                        HomeZipCode: '12345',
-                                        HomeState: 'HomeAddressState',
-                                        HomePhone: '6789',
-                                        Company: 'CompanyName',
-                                        Department: 'Department',
-                                        JobTitle: 'JobTitle',
-                                        WorkCity: 'BusinessAddressCity',
-                                        WorkCountry: 'BusinessAddressCountry',
-                                        WorkZipCode: '12345',
-                                        WorkState: 'BusinessAddressState',
-                                        WorkPhone: '6789',
-                                        Custom1: 'OfficeLocation',
-                                        FaxNumber: '3535',
-                                        AssistantName: 'AssistantName',
-                                        AssistantPhoneNumber: '4353453',
-                                        BusinessFaxNumber: '574563',
-                                        Business2PhoneNumber: '43564657',
-                                        Home2PhoneNumber: '767564',
-                                        CarPhoneNumber: '3543646',
-                                        MiddleName: 'MiddleName',
-                                        RadioPhoneNumber: '343546',
-                                        OtherAddressCity: 'OtherAddressCity',
-                                        OtherAddressCountry: 'OtherAddressCountry',
-                                        OtherAddressPostalCode: '12345',
-                                        OtherAddressState: 'OtherAddressState',
-                                        NickName: 'NickName',
-                                        Custom2: 'CustomerId',
-                                        Custom3: 'GovernmentId',
-                                        Custom4: 'AccountName',
-                                        IMAddress: 'IMAddress',
-                                        IMAddress2: 'IMAddress2',
-                                        IMAddress3: 'IMAddress3',
-                                        ManagerName: 'ManagerName',
-                                        CompanyMainPhone: 'CompanyMainPhone',
-                                        MMS: 'MMS',
-                                        HomeAddress: "Address",
-                                        HomeAddress2: "Address2",
-                                        WorkAddress: "Address",
-                                        WorkAddress2: "Address2",
-                                        OtherAddress: "Address",
-                                        OtherAddress2: "Address2",
-                                        Notes: "Notes",
-                                        Categories: tbSync.eas.sync.Contacts.categoriesToString(["Cat1","Cat2"]),
-                                        Cildren: tbSync.eas.sync.Contacts.categoriesToString(["Child1","Child2"]),
-                                        BirthDay: "15",
-                                        BirthMonth: "05",
-                                        BirthYear: "1980",
-                                        AnniversaryDay: "27",
-                                        AnniversaryMonth: "6",
-                                        AnniversaryYear: "2009"                                    
-                                    };
-                                    for (let p in properties) {
-                                        newItem.setProperty(p, properties[p]);
+                                { 
+                                    //"Contacts";
+                                    let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
+                                    let addressbook = tbSync.getAddressBookObject(targetId);
+                                    for (let m=0; m < max; m++) {
+                                        let newItem = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
+                                        let properties = {
+                                            DisplayName: 'Debug Contact ' + Date.now(),
+                                            FirstName: 'Debug',
+                                            LastName: 'Contact ' + Date.now(),
+                                            PrimaryEmail: 'debugcontact@inter.net',
+                                            SecondEmail: 'debugcontact2@inter.net',
+                                            Email3Address: 'debugcontact3@inter.net',
+                                            WebPage1: 'WebPage',
+                                            SpouseName: 'Spouse',
+                                            CellularNumber: '0123',
+                                            PagerNumber: '4567',
+                                            HomeCity: 'HomeAddressCity',
+                                            HomeCountry: 'HomeAddressCountry',
+                                            HomeZipCode: '12345',
+                                            HomeState: 'HomeAddressState',
+                                            HomePhone: '6789',
+                                            Company: 'CompanyName',
+                                            Department: 'Department',
+                                            JobTitle: 'JobTitle',
+                                            WorkCity: 'BusinessAddressCity',
+                                            WorkCountry: 'BusinessAddressCountry',
+                                            WorkZipCode: '12345',
+                                            WorkState: 'BusinessAddressState',
+                                            WorkPhone: '6789',
+                                            Custom1: 'OfficeLocation',
+                                            FaxNumber: '3535',
+                                            AssistantName: 'AssistantName',
+                                            AssistantPhoneNumber: '4353453',
+                                            BusinessFaxNumber: '574563',
+                                            Business2PhoneNumber: '43564657',
+                                            Home2PhoneNumber: '767564',
+                                            CarPhoneNumber: '3543646',
+                                            MiddleName: 'MiddleName',
+                                            RadioPhoneNumber: '343546',
+                                            OtherAddressCity: 'OtherAddressCity',
+                                            OtherAddressCountry: 'OtherAddressCountry',
+                                            OtherAddressPostalCode: '12345',
+                                            OtherAddressState: 'OtherAddressState',
+                                            NickName: 'NickName',
+                                            Custom2: 'CustomerId',
+                                            Custom3: 'GovernmentId',
+                                            Custom4: 'AccountName',
+                                            IMAddress: 'IMAddress',
+                                            IMAddress2: 'IMAddress2',
+                                            IMAddress3: 'IMAddress3',
+                                            ManagerName: 'ManagerName',
+                                            CompanyMainPhone: 'CompanyMainPhone',
+                                            MMS: 'MMS',
+                                            HomeAddress: "Address",
+                                            HomeAddress2: "Address2",
+                                            WorkAddress: "Address",
+                                            WorkAddress2: "Address2",
+                                            OtherAddress: "Address",
+                                            OtherAddress2: "Address2",
+                                            Notes: "Notes",
+                                            Categories: tbSync.eas.sync.Contacts.categoriesToString(["Cat1","Cat2"]),
+                                            Cildren: tbSync.eas.sync.Contacts.categoriesToString(["Child1","Child2"]),
+                                            BirthDay: "15",
+                                            BirthMonth: "05",
+                                            BirthYear: "1980",
+                                            AnniversaryDay: "27",
+                                            AnniversaryMonth: "6",
+                                            AnniversaryYear: "2009"                                    
+                                        };
+                                        for (let p in properties) {
+                                            newItem.setProperty(p, properties[p]);
+                                        }
+                                        addressbook.addCard(newItem);
                                     }
-                                    addressbook.addCard(newItem);
                                 }
-                            break;
+                                break;
                             case "8":
                             case "13":
-                                //"Calendar";
+                                {
+                                    //"Calendar";
+                                    let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
+                                    let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
+                                    
+                                    //promisify calender, so it can be used together with yield
+                                    let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
+                                    let item = cal.createEvent();
+                                    item.icalString = [
+                                                                "BEGIN:VCALENDAR",
+                                                                "PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN",
+                                                                "VERSION:2.0",
+                                                                "BEGIN:VEVENT",
+                                                                "CREATED:20180609T203704Z",
+                                                                "LAST-MODIFIED:20180609T203759Z",
+                                                                "DTSTAMP:20180609T203759Z",
+                                                                "SUMMARY:TEST",
+                                                                "ORGANIZER;RSVP=FALSE;CN=support;PARTSTAT=ACCEPTED;ROLE=CHAIR:mailto:test@server.de",
+                                                                "DTSTART;VALUE=DATE:20180114",
+                                                                "DTEND;VALUE=DATE:20180115",
+                                                                "DESCRIPTION:sdfdsf",
+                                                                "X-EAS-BUSYSTATUS:0",
+                                                                "TRANSP:TRANSPARENT",
+                                                                "X-EAS-SENSITIVITY:1",
+                                                                "X-EAS-RESPONSETYPE:1",
+                                                                "X-EAS-MEETINGSTATUS:0",
+                                                                "END:VEVENT",
+                                                                "END:VCALENDAR"].join("\n");
+
+                                    targetObj.adoptItem(item)
+                                }
                                 break;
                             case "7":
                             case "15":
-                                //"Tasks";
+                                {
+                                    //"Tasks";
+                                    let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
+                                    let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
+                                    
+                                    //promisify calender, so it can be used together with yield
+                                    let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
+                                    let item = cal.createTodo();
+                                    item.icalString = [
+                                                                "BEGIN:VCALENDAR",
+                                                                "PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN",
+                                                                "VERSION:2.0",
+                                                                "BEGIN:VTIMEZONE",
+                                                                "TZID:Europe/Berlin",
+                                                                "BEGIN:DAYLIGHT",
+                                                                "TZOFFSETFROM:+0100",
+                                                                "TZOFFSETTO:+0200",
+                                                                "TZNAME:CEST",
+                                                                "DTSTART:19700329T020000",
+                                                                "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3",
+                                                                "END:DAYLIGHT",
+                                                                "BEGIN:STANDARD",
+                                                                "TZOFFSETFROM:+0200",
+                                                                "TZOFFSETTO:+0100",
+                                                                "TZNAME:CET",
+                                                                "DTSTART:19701025T030000",
+                                                                "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10",
+                                                                "END:STANDARD",
+                                                                "END:VTIMEZONE",
+                                                                "BEGIN:VTODO",
+                                                                "CREATED:20180609T225952Z",
+                                                                "LAST-MODIFIED:20180609T230558Z",
+                                                                "DTSTAMP:20180609T230558Z",
+                                                                "SUMMARY:Testaufgabe",
+                                                                "PRIORITY:5",
+                                                                "DTSTART;TZID=Europe/Berlin:20180204T010000",
+                                                                "DUE;TZID=Europe/Berlin:20180204T010000",
+                                                                "DESCRIPTION:Ja mei\n",
+                                                                "X-EAS-SENSITIVITY:0",
+                                                                "CLASS:PUBLIC",
+                                                                "X-EAS-IMPORTANCE:1",
+                                                                "END:VTODO",
+                                                                "END:VCALENDAR"].join("\n");
+
+                                    targetObj.adoptItem(item)
+                                }
                                 break;
                         }
                     }
