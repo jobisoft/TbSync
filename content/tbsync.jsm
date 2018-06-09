@@ -60,8 +60,10 @@ var tbSync = {
     bundle: Services.strings.createBundle("chrome://tbsync/locale/tbSync.strings"),
 
     prefWindowObj: null,
-    decoder : new TextDecoder(),
-    encoder : new TextEncoder(),
+    decoder: new TextDecoder(),
+    encoder: new TextEncoder(),
+
+    prefIDs: {},
 
     prefSettings: Services.prefs.getBranch("extensions.tbsync."),
     syncProviderPref: Services.prefs.getBranch("extensions.tbsync.provider."),
@@ -937,7 +939,11 @@ var tbSync = {
         onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {
             //if a new book is added, get its prefId (which we need to get the parentDir of a modified card)
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                tbSync.scanPrefIdsOfAddressBooks();
+                if (!aItem.isRemote && aItem.dirPrefId) {
+                    tbSync.prefIDs[aItem.dirPrefId] = aItem.URI;
+                    tbSync.dump("PREFID: Single Add", "<" + aItem.dirPrefId + "> = <" + aItem.URI + ">")
+                }
+                return;
             }
             
             if (aParentDir instanceof Components.interfaces.nsIAbDirectory) {
@@ -1051,17 +1057,18 @@ var tbSync = {
     },
 
     getUriFromPrefId : function(id) {
-        return this._prefIDs[id];
+        return tbSync.prefIDs[id];
     },
         
     scanPrefIdsOfAddressBooks : function () {
         let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);        
         let allAddressBooks = abManager.directories;
-        this._prefIDs = {};
         while (allAddressBooks.hasMoreElements()) {
             let addressBook = allAddressBooks.getNext().QueryInterface(Components.interfaces.nsIAbDirectory);
-            if (addressBook.isRemote) continue;
-            this._prefIDs[addressBook.dirPrefId] = addressBook.URI;
+            if (!addressBook.isRemote&& addressBook.dirPrefId) {
+                tbSync.dump("PREFID: Group Add", "<" + addressBook.dirPrefId + "> = <" + addressBook.URI + ">")
+                tbSync.prefIDs[addressBook.dirPrefId] = addressBook.URI;
+            }
         }
     },
     
@@ -1668,7 +1675,6 @@ var tbSync = {
     },
     
     checkCalender: function (account, folderID) {
-        tbSync.dump("checkCalender", account + "." + folderID);
         let folder = tbSync.db.getFolder(account, folderID);
         let calManager = cal.getCalendarManager();
         let targetCal = calManager.getCalendarById(folder.target);
