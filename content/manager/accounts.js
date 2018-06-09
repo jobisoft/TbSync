@@ -45,11 +45,12 @@ var tbSyncAccounts = {
                                 let oldresults = addressbook.getCardsFromProperty("PrimaryEmail", "debugcontact@inter.net", true);
                                 while (oldresults.hasMoreElements()) {
                                     let card = oldresults.getNext();
-                                    card.setProperty("DisplayName", "Debug Contact " + Date.now());
-                                    card.setProperty("LastName", "Contact " + Date.now());
-                                    addressbook.modifyCard(newitem.card);
+                                    if (card instanceof Components.interfaces.nsIAbCard && !card.isMailList) {
+                                        card.setProperty("DisplayName", "Debug Contact " + Date.now());
+                                        card.setProperty("LastName", "Contact " + Date.now());
+                                        addressbook.modifyCard(card);
+                                    }
                                 }
-                                
                                 break;
                             case "8":
                             case "13":
