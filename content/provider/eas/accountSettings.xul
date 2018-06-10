@@ -101,7 +101,7 @@
                         <hbox height="24" align="center">
                             <label flex="1" style="margin-left:0" class="header" id="tbsync.accountsettings.contacts.label" value="&pref.contactoptions;"/>
                         </hbox>
-                        <checkbox id="tbsync.accountsettings.birthday" label="&pref.birthday;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
+                        <!--checkbox id="tbsync.accountsettings.birthday" label="&pref.birthday;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" /-->
                         <checkbox id="tbsync.accountsettings.displayoverride" label="&pref.displayoverride;" onblur="tbSyncAccountSettings.instantSaveSetting(this);" />
 
                         <hbox align="center">

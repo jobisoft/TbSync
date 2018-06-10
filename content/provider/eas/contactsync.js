@@ -327,7 +327,7 @@ eas.sync.Contacts = {
                 //set
                 if (month.length<2) month="0"+month;
                 if (day.length<2) day="0"+day;
-                if (tbSync.db.getAccountSetting(syncdata.account, "birthday") == "1") wbxml.atag(dates[p][0], year + "-" + month + "-" + day + "T00:00:00.000Z");
+                wbxml.atag(dates[p][0], year + "-" + month + "-" + day + "T00:00:00.000Z");
             }
         }
 
