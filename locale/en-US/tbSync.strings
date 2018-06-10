@@ -89,3 +89,6 @@ github_repository=TbSync github repository
 update_to_stable=Recommendation: Update to the latest stable version.
 update_to_beta=Recommendation: Update to the latest beta version.
 
+addressbook.searchall=Search all address books
+addressbook.searchthis=Search this address book
+addressbook.searchgal=Search this address book and the global directoy (##replace.1##)

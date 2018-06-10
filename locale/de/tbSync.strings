@@ -88,3 +88,7 @@ amo_repository=Thunderbird AddOn Verzeichnis
 github_repository=TbSync Github Verzeichnis
 update_to_stable=Empfehlung: Installieren Sie die aktuelle Standard-Version.
 update_to_beta=Empfehlung: Installieren Sie die aktuelle Test-Version.
+
+addressbook.searchall=Alle Adressbücher durchsuchen
+addressbook.searchthis=Dieses Adressbuch durchsuchen
+addressbook.searchgal=Dieses Adressbuch und das globale Serververzeichnis durchsuchen (##replace.1##)

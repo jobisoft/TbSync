@@ -22,7 +22,19 @@ serverSearch.eventHandlerWindowReference = function (window) {
                 serverSearch.onSearchInputChanged(this.window);
                 break;
             case "select":
-                serverSearch.clearServerSearchResults(this.window);
+                {
+                    serverSearch.clearServerSearchResults(this.window);
+                    let searchbox =  window.document.getElementById("peopleSearchInput");
+                    if (searchbox) {
+                        let target = window.GetSelectedDirectory();
+                        let folders = tbSync.db.findFoldersWithSetting("target", target);
+                        if (folders.length > 0) {
+                            searchbox.setAttribute("placeholder", tbSync.getLocalizedMessage("addressbook.searchgal::" + tbSync.db.getAccountSetting(folders[0].account, "accountname")));
+                        } else {
+                            searchbox.setAttribute("placeholder", tbSync.getLocalizedMessage((target == "moz-abdirectory://?") ? "addressbook.searchall" : "addressbook.searchthis"));
+                        }
+                    }
+                }
                 break;
         }
     };
