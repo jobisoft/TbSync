@@ -907,7 +907,7 @@ var eas = {
             "downloadonly" : "0",
             "autosync" : "0",
             "horde" : "0",
-            "tzpush" : "1",
+            "tzpush" : "1", //legacy default value for old account
             "lastEasOptionsUpdate":"0",
             "allowedEasVersions": "",
             "allowedEasCommands": ""};
@@ -1107,7 +1107,7 @@ var eas = {
         db.setAccountSetting(account, "asversion", db.getAccountSetting(account, "asversionselected"));
         db.setAccountSetting(account, "lastEasOptionsUpdate", "0");
         db.setAccountSetting(account, "lastsynctime", "0");
-        db.setAccountSetting(account, "tzpush", tbSync.prefSettings.getBoolPref("eas.use_tzpush_contactsync_code") ? "1" : "0");
+        db.setAccountSetting(account, "tzpush", "0");
     },
 
     disableAccount: function (account) {
