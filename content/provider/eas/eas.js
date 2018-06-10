@@ -467,10 +467,11 @@ var eas = {
                         //promisify addressbook, so it can be used together with yield
                         syncdata.targetObj = eas.sync.Contacts.promisifyAddressbook(syncdata.addressbookObj);
                         
-                        if (tbSync.db.getAccountSetting(syncdata.account, "tzpush") == "1") yield eas.tzpush.start(syncdata); //using old tzpush contact sync code
-                        else {
-                            tbSync.dump("CONTACT SYNC", "NEW SYNC METHOD!");
+                        if (tbSync.db.getAccountSetting(syncdata.account, "tzpush") == "0") {
                             yield eas.sync.start(syncdata);   //using new tbsync contacts sync code
+                        } else {
+                            tbSync.dump("CONTACT SYNC", "OLD TZPUSH SYNC METHOD!");
+                            yield eas.tzpush.start(syncdata); //using old tzpush contact sync code
                         }
                         break;
 
