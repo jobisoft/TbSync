@@ -33,7 +33,7 @@ var tbSyncAccounts = {
         }
     },
     
-    debugMod: function () { 
+    debugMod: async function () { 
         let accounts = tbSync.db.getAccounts();
         for (let i=0; i < accounts.IDs.length; i++) {
             if (tbSync.isEnabled(accounts.IDs[i])) {
@@ -44,25 +44,46 @@ var tbSyncAccounts = {
                             case "9": 
                             case "14": 
                                 //"Contacts";
-                                let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                let addressbook = tbSync.getAddressBookObject(targetId);
-                                let oldresults = addressbook.getCardsFromProperty("PrimaryEmail", "debugcontact@inter.net", true);
-                                while (oldresults.hasMoreElements()) {
-                                    let card = oldresults.getNext();
-                                    if (card instanceof Components.interfaces.nsIAbCard && !card.isMailList) {
-                                        card.setProperty("DisplayName", "Debug Contact " + Date.now());
-                                        card.setProperty("LastName", "Contact " + Date.now());
-                                        addressbook.modifyCard(card);
+                                {
+                                    let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
+                                    let addressbook = tbSync.getAddressBookObject(targetId);
+                                    let oldresults = addressbook.getCardsFromProperty("PrimaryEmail", "debugcontact@inter.net", true);
+                                    while (oldresults.hasMoreElements()) {
+                                        let card = oldresults.getNext();
+                                        if (card instanceof Components.interfaces.nsIAbCard && !card.isMailList) {
+                                            card.setProperty("DisplayName", "Debug Contact " + Date.now());
+                                            card.setProperty("LastName", "Contact " + Date.now());
+                                            addressbook.modifyCard(card);
+                                        }
                                     }
                                 }
                                 break;
                             case "8":
                             case "13":
                                 //"Calendar";
-                                break;
                             case "7":
                             case "15":
                                 //"Tasks";
+                                {
+                                    let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
+                                    let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
+                                    
+                                    //promisify calender, so it can be used together with yield
+                                    let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
+                                    let results = await targetObj.getAllItems();
+
+                                    let titles = {};
+                                    titles["8"] = "Debug Event";
+                                    titles["13"] = "Debug Event (*)";
+                                    titles["7"] = "Debug Todo";
+                                    titles["15"] = "Debug Todo (*)";
+                                        
+                                    for (let r=0; r < results.length; r++) {
+                                        let newItem = results[r].clone();
+                                        newItem.title = titles[folders[f].type] + " " + Date.now();
+                                        await targetObj.modifyItem(newItem, results[r]);                                        
+                                    }
+                                }
                                 break;
                         }
                     }
@@ -71,7 +92,54 @@ var tbSyncAccounts = {
         }
     },
 
-    debugDel: function () { 
+    debugDel: async function () { 
+        let accounts = tbSync.db.getAccounts();
+        for (let i=0; i < accounts.IDs.length; i++) {
+            if (tbSync.isEnabled(accounts.IDs[i])) {
+                let folders = tbSync.db.getFolders(accounts.IDs[i]);
+                for (let f in folders) {
+                    if (folders[f].selected == "1") {
+                        switch (folders[f].type) {
+                            case "9": 
+                            case "14":
+                                //"Contacts";
+                                {                            
+                                    let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
+                                    let addressbook = tbSync.getAddressBookObject(targetId);
+                                    let oldresults = addressbook.getCardsFromProperty("PrimaryEmail", "debugcontact@inter.net", true);
+                                    let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+                                    while (oldresults.hasMoreElements()) {
+                                        cardsToDelete.appendElement(oldresults.getNext(), "");
+                                    }
+                                    addressbook.deleteCards(cardsToDelete);
+                                }
+                                break;
+                            case "8":
+                            case "13":
+                                //"Calendar"
+                            case "7":
+                            case "15":
+                                //"Tasks"
+                                {
+                                    let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
+                                    let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
+                                    
+                                    //promisify calender, so it can be used together with yield
+                                    let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
+                                    let results = await targetObj.getAllItems();
+                                    for (let r=0; r < results.length; r++) {
+                                        await targetObj.deleteItem(results[r]);
+                                    }
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    },
+
+    debugAdd: function (set) { 
         let accounts = tbSync.db.getAccounts();
         for (let i=0; i < accounts.IDs.length; i++) {
             if (tbSync.isEnabled(accounts.IDs[i])) {
@@ -82,45 +150,11 @@ var tbSyncAccounts = {
                             case "9": 
                             case "14": 
                                 //"Contacts";
-                                let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                let addressbook = tbSync.getAddressBookObject(targetId);
-                                let oldresults = addressbook.getCardsFromProperty("PrimaryEmail", "debugcontact@inter.net", true);
-                                let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-                                while (oldresults.hasMoreElements()) {
-                                    cardsToDelete.appendElement(oldresults.getNext(), "");
-                                }
-                                addressbook.deleteCards(cardsToDelete);
-                                
-                                break;
-                            case "8":
-                            case "13":
-                                //"Calendar";
-                                break;
-                            case "7":
-                            case "15":
-                                //"Tasks";
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-    },
-
-    debugAdd: function (max) { 
-        let accounts = tbSync.db.getAccounts();
-        for (let i=0; i < accounts.IDs.length; i++) {
-            if (tbSync.isEnabled(accounts.IDs[i])) {
-                let folders = tbSync.db.getFolders(accounts.IDs[i]);
-                for (let f in folders) {
-                    if (folders[f].selected == "1") {
-                        switch (folders[f].type) {
-                            case "9": 
-                            case "14": 
                                 { 
-                                    //"Contacts";
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
                                     let addressbook = tbSync.getAddressBookObject(targetId);
+                                    //the two sets differ by number of contacts
+                                    let max = (set == 1) ? 2 : 10;
                                     for (let m=0; m < max; m++) {
                                         let newItem = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
                                         let properties = {
@@ -196,15 +230,15 @@ var tbSyncAccounts = {
                                 break;
                             case "8":
                             case "13":
+                                //"Calendar";
                                 {
-                                    //"Calendar";
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
                                     let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
                                     
                                     //promisify calender, so it can be used together with yield
                                     let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
                                     let item = cal.createEvent();
-                                    item.icalString = [
+                                    if (set == 1) item.icalString = [
                                                                 "BEGIN:VCALENDAR",
                                                                 "PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN",
                                                                 "VERSION:2.0",
@@ -212,13 +246,50 @@ var tbSyncAccounts = {
                                                                 "CREATED:20180609T203704Z",
                                                                 "LAST-MODIFIED:20180609T203759Z",
                                                                 "DTSTAMP:20180609T203759Z",
-                                                                "SUMMARY:TEST",
-                                                                "ORGANIZER;RSVP=FALSE;CN=support;PARTSTAT=ACCEPTED;ROLE=CHAIR:mailto:test@server.de",
+                                                                "SUMMARY:Debug Event",
+                                                                "ORGANIZER;RSVP=FALSE;CN=support;PARTSTAT=ACCEPTED;ROLE=CHAIR:mailto:user@inter.net",
                                                                 "DTSTART;VALUE=DATE:20180114",
                                                                 "DTEND;VALUE=DATE:20180115",
-                                                                "DESCRIPTION:sdfdsf",
+                                                                "DESCRIPTION:Test",
                                                                 "X-EAS-BUSYSTATUS:0",
                                                                 "TRANSP:TRANSPARENT",
+                                                                "X-EAS-SENSITIVITY:1",
+                                                                "X-EAS-RESPONSETYPE:1",
+                                                                "X-EAS-MEETINGSTATUS:0",
+                                                                "END:VEVENT",
+                                                                "END:VCALENDAR"].join("\n");
+                                    if (set == 2) item.icalString = ["BEGIN:VCALENDAR",
+                                                                "PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN",
+                                                                "VERSION:2.0",
+                                                                "BEGIN:VTIMEZONE",
+                                                                "TZID:Europe/Berlin",
+                                                                "BEGIN:DAYLIGHT",
+                                                                "TZOFFSETFROM:+0100",
+                                                                "TZOFFSETTO:+0200",
+                                                                "TZNAME:CEST",
+                                                                "DTSTART:19700329T020000",
+                                                                "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3",
+                                                                "END:DAYLIGHT",
+                                                                "BEGIN:STANDARD",
+                                                                "TZOFFSETFROM:+0200",
+                                                                "TZOFFSETTO:+0100",
+                                                                "TZNAME:CET",
+                                                                "DTSTART:19701025T030000",
+                                                                "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10",
+                                                                "END:STANDARD",
+                                                                "END:VTIMEZONE",
+                                                                "BEGIN:VEVENT",
+                                                                "CREATED:20180610T083243Z",
+                                                                "LAST-MODIFIED:20180610T083353Z",
+                                                                "DTSTAMP:20180610T083353Z",
+                                                                "SUMMARY:Debug Event (Reccurring)",
+                                                                "ORGANIZER;RSVP=FALSE;CN=support;PARTSTAT=ACCEPTED;ROLE=CHAIR:mailto:user@inter.net",
+                                                                "RRULE:FREQ=WEEKLY;UNTIL=20181030T220000Z;BYDAY=FR",
+                                                                "DTSTART;TZID=Europe/Berlin:20180518T230000",
+                                                                "DTEND;TZID=Europe/Berlin:20180519T000000",
+                                                                "DESCRIPTION:Test",
+                                                                "X-EAS-BUSYSTATUS:2",
+                                                                "TRANSP:OPAQUE",
                                                                 "X-EAS-SENSITIVITY:1",
                                                                 "X-EAS-RESPONSETYPE:1",
                                                                 "X-EAS-MEETINGSTATUS:0",
@@ -230,15 +301,15 @@ var tbSyncAccounts = {
                                 break;
                             case "7":
                             case "15":
+                                //"Tasks";
                                 {
-                                    //"Tasks";
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
                                     let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
                                     
                                     //promisify calender, so it can be used together with yield
                                     let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
                                     let item = cal.createTodo();
-                                    item.icalString = [
+                                    if (set == 1) item.icalString = [
                                                                 "BEGIN:VCALENDAR",
                                                                 "PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN",
                                                                 "VERSION:2.0",
@@ -271,6 +342,44 @@ var tbSyncAccounts = {
                                                                 "X-EAS-SENSITIVITY:0",
                                                                 "CLASS:PUBLIC",
                                                                 "X-EAS-IMPORTANCE:1",
+                                                                "END:VTODO",
+                                                                "END:VCALENDAR"].join("\n");
+
+                                    if (set == 2) item.icalString = [
+                                                                "BEGIN:VCALENDAR",
+                                                                "PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN",
+                                                                "VERSION:2.0",
+                                                                "BEGIN:VTIMEZONE",
+                                                                "TZID:Europe/Berlin",
+                                                                "BEGIN:DAYLIGHT",
+                                                                "TZOFFSETFROM:+0100",
+                                                                "TZOFFSETTO:+0200",
+                                                                "TZNAME:CEST",
+                                                                "DTSTART:19700329T020000",
+                                                                "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3",
+                                                                "END:DAYLIGHT",
+                                                                "BEGIN:STANDARD",
+                                                                "TZOFFSETFROM:+0200",
+                                                                "TZOFFSETTO:+0100",
+                                                                "TZNAME:CET",
+                                                                "DTSTART:19701025T030000",
+                                                                "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10",
+                                                                "END:STANDARD",
+                                                                "END:VTIMEZONE",
+                                                                "BEGIN:VTODO",
+                                                                "CREATED:20180610T083240Z",
+                                                                "LAST-MODIFIED:20180610T084151Z",
+                                                                "DTSTAMP:20180610T084151Z",
+                                                                "SUMMARY:Debug Todo (Reccurring)",
+                                                                "PRIORITY:5",
+                                                                "RRULE:FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR",
+                                                                "DTSTART;TZID=Europe/Berlin:20180204T010000",
+                                                                "DUE;TZID=Europe/Berlin:20180204T010000",
+                                                                "DESCRIPTION:Test",
+                                                                "X-EAS-SENSITIVITY:0",
+                                                                "CLASS:PUBLIC",
+                                                                "X-EAS-IMPORTANCE:1",
+                                                                "SEQUENCE:1",
                                                                 "END:VTODO",
                                                                 "END:VCALENDAR"].join("\n");
 
@@ -345,7 +454,7 @@ var tbSyncAccounts = {
         if (isActionsDropdown) {
             document.getElementById("accountActionsDebugToggleAll").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
             document.getElementById("accountActionsDebugAdd1").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
-            document.getElementById("accountActionsDebugAdd10").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
+            document.getElementById("accountActionsDebugAdd2").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
             document.getElementById("accountActionsDebugMod").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
             document.getElementById("accountActionsDebugDel").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
             document.getElementById("accountActionsSeparatorDebug").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
