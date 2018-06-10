@@ -101,7 +101,7 @@ var tbSync = {
         //init DB
         yield tbSync.db.init();
 
-        //convert database when migrating from connect state to enable state (keep this in 0.7 branch)
+        //convert database when migrating from legacy connect state to enable state (keep this in 0.7 branch)
         let accounts = tbSync.db.getAccounts();
         for (let i = 0; i < accounts.IDs.length; i++) {
             if (accounts.data[accounts.IDs[i]].state == "connected") accounts.data[accounts.IDs[i]].state = "enabled";
@@ -216,6 +216,15 @@ var tbSync = {
         tbSync.syncTimer.start();
 
         tbSync.dump("TbSync init","Done");
+
+        //check for missing downloadonly option (prepare for v0.7.9) and old tzpush option
+        let showMigrationPopup = false;
+        let accounts = tbSync.db.getAccounts();
+        for (let i = 0; i < accounts.IDs.length; i++) {
+            if (accounts.data[accounts.IDs[i]].tzpush != "0") showMigrationPopup = true;
+        }
+        if (tbSync.db.findFoldersWithSetting("downloadonly", "").length > 0) showMigrationPopup = true;
+        if (showMigrationPopup) tbSync.window.alert(tbSync.getLocalizedMessage("migrate"));
 
         //check for updates
         yield tbSync.check4updates();

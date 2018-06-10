@@ -92,3 +92,5 @@ update_to_beta=Recommendation: Update to the latest beta version.
 addressbook.searchall=Search all address books
 addressbook.searchthis=Search this address book
 addressbook.searchgal=Search this address book and the global directoy (##replace.1##)
+
+migrate=Important information regarding TbSync!\n\nIn this version a lot has changed "under the hood". It is imperative that you deactivate all your accounts in the TbSync account manager as soon as possible and then reactivate them again, which will adjust the accounts to the internal changes. Prior synchronization is possible.\n\nThis message will be displayed until you complete these steps for all your accounts.

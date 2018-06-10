@@ -92,3 +92,5 @@ update_to_beta=Empfehlung: Installieren Sie die aktuelle Test-Version.
 addressbook.searchall=Alle Adressbücher durchsuchen
 addressbook.searchthis=Dieses Adressbuch durchsuchen
 addressbook.searchgal=Dieses Adressbuch und das globale Serververzeichnis durchsuchen (##replace.1##)
+
+migrate=Wichtige Informationen zu TbSync!\n\nIn dieser Version hat sich "unter der Haube" einiges verändert. Es ist zwingend notwendig, das Sie all Ihre angelegten Konten im TbSync Account Manager möglichst bald einmal deaktivieren und danach wieder re-aktivieren, wodurch die Konten an die internen Änderungen angepasst werden. Eine vorherige Synchronisation ist möglich.\n\nSolange Sie diese Schritte nicht für all Ihre Konten durchgeführt haben, erscheint diese Meldung.

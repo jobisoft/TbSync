@@ -248,7 +248,8 @@ var eas = {
                         newData.parentID = add[count].ParentId;
                         newData.synckey = "";
                         newData.target = "";
-                        
+                        newData.downloadonly = tbSync.db.getAccountSetting(syncdata.account, "downloadonly"); //in v0.7.9 each folder will have its own settings, the main setting is just the default
+
                         //if there is a cached version of this folder, take selection state from there
                         if (tbSync.db.getAccountSetting(syncdata.account, "syncdefaultfolders") == "1") {
                             let cachedFolders = tbSync.db.findFoldersWithSetting(["cached","name","account","type"], ["1", newData.name,  newData.account, newData.type], "provider", "eas");
@@ -1028,6 +1029,7 @@ var eas = {
             "lastsynctime" : "",
             "status" : "",
             "parentID" : "",
+            "downloadonly" : "", //indicate not set
             "cached" : "0"};
         return folder;
     },
