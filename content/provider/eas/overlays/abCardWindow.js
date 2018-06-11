@@ -22,8 +22,10 @@ tbSync.eas.onBeforeInjectIntoCardEditWindow = function (window) {
 
 tbSync.eas.onInjectIntoCardEditWindow = function (window) {
     if (window.location.href=="chrome://messenger/content/addressbook/abNewCardDialog.xul") {
-        window.RegisterSaveListener(tbSync.eas.onSaveCard);
-        //add handler for ab switching
+        //add handler for ab switching    
+        tbSync.eas.onAbSelectChangeNewCard(window);
+        window.document.getElementById("abPopup").addEventListener("select", function () {tbSync.eas.onAbSelectChangeNewCard(window);}, false);
+        RegisterSaveListener(tbSync.eas.onSaveCard);
     } else {
         window.RegisterLoadListener(tbSync.eas.onLoadCard);
         window.RegisterSaveListener(tbSync.eas.onSaveCard);
@@ -33,6 +35,14 @@ tbSync.eas.onInjectIntoCardEditWindow = function (window) {
     }
 }
 
+tbSync.eas.onAbSelectChangeNewCard = function(window) {
+    let folders = tbSync.db.findFoldersWithSetting("target", window.document.getElementById("abPopup").value);
+    let eas = (folders.length > 0 && tbSync.db.getAccountSetting(folders[0].account, "provider") == "eas");
+    window.document.getElementById("easFields1Tab").hidden = !eas;
+    window.document.getElementById("easFields2Tab").hidden = !eas;
+    window.document.getElementById("MiddleNameContainer").hidden = !eas;
+    window.document.getElementById("Email3AddressContainer").hidden = !eas;
+}
 
 //What to do, if card is opened for edit in UI (listener only registerd for EAS cards, so no need to check again)
 tbSync.eas.onLoadCard = function (aCard, aDocument) {

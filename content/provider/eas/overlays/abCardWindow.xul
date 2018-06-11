@@ -26,7 +26,7 @@
     </hbox>
 
     <tab id="easFields1Tab" label="&abCard.header.eas;" appendto="abTabs" />
-    <tab id="easFields2tab" label="&abCard.header.otheraddress;" appendto="abTabs" />
+    <tab id="easFields2Tab" label="&abCard.header.otheraddress;" appendto="abTabs" />
       
       <vbox id="easFields1Panel" appendto="abTabPanels" >
       <hbox>
