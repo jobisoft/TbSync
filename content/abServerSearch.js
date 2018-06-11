@@ -28,7 +28,7 @@ serverSearch.eventHandlerWindowReference = function (window) {
                     if (searchbox) {
                         let target = window.GetSelectedDirectory();
                         let folders = tbSync.db.findFoldersWithSetting("target", target);
-                        if (folders.length > 0) {
+                        if (folders.length > 0 && tbSync[tbSync.db.getAccountSetting(folders[0].account, "provider")].abServerSearch) {
                             searchbox.setAttribute("placeholder", tbSync.getLocalizedMessage("addressbook.searchgal::" + tbSync.db.getAccountSetting(folders[0].account, "accountname")));
                         } else {
                             searchbox.setAttribute("placeholder", tbSync.getLocalizedMessage((target == "moz-abdirectory://?") ? "addressbook.searchall" : "addressbook.searchthis"));

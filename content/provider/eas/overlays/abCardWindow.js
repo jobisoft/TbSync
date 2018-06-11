@@ -1,7 +1,8 @@
 tbSync.eas.onBeforeInjectIntoCardEditWindow = function (window) {
     //is this NewCard or EditCard?
     if (window.location.href=="chrome://messenger/content/addressbook/abNewCardDialog.xul") {
-        return true;
+        //always inject if NewCard, but hide if selected ab is not EAS
+        return true;        
     } else {    
         //Only inject, if this card is an EAS card
         let cards = window.opener.GetSelectedAbCards();
@@ -10,7 +11,7 @@ tbSync.eas.onBeforeInjectIntoCardEditWindow = function (window) {
             let aParentDirURI = tbSync.getUriFromPrefId(cards[0].directoryId.split("&")[0]);
             if (aParentDirURI) { //could be undefined
                 let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
-                if (folders.length > 0) return true;
+                if (folders.length > 0 && tbSync.db.getAccountSetting(folders[0].account, "provider") == "eas") return true;
             }
         }
     }
@@ -20,11 +21,16 @@ tbSync.eas.onBeforeInjectIntoCardEditWindow = function (window) {
 
 
 tbSync.eas.onInjectIntoCardEditWindow = function (window) {
-    window.RegisterLoadListener(tbSync.eas.onLoadCard);
-	window.RegisterSaveListener(tbSync.eas.onSaveCard);
+    if (window.location.href=="chrome://messenger/content/addressbook/abNewCardDialog.xul") {
+        window.RegisterSaveListener(tbSync.eas.onSaveCard);
+        //add handler for ab switching
+    } else {
+        window.RegisterLoadListener(tbSync.eas.onLoadCard);
+        window.RegisterSaveListener(tbSync.eas.onSaveCard);
 
-    //if this window was open during inject, load the extra fields
-	if (gEditCard) tbSync.eas.onLoadCard(gEditCard.card, window.document);
+        //if this window was open during inject, load the extra fields
+        if (gEditCard) tbSync.eas.onLoadCard(gEditCard.card, window.document);
+    }
 }
 
 
