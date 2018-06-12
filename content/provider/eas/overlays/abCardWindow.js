@@ -55,11 +55,14 @@ tbSync.eas.onLoadCard = function (aCard, aDocument) {
 }
 
 
-//What to do, if card is saved in UI (listener only registerd for EAS cards, so no need to check again)
+//What to do, if card is saved in UI (listener is registered for all cards, so we need to check for EAS cards)
 tbSync.eas.onSaveCard = function (aCard, aDocument) {
-    let items = aDocument.getElementsByClassName("easProperty");
-    for (let i=0; i < items.length; i++)
-    {
-        aCard.setProperty(items[i].id, items[i].value);
+    //use the hidden status of easFields1Tab to know, if this is an eas card
+    if (window.document.getElementById("easFields1Tab") && !window.document.getElementById("easFields1Tab").hidden) {
+        let items = aDocument.getElementsByClassName("easProperty");
+        for (let i=0; i < items.length; i++)
+        {
+            aCard.setProperty(items[i].id, items[i].value);
+        }
     }
 }
