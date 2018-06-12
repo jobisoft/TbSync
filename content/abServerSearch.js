@@ -25,8 +25,8 @@ serverSearch.eventHandlerWindowReference = function (window) {
                 {
                     serverSearch.clearServerSearchResults(this.window);
                     let searchbox =  window.document.getElementById("peopleSearchInput");
-                    if (searchbox) {
-                        let target = window.GetSelectedDirectory();
+                    let target = window.GetSelectedDirectory();
+                    if (searchbox && target) {
                         let folders = tbSync.db.findFoldersWithSetting("target", target);
                         if (folders.length > 0 && tbSync[tbSync.db.getAccountSetting(folders[0].account, "provider")].abServerSearch) {
                             searchbox.setAttribute("placeholder", tbSync.getLocalizedMessage("addressbook.searchgal::" + tbSync.db.getAccountSetting(folders[0].account, "accountname")));
