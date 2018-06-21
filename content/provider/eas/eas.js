@@ -107,6 +107,11 @@ var eas = {
                     yield eas.getServerOptions(syncdata);
                 }
                 
+                //update "live" setting from UI
+                if (!tbSync.isConnected(syncdata.account)) {
+                    db.setAccountSetting(syncdata.account, "asversion", db.getAccountSetting(syncdata.account, "asversionselected"));
+                }
+                
                 //check EAS version - "auto" means we just enabled and have to find the best option avail, any other value needs to be checked agains options avail
                 let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
                 let allowed = tbSync.db.getAccountSetting(syncdata.account, "allowedEasVersions").split(",");
@@ -1107,7 +1112,6 @@ var eas = {
         db.setAccountSetting(account, "state", "enabled");
         db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
-        db.setAccountSetting(account, "asversion", db.getAccountSetting(account, "asversionselected"));
         db.setAccountSetting(account, "lastEasOptionsUpdate", "0");
         db.setAccountSetting(account, "lastsynctime", "0");
         db.setAccountSetting(account, "tzpush", "0");
