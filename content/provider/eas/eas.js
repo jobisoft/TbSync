@@ -1331,16 +1331,13 @@ var eas = {
             syncdata.req.overrideMimeType("text/plain");
             syncdata.req.setRequestHeader("User-Agent", userAgent);
             syncdata.req.setRequestHeader("Authorization", 'Basic ' + btoa(connection.user + ':' + password));
-
             syncdata.req.timeout = tbSync.prefSettings.getIntPref("eas.timeout");
 
             syncdata.req.ontimeout = function () {
-                tbSync.db.setAccountSetting(syncdata.account, "lastEasOptionsUpdate", Date.now());
                 resolve();
             };
 
             syncdata.req.onerror = function () {
-                tbSync.db.setAccountSetting(syncdata.account, "lastEasOptionsUpdate", Date.now());
                 resolve();
             };
 
@@ -1365,7 +1362,6 @@ var eas = {
                         }
 
                     default:
-                            tbSync.db.setAccountSetting(syncdata.account, "lastEasOptionsUpdate", Date.now());
                             resolve();
 
                 }
