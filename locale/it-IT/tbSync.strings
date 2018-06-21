@@ -23,7 +23,7 @@ status.nolightning=Lightning Add-On not installed, calendars are not supported.
 status.javascriptError=Javascript error! Check debug log for details.
 status.mailformed-xml=Could not parse XML. Check debug log for details. 
 status.invalid=Invalid server response (junk).
-status.InvalidServerOptions=The server responded with invalid server options. Check wether EAS is allowed for this user.
+status.InvalidServerOptions=The server does not provide information about the supported ActiveSync versions. Is EAS blocked for this user or this client (TbSync)? You could try to set the ActiveSync version manually.
 
 status.security=Could not establish a secure connection. Are you using a self-signed or otherwise untrusted certificate without importing it into Thunderbird? (##replace.1##)||How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F||[help]
 status.network=Could not connect to server (##replace.1##).

@@ -118,10 +118,12 @@ var eas = {
                 if (asversion == "auto") {
                     if (allowed.includes("14.0")) tbSync.db.setAccountSetting(syncdata.account, "asversion","14.0");
                     else if (allowed.includes("2.5")) tbSync.db.setAccountSetting(syncdata.account, "asversion","2.5");
-                    else {
+                    else if (allowed == "") {
+                        throw eas.finishSync("InvalidServerOptions", eas.flags.abortWithError);
+                    } else {
                         throw eas.finishSync("nosupportedeasversion::"+allowed.join(","), eas.flags.abortWithError);
                     }
-                } else if (!allowed.includes(asversion)) {
+                } else if (allowed != "" && !allowed.includes(asversion)) {
                     throw eas.finishSync("notsupportedeasversion::"+asversion+"::"+allowed.join(","), eas.flags.abortWithError);
                 }
                 

@@ -23,7 +23,7 @@ status.nolightning=Lightning Add-On nicht installiert, Kalender nicht nutzbar.
 status.javascriptError=Javascript Fehler! Prüfen Sie bitte den Fehlerbericht für weitere Details.
 status.mailformed-xml=Der XML Baum konnte nicht geparst werden. Prüfen Sie bitte den Fehlerbericht für weitere Details.  
 status.invalid=Ungültige Serverantwort.
-status.InvalidServerOptions=Der Server antwortete mit ungültigen Server Optionen. Bitte prüfen, ob EAS für den Benutzer erlaubt ist.
+status.InvalidServerOptions=Der Server sendet keine Informationen zu den unterstützten ActiveSync Versionen. Ist EAS für diesen Benutzer bzw. für dieses Programm (TbSync) freigeschaltet? Sie können versuchen, die ActiveSync Version manuell festzulegen.
 
 status.security=Fehler beim Aufbau einer sicherern Verbindung. Benutzen Sie eventuell ein selbst signiertes Zertifikat oder ein andersartiges nicht vertrauenswürdiges Zertifikat welches nicht in Thunderbird importiert ist? (##replace.1##)||How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F||[help]
 status.network=Verbindung zum Server fehlgeschlagen (##replace.1##).
