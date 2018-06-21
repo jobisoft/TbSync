@@ -1333,16 +1333,13 @@ var eas = {
             syncdata.req.timeout = tbSync.prefSettings.getIntPref("eas.timeout");
 
             syncdata.req.ontimeout = function () {
-                reject(eas.finishSync("timeout", eas.flags.abortWithError));
+                tbSync.db.setAccountSetting(syncdata.account, "lastEasOptionsUpdate", Date.now());
+                resolve();
             };
 
             syncdata.req.onerror = function () {
-                let error = tbSync.eas.createTCPErrorFromFailedXHR(syncdata.req);
-                if (!error) {
-                    reject(eas.finishSync("networkerror", eas.flags.abortWithServerError));
-                } else {
-                    reject(eas.finishSync(error, eas.flags.abortWithServerError));
-                }
+                tbSync.db.setAccountSetting(syncdata.account, "lastEasOptionsUpdate", Date.now());
+                resolve();
             };
 
             syncdata.req.onload = function() {
@@ -1363,19 +1360,11 @@ var eas = {
                             tbSync.db.setAccountSetting(syncdata.account, "allowedEasCommands", responseData["MS-ASProtocolCommands"]);
                             tbSync.db.setAccountSetting(syncdata.account, "allowedEasVersions", responseData["MS-ASProtocolVersions"]);
                             tbSync.db.setAccountSetting(syncdata.account, "lastEasOptionsUpdate", Date.now());
-                            resolve();
-                        } else {
-                            reject(eas.finishSync("InvalidServerOptions", eas.flags.abortWithError));
                         }
-                        break;
-
-                    case 401:
-                    case 403: //some servers send 403 on 401
-                        reject(eas.finishSync("401", eas.flags.abortWithError));
-                        break;
 
                     default:
-                        reject(eas.finishSync(syncdata.req.status, eas.flags.abortWithError));
+                            tbSync.db.setAccountSetting(syncdata.account, "lastEasOptionsUpdate", Date.now());
+                            resolve();
 
                 }
             };
