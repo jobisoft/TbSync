@@ -164,7 +164,7 @@ var tbSyncAccountSettings = {
         let hideOptions = isConnected && tbSyncAccountSettings.switchMode == "on";
         
         //which box is to be displayed? options or folders
-        document.getElementById("tbsync.accountsettings.config.unlock").hidden = (isEnabled || tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype") == "custom"); 
+        document.getElementById("tbsync.accountsettings.config.unlock").hidden = (isConnected || tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype") == "custom"); 
         document.getElementById("tbsync.accountsettings.options").hidden = hideOptions;
         document.getElementById("tbsync.accountsettings.server").hidden = hideOptions;
         document.getElementById("tbsync.accountsettings.folders").hidden = !hideOptions;
