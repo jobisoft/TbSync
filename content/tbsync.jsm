@@ -689,16 +689,27 @@ var tbSync = {
         Services.scriptloader.loadSubScript(file, this);
     },
 
-    //async sleep function using Promise
-    sleep : function (delay) {
+    //async sleep function using Promise to postpone actions to keep UI responsive
+    sleep : function (_delay) {
+        let useIdleCallback = false;
+        let delay = _delay;
+        if (tbSync.window.requestIdleCallback) {
+            useIdleCallback = true;
+            delay= 2;
+        }
         let timer =  Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
+        
         return new Promise(function(resolve, reject) {
             let event = {
                 notify: function(timer) {
-                    resolve();
+                    if (useIdleCallback) {
+                        tbSync.window.requestIdleCallback(resolve);                        
+                    } else {
+                        resolve();
+                    }
                 }
             }            
-            timer.initWithCallback(event,delay, Components.interfaces.nsITimer.TYPE_ONE_SHOT);
+            timer.initWithCallback(event, delay, Components.interfaces.nsITimer.TYPE_ONE_SHOT);
         });
     },
 
