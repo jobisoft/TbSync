@@ -26,7 +26,7 @@
 <!ENTITY manager.accounts "Accounts">
 <!ENTITY manager.status "Status">
 
-<!ENTITY manager.catman.text "TbSync also syncs contact categories, which are a powerful replacement for the non-syncable contact lists. To be able to use them in the Thunderbird address book you can install the Category Manager Add-On. It enables you to manage overlapping category based contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla Add-On repository:">
+<!ENTITY manager.catman.text "TbSync also syncs contact categories, which are a powerful replacement for the non-syncable contact lists. To be able to use them in the Thunderbird address book you can install the Category Manager Add-On. It allows to manage overlapping category based contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla Add-On repository:">
 <!ENTITY manager.tzpush.line1 "This Add-On is partially based on TzPush developed by Mark Nethersole. TbSync would not have been possible without his work and I am thankful for his contributions.">
 <!ENTITY manager.tzpush.line2 "Mark is dedicated to the CAPE charity, which he introduced in TzPush with the following words:">
 

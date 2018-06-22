@@ -26,7 +26,7 @@
 <!ENTITY manager.accounts "Konten">
 <!ENTITY manager.status "Status">
 
-<!ENTITY manager.catman.text "TbSync synchronisiert auch Kontaktkategorien, die einen effizienten Ersatz für die nicht synchronisierbaren Kontaktlisten darstellen. Um diese im Thunderbird Adressbuch zu nutzen, können Sie das Add-On 'Category Manager' installieren. Dieses Add-On ermöglicht es Ihnen überlappende kategoriebasierte Kontaktgruppen zu verwalten und es stellt eine Reihe anderer kategoriespezifischer Funktionen bereit. Es kann im offiziellen Mozilla Add-On Repository gefunden werden:">
+<!ENTITY manager.catman.text "TbSync synchronisiert auch Kontaktkategorien, die einen effizienten Ersatz für die nicht synchronisierbaren Kontaktlisten darstellen. Um diese im Thunderbird Adressbuch zu nutzen, können Sie das Add-On 'Category Manager' installieren. Dieses Add-On ermöglicht die Verwaltung überlappender kategoriebasierter Kontaktgruppen und stellt eine Reihe anderer kategoriespezifischer Funktionen bereit. Es kann aus dem offiziellen Mozilla Add-On Repository heruntergeladen werden:">
 <!ENTITY manager.tzpush.line1 "Dieses Add-On beruht in Teilen auf TzPush, welches von Mark Nethersole entwickelt wurde. TbSync wäre ohne seine Arbeit nicht möglich gewesen und ich bin für seinen Beitrag sehr dankbar.">
 <!ENTITY manager.tzpush.line2 "Mark ist der CAPE Stiftung verbunden, die er in TzPush mit den folgenden Worten vorstellt:">
 
