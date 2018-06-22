@@ -35,7 +35,7 @@
         </menupopup>
     </popupset>
 
-    <vbox flex="1">
+    <vbox flex="1" id="tbsync.accountsettings.frame" hidden="true">
 
         <grid flex="1">
            <columns>

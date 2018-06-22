@@ -19,7 +19,9 @@ var tbSyncAccountSettings = {
         
         Services.obs.addObserver(tbSyncAccountSettings.syncstateObserver, "tbsync.changedSyncstate", false);
         Services.obs.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui", false);
+
         tbSyncAccountSettings.init = true;
+        document.getElementById('tbsync.accountsettings.frame').hidden = false;	    
     },
 
     onunload: function () {
