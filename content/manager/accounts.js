@@ -18,6 +18,17 @@ var tbSyncAccounts = {
         Services.obs.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.changedSyncstate", false);
         Services.obs.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.changedAccountName", false);
         Services.obs.addObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.toggleEnableState", false);
+	    
+        //prepare addmenu
+        for (let provider in tbSync.syncProviderList) {
+            let newItem = window.document.createElement("menuitem");
+            newItem.setAttribute("value", provider);
+            newItem.setAttribute("label", tbSync.syncProviderList[provider]);
+            newItem.setAttribute("class", "menuitem-non-iconic");
+            newItem.addEventListener("click", function () {tbSyncAccounts.addAccount(provider) }, false);
+            window.document.getElementById("accountActionsAddAccount").appendChild(newItem);
+        }
+	    
     },
 
     onunload: function () {
@@ -393,11 +404,10 @@ var tbSyncAccounts = {
         }
     },
         
-    addAccount: function () {
-        //EAS hardcoded, will be made dynamic as soon as different providers are usable
+    addAccount: function (provider) {
         document.getElementById("tbSyncAccounts.accounts").disabled=true;
         document.getElementById("tbSyncAccounts.btnAccountActions").disabled=true;
-        window.openDialog("chrome://tbsync/content/provider/eas/newaccount.xul", "easnewaccount", "centerscreen,modal,resizable=no");
+        window.openDialog("chrome://tbsync/content/provider/"+provider+"/newaccount.xul", "newaccount", "centerscreen,modal,resizable=no");
         document.getElementById("tbSyncAccounts.accounts").disabled=false;
         document.getElementById("tbSyncAccounts.btnAccountActions").disabled=false;
     },
@@ -459,6 +469,7 @@ var tbSyncAccounts = {
             document.getElementById("accountActionsDebugDel").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
             document.getElementById("accountActionsSeparatorDebug").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
         }
+
     },
     
     toggleEnableState: function () {

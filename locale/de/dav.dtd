@@ -1,0 +1,13 @@
+<!ENTITY title "CalDAV/CardDAV Konto hinzufügen">
+
+<!ENTITY ok "Konto hinzufügen">
+<!ENTITY name "Kontoname:">
+<!ENTITY user "Benutzername:">
+<!ENTITY password "Passwort:">
+<!ENTITY server "Server:">
+
+<!ENTITY description "Bitte wählen Sie einen Namen für das neue TbSync Konto, tragen den Benutzername für das CardDAV/CalDAV Konto welches Sie hinzufügen möchten ein und geben Sie die Adresse des Servers an. ">
+
+<!ENTITY pref.AccountName "Kontoname">
+<!ENTITY pref.UserName "Benutzername">
+<!ENTITY pref.ServerName "Server Adresse">

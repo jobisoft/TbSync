@@ -69,11 +69,13 @@
                 style="margin-left:0; margin-right:0"
                 type="menu">
                         <menupopup id="accountActionsDropdown" onpopupshowing="tbSyncAccounts.updateDropdown('accountActions');">
-                            <menuitem id="accountActionsAddAccount"
-                                    class="menuitem-iconic"
-                                    image="chrome://tbsync/skin/add16.png"
-                                    label="&pref.AddAccount;"
-                                    oncommand="tbSyncAccounts.addAccount();"/>
+                            <menu
+                                class="menu-iconic"
+                                image="chrome://tbsync/skin/add16.png"
+                                label="&pref.AddAccount;"
+                                noncommand="tbSyncAccounts.addAccount();">
+                                    <menupopup id="accountActionsAddAccount" />
+                            </menu>
                             <menuitem id="accountActionsSyncAllAccounts"
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/sync16.png"

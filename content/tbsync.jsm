@@ -67,8 +67,8 @@ var tbSync = {
 
     prefSettings: Services.prefs.getBranch("extensions.tbsync."),
     syncProviderList: {
-        eas: "Exchange Active Sync", 
-        dav: "CalDAV/CardDAV (sabre/dav, ownCloud, Nextcloud)"
+        eas: "Exchange ActiveSync (EAS)", 
+        dav: "Nextcloud, ownCloud, sabre/dav"
         },
 
     storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
