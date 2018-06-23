@@ -45,9 +45,6 @@ function startup(data, reason) {
     branch.setBoolPref("notify4beta", false);
     branch.setIntPref("updateCheckInterval", 6);
     
-    branch.setCharPref("provider.eas", "Exchange Active Sync");
-    branch.setCharPref("provider.dav", "CalDAV/CardDAV (sabre/dav, ownCloud, Nextcloud)");
-
     branch.setIntPref("debug.breakpoint", 0);
     branch.setBoolPref("debug.testoptions", false);
 

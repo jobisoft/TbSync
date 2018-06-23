@@ -66,9 +66,10 @@ var tbSync = {
     prefIDs: {},
 
     prefSettings: Services.prefs.getBranch("extensions.tbsync."),
-    syncProviderPref: Services.prefs.getBranch("extensions.tbsync.provider."),
-    syncProviderList: Services.prefs.getBranch("extensions.tbsync.provider.").getChildList("", {}),
-
+    syncProviderList: {
+        eas: "Exchange Active Sync", 
+        dav: "CalDAV/CardDAV (sabre/dav, ownCloud, Nextcloud)"
+        },
 
     storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
 
@@ -108,14 +109,14 @@ var tbSync = {
         }
 
         //load provider subscripts into tbSync 
-        for (let i=0;i<tbSync.syncProviderList.length;i++) {
-            tbSync.dump("PROVIDER", tbSync.syncProviderList[i] + "::" + tbSync.syncProviderPref.getCharPref(tbSync.syncProviderList[i]));
-            tbSync.includeJS("chrome://tbsync/content/provider/"+tbSync.syncProviderList[i]+"/" + tbSync.syncProviderList[i] +".js");
+        for (let provider in tbSync.syncProviderList) {
+            tbSync.dump("PROVIDER", provider + "::" + tbSync.syncProviderList[provider]);
+            tbSync.includeJS("chrome://tbsync/content/provider/"+provider+"/" + provider +".js");
         }
 
         //init provider 
-        for (let i=0;i<tbSync.syncProviderList.length;i++) {
-            yield tbSync[tbSync.syncProviderList[i]].init();
+        for (let provider in tbSync.syncProviderList) {
+            yield tbSync[provider].init();
         }
 
         //init stuff for address book
@@ -183,8 +184,8 @@ var tbSync = {
                 }
 
                 //are there any other init4lightning we need to call?
-                for (let i=0;i<tbSync.syncProviderList.length;i++) {
-                    yield tbSync[tbSync.syncProviderList[i]].init4lightning();
+                for (let provider in tbSync.syncProviderList) {
+                    yield tbSync[provider].init4lightning();
                 }
 
                 //inject UI elements
@@ -277,8 +278,8 @@ var tbSync = {
             }
 
             //are there any other cleanup4lightning we need to call?
-            for (let i=0;i<tbSync.syncProviderList.length;i++) {
-                tbSync[tbSync.syncProviderList[i]].cleanup4lightning();
+            for (let provider in tbSync.syncProviderList) {
+                tbSync[provider].cleanup4lightning();
             }
         }
     },
