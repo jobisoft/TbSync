@@ -9,19 +9,24 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 
 ### Icon sources
 
-* [tbsync.png] https://www.iconfinder.com/paomedia 
+# Not used
 * [discon.png] http://p.yusukekamiyamane.com/
-* [tick16.png] http://www.iconarchive.com/artist/pixelmixer.html
-* [info16.png] http://www.iconarchive.com/artist/pixelmixer.html
-* [warning16.png] http://www.iconarchive.com/artist/pixelmixer.html
-* [error16.png] http://p.yusukekamiyamane.com/
-* [sync16.png] http://carlosjj.deviantart.com/art/Google-JFK-Icons-ICO-and-PNG-270715545
-* [calendar16.png] https://www.iconfinder.com/icons/27835/calendar_date_january_icon#size=16 / http://icons8.com/
-* [contacts16.png] http://findicons.com/icon/237992/contact?id=404946
-* [todo16.png] http://findicons.com/icon/237965/todo
-* [add16.png] https://www.awicons.com/
-* [del16.png] https://www.awicons.com/
-* [update.png] http://google.com/design/
-* [report_send.png] https://www.iconfinder.com/icons/36365/ + https://www.iconfinder.com/icons/93180
-* [report_open.png] https://www.iconfinder.com/icons/36373
 
+
+* [add16.png] https://openclipart.org/
+* [del16.png] https://openclipart.org/
+* [info16.png] https://openclipart.org/
+* [tick16.png] https://openclipart.org/
+License: CC0-1.0
+
+* [calendar16.png] https://www.iconfinder.com/icons/35805/
+* [contacts16.png] https://www.iconfinder.com/icons/25910/
+* [error16.png] http://p.yusukekamiyamane.com/
+* [report_send.png] https://www.iconfinder.com/icons/36365/ + https://www.iconfinder.com/icons/93180 
+* [report_open.png] https://www.iconfinder.com/icons/36373
+* [sync16.png] https://www.iconfinder.com/icons/132740/
+* [todo16.png] https://www.iconfinder.com/icons/45913/
+* [tbsync.png] https://www.iconfinder.com/icons/299097
+* [update.png] https://www.iconfinder.com/icons/352158/
+* [warning16.png] https://www.iconfinder.com/icons/36026/
+License: CC-BY 3.0
