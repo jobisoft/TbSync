@@ -1319,8 +1319,6 @@ var eas = {
         let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
 
         let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
-        if (userAgent == "") userAgent = "Thunderbird ActiveSync";
-
         tbSync.dump("Sending", "OPTIONS " + connection.host);
         
         return new Promise(function(resolve,reject) {
@@ -1383,8 +1381,6 @@ var eas = {
 
         let deviceType = tbSync.prefSettings.getCharPref("clientID.type");
         let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
-        if (deviceType == "") deviceType = "TbSync";
-        if (userAgent == "") userAgent = "Thunderbird ActiveSync";
 
         let deviceId = tbSync.db.getAccountSetting(syncdata.account, "deviceId");
 
@@ -1790,7 +1786,6 @@ var eas = {
             xml += '</Autodiscover>\r\n';
             
             let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
-            if (userAgent == "") userAgent = "Thunderbird ActiveSync";
 
             // Create request handler - API changed with TB60 to new XMKHttpRequest()
             let req = new XMLHttpRequest();

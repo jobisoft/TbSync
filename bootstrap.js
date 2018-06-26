@@ -40,8 +40,8 @@ function startup(data, reason) {
 
     //set default prefs
     let branch = Services.prefs.getDefaultBranch("extensions.tbsync.");
-    branch.setCharPref("clientID.type", "");
-    branch.setCharPref("clientID.useragent", "");    
+    branch.setCharPref("clientID.type", "TbSync");
+    branch.setCharPref("clientID.useragent", "Thunderbird ActiveSync");    
     branch.setBoolPref("notify4beta", false);
     branch.setIntPref("updateCheckInterval", 6);
     
