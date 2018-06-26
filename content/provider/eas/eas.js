@@ -831,7 +831,7 @@ var eas = {
             status = error;
             time = "";
         }
-        tbSync.dump("finishFolderSync(" + info + ")", tbSync.getLocalizedMessage("status." + status));
+        tbSync.dump("finishFolderSync(" + info + ")", tbSync.getLocalizedMessage("status." + status, "eas"));
         
         if (syncdata.folderID != "") {
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", status);
@@ -1715,7 +1715,7 @@ var eas = {
             //also check, if one of our request succeded or failed hard, no need to wait for the others, return
             for (let r=0; r<responses.length; r++) {
                 if (responses[r].server) result = {"server": responses[r].server, "user": responses[r].user, "error": "", "errorcode":200};
-                if (responses[r].error == 403 || responses[r].error == 401) result = {"server": "", "user": responses[r].user, "errorcode": responses[r].error, "error": tbSync.getLocalizedMessage("status." + responses[r].error)};
+                if (responses[r].error == 403 || responses[r].error == 401) result = {"server": "", "user": responses[r].user, "errorcode": responses[r].error, "error": tbSync.getLocalizedMessage("status." + responses[r].error, "eas")};
             }
             
         } 

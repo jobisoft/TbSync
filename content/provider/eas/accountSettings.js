@@ -84,7 +84,7 @@ var tbSyncAccountSettings = {
         }
         
         // special treatment for configuration label
-        document.getElementById("tbsync.accountsettings.config.label").value= tbSync.getLocalizedMessage("config." + servertype);
+        document.getElementById("tbsync.accountsettings.config.label").value= tbSync.getLocalizedMessage("config." + servertype, "eas");
         
         // also load DeviceId
         document.getElementById('deviceId').value = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "deviceId");
@@ -130,7 +130,7 @@ var tbSyncAccountSettings = {
     },
 
     unlockSettings: function () {
-        if (confirm(tbSync.getLocalizedMessage("prompt.UnlockSettings"))) {
+        if (confirm(tbSync.getLocalizedMessage("prompt.UnlockSettings", "eas"))) {
             tbSync.db.setAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype", "custom");
             this.loadSettings();
         }
@@ -228,15 +228,15 @@ var tbSyncAccountSettings = {
             }
 
             //we are syncing, either still connection or indeed syncing
-            if (isConnected) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.syncing");
-            else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.connecting");            
+            if (isConnected) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.syncing", "eas");
+            else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("status.connecting", "eas");            
 
             //do not display slider while syncing
             document.getElementById('tbsync.accountsettings.slider').hidden = true;
             
         } else {
-            let localized = tbSync.getLocalizedMessage("status." + status);
-            if (!isEnabled) localized = tbSync.getLocalizedMessage("status." + "disabled");
+            let localized = tbSync.getLocalizedMessage("status." + status, "eas");
+            if (!isEnabled) localized = tbSync.getLocalizedMessage("status." + "disabled", "eas");
 
             //check, if this localized string contains a link
             let parts = localized.split("||");
@@ -246,8 +246,8 @@ var tbSyncAccountSettings = {
                     document.getElementById('syncstate_link').textContent = parts[2];
             }
             
-            if (isConnected) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.syncthis");            
-            else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.tryagain");            
+            if (isConnected) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.syncthis", "eas");            
+            else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.tryagain", "eas");            
 
             //do not display slider if not connected
             document.getElementById('tbsync.accountsettings.slider').hidden = !isConnected;
@@ -263,8 +263,8 @@ var tbSyncAccountSettings = {
         document.getElementById('tbsync.accountsettings.syncbtn').hidden = !(isEnabled && tbSyncAccountSettings.switchMode == "on");
         document.getElementById('tbsync.accountsettings.enablebtn').hidden = (isEnabled && tbSyncAccountSettings.switchMode == "on");
 
-        if (isEnabled) document.getElementById('tbsync.accountsettings.enablebtn').label = tbSync.getLocalizedMessage("button.disableAndEdit");
-        else document.getElementById('tbsync.accountsettings.enablebtn').label = tbSync.getLocalizedMessage("button.enableAndConnect");
+        if (isEnabled) document.getElementById('tbsync.accountsettings.enablebtn').label = tbSync.getLocalizedMessage("button.disableAndEdit", "eas");
+        else document.getElementById('tbsync.accountsettings.enablebtn').label = tbSync.getLocalizedMessage("button.enableAndConnect", "eas");
     },
 
 
@@ -275,7 +275,7 @@ var tbSyncAccountSettings = {
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.selectedAccount, fID, true);
 
             if (folder.selected == "1") {
-                if (window.confirm(tbSync.getLocalizedMessage("prompt.Unsubscribe"))) {
+                if (window.confirm(tbSync.getLocalizedMessage("prompt.Unsubscribe", "eas"))) {
                     //deselect folder
                     folder.selected = "0";
                     //remove folder, which will trigger the listener in tbsync which will clean up everything
@@ -406,22 +406,22 @@ var tbSyncAccountSettings = {
                         case "OK":
                         case "modified":
                             if (type == "7" || type == "15" || type == "8" || type == "13") {
-                                if (tbSync.lightningIsAvailable()) status = tbSync.getLocalizedMessage("status." + status) + ": "+ tbSync.getCalendarName(folders[folderIDs[i]].target);
-                                else status = tbSync.getLocalizedMessage("status.nolightning");
+                                if (tbSync.lightningIsAvailable()) status = tbSync.getLocalizedMessage("status." + status, "eas") + ": "+ tbSync.getCalendarName(folders[folderIDs[i]].target);
+                                else status = tbSync.getLocalizedMessage("status.nolightning", "eas");
                             }
-                            if (type == "9" || type == "14") status = tbSync.getLocalizedMessage("status." + status) + ": "+ tbSync.getAddressBookName(folders[folderIDs[i]].target);
+                            if (type == "9" || type == "14") status = tbSync.getLocalizedMessage("status." + status, "eas") + ": "+ tbSync.getAddressBookName(folders[folderIDs[i]].target);
                             break;
                         case "pending":
                             let syncdata = tbSync.getSyncData(tbSyncAccountSettings.selectedAccount);
-                            status = tbSync.getLocalizedMessage("status." + status);
+                            status = tbSync.getLocalizedMessage("status." + status, "eas");
                             if (folderIDs[i] == syncdata.folderID) {
-                                status = tbSync.getLocalizedMessage("status.syncing");
+                                status = tbSync.getLocalizedMessage("status.syncing", "eas");
                                 if (["send","eval","prepare"].includes(syncdata.syncstate.split(".")[0]) && (syncdata.todo + syncdata.done) > 0) status = status + " (" + syncdata.done + (syncdata.todo>0 ? "/" + syncdata.todo : "") + ")"; 
                             }
                             status = status + " ...";
                             break;
                         default:
-                            status = tbSync.getLocalizedMessage("status." + status);
+                            status = tbSync.getLocalizedMessage("status." + status, "eas");
                     }
                 }
                 
@@ -545,7 +545,7 @@ var tbSyncAccountSettings = {
                                 //do not pop alert box for these
                                 break;
                             default:
-                                msg = tbSync.getLocalizedMessage("status." + status);
+                                msg = tbSync.getLocalizedMessage("status." + status, "eas");
                         }
                 }
                 

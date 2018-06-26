@@ -2,74 +2,9 @@ info.idle=Leerlauf
 info.error=Fehler
 info.sync=Synchronisation
 
-status.notsyncronized=Konto muss synchronisiert werden.
-status.needtorevert=Konto muss synchronisiert werden, um lokale Änderungen rückgängig zu machen (one-way sync).
-status.disabled=Konto ist deaktiviert, Synchronisation ist ausgeschaltet.
-status.notargets=Synchronisation abgebrochen da die Elemente zum Synchronisieren nicht erstellt werden konnten.
-status.nouserhost=Angabe des Benutzernamens und/oder des Servers fehlt. Bitte die korrekten Informationen eintragen.
-status.timeout=Kommunikations-Timeout.
-status.networkerror=Verbindung zum Server fehlgeschlagen.
-status.404=Unbekanner Benutzer (HTTP Fehler 404).
-status.403=Verbindung vom Server abgelehnt (nicht erlaubt).
-status.401=Authentifizierung fehlgeschlagen, überprüfen Sie den Benutzernamen und das Passwort.
-status.449=Server erwartet Provisionierung.
-status.500=Unbekannter Server Fehler (HTTP Fehler 500).
-status.503=Service nicht erreichbar.
-status.httperror=Kommunikationsfehler (HTTP Status ##replace.1##).
-status.wbxmlerror=Synchronisation fehlgeschlagen. Der Server antwortete mit dem Status <##replace.1##>.
-status.wbxmlmissingfield=Verletzung des ActiveSync Protokolls: Notwendiges Feld <##replace.1##> ist nicht in der Serverantwort enthalten.
-status.OK=Ok
-status.nolightning=Lightning Add-On nicht installiert, Kalender nicht nutzbar.
-status.javascriptError=Javascript Fehler! Prüfen Sie bitte den Fehlerbericht für weitere Details.
-status.mailformed-xml=Der XML Baum konnte nicht geparst werden. Prüfen Sie bitte den Fehlerbericht für weitere Details.  
-status.invalid=Ungültige Serverantwort.
-status.InvalidServerOptions=Der Server sendet keine Informationen zu den unterstützten ActiveSync Versionen. Ist EAS für diesen Benutzer bzw. für dieses Programm (TbSync) freigeschaltet? Sie können versuchen, die ActiveSync Version manuell festzulegen.
-
-status.security=Fehler beim Aufbau einer sicherern Verbindung. Benutzen Sie eventuell ein selbst signiertes Zertifikat oder ein andersartiges nicht vertrauenswürdiges Zertifikat welches nicht in Thunderbird importiert ist? (##replace.1##)||How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F||[help]
-status.network=Verbindung zum Server fehlgeschlagen (##replace.1##).
-
-status.syncing=Synchronisierung
-status.connecting=Verbindungsaufbau
-status.skipped=Nicht unterstützt
-status.aborted=Nicht synchronisiert
-status.pending=Warten auf Synchronisation
-status.modified=Lokale Änderungen
-
-status.resync-loop=Es ist ein Fehler aufgetreten, der nicht durch wiederholtes Synchronisieren des Kontos behoben werden konnte. Bitte deaktivieren sie das Konto und wiederholen den Vorgang. (Fehler: Synchronisationsschleife)
-
-status.policy.2=Es gibt keine Regel (policy) für diesen Klient. Kontaktieren Sie Ihren Server Administrator oder deaktivieren Sie die Provisionierungsoption für dieses Konto in TbSync.
-status.policy.3=Unbekannter Wert für den Regeltyp (policy type). Kontaktieren Sie Ihren Server Administrator oder deaktivieren Sie die Provisionierungsoption für dieses Konto in TbSync.
-status.policy.4=Die Daten für die Regeln auf dem Server sind beschädigt (möglicherweise manipuliert). Kontaktieren Sie Ihren Server Administrator oder deaktivieren Sie die Provisionierungsoption für dieses Konto in TbSync.
-status.policy.5=Der Klient bestätigt einen falschen Richtlinienschlüssel (policy key). Kontaktieren Sie Ihren Server Administrator oder deaktivieren Sie die Provisionierungsoption für dieses Konto in TbSync.
-
-status.provision=Provisionierung fehlerhaft mit folgendem Status <##replace.1##>
-
-status.folderDelete.3=Systemordner können nicht gelöscht werden.
-status.folderDelete.6=Das Kommando konnte nicht abgeschlossen werden, auf dem Server ist ein Fehler aufgetreten.
-
-status.global.101=Das WBXML der Anfrage konnte nicht in gültiges XML dekodiert werden (Fehler 101).
-status.global.102=Das WBXML der Anfrage konnte nicht in gültiges XML dekodiert werden (Fehler 102).
-status.global.103=Das XML der Anfrage entspricht nicht den Protokollanforderungen (Fehler 103).
-status.global.clientdenied=Der EAS Server antwortet mit <##replace.2##> (status ##replace.1##) und verweigert TbSync den Zugriff auf Ihr Konto.||What-if-TbSync-is-blocked-by-my-server%3F||[help]
-
-status.ServerRejectedSomeItems=Der EAS Server akzeptierte nur ##replace.2## von Ihren Elementen und hat die verbliebenen Elemente mit den folgenden Gründe zurückgewiesen: ##replace.1##. Prüfen Sie den Fehlerbericht auf "Bad item skipped".
-status.ServerRejectedAllItems=Der EAS Server hat Ihre Elemente wegen der folgenden Gründe zurückgewiesen : ##replace.1##. Prüfen Sie den Fehlerbericht auf "Bad item skipped".
-status.ServerRejectedRequest=Der EAS Server hat die letzte Anforderung zurückgewiesen. Prüfen Sie den Fehlerbericht für weitere Informationen.
-status.TempServerError=Der Server meldete einen temporären Systemfehler, oder ein fehlerhaftes Element. Dies ist häufig ein vorübergehender Zustand (versuchen Sie es später erneut).
-
-status.nosupportedeasversion=Der Server unterstützt kein ActiveSync v2.5 oder v14.0 (nur ##replace.1##). TbSync kann nicht mit diesem Server arbeiten.
-status.notsupportedeasversion=Der Server unterstützt nicht die ausgewählte ActiveSync Version v##replace.1## (nur ##replace.2##).
-
 prompt.DeleteAccount=Sind Sie sicher, dass Sie das Konto ##accountName## löschen möchten?
 prompt.Disable=Sind Sie sicher, dass Sie dieses Konto deaktivieren möchten? Alle lokalen Veränderungen, die noch nicht synchronisiert wurden, gehen dabei verloren!
-prompt.Unsubscribe=Sind Sie sicher, dass Sie dieses Element nicht länger abonieren möchten? Alle lokalen Veränderungen, die noch nicht synchronisiert wurden, gehen dabei verloren!
-prompt.UnlockSettings=Das Ändern der vordefinierten Servereinstellungen kann zu Synchronisationsfehlern führen. Sind Sie sicher, dass Sie die vordefinierten Servereinstellungen entsperren wollen?
 prompt.Password=Bitte geben Sie das Passwort für den Benutzer ##user## ein:
-
-button.syncthis=Konto synchronisieren
-button.tryagain=Erneut versuchen mit dem Server zu verbinden
-button.enableAndConnect=Konto aktivieren & mit dem Server verbinden
-button.disableAndEdit=Konto deaktivieren, um Einstellungen zu bearbeiten
 
 account=TbSync Konto [##accountname##]
 
@@ -77,10 +12,6 @@ accountacctions.delete=Konto "##accountname##" löschen
 accountacctions.sync=Konto "##accountname##" synchronisieren 
 accountacctions.enable=Konto "##accountname##" aktivieren & Server kontaktieren
 accountacctions.disable=Konto "##accountname##" deaktivieren 
-
-config.auto=ActiveSync Server Konfiguration (Autodiscover)
-config.custom=ActiveSync Server Konfiguration
-config.outlook.com=Server Konfiguration für Outlook.com Konten
 
 update_available=Update verfügbar
 old_beta_version=ältere Test-Version

@@ -2,74 +2,9 @@ info.idle=Idle
 info.error=Error
 info.sync=Syncing
 
-status.notsyncronized=Account needs to be syncronized, at least one item is out of sync.
-status.needtorevert=Account needs to be syncronized to revert local changes (one-way sync).
-status.disabled=Account is not enabled, synchronization is disabled.
-status.notargets=Aborting Sync, because sync targets could not be created.
-status.nouserhost=Missing username and/or server. Please provide those values.
-status.timeout=Communication timeout.
-status.networkerror=Could not connect to server.
-status.404=User not found (HTTP Error 404).
-status.403=Server rejected connection (forbidden).
-status.401=Could not authenticate, check username and password.
-status.449=Server requests provisioning.
-status.500=Unknown Server Error (HTTP Error 500).
-status.503=Service unavailable.
-status.httperror=Communication error (HTTP status ##replace.1##).
-status.wbxmlerror=Sync failed. Server responded with status <##replace.1##>.
-status.wbxmlmissingfield=ActiveSync protocol violation: Mandatory field <##replace.1##> is missing from server response.
-status.OK=Ok
-status.nolightning=Lightning Add-On not installed, calendars are not supported.
-status.javascriptError=Javascript error! Check debug log for details.
-status.mailformed-xml=Could not parse XML. Check debug log for details. 
-status.invalid=Invalid server response (junk).
-status.InvalidServerOptions=The server does not provide information about the supported ActiveSync versions. Is EAS blocked for this user or this client (TbSync)? You could try to set the ActiveSync version manually.
-
-status.security=Could not establish a secure connection. Are you using a self-signed or otherwise untrusted certificate without importing it into Thunderbird? (##replace.1##)||How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F||[help]
-status.network=Could not connect to server (##replace.1##).
-
-status.syncing=Synchronizing
-status.connecting=Connecting to server
-status.skipped=Not yet supported, skipped
-status.aborted=Not synchronized
-status.pending=Waiting to be synchronized
-status.modified=Local modifications
-
-status.resync-loop=There was an error from which we could not recover by resyncing the account. Please disable the account and try again. (Error: resync loop)
-
-status.policy.2=There is no policy for this client. Contact your server administrator or disable provisioning for this account.
-status.policy.3=Unknown PolicyType value. Contact your server administrator or disable provisioning for this account.
-status.policy.4=The policy data on the server is corrupted (possibly tampered with). Contact your server administrator or disable provisioning for this account.
-status.policy.5=The client is acknowledging the wrong policy key. Contact your server administrator or disable provisioning for this account.
-
-status.provision=Provisioning failed with status <##replace.1##>
-
-status.folderDelete.3=Cannot delete a system folder.
-status.folderDelete.6=Command could not be completed, an error occurred on the server.
-
-status.global.101=The request contains WBXML but it could not be decoded into XML (Error 101).
-status.global.102=The request contains WBXML but it could not be decoded into XML (Error 102).
-status.global.103=The XML provided in the request does not follow the protocol requirements (Error 103).
-status.global.clientdenied=The EAS server reports <##replace.2##> (status ##replace.1##) and does not allow TbSync to access your account.||What-if-TbSync-is-blocked-by-my-server%3F||[help]
-
-status.ServerRejectedSomeItems=The EAS server accepted only ##replace.2## of your items and rejected the remaining ones for the following reasons: ##replace.1##. Check the debug log for "Bad item skipped".
-status.ServerRejectedAllItems=The EAS server rejected your items for the following reasons: ##replace.1##. Check the debug log for "Bad item skipped".
-status.ServerRejectedRequest=The EAS Server rejected our last request. Check the debug log for more information.
-status.TempServerError=Server reported temporary system issue, or bad item. This is frequently a transient condition (so try again later).
-
-status.nosupportedeasversion=Server does not support ActiveSync v2.5 or v14.0 (only ##replace.1##). TbSync will not work with this ActiveSync server.
-status.notsupportedeasversion=Server does not support selected ActiveSync v##replace.1## (only ##replace.2##).
-
 prompt.DeleteAccount=Are you sure that you want to delete account ##accountName##?
 prompt.Disable=Are you sure you want to disable this account? All local modifications, which have not been synced yet, will be lost!
-prompt.Unsubscribe=Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!
-prompt.UnlockSettings=Changing any of the predefined server settings could lead to synchronization errors. Are you sure you want to unlock all predefined server settings?
 prompt.Password=Please enter the password for user ##user##:
-
-button.syncthis=Synchronize this account
-button.tryagain=Try again to connect to server
-button.enableAndConnect=Enable account & try to connect to server
-button.disableAndEdit=Disable account to edit settings
 
 account=TbSync account [##accountname##]
 
@@ -77,10 +12,6 @@ accountacctions.delete=Delete account "##accountname##"
 accountacctions.sync=Synchronize account "##accountname##"
 accountacctions.enable=Enable account "##accountname##" & try to connect to server
 accountacctions.disable=Disable account "##accountname##"
-
-config.auto=ActiveSync server configuration (Autodiscover)
-config.custom=ActiveSync server configuration
-config.outlook.com=Server configuration for Outlook.com accounts
 
 update_available=update available
 old_beta_version=older beta version
