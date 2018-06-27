@@ -21,12 +21,11 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [contacts16.png] https://www.iconfinder.com/icons/25910/
 * [todo16.png] https://www.iconfinder.com/icons/45913/
 * [error16.png] http://p.yusukekamiyamane.com/
+* [connect.png] http://p.yusukekamiyamane.com/
 * [report_send.png] https://www.iconfinder.com/icons/36365/ + https://www.iconfinder.com/icons/93180 
 * [report_open.png] https://www.iconfinder.com/icons/36373
 * [tbsync.png] https://www.iconfinder.com/icons/299097
-* [tbsync.png (old)] https://www.iconfinder.com/paomedia 
 * [update32.png] https://www.iconfinder.com/icons/352158/
-* [update32.png (old)] http://google.com/design/
 * [warning16.png] https://www.iconfinder.com/icons/36026/
 * [warning16.png (old)] http://www.iconarchive.com/artist/pixelmixer.html
 
@@ -35,9 +34,6 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 
 #### Other
 * [sync16.png] http://carlosjj.deviantart.com/art/Google-JFK-Icons-ICO-and-PNG-270715545
-* [report_send.png] https://www.iconfinder.com/icons/36365/ + https://www.iconfinder.com/icons/93180
-* [report_open.png] https://www.iconfinder.com/icons/36373
-* [connect.png] http://p.yusukekamiyamane.com/
 * [slider-on.png] http://www.flaticon.com/free-icon/on-slider_84162
 * [slider-off.png] http://www.flaticon.com/free-icon/switch-off_84021
 * [lock24.png] https://www.iconfinder.com/icons/25469/lock_icon
