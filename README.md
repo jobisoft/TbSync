@@ -21,17 +21,14 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [del16.png] https://www.awicons.com/
 * [report_send.png] https://www.iconfinder.com/icons/36365/ + https://www.iconfinder.com/icons/93180
 * [report_open.png] https://www.iconfinder.com/icons/36373
-
 * [connect.png] http://p.yusukekamiyamane.com/
 * [disabled.png] https://github.com/google/material-design-icons/blob/master/notification/1x_web/ic_do_not_disturb_alt_black_18dp.png
 * [slider-on.png] http://www.flaticon.com/free-icon/on-slider_84162
 * [slider-off.png] http://www.flaticon.com/free-icon/switch-off_84021
-
 * [lock24.png] https://www.iconfinder.com/icons/25469/lock_icon
-
 * [tbsync.png] https://www.iconfinder.com/paomedia 
 * [update32.png] http://google.com/design/
-* [group32.png] 
+* [group32.png] http://www.iconarchive.com/show/windows-8-icons-by-icons8/Healthcare-Groups-icon.html
 * [cape]
 * [catman32.png] 
 * [help32.png] 
