@@ -27,6 +27,7 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [report_send.png] https://www.iconfinder.com/icons/36365/ + https://www.iconfinder.com/icons/93180 
 * [report_open.png] https://www.iconfinder.com/icons/36373
 * [tbsync.png] https://www.iconfinder.com/icons/299097
+* [lock24.png] https://www.iconfinder.com/icons/285646/lock_icon
 * [update32.png] https://www.iconfinder.com/icons/352158/
 * [group32.png] https://www.iconfinder.com/icons/3289557/clan_group_partners_peers_people_icon
 * [settings32.png] https://www.iconfinder.com/icons/299098/cogs_icon
@@ -41,6 +42,5 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [sync16.png] http://carlosjj.deviantart.com/art/Google-JFK-Icons-ICO-and-PNG-270715545
 * [slider-on.png] http://www.flaticon.com/free-icon/on-slider_84162
 * [slider-off.png] http://www.flaticon.com/free-icon/switch-off_84021
-* [lock24.png] https://www.iconfinder.com/icons/25469/lock_icon
 * [cape]
 * [catman32.png] 
