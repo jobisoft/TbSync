@@ -34,6 +34,9 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 #### Apache Software License 2.0
 * [disabled16.png] https://github.com/google/material-design-icons/blob/master/notification/1x_web/ic_do_not_disturb_alt_black_18dp.png
 
+#### GPL
+* [help32.png] https://www.iconfinder.com/icons/58495/button_help_white_icon
+
 #### Other
 * [sync16.png] http://carlosjj.deviantart.com/art/Google-JFK-Icons-ICO-and-PNG-270715545
 * [slider-on.png] http://www.flaticon.com/free-icon/on-slider_84162
@@ -41,4 +44,3 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [lock24.png] https://www.iconfinder.com/icons/25469/lock_icon
 * [cape]
 * [catman32.png] 
-* [help32.png] https://www.iconfinder.com/icons/131716/about_help_question_support_icon
