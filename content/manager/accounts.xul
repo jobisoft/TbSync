@@ -15,7 +15,7 @@
         <menupopup id="tbsync.accountmanger.ContextMenu" onpopupshowing="tbSyncAccounts.updateDropdown('contextMenu');">
             <menuitem id="contextMenuRetryConnectAccount" 
                     class="menuitem-iconic"
-                    image="chrome://tbsync/skin/connect.png"
+                    image="chrome://tbsync/skin/connect16.png"
                     label="&pref.RetryConnectAccount;" 
                     oncommand="tbSyncAccounts.synchronizeAccount();"/>
             <menuitem id="contextMenuSyncAccount" 
@@ -25,7 +25,7 @@
                     oncommand="tbSyncAccounts.synchronizeAccount();"/>
             <menuitem id="contextMenuEnableAccount" 
                     class="menuitem-iconic"
-                    image="chrome://tbsync/skin/connect.png"
+                    image="chrome://tbsync/skin/connect16.png"
                     label="&pref.EnableAccount;" 
                     oncommand="tbSyncAccounts.toggleEnableState();"/>
             <menuitem id="contextMenuShowSyncLog"
@@ -35,7 +35,7 @@
                     noncommand=""/>
             <menuitem id="contextMenuDisableAccount" 
                     class="menuitem-iconic"
-                    image="chrome://tbsync/skin/disabled.png"
+                    image="chrome://tbsync/skin/disabled16.png"
                     label="&pref.DisableAccount;" 
                     oncommand="tbSyncAccounts.toggleEnableState();"/>
             <menuitem id="contextMenuDeleteAccount"
@@ -115,7 +115,7 @@
                                     oncommand="tbSyncAccounts.deleteAccount();"/>
                             <menuitem id="accountActionsDisableAccount" 
                                     class="menuitem-iconic"
-                                    image="chrome://tbsync/skin/disabled.png"
+                                    image="chrome://tbsync/skin/disabled16.png"
                                     label="&pref.DisableAccount;" 
                                     oncommand="tbSyncAccounts.toggleEnableState();"/>
                             <menuitem id="accountActionsShowSyncLog"
@@ -125,7 +125,7 @@
                                     noncommand=""/>
                             <menuitem id="accountActionsEnableAccount" 
                                     class="menuitem-iconic"
-                                    image="chrome://tbsync/skin/connect.png"
+                                    image="chrome://tbsync/skin/connect16.png"
                                     label="&pref.EnableAccount;" 
                                     oncommand="tbSyncAccounts.toggleEnableState();"/>
                             <menuitem id="accountActionsSyncAccount" 
@@ -135,7 +135,7 @@
                                     oncommand="tbSyncAccounts.synchronizeAccount();"/>
                             <menuitem id="accountActionsRetryConnectAccount" 
                                     class="menuitem-iconic"
-                                    image="chrome://tbsync/skin/connect.png"
+                                    image="chrome://tbsync/skin/connect16.png"
                                     label="&pref.RetryConnectAccount;" 
                                     oncommand="tbSyncAccounts.synchronizeAccount();"/>                                    
                         </menupopup>

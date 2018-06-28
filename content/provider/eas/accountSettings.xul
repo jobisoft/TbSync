@@ -29,7 +29,7 @@
         <menupopup id="tbsync.accountsettings.DisableContextMenu" onpopupshowing="tbSyncAccountSettings.updateDisableContextMenu();">
             <menuitem id="contextMenuDisableAccount" 
                     class="menuitem-iconic"
-                    image="chrome://tbsync/skin/disabled.png"
+                    image="chrome://tbsync/skin/disabled16.png"
                     label="&pref.DisableAccount;" 
                     oncommand="tbSyncAccountSettings.toggleEnableState();"/>
         </menupopup>

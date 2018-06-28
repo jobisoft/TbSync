@@ -558,11 +558,11 @@ var tbSyncAccounts = {
         switch (tbSync.db.getAccountSetting(account, "status")) {
             case "OK":
                 if (tbSync.isEnabled(account)) src = "tick16.png";
-                else src = "disabled.png";
+                else src = "disabled16.png";
                 break;
             
             case "disabled":
-                src = "disabled.png";
+                src = "disabled16.png";
                 break;
             
             case "needtorevert":
