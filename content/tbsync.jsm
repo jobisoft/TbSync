@@ -68,7 +68,7 @@ var tbSync = {
     prefSettings: Services.prefs.getBranch("extensions.tbsync."),
     syncProviderList: {
         eas: "Exchange ActiveSync (EAS)", 
-        dav: "Nextcloud, ownCloud, sabre/dav"
+        //dav: "Nextcloud, ownCloud, sabre/dav"
         },
 
     storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
@@ -108,30 +108,13 @@ var tbSync = {
             if (accounts.data[accounts.IDs[i]].state == "connected") accounts.data[accounts.IDs[i]].state = "enabled";
         }
 
-        //load provider subscripts into tbSync 
-        for (let provider in tbSync.syncProviderList) {
-            tbSync.dump("PROVIDER", provider + "::" + tbSync.syncProviderList[provider]);
-            tbSync.includeJS("chrome://tbsync/content/provider/"+provider+"/" + provider +".js");
-        }
-
-        //init provider 
-        for (let provider in tbSync.syncProviderList) {
-            yield tbSync[provider].init();
-        }
-
-        //init stuff for address book
-        tbSync.addressbookListener.add();
-        tbSync.scanPrefIdsOfAddressBooks();
-
-        //init stuff for lightning (and dump any other installed AddOn)
-        //TODO: If lightning is converted to restartless, use AddonManager.addAddonListener() to get notification of enable/disable
+        //Wait for all other addons
         if (Services.vc.compare(Services.appinfo.platformVersion, "61.*") >= 0)  {
             let addons = yield AddonManager.getAllAddons();
             yield tbSync.finalizeInitByWaitingForAddons(addons);
         } else {
             AddonManager.getAllAddons(tbSync.finalizeInitByWaitingForAddons);
         }
-                
     }),
         
     finalizeInitByWaitingForAddons: Task.async (function* (addons) {
@@ -141,9 +124,10 @@ var tbSync = {
                 tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
                 if (addons[a].id.toString() == "{e2fda1a4-762b-4020-b5ad-a41df1933103}") lightning = true;
                 if (addons[a].id.toString() == "tbsync@jobisoft.de") tbSync.versionInfo.installed = addons[a].version.toString();
+                //Check external provider
             }
         }
-
+        
         if (lightning) {
             tbSync.dump("Check4Lightning","Start");
 
@@ -183,11 +167,6 @@ var tbSync = {
                     if (ianaZoneName == tbSync.defaultTimezoneInfo.std.id) tbSync.defaultTimezoneInfo.std.windowsZoneName = windowsZoneName;
                 }
 
-                //are there any other init4lightning we need to call?
-                for (let provider in tbSync.syncProviderList) {
-                    yield tbSync[provider].init4lightning();
-                }
-
                 //inject UI elements
                 if (tbSync.window.document.getElementById("calendar-synchronize-button")) {
                     tbSync.window.document.getElementById("calendar-synchronize-button").addEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
@@ -204,8 +183,57 @@ var tbSync = {
             }
         }
 
+        //load provider subscripts into tbSync 
+        for (let provider in tbSync.syncProviderList) {
+            tbSync.dump("PROVIDER", provider + "::" + tbSync.syncProviderList[provider]);
+            tbSync.includeJS("chrome://tbsync/content/provider/"+provider+"/" + provider +".js");
+        }
+
+        //init provider 
+        for (let provider in tbSync.syncProviderList) {
+            yield tbSync[provider].init();
+        }
+
+        //init lightning part of provider
+        if (tbSync.lightningIsAvailable()) {
+            for (let provider in tbSync.syncProviderList) {
+                yield tbSync[provider].init4lightning();
+            }
+        }
+        
+        //init stuff for address book
+        tbSync.addressbookListener.add();
+        tbSync.scanPrefIdsOfAddressBooks();        
+
         //init stuff for sync process
         tbSync.resetSync();
+
+        //fix criticalBug introduced by changing DeviceType, deviceType now is part of the account data
+        let showMigrationPopup = false;
+        let accounts = tbSync.db.getAccounts();
+        for (let i = 0; i < accounts.IDs.length; i++) {
+            if (!accounts.data[accounts.IDs[i]].hasOwnProperty("devicetype")) {
+                showMigrationPopup = true;
+
+                //remove all folders, disable account, set to fixed, create new deviceID
+                tbSync.db.setAccountSetting(accounts.IDs[i], "deviceId", tbSync.eas.getNewDeviceId());
+                tbSync.db.setAccountSetting(accounts.IDs[i], "useragent", tbSync.prefSettings.getCharPref("eas.clientID.useragent"));
+                tbSync.db.setAccountSetting(accounts.IDs[i], "devicetype", tbSync.prefSettings.getCharPref("eas.clientID.type"));                 
+                tbSync.db.setAccountSetting(accounts.IDs[i], "state", "disabled");
+                tbSync.db.setAccountSetting(accounts.IDs[i], "status", "disabled");
+                tbSync.db.setAccountSetting(accounts.IDs[i], "policykey", 0);
+                tbSync.db.setAccountSetting(accounts.IDs[i], "foldersynckey", "");
+                    
+                let folders = tbSync.db.getFolders(accounts.IDs[i]);
+                for (let f in folders) {
+                    //rename target
+                    if (folders[f].target != "") tbSync.eas.takeTargetOffline(folders[f].target, folders[f].type, " [emergency backup by TbSync]");
+                    //remove folder
+                    tbSync.db.deleteFolder(accounts.IDs[i], folders[f].folderID);
+                }		    
+            }
+        }
+        if (showMigrationPopup) tbSync.window.alert(tbSync.getLocalizedMessage("migrate"));
 
         //enable TbSync
         tbSync.enabled = true;
@@ -218,38 +246,10 @@ var tbSync = {
 
         tbSync.dump("TbSync init","Done");
 
-        //check for missing downloadonly option (prepare for v0.7.9) and old tzpush option
-        let showMigrationPopup = false;
-        let accounts = tbSync.db.getAccounts();
-        for (let i = 0; i < accounts.IDs.length; i++) {
-            if (accounts.data[accounts.IDs[i]].tzpush != "0") showMigrationPopup = true;
-        }
-        if (tbSync.db.findFoldersWithSetting("downloadonly", "").length > 0) showMigrationPopup = true;
-        if (showMigrationPopup) tbSync.window.alert(tbSync.getLocalizedMessage("migrate"));
-
         //check for updates
         yield tbSync.check4updates();
     }),
-    
-/*    onLightningLoad: {
-        timer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
-
-        start: function () {
-            this.timer.cancel();
-            this.timer.initWithCallback(this.event, 2000, 0); //run timer in 2s
-        },
-
-        cancel: function () {
-            this.timer.cancel();
-        },
-
-        event: {
-            notify: Task.async (function* (timer) {
-
-            })
-        }
-    },*/
-    
+        
     cleanup: function() {
         //cancel sync timer
         tbSync.syncTimer.cancel();
@@ -841,25 +841,9 @@ var tbSync = {
 
                     let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
                     if (folders.length > 0) {
-                        
-                        //THIS CODE ONLY ACTS ON TZPUSH CARDS
-                        let ServerId = aItem.getProperty("ServerId", "");
-                        //Cards without ServerId have not yet been synced to the server, therefore this is a hidden modification.
-                        //Next time we sync, this entire card will be added, regardless if it was modified or not
-                        if (ServerId) {
-                            //Problem: A card modified by server should not trigger a changelog entry, so they are pretagged with modified_by_server
-                            let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, ServerId);
-                            if (itemStatus == "modified_by_server") {
-                                tbSync.db.removeItemFromChangeLog(aParentDirURI, ServerId);
-                            } else {
-                                tbSync.setTargetModified(folders[0]);
-                                tbSync.db.addItemToChangeLog(aParentDirURI, ServerId, "modified_by_user");
-                            }
-                        }
-                        //END
-                        
-                        //THIS CODE ONLY ACTS ON TBSYNC CARDS
-                        let cardId = aItem.getProperty("EASID", "");
+                                                
+                        //THIS CODE ONLY ACTS ON TBSyNC CARDS
+                        let cardId = aItem.getProperty("TBSYNCID", "");
                         if (cardId) {
                             //Problem: A card modified by server should not trigger a changelog entry, so they are pretagged with modified_by_server
                             let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
@@ -891,23 +875,8 @@ var tbSync = {
                 let folders = tbSync.db.findFoldersWithSetting("target", aParentDir.URI);
                 if (folders.length > 0) {
                     
-                    //THIS CODE ONLY ACTS ON TZPUSH CARDS
-                    let ServerId = aItem.getProperty("ServerId", "");
-                    if (ServerId) {
-                        //Problem: A card deleted by server should not trigger a changelog entry, so they are pretagged with deleted_by_server
-                        let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, ServerId);
-                        if (itemStatus == "deleted_by_server") {
-                            tbSync.db.removeItemFromChangeLog(aParentDir.URI, ServerId);
-                        } else {
-                            tbSync.db.addItemToChangeLog(aParentDir.URI, ServerId, "deleted_by_user");
-                            tbSync.setTargetModified(folders[0]);
-                        }
-                    }
-                    //END
-                    
-                    
                     //THIS CODE ONLY ACTS ON TBSYNC CARDS
-                    let cardId = aItem.getProperty("EASID", "");
+                    let cardId = aItem.getProperty("TBSYNCID", "");
                     if (cardId) {
                         //Problem: A card deleted by server should not trigger a changelog entry, so they are pretagged with deleted_by_server
                         let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
@@ -972,21 +941,6 @@ var tbSync = {
             }
 
             if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
-
-                //THIS CODE ONLY ACTS ON TZPUSH CARDS
-                    /* * *
-                     * If cards get moved between books or if the user imports new cards, we always have to strip the serverID (if present). The only valid option
-                     * to introduce a new card with a serverID is during sync, when the server pushes a new card. To catch this, the sync code is adjusted to 
-                     * actually add the new card without serverID and modifies it right after addition, so this addressbookListener can safely strip any serverID 
-                     * off added cards, because they are introduced by user actions (move, copy, import) and not by a sync. */
-                let ServerId = aItem.getProperty("ServerId", "");
-                if (ServerId != "") { //moved from another book or import
-                    aItem.setProperty("ServerId", "");
-                    aParentDir.modifyCard(aItem);
-                    //no need to update changelog, because every added tzpush card is without serverid
-                }
-                //END
-
                 
                 let folders = tbSync.db.findFoldersWithSetting("target", aParentDir.URI);
                 if (folders.length > 0) {
@@ -995,7 +949,7 @@ var tbSync = {
                     let searchResultProvider = aItem.getProperty("X-Server-Searchresult", "");
                     if (searchResultProvider) return;
 
-                    let cardId = aItem.getProperty("EASID", "");
+                    let cardId = aItem.getProperty("TBSYNCID", "");
                     if (cardId) {
                         let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
                         if (itemStatus == "added_by_server") {
@@ -1004,10 +958,10 @@ var tbSync = {
                         } 
                     }
                     
-                    //if this point is reached, either new card (no EASID), or moved card (old EASID) -> reset EASID 
+                    //if this point is reached, either new card (no TBSYNCID), or moved card (old TBSYNCID) -> reset TBSYNCID 
                     tbSync.setTargetModified(folders[0]);
                     tbSync.db.addItemToChangeLog(aParentDir.URI, aItem.localId, "added_by_user");
-                    aItem.setProperty("EASID", aItem.localId);
+                    aItem.setProperty("TBSYNCID", aItem.localId);
                     aParentDir.modifyCard(aItem);
                 }
                 

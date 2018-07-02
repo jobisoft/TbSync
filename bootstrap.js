@@ -40,8 +40,6 @@ function startup(data, reason) {
 
     //set default prefs
     let branch = Services.prefs.getDefaultBranch("extensions.tbsync.");
-    branch.setCharPref("clientID.type", "TbSync");
-    branch.setCharPref("clientID.useragent", "Thunderbird ActiveSync");    
     branch.setBoolPref("notify4beta", false);
     branch.setIntPref("updateCheckInterval", 6);
     
@@ -55,6 +53,8 @@ function startup(data, reason) {
     branch.setIntPref("eas.timeout", 90000);
     branch.setIntPref("eas.synclimit", 7);
     branch.setIntPref("eas.maxitems", 50);
+    branch.setCharPref("eas.clientID.type", "TbSync");
+    branch.setCharPref("eas.clientID.useragent", "Thunderbird ActiveSync");    
 
     Components.utils.import("chrome://tbsync/content/tbsync.jsm");
     Components.utils.import("chrome://tbsync/content/OverlayManager.jsm");

@@ -4,8 +4,8 @@ eas.sync.Contacts = {
 
     createItem : function (card = null) {
         let item = {
-            get id() {return this.card.getProperty("EASID", "")},
-            set id(newId) {this.card.setProperty("EASID", newId)},
+            get id() {return this.card.getProperty("TBSYNCID", "")},
+            set id(newId) {this.card.setProperty("TBSYNCID", newId)},
             get icalString() {return this.card.displayName + " (" + this.card.firstName + ", " + this.card.lastName + ") <"+this.card.primaryEmail+">" },
             clone: function () { return this; } //no real clone
         };
@@ -52,7 +52,7 @@ eas.sync.Contacts = {
             getItem: function (searchId) {
                 /* return array of items matching */
                 let items = [];
-                let card = addressbook.getCardFromProperty("EASID", searchId, true); //3rd param enables case sensitivity
+                let card = addressbook.getCardFromProperty("TBSYNCID", searchId, true); //3rd param enables case sensitivity
                 
                 if (card) {
                     items.push(eas.sync.Contacts.createItem(card));
@@ -167,7 +167,7 @@ eas.sync.Contacts = {
     setThunderbirdItemFromWbxml: function (item, data, id, syncdata) {
         let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
 
-        item.card.setProperty("EASID", id);
+        item.card.setProperty("TBSYNCID", id);
 
         //loop over all known TB properties which map 1-to-1 (two EAS sets Contacts and Contacts2)
         for (let set=0; set < 2; set++) {

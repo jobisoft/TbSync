@@ -474,12 +474,7 @@ var eas = {
                         //promisify addressbook, so it can be used together with yield
                         syncdata.targetObj = eas.sync.Contacts.promisifyAddressbook(syncdata.addressbookObj);
                         
-                        if (tbSync.db.getAccountSetting(syncdata.account, "tzpush") == "0") {
-                            yield eas.sync.start(syncdata);   //using new tbsync contacts sync code
-                        } else {
-                            tbSync.dump("CONTACT SYNC", "OLD TZPUSH SYNC METHOD!");
-                            yield eas.tzpush.start(syncdata); //using old tzpush contact sync code
-                        }
+                        yield eas.sync.start(syncdata);   //using new tbsync contacts sync code
                         break;
 
                     case "Calendar":
@@ -916,10 +911,11 @@ var eas = {
             "downloadonly" : "0",
             "autosync" : "0",
             "horde" : "0",
-            "tzpush" : "1", //legacy default value for old account
             "lastEasOptionsUpdate":"0",
             "allowedEasVersions": "",
-            "allowedEasCommands": ""};
+            "allowedEasCommands": "",
+            "useragent": tbSync.prefSettings.getCharPref("eas.clientID.useragent"),
+            "devicetype": tbSync.prefSettings.getCharPref("eas.clientID.type")}; 
         return row;
     },
 
@@ -1081,9 +1077,9 @@ var eas = {
         }
     },
 
-    takeTargetOffline: function(target, type) {
+    takeTargetOffline: function(target, type, _suffix = "") {
         let d = new Date();
-        let suffix = " [lost contact on " + d.getDate().toString().padStart(2,"0") + "." + (d.getMonth()+1).toString().padStart(2,"0") + "." + d.getFullYear() +"]"
+        let suffix = _suffix ? _suffix : " [lost contact on " + d.getDate().toString().padStart(2,"0") + "." + (d.getMonth()+1).toString().padStart(2,"0") + "." + d.getFullYear() +"]"
 
         //if there are local changes, append an  (*) to the name of the target
         let c = 0;
@@ -1097,11 +1093,13 @@ var eas = {
         tbSync.db.clearChangeLog(target);
         
         switch (type) {
-            case "8":
+            case "8": //calendar
             case "13":
+            case "7": //tasks
+            case "15":
                 tbSync.appendSuffixToNameOfCalendar(target, suffix);
                 break;
-            case "9":
+            case "9": //contacts
             case "14":
                 tbSync.appendSuffixToNameOfBook(target, suffix);
                 break;
@@ -1116,7 +1114,6 @@ var eas = {
         db.setAccountSetting(account, "foldersynckey", "");
         db.setAccountSetting(account, "lastEasOptionsUpdate", "0");
         db.setAccountSetting(account, "lastsynctime", "0");
-        db.setAccountSetting(account, "tzpush", "0");
     },
 
     disableAccount: function (account) {
@@ -1318,7 +1315,7 @@ var eas = {
         let connection = tbSync.eas.getConnection(syncdata.account);
         let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
 
-        let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
+        let userAgent = tbSync.db.getAccountSetting(syncdata.account, "useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
         tbSync.dump("Sending", "OPTIONS " + connection.host);
         
         return new Promise(function(resolve,reject) {
@@ -1379,9 +1376,8 @@ var eas = {
         let connection = tbSync.eas.getConnection(syncdata.account);
         let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
 
-        let deviceType = tbSync.prefSettings.getCharPref("clientID.type");
-        let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
-
+        let userAgent = tbSync.db.getAccountSetting(syncdata.account, "useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
+        let deviceType = tbSync.db.getAccountSetting(syncdata.account, "devicetype");
         let deviceId = tbSync.db.getAccountSetting(syncdata.account, "deviceId");
 
         tbSync.dump("Sending (EAS v"+tbSync.db.getAccountSetting(syncdata.account, "asversion") +")", "POST " + connection.host + '?Cmd=' + command + '&User=' + encodeURIComponent(connection.user) + '&DeviceType=' +deviceType + '&DeviceId=' + deviceId, true);
@@ -1785,7 +1781,7 @@ var eas = {
             xml += '</Request>\r\n';
             xml += '</Autodiscover>\r\n';
             
-            let userAgent = tbSync.prefSettings.getCharPref("clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
+            let userAgent = tbSync.prefSettings.getCharPref("eas.clientID.useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
 
             // Create request handler - API changed with TB60 to new XMKHttpRequest()
             let req = new XMLHttpRequest();
@@ -1878,4 +1874,3 @@ tbSync.includeJS("chrome://tbsync/content/provider/eas/sync.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/tasksync.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/calendarsync.js");
 tbSync.includeJS("chrome://tbsync/content/provider/eas/contactsync.js");
-tbSync.includeJS("chrome://tbsync/content/provider/eas/tzpush.js");
