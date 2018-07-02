@@ -15,6 +15,8 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [tick16.png] https://openclipart.org/
 * [info16.png] https://openclipart.org/
 * [info16.png (old)] http://www.iconarchive.com/artist/pixelmixer.html
+* [slider-on.png] https://github.com/jobisoft/TbSync/blob/master/skin/src/LICENSE
+* [slider-off.png] https://github.com/jobisoft/TbSync/blob/master/skin/src/LICENSE
 
 #### CC-BY 3.0
 * [calendar16.png] https://www.iconfinder.com/icons/35805/
@@ -40,7 +42,5 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 
 #### Other
 * [sync16.png] http://carlosjj.deviantart.com/art/Google-JFK-Icons-ICO-and-PNG-270715545
-* [slider-on.png] http://www.flaticon.com/free-icon/on-slider_84162
-* [slider-off.png] http://www.flaticon.com/free-icon/switch-off_84021
 * [cape]
 * [catman32.png] 
