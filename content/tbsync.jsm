@@ -685,10 +685,10 @@ var tbSync = {
     },
 
     //async sleep function using Promise to postpone actions to keep UI responsive
-    sleep : function (_delay) {
+    sleep : function (_delay, useRequestIdleCallback = true) {
         let useIdleCallback = false;
         let delay = _delay;
-        if (tbSync.window.requestIdleCallback) {
+        if (tbSync.window.requestIdleCallback && useRequestIdleCallback) {
             useIdleCallback = true;
             delay= 2;
         }
