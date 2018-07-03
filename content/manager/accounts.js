@@ -51,10 +51,9 @@ var tbSyncAccounts = {
                 let folders = tbSync.db.getFolders(accounts.IDs[i]);
                 for (let f in folders) {
                     if (folders[f].selected == "1") {
-                        switch (folders[f].type) {
-                            case "9": 
-                            case "14": 
-                                //"Contacts";
+                        let tbType = tbSync[accounts.data[accounts.IDs[i]].provider].getThunderbirdFolderType(folders[f].type);
+                        switch (tbType) {
+                            case "tb-contact": 
                                 {
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
                                     let addressbook = tbSync.getAddressBookObject(targetId);
@@ -69,12 +68,8 @@ var tbSyncAccounts = {
                                     }
                                 }
                                 break;
-                            case "8":
-                            case "13":
-                                //"Calendar";
-                            case "7":
-                            case "15":
-                                //"Tasks";
+                            case "tb-event":
+                            case "tb-todo":
                                 {
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
                                     let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
@@ -82,16 +77,10 @@ var tbSyncAccounts = {
                                     //promisify calender, so it can be used together with yield
                                     let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
                                     let results = await targetObj.getAllItems();
-
-                                    let titles = {};
-                                    titles["8"] = "Debug Event";
-                                    titles["13"] = "Debug Event (*)";
-                                    titles["7"] = "Debug Todo";
-                                    titles["15"] = "Debug Todo (*)";
                                         
                                     for (let r=0; r < results.length; r++) {
                                         let newItem = results[r].clone();
-                                        newItem.title = titles[folders[f].type] + " " + Date.now();
+                                        newItem.title = tbType + " " + Date.now();
                                         await targetObj.modifyItem(newItem, results[r]);                                        
                                     }
                                 }
@@ -110,10 +99,8 @@ var tbSyncAccounts = {
                 let folders = tbSync.db.getFolders(accounts.IDs[i]);
                 for (let f in folders) {
                     if (folders[f].selected == "1") {
-                        switch (folders[f].type) {
-                            case "9": 
-                            case "14":
-                                //"Contacts";
+                        switch (tbSync[accounts.data[accounts.IDs[i]].provider].getThunderbirdFolderType(folders[f].type)) {
+                            case "tb-contact": 
                                 {                            
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
                                     let addressbook = tbSync.getAddressBookObject(targetId);
@@ -125,12 +112,9 @@ var tbSyncAccounts = {
                                     addressbook.deleteCards(cardsToDelete);
                                 }
                                 break;
-                            case "8":
-                            case "13":
-                                //"Calendar"
-                            case "7":
-                            case "15":
-                                //"Tasks"
+
+                            case "tb-event":
+                            case "tb-todo":
                                 {
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
                                     let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
@@ -157,10 +141,8 @@ var tbSyncAccounts = {
                 let folders = tbSync.db.getFolders(accounts.IDs[i]);
                 for (let f in folders) {
                     if (folders[f].selected == "1") {
-                        switch (folders[f].type) {
-                            case "9": 
-                            case "14": 
-                                //"Contacts";
+                        switch (tbSync[accounts.data[accounts.IDs[i]].provider].getThunderbirdFolderType(folders[f].type)) {
+                            case "tb-contact": 
                                 { 
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
                                     let addressbook = tbSync.getAddressBookObject(targetId);
@@ -239,9 +221,8 @@ var tbSyncAccounts = {
                                     }
                                 }
                                 break;
-                            case "8":
-                            case "13":
-                                //"Calendar";
+
+                            case "tb-event":
                                 {
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
                                     let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
@@ -310,9 +291,8 @@ var tbSyncAccounts = {
                                     targetObj.adoptItem(item)
                                 }
                                 break;
-                            case "7":
-                            case "15":
-                                //"Tasks";
+
+                            case "tb-todo":
                                 {
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
                                     let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
