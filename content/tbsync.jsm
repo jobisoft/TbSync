@@ -134,7 +134,7 @@ var tbSync = {
                             name: "Exchange WebServices (EWS)", 
                             js: "//ews4tbsync/content/ews.js" , 
                             newXul: "//ews4tbsync/content/newaccount.xul", 
-                            accountXul: "//ews4tbsync/accountSettings.xul"};
+                            accountXul: "//ews4tbsync/content/accountSettings.xul"};
                         break;
                 }
             }
@@ -584,6 +584,54 @@ var tbSync = {
 
         params.composeFields.addAttachment(attachment);        
         MailServices.compose.OpenComposeWindowWithParams (null, params);    
+    },
+    
+    getHost4PasswordManager: function (accountdata) {
+        let parts = accountdata.user.split("@");
+        if (parts.length > 1) {
+            return accountdata.provider + "://" + parts[1];
+        } else {
+            return accountdata.provider + "://" + accountdata.accountname;
+        }
+    },
+
+    getPassword: function (accountdata) {
+        let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata);
+        let logins = Services.logins.findLogins({}, host4PasswordManager, null, "TbSync");
+        for (let i = 0; i < logins.length; i++) {
+            if (logins[i].username == accountdata.user) {
+                return logins[i].password;
+            }
+        }
+        //No password found - we should ask for one - this will be triggered by the 401 response, which also catches wrong passwords
+        return null;
+    },
+
+    setPassword: function (accountdata, newPassword) {
+        let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata);
+        let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
+        let curPassword = tbSync.getPassword(accountdata);
+        
+        //Is there a loginInfo for this accountdata?
+        if (curPassword !== null) {
+            //remove current login info
+            let currentLoginInfo = new nsLoginInfo(host4PasswordManager, null, "TbSync", accountdata.user, curPassword, "", "");
+            try {
+                Services.logins.removeLogin(currentLoginInfo);
+            } catch (e) {
+                tbSync.dump("Error removing loginInfo", e);
+            }
+        }
+        
+        //create loginInfo with new password
+        if (newPassword != "") {
+            let newLoginInfo = new nsLoginInfo(host4PasswordManager, null, "TbSync", accountdata.user, newPassword, "", "");
+            try {
+                Services.logins.addLogin(newLoginInfo);
+            } catch (e) {
+                tbSync.dump("Error adding loginInfo", e);
+            }
+        }
     },
     
     getAbsolutePath: function(filename) {

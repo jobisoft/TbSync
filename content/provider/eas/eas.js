@@ -23,10 +23,10 @@ var eas = {
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/provider/eas/overlays/addressbookoverlay.xul");
 
         //fix criticalBug introduced by changing DeviceType, deviceType now is part of the account data
-        let showMigrationPopup = true;
+        let showMigrationPopup = false;
         let accounts = tbSync.db.getAccounts();
         for (let i = 0; i < accounts.IDs.length; i++) {
-            if (!accounts.data[accounts.IDs[i]].hasOwnProperty("devicetype")) {
+            if (accounts.data[accounts.IDs[i]].provider == "eas" && !accounts.data[accounts.IDs[i]].hasOwnProperty("devicetype")) {
                 showMigrationPopup = true;
 
                 //remove all folders, disable account, set to fixed, create new deviceID
@@ -988,55 +988,7 @@ var eas = {
             user: tbSync.db.getAccountSetting(account, "user"),
         };
         return connection;
-    },
-
-    getHost4PasswordManager: function (accountdata) {
-        let parts = accountdata.user.split("@");
-        if (parts.length > 1) {
-            return "eas://" + parts[1];
-        } else {
-            return "eas://" + accountdata.accountname;
-        }
-    },
-    
-    getPassword: function (accountdata) {
-        let host4PasswordManager = tbSync.eas.getHost4PasswordManager(accountdata);
-        let logins = Services.logins.findLogins({}, host4PasswordManager, null, "TbSync");
-        for (let i = 0; i < logins.length; i++) {
-            if (logins[i].username == accountdata.user) {
-                return logins[i].password;
-            }
-        }
-        //No password found - we should ask for one - this will be triggered by the 401 response, which also catches wrong passwords
-        return null;
-    },
-
-    setPassword: function (accountdata, newPassword) {
-        let host4PasswordManager = tbSync.eas.getHost4PasswordManager(accountdata);
-        let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
-        let curPassword = tbSync.eas.getPassword(accountdata);
-        
-        //Is there a loginInfo for this accountdata?
-        if (curPassword !== null) {
-            //remove current login info
-            let currentLoginInfo = new nsLoginInfo(host4PasswordManager, null, "TbSync", accountdata.user, curPassword, "", "");
-            try {
-                Services.logins.removeLogin(currentLoginInfo);
-            } catch (e) {
-                tbSync.dump("Error removing loginInfo", e);
-            }
-        }
-        
-        //create loginInfo with new password
-        if (newPassword != "") {
-            let newLoginInfo = new nsLoginInfo(host4PasswordManager, null, "TbSync", accountdata.user, newPassword, "", "");
-            try {
-                Services.logins.addLogin(newLoginInfo);
-            } catch (e) {
-                tbSync.dump("Error adding loginInfo", e);
-            }
-        }
-    } ,
+    },    
 
     parentIsTrash: function (account, parentID) {
         if (parentID == "0") return false;
@@ -1338,7 +1290,7 @@ var eas = {
     getServerOptions: function (syncdata) {        
         tbSync.setSyncState("prepare.request.options", syncdata.account);
         let connection = tbSync.eas.getConnection(syncdata.account);
-        let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
+        let password = tbSync.getPassword(tbSync.db.getAccount(syncdata.account));
 
         let userAgent = tbSync.db.getAccountSetting(syncdata.account, "useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
         tbSync.dump("Sending", "OPTIONS " + connection.host);
@@ -1399,7 +1351,7 @@ var eas = {
         tbSync.eas.logxml(wbxml, msg);
 
         let connection = tbSync.eas.getConnection(syncdata.account);
-        let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
+        let password = tbSync.getPassword(tbSync.db.getAccount(syncdata.account));
 
         let userAgent = tbSync.db.getAccountSetting(syncdata.account, "useragent"); //plus calendar.useragent.extra = Lightning/5.4.5.2
         let deviceType = tbSync.db.getAccountSetting(syncdata.account, "devicetype");
@@ -1667,7 +1619,7 @@ var eas = {
     updateServerConnectionViaAutodiscover: Task.async (function* (syncdata) {
         tbSync.setSyncState("prepare.request.autodiscover", syncdata.account);
         let user = tbSync.db.getAccountSetting(syncdata.account, "user");
-        let password = tbSync.eas.getPassword(tbSync.db.getAccount(syncdata.account));
+        let password = tbSync.getPassword(tbSync.db.getAccount(syncdata.account));
 
         tbSync.setSyncState("send.request.autodiscover", syncdata.account);
         let result = yield tbSync.eas.getServerConnectionViaAutodiscover(user, password, 30*1000);
