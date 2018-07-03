@@ -110,7 +110,21 @@ var eas = {
         }
     },
 
-
+    getThunderbirdFolderType: function(type) {
+        switch (type) {
+            case "9": 
+            case "14": 
+                return "tb-contact";
+            case "8":
+            case "13":
+                return "tb-event";
+            case "7":
+            case "15":
+                return "tb-todo";
+            default:
+                return "unknown";
+        };
+    },
 
 
 
@@ -481,17 +495,14 @@ var eas = {
                 syncdata.synckey = folders[0].synckey;
                 syncdata.folderID = folders[0].folderID;
                 //get syncdata type, which is also used in WBXML for the CLASS element
-                switch (folders[0].type) {
-                    case "9": 
-                    case "14": 
+                switch (eas.getThunderbirdFolderType(folders[0].type)) {
+                    case "tb-contact": 
                         syncdata.type = "Contacts";
                         break;
-                    case "8":
-                    case "13":
+                    case "tb-event":
                         syncdata.type = "Calendar";
                         break;
-                    case "7":
-                    case "15":
+                    case "tb-todo":
                         syncdata.type = "Tasks";
                         break;
                     default:
@@ -1066,15 +1077,12 @@ var eas = {
     },
 
     removeTarget: function(target, type) {
-        switch (type) {
-            case "8": //calendar
-            case "13":
-            case "7": //tasks
-            case "15":
+        switch (eas.getThunderbirdFolderType(type)) {
+            case "tb-event":
+            case "tb-todo":
                 tbSync.removeCalendar(target);
                 break;
-            case "9":
-            case "14":
+            case "tb-contact":
                 tbSync.removeBook(target);
                 break;
             default:
@@ -1097,15 +1105,12 @@ var eas = {
         //this is the only place, where we manually have to call clearChangelog, because the target is not deleted (on delete, changelog is cleared automatically)
         tbSync.db.clearChangeLog(target);
         
-        switch (type) {
-            case "8": //calendar
-            case "13":
-            case "7": //tasks
-            case "15":
+        switch (eas.getThunderbirdFolderType(type)) {
+            case "tb-event":
+            case "tb-todo":
                 tbSync.appendSuffixToNameOfCalendar(target, suffix);
                 break;
-            case "9": //contacts
-            case "14":
+            case "tb-contact":
                 tbSync.appendSuffixToNameOfBook(target, suffix);
                 break;
             default:
