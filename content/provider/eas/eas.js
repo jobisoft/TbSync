@@ -21,6 +21,32 @@ var eas = {
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abEditCardDialog.xul", "chrome://tbsync/content/provider/eas/overlays/abCardWindow.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/provider/eas/overlays/abCardWindow.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/provider/eas/overlays/addressbookoverlay.xul");
+
+        //fix criticalBug introduced by changing DeviceType, deviceType now is part of the account data
+        let showMigrationPopup = true;
+        let accounts = tbSync.db.getAccounts();
+        for (let i = 0; i < accounts.IDs.length; i++) {
+            if (!accounts.data[accounts.IDs[i]].hasOwnProperty("devicetype")) {
+                showMigrationPopup = true;
+
+                //remove all folders, disable account, set to fixed, create new deviceID
+                tbSync.db.setAccountSetting(accounts.IDs[i], "deviceId", tbSync.eas.getNewDeviceId());
+                tbSync.db.setAccountSetting(accounts.IDs[i], "useragent", tbSync.prefSettings.getCharPref("eas.clientID.useragent"));
+                tbSync.db.setAccountSetting(accounts.IDs[i], "devicetype", tbSync.prefSettings.getCharPref("eas.clientID.type"));                 
+                tbSync.db.setAccountSetting(accounts.IDs[i], "status", "disabled");
+                tbSync.db.setAccountSetting(accounts.IDs[i], "policykey", 0);
+                tbSync.db.setAccountSetting(accounts.IDs[i], "foldersynckey", "");
+                    
+                let folders = tbSync.db.getFolders(accounts.IDs[i]);
+                for (let f in folders) {
+                    //rename target
+                    if (folders[f].target != "") tbSync.eas.takeTargetOffline(folders[f].target, folders[f].type, " [emergency backup by TbSync]");
+                    //remove folder
+                    tbSync.db.deleteFolder(accounts.IDs[i], folders[f].folderID);
+                }		    
+            }
+        }
+        if (showMigrationPopup) tbSync.window.alert(tbSync.getLocalizedMessage("migrate"));        
     }),
 
 
@@ -894,7 +920,6 @@ var eas = {
             "policykey" : 0, 
             "foldersynckey" : "0",
             "lastsynctime" : "0", 
-            "state" : "disabled",
             "status" : "disabled",
             "deviceId" : tbSync.eas.getNewDeviceId(),
             "asversionselected" : "auto",
@@ -1109,7 +1134,7 @@ var eas = {
     },
 
     enableAccount: function (account) {
-        db.setAccountSetting(account, "state", "enabled");
+        db.setAccountSetting(account, "status", "notsyncronized");
         db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
         db.setAccountSetting(account, "lastEasOptionsUpdate", "0");
@@ -1117,7 +1142,7 @@ var eas = {
     },
 
     disableAccount: function (account) {
-        db.setAccountSetting(account, "state", "disabled"); //enabled or disabled
+        db.setAccountSetting(account, "status", "disabled");
         db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
 

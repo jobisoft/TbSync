@@ -23,7 +23,7 @@ var tbSyncAccounts = {
         for (let provider in tbSync.syncProviderList) {
             let newItem = window.document.createElement("menuitem");
             newItem.setAttribute("value", provider);
-            newItem.setAttribute("label", tbSync.syncProviderList[provider]);
+            newItem.setAttribute("label", tbSync.syncProviderList[provider].name);
             newItem.setAttribute("class", "menuitem-non-iconic");
             newItem.addEventListener("click", function () {tbSyncAccounts.addAccount(provider) }, false);
             window.document.getElementById("accountActionsAddAccount").appendChild(newItem);
@@ -407,7 +407,7 @@ var tbSyncAccounts = {
     addAccount: function (provider) {
         document.getElementById("tbSyncAccounts.accounts").disabled=true;
         document.getElementById("tbSyncAccounts.btnAccountActions").disabled=true;
-        window.openDialog("chrome://tbsync/content/provider/"+provider+"/newaccount.xul", "newaccount", "centerscreen,modal,resizable=no");
+        window.openDialog("chrome:" + tbSync.syncProviderList[provider].newXul, "newaccount", "centerscreen,modal,resizable=no");
         document.getElementById("tbSyncAccounts.accounts").disabled=false;
         document.getElementById("tbSyncAccounts.btnAccountActions").disabled=false;
     },
@@ -692,7 +692,7 @@ var tbSyncAccounts = {
             //get id of selected account from value of selectedItem
             this.selectedAccount = accountsList.selectedItem.value;
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-            document.getElementById("tbSyncAccounts.contentFrame").webNavigation.loadURI("chrome://tbsync/content/provider/"+tbSync.db.getAccountSetting(this.selectedAccount, "provider")+"/accountSettings.xul?id=" + this.selectedAccount, LOAD_FLAGS_NONE, null, null, null);
+            document.getElementById("tbSyncAccounts.contentFrame").webNavigation.loadURI("chrome:" + tbSync.syncProviderList[tbSync.db.getAccountSetting(this.selectedAccount, "provider")].accountXul+"?id=" + this.selectedAccount, LOAD_FLAGS_NONE, null, null, null);
         }
     }
     

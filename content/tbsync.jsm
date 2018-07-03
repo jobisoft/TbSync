@@ -66,9 +66,14 @@ var tbSync = {
     prefIDs: {},
 
     prefSettings: Services.prefs.getBranch("extensions.tbsync."),
+
+    // define all build-in providers
     syncProviderList: {
-        eas: "Exchange ActiveSync (EAS)", 
-        //dav: "Nextcloud, ownCloud, sabre/dav"
+        eas: {
+            name: "Exchange ActiveSync (EAS)", 
+            js: "//tbsync/content/provider/eas/eas.js", 
+            newXul: "//tbsync/content/provider/eas/newaccount.xul", 
+            accountXul: "//tbsync/content/provider/eas/accountSettings.xul"},  
         },
 
     storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
@@ -84,6 +89,7 @@ var tbSync = {
         tbSync.window = window;
         Services.obs.addObserver(tbSync.initSyncObserver, "tbsync.initSync", false);
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate", false);
+        Services.obs.addObserver(tbSync.removeProviderObserver, "tbsync.removeProvider", false);
 
         // Inject UI before init finished, to give user the option to see Oops message and report bug
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
@@ -102,12 +108,6 @@ var tbSync = {
         //init DB
         yield tbSync.db.init();
 
-        //convert database when migrating from legacy connect state to enable state (keep this in 0.7 branch)
-        let accounts = tbSync.db.getAccounts();
-        for (let i = 0; i < accounts.IDs.length; i++) {
-            if (accounts.data[accounts.IDs[i]].state == "connected") accounts.data[accounts.IDs[i]].state = "enabled";
-        }
-
         //Wait for all other addons
         if (Services.vc.compare(Services.appinfo.platformVersion, "61.*") >= 0)  {
             let addons = yield AddonManager.getAllAddons();
@@ -122,9 +122,21 @@ var tbSync = {
         for (let a=0; a < addons.length; a++) {
             if (addons[a].isActive) {
                 tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
-                if (addons[a].id.toString() == "{e2fda1a4-762b-4020-b5ad-a41df1933103}") lightning = true;
-                if (addons[a].id.toString() == "tbsync@jobisoft.de") tbSync.versionInfo.installed = addons[a].version.toString();
-                //Check external provider
+                switch (addons[a].id.toString()) {
+                    case "{e2fda1a4-762b-4020-b5ad-a41df1933103}":
+                        lightning = true;
+                        break;
+                    case "tbsync@jobisoft.de":
+                        tbSync.versionInfo.installed = addons[a].version.toString();
+                        break;
+                    case "ews4tbsync@jobisoft.de":
+                        tbSync.syncProviderList.ews = {
+                            name: "Exchange WebServices (EWS)", 
+                            js: "//ews4tbsync/content/ews.js" , 
+                            newXul: "//ews4tbsync/content/newaccount.xul", 
+                            accountXul: "//ews4tbsync/accountSettings.xul"};
+                        break;
+                }
             }
         }
         
@@ -185,8 +197,8 @@ var tbSync = {
 
         //load provider subscripts into tbSync 
         for (let provider in tbSync.syncProviderList) {
-            tbSync.dump("PROVIDER", provider + "::" + tbSync.syncProviderList[provider]);
-            tbSync.includeJS("chrome://tbsync/content/provider/"+provider+"/" + provider +".js");
+            tbSync.dump("PROVIDER", provider + "::" + tbSync.syncProviderList[provider].name);
+            tbSync.includeJS("chrome:" + tbSync.syncProviderList[provider].js);
         }
 
         //init provider 
@@ -207,33 +219,6 @@ var tbSync = {
 
         //init stuff for sync process
         tbSync.resetSync();
-
-        //fix criticalBug introduced by changing DeviceType, deviceType now is part of the account data
-        let showMigrationPopup = false;
-        let accounts = tbSync.db.getAccounts();
-        for (let i = 0; i < accounts.IDs.length; i++) {
-            if (!accounts.data[accounts.IDs[i]].hasOwnProperty("devicetype")) {
-                showMigrationPopup = true;
-
-                //remove all folders, disable account, set to fixed, create new deviceID
-                tbSync.db.setAccountSetting(accounts.IDs[i], "deviceId", tbSync.eas.getNewDeviceId());
-                tbSync.db.setAccountSetting(accounts.IDs[i], "useragent", tbSync.prefSettings.getCharPref("eas.clientID.useragent"));
-                tbSync.db.setAccountSetting(accounts.IDs[i], "devicetype", tbSync.prefSettings.getCharPref("eas.clientID.type"));                 
-                tbSync.db.setAccountSetting(accounts.IDs[i], "state", "disabled");
-                tbSync.db.setAccountSetting(accounts.IDs[i], "status", "disabled");
-                tbSync.db.setAccountSetting(accounts.IDs[i], "policykey", 0);
-                tbSync.db.setAccountSetting(accounts.IDs[i], "foldersynckey", "");
-                    
-                let folders = tbSync.db.getFolders(accounts.IDs[i]);
-                for (let f in folders) {
-                    //rename target
-                    if (folders[f].target != "") tbSync.eas.takeTargetOffline(folders[f].target, folders[f].type, " [emergency backup by TbSync]");
-                    //remove folder
-                    tbSync.db.deleteFolder(accounts.IDs[i], folders[f].folderID);
-                }		    
-            }
-        }
-        if (showMigrationPopup) tbSync.window.alert(tbSync.getLocalizedMessage("migrate"));
 
         //enable TbSync
         tbSync.enabled = true;
@@ -257,6 +242,7 @@ var tbSync = {
         //remove observer
         Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate");
         Services.obs.removeObserver(tbSync.initSyncObserver, "tbsync.initSync");
+        Services.obs.removeObserver(tbSync.removeProviderObserver, "tbsync.removeProvider");
 
         //close window (if open)
         if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
@@ -373,6 +359,14 @@ var tbSync = {
         }
     },
 
+    //Observer to remove provider
+    removeProviderObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            if (tbSync.enabled) {
+                if (tbSync.syncProviderList[aData]) delete tbSync.syncProviderList[aData];
+            }
+        }
+    },
 
 
 
@@ -431,14 +425,14 @@ var tbSync = {
     },
     
     isEnabled: function (account) {
-        let state = tbSync.db.getAccountSetting(account, "state"); //enabled, disabled
-        return  (state == "enabled");
+        let status = tbSync.db.getAccountSetting(account, "status");
+        return  (status != "disabled");
     },
 
     isConnected: function (account) {
-        let state = tbSync.db.getAccountSetting(account, "state"); //enabled, disabled
+        let status = tbSync.db.getAccountSetting(account, "status");
         let numberOfFoundFolders = tbSync.db.findFoldersWithSetting("cached", "0", account).length;
-        return (state == "enabled" && numberOfFoundFolders > 0);
+        return (status != "disabled" && numberOfFoundFolders > 0);
     },
     
     prepareSyncDataObj: function (account, forceResetOfSyncData = false) {
@@ -518,7 +512,7 @@ var tbSync = {
     },
     
     resetSync: function () {
-        //get all accounts and set all with syncing state to notsyncronized
+        //get all accounts and set all with syncing status to notsyncronized
         let accounts = tbSync.db.getAccounts();
         for (let i=0; i<accounts.IDs.length; i++) {
             //reset sync objects
