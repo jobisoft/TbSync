@@ -884,7 +884,7 @@ var tbSync = {
                     let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
                     if (folders.length > 0) {
                                                 
-                        //THIS CODE ONLY ACTS ON TBSyNC CARDS
+                        //THIS CODE ONLY ACTS ON TBSYNC CARDS
                         let cardId = aItem.getProperty("TBSYNCID", "");
                         if (cardId) {
                             //Problem: A card modified by server should not trigger a changelog entry, so they are pretagged with modified_by_server
@@ -1260,37 +1260,6 @@ var tbSync = {
     
     //guess the IANA timezone (used by TB) based on stdandard offset, daylight offset and standard name
     guessTimezoneByStdDstOffset: function(stdOffset, dstOffset, stdName = "") {
-        /*                
-            TbSync is sending timezone as detailed as possible using IANA and international abbreviations:
-
-                    [Send TZ] : Test Lord Howe
-                    utcOffset: -630
-                    standardName: Australia/Lord_Howe, LHST
-                    standardDate: 0-4-1, 0, 2:0:0.0
-                    standardBias: 0
-                    daylightName: Australia/Lord_Howe, LHDT
-                    daylightDate: 0-10-1, 0, 2:0:0.0
-                    daylightBias: -30
-
-                    ** Fri Mar 16 2018 11:11:30 GMT+0100 **
-                    [Send TZ] : Test Europe/Berlin
-                    utcOffset: -60
-                    standardName: Europe/Berlin, CET
-                    standardDate: 0-10-5, 0, 3:0:0.0
-                    standardBias: 0
-                    daylightName: Europe/Berlin, CEST
-                    daylightDate: 0-3-5, 0, 2:0:0.0
-                    daylightBias: -60
-
-                This is, how it comes back from Outlook:
-                
-                    standardName: Lord Howe Standard Time
-                    daylightName: (UTC+10:30) Lord Howe Island
-
-                    standardName: Europe/Berlin, CET
-                    daylightName: Customized Time Zone
-                
-                SOGo & Horde are not sending back anything in standardName and daylightName */
                     
             //get a list of all zones
             //alternativly use cal.fromRFC3339 - but this is only doing this:
@@ -1384,10 +1353,6 @@ var tbSync = {
             tbSync.dump("Timezone could not be matched via offsets (std:" + stdOffset +", dst:" + dstOffset + "), using default timezone", tbSync.defaultTimezoneInfo.std.id);
             return tbSync.defaultTimezoneInfo.timezone;
     },
-
-    
-
-
 
     //extract standard and daylight timezone data
     getTimezoneInfo: function (timezone) {        
