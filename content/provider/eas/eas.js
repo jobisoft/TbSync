@@ -79,8 +79,36 @@ var eas = {
     cleanup4lightning: function ()  {
     },
 
+    createCalendar: function(account, folderID, color, newname) {
+        //Alternative calendar, which uses calTbSyncCalendar
+        //let newCalendar = calManager.createCalendar("TbSync", Services.io.newURI('tbsync-calendar://'));
 
+        //Create the new standard calendar with a unique name
+        let calManager = cal.getCalendarManager();
+        let newCalendar = calManager.createCalendar("storage", Services.io.newURI("moz-storage-calendar://"));
+        newCalendar.id = cal.getUUID();
+        newCalendar.name = newname;
 
+        newCalendar.setProperty("color", color); //any chance to get the color from the provider? pass via folderSetting
+        newCalendar.setProperty("relaxedMode", true); //sometimes we get "generation too old for modifyItem", check can be disabled with relaxedMode
+        newCalendar.setProperty("calendar-main-in-composite",true);
+
+        return newCalendar;
+    },
+
+    createCalendarPostAction: function(account, folderID, newCalendar) {
+        //is there an email identity we can associate this calendar to? 
+        //getIdentityKey returns "" if none found, which removes any association
+        let key = tbSync.getIdentityKey(tbSync.db.getAccountSetting(account, "user"));
+        newCalendar.setProperty("fallbackOrganizerName", newCalendar.getProperty("organizerCN"));
+        newCalendar.setProperty("imip.identity.key", key);
+        if (key === "") {
+            //there is no matching email identity - use current default value as best guess and remove association
+            //use current best guess 
+            newCalendar.setProperty("organizerCN", newCalendar.getProperty("fallbackOrganizerName"));
+            newCalendar.setProperty("organizerId", cal.prependMailTo(tbSync.db.getAccountSetting(account, "user")));
+        }
+    },
 
 
 

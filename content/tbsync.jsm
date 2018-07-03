@@ -1414,6 +1414,9 @@ var tbSync = {
             let dtstart = zone.getFirstPropertyValue("dtstart");
             if (rrule && dtstart) {
                 /*
+
+                    THE switchdate PART OF THE OBJECT IS MICROSOFT SPECIFIC, EVERYTHING ELSE IS THUNDERBIRD GENERIC, I LET IT SIT HERE ANYHOW
+                    
                     https://msdn.microsoft.com/en-us/library/windows/desktop/ms725481(v=vs.85).aspx
 
                     To select the correct day in the month, set the wYear member to zero, the wHour and wMinute members to
@@ -1485,7 +1488,6 @@ var tbSync = {
 
         onModifyItem : function (aNewItem, aOldItem) {
             //check, if it is a pure modification within the same calendar
-            //tbSync.dump("Info cal.onModifyItem", aNewItem.id + " | " + aOldItem.id);                
             if (aNewItem && aNewItem.calendar && aOldItem && aOldItem.calendar) {
                 if (aNewItem.calendar.id == aOldItem.calendar.id) {
 
@@ -1495,27 +1497,6 @@ var tbSync = {
                         //check if t was added by the server
                         let itemStatus = tbSync.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
 
-/*
-                        if (cal.isInvitation(aNewItem)) { //TODO
-                            //did attendee.participationStatus change?
-                            //with eas 14.0 it is not possible to directly ack a meeting request (via EAS), the user has to send an email back to the organizer, 
-                            //which is auto interpreted and on the next sync the ack is forwarded to us via EAS (thats what I have understood at least)
-                            //can we send that email via EAS? This would even work, if the user does not have the email account setup in TB
-                            //https://msdn.microsoft.com/en-us/library/ff631378(v=exchg.80).aspx
-                            //https://msdn.microsoft.com/en-us/library/ee158682(v=exchg.80).aspx
-                            //https://blogs.msdn.microsoft.com/exchangedev/2011/07/22/working-with-meeting-requests-in-exchange-activesync/
-
-                            let parentCalendar = cal.getCalendarManager().getCalendarById(aNewItem.calendar.id);
-                            let selfAttendeeNew = aNewItem.getAttendeeById(parentCalendar.getProperty("organizerId"));
-                            let selfAttendeeOld = (aOldItem ? aOldItem.getAttendeeById(parentCalendar.getProperty("organizerId")) : null);
-                            
-                            if (!(selfAttendeeNew && selfAttendeeOld && selfAttendeeNew.participationStatus == selfAttendeeOld.participationStatus)) {
-                                //something changed
-                                if (selfAttendeeOld) tbSync.dump("Invitation status of selfAttendee", selfAttendeeNew.participationStatus + " vs " + selfAttendeeOld.participationStatus);
-                                else  tbSync.dump("Invitation status of selfAttendee", selfAttendeeNew.participationStatus); 
-                            }
-                        }
-*/                        
                         if (itemStatus == "modified_by_server") {
                             tbSync.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);
                         } else if (itemStatus != "added_by_user") { //if it is a local unprocessed add do not add it to changelog
@@ -1532,7 +1513,6 @@ var tbSync = {
         },
 
         onDeleteItem : function (aDeletedItem) {
-            //tbSync.dump("Info cal.onDeleteItem", aDeletedItem.id);                
             if (aDeletedItem && aDeletedItem.calendar) {
                 //if an event in one of the synced calendars is modified, update status of target and account
                 let folders = tbSync.db.findFoldersWithSetting("target", aDeletedItem.calendar.id);
@@ -1656,6 +1636,7 @@ var tbSync = {
         else return "unset";
     },
     
+    //this function actually creates a calendar if missing
     checkCalender: function (account, folderID) {
         let folder = tbSync.db.getFolder(account, folderID);
         let calManager = cal.getCalendarManager();
@@ -1664,9 +1645,8 @@ var tbSync = {
         if (targetCal !== null) {
             return true;
         }
-
         
-        // If there is a known/cached value, than get unique name for new calendar 
+        // If there is a known/cached value, than use that as starting point to generate unique name for new calendar 
         let cachedName = tbSync.db.getFolderSetting(account, folderID, "targetName");
         let testname = (cachedName == "" ? folder.name + " (" + tbSync.db.getAccountSetting(account, "accountname") + ")" : cachedName);
 
@@ -1739,51 +1719,17 @@ var tbSync = {
         let cachedColor = tbSync.db.getFolderSetting(account, folderID, "targetColor");        
         let color = (cachedColor == "" ? freeColors[0].color : cachedColor);
 
-        //Alternative calendar, which uses calTbSyncCalendar
-        //let newCalendar = calManager.createCalendar("TbSync", Services.io.newURI('tbsync-calendar://'));
-
-        //Create the new standard calendar with a unique name
-        let newCalendar = calManager.createCalendar("storage", Services.io.newURI("moz-storage-calendar://"));
-        newCalendar.id = cal.getUUID();
-        newCalendar.name = newname;
+        //create and register new calendar
+        let newCalendar = tbSync[tbSync.db.getAccountSetting(account, "provider")].createCalendar(account, folderID, color, newname);
         calManager.registerCalendar(newCalendar);
-        newCalendar.setProperty("color", color); //any chance to get the color from the provider?
-        newCalendar.setProperty("relaxedMode", true); //sometimes we get "generation too old for modifyItem", check can be disabled with relaxedMode
-    
-        newCalendar.setProperty("calendar-main-in-composite",true);
-
-        //is there an email identity we can associate this calendar to? 
-        //getIdentityKey returns "" if none found, which removes any association
-        let key = tbSync.getIdentityKey(tbSync.db.getAccountSetting(account, "user"));
-        newCalendar.setProperty("fallbackOrganizerName", newCalendar.getProperty("organizerCN"));
-        newCalendar.setProperty("imip.identity.key", key);
-        if (key === "") {
-            //there is no matching email identity - use current default value as best guess and remove association
-            //use current best guess 
-            newCalendar.setProperty("organizerCN", newCalendar.getProperty("fallbackOrganizerName"));
-            newCalendar.setProperty("organizerId", cal.prependMailTo(tbSync.db.getAccountSetting(account, "user")));
-        }
+        tbSync[tbSync.db.getAccountSetting(account, "provider")].createCalendarPostAction(account, folderID, newCalendar);
 
         //store id of calendar as target in DB
         tbSync.dump("tbSync::checkCalendar("+account+", "+folderID+")", "Creating new calendar (" + newname + ")");
         tbSync.db.setFolderSetting(account, folderID, "target", newCalendar.id); 
         tbSync.db.setFolderSetting(account, folderID, "targetName", newname); 
         tbSync.db.setFolderSetting(account, folderID, "targetColor", color); 
-        return true;
-
-        /*            
-            // add custom observer to calender - besides the global one added in tbSync.init()
-            calendar.addObserver(tbSync.calendarObserver2);
-            
-            //get all items of a calendar - results are catched by the listener and finished by a onOperationComplete
-            //Flags : https://dxr.mozilla.org/comm-central/source/calendar/base/public/calICalendar.idl#243
-            calendar.getItems(0xFFFF,
-                             0,
-                             null,
-                             null,
-                             calendarsync.calendarOperationObserver);
-        */
-        
+        return true;        
     }
 
 };
