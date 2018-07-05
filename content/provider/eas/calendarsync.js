@@ -64,15 +64,12 @@ eas.sync.Calendar = {
             let startDate = new Date(getIsoUtcString(cal.createDateTime(data.StartTime), true));
             let nowDate = new Date();
 
-            //Do not add alarms to old events
-            if (startDate > nowDate) {
-                let alarm = cal.createAlarm();
-                alarm.related = Components.interfaces.calIAlarm.ALARM_RELATED_START;
-                alarm.offset = cal.createDuration();
-                alarm.offset.inSeconds = (0-parseInt(data.Reminder)*60);
-                alarm.action ="DISPLAY";
-                item.addAlarm(alarm);
-            }
+            let alarm = cal.createAlarm();
+            alarm.related = Components.interfaces.calIAlarm.ALARM_RELATED_START;
+            alarm.offset = cal.createDuration();
+            alarm.offset.inSeconds = (0-parseInt(data.Reminder)*60);
+            alarm.action ="DISPLAY";
+            item.addAlarm(alarm);
         }
 
         eas.sync.mapEasPropertyToThunderbird ("BusyStatus", "TRANSP", data, item);
