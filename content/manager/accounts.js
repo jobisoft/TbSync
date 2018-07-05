@@ -520,7 +520,7 @@ var tbSyncAccounts = {
         observe: function (aSubject, aTopic, aData) {
             if (aData != "") {
                 //since we want rotating arrows on each syncstate change, we need to run this on each syncstate
-                let syncstate = tbSync.getSyncData(aData,"syncstate");
+                //let syncstate = tbSync.getSyncData(aData,"syncstate");
                 tbSyncAccounts.updateAccountStatus(aData);
             }
         }
