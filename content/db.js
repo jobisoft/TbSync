@@ -102,11 +102,19 @@ var db = {
     // ACCOUNT FUNCTIONS
 
     isValidAccountSetting: function (settings, name) {
+        //check if provider is installed
+        if (!tbSync.syncProviderList.hasOwnProperty(settings.provider)) 
+            return false;
+        
         //the only hardcoded account option is "provider", all others are taken from tbSync[provider].getNewAccountEntry())
         return ((name == "provider" || tbSync[settings.provider].getNewAccountEntry().hasOwnProperty(name)));
     },
 
     getDefaultAccountSetting: function (settings, name) {
+        //check if provider is installed
+        if (!tbSync.syncProviderList.hasOwnProperty(settings.provider)) 
+            return null;
+        
         //THIS FUNCTION ASSUMES, THAT THE GIVEN FIELD IS VALID
         return tbSync[settings.provider].getNewAccountEntry()[name];
     },
@@ -148,7 +156,8 @@ var db = {
 
     getAccounts: function () {
         let accounts = {};
-        accounts.IDs = Object.keys(this.accounts.data).sort((a, b) => a - b);
+        //IDs array only contains IDs of accounts whose provider is actually installed
+        accounts.IDs = Object.keys(this.accounts.data).filter(account => tbSync.syncProviderList.hasOwnProperty(this.accounts.data[account].provider)).sort((a, b) => a - b);
         accounts.data = this.accounts.data;
         return accounts;
     },
@@ -181,12 +190,22 @@ var db = {
 
     isValidFolderSetting: function (account, field) {
         let provider = this.getAccountSetting(account, "provider");
+
+        //check if provider is installed
+        if (!tbSync.syncProviderList.hasOwnProperty(provider)) 
+            return false;
+
         return tbSync[provider].getNewFolderEntry().hasOwnProperty(field);
     },
 
     getDefaultFolderSetting: function (account, field) {
-        //THIS FUNCTION ASSUMES, THAT THE GIVEN FIELD IS VALID
         let provider = this.getAccountSetting(account, "provider");
+
+        //check if provider is installed
+        if (!tbSync.syncProviderList.hasOwnProperty(provider)) 
+            return null;
+        
+        //THIS FUNCTION ASSUMES, THAT THE GIVEN FIELD IS VALID
         return tbSync[provider].getNewFolderEntry()[field];
     },
 
