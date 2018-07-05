@@ -543,6 +543,11 @@ var tbSync = {
         Services.obs.notifyObservers(null, "tbsync.changedSyncstate", account);
     },
     
+    setAccountState: function(accountstate, account) {
+        tbSync.db.setAccountSetting(account, "status", accountstate);
+        Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
+    },
+    
     resetSync: function () {
         //get all accounts and set all with syncing status to notsyncronized
         let accounts = tbSync.db.getAccounts();
@@ -870,7 +875,7 @@ var tbSync = {
     },
     
     setTargetModified : function (folder) {
-        if (folder.status == "OK") {
+        if (folder.status == "OK" && tbSync.isEnabled(folder.account)) {
             tbSync.db.setAccountSetting(folder.account, "status", tbSync.db.getAccountSetting(folder.account, "downloadonly") == "1" ? "needtorevert" : "notsyncronized");
             tbSync.db.setFolderSetting(folder.account, folder.folderID, "status", "modified");
             //notify settings gui to update status
@@ -889,6 +894,73 @@ var tbSync = {
         return "unknown";
     },
 
+    //actually remove address books / calendars from TB, based on TB type
+    removeTarget: function(target, type) {
+        switch (type) {
+            case "tb-event":
+            case "tb-todo":
+                tbSync.removeCalendar(target);
+                break;
+            case "tb-contact":
+                tbSync.removeBook(target);
+                break;
+            default:
+                tbSync.dump("tbSync.removeTarget","Unknown type <"+type+">");
+        }
+    },
+    
+    //rename target and clear changelog (it is still connected to tbSync, if folder in DB is not deleted/replaced) 
+    takeTargetOffline: function(provider, target, type, _suffix = "") {
+        if (target != "") {
+            let d = new Date();
+            let suffix = _suffix ? _suffix : " [lost contact on " + d.getDate().toString().padStart(2,"0") + "." + (d.getMonth()+1).toString().padStart(2,"0") + "." + d.getFullYear() +"]"
+
+            //if there are local changes, append an  (*) to the name of the target
+            let c = 0;
+            let a = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
+            for (let i=0; i<a.length; i++) c++;
+            if (c>0) suffix += " (*)";
+
+            //this is the only place, where we manually have to call clearChangelog, because the target is not deleted
+            //(on delete, changelog is cleared automatically)
+            tbSync.db.clearChangeLog(target);
+            
+            switch (tbSync[provider].getThunderbirdFolderType(type)) {
+                case "tb-event":
+                case "tb-todo":
+                    tbSync.appendSuffixToNameOfCalendar(target, suffix);
+                    break;
+                case "tb-contact":
+                    tbSync.appendSuffixToNameOfBook(target, suffix);
+                    break;
+                default:
+                    tbSync.dump("tbSync.takeTargetOffline","Unknown type <"+type+">");
+            }
+        }
+    },
+
+    //remove folder from DB (with cache support)
+    removeAllFolders: function(account) {
+        let provider = tbSync.db.getAccountSetting(account, "provider");
+        let folders = tbSync.db.getFolders(account);
+        for (let i in folders) {
+            let folderID = folders[i].folderID;
+            let target = folders[i].target;
+            let type = tbSync[provider].getThunderbirdFolderType(folders[i].type);            
+            
+            //Add a cached version of this folder to the database
+            if (tbSync.db.getAccountSetting(account, "syncdefaultfolders") == "1") {
+                folders[i].cached = "1";
+                folders[i].folderID = "cached-"+folderID;
+                tbSync.db.addFolder(folders[i]);
+            }
+            tbSync.db.deleteFolder(account, folderID); 
+
+            if (target != "") {
+                tbSync.removeTarget(target, type);
+            }
+        }
+    },
 
 
 
@@ -989,7 +1061,7 @@ var tbSync = {
                     //update settings window, if open
                     if (folders[0].selected == "1") {
                         folders[0].status= "aborted";
-                        tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
+                        if (tbSync.isEnabled(folders[0].account)) tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
 
                         //update settings window, if open
                          Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
@@ -1620,7 +1692,7 @@ var tbSync = {
                 
                 if (folders[0].selected == "1") {
                     folders[0].status= "aborted";
-                    tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
+                    if (tbSync.isEnabled(folders[0].account)) tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
 
                     //update settings window, if open
                     Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);

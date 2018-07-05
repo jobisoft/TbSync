@@ -39,8 +39,8 @@ var eas = {
                     
                 let folders = tbSync.db.getFolders(accounts.IDs[i]);
                 for (let f in folders) {
-                    //rename target
-                    if (folders[f].target != "") tbSync.eas.takeTargetOffline(folders[f].target, folders[f].type, " [emergency backup by TbSync]");
+                    //rename target if it exists
+                    tbSync.takeTargetOffline("eas", folders[f].target, folders[f].type, " [emergency backup by TbSync]");
                     //remove folder
                     tbSync.db.deleteFolder(accounts.IDs[i], folders[f].folderID);
                 }		    
@@ -122,7 +122,7 @@ var eas = {
             case "15":
                 return "tb-todo";
             default:
-                return "unknown";
+                return "unknown ("+type + ")";
         };
     },
 
@@ -352,7 +352,7 @@ var eas = {
                             folder.selected = "0";
                             folder.target = "";
                             //if target exists, take it offline
-                            if (target != "") tbSync.eas.takeTargetOffline(target, folder.type);
+                            tbSync.takeTargetOffline("eas", target, folder.type);
                         }    
                         folder.type = add[count].Type;
                         folder.status = "";
@@ -383,7 +383,7 @@ var eas = {
                             folder.selected = "0";                    
                             folder.target = "";                    
                             //if target exists, take it offline
-                            if (target != "") tbSync.eas.takeTargetOffline(target, folder.type);
+                            tbSync.takeTargetOffline("eas", target, folder.type);
 
                             //clear on deselect
                             folder.synckey = "";
@@ -423,7 +423,7 @@ var eas = {
                         folder.selected = "0";                    
                         folder.target = "";                    
                         //if target exists, take it offline
-                        if (target != "") tbSync.eas.takeTargetOffline(target, folder.type);
+                        tbSync.takeTargetOffline("eas", target, folder.type);
                         //delete folder in account manager
                         tbSync.db.deleteFolder(syncdata.account, del[count].ServerId);
                     } else {
@@ -446,7 +446,7 @@ var eas = {
                 //special action dring resync: remove all folders from db, which have not been added by server (thus are no longer there)
                 if (syncdata.accountResync && !addedFolders.includes(folders[f].folderID)) {
                     //if target exists, take it offline
-                    if (folders[f].target != "") tbSync.eas.takeTargetOffline(folders[f].target, folders[f].type);
+                    tbSync.takeTargetOffline("eas", folders[f].target, folders[f].type);
                     //delete folder in account manager
                     tbSync.db.deleteFolder(syncdata.account, folders[f].folderID);
                     continue;
@@ -1079,48 +1079,6 @@ var eas = {
         return settings;
     },
 
-    removeTarget: function(target, type) {
-        switch (eas.getThunderbirdFolderType(type)) {
-            case "tb-event":
-            case "tb-todo":
-                tbSync.removeCalendar(target);
-                break;
-            case "tb-contact":
-                tbSync.removeBook(target);
-                break;
-            default:
-                tbSync.dump("eas.removeTarget","Unknown type <"+type+">");
-        }
-    },
-
-    takeTargetOffline: function(target, type, _suffix = "") {
-        let d = new Date();
-        let suffix = _suffix ? _suffix : " [lost contact on " + d.getDate().toString().padStart(2,"0") + "." + (d.getMonth()+1).toString().padStart(2,"0") + "." + d.getFullYear() +"]"
-
-        //if there are local changes, append an  (*) to the name of the target
-        let c = 0;
-        let a = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
-        for (let i=0; i<a.length; i++) c++;
-        if (c>0) suffix += " (*)";
-
-        //TODO/IDEA : We could also try to add each modified item to a  xxx_by_user category, so the user can quickly identify, which data was not synced
-
-        //this is the only place, where we manually have to call clearChangelog, because the target is not deleted (on delete, changelog is cleared automatically)
-        tbSync.db.clearChangeLog(target);
-        
-        switch (eas.getThunderbirdFolderType(type)) {
-            case "tb-event":
-            case "tb-todo":
-                tbSync.appendSuffixToNameOfCalendar(target, suffix);
-                break;
-            case "tb-contact":
-                tbSync.appendSuffixToNameOfBook(target, suffix);
-                break;
-            default:
-                tbSync.dump("eas.takeTargetOffline","Unknown type <"+type+">");
-        }
-    },
-
     enableAccount: function (account) {
         db.setAccountSetting(account, "status", "notsyncronized");
         db.setAccountSetting(account, "policykey", 0);
@@ -1134,27 +1092,8 @@ var eas = {
         db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
 
-        //Delete all targets / folders
-        let folders = db.getFolders(account);
-        for (let i in folders) {
-            let folderID = folders[i].folderID;
-            let target = folders[i].target;
-            let type = folders[i].type;            
-            
-            //Add a cached version of this folder to the database
-            if (tbSync.db.getAccountSetting(account, "syncdefaultfolders") == "1") {
-                folders[i].cached = "1";
-                folders[i].folderID = "cached-"+folderID;
-                db.addFolder(folders[i]);
-            }
-            db.deleteFolder(account, folderID); 
-
-            if (target != "") {
-                tbSync.eas.removeTarget(target, type);
-            }
-        }
-
-        db.setAccountSetting(account, "status", "disabled");
+        //remove all folders from DB and remove associated targets (cache folders, if syncdefaultfolders set) 
+        tbSync.removeAllFolders(account);
     },
 
     TimeZoneDataStructure : class {
@@ -1579,7 +1518,7 @@ var eas = {
                     folder.selected = "0";
                     folder.target = "";
                     //if target exists, take it offline
-                    if (target != "") tbSync.eas.takeTargetOffline(target, folder.type);
+                    tbSync.takeTargetOffline("eas", target, folder.type);
                     tbSync.db.deleteFolder(syncdata.account, syncdata.folderID);
                     //folder is no longer there, unset current folder
                     syncdata.folderID = "";

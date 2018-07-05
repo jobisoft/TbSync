@@ -274,12 +274,15 @@ var tbSyncAccountSettings = {
             let fID =  folderList.selectedItem.value;
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.selectedAccount, fID, true);
 
+            if (!tbSync.isEnabled(folder.account))
+                return;
+		
             if (folder.selected == "1") {
                 if (window.confirm(tbSync.getLocalizedMessage("prompt.Unsubscribe", "eas"))) {
                     //deselect folder
                     folder.selected = "0";
                     //remove folder, which will trigger the listener in tbsync which will clean up everything
-                    tbSync.eas.removeTarget(folder.target, folder.type); 
+                    tbSync.eas.removeTarget(folder.target, eas.getThunderbirdFolderType(folder.type)); 
                 }
             } else {
                 //select and update status
