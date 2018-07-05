@@ -364,6 +364,8 @@ var tbSync = {
         observe: function (aSubject, aTopic, aData) {
             if (tbSync.enabled) {
                 if (tbSync.syncProviderList[aData]) delete tbSync.syncProviderList[aData];
+                //close window (if open)
+                if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
             }
         }
     },
