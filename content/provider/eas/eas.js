@@ -559,8 +559,11 @@ var eas = {
                         
                         //promisify calender, so it can be used together with yield
                         syncdata.targetObj = cal.async.promisifyCalendar(syncdata.calendarObj.wrappedJSObject);
-             
+
+                        syncdata.calendarObj.startBatch();
                         yield eas.sync.start(syncdata);
+                        syncdata.calendarObj.endBatch();
+
                         break;
                 }
 
