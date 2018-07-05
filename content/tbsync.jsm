@@ -74,8 +74,16 @@ var tbSync = {
             js: "//tbsync/content/provider/eas/eas.js", 
             newXul: "//tbsync/content/provider/eas/newaccount.xul", 
             accountXul: "//tbsync/content/provider/eas/accountSettings.xul"},  
-        },
+    },
 
+    externalProviderList: {
+        ews: {
+            name: "Exchange WebServices (EWS)", 
+            js: "//ews4tbsync/content/ews.js" , 
+            newXul: "//ews4tbsync/content/newaccount.xul", 
+            accountXul: "//ews4tbsync/content/accountSettings.xul"}
+    },
+    
     storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
 
 
@@ -90,6 +98,7 @@ var tbSync = {
         Services.obs.addObserver(tbSync.initSyncObserver, "tbsync.initSync", false);
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate", false);
         Services.obs.addObserver(tbSync.removeProviderObserver, "tbsync.removeProvider", false);
+        Services.obs.addObserver(tbSync.addProviderObserver, "tbsync.addProvider", false);
 
         // Inject UI before init finished, to give user the option to see Oops message and report bug
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
@@ -130,11 +139,7 @@ var tbSync = {
                         tbSync.versionInfo.installed = addons[a].version.toString();
                         break;
                     case "ews4tbsync@jobisoft.de":
-                        tbSync.syncProviderList.ews = {
-                            name: "Exchange WebServices (EWS)", 
-                            js: "//ews4tbsync/content/ews.js" , 
-                            newXul: "//ews4tbsync/content/newaccount.xul", 
-                            accountXul: "//ews4tbsync/content/accountSettings.xul"};
+                        tbSync.syncProviderList.ews = tbSync.externalProviderList.ews;
                         break;
                 }
             }
@@ -243,6 +248,7 @@ var tbSync = {
         Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate");
         Services.obs.removeObserver(tbSync.initSyncObserver, "tbsync.initSync");
         Services.obs.removeObserver(tbSync.removeProviderObserver, "tbsync.removeProvider");
+        Services.obs.removeObserver(tbSync.addProviderObserver, "tbsync.addProvider");
 
         //close window (if open)
         if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
@@ -359,15 +365,39 @@ var tbSync = {
         }
     },
 
+    //Observer to add provider
+    addProviderObserver: {
+        observe: Task.async (function* (aSubject, aTopic, aData) {
+            if (tbSync.enabled) {
+                //close window (if open)
+                if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
+
+                //load provider
+                tbSync.syncProviderList[aData] = tbSync.externalProviderList[aData];
+                tbSync.dump("PROVIDER", aData + "::" + tbSync.syncProviderList[aData].name);
+                tbSync.includeJS("chrome:" + tbSync.syncProviderList[aData].js);
+
+                //init provider 
+                yield tbSync[aData].init();
+
+                //init lighning part of provider 
+                if (tbSync.lightningIsAvailable()) {
+                    yield tbSync[aData].init4lightning();
+                }
+                
+            }
+        })
+    },
+
     //Observer to remove provider
     removeProviderObserver: {
-        observe: function (aSubject, aTopic, aData) {
+        observe: Task.async (function* (aSubject, aTopic, aData) {
             if (tbSync.enabled) {
                 if (tbSync.syncProviderList[aData]) delete tbSync.syncProviderList[aData];
                 //close window (if open)
                 if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
             }
-        }
+        })
     },
 
 
