@@ -6,7 +6,7 @@ Components.utils.import("resource://gre/modules/Task.jsm");
 */
 
 tbSync.onInjectIntoMessengerCompose = function (window) {
-    // create the MutationObserver: try to inject after the src attribute of the sidebar browser has been changed, thus the URL has been loaded
+    // Create the MutationObserver: try to inject after the src attribute of the sidebar browser has been changed, thus the URL has been loaded
     tbSync.messengerComposeObserver = new MutationObserver(function(mutations) {
       mutations.forEach(function(mutation) {
           tbSync.messengerComposeObserverTimer = window.setInterval(function(){    
@@ -23,6 +23,14 @@ tbSync.onInjectIntoMessengerCompose = function (window) {
     });     
      
     tbSync.messengerComposeObserver.observe(window.document.getElementById("sidebar"), { attributes: true, childList: false, characterData: false });
+    
+    // Add autoComplete for TbSync
+    if (window.document.getElementById("addressCol2#1")) {
+        let autocompletesearch = window.document.getElementById("addressCol2#1").getAttribute("autocompletesearch");
+        if (autocompletesearch.indexOf("tbSyncAutoCompleteSearch") == -1) {
+            window.document.getElementById("addressCol2#1").setAttribute("autocompletesearch", autocompletesearch + " tbSyncAutoCompleteSearch");
+        }
+    }    
 }
 
 tbSync.onRemoveFromMessengerCompose = function (window) {
@@ -31,4 +39,10 @@ tbSync.onRemoveFromMessengerCompose = function (window) {
         tbSync.overlayManager.removeAllOverlays(targetWindow);
     }                        
     tbSync.messengerComposeObserver.disconnect();
+    
+    // Remove autoComplete for TbSync
+    if (window.document.getElementById("addressCol2#1")) {
+        let autocompletesearch = window.document.getElementById("addressCol2#1").getAttribute("autocompletesearch").replace("tbSyncAutoCompleteSearch", "");
+        window.document.getElementById("addressCol2#1").setAttribute("autocompletesearch", autocompletesearch.trim());
+    }
 }

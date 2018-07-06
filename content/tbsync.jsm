@@ -113,10 +113,14 @@ var tbSync = {
         // load common subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
         tbSync.includeJS("chrome://tbsync/content/db.js");
         tbSync.includeJS("chrome://tbsync/content/abServerSearch.js");
+        tbSync.includeJS("chrome://tbsync/content/tbSyncAutoCompleteSearch.js");
 
         //init DB
         yield tbSync.db.init();
 
+        //init tbSync autocomplete in addressbook
+        tbSync.autocomplete.init();
+        
         //Wait for all other addons
         if (Services.vc.compare(Services.appinfo.platformVersion, "61.*") >= 0)  {
             let addons = yield AddonManager.getAllAddons();
@@ -255,6 +259,9 @@ var tbSync = {
         
         //remove listener
         tbSync.addressbookListener.remove();
+
+        //remove tbSync autocomplete
+        tbSync.autocomplete.shutdown();
 
         if (tbSync.lightningInitDone) {
             //removing global observer
@@ -1046,7 +1053,6 @@ var tbSync = {
         foStream.close();
     },
     
-
 
 
 
