@@ -269,10 +269,6 @@ var tbSync = {
                 tbSync.window.document.getElementById("task-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
             }
 
-            //are there any other cleanup4lightning we need to call?
-            for (let provider in tbSync.syncProviderList) {
-                tbSync[provider].cleanup4lightning();
-            }
         }
     },
 
@@ -368,7 +364,8 @@ var tbSync = {
     //Observer to add provider
     addProviderObserver: {
         observe: Task.async (function* (aSubject, aTopic, aData) {
-            if (tbSync.enabled) {
+            //Security: only allow to load pre-registered providers
+            if (tbSync.enabled &&  tbSync.externalProviderList.hasOwnProperty(aData)) {
                 //close window (if open)
                 if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
 
@@ -392,7 +389,8 @@ var tbSync = {
     //Observer to remove provider
     removeProviderObserver: {
         observe: Task.async (function* (aSubject, aTopic, aData) {
-            if (tbSync.enabled) {
+            //Security: only allow to unload pre-registered providers
+            if (tbSync.enabled &&  tbSync.externalProviderList.hasOwnProperty(aData)) {
                 if (tbSync.syncProviderList[aData]) delete tbSync.syncProviderList[aData];
                 //close window (if open)
                 if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
@@ -449,9 +447,6 @@ var tbSync = {
 
     //used by UI to find out, if this account is beeing synced
     isSyncing: function (account) {
-        //I think using the global status is more safe ???
-        //let syncstate = tbSync.getSyncData(account,"synstate"); //individual syncstates
-        //return (syncstate != "accountdone" && syncstate != "");
         let status = tbSync.db.getAccountSetting(account, "status"); //global status of the account
         return (status == "syncing");
     },
@@ -521,33 +516,17 @@ var tbSync = {
 
             //create syncdata object for each account (to be able to have parallel XHR)
             tbSync.prepareSyncDataObj(accountsToDo[i], true);
-            tbSync[tbSync.db.getAccountSetting(accountsToDo[i], "provider")].start(tbSync.getSyncData(accountsToDo[i]), job, folderID);
+            
+            tbSync.db.setAccountSetting(accountsToDo[i], "status", "syncing");
+            tbSync.setSyncData(accountsToDo[i], "syncstate",  "syncing");            
+            tbSync.setSyncData(accountsToDo[i], "folderID", folderID);            
+            Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", accountsToDo[i]);
+            
+            tbSync[tbSync.db.getAccountSetting(accountsToDo[i], "provider")].start(tbSync.getSyncData(accountsToDo[i]), job);
         }
         
     },
-
-    setSyncState: function(syncstate, account = "", folderID = "") {
-        //set new syncstate
-        let msg = "State: " + syncstate;
-        if (account !== "") msg += ", Account: " + tbSync.db.getAccountSetting(account, "accountname");
-        if (folderID !== "") msg += ", Folder: " + tbSync.db.getFolderSetting(account, folderID, "name");
-
-        if (account && syncstate.split(".")[0] == "send") {
-            //add timestamp to be able to display timeout countdown
-            syncstate = syncstate + "||" + Date.now();
-        }
-
-        tbSync.setSyncData(account, "syncstate", syncstate);
-        tbSync.dump("setSyncState", msg);
-
-        Services.obs.notifyObservers(null, "tbsync.changedSyncstate", account);
-    },
-    
-    setAccountState: function(accountstate, account) {
-        tbSync.db.setAccountSetting(account, "status", accountstate);
-        Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
-    },
-    
+   
     resetSync: function () {
         //get all accounts and set all with syncing status to notsyncronized
         let accounts = tbSync.db.getAccounts();
@@ -568,7 +547,200 @@ var tbSync = {
         }
     },
 
+    setTargetModified : function (folder) {
+        if (folder.status == "OK" && tbSync.isEnabled(folder.account)) {
+            tbSync.db.setAccountSetting(folder.account, "status", tbSync.db.getFolderSetting(folder.account, folder.folderID, "downloadonly") == "1" ? "needtorevert" : "notsyncronized");
+            tbSync.db.setFolderSetting(folder.account, folder.folderID, "status", "modified");
+            //notify settings gui to update status
+             Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folder.account);
+        }
+    },
 
+    //returns if item is todo, event, contactcard or something else
+    getItemType: function (aItem) {        
+        if (aItem instanceof Components.interfaces.nsIAbCard) {
+            return "tb-contact"
+        } else {
+            if ((cal.item && cal.item.isEvent(aItem)) || cal.isEvent(aItem)) return "tb-event";
+            if ((cal.item && cal.item.isToDo(aItem)) || cal.isToDo(aItem)) return "tb-todo";
+        }
+        return "unknown";
+    },
+
+    //actually remove address books / calendars from TB, based on TB type
+    removeTarget: function(target, type) {
+        switch (type) {
+            case "tb-event":
+            case "tb-todo":
+                tbSync.removeCalendar(target);
+                break;
+            case "tb-contact":
+                tbSync.removeBook(target);
+                break;
+            default:
+                tbSync.dump("tbSync.removeTarget","Unknown type <"+type+">");
+        }
+    },
+    
+    //rename target and clear changelog (it is still connected to tbSync, if folder in DB is not deleted/replaced) 
+    takeTargetOffline: function(provider, target, type, _suffix = "") {
+        if (target != "") {
+            let d = new Date();
+            let suffix = _suffix ? _suffix : " [lost contact on " + d.getDate().toString().padStart(2,"0") + "." + (d.getMonth()+1).toString().padStart(2,"0") + "." + d.getFullYear() +"]"
+
+            //if there are local changes, append an  (*) to the name of the target
+            let c = 0;
+            let a = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
+            for (let i=0; i<a.length; i++) c++;
+            if (c>0) suffix += " (*)";
+
+            //this is the only place, where we manually have to call clearChangelog, because the target is not deleted
+            //(on delete, changelog is cleared automatically)
+            tbSync.db.clearChangeLog(target);
+            
+            switch (tbSync[provider].getThunderbirdFolderType(type)) {
+                case "tb-event":
+                case "tb-todo":
+                    tbSync.appendSuffixToNameOfCalendar(target, suffix);
+                    break;
+                case "tb-contact":
+                    tbSync.appendSuffixToNameOfBook(target, suffix);
+                    break;
+                default:
+                    tbSync.dump("tbSync.takeTargetOffline","Unknown type <"+type+">");
+            }
+        }
+    },
+
+    //remove folder from DB (with cache support)
+    removeAllFolders: function(account) {
+        let provider = tbSync.db.getAccountSetting(account, "provider");
+        let folders = tbSync.db.getFolders(account);
+        for (let i in folders) {
+            let folderID = folders[i].folderID;
+            let target = folders[i].target;
+            let type = tbSync[provider].getThunderbirdFolderType(folders[i].type);            
+            
+            //Add a cached version of this folder to the database
+            if (tbSync.db.getAccountSetting(account, "syncdefaultfolders") == "1") {
+                folders[i].cached = "1";
+                folders[i].folderID = "cached-"+folderID;
+                tbSync.db.addFolder(folders[i]);
+            }
+            tbSync.db.deleteFolder(account, folderID); 
+
+            if (target != "") {
+                tbSync.removeTarget(target, type);
+            }
+        }
+    },
+
+    //set all selected folders to pending
+    setSelectedFoldersToPending: function(account) {
+        //set selected folders to pending, so they get synced
+        //also clean up leftover folder entries in DB during resync
+        let folders = tbSync.db.getFolders(account);
+        for (let f in folders) {
+            //remove all cached folders
+            if (folders[f].cached == "1") {
+                tbSync.db.deleteFolder(account, folders[f].folderID);
+                continue;
+            }
+                            
+            if (folders[f].selected == "1") {
+                tbSync.db.setFolderSetting(folders[f].account, folders[f].folderID, "status", "pending");
+            }
+        }
+        
+        //if account is connected (folders found) set syncstate to connected to switch to folder view
+        if (tbSync.isConnected(account)) tbSync.setSyncState("connected", account);        
+    },
+
+    getTypeImage: function (type) {
+        let src = ""; 
+        switch (type) {
+            case "tb-todo":
+                src = "todo16.png";
+                break;
+            case "tb-event":
+                src = "calendar16.png";
+                break;
+            case "tb-contact":
+                src = "contacts16.png";
+                break;
+        }
+        return "chrome://tbsync/skin/" + src;
+    },    
+
+    finishAccountSync: function (syncdata, error) {
+        // set each folder with PENDING status to ABORTED
+        let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
+        for (let i=0; i < folders.length; i++) {
+            tbSync.db.setFolderSetting(syncdata.account, folders[i].folderID, "status", "aborted");
+        }
+
+        //update account status
+        let status = "OK";
+        if (error != "") status = error;
+        else {
+            //search for folders with error
+            folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);
+            for (let i in folders) {
+                if (folders[i].status != "" && folders[i].status != "OK" && folders[i].status != "aborted") {
+                    status = folders[i].status;
+                    break;
+                }
+            }
+        }
+        
+        //done
+        tbSync.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
+        tbSync.db.setAccountSetting(syncdata.account, "status", status);
+        tbSync.setSyncState("accountdone", syncdata.account); 
+    },
+
+    finishFolderSync: function (syncdata, error) {
+        //a folder has been finished, update status
+        let time = Date.now();
+        let status = "OK";
+        
+        let info = tbSync.db.getAccountSetting(syncdata.account, "accountname");
+        if (syncdata.folderID != "") {
+            info += "." + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name");
+        }
+        
+        if (error !== "") {
+            status = error;
+            time = "";
+        }
+        tbSync.dump("finishFolderSync(" + info + ")", tbSync.getLocalizedMessage("status." + status, tbSync.db.getAccountSetting(syncdata.account, "provider")));
+        
+        if (syncdata.folderID != "") {
+            tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", status);
+            tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime", time);
+        } 
+
+        tbSync.setSyncState("done", syncdata.account);
+    },
+    
+    setSyncState: function(syncstate, account = "", folderID = "") {
+        //set new syncstate
+        let msg = "State: " + syncstate;
+        if (account !== "") msg += ", Account: " + tbSync.db.getAccountSetting(account, "accountname");
+        if (folderID !== "") msg += ", Folder: " + tbSync.db.getFolderSetting(account, folderID, "name");
+
+        if (account && syncstate.split(".")[0] == "send") {
+            //add timestamp to be able to display timeout countdown
+            syncstate = syncstate + "||" + Date.now();
+        }
+
+        tbSync.setSyncData(account, "syncstate", syncstate);
+        tbSync.dump("setSyncState", msg);
+
+        Services.obs.notifyObservers(null, "tbsync.changedSyncstate", account);
+    },
+
+ 
 
 
 
@@ -874,93 +1046,6 @@ var tbSync = {
         foStream.close();
     },
     
-    setTargetModified : function (folder) {
-        if (folder.status == "OK" && tbSync.isEnabled(folder.account)) {
-            tbSync.db.setAccountSetting(folder.account, "status", tbSync.db.getAccountSetting(folder.account, "downloadonly") == "1" ? "needtorevert" : "notsyncronized");
-            tbSync.db.setFolderSetting(folder.account, folder.folderID, "status", "modified");
-            //notify settings gui to update status
-             Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folder.account);
-        }
-    },
-
-    //returns if item is todo, event, contactcard or something else
-    getItemType: function (aItem) {        
-        if (aItem instanceof Components.interfaces.nsIAbCard) {
-            return "tb-contact"
-        } else {
-            if ((cal.item && cal.item.isEvent(aItem)) || cal.isEvent(aItem)) return "tb-event";
-            if ((cal.item && cal.item.isToDo(aItem)) || cal.isToDo(aItem)) return "tb-todo";
-        }
-        return "unknown";
-    },
-
-    //actually remove address books / calendars from TB, based on TB type
-    removeTarget: function(target, type) {
-        switch (type) {
-            case "tb-event":
-            case "tb-todo":
-                tbSync.removeCalendar(target);
-                break;
-            case "tb-contact":
-                tbSync.removeBook(target);
-                break;
-            default:
-                tbSync.dump("tbSync.removeTarget","Unknown type <"+type+">");
-        }
-    },
-    
-    //rename target and clear changelog (it is still connected to tbSync, if folder in DB is not deleted/replaced) 
-    takeTargetOffline: function(provider, target, type, _suffix = "") {
-        if (target != "") {
-            let d = new Date();
-            let suffix = _suffix ? _suffix : " [lost contact on " + d.getDate().toString().padStart(2,"0") + "." + (d.getMonth()+1).toString().padStart(2,"0") + "." + d.getFullYear() +"]"
-
-            //if there are local changes, append an  (*) to the name of the target
-            let c = 0;
-            let a = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
-            for (let i=0; i<a.length; i++) c++;
-            if (c>0) suffix += " (*)";
-
-            //this is the only place, where we manually have to call clearChangelog, because the target is not deleted
-            //(on delete, changelog is cleared automatically)
-            tbSync.db.clearChangeLog(target);
-            
-            switch (tbSync[provider].getThunderbirdFolderType(type)) {
-                case "tb-event":
-                case "tb-todo":
-                    tbSync.appendSuffixToNameOfCalendar(target, suffix);
-                    break;
-                case "tb-contact":
-                    tbSync.appendSuffixToNameOfBook(target, suffix);
-                    break;
-                default:
-                    tbSync.dump("tbSync.takeTargetOffline","Unknown type <"+type+">");
-            }
-        }
-    },
-
-    //remove folder from DB (with cache support)
-    removeAllFolders: function(account) {
-        let provider = tbSync.db.getAccountSetting(account, "provider");
-        let folders = tbSync.db.getFolders(account);
-        for (let i in folders) {
-            let folderID = folders[i].folderID;
-            let target = folders[i].target;
-            let type = tbSync[provider].getThunderbirdFolderType(folders[i].type);            
-            
-            //Add a cached version of this folder to the database
-            if (tbSync.db.getAccountSetting(account, "syncdefaultfolders") == "1") {
-                folders[i].cached = "1";
-                folders[i].folderID = "cached-"+folderID;
-                tbSync.db.addFolder(folders[i]);
-            }
-            tbSync.db.deleteFolder(account, folderID); 
-
-            if (target != "") {
-                tbSync.removeTarget(target, type);
-            }
-        }
-    },
 
 
 
@@ -1284,7 +1369,53 @@ var tbSync = {
         return data;
     },
 
+    promisifyAddressbook: function (addressbook) {
+    /* 
+        Return obj with identical interface to promisifyCalendar. But we currently do not need a promise. 
+            adoptItem(card)
+            modifyItem(newcard, existingcard)
+            deleteItem(card)
+            getItem(id)
 
+        Avail API:
+            addressBook.modifyCard(card);
+            addressBook.getCardFromProperty("localId", ClientId, false);
+            addressBook.deleteCards(cardsToDelete);
+            card.setProperty('ServerId', ServerId);
+    */
+        let apiWrapper = {
+            adoptItem: function (item) { 
+                /* add card to addressbook */
+                addressbook.addCard(item.card);
+            },
+
+            modifyItem: function (newitem, existingitem) {
+                /* modify card */
+                addressbook.modifyCard(newitem.card);
+            },
+
+            deleteItem: function (item) {
+                /* remove card from addressBook */
+                let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+                cardsToDelete.appendElement(item.card, "");
+                addressbook.deleteCards(cardsToDelete);
+            },
+
+            getItem: function (searchId) {
+                /* return array of items matching */
+                let items = [];
+                let card = addressbook.getCardFromProperty("TBSYNCID", searchId, true); //3rd param enables case sensitivity
+                
+                if (card) {
+                    items.push(eas.sync.Contacts.createItem(card));
+                }
+                
+                return items;
+            }
+        };
+    
+        return apiWrapper;
+    },
 
 
     // CALENDAR FUNCTIONS

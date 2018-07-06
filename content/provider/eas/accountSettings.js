@@ -324,25 +324,6 @@ var tbSyncAccountSettings = {
         document.getElementById("tbsync.accountsettings.ContextMenuToggleSubscription").hidden = hideContextMenuToggleSubscription;
     },
 
-    getTypeImage: function (type) {
-        let src = ""; 
-        switch (type) {
-            case "7":
-            case "15":
-                src = "todo16.png";
-                break;
-            case "8":
-            case "13":
-                src = "calendar16.png";
-                break;
-            case "9":
-            case "14":
-                src = "contacts16.png";
-                break;
-        }
-        return "chrome://tbsync/skin/" + src;
-    },
-
     getIdChain: function (allowedTypesOrder, account, folderID) {
         //create sort string so that child folders are directly below their parent folders, different folder types are grouped and trashes folders at the end
         let folder = folderID;
@@ -441,7 +422,7 @@ var tbSyncAccountSettings = {
                     itemTypeCell.setAttribute("width", "24");
                     itemTypeCell.setAttribute("height", "24");
                         let itemType = document.createElement("image");
-                        itemType.setAttribute("src", this.getTypeImage(type));
+                        itemType.setAttribute("src", tbSync.getTypeImage(tbSync.eas.getThunderbirdFolderType(type)));
                         itemType.setAttribute("style", "margin: 4px;");
                     itemTypeCell.appendChild(itemType);
                     newListItem.appendChild(itemTypeCell);

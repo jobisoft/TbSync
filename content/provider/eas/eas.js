@@ -75,10 +75,6 @@ var eas = {
         }
     }),
 
-    //this is  called during tbSync cleanup (if lighning is enabled)
-    cleanup4lightning: function ()  {
-    },
-
     createCalendar: function(account, folderID, color, newname) {
         //Alternative calendar, which uses calTbSyncCalendar
         //let newCalendar = calManager.createCalendar("TbSync", Services.io.newURI('tbsync-calendar://'));
@@ -130,10 +126,7 @@ var eas = {
 
 
     //CORE SYNC LOOP FUNCTION
-    start: Task.async (function* (syncdata, job, folderID = "")  {
-        //set syncdata for this sync process (reference from outer object)
-        syncdata.syncstate = "";
-        syncdata.folderID = folderID;
+    start: Task.async (function* (syncdata, job)  {
         let accountReSyncs = 0;
         
         do {
@@ -141,10 +134,6 @@ var eas = {
                 accountReSyncs++;
                 syncdata.todo = 0;
                 syncdata.done = 0;
-
-                // set status to syncing (so settingswindow will display syncstates instead of status) and set initial syncstate
-                tbSync.db.setAccountSetting(syncdata.account, "status", "syncing");
-                tbSync.setSyncState("syncing", syncdata.account);
 
                 if (accountReSyncs > 3) {
                     throw eas.finishSync("resync-loop", eas.flags.abortWithError);
@@ -237,7 +226,7 @@ var eas = {
                             switch (errorcode) {
                                 case 401:
                                 case 403: //failed to authenticate
-                                    eas.finishAccountSync(syncdata, "401");
+                                    tbSync.finishAccountSync(syncdata, "401");
                                     return;                            
                                 case 200: //server and/or user was updated, retry
                                     Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", syncdata.account);
@@ -249,13 +238,13 @@ var eas = {
                     case eas.flags.abortWithError: //fatal error, finish account sync
                     case eas.flags.syncNextFolder: //no more folders left, finish account sync
                     case eas.flags.resyncFolder: //should not happen here, just in case
-                        eas.finishAccountSync(syncdata, report.message);
+                        tbSync.finishAccountSync(syncdata, report.message);
                         return;
 
                     default:
                         //there was some other error
                         Components.utils.reportError(report);
-                        eas.finishAccountSync(syncdata, "javascriptError");
+                        tbSync.finishAccountSync(syncdata, "javascriptError");
                         return;
                 }
 
@@ -323,7 +312,7 @@ var eas = {
                         newData.parentID = add[count].ParentId;
                         newData.synckey = "";
                         newData.target = "";
-                        newData.downloadonly = tbSync.db.getAccountSetting(syncdata.account, "downloadonly"); //in v0.7.9 each folder will have its own settings, the main setting is just the default
+                        newData.downloadonly = tbSync.db.getAccountSetting(syncdata.account, "downloadonly"); //each folder has its own settings, the main setting is just the default
 
                         //if there is a cached version of this folder, take selection state from there
                         if (tbSync.db.getAccountSetting(syncdata.account, "syncdefaultfolders") == "1") {
@@ -433,33 +422,20 @@ var eas = {
             }
 
             
-            //set selected folders to pending, so they get synced
-            //also clean up leftover folder entries in DB during resync
-            let folders = tbSync.db.getFolders(syncdata.account);
-            for (let f in folders) {
-                //remove all cached folders
-                if (folders[f].cached == "1") {
-                    tbSync.db.deleteFolder(syncdata.account, folders[f].folderID);
-                    continue;
-                }
-                
-                //special action dring resync: remove all folders from db, which have not been added by server (thus are no longer there)
-                if (syncdata.accountResync && !addedFolders.includes(folders[f].folderID)) {
-                    //if target exists, take it offline
-                    tbSync.takeTargetOffline("eas", folders[f].target, folders[f].type);
-                    //delete folder in account manager
-                    tbSync.db.deleteFolder(syncdata.account, folders[f].folderID);
-                    continue;
-                }
-                            
-                if (folders[f].selected == "1") {
-                    tbSync.db.setFolderSetting(folders[f].account, folders[f].folderID, "status", "pending");
+            //special action during resync: remove all folders from db, which have not been added by server (thus are no longer there)
+            if (syncdata.accountResync) {
+                let folders = tbSync.db.getFolders(syncdata.account);
+                for (let f in folders) {
+                    if (!addedFolders.includes(folders[f].folderID)) {
+                        //if target exists, take it offline
+                        tbSync.takeTargetOffline("eas", folders[f].target, folders[f].type);
+                        //delete folder in account manager
+                        tbSync.db.deleteFolder(syncdata.account, folders[f].folderID);
+                    }
                 }
             }
-
-            //if account is connected (folders found) set syncstate to connected to switch to folder view
-            if (tbSync.isConnected(syncdata.account)) tbSync.setSyncState("connected", syncdata.account, syncdata.folderID);
             
+            tbSync.setSelectedFoldersToPending(syncdata.account);            
         }
     }),
 
@@ -467,12 +443,7 @@ var eas = {
     syncPendingFolders: Task.async (function* (syncdata)  {
         let folderReSyncs = 1;
         
-        do {            
-            //reset syncdata statecounts
-            syncdata.statecounts = {};
-            syncdata.todo = 0;
-            syncdata.done = 0;
-                
+        do {                
             //any pending folders left?
             let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
             if (folders.length == 0) {
@@ -537,7 +508,7 @@ var eas = {
                         syncdata.addressbookObj = tbSync.getAddressBookObject(syncdata.targetId);
 
                         //promisify addressbook, so it can be used together with yield
-                        syncdata.targetObj = eas.sync.Contacts.promisifyAddressbook(syncdata.addressbookObj);
+                        syncdata.targetObj = tbSync.promisifyAddressbook(syncdata.addressbookObj);
                         
                         yield eas.sync.start(syncdata);   //using new tbsync contacts sync code
                         break;
@@ -573,12 +544,12 @@ var eas = {
                     case eas.flags.abortWithError:  //if there was a fatal error during folder sync, re-throw error to finish account sync (with error)
                     case eas.flags.abortWithServerError:
                     case eas.flags.resyncAccount:   //if the entire account needs to be resynced, finish this folder and re-throw account (re)sync request                                                    
-                        eas.finishFolderSync(syncdata, report.message);
+                        tbSync.finishFolderSync(syncdata, report.message);
                         throw eas.finishSync(report.message, report.type);
                         break;
 
                     case eas.flags.syncNextFolder:
-                        eas.finishFolderSync(syncdata, report.message);
+                        tbSync.finishFolderSync(syncdata, report.message);
                         break;
                                             
                     case eas.flags.resyncFolder:
@@ -590,7 +561,7 @@ var eas = {
                     default:
                         Components.utils.reportError(report);
                         let msg = "javascriptError";
-                        eas.finishFolderSync(syncdata, msg);
+                        tbSync.finishFolderSync(syncdata, msg);
                         //this is a fatal error, re-throw error to finish account sync
                         throw eas.finishSync(msg, eas.flags.abortWithError);
                 }
@@ -878,59 +849,7 @@ var eas = {
         e.type = type;
         e.message = msg;
         return e; 
-    },
-
-    finishFolderSync: function (syncdata, error) {
-        //a folder has been finished, update status
-        let time = Date.now();
-        let status = "OK";
-        
-        let info = tbSync.db.getAccountSetting(syncdata.account, "accountname");
-        if (syncdata.folderID != "") {
-            info += "." + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name");
-        }
-        
-        if (error !== "") {
-            status = error;
-            time = "";
-        }
-        tbSync.dump("finishFolderSync(" + info + ")", tbSync.getLocalizedMessage("status." + status, "eas"));
-        
-        if (syncdata.folderID != "") {
-            tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", status);
-            tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime", time);
-        } 
-
-        tbSync.setSyncState("done", syncdata.account);
-    },
-
-    finishAccountSync: function (syncdata, error) {
-        // set each folder with PENDING status to ABORTED
-        let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
-        for (let i=0; i < folders.length; i++) {
-            tbSync.db.setFolderSetting(syncdata.account, folders[i].folderID, "status", "aborted");
-        }
-
-        //update account status
-        let status = "OK";
-        if (error != "") status = error;
-        else {
-            //search for folders with error
-            folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);
-            for (let i in folders) {
-                if (folders[i].status != "" && folders[i].status != "OK" && folders[i].status != "aborted") {
-                    status = folders[i].status;
-                    break;
-                }
-            }
-        }
-        
-        //done
-        tbSync.db.setAccountSetting(syncdata.account, "lastsynctime", Date.now());
-        tbSync.db.setAccountSetting(syncdata.account, "status", status);
-        tbSync.setSyncState("accountdone", syncdata.account); 
-    
-    },
+    },    
     
     updateSynckey: function (syncdata, wbxmlData) {
         let synckey = xmltools.getWbxmlDataField(wbxmlData,"Sync.Collections.Collection.SyncKey");
@@ -1052,7 +971,7 @@ var eas = {
             "lastsynctime" : "",
             "status" : "",
             "parentID" : "",
-            "downloadonly" : "", //indicate not set
+            "downloadonly" : "0",
             "cached" : "0"};
         return folder;
     },

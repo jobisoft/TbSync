@@ -15,55 +15,6 @@ eas.sync.Contacts = {
                     
         return item;
     },
-
-    
-    promisifyAddressbook: function (addressbook) {
-    /* 
-        Return obj with identical interface to promisifyCalendar. But we currently do not need a promise. 
-            adoptItem(card)
-            modifyItem(newcard, existingcard)
-            deleteItem(card)
-            getItem(id)
-
-        Avail API:
-            addressBook.modifyCard(card);
-            addressBook.getCardFromProperty("localId", ClientId, false);
-            addressBook.deleteCards(cardsToDelete);
-            card.setProperty('ServerId', ServerId);
-    */
-        let apiWrapper = {
-            adoptItem: function (item) { 
-                /* add card to addressbook */
-                addressbook.addCard(item.card);
-            },
-
-            modifyItem: function (newitem, existingitem) {
-                /* modify card */
-                addressbook.modifyCard(newitem.card);
-            },
-
-            deleteItem: function (item) {
-                /* remove card from addressBook */
-                let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-                cardsToDelete.appendElement(item.card, "");
-                addressbook.deleteCards(cardsToDelete);
-            },
-
-            getItem: function (searchId) {
-                /* return array of items matching */
-                let items = [];
-                let card = addressbook.getCardFromProperty("TBSYNCID", searchId, true); //3rd param enables case sensitivity
-                
-                if (card) {
-                    items.push(eas.sync.Contacts.createItem(card));
-                }
-                
-                return items;
-            }
-        };
-    
-        return apiWrapper;
-    },
     
     //these functions handle categories compatible to the Category Manager Add-On, which is compatible to lots of other sync tools (sogo, carddav-sync, roundcube)
     categoriesFromString: function (catString) {

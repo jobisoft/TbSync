@@ -15,15 +15,17 @@ eas.sync = {
 
     start: Task.async (function* (syncdata)  {
         //sync
+        syncdata.done = 0;
+        syncdata.todo = 0;
 
-        if (tbSync.db.getAccountSetting(syncdata.account, "downloadonly") == "1") {		
+        if (tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "downloadonly") == "1") {		
             yield eas.sync.revertLocalChanges (syncdata);
         }
 
         yield eas.getItemEstimate (syncdata);
         yield eas.sync.requestRemoteChanges (syncdata); 
 
-        if (tbSync.db.getAccountSetting(syncdata.account, "downloadonly") != "1") {		
+        if (tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "downloadonly") != "1") {		
             yield eas.sync.sendLocalChanges (syncdata);
         }
 
@@ -476,7 +478,7 @@ eas.sync = {
                 } else {
                     //item exists, asuming resync
                     //we MUST make sure, that our local version is send to the server (not if read-only of course)
-                    if (tbSync.db.getAccountSetting(syncdata.account, "downloadonly") != "1") {
+                    if (tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "downloadonly") != "1") {
                         tbSync.dump("Add request, but element exists already, asuming resync, local version wins.", ServerId);
                         db.addItemToChangeLog(syncdata.targetId, ServerId, "modified_by_user");
                     }
