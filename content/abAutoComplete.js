@@ -166,7 +166,7 @@ abAutoComplete.Result.prototype = {
      * This returns the string that is displayed in the dropdown
      */
       getLabelAt(aIndex) {
-        return this.getValueAt(aIndex) + " (" + this.getCommentAt(aIndex) + ")";
+        return "  " + this.getValueAt(aIndex) + " (" + this.getCommentAt(aIndex) + ")";
       },
 
     /**
