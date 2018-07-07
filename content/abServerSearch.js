@@ -132,33 +132,14 @@ serverSearch.onSearchInputChanged = Task.async (function* (window) {
                         serverSearch.clearServerSearchResults(window);
 
                         for (let count = 0; count < results.length; count++) {
-                            if (results[count].Properties) {
-                                //tbSync.window.console.log('Found contact:' + results[count].Properties.DisplayName);
-                                let newItem = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-                                newItem.setProperty("X-Server-Searchresult", "TbSync");
-                                newItem.setProperty("FirstName", results[count].Properties.FirstName);
-                                newItem.setProperty("LastName", results[count].Properties.LastName);
-                                newItem.setProperty("DisplayName", results[count].Properties.DisplayName + " ("+ accountname +")");
-                                newItem.setProperty("PrimaryEmail", results[count].Properties.EmailAddress);
-
-                                newItem.setProperty("CellularNumber", results[count].Properties.MobilePhone);
-                                newItem.setProperty("HomePhone", results[count].Properties.HomePhone);
-                                newItem.setProperty("WorkPhone", results[count].Properties.Phone);
-                                newItem.setProperty("Company", results[count].Properties.Company);
-                                newItem.setProperty("Department", results[count].Properties.Title);
-                                newItem.setProperty("JobTitle", results[count].Properties.Office);
-
-                                /* unmapped:
-                                                        gal:
-                                                        gal:Office
-                                                        gal:Title
-                                                        gal:Company
-                                                        gal:Picture
-                                                        gal:Data
-                                            */
-
-                                addressbook.addCard(newItem);
+                            let newItem = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
+                            for (var prop in results[count].properties) {
+                                if (results[count].properties.hasOwnProperty(prop)) {
+                                    newItem.setProperty(prop, results[count].properties[prop]);
+                                }
                             }
+                            newItem.setProperty("X-Server-Searchresult", "TbSync");
+                            addressbook.addCard(newItem);
                         }   
                         window.onEnterInSearchBar();
                         if (window.tbSync_serverSearchNextQuery == "") window.tbSync_serverSearchBusy = false;

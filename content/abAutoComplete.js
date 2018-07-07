@@ -3,29 +3,25 @@
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 //derived from https://dxr.mozilla.org/comm-central/source/mozilla/accessible/tests/mochitest/autocomplete.js
-var autocomplete = {
+var abAutoComplete = {
 
     tbSyncAutoCompleteSearch : null,
 
     /**
      * Register 'tbSyncAutoCompleteSearch' AutoCompleteSearch.
-     *
-     * @param aValues [in] set of possible results values
-     * @param aComments [in] set of possible results descriptions
      */
     init : function () {
-      var allResults = new autocomplete.ResultsHeap();
-      autocomplete.tbSyncAutoCompleteSearch = new autocomplete.Search("tbSyncAutoCompleteSearch", allResults);
-      autocomplete.register(autocomplete.tbSyncAutoCompleteSearch, "AutoCompleteSearch");
+      abAutoComplete.tbSyncAutoCompleteSearch = new abAutoComplete.Search("tbSyncAutoCompleteSearch");
+      abAutoComplete.register(abAutoComplete.tbSyncAutoCompleteSearch, "AutoCompleteSearch");
     },
 
     /**
      * Unregister 'tbSyncAutoCompleteSearch' AutoCompleteSearch.
      */
     shutdown : function () {
-      autocomplete.unregister(autocomplete.tbSyncAutoCompleteSearch);
-      autocomplete.tbSyncAutoCompleteSearch.cid = null;
-      autocomplete.tbSyncAutoCompleteSearch = null;
+      abAutoComplete.unregister(abAutoComplete.tbSyncAutoCompleteSearch);
+      abAutoComplete.tbSyncAutoCompleteSearch.cid = null;
+      abAutoComplete.tbSyncAutoCompleteSearch = null;
     },
 
 
@@ -58,22 +54,12 @@ var autocomplete = {
 
 
     /**
-     * A container to keep all possible results of autocomplete search.
-     */
-    ResultsHeap : function () {
-    },
-
-
-
-    /**
      * nsIAutoCompleteSearch implementation.
      *
      * @param aName       [in] the name of autocomplete search
-     * @param aAllResults [in] ResultsHeap object
      */
-    Search : function (aName, aAllResults) {
+    Search : function (aName) {
       this.name = aName;
-      this.allResults = aAllResults;
     },
 
 
@@ -98,36 +84,14 @@ var autocomplete = {
 
 
 
-autocomplete.ResultsHeap.prototype = {
-      constructor: autocomplete.ResultsHeap,
-
-      /**
-       * Return AutoCompleteResult for the given search string.
-       */
-      getAutoCompleteResultFor(aSearchString) {
-        //fake dummy dataset
-        var _v = [ "hello", "hi" ];
-        var _c = [ "Beep beep'm beep beep yeah", "Baby you can drive my car" ];
-          
-        var values = [], comments = [];
-        for (var idx = 0; idx < _v.length; idx++) {
-          if (_v[idx].includes(aSearchString)) {
-            values.push(_v[idx]);
-            comments.push(_c[idx]);
-          }
-        }
-        return new autocomplete.Result(values, comments);
-      }
-}
-
-autocomplete.Search.prototype = {
-      constructor: autocomplete.Search,
+abAutoComplete.Search.prototype = {
+      constructor: abAutoComplete.Search,
 
       // nsIAutoCompleteSearch implementation
-      startSearch(aSearchString, aSearchParam, aPreviousResult, aListener) {
-        var result = this.allResults.getAutoCompleteResultFor(aSearchString);
+      startSearch : Task.async (function* (aSearchString, aSearchParam, aPreviousResult, aListener) {
+        var result = yield this.getAutoCompleteResultFor(aSearchString);
         aListener.onSearchResult(this, result);
-      },
+      }),
 
       stopSearch() {},
 
@@ -142,12 +106,48 @@ autocomplete.Search.prototype = {
       // Search name. Used by AutoCompleteController.
       name: null,
 
-      // Results heap.
-      allResults: null
+      /**
+       * Return AutoCompleteResult for the given search string.
+       */
+      getAutoCompleteResultFor : Task.async (function* (aSearchString) {
+        //check each account and init server request
+        let accounts = tbSync.db.getAccounts();
+        let requests = [];
+        let values = [];
+        let comments = [];
+          
+        if (aSearchString.length > 3) {
+            for (let i=0; i<accounts.IDs.length; i++) {
+                let account = accounts.IDs[i];
+                let provider = accounts.data[account].provider;
+                let status = accounts.data[account].status;
+                
+                if (status == "disabled") continue;
+                
+                //start all requests parallel (do not wait till done here, no yield, push the promise)
+                if (tbSync[provider].abServerSearch) {
+                    requests.push(tbSync[provider].abServerSearch (account, aSearchString));
+                }
+            }
+            
+            //wait for all requests to finish (only have to wait for the slowest, all others are done)
+            for (let r=0; r < requests.length; r++) {
+                let results = yield requests[r];
+                for (let count=0; count < results.length; count++) {
+                    if (results[count].autocomplete) {
+                        values.push(results[count].autocomplete.value);
+                        comments.push(results[count].autocomplete.account);
+                    }
+                }
+            }
+        }
+        
+        return new abAutoComplete.Result(values, comments);
+      })
 }
 
-autocomplete.Result.prototype = {
-      constructor: autocomplete.Result,
+abAutoComplete.Result.prototype = {
+      constructor: abAutoComplete.Result,
 
       searchString: "",
       searchResult: null,
@@ -166,7 +166,7 @@ autocomplete.Result.prototype = {
      * This returns the string that is displayed in the dropdown
      */
       getLabelAt(aIndex) {
-        return this.getValueAt(aIndex);
+        return this.getValueAt(aIndex) + " (" + this.getCommentAt(aIndex) + ")";
       },
 
     /**

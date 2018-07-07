@@ -786,8 +786,37 @@ var eas = {
             
         let response = yield eas.sendRequest(wbxml.getBytes(), "Search", syncdata);
         let wbxmlData = eas.getDataFromResponse(response);
+        let results = xmltools.nodeAsArray(wbxmlData.Search.Response.Store.Result);
 
-        return xmltools.nodeAsArray(wbxmlData.Search.Response.Store.Result);
+        let galdata = [];
+        let accountname = tbSync.db.getAccountSetting(account, "accountname");
+    
+		for (let count = 0; count < results.length; count++) {
+            if (results[count].Properties) {
+                //tbSync.window.console.log('Found contact:' + results[count].Properties.DisplayName);
+                let resultset = {};
+
+                resultset.properties = {};                    
+                resultset.properties["FirstName"] = results[count].Properties.FirstName;
+                resultset.properties["LastName"] = results[count].Properties.LastName;
+                resultset.properties["DisplayName"] = results[count].Properties.DisplayName;
+                resultset.properties["PrimaryEmail"] = results[count].Properties.EmailAddress;
+                resultset.properties["CellularNumber"] = results[count].Properties.MobilePhone;
+                resultset.properties["HomePhone"] = results[count].Properties.HomePhone;
+                resultset.properties["WorkPhone"] = results[count].Properties.Phone;
+                resultset.properties["Company"] = accountname; //results[count].Properties.Company;
+                resultset.properties["Department"] = results[count].Properties.Title;
+                resultset.properties["JobTitle"] = results[count].Properties.Office;
+
+                resultset.autocomplete = {};                    
+                resultset.autocomplete.value = results[count].Properties.DisplayName + " <" + results[count].Properties.EmailAddress + ">";
+                resultset.autocomplete.account = accountname;
+                    
+                galdata.push(resultset);
+            }
+        }
+		
+        return galdata;
     }),
 
     deleteFolder: Task.async (function* (syncdata)  {
