@@ -1400,7 +1400,7 @@ var tbSync = {
                 let card = addressbook.getCardFromProperty("TBSYNCID", searchId, true); //3rd param enables case sensitivity
                 
                 if (card) {
-                    items.push(eas.sync.Contacts.createItem(card));
+                    items.push(tbSync.eas.sync.Contacts.createItem(card));
                 }
                 
                 return items;
