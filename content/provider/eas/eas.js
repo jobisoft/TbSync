@@ -16,7 +16,7 @@ var eas = {
     }),
     
 
-    init: Task.async (function* ()  {
+    init: Task.async (function* (lightningIsAvail)  {
         //dynamically load overlays from xpi
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abEditCardDialog.xul", "chrome://tbsync/content/provider/eas/overlays/abCardWindow.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/provider/eas/overlays/abCardWindow.xul");
@@ -46,34 +46,37 @@ var eas = {
                 }		    
             }
         }
-        if (showMigrationPopup) tbSync.window.alert(tbSync.getLocalizedMessage("migrate"));        
-    }),
+        if (showMigrationPopup) tbSync.window.alert(tbSync.getLocalizedMessage("migrate"));
 
-
-    //this is  called, after lighning has become available - it is called by tbSync.onLightningLoad
-    init4lightning: Task.async (function* () {
-        //If an EAS calendar is currently NOT associated with an email identity, try to associate, 
-        //but do not change any explicitly set association
-        // - A) find email identity and accociate (which sets organizer to that user identity)
-        // - B) overwrite default organizer with current best guess
-        //TODO: Do this after email accounts changed, not only on restart? 
-        let folders = tbSync.db.findFoldersWithSetting(["selected","type"], ["1","8,13"], "provider", "eas");
-        for (let f=0; f<folders.length; f++) {
-            let calendar = cal.getCalendarManager().getCalendarById(folders[f].target);
-            if (calendar && calendar.getProperty("imip.identity.key") == "") {
-                //is there an email identity for this eas account?
-                let key = tbSync.getIdentityKey(tbSync.db.getAccountSetting(folders[f].account, "user"));
-                if (key === "") { //TODO: Do this even after manually switching to NONE, not only on restart?
-                    //set transient calendar organizer settings based on current best guess and 
-                    calendar.setProperty("organizerId", cal.prependMailTo(tbSync.db.getAccountSetting(folders[f].account, "user")));
-                    calendar.setProperty("organizerCN",  calendar.getProperty("fallbackOrganizerName"));
-                } else {                      
-                    //force switch to found identity
-                    calendar.setProperty("imip.identity.key", key);
+        if (lightningIsAvail) {
+            //If an EAS calendar is currently NOT associated with an email identity, try to associate, 
+            //but do not change any explicitly set association
+            // - A) find email identity and accociate (which sets organizer to that user identity)
+            // - B) overwrite default organizer with current best guess
+            //TODO: Do this after email accounts changed, not only on restart? 
+            let folders = tbSync.db.findFoldersWithSetting(["selected","type"], ["1","8,13"], "provider", "eas");
+            for (let f=0; f<folders.length; f++) {
+                let calendar = cal.getCalendarManager().getCalendarById(folders[f].target);
+                if (calendar && calendar.getProperty("imip.identity.key") == "") {
+                    //is there an email identity for this eas account?
+                    let key = tbSync.getIdentityKey(tbSync.db.getAccountSetting(folders[f].account, "user"));
+                    if (key === "") { //TODO: Do this even after manually switching to NONE, not only on restart?
+                        //set transient calendar organizer settings based on current best guess and 
+                        calendar.setProperty("organizerId", cal.prependMailTo(tbSync.db.getAccountSetting(folders[f].account, "user")));
+                        calendar.setProperty("organizerCN",  calendar.getProperty("fallbackOrganizerName"));
+                    } else {                      
+                        //force switch to found identity
+                        calendar.setProperty("imip.identity.key", key);
+                    }
                 }
             }
         }
+
     }),
+
+    getProviderIcon: function () {
+        return "chrome://tbsync/skin/eas16.png";
+    },
 
     createCalendar: function(account, folderID, color, newname) {
         //Alternative calendar, which uses calTbSyncCalendar
@@ -786,36 +789,38 @@ var eas = {
             
         let response = yield eas.sendRequest(wbxml.getBytes(), "Search", syncdata);
         let wbxmlData = eas.getDataFromResponse(response);
-        let results = xmltools.nodeAsArray(wbxmlData.Search.Response.Store.Result);
-
         let galdata = [];
-        let accountname = tbSync.db.getAccountSetting(account, "accountname");
-    
-		for (let count = 0; count < results.length; count++) {
-            if (results[count].Properties) {
-                //tbSync.window.console.log('Found contact:' + results[count].Properties.DisplayName);
-                let resultset = {};
 
-                resultset.properties = {};                    
-                resultset.properties["FirstName"] = results[count].Properties.FirstName;
-                resultset.properties["LastName"] = results[count].Properties.LastName;
-                resultset.properties["DisplayName"] = results[count].Properties.DisplayName;
-                resultset.properties["PrimaryEmail"] = results[count].Properties.EmailAddress;
-                resultset.properties["CellularNumber"] = results[count].Properties.MobilePhone;
-                resultset.properties["HomePhone"] = results[count].Properties.HomePhone;
-                resultset.properties["WorkPhone"] = results[count].Properties.Phone;
-                resultset.properties["Company"] = accountname; //results[count].Properties.Company;
-                resultset.properties["Department"] = results[count].Properties.Title;
-                resultset.properties["JobTitle"] = results[count].Properties.Office;
+        if (wbxmlData.Search && wbxmlData.Search.Response && wbxmlData.Search.Response.Store && wbxmlData.Search.Response.Store.Result) {
+            let results = xmltools.nodeAsArray(wbxmlData.Search.Response.Store.Result);
+            let accountname = tbSync.db.getAccountSetting(account, "accountname");
+        
+            for (let count = 0; count < results.length; count++) {
+                if (results[count].Properties) {
+                    //tbSync.window.console.log('Found contact:' + results[count].Properties.DisplayName);
+                    let resultset = {};
 
-                resultset.autocomplete = {};                    
-                resultset.autocomplete.value = results[count].Properties.DisplayName + " <" + results[count].Properties.EmailAddress + ">";
-                resultset.autocomplete.account = accountname;
-                    
-                galdata.push(resultset);
+                    resultset.properties = {};                    
+                    resultset.properties["FirstName"] = results[count].Properties.FirstName;
+                    resultset.properties["LastName"] = results[count].Properties.LastName;
+                    resultset.properties["DisplayName"] = results[count].Properties.DisplayName;
+                    resultset.properties["PrimaryEmail"] = results[count].Properties.EmailAddress;
+                    resultset.properties["CellularNumber"] = results[count].Properties.MobilePhone;
+                    resultset.properties["HomePhone"] = results[count].Properties.HomePhone;
+                    resultset.properties["WorkPhone"] = results[count].Properties.Phone;
+                    resultset.properties["Company"] = accountname; //results[count].Properties.Company;
+                    resultset.properties["Department"] = results[count].Properties.Title;
+                    resultset.properties["JobTitle"] = results[count].Properties.Office;
+
+                    resultset.autocomplete = {};                    
+                    resultset.autocomplete.value = results[count].Properties.DisplayName + " <" + results[count].Properties.EmailAddress + ">";
+                    resultset.autocomplete.account = account;
+                        
+                    galdata.push(resultset);
+                }
             }
         }
-		
+        
         return galdata;
     }),
 

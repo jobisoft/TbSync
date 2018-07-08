@@ -212,14 +212,7 @@ var tbSync = {
 
         //init provider 
         for (let provider in tbSync.syncProviderList) {
-            yield tbSync[provider].init();
-        }
-
-        //init lightning part of provider
-        if (tbSync.lightningIsAvailable()) {
-            for (let provider in tbSync.syncProviderList) {
-                yield tbSync[provider].init4lightning();
-            }
+            yield tbSync[provider].init(tbSync.lightningIsAvailable());
         }
         
         //init stuff for address book
@@ -382,13 +375,7 @@ var tbSync = {
                 tbSync.includeJS("chrome:" + tbSync.syncProviderList[aData].js);
 
                 //init provider 
-                yield tbSync[aData].init();
-
-                //init lighning part of provider 
-                if (tbSync.lightningIsAvailable()) {
-                    yield tbSync[aData].init4lightning();
-                }
-                
+                yield tbSync[aData].init(tbSync.lightningIsAvailable());                
             }
         })
     },

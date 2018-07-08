@@ -126,19 +126,23 @@ abAutoComplete.Search.prototype = {
                 
                 //start all requests parallel (do not wait till done here, no yield, push the promise)
                 if (tbSync[provider].abServerSearch) {
-                    requests.push(tbSync[provider].abServerSearch (account, aSearchString));
+                    try {
+                        requests.push(tbSync[provider].abServerSearch (account, aSearchString));
+                    } catch (e) {}
                 }
             }
             
             //wait for all requests to finish (only have to wait for the slowest, all others are done)
             for (let r=0; r < requests.length; r++) {
-                let results = yield requests[r];
-                for (let count=0; count < results.length; count++) {
-                    if (results[count].autocomplete) {
-                        values.push(results[count].autocomplete.value);
-                        comments.push(results[count].autocomplete.account);
+                try {
+                    let results = yield requests[r];
+                    for (let count=0; count < results.length; count++) {
+                        if (results[count].autocomplete) {
+                            values.push(results[count].autocomplete.value);
+                            comments.push(results[count].autocomplete.account);
+                        }
                     }
-                }
+                } catch (e) {};
             }
         }
         
@@ -166,11 +170,11 @@ abAutoComplete.Result.prototype = {
      * This returns the string that is displayed in the dropdown
      */
       getLabelAt(aIndex) {
-        return "  " + this.getValueAt(aIndex) + " (" + this.getCommentAt(aIndex) + ")";
+        return "  " + this.getValueAt(aIndex) + " (" + tbSync.db.getAccountSetting(this.getCommentAt(aIndex), "accountname") + ")";
       },
 
     /**
-     * Get the comment of the result at the given index
+     * Get the comment of the result at the given index (holds the account this search result belongs to)
      */
       getCommentAt(aIndex) {
         return this.comments[aIndex];
@@ -187,7 +191,7 @@ abAutoComplete.Result.prototype = {
      * Get the image of the result at the given index
      */
       getImageAt(aIndex) {
-        return "chrome://tbsync/skin/contacts16.png";
+        return tbSync[tbSync.db.getAccountSetting(this.getCommentAt(aIndex), "provider")].getProviderIcon();
       },
 
     /**

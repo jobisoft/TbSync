@@ -18,17 +18,18 @@ var tbSyncAccounts = {
         Services.obs.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.changedSyncstate", false);
         Services.obs.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.changedAccountName", false);
         Services.obs.addObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.toggleEnableState", false);
-	    
+        
         //prepare addmenu
         for (let provider in tbSync.syncProviderList) {
             let newItem = window.document.createElement("menuitem");
             newItem.setAttribute("value", provider);
             newItem.setAttribute("label", tbSync.syncProviderList[provider].name);
-            newItem.setAttribute("class", "menuitem-non-iconic");
-            newItem.addEventListener("click", function () {tbSyncAccounts.addAccount(provider) }, false);
+//            newItem.setAttribute("class", "menuitem-non-iconic");
+            newItem.setAttribute("class", "menuitem-iconic");
+            newItem.setAttribute("src", tbSync[provider].getProviderIcon());
             window.document.getElementById("accountActionsAddAccount").appendChild(newItem);
         }
-	    
+        
     },
 
     onunload: function () {
@@ -439,7 +440,7 @@ var tbSyncAccounts = {
             if (isActionsDropdown) document.getElementById(selector + "EnableAccount").label = tbSync.getLocalizedMessage("accountacctions.enable").replace("##accountname##", selectedAccountName);
             if (isActionsDropdown) document.getElementById(selector + "DisableAccount").label = tbSync.getLocalizedMessage("accountacctions.disable").replace("##accountname##", selectedAccountName);
         }
-	
+    
         //Debug Options
         if (isActionsDropdown) {
             document.getElementById("accountActionsDebugToggleAll").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
@@ -544,9 +545,12 @@ var tbSyncAccounts = {
                 src = "disabled16.png";
                 break;
             
+            case "nolightning":
+                src = "info16.png";
+                break;
+
             case "needtorevert":
             case "notsyncronized":
-            case "nolightning":
             case "modified":
                 src = "warning16.png";
                 break;

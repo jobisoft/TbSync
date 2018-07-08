@@ -13,8 +13,6 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [add16.png] https://openclipart.org/
 * [del16.png] https://openclipart.org/
 * [tick16.png] https://openclipart.org/
-* [info16.png] https://openclipart.org/
-* [info16.png (old)] http://www.iconarchive.com/artist/pixelmixer.html
 * [slider-on.png] https://github.com/jobisoft/TbSync/blob/master/skin/src/LICENSE
 * [slider-off.png] https://github.com/jobisoft/TbSync/blob/master/skin/src/LICENSE
 
@@ -23,8 +21,9 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [contacts16.png] https://www.iconfinder.com/icons/25910/
 * [todo16.png] https://www.iconfinder.com/icons/45913/
 * [error16.png] http://p.yusukekamiyamane.com/
+* [info16.png] https://www.iconfinder.com/icons/64363/info_rhombus_icon
 * [warning16.png] https://www.iconfinder.com/icons/36026/
-* [warning16.png (old)] http://www.iconarchive.com/artist/pixelmixer.html
+* [eas16.png] https://www.iconfinder.com/icons/64484/exchange_ms_icon
 * [connect16.png] http://p.yusukekamiyamane.com/
 * [report_send.png] https://www.iconfinder.com/icons/36365/ + https://www.iconfinder.com/icons/93180 
 * [report_open.png] https://www.iconfinder.com/icons/36373

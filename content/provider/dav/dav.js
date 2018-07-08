@@ -3,11 +3,7 @@
 var dav = {
     bundle: Services.strings.createBundle("chrome://tbsync/locale/dav.strings"),
 
-    init: Task.async (function* ()  {        
-    }),
-
-    //this is  called, after lighning has become available - it is called by tbSync.onLightningLoad
-    init4lightning: Task.async (function* ()  {
+    init: Task.async (function* (lightningIsAvail)  {        
     }),
     
 };
