@@ -325,9 +325,9 @@ var tbSyncAccountSettings = {
     },
 
     getIdChain: function (allowedTypesOrder, account, folderID) {
-        //create sort string so that child folders are directly below their parent folders, different folder types are grouped and trashes folders at the end
+        //create sort string so that child folders are directly below their parent folders, different folder types are grouped and trashed folders at the end
         let folder = folderID;
-        let parent =  tbSync.db.getFolder(account, folderID).parentID;
+        let parent = tbSync.db.getFolder(account, folderID).parentID;
         let chain = folder.toString().padStart(3,"0");
         
         while (parent && parent != "0") {

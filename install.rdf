@@ -26,7 +26,7 @@
         <em:localized>
           <Description>
             <em:locale>de</em:locale>
-            <em:name>TbSync (Provider für Exchange per ActiveSync)</em:name>
+            <em:name>TbSync (Provider für Exchange ActiveSync)</em:name>
             <em:description>Synchronisiert Exchange ActiveSync Konten (Kontakte, Aufgaben und Kalender) mit Thunderbird</em:description>
           </Description>
         </em:localized>
