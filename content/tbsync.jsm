@@ -1297,7 +1297,7 @@ var tbSync = {
         } while (!unique);
         
         //Create the new book with the unique name
-        let dirPrefId = tbSync.createAddressBook(newname, account, folderID);
+        let dirPrefId = tbSync[tbSync.db.getAccountSetting(account, "provider")].createAddressBook(newname, account, folderID);
         
         //find uri of new book and store in DB
         let booksIter = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).directories;
