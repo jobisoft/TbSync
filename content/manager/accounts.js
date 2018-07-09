@@ -24,8 +24,8 @@ var tbSyncAccounts = {
             let newItem = window.document.createElement("menuitem");
             newItem.setAttribute("value", provider);
             newItem.setAttribute("label", tbSync.syncProviderList[provider].name);
-//            newItem.setAttribute("class", "menuitem-non-iconic");
             newItem.setAttribute("class", "menuitem-iconic");
+            newItem.addEventListener("click", function () {tbSyncAccounts.addAccount(provider) }, false);
             newItem.setAttribute("src", tbSync[provider].getProviderIcon());
             window.document.getElementById("accountActionsAddAccount").appendChild(newItem);
         }
