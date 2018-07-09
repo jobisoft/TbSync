@@ -102,12 +102,16 @@ var db = {
     // ACCOUNT FUNCTIONS
 
     isValidAccountSetting: function (settings, name) {
+        //provider is hardcoded and always true
+        if (name == "provider") 
+            return true;
+
         //check if provider is installed
         if (!tbSync.syncProviderList.hasOwnProperty(settings.provider)) 
             return false;
         
-        //the only hardcoded account option is "provider", all others are taken from tbSync[provider].getNewAccountEntry())
-        return ((name == "provider" || tbSync[settings.provider].getNewAccountEntry().hasOwnProperty(name)));
+        //check tbSync[provider].getNewAccountEntry())
+        return (tbSync[settings.provider].getNewAccountEntry().hasOwnProperty(name));
     },
 
     getDefaultAccountSetting: function (settings, name) {
@@ -275,6 +279,11 @@ var db = {
               delete (this.folders[aID]);
               this.saveFolders();
               continue;
+            }
+	    
+            //skip this folder, if it belongs to an account currently not supported (provider not loaded)
+            if (!tbSync.syncProviderList.hasOwnProperty(this.getAccountSetting(aID, "provider"))) {
+                continue;
             }
 
             //does this account match account search options?

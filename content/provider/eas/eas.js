@@ -78,12 +78,17 @@ var eas = {
         return "chrome://tbsync/skin/eas16.png";
     },
 
-    createCalendar: function(account, folderID, color, newname) {
+    createAddressBook: function (newname, account, folderID) {
+        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+        return abManager.newAddressBook(newname, "", 2); /* kPABDirectory - return abManager.newAddressBook(name, "moz-abmdbdirectory://", 2); */
+    },
+
+    createCalendar: function(newname, account, folderID, color) {
+        let calManager = cal.getCalendarManager();
         //Alternative calendar, which uses calTbSyncCalendar
         //let newCalendar = calManager.createCalendar("TbSync", Services.io.newURI('tbsync-calendar://'));
 
         //Create the new standard calendar with a unique name
-        let calManager = cal.getCalendarManager();
         let newCalendar = calManager.createCalendar("storage", Services.io.newURI("moz-storage-calendar://"));
         newCalendar.id = cal.getUUID();
         newCalendar.name = newname;
@@ -92,10 +97,8 @@ var eas = {
         newCalendar.setProperty("relaxedMode", true); //sometimes we get "generation too old for modifyItem", check can be disabled with relaxedMode
         newCalendar.setProperty("calendar-main-in-composite",true);
 
-        return newCalendar;
-    },
+        calManager.registerCalendar(newCalendar);
 
-    createCalendarPostAction: function(account, folderID, newCalendar) {
         //is there an email identity we can associate this calendar to? 
         //getIdentityKey returns "" if none found, which removes any association
         let key = tbSync.getIdentityKey(tbSync.db.getAccountSetting(account, "user"));
@@ -107,6 +110,8 @@ var eas = {
             newCalendar.setProperty("organizerCN", newCalendar.getProperty("fallbackOrganizerName"));
             newCalendar.setProperty("organizerId", cal.prependMailTo(tbSync.db.getAccountSetting(account, "user")));
         }
+        
+        return newCalendar;
     },
 
     getThunderbirdFolderType: function(type) {

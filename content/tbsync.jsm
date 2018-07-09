@@ -206,12 +206,12 @@ var tbSync = {
 
         //load provider subscripts into tbSync 
         for (let provider in tbSync.syncProviderList) {
-            tbSync.dump("PROVIDER", provider + "::" + tbSync.syncProviderList[provider].name);
             tbSync.includeJS("chrome:" + tbSync.syncProviderList[provider].js);
         }
 
         //init provider 
         for (let provider in tbSync.syncProviderList) {
+            tbSync.dump("PROVIDER", provider + "::" + tbSync.syncProviderList[provider].name);
             yield tbSync[provider].init(tbSync.lightningIsAvailable());
         }
         
@@ -1205,11 +1205,6 @@ var tbSync = {
                 .removeAddressBookListener(tbSync.addressbookListener);
         }
     },
-        
-    addBook: function (name) {
-        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-        return abManager.newAddressBook(name, "", 2); /* kPABDirectory - return abManager.newAddressBook(name, "moz-abmdbdirectory://", 2); */
-    },
 
     removeBook: function (uri) { 
         // get all address books
@@ -1302,7 +1297,7 @@ var tbSync = {
         } while (!unique);
         
         //Create the new book with the unique name
-        let dirPrefId = tbSync.addBook(newname);
+        let dirPrefId = tbSync.createAddressBook(newname, account, folderID);
         
         //find uri of new book and store in DB
         let booksIter = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).directories;
@@ -1948,9 +1943,7 @@ var tbSync = {
         let color = (cachedColor == "" ? freeColors[0].color : cachedColor);
 
         //create and register new calendar
-        let newCalendar = tbSync[tbSync.db.getAccountSetting(account, "provider")].createCalendar(account, folderID, color, newname);
-        calManager.registerCalendar(newCalendar);
-        tbSync[tbSync.db.getAccountSetting(account, "provider")].createCalendarPostAction(account, folderID, newCalendar);
+        let newCalendar = tbSync[tbSync.db.getAccountSetting(account, "provider")].createCalendar(newname, account, folderID, color);
 
         //store id of calendar as target in DB
         tbSync.dump("tbSync::checkCalendar("+account+", "+folderID+")", "Creating new calendar (" + newname + ")");
