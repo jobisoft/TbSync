@@ -4,18 +4,18 @@
 <!ENTITY toolbar.label " Synchronisiere alle TbSync Konten">
 <!ENTITY toolbar.tooltiptext "Gleiche alle TbSync Konten mit den Servern ab">
 
-<!ENTITY pref.AccountActions "Konto Aktionen">
-<!ENTITY pref.AddAccount "Neues Konto hinzufügen">
-<!ENTITY pref.SyncAll "Synchronisiere alle aktivierten Konten">
+<!ENTITY manager.AccountActions "Konto Aktionen">
+<!ENTITY manager.AddAccount "Neues Konto hinzufügen">
+<!ENTITY manager.SyncAll "Synchronisiere alle aktivierten Konten">
 
-<!ENTITY pref.SynchronizeAccount "Konto synchronisieren">
-<!ENTITY pref.DisableAccount "Konto deaktivieren">
-<!ENTITY pref.DeleteAccount "Konto löschen">
-<!ENTITY pref.ShowSyncLog "Synchronisationsmeldungen anzeigen">
-<!ENTITY pref.EnableAccount "Konto aktivieren &amp; mit dem Server verbinden">
-<!ENTITY pref.RetryConnectAccount "Erneut versuchen mit dem  Server zu verbinden">
+<!ENTITY manager.SynchronizeAccount "Konto synchronisieren">
+<!ENTITY manager.EnableAccount "Konto aktivieren &amp; mit dem Server verbinden">
+<!ENTITY manager.DisableAccount "Konto deaktivieren">
+<!ENTITY manager.DeleteAccount "Konto löschen">
+<!ENTITY manager.ShowSyncLog "Synchronisationsmeldungen anzeigen">
+<!ENTITY manager.RetryConnectAccount "Erneut versuchen mit dem  Server zu verbinden">
 
-<!ENTITY pref.noaccounts "Es sind aktuell noch keine Konten konfiguriert.">
+<!ENTITY manager.noaccounts "Es sind aktuell noch keine Konten konfiguriert.">
 
 <!ENTITY manager.title "TbSync Kontoverwaltung">
 <!ENTITY manager.accountsettings "Kontoeinstellungen">
@@ -48,7 +48,7 @@
 <!ENTITY manager.help.sendcurrentdebuglog "Sendet den aktuellen Fehlerbericht an den Entwickler.">
 
 <!ENTITY manager.update.intro "Die folgenden Informationen wurden beim letzten Start von Thunderbird gesammelt:">
- <!ENTITY manager.update.installed "Installierte Version:">
+<!ENTITY manager.update.installed "Installierte Version:">
 <!ENTITY manager.update.amo_stable "Offizielle Version:">
 <!ENTITY manager.update.github_stable "Aktuelle Standard-Version (stable):">
 <!ENTITY manager.update.github_beta "Aktuelle Test-Version (beta):">

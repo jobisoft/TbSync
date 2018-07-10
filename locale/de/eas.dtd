@@ -1,14 +1,14 @@
-<!ENTITY title "Exchange ActiveSync Konto hinzufügen">
+<!ENTITY add.title "Exchange ActiveSync Konto hinzufügen">
+<!ENTITY add.ok "Konto hinzufügen">
+<!ENTITY add.name "Kontoname:">
+<!ENTITY add.user "Benutzername (E-Mail Adresse):">
+<!ENTITY add.password "Passwort:">
+<!ENTITY add.server "Server Konfiguration:">
+<!ENTITY add.description "Bitte wählen Sie einen Namen für das neue TbSync Konto, tragen den Benutzername für das ActiveSync Konto welches Sie hinzufügen möchten (üblicher Weise eine E-Mail Adresse) ein und wählen Sie die passende Option für die Server Konfiguration aus. ">
 
-<!ENTITY ok "Konto hinzufügen">
-<!ENTITY name "Kontoname:">
-<!ENTITY user "Benutzername (E-Mail Adresse):">
-<!ENTITY password "Passwort:">
-<!ENTITY server "Server Konfiguration:">
-
-<!ENTITY autodetect "bestmöglich">
-
-<!ENTITY description "Bitte wählen Sie einen Namen für das neue TbSync Konto, tragen den Benutzername für das ActiveSync Konto welches Sie hinzufügen möchten (üblicher Weise eine E-Mail Adresse) ein und wählen Sie die passende Option für die Server Konfiguration aus. ">
+<!ENTITY pref.EnableAccount "Konto aktivieren &amp; mit dem Server verbinden">
+<!ENTITY pref.SynchronizeAccount "Konto synchronisieren">
+<!ENTITY pref.autodetect "bestmöglich">
 
 <!ENTITY pref.AccountName "Kontoname">
 <!ENTITY pref.UserName "Benutzername">
@@ -38,11 +38,11 @@
 <!ENTITY pref.targetname "Synchronisationsziel">
 <!ENTITY pref.status "Status">
 
+<!ENTITY pref.switchFoldersAndConfig "Doppelklick um zwischen der Ordneransicht und der Anzeige der Einstellungen zu wechseln.">
+
 <!ENTITY servertype.auto "Automatische Konfiguration via ActiveSync Autodiscover">
 <!ENTITY servertype.custom "Benutzerspezifische Konfiguration">
 <!ENTITY servertype.unlock "Doppelklick um die vordefinierten Servereinstellungen zu entsperren.">
-
-<!ENTITY pref.switchFoldersAndConfig "Doppelklick um zwischen der Ordneransicht und der Anzeige der Einstellungen zu wechseln.">
 
 <!ENTITY abCard.MiddleName "Zweiter Vorname:">
 <!ENTITY abCard.Email3Address "Alternative E-Mail:">

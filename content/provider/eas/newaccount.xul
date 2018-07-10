@@ -4,7 +4,7 @@
 
 <dialog
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-    title="&title;"
+    title="&add.title;"
     buttons="cancel,extra1"
     defaultButton="extra1"
     buttonlabelextra1=""
@@ -16,7 +16,7 @@
     <script type="application/javascript" src="chrome://tbsync/content/provider/eas/newaccount.js"/>
 
     <vbox>
-        <description style="width: 450px">&description;</description>
+        <description style="width: 450px">&add.description;</description>
 
         <grid style="margin-top:1ex">
             <columns>
@@ -25,19 +25,19 @@
             </columns>
             <rows>
                 <row>
-                    <vbox pack="center"><label value="&name;" /></vbox>
+                    <vbox pack="center"><label value="&add.name;" /></vbox>
                     <textbox id="tbsync.newaccount.name" oninput="tbSyncEasNewAccount.onUserTextInput();"/>
                 </row>
                 <row>
-                    <vbox pack="center"><label value="&user;" /></vbox>
+                    <vbox pack="center"><label value="&add.user;" /></vbox>
                     <textbox id="tbsync.newaccount.user" oninput="tbSyncEasNewAccount.onUserTextInput();"/>
                 </row>
                 <row>
-                    <vbox pack="center"><label value="&password;" /></vbox>
+                    <vbox pack="center"><label value="&add.password;" /></vbox>
                     <textbox id="tbsync.newaccount.password" type="password" oninput="tbSyncEasNewAccount.onUserTextInput();"/>
                 </row>
                 <row>
-                    <vbox pack="center"><label value="&server;" /></vbox>
+                    <vbox pack="center"><label value="&add.server;" /></vbox>
                     <menulist id="tbsync.newaccount.servertype" oncommand="tbSyncEasNewAccount.onUserDropdown();">
                         <menupopup>
                             <menuitem label="&servertype.auto;" value="auto" />

@@ -16,32 +16,32 @@
             <menuitem id="contextMenuRetryConnectAccount" 
                     class="menuitem-iconic"
                     image="chrome://tbsync/skin/connect16.png"
-                    label="&pref.RetryConnectAccount;" 
+                    label="&manager.RetryConnectAccount;" 
                     oncommand="tbSyncAccounts.synchronizeAccount();"/>
             <menuitem id="contextMenuSyncAccount" 
                     class="menuitem-iconic"
                     image="chrome://tbsync/skin/sync16.png"
-                    label="&pref.SynchronizeAccount;" 
+                    label="&manager.SynchronizeAccount;" 
                     oncommand="tbSyncAccounts.synchronizeAccount();"/>
             <menuitem id="contextMenuEnableAccount" 
                     class="menuitem-iconic"
                     image="chrome://tbsync/skin/connect16.png"
-                    label="&pref.EnableAccount;" 
+                    label="&manager.EnableAccount;" 
                     oncommand="tbSyncAccounts.toggleEnableState();"/>
             <menuitem id="contextMenuShowSyncLog"
                     class="menuitem-iconic"
                     image="chrome://tbsync/skin/info16.png"
-                    label="&pref.ShowSyncLog;"
+                    label="&manager.ShowSyncLog;"
                     noncommand=""/>
             <menuitem id="contextMenuDisableAccount" 
                     class="menuitem-iconic"
                     image="chrome://tbsync/skin/disabled16.png"
-                    label="&pref.DisableAccount;" 
+                    label="&manager.DisableAccount;" 
                     oncommand="tbSyncAccounts.toggleEnableState();"/>
             <menuitem id="contextMenuDeleteAccount"
                     class="menuitem-iconic"
                     image="chrome://tbsync/skin/del16.png"
-                    label="&pref.DeleteAccount;"
+                    label="&manager.DeleteAccount;"
                     oncommand="tbSyncAccounts.deleteAccount();"/>
         </menupopup>
     </popupset>
@@ -65,21 +65,21 @@
              <vbox flex="1">
                 <button 
                 id="tbSyncAccounts.btnAccountActions"
-                label="&pref.AccountActions;"
+                label="&manager.AccountActions;"
                 style="margin-left:0; margin-right:0"
                 type="menu">
                         <menupopup id="accountActionsDropdown" onpopupshowing="tbSyncAccounts.updateDropdown('accountActions');">
                             <menu
                                 class="menu-iconic"
                                 image="chrome://tbsync/skin/add16.png"
-                                label="&pref.AddAccount;"
+                                label="&manager.AddAccount;"
                                 noncommand="tbSyncAccounts.addAccount();">
                                     <menupopup id="accountActionsAddAccount" />
                             </menu>
                             <menuitem id="accountActionsSyncAllAccounts"
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/sync16.png"
-                                    label="&pref.SyncAll;"
+                                    label="&manager.SyncAll;"
                                     oncommand="tbSync.syncAccount('sync');"/>
                             <menuseparator id="accountActionsSeparator"/>
                             <menuitem id="accountActionsDebugToggleAll"
@@ -111,32 +111,32 @@
                             <menuitem id="accountActionsDeleteAccount"
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/del16.png"
-                                    label="&pref.DeleteAccount;"
+                                    label="&manager.DeleteAccount;"
                                     oncommand="tbSyncAccounts.deleteAccount();"/>
                             <menuitem id="accountActionsDisableAccount" 
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/disabled16.png"
-                                    label="&pref.DisableAccount;" 
+                                    label="&manager.DisableAccount;" 
                                     oncommand="tbSyncAccounts.toggleEnableState();"/>
                             <menuitem id="accountActionsShowSyncLog"
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/info16.png"
-                                    label="&pref.ShowSyncLog;"
+                                    label="&manager.ShowSyncLog;"
                                     noncommand=""/>
                             <menuitem id="accountActionsEnableAccount" 
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/connect16.png"
-                                    label="&pref.EnableAccount;" 
+                                    label="&manager.EnableAccount;" 
                                     oncommand="tbSyncAccounts.toggleEnableState();"/>
                             <menuitem id="accountActionsSyncAccount" 
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/sync16.png"
-                                    label="&pref.SynchronizeAccount;" 
+                                    label="&manager.SynchronizeAccount;" 
                                     oncommand="tbSyncAccounts.synchronizeAccount();"/>
                             <menuitem id="accountActionsRetryConnectAccount" 
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/connect16.png"
-                                    label="&pref.RetryConnectAccount;" 
+                                    label="&manager.RetryConnectAccount;" 
                                     oncommand="tbSyncAccounts.synchronizeAccount();"/>                                    
                         </menupopup>
                 </button>

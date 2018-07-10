@@ -2,8 +2,6 @@
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
 <?xml-stylesheet href="chrome://tbsync/content/manager/manager.css" type="text/css"?>
 <!DOCTYPE window [
-  <!ENTITY % commonDTD SYSTEM "chrome://tbsync/locale/tbSync.dtd">
-  %commonDTD;
   <!ENTITY % easDTD SYSTEM "chrome://tbsync/locale/eas.dtd">
   %easDTD;
 ]>
@@ -25,15 +23,8 @@
         </menupopup>
     </popupset>
 
-    <popupset>
-        <menupopup id="tbsync.accountsettings.DisableContextMenu" onpopupshowing="tbSyncAccountSettings.updateDisableContextMenu();">
-            <menuitem id="contextMenuDisableAccount" 
-                    class="menuitem-iconic"
-                    image="chrome://tbsync/skin/disabled16.png"
-                    label="&pref.DisableAccount;" 
-                    oncommand="tbSyncAccountSettings.toggleEnableState();"/>
-        </menupopup>
-    </popupset>
+
+
 
     <vbox flex="1" id="tbsync.accountsettings.frame" hidden="true">
 
@@ -43,7 +34,7 @@
                 <column flex="1" />
            </columns>
 
-    <rows>
+            <rows>
                 <row>
                     <vbox pack="center">
                         <label style="text-align:left" control="tbsync.accountsettings.accountname" value="&pref.AccountName;" />
@@ -73,7 +64,7 @@
                             <vbox flex="1">
                                 <menulist flex="1" style="margin-right:0;" id="tbsync.accountsettings.asversionselected" onblur="tbSyncAccountSettings.instantSaveSetting(this);" >
                                     <menupopup>
-                                        <menuitem label="&autodetect;" value="auto" />
+                                        <menuitem label="&pref.autodetect;" value="auto" />
                                         <menuitem label="v2.5" value="2.5" />
                                         <menuitem label="v14.0" value="14.0" />
                                     </menupopup>
@@ -156,7 +147,7 @@
                     <vbox/>
                     <hbox flex="1" >
                         <button id="tbsync.accountsettings.enablebtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.EnableAccount;" oncommand="tbSyncAccountSettings.toggleEnableState();" />
-                        <button id="tbsync.accountsettings.syncbtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.SynchronizeAccount;" oncommand="tbSync.syncAccount('sync', tbSyncAccountSettings.account)" context="tbsync.accountsettings.DisableContextMenu" />
+                        <button id="tbsync.accountsettings.syncbtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.SynchronizeAccount;" oncommand="tbSync.syncAccount('sync', tbSyncAccountSettings.account)" />
                     </hbox>
                 </row>
 
