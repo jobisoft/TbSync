@@ -943,10 +943,6 @@ var eas = {
             "devicetype": tbSync.prefSettings.getCharPref("eas.clientID.type")}; 
         return row;
     },
-
-    getAccountStorageFields: function () {
-        return Object.keys(this.getNewAccountEntry()).sort();
-    },
     
     logxml : function (wbxml, what) {
         //include xml in log, if userdatalevel 2 or greater
@@ -1013,28 +1009,6 @@ var eas = {
             "downloadonly" : "0",
             "cached" : "0"};
         return folder;
-    },
-
-    getFixedServerSettings: function(servertype) {
-        let settings = {};
-
-        switch (servertype) {
-            case "auto":
-                settings["host"] = null;
-                settings["https"] = null;
-                settings["asversionselected"] = null;
-                break;
-
-            //just here for reference, if this method is going to be used again
-            case "outlook.com":
-                settings["host"] = "eas.outlook.com";
-                settings["https"] = "1";
-                settings["asversionselected"] = "2.5";
-                settings["seperator"] = "44";
-                break;
-        }
-        
-        return settings;
     },
 
     enableAccount: function (account) {
@@ -1775,7 +1749,79 @@ var eas = {
             else  req.send(xml);
             
         });
-    }
+    },
+    
+    
+    
+    
+    //UI Interface (only needed/used if standard UI is used)
+    accountSettingsDialogGetAccountStorageFields: function () {
+        return Object.keys(this.getNewAccountEntry()).sort();
+    },
+
+    accountSettingsDialogGetAlwaysUnlockedSettings: function () {
+        return ["autosync"];
+    },
+
+    accountSettingsDialogGetFixedServerSettings: function(servertype) {
+        let settings = {};
+
+        switch (servertype) {
+            case "auto":
+                settings["host"] = null;
+                settings["https"] = null;
+                settings["asversionselected"] = null;
+                break;
+
+            //just here for reference, if this method is going to be used again
+            case "outlook.com":
+                settings["host"] = "eas.outlook.com";
+                settings["https"] = "1";
+                settings["asversionselected"] = "2.5";
+                settings["seperator"] = "44";
+                break;
+        }
+        
+        return settings;
+    },
+
+    
+
+
+    //Custom stuff, outside of interface, invoked by own functions in accountSettings.xul
+    customUIstripHost: function (document, account) {
+        let host = document.getElementById('tbsync.accountsettings.pref.host').value;
+        if (host.indexOf("https://") == 0) {
+            host = host.replace("https://","");
+            document.getElementById('tbsync.accountsettings.pref.https').checked = true;
+            tbSync.db.setAccountSetting(account, "https", "1");
+        } else if (host.indexOf("http://") == 0) {
+            host = host.replace("http://","");
+            document.getElementById('tbsync.accountsettings.pref.https').checked = false;
+            tbSync.db.setAccountSetting(account, "https", "0");
+        }
+        
+        while (host.endsWith("/")) { host = host.slice(0,-1); }        
+        document.getElementById('tbsync.accountsettings.pref.host').value = host
+        tbSync.db.setAccountSetting(account, "host", host);
+    },
+    
+    customUIdeleteFolder: function(document, account) {
+        let folderList = document.getElementById("tbsync.accountsettings.folderlist");
+        if (folderList.selectedItem !== null && !folderList.disabled) {
+            let fID =  folderList.selectedItem.value;
+            let folder = tbSync.db.getFolder(account, fID, true);
+
+            //only trashed folders can be purged (for example O365 does not show deleted folders but also does not allow to purge them)
+            if (!tbSync.eas.parentIsTrash(account, folder.parentID)) return;
+            
+            if (folder.selected == "1") alert(tbSync.getLocalizedMessage("deletefolder.notallowed::" + folder.name, "eas"));
+            else if (confirm(tbSync.getLocalizedMessage("deletefolder.confirm::" + folder.name, "eas"))) {
+                tbSync.syncAccount("deletefolder", account, fID);
+            } 
+        }            
+    },
+    
     
 };
     

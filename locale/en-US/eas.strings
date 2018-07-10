@@ -94,7 +94,6 @@ status.security=Could not establish a secure connection. Are you using a self-si
 status.network=Could not connect to server (##replace.1##).
 
 status.syncing=Synchronizing
-status.connecting=Connecting to server
 status.skipped=Not yet supported, skipped
 status.aborted=Not synchronized
 status.pending=Waiting to be synchronized
@@ -127,11 +126,6 @@ status.notsupportedeasversion=Server does not support selected ActiveSync v##rep
 
 prompt.Unsubscribe=Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!
 prompt.UnlockSettings=Changing any of the predefined server settings could lead to synchronization errors. Are you sure you want to unlock all predefined server settings?
-
-button.syncthis=Synchronize this account
-button.tryagain=Try again to connect to server
-button.enableAndConnect=Enable account & try to connect to server
-button.disableAndEdit=Disable account to edit settings
 
 config.auto=ActiveSync server configuration (Autodiscover)
 config.custom=ActiveSync server configuration

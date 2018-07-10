@@ -2,6 +2,13 @@ info.idle=Leerlauf
 info.error=Fehler
 info.sync=Synchronisation
 
+button.syncthis=Konto synchronisieren
+button.tryagain=Erneut versuchen mit dem Server zu verbinden
+button.enableAndConnect=Konto aktivieren & mit dem Server verbinden
+button.disableAndEdit=Konto deaktivieren, um Einstellungen zu bearbeiten
+button.connecting=Verbindungsaufbau
+button.syncing=Synchronisierung
+
 prompt.DeleteAccount=Sind Sie sicher, dass Sie das Konto ##accountName## löschen möchten?
 prompt.Disable=Sind Sie sicher, dass Sie dieses Konto deaktivieren möchten? Alle lokalen Veränderungen, die noch nicht synchronisiert wurden, gehen dabei verloren!
 prompt.Password=Bitte geben Sie das Passwort für den Benutzer ##user## ein:

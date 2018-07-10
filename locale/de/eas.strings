@@ -94,7 +94,6 @@ status.security=Fehler beim Aufbau einer sicherern Verbindung. Benutzen Sie even
 status.network=Verbindung zum Server fehlgeschlagen (##replace.1##).
 
 status.syncing=Synchronisierung
-status.connecting=Verbindungsaufbau
 status.skipped=Nicht unterstützt
 status.aborted=Nicht synchronisiert
 status.pending=Warten auf Synchronisation
@@ -127,11 +126,6 @@ status.notsupportedeasversion=Der Server unterstützt nicht die ausgewählte Act
 
 prompt.Unsubscribe=Sind Sie sicher, dass Sie dieses Element nicht länger abonieren möchten? Alle lokalen Veränderungen, die noch nicht synchronisiert wurden, gehen dabei verloren!
 prompt.UnlockSettings=Das Ändern der vordefinierten Servereinstellungen kann zu Synchronisationsfehlern führen. Sind Sie sicher, dass Sie die vordefinierten Servereinstellungen entsperren wollen?
-
-button.syncthis=Konto synchronisieren
-button.tryagain=Erneut versuchen mit dem Server zu verbinden
-button.enableAndConnect=Konto aktivieren & mit dem Server verbinden
-button.disableAndEdit=Konto deaktivieren, um Einstellungen zu bearbeiten
 
 config.auto=ActiveSync Server Konfiguration (Autodiscover)
 config.custom=ActiveSync Server Konfiguration
