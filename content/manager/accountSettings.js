@@ -246,7 +246,7 @@ var tbSyncAccountSettings = {
                     //deselect folder
                     folder.selected = "0";
                     //remove folder, which will trigger the listener in tbsync which will clean up everything
-                    tbSync[tbSyncAccountSettings.provider].removeTarget(folder.target, tbSync[tbSyncAccountSettings.provider].getThunderbirdFolderType(folder.type)); 
+                    tbSync.removeTarget(folder.target, tbSync[tbSyncAccountSettings.provider].getThunderbirdFolderType(folder.type)); 
                 }
             } else {
                 //select and update status
