@@ -138,7 +138,7 @@
 
                 <row>
                      <label  style="text-align:left" value="&pref.DeviceId;" />
-                     <hbox><label style="margin-left:0; margin-bottom: 1ex;" flex="1" value="" disabled="true" id="deviceId" /><image style="margin-right:0" tooltiptext="&pref.switchFoldersAndConfig;" ondblclick="tbSyncAccountSettings.switchFoldersAndConfigView()" width="24" height="24" id="tbsync.accountsettings.slider" src="chrome://tbsync/skin/slider-on.png" /></hbox>
+                     <hbox><label style="margin-left:0; margin-bottom: 1ex;" flex="1" value="" disabled="true" id="tbsync.accountsettings.deviceId" /><image style="margin-right:0" tooltiptext="&pref.switchFoldersAndConfig;" ondblclick="tbSyncAccountSettings.switchFoldersAndConfigView()" width="24" height="24" id="tbsync.accountsettings.slider" src="chrome://tbsync/skin/slider-on.png" /></hbox>
                 </row>
                 <row>
                      <label  style="text-align:left" value="&pref.syncstate;" />
@@ -156,7 +156,7 @@
                     <vbox/>
                     <hbox flex="1" >
                         <button id="tbsync.accountsettings.enablebtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.EnableAccount;" oncommand="tbSyncAccountSettings.toggleEnableState();" />
-                        <button id="tbsync.accountsettings.syncbtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.SynchronizeAccount;" oncommand="tbSyncAccountSettings.requestSync();" context="tbsync.accountsettings.DisableContextMenu" />
+                        <button id="tbsync.accountsettings.syncbtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.SynchronizeAccount;" oncommand="tbSync.syncAccount('sync', tbSyncAccountSettings.selectedAccount)" context="tbsync.accountsettings.DisableContextMenu" />
                     </hbox>
                 </row>
 

@@ -10,6 +10,7 @@ var tbSyncAccountSettings = {
     switchMode: "on",
     updateTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
+
     onload: function () {
         //get the selected account from the loaded URI
         tbSyncAccountSettings.selectedAccount = window.location.toString().split("id=")[1];
@@ -24,6 +25,7 @@ var tbSyncAccountSettings = {
         document.getElementById('tbsync.accountsettings.frame').hidden = false;	    
     },
 
+
     onunload: function () {
         tbSyncAccountSettings.updateTimer.cancel();
         if (tbSyncAccountSettings.init) {
@@ -31,33 +33,12 @@ var tbSyncAccountSettings = {
             Services.obs.removeObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui");
         }
     },
-
-    // manage sync via queue
-    requestSync: function (job, account) {
-        if (!document.getElementById('tbsync.accountsettings.syncbtn').disabled) tbSync.syncAccount('sync', tbSyncAccountSettings.selectedAccount);
-    },
-
-
-    deleteFolder: function() {
-        let folderList = document.getElementById("tbsync.accountsettings.folderlist");
-        if (folderList.selectedItem !== null && !folderList.disabled) {
-            let fID =  folderList.selectedItem.value;
-            let folder = tbSync.db.getFolder(tbSyncAccountSettings.selectedAccount, fID, true);
-
-            //only trashed folders can be purged (for example O365 does not show deleted folders but also does not allow to purge them)
-            if (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) return;
-            
-            if (folder.selected == "1") alert(tbSync.getLocalizedMessage("deletefolder.notallowed::" + folder.name,"eas"));
-            else if (confirm(tbSync.getLocalizedMessage("deletefolder.confirm::" + folder.name,"eas"))) {
-                tbSync.syncAccount("deletefolder", tbSyncAccountSettings.selectedAccount, fID);
-            } 
-        }            
-    },
     
-    /* * *
-    * Run through all defined TbSync settings and if there is a corresponding
-    * field in the settings dialog, fill it with the stored value.
-    */
+
+    /**
+     * Run through all defined TbSync settings and if there is a corresponding
+     * field in the settings dialog, fill it with the stored value.
+     */
     loadSettings: function () {
         let settings = tbSync.eas.getAccountStorageFields();
         let servertype = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "servertype");
@@ -85,10 +66,7 @@ var tbSyncAccountSettings = {
         
         // special treatment for configuration label
         document.getElementById("tbsync.accountsettings.config.label").value= tbSync.getLocalizedMessage("config." + servertype, "eas");
-        
-        // also load DeviceId
-        document.getElementById('deviceId').value = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "deviceId");
-        
+
         this.updateGui();
     },
 
@@ -136,6 +114,11 @@ var tbSyncAccountSettings = {
         }
     },
 
+
+
+
+
+
     updateGuiObserver: {
         observe: function (aSubject, aTopic, aData) {
             //only update if request for this account
@@ -159,10 +142,9 @@ var tbSyncAccountSettings = {
         let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "status");
         let neverLockedFields = ["autosync"];
 
-        //let isSyncing = tbSync.isSyncing(tbSyncAccountSettings.selectedAccount);
         let isConnected = tbSync.isConnected(tbSyncAccountSettings.selectedAccount);
         let isEnabled = tbSync.isEnabled(tbSyncAccountSettings.selectedAccount);      
-        let isSyncing = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
+        let isSyncing = tbSync.isSyncing(tbSyncAccountSettings.selectedAccount);
         let hideOptions = isConnected && tbSyncAccountSettings.switchMode == "on";
         
         //which box is to be displayed? options or folders
@@ -198,7 +180,7 @@ var tbSyncAccountSettings = {
 
         // if this account is beeing synced, display syncstate, otherwise print status
         let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.selectedAccount, "status");
-        let isSyncing = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
+        let isSyncing = tbSync.isSyncing(tbSyncAccountSettings.selectedAccount);
         let isConnected = tbSync.isConnected(tbSyncAccountSettings.selectedAccount);
         let isEnabled = tbSync.isEnabled(tbSyncAccountSettings.selectedAccount);
         
@@ -488,8 +470,7 @@ var tbSyncAccountSettings = {
     },
     
     updateDisableContextMenu: function () {
-        let isSyncing = (status == "syncing" || tbSync.isSyncing(tbSyncAccountSettings.selectedAccount));
-        document.getElementById("contextMenuDisableAccount").disabled = isSyncing;
+        document.getElementById("contextMenuDisableAccount").disabled = tbSync.isSyncing(tbSyncAccountSettings.selectedAccount);
     },
     
     /* * *
@@ -540,6 +521,27 @@ var tbSyncAccountSettings = {
                 }
             }
         }
-    }
+    },
+
+
+
+
+
+    //FUNCTIONS INVOKED BY CUSTOM POPUPS
+    deleteFolder: function() {
+        let folderList = document.getElementById("tbsync.accountsettings.folderlist");
+        if (folderList.selectedItem !== null && !folderList.disabled) {
+            let fID =  folderList.selectedItem.value;
+            let folder = tbSync.db.getFolder(tbSyncAccountSettings.selectedAccount, fID, true);
+
+            //only trashed folders can be purged (for example O365 does not show deleted folders but also does not allow to purge them)
+            if (!tbSync.eas.parentIsTrash(tbSyncAccountSettings.selectedAccount, folder.parentID)) return;
+            
+            if (folder.selected == "1") alert(tbSync.getLocalizedMessage("deletefolder.notallowed::" + folder.name,"eas"));
+            else if (confirm(tbSync.getLocalizedMessage("deletefolder.confirm::" + folder.name,"eas"))) {
+                tbSync.syncAccount("deletefolder", tbSyncAccountSettings.selectedAccount, fID);
+            } 
+        }            
+    },
 
 };
