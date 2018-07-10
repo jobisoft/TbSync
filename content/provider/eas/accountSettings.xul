@@ -16,12 +16,12 @@
     onunload="tbSyncAccountSettings.onunload()"
     title="" >
 
-    <script type="text/javascript" src="chrome://tbsync/content/provider/eas/accountSettings.js" /> 
+    <script type="text/javascript" src="chrome://tbsync/content/manager/accountSettings.js" /> 
 
     <popupset>
-        <menupopup id="tbsync.accountsettings.ContextMenu" onpopupshowing="tbSyncAccountSettings.updateMenuPopup();">
-            <menuitem id="tbsync.accountsettings.ContextMenuToggleSubscription" label="toggle" oncommand="tbSyncAccountSettings.toggleFolder();"/>
-            <menuitem id="tbsync.accountsettings.ContextMenuDelete" label="delete" oncommand="tbSyncAccountSettings.deleteFolder();"/>
+        <menupopup id="tbsync.accountsettings.FolderListContextMenu" onpopupshowing="tbSyncAccountSettings.updateMenuPopup();">
+            <menuitem id="tbsync.accountsettings.FolderListContextMenuToggleSubscription" label="toggle" oncommand="tbSyncAccountSettings.toggleFolder();"/>
+            <menuitem id="tbsync.accountsettings.FolderListContextMenuDelete" label="delete" oncommand="tbSyncAccountSettings.deleteFolder();"/>
         </menupopup>
     </popupset>
 
@@ -124,7 +124,7 @@
                         id="tbsync.accountsettings.folderlist"
                         flex="1"
                         style="margin-left:0; margin-right:0;"
-                        context="tbsync.accountsettings.ContextMenu"
+                        context="tbsync.accountsettings.FolderListContextMenu"
                         seltype="single"
                         onkeypress="if (event.keyCode == 46) {tbSyncAccountSettings.deleteFolder();}"
                         ondblclick="tbSyncAccountSettings.toggleFolder();">
@@ -156,7 +156,7 @@
                     <vbox/>
                     <hbox flex="1" >
                         <button id="tbsync.accountsettings.enablebtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.EnableAccount;" oncommand="tbSyncAccountSettings.toggleEnableState();" />
-                        <button id="tbsync.accountsettings.syncbtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.SynchronizeAccount;" oncommand="tbSync.syncAccount('sync', tbSyncAccountSettings.selectedAccount)" context="tbsync.accountsettings.DisableContextMenu" />
+                        <button id="tbsync.accountsettings.syncbtn" flex="1" style="margin-right:0; margin-left:0" label="&pref.SynchronizeAccount;" oncommand="tbSync.syncAccount('sync', tbSyncAccountSettings.account)" context="tbsync.accountsettings.DisableContextMenu" />
                     </hbox>
                 </row>
 
