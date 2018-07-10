@@ -1236,7 +1236,7 @@ var eas = {
             syncdata.req.overrideMimeType("text/plain");
             syncdata.req.setRequestHeader("User-Agent", userAgent);
             syncdata.req.setRequestHeader("Authorization", 'Basic ' + btoa(connection.user + ':' + password));
-            syncdata.req.timeout = tbSync.prefSettings.getIntPref("eas.timeout");
+            syncdata.req.timeout = tbSync.prefSettings.getIntPref("timeout");
 
             syncdata.req.ontimeout = function () {
                 resolve();
@@ -1312,7 +1312,7 @@ var eas = {
                 tbSync.dump("PolicyKey used",tbSync.db.getAccountSetting(syncdata.account, "policykey"));
             }
 
-            syncdata.req.timeout = tbSync.prefSettings.getIntPref("eas.timeout");
+            syncdata.req.timeout = tbSync.prefSettings.getIntPref("timeout");
 
             syncdata.req.ontimeout = function () {
                 if (allowSoftFail) resolve("");

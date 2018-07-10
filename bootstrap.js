@@ -42,6 +42,7 @@ function startup(data, reason) {
     let branch = Services.prefs.getDefaultBranch("extensions.tbsync.");
     branch.setBoolPref("notify4beta", false);
     branch.setIntPref("updateCheckInterval", 6);
+    branch.setIntPref("timeout", 90000);
     
     branch.setIntPref("debug.breakpoint", 0);
     branch.setBoolPref("debug.testoptions", false);
@@ -50,7 +51,6 @@ function startup(data, reason) {
     branch.setBoolPref("log.tofile", false);
     branch.setIntPref("log.userdatalevel", 0); //0 - metadata (no incomming xml/wbxml, only parsed data without userdata (except failing items))   1 - including userdata,  2 - raw xml , 3 - raw wbxml
 
-    branch.setIntPref("eas.timeout", 90000);
     branch.setIntPref("eas.synclimit", 7);
     branch.setIntPref("eas.maxitems", 50);
     branch.setCharPref("eas.clientID.type", "TbSync");
