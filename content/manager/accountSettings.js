@@ -21,6 +21,7 @@ var tbSyncAccountSettings = {
     // tbsync.accountsettings.group.options
     // tbsync.accountsettings.group.server
     // tbsync.accountsettings.group.folders
+    // tbsync.accountsettings.folderlist
     
 
     onload: function () {
@@ -29,8 +30,8 @@ var tbSyncAccountSettings = {
 
         //get information for that acount
         tbSyncAccountSettings.provider = tbSync.db.getAccountSetting(tbSyncAccountSettings.account, "provider");
-        tbSyncAccountSettings.settings = tbSync[tbSyncAccountSettings.provider].accountSettingsDialogGetAccountStorageFields();
-        tbSyncAccountSettings.alwaysUnlockedSettings = tbSync[tbSyncAccountSettings.provider].accountSettingsDialogGetAlwaysUnlockedSettings();
+        tbSyncAccountSettings.settings = tbSync[tbSyncAccountSettings.provider].ui.getAccountStorageFields();
+        tbSyncAccountSettings.alwaysUnlockedSettings = tbSync[tbSyncAccountSettings.provider].ui.getAlwaysUnlockedSettings();
         //also get settings, which might be changed during sync, so need to be updated more often
         tbSyncAccountSettings.viewFolderPane = "on";
     
@@ -59,7 +60,7 @@ var tbSyncAccountSettings = {
      */
     loadSettings: function () {
         tbSyncAccountSettings.servertype = tbSync.db.getAccountSetting(tbSyncAccountSettings.account, "servertype");
-        tbSyncAccountSettings.fixedSettings = tbSync[tbSyncAccountSettings.provider].accountSettingsDialogGetFixedServerSettings(tbSyncAccountSettings.servertype);
+        tbSyncAccountSettings.fixedSettings = tbSync[tbSyncAccountSettings.provider].ui.getFixedServerSettings(tbSyncAccountSettings.servertype);
 
         for (let i=0; i < tbSyncAccountSettings.settings.length; i++) {
             let pref = document.getElementById("tbsync.accountsettings.pref." + tbSyncAccountSettings.settings[i]);
@@ -145,7 +146,7 @@ var tbSyncAccountSettings = {
         }
         //disable enable/disable btn, sync btn and folderlist during sync, also hide sync button if disabled
         document.getElementById('tbsync.accountsettings.enablebtn').disabled = isSyncing;
-//        document.getElementById('tbsync.accountsettings.folderlist').disabled = isSyncing;
+        document.getElementById('tbsync.accountsettings.folderlist').disabled = isSyncing;
         document.getElementById('tbsync.accountsettings.syncbtn').disabled = isSyncing;
         
         document.getElementById('tbsync.accountsettings.syncbtn').hidden = !(isEnabled && tbSyncAccountSettings.viewFolderPane == "on");
@@ -156,8 +157,8 @@ var tbSyncAccountSettings = {
         
         
         
-        tbSyncAccountSettings.updateSyncstate();
         tbSyncAccountSettings.updateFolderList();
+        tbSyncAccountSettings.updateSyncstate();
     },
 
     updateSyncstate: function () {
@@ -264,7 +265,7 @@ var tbSyncAccountSettings = {
                 return;
         
             if (folder.selected == "1") {
-                if (window.confirm(tbSync.getLocalizedMessage("prompt.Unsubscribe", tbSyncAccountSettings.provider))) {
+                if (window.confirm(tbSync.getLocalizedMessage("prompt.Unsubscribe"))) {
                     //deselect folder
                     folder.selected = "0";
                     //remove folder, which will trigger the listener in tbsync which will clean up everything
@@ -276,18 +277,18 @@ var tbSyncAccountSettings = {
                 tbSync.db.setFolderSetting(tbSyncAccountSettings.account, fID, "status", "aborted");
                 tbSync.db.setAccountSetting(folder.account, "status", "notsyncronized");
                 Services.obs.notifyObservers(null, "tbsync.changedSyncstate", tbSyncAccountSettings.account);
-                tbSyncAccountSettings.updateSyncstate();
             }
-            tbSyncAccountSettings.updateFolderList();
+            tbSyncAccountSettings.updateSyncstate();
+            //tbSyncAccountSettings.updateFolderList(); //updateFodlerList is actually changing the content of the folderlist, changing the state of a folder is done by updateSyncstate
         }
     },
 
     onFolderListContextMenuShowing: function () {
         let folderList = document.getElementById("tbsync.accountsettings.folderlist");
-        let hideContextMenuDelete = true;
         let hideContextMenuToggleSubscription = true;
-
-        if (!folderList.disabled && folderList.selectedItem !== null && folderList.selectedItem.value !== undefined) {
+        let aFolderIsSelected = (!folderList.disabled && folderList.selectedItem !== null && folderList.selectedItem.value !== undefined);
+        
+        if (aFolderIsSelected) {
             let fID =  folderList.selectedItem.value;
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.account, fID, true);
 
@@ -299,15 +300,12 @@ var tbSyncAccountSettings = {
                 document.getElementById("tbsync.accountsettings.FolderListContextMenuToggleSubscription").label = tbSync.getLocalizedMessage("subscribe.on::" + folder.name, tbSyncAccountSettings.provider);
             }
             
-            //if a folder in trash is selected, also show ContextMenuDelete (but only if FolderDelete is allowed)
-            if (tbSync[tbSyncAccountSettings.provider].parentIsTrash(tbSyncAccountSettings.account, folder.parentID) && tbSync.db.getAccountSetting(tbSyncAccountSettings.account, "allowedEasCommands").split(",").includes("FolderDelete")) {// folder in recycle bin
-                hideContextMenuDelete = false;
-                document.getElementById("tbsync.accountsettings.FolderListContextMenuDelete").label = tbSync.getLocalizedMessage("deletefolder.menuentry::" + folder.name, tbSyncAccountSettings.provider);
-            }
+            tbSync[tbSyncAccountSettings.provider].ui.onFolderListContextMenuShowing(document, folder);
+        } else {
+            tbSync[tbSyncAccountSettings.provider].ui.onFolderListContextMenuShowing(document, null);
         }
         
-        document.getElementById("tbsync.accountsettings.FolderListContextMenuDelete").hidden = hideContextMenuDelete;
-        document.getElementById("tbsync.accountsettings.FolderListContextMenuToggleSubscription").hidden = hideContextMenuToggleSubscription;
+        document.getElementById("tbsync.accountsettings.FolderListContextMenuToggleSubscription").hidden = hideContextMenuToggleSubscription;                    
     },
 
     getIdChain: function (allowedTypesOrder, account, folderID) {

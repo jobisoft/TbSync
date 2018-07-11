@@ -19,7 +19,7 @@
     <popupset>
         <menupopup id="tbsync.accountsettings.FolderListContextMenu" onpopupshowing="tbSyncAccountSettings.onFolderListContextMenuShowing();">
             <menuitem id="tbsync.accountsettings.FolderListContextMenuToggleSubscription" label="toggle" oncommand="tbSyncAccountSettings.toggleFolder();"/>
-            <menuitem id="tbsync.accountsettings.FolderListContextMenuDelete" label="delete" oncommand="tbSyncAccountSettings.customUIdeleteFolder(document, tbSyncAccountSettings.account);"/>
+            <menuitem id="tbsync.accountsettings.FolderListContextMenuDelete" label="delete" oncommand="tbSync.eas.ui.deleteFolder(document, tbSyncAccountSettings.account);"/>
         </menupopup>
     </popupset>
 
@@ -57,7 +57,7 @@
                         </hbox>
 
                         <hbox>
-                            <hbox width="235"><textbox flex="1" style="margin-left:0; margin-right:0" tooltiptext="&pref.ServerNameDescription;" id="tbsync.accountsettings.pref.host" onblur="tbSync.eas.customUIstripHost(document, tbSyncAccountSettings.account);" /></hbox>
+                            <hbox width="235"><textbox flex="1" style="margin-left:0; margin-right:0" tooltiptext="&pref.ServerNameDescription;" id="tbsync.accountsettings.pref.host" onblur="tbSync.eas.ui.stripHost(document, tbSyncAccountSettings.account);" /></hbox>
                             <vbox flex="1">
                                 <menulist flex="1" style="margin-right:0;" id="tbsync.accountsettings.pref.asversionselected"  >
                                     <menupopup>
@@ -114,7 +114,6 @@
                         style="margin-left:0; margin-right:0;"
                         context="tbsync.accountsettings.FolderListContextMenu"
                         seltype="single"
-                        onkeypress="if (event.keyCode == 46) {tbSync.eas.customUIdeleteFolder(document, tbSyncAccountSettings.account);}"
                         ondblclick="tbSyncAccountSettings.toggleFolder();">
                         <listhead style="border-bottom: 1px solid lightgrey;">
                             <listheader style="font-weight:bold;" label="" width="24" />

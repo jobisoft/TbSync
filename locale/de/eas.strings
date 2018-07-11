@@ -124,9 +124,6 @@ status.TempServerError=Der Server meldete einen temporären Systemfehler, oder e
 status.nosupportedeasversion=Der Server unterstützt kein ActiveSync v2.5 oder v14.0 (nur ##replace.1##). TbSync kann nicht mit diesem Server arbeiten.
 status.notsupportedeasversion=Der Server unterstützt nicht die ausgewählte ActiveSync Version v##replace.1## (nur ##replace.2##).
 
-prompt.Unsubscribe=Sind Sie sicher, dass Sie dieses Element nicht länger abonieren möchten? Alle lokalen Veränderungen, die noch nicht synchronisiert wurden, gehen dabei verloren!
-prompt.UnlockSettings=Das Ändern der vordefinierten Servereinstellungen kann zu Synchronisationsfehlern führen. Sind Sie sicher, dass Sie die vordefinierten Servereinstellungen entsperren wollen?
-
 config.auto=ActiveSync Server Konfiguration (Autodiscover)
 config.custom=ActiveSync Server Konfiguration
 config.outlook.com=Server Konfiguration für Outlook.com Konten

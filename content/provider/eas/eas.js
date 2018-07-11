@@ -1754,74 +1754,89 @@ var eas = {
     
     
     
-    //UI Interface (only needed/used if standard UI is used)
-    accountSettingsDialogGetAccountStorageFields: function () {
-        return Object.keys(this.getNewAccountEntry()).sort();
-    },
+    //UI Interface (only needed, if standard TbSync UI is used/overlayed)
+    ui: {
 
-    accountSettingsDialogGetAlwaysUnlockedSettings: function () {
-        return ["autosync"];
-    },
+        getAccountStorageFields: function () {
+            return Object.keys(tbSync.eas.getNewAccountEntry()).sort();
+        },
 
-    accountSettingsDialogGetFixedServerSettings: function(servertype) {
-        let settings = {};
+        getAlwaysUnlockedSettings: function () {
+            return ["autosync"];
+        },
 
-        switch (servertype) {
-            case "auto":
-                settings["host"] = null;
-                settings["https"] = null;
-                settings["asversionselected"] = null;
-                break;
+        getFixedServerSettings: function (servertype) {
+            let settings = {};
 
-            //just here for reference, if this method is going to be used again
-            case "outlook.com":
-                settings["host"] = "eas.outlook.com";
-                settings["https"] = "1";
-                settings["asversionselected"] = "2.5";
-                settings["seperator"] = "44";
-                break;
-        }
-        
-        return settings;
-    },
+            switch (servertype) {
+                case "auto":
+                    settings["host"] = null;
+                    settings["https"] = null;
+                    settings["asversionselected"] = null;
+                    break;
 
-    
-
-
-    //Custom stuff, outside of interface, invoked by own functions in accountSettings.xul
-    customUIstripHost: function (document, account) {
-        let host = document.getElementById('tbsync.accountsettings.pref.host').value;
-        if (host.indexOf("https://") == 0) {
-            host = host.replace("https://","");
-            document.getElementById('tbsync.accountsettings.pref.https').checked = true;
-            tbSync.db.setAccountSetting(account, "https", "1");
-        } else if (host.indexOf("http://") == 0) {
-            host = host.replace("http://","");
-            document.getElementById('tbsync.accountsettings.pref.https').checked = false;
-            tbSync.db.setAccountSetting(account, "https", "0");
-        }
-        
-        while (host.endsWith("/")) { host = host.slice(0,-1); }        
-        document.getElementById('tbsync.accountsettings.pref.host').value = host
-        tbSync.db.setAccountSetting(account, "host", host);
-    },
-    
-    customUIdeleteFolder: function(document, account) {
-        let folderList = document.getElementById("tbsync.accountsettings.folderlist");
-        if (folderList.selectedItem !== null && !folderList.disabled) {
-            let fID =  folderList.selectedItem.value;
-            let folder = tbSync.db.getFolder(account, fID, true);
-
-            //only trashed folders can be purged (for example O365 does not show deleted folders but also does not allow to purge them)
-            if (!tbSync.eas.parentIsTrash(account, folder.parentID)) return;
+                //just here for reference, if this method is going to be used again
+                case "outlook.com":
+                    settings["host"] = "eas.outlook.com";
+                    settings["https"] = "1";
+                    settings["asversionselected"] = "2.5";
+                    settings["seperator"] = "44";
+                    break;
+            }
             
-            if (folder.selected == "1") alert(tbSync.getLocalizedMessage("deletefolder.notallowed::" + folder.name, "eas"));
-            else if (confirm(tbSync.getLocalizedMessage("deletefolder.confirm::" + folder.name, "eas"))) {
+            return settings;
+        },
+
+        onFolderListContextMenuShowing: function (document, folder) {
+            let hideContextMenuDelete = true;
+
+            if (folder !== null) {
+                //if a folder in trash is selected, also show ContextMenuDelete (but only if FolderDelete is allowed)
+                if (tbSync.eas.parentIsTrash(folder.account, folder.parentID) && tbSync.db.getAccountSetting(folder.account, "allowedEasCommands").split(",").includes("FolderDelete")) {// folder in recycle bin
+                    hideContextMenuDelete = false;
+                    document.getElementById("tbsync.accountsettings.FolderListContextMenuDelete").label = tbSync.getLocalizedMessage("deletefolder.menuentry::" + folder.name, "eas");
+                }                
+            }
+
+            document.getElementById("tbsync.accountsettings.FolderListContextMenuDelete").hidden = hideContextMenuDelete;
+        },
+
+
+
+        //Custom stuff, outside of interface, invoked by own functions in overlayed accountSettings.xul
+        stripHost: function (document, account) {
+            let host = document.getElementById('tbsync.accountsettings.pref.host').value;
+            if (host.indexOf("https://") == 0) {
+                host = host.replace("https://","");
+                document.getElementById('tbsync.accountsettings.pref.https').checked = true;
+                tbSync.db.setAccountSetting(account, "https", "1");
+            } else if (host.indexOf("http://") == 0) {
+                host = host.replace("http://","");
+                document.getElementById('tbsync.accountsettings.pref.https').checked = false;
+                tbSync.db.setAccountSetting(account, "https", "0");
+            }
+            
+            while (host.endsWith("/")) { host = host.slice(0,-1); }        
+            document.getElementById('tbsync.accountsettings.pref.host').value = host
+            tbSync.db.setAccountSetting(account, "host", host);
+        },
+        
+        deleteFolder: function(document, account) {
+            let folderList = document.getElementById("tbsync.accountsettings.folderlist");
+            if (folderList.selectedItem !== null && !folderList.disabled) {
+                let fID =  folderList.selectedItem.value;
+                let folder = tbSync.db.getFolder(account, fID, true);
+
+                //only trashed folders can be purged (for example O365 does not show deleted folders but also does not allow to purge them)
+                if (!tbSync.eas.parentIsTrash(account, folder.parentID)) return;
+                
+                if (folder.selected == "1") alert(tbSync.getLocalizedMessage("deletefolder.notallowed::" + folder.name, "eas"));
+                else if (confirm(tbSync.getLocalizedMessage("deletefolder.confirm::" + folder.name, "eas"))) {
                 tbSync.syncAccount("deletefolder", account, fID);
-            } 
-        }            
-    },
-    
+                } 
+            }            
+        },
+    }
     
 };
     

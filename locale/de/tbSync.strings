@@ -12,6 +12,8 @@ button.syncing=Synchronisierung
 prompt.DeleteAccount=Sind Sie sicher, dass Sie das Konto ##accountName## löschen möchten?
 prompt.Disable=Sind Sie sicher, dass Sie dieses Konto deaktivieren möchten? Alle lokalen Veränderungen, die noch nicht synchronisiert wurden, gehen dabei verloren!
 prompt.Password=Bitte geben Sie das Passwort für den Benutzer ##user## ein:
+prompt.Unsubscribe=Sind Sie sicher, dass Sie dieses Element nicht länger abonieren möchten? Alle lokalen Veränderungen, die noch nicht synchronisiert wurden, gehen dabei verloren!
+prompt.UnlockSettings=Das Ändern der vordefinierten Servereinstellungen kann zu Synchronisationsfehlern führen. Sind Sie sicher, dass Sie die vordefinierten Servereinstellungen entsperren wollen?
 
 account=TbSync Konto [##accountname##]
 

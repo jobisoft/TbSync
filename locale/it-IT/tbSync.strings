@@ -12,6 +12,8 @@ button.syncing=Synchronizing
 prompt.DeleteAccount=Are you sure that you want to delete account ##accountName##?
 prompt.Disable=Are you sure you want to disable this account? All local modifications, which have not been synced yet, will be lost!
 prompt.Password=Please enter the password for user ##user##:
+prompt.Unsubscribe=Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!
+prompt.UnlockSettings=Changing any of the predefined server settings could lead to synchronization errors. Are you sure you want to unlock all predefined server settings?
 
 account=TbSync account [##accountname##]
 
