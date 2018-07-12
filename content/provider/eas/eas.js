@@ -1860,7 +1860,7 @@ var eas = {
             
             if (folder && folder.type) {
                 let pos = allowedTypesOrder.indexOf(folder.type);
-                chain = pos.toString().padStart(3,"0") + "." + chain;
+                chain = ((pos == -1) ? "ZZZ" : pos.toString().padStart(3,"0")) + "." + chain;
             }
             
             return chain;
