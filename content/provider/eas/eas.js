@@ -1898,20 +1898,24 @@ var eas = {
 
 
         //Custom stuff, outside of interface, invoked by own functions in overlayed accountSettings.xul
-        getIdChain: function (allowedTypesOrder, account, folderID) {
+        getIdChain: function (allowedTypesOrder, account, _folderID) {
+            let folderID = _folderID;
+            
             //create sort string so that child folders are directly below their parent folders, different folder types are grouped and trashed folders at the end
-            let folder = folderID;
-            let parent = tbSync.db.getFolder(account, folderID).parentID;
-            let chain = folder.toString().padStart(3,"0");
+            let chain = folderID.toString().padStart(3,"0");
+            let folder = tbSync.db.getFolder(account, folderID);
             
-            while (parent && parent != "0") {
-                chain = parent.toString().padStart(3,"0") + "." + chain;
-                folder = parent;
-                parent = tbSync.db.getFolder(account, folder).parentID;
-            };
+            while (folder && folder.parentID && folder.parentID != "0") {
+                chain = folder.parentID.toString().padStart(3,"0") + "." + chain;
+                folderID = folder.parentID;
+                folder = tbSync.db.getFolder(account, folderID);
+            }
             
-            let pos = allowedTypesOrder.indexOf(tbSync.db.getFolder(account, folder).type);
-            chain = (pos == -1 ? "U" : pos).toString().padStart(3,"0") + "." + chain;
+            if (folder && folder.type) {
+                let pos = allowedTypesOrder.indexOf(folder.type);
+                chain = pos.toString().padStart(3,"0") + "." + chain;
+            }
+            
             return chain;
         },    
 
