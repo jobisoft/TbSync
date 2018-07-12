@@ -96,7 +96,7 @@ var tbSync = {
         tbSync.dump("TbSync init","Start");
         tbSync.window = window;
         Services.obs.addObserver(tbSync.initSyncObserver, "tbsync.initSync", false);
-        Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate", false);
+        Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate", false);
         Services.obs.addObserver(tbSync.removeProviderObserver, "tbsync.removeProvider", false);
         Services.obs.addObserver(tbSync.addProviderObserver, "tbsync.addProvider", false);
 
@@ -242,7 +242,7 @@ var tbSync = {
         tbSync.syncTimer.cancel();
 
         //remove observer
-        Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.changedSyncstate");
+        Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate");
         Services.obs.removeObserver(tbSync.initSyncObserver, "tbsync.initSync");
         Services.obs.removeObserver(tbSync.removeProviderObserver, "tbsync.removeProvider");
         Services.obs.removeObserver(tbSync.addProviderObserver, "tbsync.addProvider");
@@ -514,6 +514,7 @@ var tbSync = {
             tbSync.db.setAccountSetting(accountsToDo[i], "status", "syncing");
             tbSync.setSyncData(accountsToDo[i], "syncstate",  "syncing");            
             tbSync.setSyncData(accountsToDo[i], "folderID", folderID);            
+            //send GUI into lock mode (syncstate == syncing)
             Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", accountsToDo[i]);
             
             tbSync[tbSync.db.getAccountSetting(accountsToDo[i], "provider")].start(tbSync.getSyncData(accountsToDo[i]), job);
@@ -546,7 +547,7 @@ var tbSync = {
             tbSync.db.setAccountSetting(folder.account, "status", tbSync.db.getFolderSetting(folder.account, folder.folderID, "downloadonly") == "1" ? "needtorevert" : "notsyncronized");
             tbSync.db.setFolderSetting(folder.account, folder.folderID, "status", "modified");
             //notify settings gui to update status
-             Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folder.account);
+             Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folder.account);
         }
     },
 
@@ -645,26 +646,56 @@ var tbSync = {
                 tbSync.db.setFolderSetting(folders[f].account, folders[f].folderID, "status", "pending");
             }
         }
-        
-        //if account is connected (folders found) set syncstate to connected to switch to folder view
-        if (tbSync.isConnected(account)) tbSync.setSyncState("connected", account);        
     },
 
-    getTypeImage: function (type) {
-        let src = ""; 
-        switch (type) {
-            case "tb-todo":
-                src = "todo16.png";
-                break;
-            case "tb-event":
-                src = "calendar16.png";
-                break;
-            case "tb-contact":
-                src = "contacts16.png";
-                break;
+    getSyncStatusMsg: function (folder, syncdata, provider) {
+        let status = "";
+        
+        if (folder.selected == "1") {
+            //default
+            status = tbSync.getLocalizedMessage("status." + folder.status, provider);
+
+            switch (folder.status) {
+                case "OK":
+                case "modified":
+                    switch (tbSync[provider].getThunderbirdFolderType(folder.type)) {
+                        case "tb-todo": 
+                        case "tb-event": 
+                            status = tbSync.lightningIsAvailable() ? status + ": "+ tbSync.getCalendarName(folder.target) : tbSync.getLocalizedMessage("status.nolightning", provider);
+                            break;
+                        case "tb-contact": 
+                            status =status + ": "+ tbSync.getAddressBookName(folder.target);
+                            break;
+                    }
+                    break;
+                    
+                case "pending":
+                    if (syncdata && folder.folderID == syncdata.folderID) {
+                        //syncing (there is no extra state for this)
+                        status = tbSync.getLocalizedMessage("status.syncing", provider);
+                        if (["send","eval","prepare"].includes(syncdata.syncstate.split(".")[0]) && (syncdata.todo + syncdata.done) > 0) {
+                            //add progress information
+                            status = status + " (" + syncdata.done + (syncdata.todo > 0 ? "/" + syncdata.todo : "") + ")"; 
+                        }
+                    }
+
+                    status = status + " ...";
+                    break;            
+            }
+        } else {
+            //remain empty if not selected
+        }        
+
+        return status;
+    },
+
+    updateListItemCell: function (e, attribs, value) {
+        if (e.getAttribute(attribs[0]) != value) {
+            for (let i=0; i<attribs.length; i++) {
+                e.setAttribute(attribs[i],value);
+            }
         }
-        return "chrome://tbsync/skin/" + src;
-    },    
+    },
 
     finishAccountSync: function (syncdata, error) {
         // set each folder with PENDING status to ABORTED
@@ -731,7 +762,7 @@ var tbSync = {
         tbSync.setSyncData(account, "syncstate", syncstate);
         tbSync.dump("setSyncState", msg);
 
-        Services.obs.notifyObservers(null, "tbsync.changedSyncstate", account);
+        Services.obs.notifyObservers(null, "tbsync.updateSyncstate", account);
     },
 
  
@@ -868,7 +899,7 @@ var tbSync = {
                 }
             }
             //update UI
-            Services.obs.notifyObservers(null, "tbsync.changedSyncstate", null);
+            Services.obs.notifyObservers(null, "tbsync.updateSyncstate", null);
             Services.obs.notifyObservers(null, "tbsync.refreshUpdateButton", null);
         }        
     }),
@@ -1055,7 +1086,7 @@ var tbSync = {
                         //store current/new name of target
                         tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetName", tbSync.getAddressBookName(folders[0].target));                         
                         //update settings window, if open
-                         Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+                         Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
                 }
             }
 
@@ -1142,7 +1173,7 @@ var tbSync = {
                         if (tbSync.isEnabled(folders[0].account)) tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
 
                         //update settings window, if open
-                         Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+                         Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
                     }
                     tbSync.db.saveFolders();
                     
@@ -1771,7 +1802,7 @@ var tbSync = {
                         //update stored name to recover after disable
                         tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetName", aValue);                         
                         //update settings window, if open
-                        Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+                        Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
                         break;
                 }
             }
@@ -1784,7 +1815,7 @@ var tbSync = {
                     let folders = tbSync.db.findFoldersWithSetting("target", aCalendar.id);
                     if (folders.length > 0) {
                         //update settings window, if open
-                        Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+                        Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
                     }
                     break;
             }
@@ -1814,7 +1845,7 @@ var tbSync = {
                     if (tbSync.isEnabled(folders[0].account)) tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
 
                     //update settings window, if open
-                    Services.obs.notifyObservers(null, "tbsync.changedSyncstate", folders[0].account);
+                    Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
                 }
                 tbSync.db.saveFolders();
             }

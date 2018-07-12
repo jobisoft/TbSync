@@ -130,6 +130,26 @@ var eas = {
         };
     },
 
+    getTypeImage: function (type) {
+        let src = ""; 
+        switch (type) {
+            case "9": 
+            case "14": 
+                src = "contacts16.png";
+                break;
+            case "8":
+            case "13":
+                src = "calendar16.png";
+                break;
+            case "7":
+            case "15":
+                src = "todo16.png";
+                break;
+        }
+        return "chrome://tbsync/skin/" + src;
+    },    
+
+
 
 
 
@@ -202,6 +222,8 @@ var eas = {
                         //get all folders, which need to be synced
                         //yield eas.getUserInfo(syncdata);
                         yield eas.getPendingFolders(syncdata);
+                        //update folder list in GUI
+                        Services.obs.notifyObservers(null, "tbsync.updateFolderList", syncdata.account);
                         //sync all pending folders
                         yield eas.syncPendingFolders(syncdata); //inside here we throw and catch FinischFolderSync
                         throw eas.finishSync();
@@ -866,7 +888,7 @@ var eas = {
             tbSync.db.deleteFolder(syncdata.account, syncdata.folderID);
             syncdata.folderID = "";
             //update manager gui / folder list
-            Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", syncdata.account);
+            Services.obs.notifyObservers(null, "tbsync.updateFolderList", syncdata.account);
             throw eas.finishSync();
         } else {
             throw eas.finishSync("wbxmlmissingfield::FolderDelete.SyncKey", eas.flags.abortWithError);
@@ -1801,9 +1823,98 @@ var eas = {
             document.getElementById("tbsync.accountsettings.FolderListContextMenuDelete").hidden = hideContextMenuDelete;
         },
 
+        getSortedFolderData: function (account) {
+            let folderData = [];
+            let folders = tbSync.db.getFolders(account);
+            let allowedTypesOrder = ["9","14","8","13","7","15"];
+            let folderIDs = Object.keys(folders).filter(f => allowedTypesOrder.includes(folders[f].type)).sort((a, b) => (tbSync.eas.ui.getIdChain(allowedTypesOrder, account, a).localeCompare(tbSync.eas.ui.getIdChain(allowedTypesOrder, account, b))));
+            
+            for (let i=0; i < folderIDs.length; i++) {
+                folderData.push(tbSync.eas.ui.getFolderRowData(folders[folderIDs[i]]));
+            }
+            return folderData;
+        },
+        
+        getFolderRowData: function (folder, syncdata = null) {
+            let rowData = {};
+            rowData.folderID = folder.folderID;
+            rowData.selected = (folder.selected == "1");
+            rowData.type = folder.type;
+            rowData.name = folder.name;
+            rowData.status = tbSync.getSyncStatusMsg(folder, syncdata, "eas");
+
+            if (tbSync.eas.parentIsTrash(folder.account, folder.parentID)) rowData.name = tbSync.getLocalizedMessage("recyclebin", "eas") + " | " + rowData.name;
+
+            return rowData;
+        },
+    
+        addRowToFolderList: function (document, newListItem, rowData) {
+            //add folder type/img
+            let itemTypeCell = document.createElement("listcell");
+            itemTypeCell.setAttribute("class", "img");
+            itemTypeCell.setAttribute("width", "24");
+            itemTypeCell.setAttribute("height", "24");
+                let itemType = document.createElement("image");
+                itemType.setAttribute("src", tbSync.eas.getTypeImage(rowData.type));
+                itemType.setAttribute("style", "margin: 4px;");
+            itemTypeCell.appendChild(itemType);
+            newListItem.appendChild(itemTypeCell);
+
+            //add folder name
+            let itemLabelCell = document.createElement("listcell");
+            itemLabelCell.setAttribute("class", "label");
+            itemLabelCell.setAttribute("width", "145");
+            itemLabelCell.setAttribute("crop", "end");
+            itemLabelCell.setAttribute("label", rowData.name);
+            itemLabelCell.setAttribute("tooltiptext", rowData.name);
+            itemLabelCell.setAttribute("disabled", !rowData.selected);
+            if (!rowData.selected) itemLabelCell.setAttribute("style", "font-style:italic;");
+            newListItem.appendChild(itemLabelCell);
+
+            //add folder status
+            let itemStatusCell = document.createElement("listcell");
+            itemStatusCell.setAttribute("class", "label");
+            itemStatusCell.setAttribute("flex", "1");
+            itemStatusCell.setAttribute("crop", "end");
+            itemStatusCell.setAttribute("label", rowData.status);
+            itemStatusCell.setAttribute("tooltiptext", rowData.status);
+            newListItem.appendChild(itemStatusCell);
+        },		
+
+        updateRowOfFolderList: function (document, item, rowData) {
+            tbSync.updateListItemCell(item.childNodes[1], ["label","tooltiptext"], rowData.name);
+            tbSync.updateListItemCell(item.childNodes[2], ["label","tooltiptext"], rowData.status);
+            if (rowData.selected) {
+                tbSync.updateListItemCell(item.childNodes[1], ["style"], "font-style:normal;");
+                tbSync.updateListItemCell(item.childNodes[1], ["disabled"], "false");
+            } else {
+                tbSync.updateListItemCell(item.childNodes[1], ["style"], "font-style:italic;");
+                tbSync.updateListItemCell(item.childNodes[1], ["disabled"], "true");
+            }
+        },
+
+
+
 
 
         //Custom stuff, outside of interface, invoked by own functions in overlayed accountSettings.xul
+        getIdChain: function (allowedTypesOrder, account, folderID) {
+            //create sort string so that child folders are directly below their parent folders, different folder types are grouped and trashed folders at the end
+            let folder = folderID;
+            let parent = tbSync.db.getFolder(account, folderID).parentID;
+            let chain = folder.toString().padStart(3,"0");
+            
+            while (parent && parent != "0") {
+                chain = parent.toString().padStart(3,"0") + "." + chain;
+                folder = parent;
+                parent = tbSync.db.getFolder(account, folder).parentID;
+            };
+            
+            let pos = allowedTypesOrder.indexOf(tbSync.db.getFolder(account, folder).type);
+            chain = (pos == -1 ? "U" : pos).toString().padStart(3,"0") + "." + chain;
+            return chain;
+        },    
+
         stripHost: function (document, account) {
             let host = document.getElementById('tbsync.accountsettings.pref.host').value;
             if (host.indexOf("https://") == 0) {

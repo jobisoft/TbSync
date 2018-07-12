@@ -15,8 +15,8 @@ var tbSyncAccounts = {
         //scan accounts, update list and select first entry (because no id is passed to updateAccountList)
         //the onSelect event of the List will load the selected account
         this.updateAccountsList(); 
-        Services.obs.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.changedSyncstate", false);
-        Services.obs.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.changedAccountName", false);
+        Services.obs.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.updateSyncstate", false);
+        Services.obs.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.updateAccountName", false);
         Services.obs.addObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.toggleEnableState", false);
         
         //prepare addmenu
@@ -33,15 +33,15 @@ var tbSyncAccounts = {
     },
 
     onunload: function () {
-        Services.obs.removeObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.changedSyncstate");
-        Services.obs.removeObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.changedAccountName");
+        Services.obs.removeObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.updateSyncstate");
+        Services.obs.removeObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.updateAccountName");
         Services.obs.removeObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.toggleEnableState");
     },
 
     debugToggleAll: function () {
         let accounts = tbSync.db.getAccounts();
         for (let i=0; i < accounts.IDs.length; i++) {
-            tbSyncAccounts.toggleEnableStateObserver.observe(null, "tbsync.toggleEnableState", accounts.IDs[i], true);
+            tbSyncAccounts.toggleAccountEnableState(accounts.IDs[i], true);
         }
     },
     
@@ -453,13 +453,6 @@ var tbSyncAccounts = {
 
     },
     
-    toggleEnableState: function () {
-        let accountsList = document.getElementById("tbSyncAccounts.accounts");
-        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value) && !tbSync.isSyncing(accountsList.selectedItem.value)) {            
-            Services.obs.notifyObservers(null, "tbsync.toggleEnableState", accountsList.selectedItem.value);
-        }
-    },
-
     synchronizeAccount: function () {
         let accountsList = document.getElementById("tbSyncAccounts.accounts");
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)  && !tbSync.isSyncing(accountsList.selectedItem.value)) {            
@@ -493,26 +486,36 @@ var tbSyncAccounts = {
     * Observer to catch enable state toggle
     */
     toggleEnableStateObserver: {
-        observe: function (aSubject, aTopic, aData, doNotAsk = false) {
-            let account = aData;                        
-            let isConnected = tbSync.isConnected(account);
-            let isEnabled = tbSync.isEnabled(account);
-
-            if (isEnabled) {
-                //we are enabled and want to disable (do not ask, if not connected)
-                if (doNotAsk || !isConnected || window.confirm(tbSync.getLocalizedMessage("prompt.Disable"))) {
-                    tbSync[tbSync.db.getAccountSetting(account, "provider")].disableAccount(account);
-                    Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
-                }
-            } else {
-                //we are disabled and want to enabled
-                tbSync[tbSync.db.getAccountSetting(account, "provider")].enableAccount(account);
-                Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
-                tbSync.syncAccount("sync", account);
-            }
+        observe: function (aSubject, aTopic, aData) {
+            tbSyncAccounts.toggleAccountEnableState(aData, false);
         }
     },
 
+    toggleEnableState: function () {
+        let accountsList = document.getElementById("tbSyncAccounts.accounts");
+        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value) && !tbSync.isSyncing(accountsList.selectedItem.value)) {            
+            tbSyncAccounts.toggleAccountEnableState(accountsList.selectedItem.value, false);
+        }
+    },
+    
+    toggleAccountEnableState: function (account, doNotAsk) {
+        let isConnected = tbSync.isConnected(account);
+        let isEnabled = tbSync.isEnabled(account);
+
+        if (isEnabled) {
+            //we are enabled and want to disable (do not ask, if not connected)
+            if (doNotAsk || !isConnected || window.confirm(tbSync.getLocalizedMessage("prompt.Disable"))) {
+                tbSync[tbSync.db.getAccountSetting(account, "provider")].disableAccount(account);
+                Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
+                tbSyncAccounts.updateAccountStatus(account);
+            }
+        } else {
+            //we are disabled and want to enabled
+            tbSync[tbSync.db.getAccountSetting(account, "provider")].enableAccount(account);
+            Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
+            tbSync.syncAccount("sync", account);
+        }
+    },
 
     /* * *
     * Observer to catch synstate changes and to update account icons
@@ -521,7 +524,6 @@ var tbSyncAccounts = {
         observe: function (aSubject, aTopic, aData) {
             if (aData != "") {
                 //since we want rotating arrows on each syncstate change, we need to run this on each syncstate
-                //let syncstate = tbSync.getSyncData(aData,"syncstate");
                 tbSyncAccounts.updateAccountStatus(aData);
             }
         }
