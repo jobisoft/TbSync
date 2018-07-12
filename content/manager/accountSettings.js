@@ -73,6 +73,10 @@ var tbSyncAccountSettings = {
     
 
     onload: function () {
+        //load observers
+        Services.obs.addObserver(tbSyncAccountSettings.updateFolderListObserver, "tbsync.updateFolderList", false);
+        Services.obs.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui", false);
+        Services.obs.addObserver(tbSyncAccountSettings.updateSyncstateObserver, "tbsync.updateSyncstate", false);
         //get the selected account from the loaded URI
         tbSyncAccountSettings.account = window.location.toString().split("id=")[1];
 
@@ -86,10 +90,6 @@ var tbSyncAccountSettings = {
         tbSync.prepareSyncDataObj(tbSyncAccountSettings.account);
         tbSyncAccountSettings.loadSettings();
         
-        Services.obs.addObserver(tbSyncAccountSettings.updateFolderListObserver, "tbsync.updateFolderList", false);
-        Services.obs.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui", false);
-        Services.obs.addObserver(tbSyncAccountSettings.updateSyncstateObserver, "tbsync.updateSyncstate", false);
-
         //done, folderlist must be updated while visible
         document.getElementById('tbsync.accountsettings.frame').hidden = false;	    
         tbSyncAccountSettings.updateFolderList();        
