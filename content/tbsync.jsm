@@ -577,33 +577,35 @@ var tbSync = {
         }
     },
     
-    //rename target and clear changelog (it is still connected to tbSync, if folder in DB is not deleted/replaced) 
-    takeTargetOffline: function(provider, target, type, _suffix = "") {
-        if (target != "") {
+    //rename target, clear changelog and remove from DB
+    takeTargetOffline: function(provider, folder, _suffix = "") {
+        if (folder.target != "") {
             let d = new Date();
             let suffix = _suffix ? _suffix : " [lost contact on " + d.getDate().toString().padStart(2,"0") + "." + (d.getMonth()+1).toString().padStart(2,"0") + "." + d.getFullYear() +"]"
 
             //if there are local changes, append an  (*) to the name of the target
             let c = 0;
-            let a = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
+            let a = tbSync.db.getItemsFromChangeLog(folder.target, 0, "_by_user");
             for (let i=0; i<a.length; i++) c++;
             if (c>0) suffix += " (*)";
 
             //this is the only place, where we manually have to call clearChangelog, because the target is not deleted
             //(on delete, changelog is cleared automatically)
-            tbSync.db.clearChangeLog(target);
+            tbSync.db.clearChangeLog(folder.target);
             
-            switch (tbSync[provider].getThunderbirdFolderType(type)) {
+            switch (tbSync[provider].getThunderbirdFolderType(folder.type)) {
                 case "tb-event":
                 case "tb-todo":
-                    tbSync.appendSuffixToNameOfCalendar(target, suffix);
+                    tbSync.appendSuffixToNameOfCalendar(folder.target, suffix);
                     break;
                 case "tb-contact":
-                    tbSync.appendSuffixToNameOfBook(target, suffix);
+                    tbSync.appendSuffixToNameOfBook(folder.target, suffix);
                     break;
                 default:
-                    tbSync.dump("tbSync.takeTargetOffline","Unknown type <"+type+">");
+                    tbSync.dump("tbSync.takeTargetOffline","Unknown type <"+folder.type+">");
             }
+            
+            tbSync.db.deleteFolder(folder.account, folder.folderID);            
         }
     },
 

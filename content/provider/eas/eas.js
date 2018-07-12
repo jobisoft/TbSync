@@ -39,10 +39,7 @@ var eas = {
                     
                 let folders = tbSync.db.getFolders(accounts.IDs[i]);
                 for (let f in folders) {
-                    //rename target if it exists
-                    tbSync.takeTargetOffline("eas", folders[f].target, folders[f].type, " [emergency backup by TbSync]");
-                    //remove folder
-                    tbSync.db.deleteFolder(accounts.IDs[i], folders[f].folderID);
+                    tbSync.takeTargetOffline("eas", folders[f], " [emergency backup by TbSync]");
                 }		    
             }
         }
@@ -232,6 +229,8 @@ var eas = {
                     case "deletefolder":
                         //TODO: foldersync first ???
                         yield eas.deleteFolder(syncdata);
+                        //update folder list in GUI
+                        Services.obs.notifyObservers(null, "tbsync.updateFolderList", syncdata.account);
                         throw eas.finishSync();
                         break;
                         
@@ -334,15 +333,11 @@ var eas = {
                     let folder = tbSync.db.getFolder(syncdata.account, add[count].ServerId);
                     if (folder === null) {
                         //add folder
-                        let newData =tbSync.eas.getNewFolderEntry();
-                        newData.account = syncdata.account;
+                        let newData =tbSync.eas.getNewFolderEntry(syncdata.account);
                         newData.folderID = add[count].ServerId;
                         newData.name = add[count].DisplayName;
                         newData.type = add[count].Type;
                         newData.parentID = add[count].ParentId;
-                        newData.synckey = "";
-                        newData.target = "";
-                        newData.downloadonly = tbSync.db.getAccountSetting(syncdata.account, "downloadonly"); //each folder has its own settings, the main setting is just the default
 
                         //if there is a cached version of this folder, take selection state from there
                         if (tbSync.db.getAccountSetting(syncdata.account, "syncdefaultfolders") == "1") {
@@ -355,8 +350,6 @@ var eas = {
                             else newData.selected = (newData.type == "9" || newData.type == "8" || newData.type == "7" ) ? "1" : "0";
                         } else newData.selected = "0";
                         
-                        newData.status = "";
-                        newData.lastsynctime = "";
                         tbSync.db.addFolder(newData);
                     } else if (syncdata.accountResync) {
                         //trying to add an existing folder during resync, overwrite local settings with those from server
@@ -365,18 +358,8 @@ var eas = {
                         folder.name = add[count].DisplayName;
                         folder.parentID = add[count].ParentId;
 
-                        //check if type changed
-                        if ((folder.type != add[count].Type) && (folder.selected == "1" || target != "")) {
-                            //deselect folder
-                            folder.selected = "0";
-                            folder.target = "";
-                            //if target exists, take it offline
-                            tbSync.takeTargetOffline("eas", target, folder.type);
-                        }    
-                        folder.type = add[count].Type;
+                        //always clear during resync
                         folder.status = "";
-
-                        //always clear
                         folder.synckey = "";
                         folder.lastsynctime = "";
 
@@ -387,7 +370,7 @@ var eas = {
                 //looking for updates
                 let update = xmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Update);
                 for (let count = 0; count < update.length; count++) {
-                    //geta a reference
+                    //get a reference
                     let folder = tbSync.db.getFolder(syncdata.account, update[count].ServerId);
                     if (folder !== null) {
                         let target = folder.target;
@@ -395,37 +378,17 @@ var eas = {
                         //update folder
                         folder.name = update[count].DisplayName;
                         folder.parentID = update[count].ParentId;
-                        
-                        //check if type changed or folder got deleted
-                        if ((folder.type != update[count].Type) && (folder.selected == "1" || target != "")) {
-                            //deselect folder
-                            folder.selected = "0";                    
-                            folder.target = "";                    
-                            //if target exists, take it offline
-                            tbSync.takeTargetOffline("eas", target, folder.type);
-
-                            //clear on deselect
-                            folder.synckey = "";
-                            folder.lastsynctime = "";
-                        }
-                        folder.type = update[count].Type;
                         folder.status = "";
 
                         tbSync.db.saveFolders();
 
                     } else {
                         //this might be a problem: cannot update an non-existing folder - simply add the folder as not selected
-                        let newData =tbSync.eas.getNewFolderEntry();
-                        newData.account = syncdata.account;
+                        let newData =tbSync.eas.getNewFolderEntry(syncdata.account);
                         newData.folderID = update[count].ServerId;
                         newData.name = update[count].DisplayName;
                         newData.type = update[count].Type;
                         newData.parentID = update[count].ParentId;
-                        newData.synckey = "";
-                        newData.target = "";
-                        newData.selected = "";
-                        newData.status = "";
-                        newData.lastsynctime = "";
                         tbSync.db.addFolder(newData);
                     }
                 }
@@ -434,17 +397,9 @@ var eas = {
                 let del = xmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Delete);
                 for (let count = 0; count < del.length; count++) {
 
-                    //get a copy of the folder, so we can del it
                     let folder = tbSync.db.getFolder(syncdata.account, del[count].ServerId);
                     if (folder !== null) {
-                        let target = folder.target;
-                        //deselect folder
-                        folder.selected = "0";                    
-                        folder.target = "";                    
-                        //if target exists, take it offline
-                        tbSync.takeTargetOffline("eas", target, folder.type);
-                        //delete folder in account manager
-                        tbSync.db.deleteFolder(syncdata.account, del[count].ServerId);
+                        tbSync.takeTargetOffline("eas", folder, " [deleted from server]");
                     } else {
                         //cannot del an non-existing folder - do nothing
                     }
@@ -458,9 +413,7 @@ var eas = {
                 for (let f in folders) {
                     if (!addedFolders.includes(folders[f].folderID)) {
                         //if target exists, take it offline
-                        tbSync.takeTargetOffline("eas", folders[f].target, folders[f].type);
-                        //delete folder in account manager
-                        tbSync.db.deleteFolder(syncdata.account, folders[f].folderID);
+                        tbSync.takeTargetOffline("eas", folders[f], " [deleted from server]");
                     }
                 }
             }
@@ -1014,9 +967,9 @@ var eas = {
         return false;
     },
 
-    getNewFolderEntry: function () {
+    getNewFolderEntry: function (account) {
         let folder = {
-            "account" : "",
+            "account" : account,
             "folderID" : "",
             "name" : "",
             "type" : "",
@@ -1028,7 +981,7 @@ var eas = {
             "lastsynctime" : "",
             "status" : "",
             "parentID" : "",
-            "downloadonly" : "0",
+            "downloadonly" : tbSync.db.getAccountSetting(account, "downloadonly"), //each folder has its own settings, the main setting is just the default,
             "cached" : "0"};
         return folder;
     },
@@ -1467,13 +1420,7 @@ var eas = {
                 tbSync.synclog("Warning", "WBXML: Server reports <object not found> (" +  tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "), keeping local copy and removing folder.");
                 let folder = tbSync.db.getFolder(syncdata.account, syncdata.folderID);
                 if (folder !== null) {
-                    let target = folder.target;
-                    //deselect folder
-                    folder.selected = "0";
-                    folder.target = "";
-                    //if target exists, take it offline
-                    tbSync.takeTargetOffline("eas", target, folder.type);
-                    tbSync.db.deleteFolder(syncdata.account, syncdata.folderID);
+                    tbSync.takeTargetOffline("eas", folder, " [deleted from server]");
                     //folder is no longer there, unset current folder
                     syncdata.folderID = "";
                 }
@@ -1945,8 +1892,8 @@ var eas = {
                 //only trashed folders can be purged (for example O365 does not show deleted folders but also does not allow to purge them)
                 if (!tbSync.eas.parentIsTrash(account, folder.parentID)) return;
                 
-                if (folder.selected == "1") alert(tbSync.getLocalizedMessage("deletefolder.notallowed::" + folder.name, "eas"));
-                else if (confirm(tbSync.getLocalizedMessage("deletefolder.confirm::" + folder.name, "eas"))) {
+                if (folder.selected == "1") document.defaultView.alert(tbSync.getLocalizedMessage("deletefolder.notallowed::" + folder.name, "eas"));
+                else if (document.defaultView.confirm(tbSync.getLocalizedMessage("deletefolder.confirm::" + folder.name, "eas"))) {
                 tbSync.syncAccount("deletefolder", account, fID);
                 } 
             }            

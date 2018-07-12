@@ -199,7 +199,7 @@ var db = {
         if (!tbSync.syncProviderList.hasOwnProperty(provider)) 
             return false;
 
-        return tbSync[provider].getNewFolderEntry().hasOwnProperty(field);
+        return tbSync[provider].getNewFolderEntry(account).hasOwnProperty(field);
     },
 
     getDefaultFolderSetting: function (account, field) {
@@ -210,7 +210,7 @@ var db = {
             return null;
         
         //THIS FUNCTION ASSUMES, THAT THE GIVEN FIELD IS VALID
-        return tbSync[provider].getNewFolderEntry()[field];
+        return tbSync[provider].getNewFolderEntry(account)[field];
     },
 
     addFolder: function(data) {
