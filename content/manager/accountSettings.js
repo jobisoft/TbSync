@@ -15,9 +15,11 @@ var tbSyncAccountSettings = {
 
     updateFolderListObserver: {
         observe: function (aSubject, aTopic, aData) {
-            //only update if request for this account and main frame is visible
+            //only run if is request for this account and main frame is visible
             let account = aData;            
             if (account == tbSyncAccountSettings.account && !document.getElementById('tbsync.accountsettings.frame').hidden) {
+                //make sure, folderlist is visible, otherwise our updates will be discarded (may cause errors)
+                tbSyncAccountSettings.updateGui();
                 tbSyncAccountSettings.updateFolderList();
             }
         }
@@ -25,7 +27,7 @@ var tbSyncAccountSettings = {
 
     updateGuiObserver: {
         observe: function (aSubject, aTopic, aData) {
-            //only update if request for this account and main frame is visible
+            //only run if is request for this account and main frame is visible
             let account = aData;            
             if (account == tbSyncAccountSettings.account && !document.getElementById('tbsync.accountsettings.frame').hidden) {
                 tbSyncAccountSettings.updateGui();
@@ -35,7 +37,7 @@ var tbSyncAccountSettings = {
 
     updateSyncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
-            //only update if request for this account and main frame is visible
+            //only run if is request for this account and main frame is visible
             let account = aData;            
             if (account == tbSyncAccountSettings.account && !document.getElementById('tbsync.accountsettings.frame').hidden) {
                 
@@ -88,7 +90,9 @@ var tbSyncAccountSettings = {
         Services.obs.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.updateAccountSettingsGui", false);
         Services.obs.addObserver(tbSyncAccountSettings.updateSyncstateObserver, "tbsync.updateSyncstate", false);
 
+        //done, folderlist must be updated while visible
         document.getElementById('tbsync.accountsettings.frame').hidden = false;	    
+        tbSyncAccountSettings.updateFolderList();        
     },
 
 
@@ -145,30 +149,6 @@ var tbSyncAccountSettings = {
         // special treatment for configuration label, which is a permanent setting and will not change by switching modes (only by unlocking, which will handle that)
         document.getElementById("tbsync.accountsettings.label.config").value= tbSync.getLocalizedMessage("config." + tbSyncAccountSettings.servertype, tbSyncAccountSettings.provider);
         
-        tbSyncAccountSettings.updateFolderList();
-    },
-
-    updateFolderList: function () {        
-        //clear folderlist
-        let folderList = document.getElementById("tbsync.accountsettings.folderlist");
-        for (let i=folderList.getRowCount()-1; i>=0; i--) {
-            folderList.removeItemAt(i);
-        }
-
-        //rebuild folderlist
-        let folderData = tbSync[tbSyncAccountSettings.provider].ui.getSortedFolderData(tbSyncAccountSettings.account);
-        for (let i=0; i < folderData.length; i++) {
-            //add new entry
-            let newListItem = document.createElement("richlistitem");
-            //newListItem.setAttribute("id", "folder." + folderData[i].folderID);
-            newListItem.setAttribute("value", folderData[i].folderID);
-
-            tbSync[tbSyncAccountSettings.provider].ui.addRowToFolderList(document, newListItem, folderData[i]);
-            
-            //ensureElementIsVisible also forces internal update of rowCount, which sometimes is not updated automatically upon appendChild
-            folderList.ensureElementIsVisible(folderList.appendChild(newListItem));
-        }
-
         tbSyncAccountSettings.updateGui();        
     },
 
@@ -279,7 +259,7 @@ var tbSyncAccountSettings = {
         }
                 
         //update syncstates of folders in folderlist, if visible
-        if (!document.getElementById("tbsync.accountsettings.group.folders").hidden) {
+        if (!document.getElementById("tbsync.accountsettings.group.folders").hidden && !document.getElementById('tbsync.accountsettings.frame').hidden) {
             let folderList = document.getElementById("tbsync.accountsettings.folderlist");
             for (let i=0; i < folderList.getRowCount(); i++) {
                 let item = folderList.getItemAtIndex(i);
@@ -291,6 +271,31 @@ var tbSyncAccountSettings = {
                     
                 }
             }
+        }
+    },
+
+    updateFolderList: function () {        
+        //do not upate, if not visible (may cause errors)
+        if ( document.getElementById('tbsync.accountsettings.frame').hidden || document.getElementById("tbsync.accountsettings.group.folders").hidden) 
+            return;
+        
+        //clear folderlist
+        let folderList = document.getElementById("tbsync.accountsettings.folderlist");
+        for (let i=folderList.getRowCount()-1; i>=0; i--) {
+            folderList.removeItemAt(i);
+        }
+
+        //rebuild folderlist
+        let folderData = tbSync[tbSyncAccountSettings.provider].ui.getSortedFolderData(tbSyncAccountSettings.account);
+        for (let i=0; i < folderData.length; i++) {
+            //add new entry
+            let newListItem = document.createElement("richlistitem");
+            newListItem.setAttribute("value", folderData[i].folderID);
+
+            tbSync[tbSyncAccountSettings.provider].ui.addRowToFolderList(document, newListItem, folderData[i]);
+            
+            //ensureElementIsVisible also forces internal update of rowCount, which sometimes is not updated automatically upon appendChild
+            folderList.ensureElementIsVisible(folderList.appendChild(newListItem));
         }
     },
 
