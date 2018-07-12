@@ -81,7 +81,8 @@ var tbSync = {
             name: "Exchange WebServices (EWS)", 
             js: "//ews4tbsync/content/ews.js" , 
             newXul: "//ews4tbsync/content/newaccount.xul", 
-            accountXul: "//ews4tbsync/content/accountSettings.xul"}
+            accountXul: "//ews4tbsync/content/accountSettings.xul",
+            downloadUrl: "https://github.com/ExchangeCalendar/exchangecalendar/releases"}
     },
     
     storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),

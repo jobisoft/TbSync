@@ -127,25 +127,6 @@ var eas = {
         };
     },
 
-    getTypeImage: function (type) {
-        let src = ""; 
-        switch (type) {
-            case "9": 
-            case "14": 
-                src = "contacts16.png";
-                break;
-            case "8":
-            case "13":
-                src = "calendar16.png";
-                break;
-            case "7":
-            case "15":
-                src = "todo16.png";
-                break;
-        }
-        return "chrome://tbsync/skin/" + src;
-    },    
-
 
 
 
@@ -1802,7 +1783,7 @@ var eas = {
             itemTypeCell.setAttribute("width", "24");
             itemTypeCell.setAttribute("height", "24");
                 let itemType = document.createElement("image");
-                itemType.setAttribute("src", tbSync.eas.getTypeImage(rowData.type));
+                itemType.setAttribute("src", tbSync.eas.ui.getTypeImage(rowData.type));
                 itemType.setAttribute("style", "margin: 4px;");
             itemTypeCell.appendChild(itemType);
             newListItem.appendChild(itemTypeCell);
@@ -1839,6 +1820,34 @@ var eas = {
                 tbSync.updateListItemCell(item.childNodes[1], ["disabled"], "true");
             }
         },
+
+        /**
+         * Return the icon used in the folderlist to represent the different folder types
+         *
+         * @param type       [in] provider folder type
+         */
+        getTypeImage: function (type) {
+            let src = ""; 
+            switch (type) {
+                case "9": 
+                case "14": 
+                    src = "contacts16.png";
+                    break;
+                case "8":
+                case "13":
+                    src = "calendar16.png";
+                    break;
+                case "7":
+                case "15":
+                    src = "todo16.png";
+                    break;
+            }
+            return "chrome://tbsync/skin/" + src;
+        },    
+
+
+
+
 
 
 
