@@ -619,12 +619,10 @@ var tbSync = {
             let target = folders[i].target;
             let type = tbSync[provider].getThunderbirdFolderType(folders[i].type);            
             
-            //Add a cached version of this folder to the database
-            if (tbSync.db.getAccountSetting(account, "syncdefaultfolders") == "1") {
-                folders[i].cached = "1";
-                folders[i].folderID = "cached-"+folderID;
-                tbSync.db.addFolder(folders[i]);
-            }
+            //Allways cache
+            folders[i].cached = "1";
+            folders[i].folderID = "cached-"+folderID;
+            tbSync.db.addFolder(folders[i]);
             tbSync.db.deleteFolder(account, folderID); 
 
             if (target != "") {
