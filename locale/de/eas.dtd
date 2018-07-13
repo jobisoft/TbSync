@@ -21,10 +21,10 @@
 <!ENTITY pref.birthday "Sende Geburtstagsinformation">
 <!ENTITY pref.downloadonly "Lokale Änderungen verwerfen (one-way sync)">
 <!ENTITY pref.generaloptions "Allgemeine Optionen">
-<!ENTITY pref.syncdefaultfolders "Nach Herstellen der Verbindung alle Standard-Ordner bzw. alle ehemals abonierten Ordner synchronisieren">
+<!ENTITY pref.syncdefaultfolders "Beim ersten Verbindungsaufbau alle Standard-Ordner abonnieren und synchronisieren">
 <!ENTITY pref.provision "Provisionierung erzwingen (wird von Kerio benötigt)">
 
-<!ENTITY pref.autotime "Sync Intervall (in Minuten)">
+<!ENTITY pref.autotime "Sync Intervall (Minuten)">
 <!ENTITY pref.never "Eine Einstellung von 0 deaktiviert periodische Synchronisation. Push Synchronisation wird noch nicht unterstützt.">
 <!ENTITY pref.ShowTrashedFolders "Im Papierkorb gefundene Ordner anzeigen" >
 

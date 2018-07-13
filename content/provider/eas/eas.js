@@ -321,14 +321,13 @@ var eas = {
                         newData.parentID = add[count].ParentId;
 
                         //if there is a cached version of this folder, take selection state from there
-                        if (tbSync.db.getAccountSetting(syncdata.account, "syncdefaultfolders") == "1") {
-                            let cachedFolders = tbSync.db.findFoldersWithSetting(["cached","name","account","type"], ["1", newData.name,  newData.account, newData.type], "provider", "eas");
-                            if (cachedFolders && cachedFolders.length == 1) {
-                                newData.selected = cachedFolders[0].selected;
-                                newData.targetName = cachedFolders[0].targetName ? cachedFolders[0].targetName : "";
-                                newData.targetColor = cachedFolders[0].targetColor ? cachedFolders[0].targetColor : "";
-                            }
-                            else newData.selected = (newData.type == "9" || newData.type == "8" || newData.type == "7" ) ? "1" : "0";
+                        let cachedFolders = tbSync.db.findFoldersWithSetting(["cached","name","account","type"], ["1", newData.name,  newData.account, newData.type], "provider", "eas");
+                        if (cachedFolders && cachedFolders.length == 1) {
+                            newData.selected = cachedFolders[0].selected;
+                            newData.targetName = cachedFolders[0].targetName ? cachedFolders[0].targetName : "";
+                            newData.targetColor = cachedFolders[0].targetColor ? cachedFolders[0].targetColor : "";
+                        } else if (tbSync.db.getAccountSetting(syncdata.account, "syncdefaultfolders") == "1") {
+                            newData.selected = (newData.type == "9" || newData.type == "8" || newData.type == "7" ) ? "1" : "0";
                         } else newData.selected = "0";
                         
                         tbSync.db.addFolder(newData);
@@ -980,7 +979,7 @@ var eas = {
         db.setAccountSetting(account, "policykey", 0);
         db.setAccountSetting(account, "foldersynckey", "");
 
-        //remove all folders from DB and remove associated targets (cache folders, if syncdefaultfolders set) 
+        //remove all folders from DB and remove associated targets (alwasy caches folder information) 
         tbSync.removeAllFolders(account);
     },
 

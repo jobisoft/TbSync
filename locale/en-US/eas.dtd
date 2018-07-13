@@ -21,7 +21,7 @@
 <!ENTITY pref.birthday "Send birthday information">
 <!ENTITY pref.downloadonly "Revert local changes (one-way sync)">
 <!ENTITY pref.generaloptions "General options">
-<!ENTITY pref.syncdefaultfolders "Synchronize default or formaly subscribed folders right after server connection has been established">
+<!ENTITY pref.syncdefaultfolders "Subscribe and sync all default folders after the initial connection has been established.">
 <!ENTITY pref.provision "Enforce provisioning (Kerio needs this)">
 
 <!ENTITY pref.autotime "Sync interval (minutes)">
