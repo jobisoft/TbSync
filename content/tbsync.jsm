@@ -67,28 +67,32 @@ var tbSync = {
 
     prefSettings: Services.prefs.getBranch("extensions.tbsync."),
 
-    // define all build-in providers
-    syncProviderList: {
+    // define all registered provider
+    providerList: {
         eas: {
             name: "Exchange ActiveSync (EAS)", 
             js: "//tbsync/content/provider/eas/eas.js", 
             newXul: "//tbsync/content/provider/eas/newaccount.xul", 
-            accountXul: "//tbsync/content/provider/eas/accountSettings.xul"},  
-    },
-
-    externalProviderList: {
+            accountXul: "//tbsync/content/provider/eas/accountSettings.xul",
+            downloadUrl: "",
+            enabled: true,
+        },  
         ews: {
             name: "Exchange WebServices (EWS)", 
             js: "//ews4tbsync/content/ews.js" , 
             newXul: "//ews4tbsync/content/newaccount.xul", 
             accountXul: "//ews4tbsync/content/accountSettings.xul",
-            downloadUrl: "https://github.com/jobisoft/EWS-4-TbSync"},
+            downloadUrl: "https://github.com/jobisoft/EWS-4-TbSync",
+            enabled: false,
+        },
         dav: {
-            name: "CalDAV/CardDAV (sabredav, ownCloud, Nextcloud)", 
+            name: "sabre/dav (CalDAV/CardDAV)", 
             js: "//dav4tbsync/content/dav.js" , 
             newXul: "//dav4tbsync/content/newaccount.xul", 
             accountXul: "//dav4tbsync/content/accountSettings.xul",
-            downloadUrl: "https://github.com/jobisoft/DAV-4-TbSync"},
+            downloadUrl: "https://github.com/jobisoft/DAV-4-TbSync",
+            enabled: false,
+        },
     },
     
     storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
@@ -150,7 +154,10 @@ var tbSync = {
                         tbSync.versionInfo.installed = addons[a].version.toString();
                         break;
                     case "ews4tbsync@jobisoft.de":
-                        tbSync.syncProviderList.ews = tbSync.externalProviderList.ews;
+                        tbSync.providerList.ews.enabled = true;
+                        break;
+                    case "dav4tbsync@jobisoft.de":
+                        tbSync.providerList.dav.enabled = true;
                         break;
                 }
             }
@@ -212,14 +219,16 @@ var tbSync = {
         }
 
         //load provider subscripts into tbSync 
-        for (let provider in tbSync.syncProviderList) {
-            tbSync.includeJS("chrome:" + tbSync.syncProviderList[provider].js);
+        for (let provider in tbSync.providerList) {
+            if (tbSync.providerList[provider].enabled) tbSync.includeJS("chrome:" + tbSync.providerList[provider].js);
         }
 
         //init provider 
-        for (let provider in tbSync.syncProviderList) {
-            tbSync.dump("PROVIDER", provider + "::" + tbSync.syncProviderList[provider].name);
-            yield tbSync[provider].init(tbSync.lightningIsAvailable());
+        for (let provider in tbSync.providerList) {
+            if (tbSync.providerList[provider].enabled) {
+                tbSync.dump("PROVIDER", provider + "::" + tbSync.providerList[provider].name);
+                yield tbSync[provider].init(tbSync.lightningIsAvailable());
+            }
         }
         
         //init stuff for address book
@@ -372,14 +381,14 @@ var tbSync = {
     addProviderObserver: {
         observe: Task.async (function* (aSubject, aTopic, aData) {
             //Security: only allow to load pre-registered providers
-            if (tbSync.enabled &&  tbSync.externalProviderList.hasOwnProperty(aData)) {
+            if (tbSync.enabled && tbSync.providerList.hasOwnProperty(aData) && !tbSync.providerList[aData].enabled) {
                 //close window (if open)
                 if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
 
-                //load provider
-                tbSync.syncProviderList[aData] = tbSync.externalProviderList[aData];
-                tbSync.dump("PROVIDER", aData + "::" + tbSync.syncProviderList[aData].name);
-                tbSync.includeJS("chrome:" + tbSync.syncProviderList[aData].js);
+                //enable and load provider
+                tbSync.providerList[aData].enabled = true;
+                tbSync.dump("PROVIDER", aData + "::" + tbSync.providerList[aData].name);
+                tbSync.includeJS("chrome:" + tbSync.providerList[aData].js);
 
                 //init provider 
                 yield tbSync[aData].init(tbSync.lightningIsAvailable());                
@@ -391,8 +400,10 @@ var tbSync = {
     removeProviderObserver: {
         observe: Task.async (function* (aSubject, aTopic, aData) {
             //Security: only allow to unload pre-registered providers
-            if (tbSync.enabled &&  tbSync.externalProviderList.hasOwnProperty(aData)) {
-                if (tbSync.syncProviderList[aData]) delete tbSync.syncProviderList[aData];
+            if (tbSync.enabled &&  tbSync.providerList.hasOwnProperty(aData) && tbSync.providerList[aData].enabled) {
+                
+                tbSync.providerList[aData].enabled = false;
+                if (tbSync[aData]) tbSync[aData] = {};
                 //close window (if open)
                 if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
             }

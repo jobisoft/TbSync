@@ -107,7 +107,7 @@ var db = {
             return true;
 
         //check if provider is installed
-        if (!tbSync.syncProviderList.hasOwnProperty(settings.provider)) 
+        if (!tbSync.providerList.hasOwnProperty(settings.provider) || !tbSync.providerList[settings.provider].enabled) 
             return false;
         
         //check tbSync[provider].getNewAccountEntry())
@@ -116,7 +116,7 @@ var db = {
 
     getDefaultAccountSetting: function (settings, name) {
         //check if provider is installed
-        if (!tbSync.syncProviderList.hasOwnProperty(settings.provider)) 
+        if (!tbSync.providerList.hasOwnProperty(settings.provider) || !tbSync.providerList[settings.provider].enabled) 
             return null;
         
         //THIS FUNCTION ASSUMES, THAT THE GIVEN FIELD IS VALID
@@ -161,7 +161,7 @@ var db = {
     getAccounts: function () {
         let accounts = {};
         //IDs array only contains IDs of accounts whose provider is actually installed
-        accounts.IDs = Object.keys(this.accounts.data).filter(account => tbSync.syncProviderList.hasOwnProperty(this.accounts.data[account].provider)).sort((a, b) => a - b);
+        accounts.IDs = Object.keys(this.accounts.data).filter(account => (tbSync.providerList.hasOwnProperty(this.accounts.data[account].provider) && tbSync.providerList[this.accounts.data[account].provider].enabled)).sort((a, b) => a - b);
         accounts.data = this.accounts.data;
         return accounts;
     },
@@ -196,7 +196,7 @@ var db = {
         let provider = this.getAccountSetting(account, "provider");
 
         //check if provider is installed
-        if (!tbSync.syncProviderList.hasOwnProperty(provider)) 
+        if (!tbSync.providerList.hasOwnProperty(provider) || !tbSync.providerList[provider].enabled) 
             return false;
 
         return tbSync[provider].getNewFolderEntry(account).hasOwnProperty(field);
@@ -206,7 +206,7 @@ var db = {
         let provider = this.getAccountSetting(account, "provider");
 
         //check if provider is installed
-        if (!tbSync.syncProviderList.hasOwnProperty(provider)) 
+        if (!tbSync.providerList.hasOwnProperty(provider) || !tbSync.providerList[provider].enabled) 
             return null;
         
         //THIS FUNCTION ASSUMES, THAT THE GIVEN FIELD IS VALID
@@ -280,9 +280,9 @@ var db = {
               this.saveFolders();
               continue;
             }
-	    
+        
             //skip this folder, if it belongs to an account currently not supported (provider not loaded)
-            if (!tbSync.syncProviderList.hasOwnProperty(this.getAccountSetting(aID, "provider"))) {
+            if (!tbSync.providerList.hasOwnProperty(this.getAccountSetting(aID, "provider")) || !tbSync.providerList[this.getAccountSetting(aID, "provider")].enabled) {
                 continue;
             }
 
