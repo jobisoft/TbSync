@@ -26,7 +26,7 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [info16.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/64363/info_rhombus_icon)
 * [warning16.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/36026/)
 * [calendar16.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/35805/)
-* [report_send.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/36365/ + https://www.iconfinder.com/icons/93180)
+* [report_send.png] based on work by FatCow Web Hosting [#1](https://www.iconfinder.com/icons/36365/) and [#2](https://www.iconfinder.com/icons/93180)
 * [report_open.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/36373)
 * [lock24.png] by [Paomedia](https://www.iconfinder.com/icons/285646/lock_icon)
 * [tbsync.png] by [Paomedia](https://www.iconfinder.com/icons/299097)
