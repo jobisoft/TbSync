@@ -560,17 +560,28 @@ var tbSyncAccounts = {
                 break;
 
             case "syncing":
-                if (current.indexOf("sync16") == -1) {
-                    //current img is something else, show sync img directly
-                    src = "sync16.png";
-                    tbSync.setSyncData(account, "accountManagerLastUpdated", Date.now());
-                } else if ((Date.now() - tbSync.getSyncData(account, "accountManagerLastUpdated")) > 400) {
-                    //current img is one of the sync images, flip at lower speed see them rotate
-                    if (current.indexOf("sync16.png") == -1) src = "sync16.png"; else src = "sync16_r.png";
-                    tbSync.setSyncData(account, "accountManagerLastUpdated", Date.now());
-                } else {
+                switch (current.replace("chrome://tbsync/skin/","")) {
+                    case "sync16_1.png": 
+                        src = "sync16_2.png"; 
+                        break;
+                    case "sync16_2.png": 
+                        src = "sync16_3.png"; 
+                        break;
+                    case "sync16_3.png": 
+                        src = "sync16_4.png"; 
+                        break;
+                    case "sync16_4.png": 
+                        src = "sync16_1.png"; 
+                        break;
+                    default: 
+                        src = "sync16_1.png";
+                        tbSync.setSyncData(account, "accountManagerLastUpdated", 0)
+                        break;
+                }                
+                if ((Date.now() - tbSync.getSyncData(account, "accountManagerLastUpdated")) < 300) {
                     return current;
                 }
+                tbSync.setSyncData(account, "accountManagerLastUpdated", Date.now());
                 break;
 
             default:

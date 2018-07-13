@@ -15,6 +15,7 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [tick16.png] https://openclipart.org/
 * [slider-on.png] https://github.com/jobisoft/TbSync/blob/master/skin/src/LICENSE
 * [slider-off.png] https://github.com/jobisoft/TbSync/blob/master/skin/src/LICENSE
+* [sync16.png] https://openclipart.org/detail/287463/circular-arrow-blue
 
 #### CC-BY 3.0
 * [calendar16.png] https://www.iconfinder.com/icons/35805/
@@ -40,6 +41,5 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [help32.png] https://www.iconfinder.com/icons/58495/button_help_white_icon
 
 #### Other
-* [sync16.png] http://carlosjj.deviantart.com/art/Google-JFK-Icons-ICO-and-PNG-270715545
 * [cape]
 * [catman32.png] 
