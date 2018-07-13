@@ -57,6 +57,7 @@
                 onkeypress="if (event.keyCode == 46) {tbSyncAccounts.deleteAccount();}"
                 onselect="tbSyncAccounts.loadSelectedAccount();">
                 <listhead style="border-bottom: 1px solid lightgrey;">
+                    <listheader style="font-weight:bold;" label="" width="24" flex="0" />
                     <listheader style="font-weight:bold;" label="&manager.accounts;" flex="3" />
                     <listheader style="font-weight:bold;text-align:right;" label="&manager.status;" flex="1" />
                 </listhead>

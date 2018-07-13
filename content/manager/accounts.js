@@ -623,6 +623,17 @@ var tbSyncAccounts = {
                     newListItem.setAttribute("label", accounts.data[accounts.IDs[i]].accountname);
                     newListItem.setAttribute("ondblclick", "tbSyncAccounts.toggleEnableState();");
                     
+                    //add icon
+                    let itemTypeCell = document.createElement("listcell");
+                    itemTypeCell.setAttribute("class", "img");
+                    itemTypeCell.setAttribute("width", "24");
+                    itemTypeCell.setAttribute("height", "24");
+                        let itemType = document.createElement("image");
+                        itemType.setAttribute("src", tbSync[accounts.data[accounts.IDs[i]].provider].getProviderIcon());
+                        itemType.setAttribute("style", "margin: 4px;");
+                    itemTypeCell.appendChild(itemType);
+                    newListItem.appendChild(itemTypeCell);
+
                     //add account name
                     let itemLabelCell = document.createElement("listcell");
                     itemLabelCell.setAttribute("class", "label");
