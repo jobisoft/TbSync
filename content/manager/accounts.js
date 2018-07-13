@@ -596,7 +596,7 @@ var tbSyncAccounts = {
 
     updateAccountName: function (id, name) {
         let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
-        if (listItem.firstChild.getAttribute("label") != name) listItem.firstChild.setAttribute("label", name);
+        if (listItem.childNodes[1].getAttribute("label") != name) listItem.childNodes[1].setAttribute("label", name);
     },
     
     updateAccountsList: function (accountToSelect = -1) {
