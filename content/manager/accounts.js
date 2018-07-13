@@ -580,7 +580,7 @@ var tbSyncAccounts = {
 
     updateAccountStatus: function (id) {
         let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
-        if (listItem) this.setStatusImage(id, listItem.childNodes[1].firstChild);
+        if (listItem) this.setStatusImage(id, listItem.childNodes[2].firstChild);
     },
 
     updateAccountNameObserver: {
