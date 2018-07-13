@@ -82,7 +82,13 @@ var tbSync = {
             js: "//ews4tbsync/content/ews.js" , 
             newXul: "//ews4tbsync/content/newaccount.xul", 
             accountXul: "//ews4tbsync/content/accountSettings.xul",
-            downloadUrl: "https://github.com/ExchangeCalendar/exchangecalendar/releases"}
+            downloadUrl: "https://github.com/jobisoft/EWS-4-TbSync"},
+        dav: {
+            name: "CalDAV/CardDAV (sabredav, ownCloud, Nextcloud)", 
+            js: "//dav4tbsync/content/dav.js" , 
+            newXul: "//dav4tbsync/content/newaccount.xul", 
+            accountXul: "//dav4tbsync/content/accountSettings.xul",
+            downloadUrl: "https://github.com/jobisoft/DAV-4-TbSync"},
     },
     
     storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
