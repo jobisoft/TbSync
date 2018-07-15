@@ -1089,7 +1089,62 @@ var tbSync = {
         foStream.close();
     },
     
+    //XHR FUNCTIONS
+    createTCPErrorFromFailedXHR: function (xhr) {
+        //adapted from :
+        //https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/How_to_check_the_secruity_state_of_an_XMLHTTPRequest_over_SSL		
+        let status = xhr.channel.QueryInterface(Components.interfaces.nsIRequest).status;
 
+        if ((status & 0xff0000) === 0x5a0000) { // Security module
+            const nsINSSErrorsService = Components.interfaces.nsINSSErrorsService;
+            let nssErrorsService = Components.classes['@mozilla.org/nss_errors_service;1'].getService(nsINSSErrorsService);
+            
+            // NSS_SEC errors (happen below the base value because of negative vals)
+            if ((status & 0xffff) < Math.abs(nsINSSErrorsService.NSS_SEC_ERROR_BASE)) {
+
+                // The bases are actually negative, so in our positive numeric space, we
+                // need to subtract the base off our value.
+                let nssErr = Math.abs(nsINSSErrorsService.NSS_SEC_ERROR_BASE) - (status & 0xffff);
+                switch (nssErr) {
+                    case 11: return 'security::SEC_ERROR_EXPIRED_CERTIFICATE';
+                    case 12: return 'security::SEC_ERROR_REVOKED_CERTIFICATE';
+                    case 13: return 'security::SEC_ERROR_UNKNOWN_ISSUER';
+                    case 20: return 'security::SEC_ERROR_UNTRUSTED_ISSUER';
+                    case 21: return 'security::SEC_ERROR_UNTRUSTED_CERT';
+                    case 36: return 'security::SEC_ERROR_CA_CERT_INVALID';
+                    case 90: return 'security::SEC_ERROR_INADEQUATE_KEY_USAGE';
+                    case 176: return 'security::SEC_ERROR_CERT_SIGNATURE_ALGORITHM_DISABLED';
+                }
+                return 'security::UNKNOWN_SECURITY_ERROR';
+                
+            } else {
+
+                // Calculating the difference 		  
+                let sslErr = Math.abs(nsINSSErrorsService.NSS_SSL_ERROR_BASE) - (status & 0xffff);		
+                switch (sslErr) {
+                    case 3: return 'security::SSL_ERROR_NO_CERTIFICATE';
+                    case 4: return 'security::SSL_ERROR_BAD_CERTIFICATE';
+                    case 8: return 'security::SSL_ERROR_UNSUPPORTED_CERTIFICATE_TYPE';
+                    case 9: return 'security::SSL_ERROR_UNSUPPORTED_VERSION';
+                    case 12: return 'security::SSL_ERROR_BAD_CERT_DOMAIN';
+                }
+                return 'security::UNKOWN_SSL_ERROR';
+              
+            }
+
+        } else { //not the security module
+            
+            switch (status) {
+                case 0x804B000C: return 'network::NS_ERROR_CONNECTION_REFUSED';
+                case 0x804B000E: return 'network::NS_ERROR_NET_TIMEOUT';
+                case 0x804B001E: return 'network::NS_ERROR_UNKNOWN_HOST';
+                case 0x804B0047: return 'network::NS_ERROR_NET_INTERRUPT';
+            }
+            return 'network::UNKNOWN_NETWORK_ERROR';
+
+        }
+        return null;	 
+    },
 
 
     // ADDRESS BOOK FUNCTIONS
