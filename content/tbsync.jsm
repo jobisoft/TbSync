@@ -724,16 +724,18 @@ var tbSync = {
 
         //update account status
         let status = "OK";
-        if (error != "") status = error;
-        else {
+        if (error == "" || error == "OK") {
             //search for folders with error
             folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);
             for (let i in folders) {
-                if (folders[i].status != "" && folders[i].status != "OK" && folders[i].status != "aborted") {
+                let folderstatus = folders[i].status.split(".")[0];
+                if (folderstatus != "" && folderstatus != "OK" && folderstatus != "aborted") {
                     status = folders[i].status;
                     break;
                 }
             }
+        } else {
+            status = error;
         }
         
         //done
