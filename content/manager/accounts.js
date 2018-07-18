@@ -540,7 +540,7 @@ var tbSyncAccounts = {
     
     getStatusImage: function (account, current = "") {
         let src = "";   
-        switch (tbSync.db.getAccountSetting(account, "status")) {
+        switch (tbSync.db.getAccountSetting(account, "status").split(".")[0]) {
             case "OK":
                 src = "tick16.png";
                 break;
@@ -549,10 +549,12 @@ var tbSyncAccounts = {
                 src = "disabled16.png";
                 break;
             
+            case "info":
             case "nolightning":
                 src = "info16.png";
                 break;
 
+            case "warning":
             case "needtorevert":
             case "notsyncronized":
             case "modified":
