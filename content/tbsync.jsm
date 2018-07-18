@@ -859,31 +859,33 @@ var tbSync = {
         return null;
     },
 
+    setLoginInfo: function(origin, realm, user, password) {
+        let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
+
+        //remove any existing entry
+        let logins = Services.logins.findLogins({}, origin, null, realm);
+        for (let i = 0; i < logins.length; i++) {
+            if (logins[i].username == user) {
+                let currentLoginInfo = new nsLoginInfo(origin, null, realm, user, logins[i].password, "", "");
+                try {
+                    Services.logins.removeLogin(currentLoginInfo);
+                } catch (e) {
+                    tbSync.dump("Error removing loginInfo", e);
+                }
+            }
+        }
+        
+        let newLoginInfo = new nsLoginInfo(origin, null, realm, user, password, "", "");
+        try {
+            Services.logins.addLogin(newLoginInfo);
+        } catch (e) {
+            tbSync.dump("Error adding loginInfo", e);
+        }
+    },
+    
     setPassword: function (accountdata, newPassword) {
         let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata);
-        let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
-        let curPassword = tbSync.getPassword(accountdata);
-        
-        //Is there a loginInfo for this accountdata?
-        if (curPassword !== null) {
-            //remove current login info
-            let currentLoginInfo = new nsLoginInfo(host4PasswordManager, null, "TbSync", accountdata.user, curPassword, "", "");
-            try {
-                Services.logins.removeLogin(currentLoginInfo);
-            } catch (e) {
-                tbSync.dump("Error removing loginInfo", e);
-            }
-        }
-        
-        //create loginInfo with new password
-        if (newPassword != "") {
-            let newLoginInfo = new nsLoginInfo(host4PasswordManager, null, "TbSync", accountdata.user, newPassword, "", "");
-            try {
-                Services.logins.addLogin(newLoginInfo);
-            } catch (e) {
-                tbSync.dump("Error adding loginInfo", e);
-            }
-        }
+        tbSync.setLoginInfo(host4PasswordManager, "TbSync", accountdata.user, newPassword);
     },
     
     getAbsolutePath: function(filename) {
