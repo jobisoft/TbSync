@@ -961,6 +961,7 @@ var eas = {
             "lastsynctime" : "",
             "status" : "",
             "parentID" : "",
+            "monitored" : "1", //log changes into changelog
             "downloadonly" : tbSync.db.getAccountSetting(account, "downloadonly"), //each folder has its own settings, the main setting is just the default,
             "cached" : "0"};
         return folder;
