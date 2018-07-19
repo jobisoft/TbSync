@@ -13,7 +13,7 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [add16.png] by [Jean Victor Balin](https://openclipart.org/detail/16950/add)
 * [del16.png] by [Jean Victor Balin](https://openclipart.org/detail/16982/cross)
 * [tick16.png] by [Jean Victor Balin](https://openclipart.org/detail/17056/tick)
-* [capetree.png] by [jpenrici](https://openclipart.org/detail/195795/tree17)
+* [cape32.png/cape_logo.png] by [jpenrici](https://openclipart.org/detail/195795/tree17)
 * [sync16.png] by [Willleam](https://openclipart.org/detail/287463/circular-arrow-blue)
 * [slider-on.png] by [John Bieling](https://github.com/jobisoft/TbSync/blob/master/skin/src/LICENSE)
 * [slider-off.png] by [John Bieling](https://github.com/jobisoft/TbSync/blob/master/skin/src/LICENSE)
