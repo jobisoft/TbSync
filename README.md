@@ -13,6 +13,7 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [add16.png] by [Jean Victor Balin](https://openclipart.org/detail/16950/add)
 * [del16.png] by [Jean Victor Balin](https://openclipart.org/detail/16982/cross)
 * [tick16.png] by [Jean Victor Balin](https://openclipart.org/detail/17056/tick)
+* [capetree.png] by [jpenrici](https://openclipart.org/detail/195795/tree17)
 * [sync16.png] by [Willleam](https://openclipart.org/detail/287463/circular-arrow-blue)
 * [slider-on.png] by [John Bieling](https://github.com/jobisoft/TbSync/blob/master/skin/src/LICENSE)
 * [slider-off.png] by [John Bieling](https://github.com/jobisoft/TbSync/blob/master/skin/src/LICENSE)
@@ -33,7 +34,7 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [settings32.png] by [Paomedia](https://www.iconfinder.com/icons/299098/cogs_icon)
 * [update32.png] by [Google](https://www.iconfinder.com/icons/352158/)
 * [group32.png] by [Dumitriu Robert](https://www.iconfinder.com/icons/3289557/clan_group_partners_peers_people_icon)
-* [catman32.png] based on 'Venn Diagram' by [WARPAINT Media Inc., CA](https://thenounproject.com/search/?q=three%20circles&i=31898#) from Noun Project 
+* [catman32.png] based on 'Venn Diagram' by [WARPAINT Media Inc., CA](https://thenounproject.com/search/?q=three%20circles&i=31898#) from Noun Project ([info](https://github.com/jobisoft/CategoryManager/tree/master/sendtocategory/skin/catman))
 
 #### Apache Software License 2.0
 * [disabled16.png] by [Google](https://github.com/google/material-design-icons/blob/master/notification/1x_web/ic_do_not_disturb_alt_black_18dp.png)
