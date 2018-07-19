@@ -1170,7 +1170,7 @@ var tbSync = {
         onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
             // change on book itself, or on card?
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                let folders =  tbSync.db.findFoldersWithSetting("target", aItem.URI);
+                let folders =  tbSync.db.findFoldersWithSetting(["target","monitored"], [aItem.URI,"1"]);
                 if (folders.length > 0) {
                         //store current/new name of target
                         tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetName", tbSync.getAddressBookName(folders[0].target));                         
@@ -1183,7 +1183,7 @@ var tbSync = {
                 let aParentDirURI = tbSync.getUriFromPrefId(aItem.directoryId.split("&")[0]);
                 if (aParentDirURI) { //could be undefined
 
-                    let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
+                    let folders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aParentDirURI,"1"]);
                     if (folders.length > 0) {
                                                 
                         //THIS CODE ONLY ACTS ON TBSYNC CARDS
@@ -1216,7 +1216,7 @@ var tbSync = {
              * deletions and log them to a file in the profile folder
              */
             if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
-                let folders = tbSync.db.findFoldersWithSetting("target", aParentDir.URI);
+                let folders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aParentDir.URI,"1"]);
                 if (folders.length > 0) {
                     
                     //THIS CODE ONLY ACTS ON TBSYNC CARDS
@@ -1243,7 +1243,7 @@ var tbSync = {
              * clean up change log
              */
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                let folders =  tbSync.db.findFoldersWithSetting("target", aItem.URI);
+                let folders =  tbSync.db.findFoldersWithSetting(["target","monitored"], [aItem.URI,"1"]);
 
                 //delete any pending changelog of the deleted book
                 tbSync.db.clearChangeLog(aItem.URI);			
@@ -1286,7 +1286,7 @@ var tbSync = {
 
             if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
                 
-                let folders = tbSync.db.findFoldersWithSetting("target", aParentDir.URI);
+                let folders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aParentDir.URI,"1"]);
                 if (folders.length > 0) {
 
                     //check if this is a temp search result card and ignore add
@@ -1818,7 +1818,7 @@ var tbSync = {
             let itemStatus = tbSync.db.getItemStatusFromChangeLog(aItem.calendar.id, aItem.id)
 
             //if an event in one of the synced calendars is added, update status of target and account
-            let folders = tbSync.db.findFoldersWithSetting("target", aItem.calendar.id);
+            let folders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aItem.calendar.id, "1"]);
             if (folders.length > 0) {
                 if (itemStatus == "added_by_server") {
                     tbSync.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);
@@ -1835,7 +1835,7 @@ var tbSync = {
                 if (aNewItem.calendar.id == aOldItem.calendar.id) {
 
                     //check, if it is an event in one of the synced calendars
-                    let newFolders = tbSync.db.findFoldersWithSetting("target", aNewItem.calendar.id);
+                    let newFolders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aNewItem.calendar.id, "1"]);
                     if (newFolders.length > 0) {
                         //check if t was added by the server
                         let itemStatus = tbSync.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
@@ -1858,7 +1858,7 @@ var tbSync = {
         onDeleteItem : function (aDeletedItem) {
             if (aDeletedItem && aDeletedItem.calendar) {
                 //if an event in one of the synced calendars is modified, update status of target and account
-                let folders = tbSync.db.findFoldersWithSetting("target", aDeletedItem.calendar.id);
+                let folders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aDeletedItem.calendar.id,"1"]);
                 if (folders.length > 0) {
                     let itemStatus = tbSync.db.getItemStatusFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id)
                     if (itemStatus == "deleted_by_server" || itemStatus == "added_by_user") {
@@ -1880,7 +1880,7 @@ var tbSync = {
         //Properties of the calendar itself (name, color etc.)
         onPropertyChanged : function (aCalendar, aName, aValue, aOldValue) {
             tbSync.dump("calendarObserver::onPropertyChanged","<" + aName + "> changed from <"+aOldValue+"> to <"+aValue+">");
-            let folders = tbSync.db.findFoldersWithSetting("target", aCalendar.id);
+            let folders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aCalendar.id,"1"]);
             if (folders.length > 0) {
                 switch (aName) {
                     case "color":
@@ -1901,7 +1901,7 @@ var tbSync = {
             tbSync.dump("calendarObserver::onPropertyDeleting","<" + aName + "> was deleted");
             switch (aName) {
                 case "name":
-                    let folders = tbSync.db.findFoldersWithSetting("target", aCalendar.id);
+                    let folders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aCalendar.id,"1"]);
                     if (folders.length > 0) {
                         //update settings window, if open
                         Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
