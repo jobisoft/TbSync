@@ -41,6 +41,3 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 
 #### GPL
 * [help32.png] by [WooThemes](https://www.iconfinder.com/icons/58495/button_help_white_icon)
-
-#### Other
-* [cape]
