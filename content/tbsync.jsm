@@ -858,12 +858,7 @@ var tbSync = {
     },
     
     getHost4PasswordManager: function (accountdata) {
-        let parts = accountdata.user.split("@");
-        if (parts.length > 1) {
-            return accountdata.provider + "://" + parts[1];
-        } else {
-            return accountdata.provider + "://" + accountdata.accountname;
-        }
+	return accountdata.provider + "://" + accountdata.host;
     },
 
     getPassword: function (accountdata) {
