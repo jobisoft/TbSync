@@ -644,19 +644,26 @@ var tbSync = {
         }
     },
 
-    //remove folder from DB (with cache support)
+    //remove all folders from DB (with cache support)
     removeAllFolders: function(account) {
         let provider = tbSync.db.getAccountSetting(account, "provider");
+
         let folders = tbSync.db.getFolders(account);
         for (let i in folders) {
             let folderID = folders[i].folderID;
             let target = folders[i].target;
             let type = tbSync[provider].getThunderbirdFolderType(folders[i].type);            
+            let persistenSettings = tbSync[provider].getPersistentFolderSettings();
             
             //Allways cache
-            folders[i].cached = "1";
-            folders[i].folderID = "cached-"+folderID;
-            tbSync.db.addFolder(folders[i]);
+            let cachedFolder = tbSync[provider].getNewFolderEntry(account);
+            for (let s=0; s < persistenSettings.length; s++) {
+                cachedFolder[persistenSettings[s]] = folders[i][persistenSettings[s]];
+            }                
+            cachedFolder.cached = "1";
+            cachedFolder.folderID = "cached-"+folderID;
+
+            tbSync.db.addFolder(cachedFolder);
             tbSync.db.deleteFolder(account, folderID); 
 
             if (target != "") {
@@ -858,7 +865,7 @@ var tbSync = {
     },
     
     getHost4PasswordManager: function (accountdata) {
-	return accountdata.provider + "://" + accountdata.host;
+        return accountdata.provider + "://" + accountdata.host;
     },
 
     getPassword: function (accountdata) {
@@ -1162,6 +1169,27 @@ var tbSync = {
         return null;	 
     },
 
+    //called by addressbook and calendar observer after a folder has been deleted (must reset but obey caching)
+    resetFolderSettings: function(folder) {
+        let provider = tbSync.db.getAccountSetting(folder.account, "provider");
+        let defaultSettings = tbSync[provider].getNewFolderEntry(folder.account);
+        let persistenSettings = tbSync[provider].getPersistentFolderSettings();
+
+        //also keep folderID
+        persistenSettings.push("folderID");
+        for (let setting in defaultSettings) {
+            if (defaultSettings.hasOwnProperty(setting)){
+                if (!persistenSettings.includes(setting)) {
+                    tbSync.db.setFolderSetting(folder.account, folder.folderID, setting, defaultSettings[setting]);
+                }
+            }
+        }                
+        
+    },
+
+
+
+
 
     // ADDRESS BOOK FUNCTIONS
     addressbookListener: {
@@ -1251,11 +1279,6 @@ var tbSync = {
                 //It should not be possible to link a book to two different accounts, so we just take the first target found
                 if (folders.length > 0) {
 
-                    folders[0].target="";
-                    folders[0].synckey="";
-                    folders[0].lastsynctime= "";
-                    folders[0].status = "";
-
                     //update settings window, if open
                     if (folders[0].selected == "1") {
                         folders[0].status= "aborted";
@@ -1264,6 +1287,7 @@ var tbSync = {
                         //update settings window, if open
                          Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
                     }
+                    tbSync.resetFolderSettings(folders[0]);
                     tbSync.db.saveFolders();
                     
                 }
@@ -1524,6 +1548,9 @@ var tbSync = {
     
         return apiWrapper;
     },
+
+
+
 
 
     // CALENDAR FUNCTIONS
@@ -1923,11 +1950,6 @@ var tbSync = {
             let folders =  tbSync.db.findFoldersWithSetting("target", aCalendar.id);
             //It should not be possible to link a calendar to two different accounts, so we just take the first target found
             if (folders.length > 0) {
-
-                folders[0].target="";
-                folders[0].synckey="";
-                folders[0].lastsynctime= "";
-                folders[0].status = "";
                 
                 if (folders[0].selected == "1") {
                     folders[0].status= "aborted";
@@ -1936,6 +1958,7 @@ var tbSync = {
                     //update settings window, if open
                     Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
                 }
+                tbSync.resetFolderSettings(folders[0]);
                 tbSync.db.saveFolders();
             }
         },
