@@ -39,7 +39,7 @@ tbSync.eas.onResultsPaneSelectionChanged = function () {
         let aParentDirURI = tbSync.getUriFromPrefId(cards[0].directoryId.split("&")[0]);
         if (aParentDirURI) { //could be undefined
             let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
-            if (folders.length > 0) {
+            if (folders.length == 1) {
                 email3Box.hidden = false;
                 let email3Value = cards[0].getProperty("Email3Address","");
                 window.HandleLink(email3Element, window.zSecondaryEmail, email3Value, email3Box, "mailto:" + email3Value);

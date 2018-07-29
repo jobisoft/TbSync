@@ -30,7 +30,7 @@ tbSync.eas.onBeforeInjectIntoCardEditWindow = function (window) {
             let aParentDirURI = tbSync.getUriFromPrefId(cards[0].directoryId.split("&")[0]);
             if (aParentDirURI) { //could be undefined
                 let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
-                if (folders.length > 0 && tbSync.db.getAccountSetting(folders[0].account, "provider") == "eas") return true;
+                if (folders.length == 1 && tbSync.db.getAccountSetting(folders[0].account, "provider") == "eas") return true;
             }
         }
     }
@@ -56,7 +56,7 @@ tbSync.eas.onInjectIntoCardEditWindow = function (window) {
 
 tbSync.eas.onAbSelectChangeNewCard = function(window) {
     let folders = tbSync.db.findFoldersWithSetting("target", window.document.getElementById("abPopup").value);
-    let eas = (folders.length > 0 && tbSync.db.getAccountSetting(folders[0].account, "provider") == "eas");
+    let eas = (folders.length == 1 && tbSync.db.getAccountSetting(folders[0].account, "provider") == "eas");
     window.document.getElementById("easFields1Tab").hidden = !eas;
     window.document.getElementById("easFields2Tab").hidden = !eas;
     window.document.getElementById("MiddleNameContainer").hidden = !eas;
