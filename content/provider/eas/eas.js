@@ -51,8 +51,8 @@ var eas = {
                 tbSync.db.setAccountSetting(accounts.IDs[i], "useragent", tbSync.prefSettings.getCharPref("eas.clientID.useragent"));
                 tbSync.db.setAccountSetting(accounts.IDs[i], "devicetype", tbSync.prefSettings.getCharPref("eas.clientID.type"));                 
                 tbSync.db.setAccountSetting(accounts.IDs[i], "status", "disabled");
-                tbSync.db.setAccountSetting(accounts.IDs[i], "policykey", 0);
-                tbSync.db.setAccountSetting(accounts.IDs[i], "foldersynckey", "");
+                tbSync.db.setAccountSetting(accounts.IDs[i], "policykey", "0");
+                tbSync.db.setAccountSetting(accounts.IDs[i], "foldersynckey", "0");
                     
                 let folders = tbSync.db.getFolders(accounts.IDs[i]);
                 for (let f in folders) {
@@ -174,7 +174,7 @@ var eas = {
                 }
 
                 //Is this a standard sync or an account resync ?
-                if (tbSync.db.getAccountSetting(syncdata.account, "foldersynckey") == "") {
+                if (tbSync.db.getAccountSetting(syncdata.account, "foldersynckey") == "0") {
                     //accountReSyncs == 1 is not a save method to identify initial sync, because a resync due to policy/provision 
                     //could still be an initial sync
                     syncdata.accountResync = (accountReSyncs > 1);
@@ -208,7 +208,7 @@ var eas = {
                 }
                 
                 //do we need to get a new policy key?
-                if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1" && tbSync.db.getAccountSetting(syncdata.account, "policykey") == 0) {
+                if (tbSync.db.getAccountSetting(syncdata.account, "provision") == "1" && tbSync.db.getAccountSetting(syncdata.account, "policykey") == "0") {
                     yield eas.getPolicykey(syncdata);
                 } 
                 
@@ -242,7 +242,7 @@ var eas = {
                 switch (report.type) {
                     case eas.flags.resyncAccount:
                         tbSync.dump("Account Resync", "Account: " + tbSync.db.getAccountSetting(syncdata.account, "accountname") + ", Reason: " + report.message);                        
-                        tbSync.db.setAccountSetting(syncdata.account, "foldersynckey", "");
+                        tbSync.db.setAccountSetting(syncdata.account, "foldersynckey", "0");
                         tbSync.db.setFolderSetting(syncdata.account, "", "synckey", "");
                         continue;
 
@@ -290,14 +290,12 @@ var eas = {
             //scan all folders and set the enabled ones to pending
             tbSync.setSyncState("prepare.request.folders", syncdata.account); 
             let foldersynckey = tbSync.db.getAccountSetting(syncdata.account, "foldersynckey");
-            //legacy fallback
-            if (foldersynckey == "") foldersynckey = "0";
 
             //build WBXML to request foldersync
             let wbxml = wbxmltools.createWBXML();
             wbxml.switchpage("FolderHierarchy");
             wbxml.otag("FolderSync");
-                wbxml.atag("SyncKey",foldersynckey);
+                wbxml.atag("SyncKey", foldersynckey);
             wbxml.ctag();
 
             tbSync.setSyncState("send.request.folders", syncdata.account); 
@@ -812,7 +810,6 @@ var eas = {
 
         tbSync.setSyncState("prepare.request.deletefolder", syncdata.account);
         let foldersynckey = tbSync.db.getAccountSetting(syncdata.account, "foldersynckey");
-        if (foldersynckey == "") foldersynckey = "0";
 
         //request foldersync
         let wbxml = wbxmltools.createWBXML();
@@ -889,7 +886,7 @@ var eas = {
             "account" : "",
             "accountname": "",
             "provider": "eas",
-            "policykey" : 0, 
+            "policykey" : "0", 
             "foldersynckey" : "0",
             "lastsynctime" : "0", 
             "status" : "disabled",
@@ -993,16 +990,16 @@ var eas = {
 
     enableAccount: function (account) {
         db.setAccountSetting(account, "status", "notsyncronized");
-        db.setAccountSetting(account, "policykey", 0);
-        db.setAccountSetting(account, "foldersynckey", "");
+        db.setAccountSetting(account, "policykey", "0");
+        db.setAccountSetting(account, "foldersynckey", "0");
         db.setAccountSetting(account, "lastEasOptionsUpdate", "0");
         db.setAccountSetting(account, "lastsynctime", "0");
     },
 
     disableAccount: function (account) {
         db.setAccountSetting(account, "status", "disabled");
-        db.setAccountSetting(account, "policykey", 0);
-        db.setAccountSetting(account, "foldersynckey", "");
+        db.setAccountSetting(account, "policykey", "0");
+        db.setAccountSetting(account, "foldersynckey", "0");
 
         //remove all folders from DB and remove associated targets (alwasy caches folder information) 
         tbSync.removeAllFolders(account);
@@ -1257,7 +1254,7 @@ var eas = {
                         //enable provision
                         tbSync.db.setAccountSetting(syncdata.account, "provision","1");
                         //reset policykey
-                        tbSync.db.setAccountSetting(syncdata.account, "policykey", 0);
+                        tbSync.db.setAccountSetting(syncdata.account, "policykey", "0");
                         reject(eas.finishSync(syncdata.req.status, eas.flags.resyncAccount));
                         break;
 
@@ -1426,7 +1423,7 @@ var eas = {
                 //enable provision
                 tbSync.db.setAccountSetting(syncdata.account, "provision","1");
                 //reset policykey
-                tbSync.db.setAccountSetting(syncdata.account, "policykey", 0);
+                tbSync.db.setAccountSetting(syncdata.account, "policykey", "0");
                 throw eas.finishSync(type+"("+status+")", eas.flags.resyncAccount);
             
             default:
