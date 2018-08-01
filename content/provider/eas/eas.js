@@ -22,17 +22,24 @@ tbSync.includeJS("chrome://tbsync/content/provider/eas/xmltools.js");
 
 var eas = {
     bundle: Services.strings.createBundle("chrome://tbsync/locale/eas.strings"),
+    
     //use flags instead of strings to avoid errors due to spelling errors
     flags : Object.freeze({
         allowEmptyResponse: true, 
         syncNextFolder: "syncNextFolder",
-        resyncFolder: "resyncFolder",
-        resyncAccount: "resyncAccount", 
+        resyncFolder: "resyncFolder", //will take down target and do a fresh sync
+        resyncAccount: "resyncAccount", //will loop once more, but will not do any special actions
         abortWithError: "abortWithError",
         abortWithServerError: "abortWithServerError",
     }),
     
 
+
+    /**
+     * Called during load of external provider extension to init provider.
+     *
+     * @param lightningIsAvail       [in] indicate wheter lightning is installed/enabled
+     */
     init: Task.async (function* (lightningIsAvail)  {
         //dynamically load overlays from xpi
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abEditCardDialog.xul", "chrome://tbsync/content/provider/eas/overlays/abCardWindow.xul");
@@ -56,7 +63,7 @@ var eas = {
                     
                 let folders = tbSync.db.getFolders(accounts.IDs[i]);
                 for (let f in folders) {
-                    tbSync.takeTargetOffline("eas", folders[f], " [emergency backup by TbSync]");
+                    tbSync.takeTargetOffline("eas", folders[f], "[emergency backup by TbSync]");
                 }		    
             }
         }
@@ -69,7 +76,7 @@ var eas = {
             // - B) overwrite default organizer with current best guess
             //TODO: Do this after email accounts changed, not only on restart? 
             let folders = tbSync.db.findFoldersWithSetting(["selected","type"], ["1","8,13"], "provider", "eas");
-            for (let f=0; f<folders.length; f++) {
+            for (let f=0; f < folders.length; f++) {
                 let calendar = cal.getCalendarManager().getCalendarById(folders[f].target);
                 if (calendar && calendar.getProperty("imip.identity.key") == "") {
                     //is there an email identity for this eas account?
@@ -88,16 +95,176 @@ var eas = {
 
     }),
 
+
+
+    /**
+     * Returns location of 16x16 pixel provider icon.
+     */
     getProviderIcon: function () {
         return "chrome://tbsync/skin/eas16.png";
     },
 
+
+
+    /**
+     * Return object which contains all possible fields of a row in the accounts database with the default value if not yet stored in the database.
+     */
+    getDefaultAccountEntries: function () {
+        let row = {
+            "account" : "",
+            "accountname": "",
+            "provider": "eas",
+            "policykey" : "0", 
+            "foldersynckey" : "0",
+            "lastsynctime" : "0", 
+            "status" : "disabled",
+            "deviceId" : tbSync.eas.getNewDeviceId(),
+            "asversionselected" : "auto",
+            "asversion" : "",
+            "host" : "",
+            "user" : "",
+            "servertype" : "",
+            "seperator" : "10",
+            "https" : "1",
+            "syncdefaultfolders" : "1",
+            "provision" : "0",
+            "birthday" : "0",
+            "displayoverride" : "0", 
+            "downloadonly" : "0",
+            "autosync" : "0",
+            "horde" : "0",
+            "lastEasOptionsUpdate":"0",
+            "allowedEasVersions": "",
+            "allowedEasCommands": "",
+            "useragent": tbSync.prefSettings.getCharPref("eas.clientID.useragent"),
+            "devicetype": tbSync.prefSettings.getCharPref("eas.clientID.type"),
+            }; 
+        return row;
+    },
+
+
+
+    /**
+     * Return object which contains all possible fields of a row in the folder database with the default value if not yet stored in the database.
+     */
+    getDefaultFolderEntries: function (account) {
+        let folder = {
+            "account" : account,
+            "folderID" : "",
+            "name" : "",
+            "type" : "",
+            "synckey" : "",
+            "target" : "",
+            "targetName" : "",
+            "targetColor" : "",
+            "selected" : "",
+            "lastsynctime" : "",
+            "status" : "",
+            "parentID" : "",
+            "useChangeLog" : "1", //log changes into changelog
+            "downloadonly" : tbSync.db.getAccountSetting(account, "downloadonly"), //each folder has its own settings, the main setting is just the default,
+            };
+        return folder;
+    },
+    
+
+
+    /**
+     * Returns an array of folder settings, that should survive disable and re-enable
+     */
+    getPersistentFolderSettings: function () {
+	    return ["targetName", "targetColor", "selected"];
+    },
+
+
+
+    /**
+     * Return the thunderbird type (tb-contact, tb-event, tb-todo) for a given folder type of this provider. A provider could have multiple 
+     * type definitions for a single thunderbird type (default calendar, shared address book, etc), this maps all possible provider types to
+     * one of the three thunderbird types.
+     *
+     * @param type       [in] provider folder type
+     */
+    getThunderbirdFolderType: function(type) {
+        switch (type) {
+            case "9": 
+            case "14": 
+                return "tb-contact";
+            case "8":
+            case "13":
+                return "tb-event";
+            case "7":
+            case "15":
+                return "tb-todo";
+            default:
+                return "unknown ("+type + ")";
+        };
+    },
+
+
+
+    /**
+     * Is called everytime an account of this provider is enabled in the manager UI, set/reset database fields as needed.
+     *
+     * @param account       [in] account which is being enabled
+     */
+    onEnableAccount: function (account) {
+        db.resetAccountSetting(account, "policykey");
+        db.resetAccountSetting(account, "foldersynckey");
+        db.resetAccountSetting(account, "lastEasOptionsUpdate");
+        db.resetAccountSetting(account, "lastsynctime");
+    },
+
+
+
+    /**
+     * Is called everytime an account of this provider is disabled in the manager UI, set/reset database fields as needed and
+     * remove/backup all sync targets of this account.
+     *
+     * @param account       [in] account which is being disabled
+     */
+    onDisableAccount: function (account) {
+    },
+
+
+
+    /**
+     * Is called everytime an new target is created, intended to set a clean sync status.
+     *
+     * @param account       [in] account the new target belongs to
+     * @param folderID       [in] folder the new target belongs to
+     */
+    onResetTarget: function (account, folderID) {
+        db.resetFolderSetting(account, folderID, "synckey");
+        db.resetFolderSetting(account, folderID, "lastsynctime");
+    },
+    
+
+
+    /**
+     * Is called if TbSync needs to create a new thunderbird address book associated with an account of this provider.
+     *
+     * @param newname       [in] name of the new address book
+     * @param account       [in] id of the account this address book belongs to
+     * @param folderID      [in] id of the folder this address book belongs to (sync target)
+     *
+     * return the id of the newAddressBook 
+     */
     createAddressBook: function (newname, account, folderID) {
         let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
         return abManager.newAddressBook(newname, "", 2); /* kPABDirectory - return abManager.newAddressBook(name, "moz-abmdbdirectory://", 2); */
     },
 
-    createCalendar: function(newname, account, folderID, color) {
+
+
+    /**
+     * Is called if TbSync needs to create a new lightning calendar associated with an account of this provider.
+     *
+     * @param newname       [in] name of the new calendar
+     * @param account       [in] id of the account this calendar belongs to
+     * @param folderID      [in] id of the folder this calendar belongs to (sync target)
+     */
+    createCalendar: function(newname, account, folderID) {
         let calManager = cal.getCalendarManager();
         //Alternative calendar, which uses calTbSyncCalendar
         //let newCalendar = calManager.createCalendar("TbSync", Services.io.newURI('tbsync-calendar://'));
@@ -107,7 +274,7 @@ var eas = {
         newCalendar.id = cal.getUUID();
         newCalendar.name = newname;
 
-        newCalendar.setProperty("color", color); //any chance to get the color from the provider? pass via folderSetting
+        newCalendar.setProperty("color", tbSync.db.getFolderSetting(account, folderID, "targetColor"));
         newCalendar.setProperty("relaxedMode", true); //sometimes we get "generation too old for modifyItem", check can be disabled with relaxedMode
         newCalendar.setProperty("calendar-main-in-composite",true);
 
@@ -128,27 +295,89 @@ var eas = {
         return newCalendar;
     },
 
-    getThunderbirdFolderType: function(type) {
-        switch (type) {
-            case "9": 
-            case "14": 
-                return "tb-contact";
-            case "8":
-            case "13":
-                return "tb-event";
-            case "7":
-            case "15":
-                return "tb-todo";
-            default:
-                return "unknown ("+type + ")";
-        };
-    },
+
+
+    /**
+     * Is called if TbSync needs to find contacts in the global address list (GAL / directory) of an account associated with this provider.
+     * It is used for autocompletion while typing something into the address field of the message composer and for the address book search,
+     * if something is typed into the search field of the Thunderbird address book.
+     *
+     * TbSync will execute this only for queries longer than 3 chars.
+     *
+     * @param account       [in] id of the account which should be searched
+     * @param currentQuery  [in] search query
+     */
+    abServerSearch: Task.async (function* (account, currentQuery)  {
+        if (!tbSync.db.getAccountSetting(account, "allowedEasCommands").split(",").includes("Search")) {
+            return null;
+        }
+
+        let wbxml = wbxmltools.createWBXML();
+        wbxml.switchpage("Search");
+        wbxml.otag("Search");
+            wbxml.otag("Store");
+                wbxml.atag("Name", "GAL");
+                wbxml.atag("Query", currentQuery);
+                wbxml.otag("Options");
+                    wbxml.atag("DeepTraversal");
+                    wbxml.atag("RebuildResults");
+                wbxml.ctag();
+            wbxml.ctag();
+        wbxml.ctag();
+
+        let syncdata = {};
+        syncdata.account = account;
+        syncdata.folderID = "";
+        syncdata.syncstate = "SearchingGAL";
+        
+            
+        let response = yield eas.sendRequest(wbxml.getBytes(), "Search", syncdata);
+        let wbxmlData = eas.getDataFromResponse(response);
+        let galdata = [];
+
+        if (wbxmlData.Search && wbxmlData.Search.Response && wbxmlData.Search.Response.Store && wbxmlData.Search.Response.Store.Result) {
+            let results = xmltools.nodeAsArray(wbxmlData.Search.Response.Store.Result);
+            let accountname = tbSync.db.getAccountSetting(account, "accountname");
+        
+            for (let count = 0; count < results.length; count++) {
+                if (results[count].Properties) {
+                    //tbSync.window.console.log('Found contact:' + results[count].Properties.DisplayName);
+                    let resultset = {};
+
+                    resultset.properties = {};                    
+                    resultset.properties["FirstName"] = results[count].Properties.FirstName;
+                    resultset.properties["LastName"] = results[count].Properties.LastName;
+                    resultset.properties["DisplayName"] = results[count].Properties.DisplayName;
+                    resultset.properties["PrimaryEmail"] = results[count].Properties.EmailAddress;
+                    resultset.properties["CellularNumber"] = results[count].Properties.MobilePhone;
+                    resultset.properties["HomePhone"] = results[count].Properties.HomePhone;
+                    resultset.properties["WorkPhone"] = results[count].Properties.Phone;
+                    resultset.properties["Company"] = accountname; //results[count].Properties.Company;
+                    resultset.properties["Department"] = results[count].Properties.Title;
+                    resultset.properties["JobTitle"] = results[count].Properties.Office;
+
+                    resultset.autocomplete = {};                    
+                    resultset.autocomplete.value = results[count].Properties.DisplayName + " <" + results[count].Properties.EmailAddress + ">";
+                    resultset.autocomplete.account = account;
+                        
+                    galdata.push(resultset);
+                }
+            }
+        }
+        
+        return galdata;
+    }),
 
 
 
-
-
-    //CORE SYNC LOOP FUNCTION
+    /**
+     * Is called if TbSync needs to synchronize an account.
+     *
+     * @param syncdata      [in] object that contains the account and maybe the folder which needs to worked on
+     *                           you are free to add more fields to this object which you need (persistent) during sync
+     * @param job           [in] identifier about what is to be done, the standard job is "sync", you are free to add
+     *                           custom jobs like "deletefolder" via your own accountSettings.xul
+     */
     start: Task.async (function* (syncdata, job)  {
         let accountReSyncs = 0;
         
@@ -169,17 +398,8 @@ var eas = {
 
                 // check if connection has data
                 let connection = tbSync.eas.getConnection(syncdata.account);
-                if (connection.server == "" || connection.user == "") {
+                if (connection.host == "" || connection.user == "") {
                     throw eas.finishSync("nouserhost", eas.flags.abortWithError);
-                }
-
-                //Is this a standard sync or an account resync ?
-                if (tbSync.db.getAccountSetting(syncdata.account, "foldersynckey") == "0") {
-                    //accountReSyncs == 1 is not a save method to identify initial sync, because a resync due to policy/provision 
-                    //could still be an initial sync
-                    syncdata.accountResync = (accountReSyncs > 1);
-                } else {
-                    syncdata.accountResync = false;
                 }
                 
                 //should we recheck options/commands?
@@ -242,8 +462,6 @@ var eas = {
                 switch (report.type) {
                     case eas.flags.resyncAccount:
                         tbSync.dump("Account Resync", "Account: " + tbSync.db.getAccountSetting(syncdata.account, "accountname") + ", Reason: " + report.message);                        
-                        tbSync.db.setAccountSetting(syncdata.account, "foldersynckey", "0");
-                        tbSync.db.setFolderSetting(syncdata.account, "", "synckey", "");
                         continue;
 
                     case eas.flags.abortWithServerError: 
@@ -281,6 +499,14 @@ var eas = {
 
     }),
 
+
+
+
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // * HELPER FUNCTIONS BEYOND THE API
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    
     getPendingFolders: Task.async (function* (syncdata)  {
         //this function sets all folders which ougth to be synced to pending, either a specific one (if folderID is set) or all avail
         if (syncdata.folderID != "") {
@@ -317,49 +543,26 @@ var eas = {
             //no need to use save getWbxmlDataField function
             
             //are there any changes in folder hierarchy
-            let addedFolders = [];
             if (wbxmlData.FolderSync.Changes) {
                 //looking for additions
                 let add = xmltools.nodeAsArray(wbxmlData.FolderSync.Changes.Add);
                 for (let count = 0; count < add.length; count++) {
-                    //special action needed during resync: keep track off all added folders
-                    addedFolders.push(add[count].ServerId);
-                    
-                    //check if we have a folder with that folderID (=data[ServerId])
-                    let folder = tbSync.db.getFolder(syncdata.account, add[count].ServerId);
-                    if (folder === null) {
-                        //add folder
-                        let newData =tbSync.eas.getNewFolderEntry(syncdata.account);
-                        newData.folderID = add[count].ServerId;
-                        newData.name = add[count].DisplayName;
-                        newData.type = add[count].Type;
-                        newData.parentID = add[count].ParentId;
-
-                        //if there is a cached version of this folder, take selection state from there
-                        let cachedFolders = tbSync.db.findFoldersWithSetting(["cached","name","account","type"], ["1", newData.name,  newData.account, newData.type], "provider", "eas");
-                        if (cachedFolders && cachedFolders.length == 1) {
-                            newData.selected = cachedFolders[0].selected;
-                            newData.targetName = cachedFolders[0].targetName ? cachedFolders[0].targetName : "";
-                            newData.targetColor = cachedFolders[0].targetColor ? cachedFolders[0].targetColor : "";
-                        } else if (tbSync.db.getAccountSetting(syncdata.account, "syncdefaultfolders") == "1") {
-                            newData.selected = (newData.type == "9" || newData.type == "8" || newData.type == "7" ) ? "1" : "0";
-                        } else newData.selected = "0";
-                        
-                        tbSync.db.addFolder(newData);
-                    } else if (syncdata.accountResync) {
-                        //trying to add an existing folder during resync, overwrite local settings with those from server
-                        let target = folder.target;
-
-                        folder.name = add[count].DisplayName;
-                        folder.parentID = add[count].ParentId;
-
-                        //always clear during resync
-                        folder.status = "";
-                        folder.synckey = "";
-                        folder.lastsynctime = "";
-
-                        tbSync.db.saveFolders();
-                    }
+                    //only add allowed folder types to DB
+                    if (!["9","14","8","13","7","15"].includes(add[count].Type)) 
+                        continue;
+                                        
+                    //create folder obj for new  folder settings
+                    let newFolderSettings = {};
+                    newFolderSettings.folderID = add[count].ServerId;
+                    newFolderSettings.name = add[count].DisplayName;
+                    newFolderSettings.type = add[count].Type;
+                    newFolderSettings.parentID = add[count].ParentId;
+                    if (tbSync.db.getAccountSetting(syncdata.account, "syncdefaultfolders") == "1") {
+                        newFolderSettings.selected = (newFolderSettings.type == "9" || newFolderSettings.type == "8" || newFolderSettings.type == "7" ) ? "1" : "0";
+                    } else newFolderSettings.selected = "0";
+                                
+                    //addFolder
+                    tbSync.db.addFolder(syncdata.account, newFolderSettings);
                 }
                 
                 //looking for updates
@@ -368,23 +571,10 @@ var eas = {
                     //get a reference
                     let folder = tbSync.db.getFolder(syncdata.account, update[count].ServerId);
                     if (folder !== null) {
-                        let target = folder.target;
-
                         //update folder
-                        folder.name = update[count].DisplayName;
-                        folder.parentID = update[count].ParentId;
-                        folder.status = "";
-
-                        tbSync.db.saveFolders();
-
-                    } else {
-                        //this might be a problem: cannot update an non-existing folder - simply add the folder as not selected
-                        let newData =tbSync.eas.getNewFolderEntry(syncdata.account);
-                        newData.folderID = update[count].ServerId;
-                        newData.name = update[count].DisplayName;
-                        newData.type = update[count].Type;
-                        newData.parentID = update[count].ParentId;
-                        tbSync.db.addFolder(newData);
+                        tbSync.db.setFolderSetting(folder.account, folder.folderID, "name", update[count].DisplayName);
+                        tbSync.db.setFolderSetting(folder.account, folder.folderID, "type", update[count].Type);
+                        tbSync.db.setFolderSetting(folder.account, folder.folderID, "parentID", update[count].ParentId);
                     }
                 }
 
@@ -394,25 +584,11 @@ var eas = {
 
                     let folder = tbSync.db.getFolder(syncdata.account, del[count].ServerId);
                     if (folder !== null) {
-                        tbSync.takeTargetOffline("eas", folder, " [deleted from server]");
-                    } else {
-                        //cannot del an non-existing folder - do nothing
+                        tbSync.takeTargetOffline("eas", folder, "[deleted from server]");
                     }
                 }
             }
 
-            
-            //special action during resync: remove all folders from db, which have not been added by server (thus are no longer there)
-            if (syncdata.accountResync) {
-                let folders = tbSync.db.getFolders(syncdata.account);
-                for (let f in folders) {
-                    if (!addedFolders.includes(folders[f].folderID)) {
-                        //if target exists, take it offline
-                        tbSync.takeTargetOffline("eas", folders[f], " [deleted from server]");
-                    }
-                }
-            }
-            
             tbSync.setSelectedFoldersToPending(syncdata.account);            
         }
     }),
@@ -460,14 +636,9 @@ var eas = {
                 
                 tbSync.setSyncState("preparing", syncdata.account, syncdata.folderID);
                 
-                //get synckey if needed (this probably means initial sync or resync)
+                //get synckey if needed
                 if (syncdata.synckey == "") {
                     yield eas.getSynckey(syncdata);
-                    //folderReSyncs == 1 is not a save method to identify initial sync, because a resync due to policy/provision 
-                    //could still be an initial sync
-                    syncdata.folderResync = (folderReSyncs > 1);
-                } else {
-                    syncdata.folderResync = false;
                 }
                 
                 //sync folder
@@ -531,9 +702,10 @@ var eas = {
                         break;
                                             
                     case eas.flags.resyncFolder:
-                        //reset synckey to indicate "resync" and sync this folder again
+                        //takeTargetOffline will backup the current folder and on next run, a fresh copy 
+                        //of the folder will be synced down - the folder itself is NOT deleted
                         tbSync.dump("Folder Resync", "Account: " + tbSync.db.getAccountSetting(syncdata.account, "accountname") + ", Folder: "+ tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + ", Reason: " + report.message);
-                        tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "synckey", "");
+                        tbSync.takeTargetOffline("eas", syncdata.folderID, "[backup before forced folder resync]", false);
                         continue;
                     
                     default:
@@ -549,13 +721,6 @@ var eas = {
         }
         while (true);
     }),
-
-
-
-
-
-
-
 
 
 
@@ -598,6 +763,7 @@ var eas = {
                 case "2":
                     //server does not have a policy for this device: disable provisioning
                     tbSync.db.setAccountSetting(syncdata.account, "provision","0")
+                    tbSync.db.resetAccountSetting(syncdata.account, "policykey");
                     throw eas.finishSync("NoPolicyForThisDevice", eas.flags.resyncAccount);
 
                 case "1":
@@ -738,67 +904,6 @@ var eas = {
         eas.checkStatus(syncdata, wbxmlData,"Settings.Status");
     }),
 
-    abServerSearch: Task.async (function* (account, currentQuery)  {
-        if (!tbSync.db.getAccountSetting(account, "allowedEasCommands").split(",").includes("Search")) {
-            return null;
-        }
-
-        let wbxml = wbxmltools.createWBXML();
-        wbxml.switchpage("Search");
-        wbxml.otag("Search");
-            wbxml.otag("Store");
-                wbxml.atag("Name", "GAL");
-                wbxml.atag("Query", currentQuery);
-                wbxml.otag("Options");
-                    wbxml.atag("DeepTraversal");
-                    wbxml.atag("RebuildResults");
-                wbxml.ctag();
-            wbxml.ctag();
-        wbxml.ctag();
-
-        let syncdata = {};
-        syncdata.account = account;
-        syncdata.folderID = "";
-        syncdata.syncstate = "SearchingGAL";
-        
-            
-        let response = yield eas.sendRequest(wbxml.getBytes(), "Search", syncdata);
-        let wbxmlData = eas.getDataFromResponse(response);
-        let galdata = [];
-
-        if (wbxmlData.Search && wbxmlData.Search.Response && wbxmlData.Search.Response.Store && wbxmlData.Search.Response.Store.Result) {
-            let results = xmltools.nodeAsArray(wbxmlData.Search.Response.Store.Result);
-            let accountname = tbSync.db.getAccountSetting(account, "accountname");
-        
-            for (let count = 0; count < results.length; count++) {
-                if (results[count].Properties) {
-                    //tbSync.window.console.log('Found contact:' + results[count].Properties.DisplayName);
-                    let resultset = {};
-
-                    resultset.properties = {};                    
-                    resultset.properties["FirstName"] = results[count].Properties.FirstName;
-                    resultset.properties["LastName"] = results[count].Properties.LastName;
-                    resultset.properties["DisplayName"] = results[count].Properties.DisplayName;
-                    resultset.properties["PrimaryEmail"] = results[count].Properties.EmailAddress;
-                    resultset.properties["CellularNumber"] = results[count].Properties.MobilePhone;
-                    resultset.properties["HomePhone"] = results[count].Properties.HomePhone;
-                    resultset.properties["WorkPhone"] = results[count].Properties.Phone;
-                    resultset.properties["Company"] = accountname; //results[count].Properties.Company;
-                    resultset.properties["Department"] = results[count].Properties.Title;
-                    resultset.properties["JobTitle"] = results[count].Properties.Office;
-
-                    resultset.autocomplete = {};                    
-                    resultset.autocomplete.value = results[count].Properties.DisplayName + " <" + results[count].Properties.EmailAddress + ">";
-                    resultset.autocomplete.account = account;
-                        
-                    galdata.push(resultset);
-                }
-            }
-        }
-        
-        return galdata;
-    }),
-
     deleteFolder: Task.async (function* (syncdata)  {
         if (syncdata.folderID == "") {
             throw eas.finishSync();
@@ -842,16 +947,6 @@ var eas = {
         }
     }),
 
-
-
-
-
-
-
-
-
-
-    // SYNC GLUE FUNCTIONS
     finishSync: function (msg = "", type = eas.flags.syncNextFolder) {
         let e = new Error(); 
         e.type = type;
@@ -880,39 +975,7 @@ var eas = {
         });
         return "mztb" + uuid;
     },
-    
-    getNewAccountEntry: function () {
-        let row = {
-            "account" : "",
-            "accountname": "",
-            "provider": "eas",
-            "policykey" : "0", 
-            "foldersynckey" : "0",
-            "lastsynctime" : "0", 
-            "status" : "disabled",
-            "deviceId" : tbSync.eas.getNewDeviceId(),
-            "asversionselected" : "auto",
-            "asversion" : "",
-            "host" : "",
-            "user" : "",
-            "servertype" : "",
-            "seperator" : "10",
-            "https" : "1",
-            "syncdefaultfolders" : "1",
-            "provision" : "0",
-            "birthday" : "0",
-            "displayoverride" : "0", 
-            "downloadonly" : "0",
-            "autosync" : "0",
-            "horde" : "0",
-            "lastEasOptionsUpdate":"0",
-            "allowedEasVersions": "",
-            "allowedEasCommands": "",
-            "useragent": tbSync.prefSettings.getCharPref("eas.clientID.useragent"),
-            "devicetype": tbSync.prefSettings.getCharPref("eas.clientID.type")}; 
-        return row;
-    },
-    
+        
     logxml : function (wbxml, what) {
         //include xml in log, if userdatalevel 2 or greater
         if ((tbSync.prefSettings.getBoolPref("log.toconsole") || tbSync.prefSettings.getBoolPref("log.tofile")) && tbSync.prefSettings.getIntPref("log.userdatalevel")>1) {
@@ -942,12 +1005,11 @@ var eas = {
         let connection = {
             protocol: (tbSync.db.getAccountSetting(account, "https") == "1") ? "https://" : "http://",
             set host(newHost) { tbSync.db.setAccountSetting(account, "host", newHost); },
-            get server() { return tbSync.db.getAccountSetting(account, "host"); },
             get host() { 
                 let h = this.protocol + tbSync.db.getAccountSetting(account, "host"); 
-                if (h.endsWith("Microsoft-Server-ActiveSync")) return h;
-                
                 while (h.endsWith("/")) { h = h.slice(0,-1); }
+
+                if (h.endsWith("Microsoft-Server-ActiveSync")) return h;
                 return h + "/Microsoft-Server-ActiveSync"; 
             },
             user: tbSync.db.getAccountSetting(account, "user"),
@@ -960,51 +1022,7 @@ var eas = {
         if (tbSync.db.getFolder(account, parentID) && tbSync.db.getFolder(account, parentID).type == "4") return true;
         return false;
     },
-
-    getNewFolderEntry: function (account) {
-        let folder = {
-            "account" : account,
-            "folderID" : "",
-            "name" : "",
-            "type" : "",
-            "synckey" : "",
-            "target" : "",
-            "targetName" : "",
-            "targetColor" : "",
-            "selected" : "",
-            "lastsynctime" : "",
-            "status" : "",
-            "parentID" : "",
-            "monitored" : "1", //log changes into changelog
-            "downloadonly" : tbSync.db.getAccountSetting(account, "downloadonly"), //each folder has its own settings, the main setting is just the default,
-            "cached" : "0"};
-        return folder;
-    },
     
-    /**
-     * Returns an array of folder settings, that should survive unsubscribe/subscribe and disable/re-enable (caching)
-     */
-    getPersistentFolderSettings: function () {
-        return ["name", "type", "targetName", "targetColor", "selected"];
-    },
-
-    enableAccount: function (account) {
-        db.setAccountSetting(account, "status", "notsyncronized");
-        db.setAccountSetting(account, "policykey", "0");
-        db.setAccountSetting(account, "foldersynckey", "0");
-        db.setAccountSetting(account, "lastEasOptionsUpdate", "0");
-        db.setAccountSetting(account, "lastsynctime", "0");
-    },
-
-    disableAccount: function (account) {
-        db.setAccountSetting(account, "status", "disabled");
-        db.setAccountSetting(account, "policykey", "0");
-        db.setAccountSetting(account, "foldersynckey", "0");
-
-        //remove all folders from DB and remove associated targets (alwasy caches folder information) 
-        tbSync.removeAllFolders(account);
-    },
-
     TimeZoneDataStructure : class {
         constructor() {
             this.buf = new DataView(new ArrayBuffer(172));
@@ -1104,17 +1122,6 @@ var eas = {
             "daylightDate: "+ this.daylightDate.toString(),
             "daylightBias: "+ this.daylightBias].join("\n"); }
     },
-
-
-
-
-
-
-
-
-
-
-
 
     getServerOptions: function (syncdata) {        
         tbSync.setSyncState("prepare.request.options", syncdata.account);
@@ -1253,8 +1260,7 @@ var eas = {
                     case 449: // Request for new provision (enable it if needed)
                         //enable provision
                         tbSync.db.setAccountSetting(syncdata.account, "provision","1");
-                        //reset policykey
-                        tbSync.db.setAccountSetting(syncdata.account, "policykey", "0");
+                        tbSync.db.resetAccountSetting(syncdata.account, "policykey");
                         reject(eas.finishSync(syncdata.req.status, eas.flags.resyncAccount));
                         break;
 
@@ -1265,10 +1271,7 @@ var eas = {
 
                         tbSync.dump("redirect (451)", "header: " + header + ", oldHost: " + connection.host + ", newHost: " + newHost);
 
-                        //Since we do not use the actual host in the LoginManager (but the FQDN part of the user name), a changing host
-                        //does not affect the loginmanager - no further action needed
                         connection.host = newHost;
-
                         reject(eas.finishSync(syncdata.req.status, eas.flags.resyncAccount));
                         break;
                         
@@ -1364,25 +1367,20 @@ var eas = {
                 return "";
         
             case "Sync:8": // Object not found - takeTargetOffline and remove folder
-                tbSync.synclog("Warning", "WBXML: Server reports <object not found> (" +  tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "), keeping local copy and removing folder.");
-                let folder = tbSync.db.getFolder(syncdata.account, syncdata.folderID);
-                if (folder !== null) {
-                    tbSync.takeTargetOffline("eas", folder, " [deleted from server]");
-                    //folder is no longer there, unset current folder
-                    syncdata.folderID = "";
+                {
+                    tbSync.synclog("Warning", "WBXML: Server reports <object not found> (" +  tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "), keeping local copy and removing folder.");
+                    let folder = tbSync.db.getFolder(syncdata.account, syncdata.folderID);
+                    if (folder !== null) {
+                        tbSync.takeTargetOffline("eas", folder, "[deleted from server]");
+                        //folder is no longer there, unset current folder
+                        syncdata.folderID = "";
+                    }
+                    throw eas.finishSync();
                 }
-                throw eas.finishSync();
 
             case "Sync:9": //User account could be out of disk space, also send if no write permission (TODO)
                 return "";
 
-            case "Sync:12": /*
-                        Perform a FolderSync command and then retry the Sync command. (is "resync" here)
-                        */
-                tbSync.synclog("Warning", "WBXML: Server reports <folder hierarchy changed> (" + fullpath + " = " + status + "), resyncing");
-                throw eas.finishSync(type+"("+status+")", eas.flags.resyncAccount);
-
-            
             case "FolderDelete:3": // special system folder - fatal error
                 throw eas.finishSync("folderDelete.3");
 
@@ -1392,7 +1390,19 @@ var eas = {
             case "FolderDelete:4": // folder does not exist - resync ( we allow delete only if folder is not subscribed )
             case "FolderDelete:9": // invalid synchronization key - resync
             case "FolderSync:9": // invalid synchronization key - resync
-                throw eas.finishSync(type+"("+status+")", eas.flags.resyncAccount);
+            case "Sync:12": // folder hierarchy changed
+                {
+                    let folders = tbSync.db.getFolders(syncdata.account);
+                    for (let f in folders) {
+                        tbSync.takeTargetOffline("eas", folders[f], "[backup before forced account resync]", false);
+                        tbSync.db.setFolderSetting(folders[f].account, folders[f].folderID, "cached", "1");
+                    }		    
+                    //folder is no longer there, unset current folder
+                    syncdata.folderID = "";
+                    //reset account
+                    tbSync.eas.onEnableAccount(syncdata.account);
+                    throw eas.finishSync(type+"("+status+")", eas.flags.resyncAccount);
+                }
         }
         
         //handle global error (https://msdn.microsoft.com/en-us/library/ee218647(v=exchg.80).aspx)
@@ -1422,8 +1432,7 @@ var eas = {
             case "144": // InvalidPolicyKey
                 //enable provision
                 tbSync.db.setAccountSetting(syncdata.account, "provision","1");
-                //reset policykey
-                tbSync.db.setAccountSetting(syncdata.account, "policykey", "0");
+                tbSync.db.resetAccountSetting(syncdata.account, "policykey");
                 throw eas.finishSync(type+"("+status+")", eas.flags.resyncAccount);
             
             default:
@@ -1670,17 +1679,38 @@ var eas = {
     
     
     
-    //UI Interface (only needed, if standard TbSync UI is used/overlayed)
+    /**
+     * Implements the TbSync UI interface for external provider extensions, 
+     * only needed, if the standard TbSync UI logic is used (chrome://tbsync/content/manager/accountSettings.js).
+     */
     ui: {
 
+        /**
+         * Returns array of all possible account options (field names of a row in the accounts database).
+         */
         getAccountStorageFields: function () {
-            return Object.keys(tbSync.eas.getNewAccountEntry()).sort();
+            return Object.keys(tbSync.eas.getDefaultAccountEntries()).sort();
         },
 
+
+
+        /**
+         * Returns array of all options, that should not lock while being connected.
+         */
         getAlwaysUnlockedSettings: function () {
             return ["autosync"];
         },
 
+
+
+        /**
+         * Returns object with fixed entries for rows in the accounts database. This is useable for two cases:
+         *   1. indicate which entries where retrieved by autodiscover, do not assign a value
+         *   2. other special server profiles (like "outlook") which the user can select during account creation with predefined values
+         * In either case, these entries are not editable in the UI by default,but the user has to unlock them.
+         *
+         * @param servertype       [in] return fixed set based on the given servertype
+         */
         getFixedServerSettings: function (servertype) {
             let settings = {};
 
@@ -1703,6 +1733,15 @@ var eas = {
             return settings;
         },
 
+
+
+        /**
+         * Is called before the context menu of the folderlist is shown, allows to 
+         * show/hide custom menu options based on selected folder
+         *
+         * @param document       [in] document object of the account settings window
+         * @param folder         [in] folder databasse object of the selected folder
+         */
         onFolderListContextMenuShowing: function (document, folder) {
             let hideContextMenuDelete = true;
 
@@ -1717,6 +1756,15 @@ var eas = {
             document.getElementById("tbsync.accountsettings.FolderListContextMenuDelete").hidden = hideContextMenuDelete;
         },
 
+
+
+        /**
+         * Returns an array of folderRowData objects, containing all information needed 
+         * to fill the folderlist. The content of the folderRowData object is free to choose,
+         * it will be passed back to addRowToFolderList() and updateRowOfFolderList()
+         *
+         * @param account        [in] account id for which the folder data should be returned
+         */
         getSortedFolderData: function (account) {
             let folderData = [];
             let folders = tbSync.db.getFolders(account);
@@ -1728,8 +1776,21 @@ var eas = {
             }
             return folderData;
         },
-        
-        getFolderRowData: function (folder, syncdata = null) {
+
+
+
+        /**
+         * Returns a folderRowData object, containing all information needed to fill one row
+         * in the folderlist. The content of the folderRowData object is free to choose, it
+         * will be passed back to addRowToFolderList() and updateRowOfFolderList()
+         *
+         * Use tbSync.getSyncStatusMsg(folder, syncdata, provider) to get a nice looking 
+         * status message, including sync progress (if folder is synced)
+         *
+         * @param folder         [in] folder databasse object of requested folder
+         * @param syncdata       [in] optional syncdata obj send by updateRowOfFolderList(),
+         *                            needed to check if the folder is currently synced
+         */             getFolderRowData: function (folder, syncdata = null) {
             let rowData = {};
             rowData.folderID = folder.folderID;
             rowData.selected = (folder.selected == "1");
@@ -1742,6 +1803,15 @@ var eas = {
             return rowData;
         },
     
+
+
+        /**
+         * Is called to add a row to the folderlist.
+         *
+         * @param document       [in] document object of the account settings window
+         * @param newListItem    [in] the listitem of the row, where row items should be added to
+         * @param rowData        [in] rowData object with all information needed to add the row
+         */        
         addRowToFolderList: function (document, newListItem, rowData) {
             //add folder type/img
             let itemTypeCell = document.createElement("listcell");
@@ -1775,6 +1845,15 @@ var eas = {
             newListItem.appendChild(itemStatusCell);
         },		
 
+
+
+        /**
+         * Is called to update a row of the folderlist.
+         *
+         * @param document       [in] document object of the account settings window
+         * @param listItem       [in] the listitem of the row, which needs to be updated
+         * @param rowData        [in] rowData object with all information needed to add the row
+         */        
         updateRowOfFolderList: function (document, item, rowData) {
             tbSync.updateListItemCell(item.childNodes[1], ["label","tooltiptext"], rowData.name);
             tbSync.updateListItemCell(item.childNodes[2], ["label","tooltiptext"], rowData.status);
@@ -1786,6 +1865,8 @@ var eas = {
                 tbSync.updateListItemCell(item.childNodes[1], ["disabled"], "true");
             }
         },
+
+
 
         /**
          * Return the icon used in the folderlist to represent the different folder types
@@ -1817,7 +1898,7 @@ var eas = {
 
 
 
-
+        //BEYOND API
 
         //Custom stuff, outside of interface, invoked by own functions in overlayed accountSettings.xul
         getIdChain: function (allowedTypesOrder, account, _folderID) {

@@ -121,7 +121,7 @@ var tbSyncEasNewAccount = {
     },
 
     addAccount (user, password, servertype, accountname, url = "") {
-        let newAccountEntry = tbSync.eas.getNewAccountEntry();
+        let newAccountEntry = tbSync.eas.getDefaultAccountEntries();
         newAccountEntry.accountname = accountname;
         newAccountEntry.user = user;
         newAccountEntry.servertype = servertype;

@@ -121,8 +121,8 @@ serverSearch.onSearchInputChanged = Task.async (function* (window) {
     if (target == "moz-abdirectory://?") return; //global search not yet(?) supported
 	
     let folders = tbSync.db.findFoldersWithSetting("target", target);
-    if (folders.length>0) {
-        let searchbox =  window.document.getElementById("peopleSearchInput");
+    if (folders.length == 1) {
+        let searchbox = window.document.getElementById("peopleSearchInput");
         let query = searchbox.value;        
         let addressbook = tbSync.getAddressBookObject(target);
 

@@ -487,8 +487,9 @@ var tbSync = {
 
     isConnected: function (account) {
         let status = tbSync.db.getAccountSetting(account, "status");
-        let numberOfFoundFolders = tbSync.db.findFoldersWithSetting("cached", "0", account).length;
-        return (status != "disabled" && numberOfFoundFolders > 0);
+        let folders =  tbSync.db.getFolders(account);
+        let numberOfValidFolders = Object.keys(folders).filter(f => folders[f].cached !== 1).length;
+        return (status != "disabled" && numberOfValidFolders > 0);
     },
     
     prepareSyncDataObj: function (account, forceResetOfSyncData = false) {
@@ -612,81 +613,37 @@ var tbSync = {
         }
     },
     
-    //rename target, clear changelog and remove from DB
-    takeTargetOffline: function(provider, folder, _suffix = "") {
-        if (folder.target != "") {
-            let d = new Date();
-            let suffix = _suffix ? _suffix : " [lost contact on " + d.getDate().toString().padStart(2,"0") + "." + (d.getMonth()+1).toString().padStart(2,"0") + "." + d.getFullYear() +"]"
+    //rename target, clear changelog (and remove from DB)
+    takeTargetOffline: function(provider, folder, suffix, deleteFolder = true) {
+        //decouple folder and target
+        let target = folder.target;
+        tbSync.db.resetFolderSetting(folder.account, folder.folderID, "target");
 
+        if (target != "") {
             //if there are local changes, append an  (*) to the name of the target
             let c = 0;
-            let a = tbSync.db.getItemsFromChangeLog(folder.target, 0, "_by_user");
+            let a = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
             for (let i=0; i<a.length; i++) c++;
             if (c>0) suffix += " (*)";
 
             //this is the only place, where we manually have to call clearChangelog, because the target is not deleted
             //(on delete, changelog is cleared automatically)
-            tbSync.db.clearChangeLog(folder.target);
-            
-            switch (tbSync[provider].getThunderbirdFolderType(folder.type)) {
-                case "tb-event":
-                case "tb-todo":
-                    tbSync.appendSuffixToNameOfCalendar(folder.target, suffix);
-                    break;
-                case "tb-contact":
-                    tbSync.appendSuffixToNameOfBook(folder.target, suffix);
-                    break;
-                default:
-                    tbSync.dump("tbSync.takeTargetOffline","Unknown type <"+folder.type+">");
+            tbSync.db.clearChangeLog(target);
+            if (suffix) {
+                switch (tbSync[provider].getThunderbirdFolderType(folder.type)) {
+                    case "tb-event":
+                    case "tb-todo":
+                        tbSync.appendSuffixToNameOfCalendar(target, " " + suffix);
+                        break;
+                    case "tb-contact":
+                        tbSync.appendSuffixToNameOfBook(target, " " + suffix);
+                        break;
+                    default:
+                        tbSync.dump("tbSync.takeTargetOffline","Unknown type <"+folder.type+">");
+                }
             }
             
-            tbSync.db.deleteFolder(folder.account, folder.folderID);            
-        }
-    },
-
-    //remove all folders from DB (with cache support)
-    removeAllFolders: function(account) {
-        let provider = tbSync.db.getAccountSetting(account, "provider");
-
-        let folders = tbSync.db.getFolders(account);
-        for (let i in folders) {
-            let folderID = folders[i].folderID;
-            let target = folders[i].target;
-            let type = tbSync[provider].getThunderbirdFolderType(folders[i].type);            
-            let persistenSettings = tbSync[provider].getPersistentFolderSettings();
-            
-            //Allways cache
-            let cachedFolder = tbSync[provider].getNewFolderEntry(account);
-            for (let s=0; s < persistenSettings.length; s++) {
-                cachedFolder[persistenSettings[s]] = folders[i][persistenSettings[s]];
-            }                
-            cachedFolder.cached = "1";
-            cachedFolder.folderID = "cached-"+folderID;
-
-            tbSync.db.addFolder(cachedFolder);
-            tbSync.db.deleteFolder(account, folderID); 
-
-            if (target != "") {
-                tbSync.removeTarget(target, type);
-            }
-        }
-    },
-
-    //set all selected folders to pending
-    setSelectedFoldersToPending: function(account) {
-        //set selected folders to pending, so they get synced
-        //also clean up leftover folder entries in DB during resync
-        let folders = tbSync.db.getFolders(account);
-        for (let f in folders) {
-            //remove all cached folders
-            if (folders[f].cached == "1") {
-                tbSync.db.deleteFolder(account, folders[f].folderID);
-                continue;
-            }
-                            
-            if (folders[f].selected == "1") {
-                tbSync.db.setFolderSetting(folders[f].account, folders[f].folderID, "status", "pending");
-            }
+            if (deleteFolder) tbSync.db.deleteFolder(folder.account, folder.folderID);            
         }
     },
 
@@ -792,7 +749,7 @@ var tbSync = {
         tbSync.setSyncState("done", syncdata.account);
     },
     
-    setSyncState: function(syncstate, account = "", folderID = "") {
+    setSyncState: function (syncstate, account = "", folderID = "") {
         //set new syncstate
         let msg = "State: " + syncstate;
         if (account !== "") msg += ", Account: " + tbSync.db.getAccountSetting(account, "accountname");
@@ -809,7 +766,49 @@ var tbSync = {
         Services.obs.notifyObservers(null, "tbsync.updateSyncstate", account);
     },
 
- 
+
+
+    enableAccount: function(account) {
+        let provider = tbSync.db.getAccountSetting(account, "provider");
+        tbSync[provider].onEnableAccount(account);
+        tbSync.db.setAccountSetting(account, "status", "notsyncronized");
+    },
+
+    disableAccount: function(account) {
+        let provider = tbSync.db.getAccountSetting(account, "provider");
+        tbSync[provider].onDisableAccount(account);
+        tbSync.db.setAccountSetting(account, "status", "disabled");
+        
+        let folders = tbSync.db.getFolders(account);
+        for (let i in folders) {
+            let target = folders[i].target;
+            let type = tbSync[provider].getThunderbirdFolderType(folders[i].type);            
+            if (target != "") {
+                //remove associated target and clear its changelog
+                tbSync.removeTarget(target, type);
+            }
+            
+            //cache folder
+            tbSync.db.setFolderSetting(folders[i].account, folders[i].folderID, "cached", "1");
+        }
+    },
+
+    //set all selected folders to pending
+    setSelectedFoldersToPending: function(account) {
+        let folders = tbSync.db.getFolders(account);
+        for (let f in folders) {
+            //delete all leftover cached folders
+            if (folders[f].cached == "1") {
+                tbSync.db.deleteFolder(folders[f].account, folders[f].folderID);
+                continue;
+            }
+
+            //set selected folders to pending, so they get synced
+            if (folders[f].selected == "1") {
+                tbSync.db.setFolderSetting(folders[f].account, folders[f].folderID, "status", "pending");
+            }
+        }
+    },
 
 
 
@@ -1169,24 +1168,6 @@ var tbSync = {
         return null;	 
     },
 
-    //called by addressbook and calendar observer after a folder has been deleted (must reset but obey caching)
-    resetFolderSettings: function(folder) {
-        let provider = tbSync.db.getAccountSetting(folder.account, "provider");
-        let defaultSettings = tbSync[provider].getNewFolderEntry(folder.account);
-        let persistenSettings = tbSync[provider].getPersistentFolderSettings();
-
-        //also keep folderID
-        persistenSettings.push("folderID");
-        for (let setting in defaultSettings) {
-            if (defaultSettings.hasOwnProperty(setting)){
-                if (!persistenSettings.includes(setting)) {
-                    tbSync.db.setFolderSetting(folder.account, folder.folderID, setting, defaultSettings[setting]);
-                }
-            }
-        }                
-        
-    },
-
 
 
 
@@ -1198,12 +1179,12 @@ var tbSync = {
         onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
             // change on book itself, or on card?
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                let folders =  tbSync.db.findFoldersWithSetting(["target","monitored"], [aItem.URI,"1"]);
-                if (folders.length > 0) {
-                        //store current/new name of target
-                        tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetName", tbSync.getAddressBookName(folders[0].target));                         
-                        //update settings window, if open
-                         Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
+                let folders =  tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aItem.URI,"1"]);
+                if (folders.length == 1) {
+                    //store current/new name of target
+                    tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetName", tbSync.getAddressBookName(folders[0].target));                         
+                    //update settings window, if open
+                     Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
                 }
             }
 
@@ -1211,8 +1192,8 @@ var tbSync = {
                 let aParentDirURI = tbSync.getUriFromPrefId(aItem.directoryId.split("&")[0]);
                 if (aParentDirURI) { //could be undefined
 
-                    let folders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aParentDirURI,"1"]);
-                    if (folders.length > 0) {
+                    let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDirURI,"1"]);
+                    if (folders.length == 1) {
                                                 
                         //THIS CODE ONLY ACTS ON TBSYNC CARDS
                         let cardId = aItem.getProperty("TBSYNCID", "");
@@ -1244,8 +1225,8 @@ var tbSync = {
              * deletions and log them to a file in the profile folder
              */
             if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
-                let folders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aParentDir.URI,"1"]);
-                if (folders.length > 0) {
+                let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDir.URI,"1"]);
+                if (folders.length == 1) {
                     
                     //THIS CODE ONLY ACTS ON TBSYNC CARDS
                     let cardId = aItem.getProperty("TBSYNCID", "");
@@ -1271,25 +1252,24 @@ var tbSync = {
              * clean up change log
              */
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                let folders =  tbSync.db.findFoldersWithSetting(["target","monitored"], [aItem.URI,"1"]);
-
-                //delete any pending changelog of the deleted book
-                tbSync.db.clearChangeLog(aItem.URI);			
-
                 //It should not be possible to link a book to two different accounts, so we just take the first target found
-                if (folders.length > 0) {
+                let folders =  tbSync.db.findFoldersWithSetting("target", aItem.URI);
+                if (folders.length == 1) {
+                    //delete any pending changelog of the deleted book
+                    tbSync.db.clearChangeLog(aItem.URI);			
 
-                    //update settings window, if open
-                    if (folders[0].selected == "1") {
-                        folders[0].status= "aborted";
-                        if (tbSync.isEnabled(folders[0].account)) tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
-
+                    if (tbSync.db.getFolderSetting(folders[0].account, folders[0].folderID, "useChangeLog") == "1") {
                         //update settings window, if open
-                         Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
+                        if (folders[0].selected == "1") {
+                            tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "status", "aborted");
+                            if (tbSync.isEnabled(folders[0].account)) tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
+
+                            //update settings window, if open
+                             Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
+                        }
                     }
-                    tbSync.resetFolderSettings(folders[0]);
-                    tbSync.db.saveFolders();
                     
+                    tbSync.db.resetFolderSetting(folders[0].account, folders[0].folderID, "target");
                 }
             }
         },
@@ -1310,8 +1290,8 @@ var tbSync = {
 
             if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
                 
-                let folders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aParentDir.URI,"1"]);
-                if (folders.length > 0) {
+                let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDir.URI,"1"]);
+                if (folders.length == 1) {
 
                     //check if this is a temp search result card and ignore add
                     let searchResultProvider = aItem.getProperty("X-Server-Searchresult", "");
@@ -1414,16 +1394,25 @@ var tbSync = {
         let folder = tbSync.db.getFolder(account, folderID);
         let targetName = tbSync.getAddressBookName(folder.target);
         let targetObject = tbSync.getAddressBookObject(folder.target);
+        let provider = tbSync.db.getAccountSetting(account, "provider");
         
-        if (targetName !== null && targetObject !== null && targetObject instanceof Components.interfaces.nsIAbDirectory) return true;
+        if (targetName !== null && targetObject !== null && targetObject instanceof Components.interfaces.nsIAbDirectory) {
+            //check for double targets - just to make sure
+            let folders = tbSync.db.findFoldersWithSetting("target", folder.target);
+            if (folders.length == 1) {
+                return true;
+            } else {
+                throw "Target with multiple source folders found! Forcing hard fail ("+folder.target+")."; 
+            }
+        }
         
         // Get cached or new unique name for new address book
-        let testname = folder.name + " (" + tbSync.db.getAccountSetting(account, "accountname") + ")";
         let cachedName = tbSync.db.getFolderSetting(account, folderID, "targetName");                         
+        let testname = cachedName == "" ? folder.name + " (" + tbSync.db.getAccountSetting(account, "accountname") + ")" : cachedName;
 
-        let newname = (cachedName == "" ? testname : cachedName);
         let count = 1;
         let unique = false;
+        let newname = testname;
         do {
             unique = true;
             let booksIter = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).directories;
@@ -1448,8 +1437,9 @@ var tbSync = {
         while (booksIter.hasMoreElements()) {
             let data = booksIter.getNext();
             if (data instanceof Components.interfaces.nsIAbDirectory && data.dirPrefId == dirPrefId) {
+                tbSync[provider].onResetTarget(account, folderID);
                 tbSync.db.setFolderSetting(account, folderID, "target", data.URI); 
-                tbSync.dump("checkAddressbook("+account+", "+folderID+")", "Creating new address book (" + newname + ", " + data.URI + ")");
+                //tbSync.db.setFolderSetting(account, folderID, "targetName", newname); 
                 return true;
             }
         }
@@ -1845,8 +1835,8 @@ var tbSync = {
             let itemStatus = tbSync.db.getItemStatusFromChangeLog(aItem.calendar.id, aItem.id)
 
             //if an event in one of the synced calendars is added, update status of target and account
-            let folders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aItem.calendar.id, "1"]);
-            if (folders.length > 0) {
+            let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aItem.calendar.id, "1"]);
+            if (folders.length == 1) {
                 if (itemStatus == "added_by_server") {
                     tbSync.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);
                 } else {
@@ -1862,9 +1852,9 @@ var tbSync = {
                 if (aNewItem.calendar.id == aOldItem.calendar.id) {
 
                     //check, if it is an event in one of the synced calendars
-                    let newFolders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aNewItem.calendar.id, "1"]);
-                    if (newFolders.length > 0) {
-                        //check if t was added by the server
+                    let newFolders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aNewItem.calendar.id, "1"]);
+                    if (newFolders.length == 1) {
+                        //check if t was modified by the server
                         let itemStatus = tbSync.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
 
                         if (itemStatus == "modified_by_server") {
@@ -1884,9 +1874,9 @@ var tbSync = {
 
         onDeleteItem : function (aDeletedItem) {
             if (aDeletedItem && aDeletedItem.calendar) {
-                //if an event in one of the synced calendars is modified, update status of target and account
-                let folders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aDeletedItem.calendar.id,"1"]);
-                if (folders.length > 0) {
+                //if an event in one of the synced calendars is deleted, update status of target and account
+                let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aDeletedItem.calendar.id,"1"]);
+                if (folders.length == 1) {
                     let itemStatus = tbSync.db.getItemStatusFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id)
                     if (itemStatus == "deleted_by_server" || itemStatus == "added_by_user") {
                         //if it is a delete pushed from the server, simply acknowledge (do nothing) 
@@ -1904,11 +1894,11 @@ var tbSync = {
             
         onError : function (aCalendar, aErrNo, aMessage) { tbSync.dump("calendarObserver::onError","<" + aCalendar.name + "> had error #"+aErrNo+"("+aMessage+")."); },
 
-        //Properties of the calendar itself (name, color etc.)
+        //Properties of the calendar itself (name, color etc.) - OTHER PROVIDER MIGHT NEED MORE OPTIONS HERE
         onPropertyChanged : function (aCalendar, aName, aValue, aOldValue) {
             tbSync.dump("calendarObserver::onPropertyChanged","<" + aName + "> changed from <"+aOldValue+"> to <"+aValue+">");
-            let folders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aCalendar.id,"1"]);
-            if (folders.length > 0) {
+            let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aCalendar.id,"1"]);
+            if (folders.length == 1) {
                 switch (aName) {
                     case "color":
                         //update stored color to recover after disable
@@ -1926,14 +1916,15 @@ var tbSync = {
 
         onPropertyDeleting : function (aCalendar, aName) {
             tbSync.dump("calendarObserver::onPropertyDeleting","<" + aName + "> was deleted");
-            switch (aName) {
-                case "name":
-                    let folders = tbSync.db.findFoldersWithSetting(["target","monitored"], [aCalendar.id,"1"]);
-                    if (folders.length > 0) {
+            let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aCalendar.id,"1"]);
+            if (folders.length == 1) {
+                switch (aName) { //OTHER PROVIDER MIGHT NEED MORE OPTIONS HERE
+                    case "color":
+                    case "name":
                         //update settings window, if open
                         Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
-                    }
                     break;
+                }
             }
         }
     },
@@ -1944,22 +1935,23 @@ var tbSync = {
         onCalendarDeleting : function (aCalendar) {
             tbSync.dump("calendarManagerObserver::onCalendarDeleting","<" + aCalendar.name + "> was deleted.");
 
-            //delete any pending changelog of the deleted calendar
-            tbSync.db.clearChangeLog(aCalendar.id);
-
-            let folders =  tbSync.db.findFoldersWithSetting("target", aCalendar.id);
             //It should not be possible to link a calendar to two different accounts, so we just take the first target found
-            if (folders.length > 0) {
-                
-                if (folders[0].selected == "1") {
-                    folders[0].status= "aborted";
-                    if (tbSync.isEnabled(folders[0].account)) tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
+            let folders =  tbSync.db.findFoldersWithSetting("target", aCalendar.id);
+            if (folders.length == 1) {
+                //delete any pending changelog of the deleted calendar
+                tbSync.db.clearChangeLog(aCalendar.id);
 
-                    //update settings window, if open
-                    Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
+                if (tbSync.db.getFolderSetting(folders[0].account, folders[0].folderID, "useChangeLog") == "1") {
+                    if (folders[0].selected == "1") {
+                        tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "status", "aborted");
+                        if (tbSync.isEnabled(folders[0].account)) tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
+
+                        //update settings window, if open
+                        Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
+                    }
                 }
-                tbSync.resetFolderSettings(folders[0]);
-                tbSync.db.saveFolders();
+                
+                tbSync.db.resetFolderSetting(folders[0].account, folders[0].folderID, "target");
             }
         },
     },
@@ -2008,17 +2000,23 @@ var tbSync = {
         let calManager = cal.getCalendarManager();
         let targetCal = calManager.getCalendarById(folder.target);
         
-        if (targetCal !== null) {
-            return true;
+        if (targetCal !== null)  {
+            //check for double targets - just to make sure
+            let folders = tbSync.db.findFoldersWithSetting("target", folder.target);
+            if (folders.length == 1) {
+                return true;
+            } else {
+                throw "Target with multiple source folders found! Forcing hard fail."; 
+            }
         }
         
-        // If there is a known/cached value, than use that as starting point to generate unique name for new calendar 
-        let cachedName = tbSync.db.getFolderSetting(account, folderID, "targetName");
-        let testname = (cachedName == "" ? folder.name + " (" + tbSync.db.getAccountSetting(account, "accountname") + ")" : cachedName);
-
-        let newname = testname;
+        //check if  there is a known/cached name, and use that as starting point to generate unique name for new calendar 
+        let cachedName = tbSync.db.getFolderSetting(account, folderID, "targetName");                         
+        let testname = cachedName == "" ? folder.name + " (" + tbSync.db.getAccountSetting(account, "accountname") + ")" : cachedName;
+        
         let count = 1;
         let unique = false;
+        let newname = testname;
         do {
             unique = true;
             for (let calendar of calManager.getCalendars({})) {
@@ -2033,66 +2031,68 @@ var tbSync = {
             }
         } while (!unique);
 
-        //define color set
-        let allColors = [
-            "#3366CC",
-            "#DC3912",
-            "#FF9900",
-            "#109618",
-            "#990099",
-            "#3B3EAC",
-            "#0099C6",
-            "#DD4477",
-            "#66AA00",
-            "#B82E2E",
-            "#316395",
-            "#994499",
-            "#22AA99",
-            "#AAAA11",
-            "#6633CC",
-            "#E67300",
-            "#8B0707",
-            "#329262",
-            "#5574A6",
-            "#3B3EAC"];
-        
-        //find all used colors
-        let usedColors = [];
-        for (let calendar of calManager.getCalendars({})) {
-            if (calendar && calendar.getProperty("color")) {
-                usedColors.push(calendar.getProperty("color").toUpperCase());
+
+        //check if there is a cached or preloaded color - if not, chose one
+        if (!tbSync.db.getFolderSetting(account, folderID, "targetColor")) {
+            //define color set
+            let allColors = [
+                "#3366CC",
+                "#DC3912",
+                "#FF9900",
+                "#109618",
+                "#990099",
+                "#3B3EAC",
+                "#0099C6",
+                "#DD4477",
+                "#66AA00",
+                "#B82E2E",
+                "#316395",
+                "#994499",
+                "#22AA99",
+                "#AAAA11",
+                "#6633CC",
+                "#E67300",
+                "#8B0707",
+                "#329262",
+                "#5574A6",
+                "#3B3EAC"];
+            
+            //find all used colors
+            let usedColors = [];
+            for (let calendar of calManager.getCalendars({})) {
+                if (calendar && calendar.getProperty("color")) {
+                    usedColors.push(calendar.getProperty("color").toUpperCase());
+                }
             }
-        }
 
-        //we do not want to change order of colors, we want to FILTER by counts, so we need to find the least count, filter by that and then take the first one
-        let minCount = null;
-        let statColors = [];
-        for (let i=0; i< allColors.length; i++) {
-            let count = usedColors.filter(item => item == allColors[i]).length;
-            if (minCount === null) minCount = count;
-            else if (count < minCount) minCount = count;
+            //we do not want to change order of colors, we want to FILTER by counts, so we need to find the least count, filter by that and then take the first one
+            let minCount = null;
+            let statColors = [];
+            for (let i=0; i< allColors.length; i++) {
+                let count = usedColors.filter(item => item == allColors[i]).length;
+                if (minCount === null) minCount = count;
+                else if (count < minCount) minCount = count;
 
-            let obj = {};
-            obj.color = allColors[i];
-            obj.count = count;
-            statColors.push(obj);
+                let obj = {};
+                obj.color = allColors[i];
+                obj.count = count;
+                statColors.push(obj);
+            }
+            
+            //filter by minCount
+            let freeColors = statColors.filter(item => (minCount == null || item.count == minCount));
+            tbSync.db.setFolderSetting(account, folderID, "targetColor", freeColors[0].color);        
         }
         
-        //filter by minCount
-        let freeColors = statColors.filter(item => (minCount == null || item.count == minCount));
-
-        //use cachedColor, if there is one
-        let cachedColor = tbSync.db.getFolderSetting(account, folderID, "targetColor");        
-        let color = (cachedColor == "" ? freeColors[0].color : cachedColor);
-
         //create and register new calendar
-        let newCalendar = tbSync[tbSync.db.getAccountSetting(account, "provider")].createCalendar(newname, account, folderID, color);
+        let provider = tbSync.db.getAccountSetting(account, "provider");
+        let newCalendar = tbSync[provider].createCalendar(newname, account, folderID);
 
         //store id of calendar as target in DB
-        tbSync.dump("tbSync::checkCalendar("+account+", "+folderID+")", "Creating new calendar (" + newname + ")");
+        tbSync[provider].onResetTarget(account, folderID);
         tbSync.db.setFolderSetting(account, folderID, "target", newCalendar.id); 
-        tbSync.db.setFolderSetting(account, folderID, "targetName", newname); 
-        tbSync.db.setFolderSetting(account, folderID, "targetColor", color); 
+        //tbSync.db.setFolderSetting(account, folderID, "targetName", newCalendar.name); 
+        tbSync.db.setFolderSetting(account, folderID, "targetColor",  newCalendar.getProperty("color"));
         return true;        
     }
 

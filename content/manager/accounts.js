@@ -490,8 +490,9 @@ var tbSyncAccounts = {
             }
             
             if (confirm(tbSync.getLocalizedMessage("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
-                //disable (removes ab, triggers changelog cleanup) 
-                tbSync[tbSync.db.getAccountSetting(accountsList.selectedItem.value, "provider")].disableAccount(accountsList.selectedItem.value);
+                //cache all folders and remove associated targets 
+                tbSync.disableAccount(accountsList.selectedItem.value);
+
                 //delete account and all folders from db
                 tbSync.db.removeAccount(accountsList.selectedItem.value);
 
@@ -520,17 +521,17 @@ var tbSyncAccounts = {
     toggleAccountEnableState: function (account, doNotAsk) {
         let isConnected = tbSync.isConnected(account);
         let isEnabled = tbSync.isEnabled(account);
-
+        
         if (isEnabled) {
             //we are enabled and want to disable (do not ask, if not connected)
             if (doNotAsk || !isConnected || window.confirm(tbSync.getLocalizedMessage("prompt.Disable"))) {
-                tbSync[tbSync.db.getAccountSetting(account, "provider")].disableAccount(account);
+                tbSync.disableAccount(account);
                 Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
                 tbSyncAccounts.updateAccountStatus(account);
             }
         } else {
             //we are disabled and want to enabled
-            tbSync[tbSync.db.getAccountSetting(account, "provider")].enableAccount(account);
+            tbSync.enableAccount(account);
             Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
             tbSync.syncAccount("sync", account);
         }

@@ -473,32 +473,20 @@ eas.sync = {
                 let data = add[count].ApplicationData;
 
                 let foundItems = yield syncdata.targetObj.getItem(ServerId);
-                if (foundItems.length == 0) { //do NOT add, if an item with that ServerId was found
-                    //if this is a resync and this item exists in delete_log, do not add it, the follow-up delete request will remove it from the server as well
-                    if (db.getItemStatusFromChangeLog(syncdata.targetId, ServerId) == "deleted_by_user") {
-                        tbSync.dump("Add request, but element is in delete_log, asuming resync, local state wins, not adding.", ServerId);
-                    } else {
-                        //There is a corner case: A local item has been send to the server, but the ACK is missing, so a reysnc happens and the event comes back with the new ServerID.
-                        //However, as its ApplicationData UID it has the original Thunderbird UID. An item with that UID could still exist! If so, that item needs to get the new ServerID
-                        //and the "new" item from the server is not added - TODO
-                        let newItem = eas.sync[syncdata.type].createItem();
-                        try {
-                            eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
-                            db.addItemToChangeLog(syncdata.targetId, ServerId, "added_by_server");
-                            yield syncdata.targetObj.adoptItem(newItem); //yield pcal.addItem(newItem); // We are not using the added item after is has been added, so we might be faster using adoptItem
-                        } catch (e) {
-                            xmltools.printXmlData(add[count], true); //include application data in log                  
-                            tbSync.dump("Bad item <javascript error>", newItem.icalString);
-                            throw e; // unable to add item to Thunderbird - fatal error
-                        }
+                if (foundItems.length == 0) {
+                    //do NOT add, if an item with that ServerId was found
+                    let newItem = eas.sync[syncdata.type].createItem();
+                    try {
+                        eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
+                        db.addItemToChangeLog(syncdata.targetId, ServerId, "added_by_server");
+                        yield syncdata.targetObj.adoptItem(newItem); //yield pcal.addItem(newItem); //We are not using the added item after is has been added, so we might be faster using adoptItem
+                    } catch (e) {
+                        xmltools.printXmlData(add[count], true); //include application data in log                  
+                        tbSync.dump("Bad item <javascript error>", newItem.icalString);
+                        throw e; // unable to add item to Thunderbird - fatal error
                     }
                 } else {
-                    //item exists, asuming resync
-                    //we MUST make sure, that our local version is send to the server (not if read-only of course)
-                    if (tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "downloadonly") != "1") {
-                        tbSync.dump("Add request, but element exists already, asuming resync, local version wins.", ServerId);
-                        db.addItemToChangeLog(syncdata.targetId, ServerId, "modified_by_user");
-                    }
+                    tbSync.synclog("Warning","Add request, but element exists already, skipped.", ServerId);
                 }
                 syncdata.done++;
             }
@@ -513,16 +501,23 @@ eas.sync = {
                 let ServerId = upd[count].ServerId;
                 let data = upd[count].ApplicationData;
 
+                syncdata.done++;
                 let foundItems = yield syncdata.targetObj.getItem(ServerId);
                 if (foundItems.length > 0) { //only update, if an item with that ServerId was found
-                    
+                                        
                     let keys = Object.keys(data);
-                    if (keys.length == 1 && keys[0] == "DtStamp") tbSync.dump("DtStampOnly", keys);
-                    else {                    
+                    //replace by smart merge
+                    if (keys.length == 1 && keys[0] == "DtStamp") tbSync.dump("DtStampOnly", keys); //ignore DtStamp updates (fix with smart merge)
+                    else {
+                        
+                        if (tbSync.db.getItemStatusFromChangeLog(syncdata.targetId, ServerId) !== null) {
+                            tbSync.synclog("Warning","Change request from server, but also local modifications, server wins!", ServerId);
+                        }
+                        
                         let newItem = foundItems[0].clone();
                         try {
                             eas.sync[syncdata.type].setThunderbirdItemFromWbxml(newItem, data, ServerId, syncdata);
-                            db.addItemToChangeLog(syncdata.targetId, ServerId, "modified_by_server"); //any local change will be lost
+                            db.addItemToChangeLog(syncdata.targetId, ServerId, "modified_by_server");
                             yield syncdata.targetObj.modifyItem(newItem, foundItems[0]);
                         } catch (e) {
                             tbSync.dump("Bad item <javascript error>", newItem.icalString);
@@ -530,14 +525,8 @@ eas.sync = {
                             throw e; // unable to mod item to Thunderbird - fatal error
                         }
                     }
-                } else if (db.getItemStatusFromChangeLog(syncdata.targetId, ServerId) == "deleted_by_user") {
-                        tbSync.dump("Change request, but element is in delete_log, local state wins, not changing.", ServerId);
-                } else {
-                    tbSync.dump("Update request, but element not found", ServerId);
-                    //resync to avoid out-of-sync problems, "add" can take care of local merges
-                    throw eas.finishSync("ChangeElementNotFound", eas.flags.resyncFolder);
+                    
                 }
-                syncdata.done++;
             }
             
             //looking for deletes
@@ -551,13 +540,6 @@ eas.sync = {
                 if (foundItems.length > 0) { //delete item with that ServerId
                     db.addItemToChangeLog(syncdata.targetId, ServerId, "deleted_by_server");
                     yield syncdata.targetObj.deleteItem(foundItems[0]);
-                } else if (db.getItemStatusFromChangeLog(syncdata.targetId, ServerId) == "deleted_by_user") {
-                        tbSync.dump("Delete request, but element is in delete_log, no action needed.", ServerId);
-                        db.removeItemFromChangeLog(syncdata.targetId, ServerId);                        
-                } else {
-                    tbSync.synclog("Warning", "Delete request for element <"+ServerId+">, but element not found! Ignoring." );
-                    //resync to avoid out-of-sync problems
-                    //throw eas.finishSync("DeleteElementNotFound", eas.flags.resyncFolder);
                 }
                 syncdata.done++;
             }
