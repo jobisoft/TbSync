@@ -612,33 +612,53 @@ var eas = {
             try {
                 
                 //resync loop control
-                if (folders[0].folderID == syncdata.folderID) folderReSyncs++;
+                if (syncdata.folderID == folders[0].folderID) folderReSyncs++;
                 else folderReSyncs = 1;
+                syncdata.folderID = folders[0].folderID;
 
                 if (folderReSyncs > 3) {
                     throw eas.finishSync("resync-loop");
                 }
 
-                syncdata.synckey = folders[0].synckey;
-                syncdata.folderID = folders[0].folderID;
                 //get syncdata type, which is also used in WBXML for the CLASS element
+                syncdata.type = null;
                 switch (eas.getThunderbirdFolderType(folders[0].type)) {
                     case "tb-contact": 
                         syncdata.type = "Contacts";
+                        // check SyncTarget
+                        if (!tbSync.checkAddressbook(syncdata.account, syncdata.folderID)) {
+                            throw eas.finishSync("notargets");
+                        }
                         break;
+                        
                     case "tb-event":
-                        syncdata.type = "Calendar";
-                        break;
+                        if (syncdata.type === null) syncdata.type = "Calendar";
                     case "tb-todo":
-                        syncdata.type = "Tasks";
+                        if (syncdata.type === null) syncdata.type = "Tasks";
+
+                        // skip if lightning is not installed
+                        if (tbSync.lightningIsAvailable() == false) {
+                            throw eas.finishSync("nolightning");
+                        }
+                        
+                        // check SyncTarget
+                        if (!tbSync.checkCalender(syncdata.account, syncdata.folderID)) {
+                            throw eas.finishSync("notargets");
+                        }                        
                         break;
+                        
                     default:
                         throw eas.finishSync("skipped");
                 };
-                
+
+
+
+
+
                 tbSync.setSyncState("preparing", syncdata.account, syncdata.folderID);
                 
                 //get synckey if needed
+                syncdata.synckey = folders[0].synckey;                
                 if (syncdata.synckey == "") {
                     yield eas.getSynckey(syncdata);
                 }
@@ -649,11 +669,6 @@ var eas = {
                 
                 switch (syncdata.type) {
                     case "Contacts": 
-                        // check SyncTarget
-                        if (!tbSync.checkAddressbook(syncdata.account, syncdata.folderID)) {
-                            throw eas.finishSync("notargets");
-                        }
-
                         //get sync target of this addressbook
                         syncdata.targetId = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
                         syncdata.addressbookObj = tbSync.getAddressBookObject(syncdata.targetId);
@@ -666,16 +681,6 @@ var eas = {
 
                     case "Calendar":
                     case "Tasks": 
-                        // skip if lightning is not installed
-                        if (tbSync.lightningIsAvailable() == false) {
-                            throw eas.finishSync("nolightning");
-                        }
-                        
-                        // check SyncTarget
-                        if (!tbSync.checkCalender(syncdata.account, syncdata.folderID)) {
-                            throw eas.finishSync("notargets");
-                        }
-
                         syncdata.targetId = tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "target");
                         syncdata.calendarObj = cal.getCalendarManager().getCalendarById(syncdata.targetId);
                         
@@ -707,7 +712,7 @@ var eas = {
                         //takeTargetOffline will backup the current folder and on next run, a fresh copy 
                         //of the folder will be synced down - the folder itself is NOT deleted
                         tbSync.dump("Folder Resync", "Account: " + tbSync.db.getAccountSetting(syncdata.account, "accountname") + ", Folder: "+ tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + ", Reason: " + report.message);
-                        tbSync.takeTargetOffline("eas", syncdata.folderID, "[backup before forced folder resync]", false);
+                        tbSync.takeTargetOffline("eas", tbSync.db.getFolder(syncdata.account, syncdata.folderID), "[backup before forced folder resync]", false);
                         continue;
                     
                     default:
