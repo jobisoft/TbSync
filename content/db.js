@@ -229,7 +229,7 @@ var db = {
             }
         }
 
-        //merge cached values
+        //merge cached/persistent values (if there exists a folder with the given folderID)
         let folder = this.getFolder(account, newFolderSettings.folderID);
         if (folder !== null) {
             let persistentSettings = tbSync[provider].getPersistentFolderSettings();
@@ -237,9 +237,6 @@ var db = {
                 if (folder[persistentSettings[s]]) newFolderSettings[persistentSettings[s]] = folder[persistentSettings[s]];
             }
         }
-
-        //set new folder as live
-        newFolderSettings.cached = "0";
 
         if (!this.folders.hasOwnProperty(account)) this.folders[account] = {};                        
         this.folders[account][newFolderSettings.folderID] = newFolderSettings;
@@ -267,7 +264,7 @@ var db = {
     },
 
     isValidFolderSetting: function (account, field) {
-        if (field == "cached") //internal property, does not need to be defined by user
+        if (["cached"].includes(field)) //internal properties, do not need to be defined by user/provider
             return true;
         
         //check if provider is installed
@@ -295,7 +292,9 @@ var db = {
                 return folder[field];
             } else {
                 let provider = this.getAccountSetting(account, "provider");
-                return tbSync[provider].getDefaultFolderEntries(account)[field];
+                let defaultFolder = tbSync[provider].getDefaultFolderEntries(account);
+                //handle internal fields, that do not have a default value (see isValidFolderSetting)
+                return (defaultFolder[field] ? defaultFolder[field] : "");
             }
         }
     },
@@ -321,10 +320,12 @@ var db = {
         if (this.isValidFolderSetting(account, field)) {
             if (folderID == "") {
                 for (let fID in this.folders[account]) {
-                    this.folders[account][fID][field] = defaults[field];
+                    //handle internal fields, that do not have a default value (see isValidFolderSetting)
+                    this.folders[account][fID][field] = defaults[field] ? defaults[field] : "";
                 }
             } else {
-                this.folders[account][folderID][field] = defaults[field];
+                //handle internal fields, that do not have a default value (see isValidFolderSetting)
+                this.folders[account][folderID][field] = defaults[field] ? defaults[field] : "";
             }
             this.saveFolders();
         }

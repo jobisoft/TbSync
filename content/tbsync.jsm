@@ -488,7 +488,8 @@ var tbSync = {
     isConnected: function (account) {
         let status = tbSync.db.getAccountSetting(account, "status");
         let folders =  tbSync.db.getFolders(account);
-        let numberOfValidFolders = Object.keys(folders).filter(f => folders[f].cached !== 1).length;
+        //check for well defined cached state
+        let numberOfValidFolders = Object.keys(folders).filter(f => folders[f].cached == "0").length;
         return (status != "disabled" && numberOfValidFolders > 0);
     },
     
@@ -793,14 +794,19 @@ var tbSync = {
         }
     },
 
-    //set all selected folders to pending
-    setSelectedFoldersToPending: function(account) {
+    //set all selected folders to "pending", so they are marked for syncing 
+    //this also removes all leftover cached folders and sets all other folders to a well defined cached = "0"
+    //which will set this account as connected (if at least one folder with cached == "0" is present)
+    prepareFoldersForSync: function(account) {
         let folders = tbSync.db.getFolders(account);
         for (let f in folders) {
             //delete all leftover cached folders
             if (folders[f].cached == "1") {
                 tbSync.db.deleteFolder(folders[f].account, folders[f].folderID);
                 continue;
+            } else {
+                //set well defined cache state
+                tbSync.db.setFolderSetting(folders[f].account, folders[f].folderID, "cached", "0");
             }
 
             //set selected folders to pending, so they get synced

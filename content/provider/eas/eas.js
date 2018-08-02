@@ -173,7 +173,7 @@ var eas = {
      * Returns an array of folder settings, that should survive disable and re-enable
      */
     getPersistentFolderSettings: function () {
-	    return ["targetName", "targetColor", "selected"];
+        return ["targetName", "targetColor", "selected"];
     },
 
 
@@ -303,6 +303,8 @@ var eas = {
      * if something is typed into the search field of the Thunderbird address book.
      *
      * TbSync will execute this only for queries longer than 3 chars.
+     *
+     * DO NOT IMPLEMENT AT ALL, IF NOT SUPPORTED
      *
      * @param account       [in] id of the account which should be searched
      * @param currentQuery  [in] search query
@@ -561,7 +563,7 @@ var eas = {
                         newFolderSettings.selected = (newFolderSettings.type == "9" || newFolderSettings.type == "8" || newFolderSettings.type == "7" ) ? "1" : "0";
                     } else newFolderSettings.selected = "0";
                                 
-                    //addFolder
+                    //if there is a cached version of this folderID, addFolder will merge all persistent settings - all other settings not defined here will be set to their defaults
                     tbSync.db.addFolder(syncdata.account, newFolderSettings);
                 }
                 
@@ -589,7 +591,7 @@ var eas = {
                 }
             }
 
-            tbSync.setSelectedFoldersToPending(syncdata.account);            
+            tbSync.prepareFoldersForSync(syncdata.account);            
         }
     }),
 
