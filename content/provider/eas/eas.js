@@ -712,7 +712,7 @@ var eas = {
                         //takeTargetOffline will backup the current folder and on next run, a fresh copy 
                         //of the folder will be synced down - the folder itself is NOT deleted
                         tbSync.dump("Folder Resync", "Account: " + tbSync.db.getAccountSetting(syncdata.account, "accountname") + ", Folder: "+ tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + ", Reason: " + report.message);
-                        tbSync.takeTargetOffline("eas", tbSync.db.getFolder(syncdata.account, syncdata.folderID), "[backup before forced folder resync]", false);
+                        tbSync.takeTargetOffline("eas", tbSync.db.getFolder(syncdata.account, syncdata.folderID), "[forced folder resync]", false);
                         continue;
                     
                     default:
@@ -1401,7 +1401,7 @@ var eas = {
                 {
                     let folders = tbSync.db.getFolders(syncdata.account);
                     for (let f in folders) {
-                        tbSync.takeTargetOffline("eas", folders[f], "[backup before forced account resync]", false);
+                        tbSync.takeTargetOffline("eas", folders[f], "[forced account resync]", false);
                         tbSync.db.setFolderSetting(folders[f].account, folders[f].folderID, "cached", "1");
                     }		    
                     //folder is no longer there, unset current folder

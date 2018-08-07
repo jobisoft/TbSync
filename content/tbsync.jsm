@@ -634,10 +634,10 @@ var tbSync = {
                 switch (tbSync[provider].getThunderbirdFolderType(folder.type)) {
                     case "tb-event":
                     case "tb-todo":
-                        tbSync.appendSuffixToNameOfCalendar(target, " " + suffix);
+                        tbSync.changeNameOfCalendarAndDisable(target, "Local backup of: %ORIG% " + suffix);
                         break;
                     case "tb-contact":
-                        tbSync.appendSuffixToNameOfBook(target, " " + suffix);
+                        tbSync.changeNameOfBook(target, "Local backup of: %ORIG% " + suffix);
                         break;
                     default:
                         tbSync.dump("tbSync.takeTargetOffline","Unknown type <"+folder.type+">");
@@ -1346,13 +1346,14 @@ var tbSync = {
         } catch (e) {}
     },
 
-    appendSuffixToNameOfBook: function (uri, suffix) { 
+    changeNameOfBook: function (uri, newname) { 
         let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
         let allAddressBooks = abManager.directories;
         while (allAddressBooks.hasMoreElements()) {
             let addressBook = allAddressBooks.getNext();
             if (addressBook instanceof Components.interfaces.nsIAbDirectory && addressBook.URI == uri) {
-                addressBook.dirName += suffix;
+                let orig = addressBook.dirName;
+                addressBook.dirName = newname.replace("%ORIG%", orig);
             }
         }
     },
@@ -1981,11 +1982,13 @@ var tbSync = {
         } catch (e) {}
     },
 
-    appendSuffixToNameOfCalendar: function(id, suffix) {
+    changeNameOfCalendarAndDisable: function(id, newname) {
         try {
             let targetCal = cal.getCalendarManager().getCalendarById(id);
             if (targetCal !== null) {
-                targetCal.name += suffix;
+                let orig = targetCal.name;
+                targetCal.name =  newname.replace("%ORIG%", orig);
+                targetCal.setProperty("disabled", true);
             }
         } catch (e) {}
     },
