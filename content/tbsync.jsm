@@ -1484,16 +1484,18 @@ var tbSync = {
         let data = "";
 
         if (photo) {
-            let file = FileUtils.getFile("ProfD", ["Photos", photo]);
+            try {
+                let file = FileUtils.getFile("ProfD", ["Photos", photo]);
 
-            let fiStream = Components.classes["@mozilla.org/network/file-input-stream;1"].createInstance(Components.interfaces.nsIFileInputStream);
-            fiStream.init(file, -1, -1, false);
-            
-            let bstream = Components.classes["@mozilla.org/binaryinputstream;1"].createInstance(Components.interfaces.nsIBinaryInputStream);
-            bstream.setInputStream(fiStream);
+                let fiStream = Components.classes["@mozilla.org/network/file-input-stream;1"].createInstance(Components.interfaces.nsIFileInputStream);
+                fiStream.init(file, -1, -1, false);
+                
+                let bstream = Components.classes["@mozilla.org/binaryinputstream;1"].createInstance(Components.interfaces.nsIBinaryInputStream);
+                bstream.setInputStream(fiStream);
 
-            data = btoa(bstream.readBytes(bstream.available()));
-            fiStream.close();
+                data = btoa(bstream.readBytes(bstream.available()));
+                fiStream.close();
+            } catch (e) {}
         }
         return data;
     },
