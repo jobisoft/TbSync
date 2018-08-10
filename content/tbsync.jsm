@@ -1208,7 +1208,9 @@ var tbSync = {
                             let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
                             if (itemStatus == "modified_by_server") {
                                 tbSync.db.removeItemFromChangeLog(aParentDirURI, cardId);
-                            } else  if (itemStatus != "added_by_user") { //if it is a local unprocessed add do not add it to changelog
+                            } else  if (itemStatus != "added_by_user" && itemStatus != "added_by_server") { 
+                                //added_by_user -> it is a local unprocessed add do not re-add it to changelog
+                                //added_by_server -> it was just added by the server but our onItemAdd has not yet seen it, do not overwrite it - race condition - this local change is probably not caused by the user - ignore it?
                                 tbSync.setTargetModified(folders[0]);
                                 tbSync.db.addItemToChangeLog(aParentDirURI, cardId, "modified_by_user");
                             }
@@ -1303,20 +1305,24 @@ var tbSync = {
                     let searchResultProvider = aItem.getProperty("X-Server-Searchresult", "");
                     if (searchResultProvider) return;
 
+                    let itemStatus = null;
                     let cardId = aItem.getProperty("TBSYNCID", "");
                     if (cardId) {
-                        let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
+                        itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
                         if (itemStatus == "added_by_server") {
                             tbSync.db.removeItemFromChangeLog(aParentDir.URI, cardId);
                             return;
                         } 
                     }
-                    
+                                
                     //if this point is reached, either new card (no TBSYNCID), or moved card (old TBSYNCID) -> reset TBSYNCID 
-                    tbSync.setTargetModified(folders[0]);
-                    tbSync.db.addItemToChangeLog(aParentDir.URI, aItem.localId, "added_by_user");
-                    aItem.setProperty("TBSYNCID", aItem.localId);
-                    aParentDir.modifyCard(aItem);
+                    //whatever happens, if this item has an entry in the changelog, it is not a new item added by the user
+                    if (itemStatus === null) {
+                        tbSync.setTargetModified(folders[0]);
+                        tbSync.db.addItemToChangeLog(aParentDir.URI, aItem.localId, "added_by_user");
+                        aItem.setProperty("TBSYNCID", aItem.localId);
+                        aParentDir.modifyCard(aItem);
+                    }
                 }
                 
             }
@@ -1848,7 +1854,7 @@ var tbSync = {
             if (folders.length == 1) {
                 if (itemStatus == "added_by_server") {
                     tbSync.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);
-                } else {
+                } else if (itemStatus === null) {
                     tbSync.setTargetModified(folders[0]);
                     tbSync.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "added_by_user");
                 }
@@ -1868,8 +1874,9 @@ var tbSync = {
 
                         if (itemStatus == "modified_by_server") {
                             tbSync.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);
-                        } else if (itemStatus != "added_by_user") { //if it is a local unprocessed add do not add it to changelog
-                            //update status of target and account
+                        } else  if (itemStatus != "added_by_user" && itemStatus != "added_by_server") {
+                            //added_by_user -> it is a local unprocessed add do not re-add it to changelog
+                            //added_by_server -> it was just added by the server but our onItemAdd has not yet seen it, do not overwrite it - race condition - this local change is probably not caused by the user - ignore it?
                             tbSync.setTargetModified(newFolders[0]);
                             tbSync.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "modified_by_user");
                         }
