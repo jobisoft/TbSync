@@ -731,6 +731,10 @@ var tbSyncAccounts = {
             const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
             document.getElementById("tbSyncAccounts.contentFrame").webNavigation.loadURI("chrome:" + tbSync.providerList[tbSync.db.getAccountSetting(this.selectedAccount, "provider")].accountXul+"?id=" + this.selectedAccount, LOAD_FLAGS_NONE, null, null, null);
         }
-    }
+    },
     
+    installProvider: function (provider) {
+        const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
+        document.getElementById("tbSyncAccounts.contentFrame").webNavigation.loadURI("chrome://tbsync/content/manager/install.xul?provider="+provider, LOAD_FLAGS_NONE, null, null, null);
+    }
 };
