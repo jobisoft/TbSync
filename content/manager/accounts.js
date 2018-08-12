@@ -38,13 +38,18 @@ var tbSyncAccounts = {
         
         //prepare addmenu
         for (let provider in tbSync.providerList) {
-            if (tbSync.providerList[provider].enabled) {
+            if (tbSync.providerList[provider].enabled || tbSync.providerList[provider].downloadUrl != "") {
                 let newItem = window.document.createElement("menuitem");
                 newItem.setAttribute("value", provider);
                 newItem.setAttribute("label", tbSync.providerList[provider].name);
                 newItem.setAttribute("class", "menuitem-iconic");
-                newItem.addEventListener("click", function () {tbSyncAccounts.addAccount(provider) }, false);
-                newItem.setAttribute("src", tbSync[provider].getProviderIcon());
+                if (tbSync.providerList[provider].enabled) {
+                    newItem.addEventListener("click", function () {tbSyncAccounts.addAccount(provider) }, false);
+                    newItem.setAttribute("src", tbSync[provider].getProviderIcon());
+                } else {
+                    newItem.addEventListener("click", function () {tbSyncAccounts.installProvider(provider) }, false);
+                    newItem.setAttribute("src", "chrome://tbsync/skin/provider16.png");                    
+                }
                 window.document.getElementById("accountActionsAddAccount").appendChild(newItem);
             }
         }

@@ -73,9 +73,8 @@
                             <menu
                                 class="menu-iconic"
                                 image="chrome://tbsync/skin/add16.png"
-                                label="&manager.AddAccount;"
-                                noncommand="tbSyncAccounts.addAccount();">
-                                    <menupopup id="accountActionsAddAccount" />
+                                label="&manager.AddAccount;">
+                                        <menupopup id="accountActionsAddAccount" />
                             </menu>
                             <menuitem id="accountActionsSyncAllAccounts"
                                     class="menuitem-iconic"
