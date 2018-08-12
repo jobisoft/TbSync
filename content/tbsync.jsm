@@ -847,8 +847,10 @@ var tbSync = {
     openFileTab: function (file) {
         return tbSync.openTBtab(tbSync.getAbsolutePath(file));
     },
+    
+    createBugReport: function (showAlert = false) {
+        if (showAlert) tbSync.prefWindowObj.alert("Please do not forget to add a bug description, reports without a bug description are ignored!");
 
-    createBugReport: function () {
         let fields = Components.classes["@mozilla.org/messengercompose/composefields;1"].createInstance(Components.interfaces.nsIMsgCompFields); 
         let params = Components.classes["@mozilla.org/messengercompose/composeparams;1"].createInstance(Components.interfaces.nsIMsgComposeParams); 
 
