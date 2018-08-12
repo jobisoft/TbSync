@@ -24,7 +24,7 @@ var tbSyncAccountManager = {
     
     refreshUpdateButtonObserver: {
         observe: function(aSubject, aTopic, aData) {        
-            document.getElementById("tbSyncAccountManager.t5").hidden = !tbSync.updatesAvailable();
+            document.getElementById("tbSyncAccountManager.t4").hidden = !tbSync.updatesAvailable();
         }
     },
 
