@@ -15,8 +15,8 @@
                 &manager.catman.text;
             </html:p>
             
-            <html:p onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://addons.mozilla.org/de/thunderbird/addon/categorymanager/');" style="color:blue;text-decoration: underline;padding-left:1em;">
-                https://addons.mozilla.org/de/thunderbird/addon/categorymanager/
+            <html:p onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://addons.thunderbird.net/de/thunderbird/addon/categorymanager/');" style="color:blue;text-decoration: underline;padding-left:1em;">
+              https://addons.thunderbird.net/de/thunderbird/addon/categorymanager/
             </html:p>
         </vbox>
     </hbox>
