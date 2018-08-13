@@ -258,6 +258,19 @@ var eas = {
 
 
     /**
+     * Is called if TbSync needs to create a new UID for an address book card
+     *
+     * @param aItem       [in] card that needs new ID
+     *
+     * returns the new id 
+     */
+    getNewCardID: function (aItem) {
+        return aItem.localId;
+    },
+
+
+
+    /**
      * Is called if TbSync needs to create a new lightning calendar associated with an account of this provider.
      *
      * @param newname       [in] name of the new calendar
