@@ -1016,8 +1016,8 @@ var tbSync = {
         return (updateBeta || updateStable);
     },
     
-    includeJS: function (file) {
-        Services.scriptloader.loadSubScript(file, this);
+    includeJS: function (file, that=this) {
+        Services.scriptloader.loadSubScript(file, that);
     },
 
     //async sleep function using Promise to postpone actions to keep UI responsive
