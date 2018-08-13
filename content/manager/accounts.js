@@ -734,7 +734,7 @@ var tbSyncAccounts = {
     },
     
     installProvider: function (provider) {
-        const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-        document.getElementById("tbSyncAccounts.contentFrame").webNavigation.loadURI("chrome://tbsync/content/manager/install.xul?provider="+provider, LOAD_FLAGS_NONE, null, null, null);
+        tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.t0").setAttribute("active","false");
+        window.location="chrome://tbsync/content/manager/installProvider.xul?provider="+provider;
     }
 };

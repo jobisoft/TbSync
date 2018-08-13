@@ -33,4 +33,6 @@ addressbook.searchall=Alle Adressbücher durchsuchen
 addressbook.searchthis=Dieses Adressbuch durchsuchen
 addressbook.searchgal=Dieses Adressbuch und das globale Serververzeichnis durchsuchen (##replace.1##)
 
+installProvider.header=Optionaler Provider "##replace.1##" für TbSync ist noch nicht installiert. 
+
 migrate=Sehr wichtige Informationen zu TbSync!\n\nLeider ist beim letzten Update etwas schief gelaufen, und TbSync ist derzeit in einem unbekannten Zustand und muss zurückgesetzt werden:\n\n - alle Konten werden deaktiviert\n - von allen Kalendern und Addressbüchern werden lokal in Thunderbird Backups angelegt\n - Addressbücher/Kalender mit nicht synchronisierten lokalen Änderungen haben ein zusätzliches (*)\n\nBitte entschuldigen Sie diese Situation.

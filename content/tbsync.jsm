@@ -92,6 +92,7 @@ var tbSync = {
             newXul: "//tbsync/content/provider/eas/newaccount.xul", 
             accountXul: "//tbsync/content/provider/eas/accountSettings.xul",
             downloadUrl: "",
+            homepageUrl: "",
             enabled: true,
         },  
         ews: {
@@ -99,7 +100,8 @@ var tbSync = {
             js: "//ews4tbsync/content/ews.js" , 
             newXul: "//ews4tbsync/content/newaccount.xul", 
             accountXul: "//ews4tbsync/content/accountSettings.xul",
-            downloadUrl: "https://github.com/jobisoft/EWS-4-TbSync",
+            downloadUrl: "",
+            homepageUrl: "https://github.com/jobisoft/EWS-4-TbSync",
             enabled: false,
         },
         dav: {
@@ -107,7 +109,8 @@ var tbSync = {
             js: "//dav4tbsync/content/dav.js" , 
             newXul: "//dav4tbsync/content/newaccount.xul", 
             accountXul: "//dav4tbsync/content/accountSettings.xul",
-            downloadUrl: "https://github.com/jobisoft/DAV-4-TbSync",
+            downloadUrl: "https://github.com/jobisoft/DAV-4-TbSync/releases/download/v0.4/DAV-4-TbSync.xpi",
+            homepageUrl: "https://github.com/jobisoft/DAV-4-TbSync",
             enabled: false,
         },
     },
