@@ -1326,9 +1326,10 @@ var tbSync = {
                     //if this point is reached, either new card (no TBSYNCID), or moved card (old TBSYNCID) -> reset TBSYNCID 
                     //whatever happens, if this item has an entry in the changelog, it is not a new item added by the user
                     if (itemStatus === null) {
+                        let provider = tbSync.db.getAccountSetting(folders[0].account, "provider");
                         tbSync.setTargetModified(folders[0]);
                         tbSync.db.addItemToChangeLog(aParentDir.URI, aItem.localId, "added_by_user");
-                        aItem.setProperty("TBSYNCID", aItem.localId);
+                        aItem.setProperty("TBSYNCID", tbSync[provider].getNewCardID(aItem));
                         aParentDir.modifyCard(aItem);
                     }
                 }
