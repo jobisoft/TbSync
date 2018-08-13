@@ -94,6 +94,7 @@ var tbSync = {
             downloadUrl: "",
             homepageUrl: "",
             enabled: true,
+            minVersion: 0,
         },  
         ews: {
             name: "Exchange WebServices (EWS)", 
@@ -103,6 +104,7 @@ var tbSync = {
             downloadUrl: "",
             homepageUrl: "https://github.com/jobisoft/EWS-4-TbSync",
             enabled: false,
+            minVersion: 0.5,
         },
         dav: {
             name: "sabre/dav (CalDAV/CardDAV)", 
@@ -112,6 +114,7 @@ var tbSync = {
             downloadUrl: "https://github.com/jobisoft/DAV-4-TbSync/releases/download/v0.4/DAV-4-TbSync.xpi",
             homepageUrl: "https://github.com/jobisoft/DAV-4-TbSync",
             enabled: false,
+            minVersion: 0.5,
         },
     },
     
@@ -174,10 +177,10 @@ var tbSync = {
                         tbSync.versionInfo.installed = addons[a].version.toString();
                         break;
                     case "ews4tbsync@jobisoft.de":
-                        tbSync.providerList.ews.enabled = true;
+                        if (Services.vc.compare(addons[a].version, tbSync.providerList.ews.minVersion) >= 0) tbSync.providerList.ews.enabled = true;
                         break;
                     case "dav4tbsync@jobisoft.de":
-                        tbSync.providerList.dav.enabled = true;
+                        if (Services.vc.compare(addons[a].version, tbSync.providerList.dav.minVersion) >= 0) tbSync.providerList.dav.enabled = true;
                         break;
                 }
             }
