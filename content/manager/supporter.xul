@@ -13,8 +13,9 @@
         <vbox flex="1">
             <html:p>
                 <html:b>&manager.supporter.contributers;</html:b><html:br/><html:br/>
-                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('http://c-a-p-e.co.uk/');" style="color:blue;text-decoration: underline">Mark Nethersole (C.A.P.E.)</html:span>  (initial implementation of EAS contact sync - TzPush)<html:br/>
-                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/ChrisJAllan');" style="color:blue;text-decoration: underline">Chris Allan</html:span>  (EAS recurring events)<html:br/>
+                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('http://c-a-p-e.co.uk');" style="color:blue;text-decoration: underline">Mark Nethersole (C.A.P.E.)</html:span>: initial implementation of EAS contact sync (TzPush)<html:br/>
+                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/ChrisJAllan');" style="color:blue;text-decoration: underline">Chris Allan</html:span>: EAS recurring events<html:br/>
+                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/Heymdall/vcard');" style="color:blue;text-decoration: underline">Alexandr Heymdall</html:span>: vCard parser<html:br/>
             </html:p>
 
             <html:p>
