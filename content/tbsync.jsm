@@ -1328,8 +1328,9 @@ var tbSync = {
                     if (itemStatus === null) {
                         let provider = tbSync.db.getAccountSetting(folders[0].account, "provider");
                         tbSync.setTargetModified(folders[0]);
-                        tbSync.db.addItemToChangeLog(aParentDir.URI, aItem.localId, "added_by_user");
-                        aItem.setProperty("TBSYNCID", tbSync[provider].getNewCardID(aItem));
+                        let newCardID = tbSync[provider].getNewCardID(aItem);
+                        tbSync.db.addItemToChangeLog(aParentDir.URI, newCardID, "added_by_user");
+                        aItem.setProperty("TBSYNCID", newCardID);
                         aParentDir.modifyCard(aItem);
                     }
                 }
