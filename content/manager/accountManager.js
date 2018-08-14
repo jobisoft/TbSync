@@ -72,15 +72,15 @@ var tbSyncAccountManager = {
         document.getElementById("latest.version").setAttribute("value", tbSync.versionInfo.beta.number);
         document.getElementById("latest.version").setAttribute("href", tbSync.versionInfo.beta.url);
         document.getElementById("latest.version").setAttribute("tooltiptext", tbSync.versionInfo.beta.url);
-        document.getElementById("installed.version").setAttribute("value", tbSync.versionInfo.installed);        
+        document.getElementById("installed.version").setAttribute("value", tbSync.providerList.eas.version);        
         this.getLogPref();
     },
     
     initUpdateData: function() {
-        document.getElementById("installed.version").setAttribute("value", tbSync.versionInfo.installed + (tbSync.isBeta() ? " ("+tbSync.getLocalizedMessage("old_beta_version")+")" : ""));
+        document.getElementById("installed.version").setAttribute("value", tbSync.providerList.eas.version + (tbSync.isBeta() ? " ("+tbSync.getLocalizedMessage("old_beta_version")+")" : ""));
 
         document.getElementById("mozilla.version").setAttribute("value", tbSync.versionInfo.mozilla.number + " @ " + tbSync.getLocalizedMessage("amo_repository"));
-        if (tbSync.cmpVersions(tbSync.versionInfo.mozilla.number, tbSync.versionInfo.installed) > 0) {
+        if (tbSync.cmpVersions(tbSync.versionInfo.mozilla.number, tbSync.providerList.eas.version) > 0) {
             document.getElementById("mozilla.version").className = "text-link";
             document.getElementById("mozilla.version").setAttribute("style", "color: blue;");
             document.getElementById("mozilla.version").setAttribute("href", tbSync.versionInfo.mozilla.url);
@@ -88,7 +88,7 @@ var tbSyncAccountManager = {
         }
         
         document.getElementById("stable.version").setAttribute("value", tbSync.versionInfo.stable.number + " @ " + tbSync.getLocalizedMessage("github_repository"));
-        if (tbSync.cmpVersions(tbSync.versionInfo.stable.number, tbSync.versionInfo.installed) > 0) {
+        if (tbSync.cmpVersions(tbSync.versionInfo.stable.number, tbSync.providerList.eas.version) > 0) {
             document.getElementById("stable.version").className = "text-link";
             document.getElementById("stable.version").setAttribute("style", "color: blue;");
             document.getElementById("stable.version").setAttribute("href", tbSync.versionInfo.stable.url);
@@ -103,7 +103,7 @@ var tbSyncAccountManager = {
             document.getElementById("beta.version").setAttribute("tooltiptext", tbSync.versionInfo.beta.url);
         }
     
-        if (tbSync.cmpVersions(tbSync.versionInfo.stable.number, tbSync.versionInfo.installed) > 0) document.getElementById("tbsync.recommendation").value = tbSync.getLocalizedMessage("update_to_stable");
-        else if (tbSync.cmpVersions(tbSync.versionInfo.beta.number, tbSync.versionInfo.installed) > 0) document.getElementById("tbsync.recommendation").value =tbSync.getLocalizedMessage("update_to_beta");
+        if (tbSync.cmpVersions(tbSync.versionInfo.stable.number, tbSync.providerList.eas.version) > 0) document.getElementById("tbsync.recommendation").value = tbSync.getLocalizedMessage("update_to_stable");
+        else if (tbSync.cmpVersions(tbSync.versionInfo.beta.number, tbSync.providerList.eas.version) > 0) document.getElementById("tbsync.recommendation").value =tbSync.getLocalizedMessage("update_to_beta");
     }
 };

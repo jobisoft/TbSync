@@ -66,7 +66,7 @@ var tbSync = {
 
     enabled: false,
     window: null,
-    versionInfo: {installed: "0.0.0", mozilla : {number: "0.0.0", url: ""}, stable : {number: "0.0.0", url: ""}, beta : {number: "0.0.0.0", url: ""}},
+    versionInfo: {mozilla : {number: "0.0.0", url: ""}, stable : {number: "0.0.0", url: ""}, beta : {number: "0.0.0.0", url: ""}},
     lastVersionCheck: 0,
         
     lightningInitDone: false,
@@ -169,19 +169,26 @@ var tbSync = {
         for (let a=0; a < addons.length; a++) {
             if (addons[a].isActive) {
                 tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
+                let provider = null;
                 switch (addons[a].id.toString()) {
                     case "{e2fda1a4-762b-4020-b5ad-a41df1933103}":
                         lightning = true;
                         break;
                     case "tbsync@jobisoft.de":
-                        tbSync.versionInfo.installed = addons[a].version.toString();
+                        provider = "eas";
                         break;
                     case "ews4tbsync@jobisoft.de":
-                        if (Services.vc.compare(addons[a].version, tbSync.providerList.ews.minVersion) >= 0) tbSync.providerList.ews.enabled = true;
+                        provider = "ews";
                         break;
                     case "dav4tbsync@jobisoft.de":
-                        if (Services.vc.compare(addons[a].version, tbSync.providerList.dav.minVersion) >= 0) tbSync.providerList.dav.enabled = true;
+                        provider = "dav";
                         break;
+                }
+
+                //if this addOn is a registerd provider, activate it
+                if (provider) {
+                    tbSync.providerList[provider].version = addons[a].version.toString();
+                    if (Services.vc.compare(tbSync.providerList[provider].version, tbSync.providerList[provider].minVersion) >= 0) tbSync.providerList[provider].enabled = true;
                 }
             }
         }
@@ -861,7 +868,7 @@ var tbSync = {
         let params = Components.classes["@mozilla.org/messengercompose/composeparams;1"].createInstance(Components.interfaces.nsIMsgComposeParams); 
 
         fields.to = "john.bieling@gmx.de"; 
-        fields.subject = "TbSync " + tbSync.versionInfo.installed + " bug report: ADD SHORT DESCRIPTION "; 
+        fields.subject = "TbSync " + tbSync.providerList.eas.version + " bug report: ADD SHORT DESCRIPTION "; 
         fields.body = "Hi John,\n\nattached you find my debug.log.\n\nBUG DESCRIPTION"; 
 
         params.composeFields = fields; 
@@ -1007,12 +1014,12 @@ var tbSync = {
     },
 
     isBeta: function () {
-        return (tbSync.versionInfo.installed.split(".").length > 3);
+        return (tbSync.providerList.eas.version.split(".").length > 3);
     },
 
     updatesAvailable: function (showBeta = tbSync.prefSettings.getBoolPref("notify4beta")) {
-        let updateBeta = (showBeta || tbSync.isBeta()) && (tbSync.cmpVersions(tbSync.versionInfo.beta.number, tbSync.versionInfo.installed) > 0);
-        let updateStable = (tbSync.cmpVersions(tbSync.versionInfo.stable.number, tbSync.versionInfo.installed)> 0);
+        let updateBeta = (showBeta || tbSync.isBeta()) && (tbSync.cmpVersions(tbSync.versionInfo.beta.number, tbSync.providerList.eas.version) > 0);
+        let updateStable = (tbSync.cmpVersions(tbSync.versionInfo.stable.number, tbSync.providerList.eas.version)> 0);
         return (updateBeta || updateStable);
     },
     
