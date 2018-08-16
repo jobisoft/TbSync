@@ -111,7 +111,7 @@ var tbSync = {
             js: "//dav4tbsync/content/dav.js" , 
             newXul: "//dav4tbsync/content/newaccount.xul", 
             accountXul: "//dav4tbsync/content/accountSettings.xul",
-            downloadUrl: "https://github.com/jobisoft/DAV-4-TbSync/releases/download/v0.4/DAV-4-TbSync.xpi",
+            downloadUrl: "https://github.com/jobisoft/DAV-4-TbSync/releases/download/v0.5/DAV-4-TbSync-0.5.xpi",
             homepageUrl: "https://github.com/jobisoft/DAV-4-TbSync",
             enabled: false,
             minVersion: 0.5,
