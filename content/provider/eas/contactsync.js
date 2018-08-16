@@ -214,7 +214,7 @@ eas.sync.Contacts = {
 
         //take care of photo
         if (data.Picture) {
-            tbSync.addphoto(id + '.jpg', item.card, xmltools.nodeAsArray(data.Picture)[0]); //Kerio sends Picture as container
+            tbSync.addphoto(id + '.jpg', syncdata.targetId, item.card, xmltools.nodeAsArray(data.Picture)[0]); //Kerio sends Picture as container
         }
         
 

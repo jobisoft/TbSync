@@ -1477,11 +1477,15 @@ var tbSync = {
         return false;
     },
 
-    addphoto: function (photo, card, data) {	
+    addphoto: function (photo, book, card, data) {	
         let dest = [];
         //the TbSync storage must be set as last
-        dest.push(["Photos", photo]);
-        dest.push(["TbSync","Photos", photo]);
+        let book64 = btoa(book);
+        let photoName = book64 + "_" + photo;
+        tbSync.dump("PhotoName", photoName);
+        
+        dest.push(["Photos", photoName]);
+        dest.push(["TbSync","Photos", book64, photo]);
         
         let filePath = "";
         for (let i=0; i < dest.length; i++) {
@@ -1495,8 +1499,7 @@ var tbSync = {
 
             filePath = 'file:///' + file.path.replace(/\\/g, '\/').replace(/^\s*\/?/, '').replace(/\ /g, '%20');
         }
-    
-        card.setProperty("PhotoName", photo);
+        card.setProperty("PhotoName", photoName);
         card.setProperty("PhotoType", "file");
         card.setProperty("PhotoURI", filePath);
         return filePath;
