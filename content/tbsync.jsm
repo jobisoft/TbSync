@@ -107,7 +107,7 @@ var tbSync = {
             minVersion: 0.5,
         },
         dav: {
-            name: "sabre/dav (CalDAV/CardDAV)", 
+            name: "sabre/dav (CalDAV & CardDAV)", 
             js: "//dav4tbsync/content/dav.js" , 
             newXul: "//dav4tbsync/content/newaccount.xul", 
             accountXul: "//dav4tbsync/content/accountSettings.xul",
