@@ -7,9 +7,9 @@
         <em:bootstrap>true</em:bootstrap>
         <em:unpack>false</em:unpack>
         <em:multiprocessCompatible>true</em:multiprocessCompatible>
-        <em:name>TbSync (Provider for Exchange ActiveSync)</em:name>
+        <em:name>TbSync (contacts, tasks and calendars)</em:name>
         <em:version>0.7.10.22</em:version>
-        <em:description>Synchronize Exchange ActiveSync accounts (contacts, tasks and calendars) to Thunderbird</em:description>
+        <em:description>Supporting Exchange ActiveSync and sabre/dav (CalDAV &amp; CardDAV) accounts.</em:description>
         <em:creator>John Bieling</em:creator>
         <em:homepageURL>https://github.com/jobisoft/TbSync</em:homepageURL>
         <em:iconURL>chrome://tbsync/skin/tbsync.png</em:iconURL>
@@ -26,8 +26,8 @@
         <em:localized>
           <Description>
             <em:locale>de</em:locale>
-            <em:name>TbSync (Provider für Exchange ActiveSync)</em:name>
-            <em:description>Synchronisiert Exchange ActiveSync Konten (Kontakte, Aufgaben und Kalender) mit Thunderbird</em:description>
+            <em:name>TbSync (Kontakte, Aufgaben und Kalender)</em:name>
+            <em:description>Unterstützt Exchange ActiveSync und sabre/dav (CalDAV &amp; CardDAV) Konten.</em:description>
           </Description>
         </em:localized>
 
