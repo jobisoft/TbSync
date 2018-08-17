@@ -1,5 +1,5 @@
 # TbSync
-[Thunderbird Add-On] Sync contacts, tasks and events to Thunderbird. The following sync provider are available
+[Thunderbird Add-On] Sync contacts, tasks and events to Thunderbird. The following servers are supported:
 * Exchange ActiveSync (EAS)
 * CalDAV & CardDAV, via [DAV-4-TbSync](https://github.com/jobisoft/DAV-4-TbSync)
 
