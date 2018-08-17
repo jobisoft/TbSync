@@ -3,7 +3,7 @@
 * Exchange ActiveSync (EAS)
 * CalDAV & CardDAV, via [DAV-4-TbSync](https://github.com/jobisoft/DAV-4-TbSync)
 
-Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki) of the TbSync project.
+Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki) of the TbSync project and in the [How-to-get-started guide](https://github.com/jobisoft/TbSync/wiki/How-to-get-started).
 
 ### External data sources
 
