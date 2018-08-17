@@ -56,13 +56,14 @@ function OverlayManager(addonData, options = {}) {
             //get urls of stylesheets to load them
             let styleSheetUrls = this.getStyleSheetUrls(rootNode);
             for (let i=0; i<styleSheetUrls.length; i++) {
-                if (!this.stylesheets.hasOwnProperty(styleSheetUrls[i])) {
+                //we must replace, since we do not know, if it changed - could have been an update
+                //if (!this.stylesheets.hasOwnProperty(styleSheetUrls[i])) {
                     this.stylesheets[styleSheetUrls[i]] = yield this.readChromeFile(styleSheetUrls[i]);
-                }
+                //}
             }
             
             if (!this.registeredOverlays[dst]) this.registeredOverlays[dst] = [];
-            this.registeredOverlays[dst].push(overlay);
+            if (!this.registeredOverlays[dst].includes(overlay)) this.registeredOverlays[dst].push(overlay);
             this.overlays[overlay] = rootNode;
         } else {
             throw "Only chrome:// URIs can be registered as overlays."
