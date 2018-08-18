@@ -111,7 +111,7 @@ var tbSync = {
             js: "//dav4tbsync/content/dav.js" , 
             newXul: "//dav4tbsync/content/newaccount.xul", 
             accountXul: "//dav4tbsync/content/accountSettings.xul",
-            downloadUrl: "https://github.com/jobisoft/DAV-4-TbSync/releases/download/v0.6/DAV-4-TbSync.xpi",
+            downloadUrl: "https://github.com/jobisoft/DAV-4-TbSync/releases/download/v0.8/DAV-4-TbSync.xpi",
             homepageUrl: "https://github.com/jobisoft/DAV-4-TbSync",
             enabled: false,
             minVersion: 0.5,
@@ -593,7 +593,7 @@ var tbSync = {
     },
 
     setTargetModified : function (folder) {
-        if (folder.status == "OK" && tbSync.isEnabled(folder.account)) {
+        if (/*folder.status == "OK" && */ tbSync.isEnabled(folder.account)) {
             tbSync.db.setAccountSetting(folder.account, "status", tbSync.db.getFolderSetting(folder.account, folder.folderID, "downloadonly") == "1" ? "needtorevert" : "notsyncronized");
             tbSync.db.setFolderSetting(folder.account, folder.folderID, "status", "modified");
             //notify settings gui to update status
