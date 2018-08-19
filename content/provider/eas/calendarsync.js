@@ -104,7 +104,7 @@ eas.sync.Calendar = {
             if (Array.isArray(data.Attendees.Attendee)) att = data.Attendees.Attendee;
             else att.push(data.Attendees.Attendee);
             for (let i = 0; i < att.length; i++) {
-                if (att[i].Email && att[i].Name) { //req.
+                if (att[i].Email && !Array.isArray(att[i].Email) && att[i].Name) { //req.
 
                     let attendee = cal.createAttendee();
 
@@ -152,7 +152,7 @@ eas.sync.Calendar = {
             }
         }
         
-        if (data.OrganizerName && data.OrganizerEmail) {
+        if (data.OrganizerName && data.OrganizerEmail && !Array.isArray(data.OrganizerEmail)) {
             //Organizer
             let organizer = cal.createAttendee();
             organizer.id = cal.prependMailTo(data.OrganizerEmail);

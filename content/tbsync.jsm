@@ -1200,7 +1200,7 @@ var tbSync = {
         onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
             // change on book itself, or on card?
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                let folders =  tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aItem.URI,"1"]);
+                let folders =  tbSync.db.findFoldersWithSetting(["target"], [aItem.URI]); //changelog is not used here, we should always catch these changes
                 if (folders.length == 1) {
                     //store current/new name of target
                     tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetName", tbSync.getAddressBookName(folders[0].target));                         
@@ -1933,7 +1933,7 @@ var tbSync = {
         //Properties of the calendar itself (name, color etc.) - OTHER PROVIDER MIGHT NEED MORE OPTIONS HERE
         onPropertyChanged : function (aCalendar, aName, aValue, aOldValue) {
             tbSync.dump("calendarObserver::onPropertyChanged","<" + aName + "> changed from <"+aOldValue+"> to <"+aValue+">");
-            let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aCalendar.id,"1"]);
+            let folders = tbSync.db.findFoldersWithSetting(["target"], [aCalendar.id]);
             if (folders.length == 1) {
                 switch (aName) {
                     case "color":
@@ -1952,7 +1952,7 @@ var tbSync = {
 
         onPropertyDeleting : function (aCalendar, aName) {
             tbSync.dump("calendarObserver::onPropertyDeleting","<" + aName + "> was deleted");
-            let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aCalendar.id,"1"]);
+            let folders = tbSync.db.findFoldersWithSetting(["target"], [aCalendar.id]);
             if (folders.length == 1) {
                 switch (aName) { //OTHER PROVIDER MIGHT NEED MORE OPTIONS HERE
                     case "color":
