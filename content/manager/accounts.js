@@ -38,7 +38,7 @@ var tbSyncAccounts = {
         
         //prepare addmenu
         for (let provider in tbSync.providerList) {
-            if (tbSync.providerList[provider].enabled || tbSync.providerList[provider].downloadUrl != "") {
+            if (tbSync.providerList[provider].enabled || tbSync.providerList[provider].homepageUrl != "") {
                 let newItem = window.document.createElement("menuitem");
                 newItem.setAttribute("value", provider);
                 newItem.setAttribute("label", tbSync.providerList[provider].name);

@@ -28,9 +28,8 @@
 
 <!ENTITY manager.catman.text "TbSync also syncs contact categories, which are a powerful replacement for the non-syncable contact lists. To be able to use them in the Thunderbird address book you can install the Category Manager Add-On. It allows to manage overlapping category based contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla Add-On repository:">
 
-<!ENTITY manager.installprovider.link "Click on the following link to download and install the missing provider:">
-<!ENTITY manager.installprovider.info "Further information about this provider can be found at its project page:">
-<!ENTITY manager.installprovider.warning "This synchronization provider is not downloaded from the Thunderbird AddOn repository and thus has not been reviewed by Thunderbird staff. The provider could do bad things to your system. Use it at your own risk.">
+<!ENTITY manager.installprovider.link "Click on the following link to open the info page of the missing synchronization provider. There you will find further information about the provider and you will have the option to install it:">
+<!ENTITY manager.installprovider.warning "This synchronization provider is not hosted in the official Thunderbird AddOn repository and thus has not been reviewed by Thunderbird staff. The provider could do bad things to your system. Use it at your own risk.">
 
 <!ENTITY manager.supporter.contributers "Contributers">
 <!ENTITY manager.supporter.sponsors "Sponsors">

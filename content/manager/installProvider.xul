@@ -27,13 +27,6 @@
             <html:p id="link" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openTBtab(this.getAttribute('link'));" style="color:blue;text-decoration: underline;padding-left:1em;">
             </html:p>
 
-            <html:p>
-                &manager.installprovider.info;
-            </html:p>
-            
-            <html:p id="info" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink(this.getAttribute('link'));" style="color:blue;text-decoration: underline;padding-left:1em;">
-            </html:p>
-
             <html:p id="warning" style="font-weight: bold">
                 &manager.installprovider.warning;
             </html:p>
