@@ -92,7 +92,7 @@ var tbSync = {
             newXul: "//tbsync/content/provider/eas/newaccount.xul", 
             accountXul: "//tbsync/content/provider/eas/accountSettings.xul",
             homepageUrl: "",
-            enabled: true,
+            enabled: false,
             minVersion: 0,
         },  
         ews: {
@@ -161,16 +161,11 @@ var tbSync = {
         }
     }),
         
-    finalizeInitByWaitingForAddons: Task.async (function* (addons) {
-        let lightning = false;
+    checkInstalledProvider: Task.async (function* (addons) {
         for (let a=0; a < addons.length; a++) {
             if (addons[a].isActive) {
-                tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
                 let provider = null;
                 switch (addons[a].id.toString()) {
-                    case "{e2fda1a4-762b-4020-b5ad-a41df1933103}":
-                        lightning = true;
-                        break;
                     case "tbsync@jobisoft.de":
                         provider = "eas";
                         break;
@@ -183,9 +178,31 @@ var tbSync = {
                 }
 
                 //if this addOn is a registerd provider, activate it
-                if (provider) {
-                    tbSync.providerList[provider].version = addons[a].version.toString();
-                    if (Services.vc.compare(tbSync.providerList[provider].version, tbSync.providerList[provider].minVersion) >= 0) tbSync.providerList[provider].enabled = true;
+                if (provider && !tbSync.providerList[provider].enabled) {
+                    let v = addons[a].version.toString();
+                    if (Services.vc.compare(v, tbSync.providerList[provider].minVersion) >= 0) {
+                        tbSync.providerList[provider].enabled = true;
+                        tbSync.providerList[provider].version = v;
+                        
+                        //load provider subscripts into tbSync 
+                        tbSync.dump("PROVIDER", provider + "::" + tbSync.providerList[provider].name);
+                        tbSync.includeJS("chrome:" + tbSync.providerList[provider].js);
+                        yield tbSync[provider].init(tbSync.lightningIsAvailable());
+                    }                        
+                }
+            }
+        }
+    }),
+    
+    finalizeInitByWaitingForAddons: Task.async (function* (addons) {
+        let lightning = false;
+        for (let a=0; a < addons.length; a++) {
+            if (addons[a].isActive) {
+                tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
+                switch (addons[a].id.toString()) {
+                    case "{e2fda1a4-762b-4020-b5ad-a41df1933103}":
+                        lightning = true;
+                        break;
                 }
             }
         }
@@ -245,18 +262,8 @@ var tbSync = {
             }
         }
 
-        //load provider subscripts into tbSync 
-        for (let provider in tbSync.providerList) {
-            if (tbSync.providerList[provider].enabled) tbSync.includeJS("chrome:" + tbSync.providerList[provider].js);
-        }
-
-        //init provider 
-        for (let provider in tbSync.providerList) {
-            if (tbSync.providerList[provider].enabled) {
-                tbSync.dump("PROVIDER", provider + "::" + tbSync.providerList[provider].name);
-                yield tbSync[provider].init(tbSync.lightningIsAvailable());
-            }
-        }
+        //check and activate installed providers
+        yield tbSync.checkInstalledProvider(addons);
         
         //init stuff for address book
         tbSync.addressbookListener.add();
@@ -412,13 +419,13 @@ var tbSync = {
                 //close window (if open)
                 if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
 
-                //enable and load provider
-                tbSync.providerList[aData].enabled = true;
-                tbSync.dump("PROVIDER", aData + "::" + tbSync.providerList[aData].name);
-                tbSync.includeJS("chrome:" + tbSync.providerList[aData].js);
-
-                //init provider 
-                yield tbSync[aData].init(tbSync.lightningIsAvailable());                
+                //check for installed providers
+                if (Services.vc.compare(Services.appinfo.platformVersion, "61.*") >= 0)  {
+                    let addons = yield AddonManager.getAllAddons();
+                    yield tbSync.checkInstalledProvider(addons);
+                } else {
+                    AddonManager.getAllAddons(tbSync.checkInstalledProvider);
+                }
             }
         })
     },
