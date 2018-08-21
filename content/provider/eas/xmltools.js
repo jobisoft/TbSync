@@ -68,22 +68,10 @@ var xmltools = {
     },
 
     //print content of xml data object (if debug output enabled)
-    printXmlData : function (data, printApplicationData, printData = true, lvl = 0) {
-        if ((tbSync.prefSettings.getBoolPref("log.toconsole") || tbSync.prefSettings.getBoolPref("log.tofile"))) {
-            let dump = "";
-            
-            for (let d in data) {
-                if (typeof(data[d]) == "object") {
-                    //if printData is false, stay false, otherwise check, if we need to switch to false
-                    let nextLevelPrintData = (printData == false || (d == "ApplicationData" && printApplicationData == false)) ? false : true;
-                    dump = dump + " ".repeat(lvl) + d + " => \n" + this.printXmlData(data[d], printApplicationData, nextLevelPrintData, lvl+1);
-                    dump = dump + " ".repeat(lvl) + d + " <= \n";
-                } else {
-                    dump = dump + " ".repeat(lvl) + d + " = [" + ((printData || tbSync.prefSettings.getIntPref("log.userdatalevel")>0) ? data[d] : "***") + "]\n";
-                }
-            }
-            if (lvl == 0) tbSync.dump("Extracted XML data", "\n" + dump);
-            else return dump;
+    printXmlData : function (data, printApplicationData) {
+        if ((tbSync.prefSettings.getBoolPref("log.toconsole") || tbSync.prefSettings.getBoolPref("log.tofile")) && printApplicationData) {
+            let dump = JSON.stringify(data);
+            tbSync.dump("Extracted XML data", "\n" + dump);
         }
     },
 
