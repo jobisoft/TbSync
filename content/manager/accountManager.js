@@ -69,9 +69,11 @@ var tbSyncAccountManager = {
         let avail = tbSync.updatesAvailable(true); //true = check beta versions even though notify4beta is not enabled
         document.getElementById("bugs.latestVersion").hidden = avail;
         document.getElementById("bugs.olderVersion").hidden = !avail;
-        document.getElementById("latest.version").setAttribute("value", tbSync.versionInfo.beta.number);
-        document.getElementById("latest.version").setAttribute("href", tbSync.versionInfo.beta.url);
-        document.getElementById("latest.version").setAttribute("tooltiptext", tbSync.versionInfo.beta.url);
+        let src = (tbSync.cmpVersions(tbSync.versionInfo.beta.number, tbSync.versionInfo.stable.number) > 0) ? "beta" : "stable";
+
+        document.getElementById("latest.version").setAttribute("value", tbSync.versionInfo[src].number);
+        document.getElementById("latest.version").setAttribute("href", tbSync.versionInfo[src].url);
+        document.getElementById("latest.version").setAttribute("tooltiptext", tbSync.versionInfo[src].url);
         document.getElementById("installed.version").setAttribute("value", tbSync.providerList.eas.version);        
         this.getLogPref();
     },
