@@ -842,6 +842,10 @@ var tbSync = {
         if (u>0 && v>=u) throw "TbSync: Aborted after breakpoint <"+v+">";
     },
 
+    isString: function (s) {
+        return (typeof s == 'string' || s instanceof String);
+    },
+    
     openTBtab: function (url) {
         let tabmail = null;
         if (tbSync.window) {
@@ -1485,11 +1489,13 @@ var tbSync = {
         let dest = [];
         //the TbSync storage must be set as last
         let book64 = btoa(book);
-        let photoName = book64 + "_" + photo;
-        tbSync.dump("PhotoName", photoName);
+        let photo64 = btoa(photo);	    
+        let photoName64 = book64 + "_" + photo64;
         
-        dest.push(["Photos", photoName]);
-        dest.push(["TbSync","Photos", book64, photo]);
+        tbSync.dump("PhotoName", photoName64);
+        
+        dest.push(["Photos", photoName64]);
+        dest.push(["TbSync","Photos", book64, photo64]);
         
         let filePath = "";
         for (let i=0; i < dest.length; i++) {
@@ -1503,7 +1509,7 @@ var tbSync = {
 
             filePath = 'file:///' + file.path.replace(/\\/g, '\/').replace(/^\s*\/?/, '').replace(/\ /g, '%20');
         }
-        card.setProperty("PhotoName", photoName);
+        card.setProperty("PhotoName", photoName64);
         card.setProperty("PhotoType", "file");
         card.setProperty("PhotoURI", filePath);
         return filePath;
@@ -2051,10 +2057,13 @@ var tbSync = {
                 throw "Target with multiple source folders found! Forcing hard fail."; 
             }
         }
+
         
         //check if  there is a known/cached name, and use that as starting point to generate unique name for new calendar 
         let cachedName = tbSync.db.getFolderSetting(account, folderID, "targetName");                         
         let testname = cachedName == "" ? folder.name + " (" + tbSync.db.getAccountSetting(account, "accountname") + ")" : cachedName;
+
+        tbSync.dump("Creating new calendar ("+folder.name+")", folderID);
         
         let count = 1;
         let unique = false;
