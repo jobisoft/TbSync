@@ -2064,7 +2064,8 @@ var tbSync = {
         let testname = cachedName == "" ? folder.name + " (" + tbSync.db.getAccountSetting(account, "accountname") + ")" : cachedName;
 
         tbSync.dump("Creating new calendar ("+folder.name+")", folderID);
-        
+        tbSync.dump("FolderData", JSON.stringify(folder));
+
         let count = 1;
         let unique = false;
         let newname = testname;
