@@ -3,13 +3,9 @@
 
 <overlay 
 	id="abCardWindow" 
-	onbeforeinject="tbSync.eas.onBeforeInjectIntoCardEditWindow(window)"
-	oninject="tbSync.eas.onInjectIntoCardEditWindow(window)"
 	xmlns:html="http://www.w3.org/1999/xhtml">
-	
-   <script type="application/javascript" src="chrome://tbsync/content/provider/eas/overlays/abCardWindow.js" />
 
-    <hbox id="MiddleNameContainer" align="center" insertafter="NameField1Container" >
+    <hbox id="MiddleNameContainer" align="center" class="easContainer" insertafter="NameField1Container" >
         <spacer flex="1" />
         <label control="MiddleName" value="&abCard.MiddleName;" />
         <hbox class="CardEditWidth" >
@@ -17,7 +13,7 @@
         </hbox>
     </hbox>
 
-    <hbox id="Email3AddressContainer" align="center" insertafter="SecondaryEmailContainer">
+    <hbox id="Email3AddressContainer" align="center" class="easContainer" insertafter="SecondaryEmailContainer">
         <spacer flex="1"/>
         <label control="Email3Address" value="&abCard.Email3Address;" />
         <hbox class="CardEditWidth">
@@ -25,8 +21,8 @@
         </hbox>
     </hbox>
 
-    <tab id="easFields1Tab" label="&abCard.header.eas;" appendto="abTabs" />
-    <tab id="easFields2Tab" label="&abCard.header.otheraddress;" appendto="abTabs" />
+    <tab id="easFields1Tab" label="&abCard.header.eas;"  class="easContainer" appendto="abTabs" />
+    <tab id="easFields2Tab" label="&abCard.header.otheraddress;" class="easContainer" appendto="abTabs" />
       
       <vbox id="easFields1Panel" appendto="abTabPanels" >
       <hbox>
@@ -156,6 +152,3 @@
 
 
 </overlay>
-
-
-

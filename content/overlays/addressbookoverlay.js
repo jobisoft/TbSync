@@ -31,24 +31,27 @@ tbSync.onRemoveFromAddressbook = function (window) {
 }
 
 tbSync.onAbResultsPaneSelectionChanged = function () {
-    let cards = window.GetSelectedAbCards();
-    //loop over all providers
+    //hide all extra fields of all providers
     for (let provider in tbSync.providerList) {
-        if (tbSync.providerList[provider].enabled && tbSync[provider].onAbResultsPaneSelectionChanged) {
-            
-            let card = null;
-            //only set card if ONE card is selected and the current AB belongs to THIS provider
-            if (cards.length == 1) {
-                let aParentDirURI = tbSync.getUriFromPrefId(cards[0].directoryId.split("&")[0]);
-                if (aParentDirURI) { //could be undefined
-                    let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
-                    if (folders.length == 1 && tbSync.db.getAccountSetting(folders[0].account, "provider") == provider) {
-                        card = cards[0];
-                    }
+        if (tbSync.providerList[provider].enabled) {
+            let container = window.document.getElementsByClassName(provider + "Container");
+            for (let i=0; i < container.length; i++) {
+                container[i].hidden = true;
+            }
+        }
+    }
+    
+    let cards = window.GetSelectedAbCards();
+    if (cards.length == 1) {
+        let aParentDirURI = tbSync.getUriFromPrefId(cards[0].directoryId.split("&")[0]);
+        if (aParentDirURI) { //could be undefined
+            let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
+            if (folders.length == 1) {
+                let provider = tbSync.db.getAccountSetting(folders[0].account, "provider");
+                if (tbSync[provider].onAbResultsPaneSelectionChanged) {
+                    tbSync[provider].onAbResultsPaneSelectionChanged(window, cards[0]);
                 }
             }
-		
-            tbSync[provider].onAbResultsPaneSelectionChanged(window, card);
         }
     }
 }

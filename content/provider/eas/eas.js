@@ -393,26 +393,35 @@ var eas = {
      * address book
      *
      * @param window       [in] window obj of address book
-     * @param cards        [in] selected card (if owned by this provider)
+     * @param card         [in] selected card
      */
     onAbResultsPaneSelectionChanged: function (window, card) {
         let email3Box = window.document.getElementById("cvEmail3Box");
         if (email3Box) {
-            if (card) {
-                let email3Value = card.getProperty("Email3Address","");
-                if (email3Value) {
-                    email3Box.hidden = false;
-                    let email3Element = window.document.getElementById("cvEmail3");
-                    window.HandleLink(email3Element, window.zSecondaryEmail, email3Value, email3Box, "mailto:" + email3Value);
-                    return;
-                }
+            let email3Value = card.getProperty("Email3Address","");
+            if (email3Value) {
+                email3Box.hidden = false;
+                let email3Element = window.document.getElementById("cvEmail3");
+                window.HandleLink(email3Element, window.zSecondaryEmail, email3Value, email3Box, "mailto:" + email3Value);
             }
-
-            //no match, hide
-            email3Box.hidden = true;
         }
     },
+    
 
+
+    /**
+     * Is called if a card is loaded in the edit dialog to show/hide elements 
+    *  besides those of class type "<provider>Container"
+     * 
+     * OPTIONAL, do not implement, if this provider is not manipulating 
+     * the edit/new dialog beyond toggeling the elements of 
+     * class  "<provider>Container"
+     *
+     * @param document       [in] document obj of edit/new dialog
+     * @param isOwnProvider  [in] true if the open card belongs to this provider
+     */
+    onAbCardLoad: function (document, isOwnProvider) {
+    },
 
 
     /**

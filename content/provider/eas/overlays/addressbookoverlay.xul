@@ -3,7 +3,7 @@
 	id="abOverlay" 
 	xmlns:html="http://www.w3.org/1999/xhtml">
 
-    <description class="CardViewLink" id="cvEmail3Box" insertafter="cvEmail2Box">
+    <description class="CardViewLink easContainer" id="cvEmail3Box" insertafter="cvEmail2Box">
         <html:a href="" id="cvEmail3" />
     </description>
 
