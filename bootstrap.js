@@ -72,6 +72,7 @@ function startup(data, reason) {
     branch.setIntPref("eas.maxitems", 50);
     branch.setCharPref("eas.clientID.type", "TbSync");
     branch.setCharPref("eas.clientID.useragent", "Thunderbird ActiveSync");    
+    branch.setBoolPref("eas.fix4freedriven", false);
 
     Components.utils.import("chrome://tbsync/content/tbsync.jsm");
     Components.utils.import("chrome://tbsync/content/OverlayManager.jsm");

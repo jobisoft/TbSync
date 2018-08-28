@@ -572,6 +572,12 @@ var eas = {
                     newFolderSettings.name = add[count].DisplayName;
                     newFolderSettings.type = add[count].Type;
                     newFolderSettings.parentID = add[count].ParentId;
+
+                    if (tbSync.prefSettings.getBoolPref("eas.fix4freedriven")) {
+                        let target = tbSync.db.getFolderSetting(syncdata.account, add[count].ServerId, "target");                    
+                        if (target) newFolderSettings.target = target;
+                    }
+                        
                     if (tbSync.db.getAccountSetting(syncdata.account, "syncdefaultfolders") == "1") {
                         newFolderSettings.selected = (newFolderSettings.type == "9" || newFolderSettings.type == "8" || newFolderSettings.type == "7" ) ? "1" : "0";
                     } else newFolderSettings.selected = "0";
