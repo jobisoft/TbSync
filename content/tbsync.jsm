@@ -477,10 +477,7 @@ var tbSync = {
                     }
 
                     //also use this timer to check for updates
-                    let checkInterval = tbSync.prefSettings.getIntPref("updateCheckInterval") * 60 * 60 * 1000;
-                    if ((Date.now() - tbSync.lastVersionCheck) > checkInterval) {
-                        tbSync.check4updates();
-                    }                
+                    tbSync.check4updates();
                 }
             }
         }
@@ -942,6 +939,10 @@ var tbSync = {
     },
 
     check4updates: Task.async (function* () {
+        let checkInterval = tbSync.prefSettings.getIntPref("updateCheckInterval") * 60 * 60 * 1000;
+        if (!(checkInterval > 0 && (Date.now() - tbSync.lastVersionCheck) > checkInterval)) 
+            return;
+
         let versions = null;
         let urls = ["https://tbsync.jobisoft.de/VERSION.info", "https://raw.githubusercontent.com/jobisoft/TbSync/master/VERSION.info"];
 
