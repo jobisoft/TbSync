@@ -386,6 +386,36 @@ var eas = {
 
 
     /**
+     * Is called if one or more cards have been selected in the addressbook, to update 
+     * field information in the card view pane
+     * 
+     * OPTIONAL, do not implement, if this provider is not adding any fields to the
+     * address book
+     *
+     * @param window       [in] window obj of address book
+     * @param cards        [in] selected card (if owned by this provider)
+     */
+    onAbResultsPaneSelectionChanged: function (window, card) {
+        let email3Box = window.document.getElementById("cvEmail3Box");
+        if (email3Box) {
+            if (card) {
+                let email3Value = card.getProperty("Email3Address","");
+                if (email3Value) {
+                    email3Box.hidden = false;
+                    let email3Element = window.document.getElementById("cvEmail3");
+                    window.HandleLink(email3Element, window.zSecondaryEmail, email3Value, email3Box, "mailto:" + email3Value);
+                    return;
+                }
+            }
+
+            //no match, hide
+            email3Box.hidden = true;
+        }
+    },
+
+
+
+    /**
      * Is called if TbSync needs to synchronize an account.
      *
      * @param syncdata      [in] object that contains the account and maybe the folder which needs to worked on

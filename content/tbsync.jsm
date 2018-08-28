@@ -136,6 +136,8 @@ var tbSync = {
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messengercompose/messengercompose.xul", "chrome://tbsync/content/overlays/messengercompose.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/abServerSearch.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abContactsPanel.xul", "chrome://tbsync/content/overlays/abServerSearch.xul");
+        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/addressbookoverlay.xul");
+        
         tbSync.overlayManager.injectAllOverlays(tbSync.window);
 
         //print information about Thunderbird version and OS
