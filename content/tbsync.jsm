@@ -166,7 +166,10 @@ var tbSync = {
     }),
         
     checkInstalledProvider: Task.async (function* (addons) {
-        for (let a=0; a < addons.length; a++) {
+        let providers = Object.keys(tbSync.providerList);
+        let wait4activate = [];
+        
+	    for (let a=0; a < addons.length; a++) {
             if (addons[a].isActive) {
                 let provider = null;
                 switch (addons[a].id.toString()) {
@@ -183,17 +186,26 @@ var tbSync = {
 
                 //if this addOn is a registerd provider, activate it
                 if (provider && !tbSync.providerList[provider].enabled) {
-                    let v = addons[a].version.toString();
-                    if (Services.vc.compare(v, tbSync.providerList[provider].minVersion) >= 0) {
-                        tbSync.providerList[provider].enabled = true;
-                        tbSync.providerList[provider].version = v;
-                        
-                        //load provider subscripts into tbSync 
-                        tbSync.dump("PROVIDER", provider + "::" + tbSync.providerList[provider].name);
-                        tbSync.includeJS("chrome:" + tbSync.providerList[provider].js);
-                        yield tbSync[provider].init(tbSync.lightningIsAvailable());
-                    }                        
+                    wait4activate.push({provider: provider, addon: addons[a]})
                 }
+            }
+        }
+        
+        //use the order of providerList to activate provider (eas first)
+        for (let i = 0; i < providers.length; i++) {
+            let provider = providers[i];
+            let waiting = wait4activate.filter(item => item.provider == provider);
+            if (waiting.length == 1) {
+                let v = waiting[0].addon.version.toString();
+                if (Services.vc.compare(v, tbSync.providerList[provider].minVersion) >= 0) {
+                    tbSync.providerList[provider].enabled = true;
+                    tbSync.providerList[provider].version = v;
+                    
+                    //load provider subscripts into tbSync 
+                    tbSync.dump("PROVIDER", provider + "::" + tbSync.providerList[provider].name);
+                    tbSync.includeJS("chrome:" + tbSync.providerList[provider].js);
+                    yield tbSync[provider].init(tbSync.lightningIsAvailable());
+                }                        
             }
         }
     }),
