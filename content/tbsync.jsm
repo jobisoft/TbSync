@@ -93,7 +93,7 @@ var tbSync = {
             accountXul: "//tbsync/content/provider/eas/accountSettings.xul",
             homepageUrl: "",
             enabled: false,
-            minVersion: 0,
+            minVersion: "0",
         },  
         ews: {
             name: "Exchange WebServices (EWS)", 
@@ -102,7 +102,7 @@ var tbSync = {
             accountXul: "//ews4tbsync/content/accountSettings.xul",
             homepageUrl: "",
             enabled: false,
-            minVersion: 0.6,
+            minVersion: "0.6",
         },
         dav: {
             name: "sabre/dav (CalDAV & CardDAV)", 
@@ -111,7 +111,7 @@ var tbSync = {
             accountXul: "//dav4tbsync/content/accountSettings.xul",
             homepageUrl: "https://addons.thunderbird.net/en-US/thunderbird/addon/dav-4-tbsync/",
             enabled: false,
-            minVersion: 0.8,
+            minVersion: "0.8.10",
         },
     },
     
@@ -169,7 +169,7 @@ var tbSync = {
         let providers = Object.keys(tbSync.providerList);
         let wait4activate = [];
         
-	    for (let a=0; a < addons.length; a++) {
+        for (let a=0; a < addons.length; a++) {
             if (addons[a].isActive) {
                 let provider = null;
                 switch (addons[a].id.toString()) {
@@ -205,7 +205,9 @@ var tbSync = {
                     tbSync.dump("PROVIDER", provider + "::" + tbSync.providerList[provider].name);
                     tbSync.includeJS("chrome:" + tbSync.providerList[provider].js);
                     yield tbSync[provider].init(tbSync.lightningIsAvailable());
-                }                        
+                } else {
+                    tbSync.window.alert("The provider <"+tbSync.providerList[provider].name+"> is not compatible with this version of TbSync, please update it to at least version <"+tbSync.providerList[provider].minVersion+">");
+                }
             }
         }
     }),
