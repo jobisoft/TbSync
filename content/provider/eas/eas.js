@@ -22,7 +22,8 @@ tbSync.includeJS("chrome://tbsync/content/provider/eas/xmltools.js");
 
 var eas = {
     bundle: Services.strings.createBundle("chrome://tbsync/locale/eas.strings"),
-    
+    minTbSyncVersionRequired: "0",
+
     //use flags instead of strings to avoid errors due to spelling errors
     flags : Object.freeze({
         allowEmptyResponse: true, 

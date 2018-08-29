@@ -111,7 +111,7 @@ var tbSync = {
             accountXul: "//dav4tbsync/content/accountSettings.xul",
             homepageUrl: "https://addons.thunderbird.net/en-US/thunderbird/addon/dav-4-tbsync/",
             enabled: false,
-            minVersion: "0.8.10",
+            minVersion: "0.9",
         },
     },
     
@@ -198,15 +198,21 @@ var tbSync = {
             if (waiting.length == 1) {
                 let v = waiting[0].addon.version.toString();
                 if (Services.vc.compare(v, tbSync.providerList[provider].minVersion) >= 0) {
-                    tbSync.providerList[provider].enabled = true;
                     tbSync.providerList[provider].version = v;
                     
                     //load provider subscripts into tbSync 
                     tbSync.dump("PROVIDER", provider + "::" + tbSync.providerList[provider].name);
                     tbSync.includeJS("chrome:" + tbSync.providerList[provider].js);
-                    yield tbSync[provider].init(tbSync.lightningIsAvailable());
+                    
+                    //before running init, check min version requirements
+                    if (tbSync.cmpVersions(tbSync[provider].minTbSyncVersionRequired, tbSync.providerList.eas.version) > 0) {
+                        tbSync.window.alert("The installed version of the provider for <"+tbSync.providerList[provider].name+">\nrequires a more recent version of TbSync.\n\nThe provider cannot be loaded until TbSync has been updated to version <"+tbSync[provider].minTbSyncVersionRequired+"> or later.");
+                    } else {
+                        tbSync.providerList[provider].enabled = true;
+                        yield tbSync[provider].init(tbSync.lightningIsAvailable());
+                    }
                 } else {
-                    tbSync.window.alert("The provider <"+tbSync.providerList[provider].name+"> is not compatible with this version of TbSync, please update it to at least version <"+tbSync.providerList[provider].minVersion+">");
+                    tbSync.window.alert("This version of TbSync requires a more recent version of the provider for\n<"+tbSync.providerList[provider].name+">.\n\nThe provider cannot be not be loaded until it has been updated to version <"+tbSync.providerList[provider].minVersion+"> or later.");
                 }
             }
         }
