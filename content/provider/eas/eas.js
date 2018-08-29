@@ -333,10 +333,11 @@ var eas = {
             wbxml.otag("Store");
                 wbxml.atag("Name", "GAL");
                 wbxml.atag("Query", currentQuery);
-                wbxml.otag("Options");
-                    wbxml.atag("DeepTraversal");
-                    wbxml.atag("RebuildResults");
-                wbxml.ctag();
+// Not valid for GAL: https://msdn.microsoft.com/en-us/library/gg675461(v=exchg.80).aspx
+//                wbxml.otag("Options");
+//                    wbxml.atag("DeepTraversal");
+//                    wbxml.atag("RebuildResults");
+//                wbxml.ctag();
             wbxml.ctag();
         wbxml.ctag();
 
