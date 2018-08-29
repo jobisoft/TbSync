@@ -68,7 +68,7 @@ var tbSync = {
     window: null,
     versionInfo: {mozilla : {number: "0.0.0", url: ""}, stable : {number: "0.0.0", url: ""}, beta : {number: "0.0.0.0", url: ""}},
     lastVersionCheck: 0,
-        
+
     lightningInitDone: false,
     cachedTimezoneData: null,
     defaultTimezoneInfo: null,
@@ -310,33 +310,35 @@ var tbSync = {
         tbSync.syncTimer.cancel();
 
         //remove observer
-        Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate");
-        Services.obs.removeObserver(tbSync.initSyncObserver, "tbsync.initSync");
-        Services.obs.removeObserver(tbSync.removeProviderObserver, "tbsync.removeProvider");
-        Services.obs.removeObserver(tbSync.addProviderObserver, "tbsync.addProvider");
+        if (tbSync.enabled === true) {
+            Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate");
+            Services.obs.removeObserver(tbSync.initSyncObserver, "tbsync.initSync");
+            Services.obs.removeObserver(tbSync.removeProviderObserver, "tbsync.removeProvider");
+            Services.obs.removeObserver(tbSync.addProviderObserver, "tbsync.addProvider");
 
-        //close window (if open)
-        if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
-        
-        //remove listener
-        tbSync.addressbookListener.remove();
+            //close window (if open)
+            if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
+            
+            //remove listener
+            tbSync.addressbookListener.remove();
 
-        //remove tbSync autocomplete
-        tbSync.abAutoComplete.shutdown();
+            //remove tbSync autocomplete
+            tbSync.abAutoComplete.shutdown();
 
-        if (tbSync.lightningInitDone) {
-            //removing global observer
-            cal.getCalendarManager().removeCalendarObserver(tbSync.calendarObserver);
-            cal.getCalendarManager().removeObserver(tbSync.calendarManagerObserver);
+            if (tbSync.lightningInitDone) {
+                //removing global observer
+                cal.getCalendarManager().removeCalendarObserver(tbSync.calendarObserver);
+                cal.getCalendarManager().removeObserver(tbSync.calendarManagerObserver);
 
-            //remove listeners on global sync buttons
-            if (tbSync.window.document.getElementById("calendar-synchronize-button")) {
-                tbSync.window.document.getElementById("calendar-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
+                //remove listeners on global sync buttons
+                if (tbSync.window.document.getElementById("calendar-synchronize-button")) {
+                    tbSync.window.document.getElementById("calendar-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
+                }
+                if (tbSync.window.document.getElementById("task-synchronize-button")) {
+                    tbSync.window.document.getElementById("task-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
+                }
+
             }
-            if (tbSync.window.document.getElementById("task-synchronize-button")) {
-                tbSync.window.document.getElementById("task-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
-            }
-
         }
     },
 
