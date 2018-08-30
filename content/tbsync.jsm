@@ -205,7 +205,7 @@ var tbSync = {
                     tbSync.includeJS("chrome:" + tbSync.providerList[provider].js);
                     
                     //before running init, check min version requirements
-                    if (tbSync.cmpVersions(tbSync[provider].minTbSyncVersionRequired, tbSync.providerList.eas.version) > 0) {
+                    if (tbSync[provider].minTbSyncVersionRequired && tbSync.cmpVersions(tbSync[provider].minTbSyncVersionRequired, tbSync.providerList.eas.version) > 0) {
                         if (tbSync.window.confirm("The installed version of the provider for <"+tbSync.providerList[provider].name+">\nrequires a more recent version of TbSync.\nThe provider cannot be loaded until TbSync has been updated to version <"+tbSync[provider].minTbSyncVersionRequired+"> or later.\n\nDo you want to open the project page, to get the latest version of TbSync?")) {
                             tbSync.openTBtab("https://addons.thunderbird.net/de/thunderbird/addon/tbsync/");
                         }
