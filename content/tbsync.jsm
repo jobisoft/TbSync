@@ -111,7 +111,7 @@ var tbSync = {
             accountXul: "//dav4tbsync/content/accountSettings.xul",
             homepageUrl: "https://addons.thunderbird.net/en-US/thunderbird/addon/dav-4-tbsync/",
             enabled: false,
-            minVersion: "0.9",
+            minVersion: "0.8.10",
         },
     },
     
@@ -206,13 +206,17 @@ var tbSync = {
                     
                     //before running init, check min version requirements
                     if (tbSync.cmpVersions(tbSync[provider].minTbSyncVersionRequired, tbSync.providerList.eas.version) > 0) {
-                        tbSync.window.alert("The installed version of the provider for <"+tbSync.providerList[provider].name+">\nrequires a more recent version of TbSync.\n\nThe provider cannot be loaded until TbSync has been updated to version <"+tbSync[provider].minTbSyncVersionRequired+"> or later.");
+                        if (tbSync.window.confirm("The installed version of the provider for <"+tbSync.providerList[provider].name+">\nrequires a more recent version of TbSync.\nThe provider cannot be loaded until TbSync has been updated to version <"+tbSync[provider].minTbSyncVersionRequired+"> or later.\n\nDo you want to open the project page, to get the latest version of TbSync?")) {
+                            tbSync.openTBtab("https://addons.thunderbird.net/de/thunderbird/addon/tbsync/");
+                        }
                     } else {
                         tbSync.providerList[provider].enabled = true;
                         yield tbSync[provider].init(tbSync.lightningIsAvailable());
                     }
                 } else {
-                    tbSync.window.alert("This version of TbSync requires a more recent version of the provider for\n<"+tbSync.providerList[provider].name+">.\n\nThe provider cannot be not be loaded until it has been updated to version <"+tbSync.providerList[provider].minVersion+"> or later.");
+                    if (tbSync.window.confirm("This version of TbSync requires a more recent version of the provider for\n<"+tbSync.providerList[provider].name+">.\nThe provider cannot be not be loaded until it has been updated to version <"+tbSync.providerList[provider].minVersion+"> or later.\n\nDo you want to open the project page, to get the latest version of this provider?")) {
+                            tbSync.openTBtab(tbSync.providerList[provider].homepageUrl);
+                    }
                 }
             }
         }
