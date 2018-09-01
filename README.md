@@ -1,6 +1,6 @@
 # TbSync
 [Thunderbird Add-On] Sync contacts, tasks and events to Thunderbird. The following servers are supported:
-* Exchange ActiveSync (EAS v2.5 and v14.0)
+* Exchange ActiveSync (EAS v2.5 & v14.0)
 * sabre/dav (CalDAV & CardDAV), via [DAV-4-TbSync](https://github.com/jobisoft/DAV-4-TbSync)
 
 Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki) of the TbSync project and in the [how-to-get-started guide](https://github.com/jobisoft/TbSync/wiki/How-to-get-started).
