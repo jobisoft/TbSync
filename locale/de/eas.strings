@@ -13,8 +13,8 @@ deletefolder.notallowed=Bitte beenden Sie zunächst das Abonement des Ordner "##
 deletefolder.confirm=Möchten Sie den Ordner "##replace.1##" wirklich ENDGÜLTIG aus dem Papierkorb ENTFERNEN?
 
 deletefolder.menuentry=Den Ordner "##replace.1##" endgültig aus dem Papierkorb entfernen
-subscribe.on="##replace.1##" abonieren
-subscribe.off="##replace.1##" nicht länger abonieren
+subscribe.on="##replace.1##" abonnieren
+subscribe.off="##replace.1##" nicht länger abonnieren
 
 recyclebin = Papierkorb
 
