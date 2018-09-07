@@ -982,7 +982,8 @@ var tbSync = {
         for (let u=0; u<urls.length && versions === null; u++) {
             try {
                 //get latest version info
-                versions = yield tbSync.fetchFile(urls[u]);
+                let v = yield tbSync.fetchFile(urls[u]);
+                if (v[0].split(" ")[0] == "mozilla") versions = v;
             } catch (ex) {
                 tbSync.dump("Get version info failed!", urls[u]);
             }
