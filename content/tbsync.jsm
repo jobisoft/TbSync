@@ -974,7 +974,7 @@ var tbSync = {
             return;
 
         let versions = null;
-        let urls = ["https://tbsync.jobisoft.de/VERSION.info", "https://raw.githubusercontent.com/jobisoft/TbSync/master/VERSION.info"];
+        let urls = ["https://tbsync.jobisoft.de/VERSION.info"];
 
         //we do not want to ask the server every 60s if the request failed for some reason, so we set the lastVersionCheck on each ATTEMPT, not on each SUCCESS
         tbSync.lastVersionCheck = Date.now();
