@@ -1321,15 +1321,13 @@ var tbSync = {
                     //delete any pending changelog of the deleted book
                     tbSync.db.clearChangeLog(aItem.URI);			
 
-                    if (tbSync.db.getFolderSetting(folders[0].account, folders[0].folderID, "useChangeLog") == "1") {
-                        //update settings window, if open
-                        if (folders[0].selected == "1") {
-                            tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "status", "aborted");
-                            if (tbSync.isEnabled(folders[0].account)) tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
+                    //update settings window, if open
+                    if (folders[0].selected == "1") {
+                        tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "status", "aborted");
+                        if (tbSync.isEnabled(folders[0].account)) tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
 
-                            //update settings window, if open
-                             Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
-                        }
+                        //update settings window, if open
+                         Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
                     }
                     
                     tbSync.db.resetFolderSetting(folders[0].account, folders[0].folderID, "target");
@@ -2019,14 +2017,12 @@ var tbSync = {
                 //delete any pending changelog of the deleted calendar
                 tbSync.db.clearChangeLog(aCalendar.id);
 
-                if (tbSync.db.getFolderSetting(folders[0].account, folders[0].folderID, "useChangeLog") == "1") {
-                    if (folders[0].selected == "1") {
-                        tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "status", "aborted");
-                        if (tbSync.isEnabled(folders[0].account)) tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
+                if (folders[0].selected == "1") {
+                    tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "status", "aborted");
+                    if (tbSync.isEnabled(folders[0].account)) tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
 
-                        //update settings window, if open
-                        Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
-                    }
+                    //update settings window, if open
+                    Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
                 }
                 
                 tbSync.db.resetFolderSetting(folders[0].account, folders[0].folderID, "target");
