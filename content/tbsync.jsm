@@ -111,7 +111,7 @@ var tbSync = {
             accountXul: "//dav4tbsync/content/accountSettings.xul",
             homepageUrl: "https://addons.thunderbird.net/en-US/thunderbird/addon/dav-4-tbsync/",
             enabled: false,
-            minVersion: "0.8.10",
+            minVersion: "0.8.23",
         },
     },
     
@@ -211,7 +211,7 @@ var tbSync = {
                         }
                     } else {
                         tbSync.providerList[provider].enabled = true;
-                        yield tbSync[provider].init(tbSync.lightningIsAvailable());
+                        yield tbSync[provider].load(tbSync.lightningIsAvailable());
                     }
                 } else {
                     if (tbSync.window.confirm("This version of TbSync requires a more recent version of the provider for\n<"+tbSync.providerList[provider].name+">.\nThe provider cannot be not be loaded until it has been updated to version <"+tbSync.providerList[provider].minVersion+"> or later.\n\nDo you want to open the project page, to get the latest version of this provider?")) {
@@ -467,6 +467,7 @@ var tbSync = {
             if (tbSync.enabled &&  tbSync.providerList.hasOwnProperty(aData) && tbSync.providerList[aData].enabled) {
                 
                 tbSync.providerList[aData].enabled = false;
+                yield tbSync[aData].unload(tbSync.lightningIsAvailable());
                 if (tbSync[aData]) tbSync[aData] = {};
                 //close window (if open)
                 if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
