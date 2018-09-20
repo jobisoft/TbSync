@@ -41,7 +41,7 @@ var eas = {
      *
      * @param lightningIsAvail       [in] indicate wheter lightning is installed/enabled
      */
-    load: Task.async (function* (lightningIsAvail)  {
+    load: Task.async (function* (lightningIsAvail) {
         //dynamically load overlays from xpi
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abEditCardDialog.xul", "chrome://tbsync/content/provider/eas/overlays/abCardWindow.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/provider/eas/overlays/abCardWindow.xul");
@@ -101,8 +101,9 @@ var eas = {
      *
      * @param lightningIsAvail       [in] indicate wheter lightning is installed/enabled
      */
-    unload: Task.async (function* (lightningIsAvail)  {
-    }),
+    unload: function (lightningIsAvail) {
+        tbSync.dump("Unloading", "eas");
+    },
 
 
     /**

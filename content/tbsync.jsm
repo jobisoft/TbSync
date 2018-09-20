@@ -335,7 +335,7 @@ var tbSync = {
             //remove tbSync autocomplete
             tbSync.abAutoComplete.shutdown();
 
-            if (tbSync.lightningInitDone) {
+            if (tbSync.lightningIsAvailable()) {
                 //removing global observer
                 cal.getCalendarManager().removeCalendarObserver(tbSync.calendarObserver);
                 cal.getCalendarManager().removeObserver(tbSync.calendarManagerObserver);
@@ -347,8 +347,16 @@ var tbSync = {
                 if (tbSync.window.document.getElementById("task-synchronize-button")) {
                     tbSync.window.document.getElementById("task-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
                 }
-
             }
+            
+            let providers = Object.keys(tbSync.providerList);
+            for (let i = 0; i < providers.length; i++) {
+                let provider = providers[i];
+                if (tbSync.providerList[provider].enabled) {
+                    tbSync[provider].unload(tbSync.lightningIsAvailable());
+                }
+            }
+            
         }
     },
 
@@ -465,7 +473,6 @@ var tbSync = {
         observe: Task.async (function* (aSubject, aTopic, aData) {
             //Security: only allow to unload pre-registered providers
             if (tbSync.enabled &&  tbSync.providerList.hasOwnProperty(aData) && tbSync.providerList[aData].enabled) {
-                
                 tbSync.providerList[aData].enabled = false;
                 yield tbSync[aData].unload(tbSync.lightningIsAvailable());
                 if (tbSync[aData]) tbSync[aData] = {};
