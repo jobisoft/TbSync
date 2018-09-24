@@ -339,7 +339,7 @@ var tbSyncAccountSettings = {
     },
 
     unlockSettings: function () {
-        if (confirm(tbSync.getLocalizedMessage("prompt.UnlockSettings", tbSyncAccountSettings.provider))) {
+        if (confirm(tbSync.getLocalizedMessage("prompt.UnlockSettings"))) {
             tbSync.db.setAccountSetting(tbSyncAccountSettings.account, "servertype", "custom");
             tbSyncAccountSettings.loadSettings();
         }
