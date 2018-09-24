@@ -470,25 +470,23 @@ var eas = {
                 if ((Date.now() - tbSync.db.getAccountSetting(syncdata.account, "lastEasOptionsUpdate")) > 86400000 ) {
                     yield eas.getServerOptions(syncdata);
                 }
-                
-                //update "live" setting from UI
-                if (!tbSync.isConnected(syncdata.account)) {
-                    db.setAccountSetting(syncdata.account, "asversion", db.getAccountSetting(syncdata.account, "asversionselected"));
-                }
-                
-                //check EAS version - "auto" means we just enabled and have to find the best option avail, any other value needs to be checked agains options avail
-                let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversion");
+                                
+                //eval the currently in the UI selected EAS version
+                let asversion = tbSync.db.getAccountSetting(syncdata.account, "asversionselected");
                 let allowed = tbSync.db.getAccountSetting(syncdata.account, "allowedEasVersions").split(",");
                 if (asversion == "auto") {
-                    if (allowed.includes("14.0")) tbSync.db.setAccountSetting(syncdata.account, "asversion","14.0");
-                    else if (allowed.includes("2.5")) tbSync.db.setAccountSetting(syncdata.account, "asversion","2.5");
-                    else if (allowed == "") {
+                    if (allowed.includes("14.0")) tbSync.db.setAccountSetting(syncdata.account, "asversion", "14.0");
+                    else if (allowed.includes("2.5")) tbSync.db.setAccountSetting(syncdata.account, "asversion", "2.5");
+                    else if (allowed.length == 0) {
                         throw eas.finishSync("InvalidServerOptions", eas.flags.abortWithError);
                     } else {
-                        throw eas.finishSync("nosupportedeasversion::"+allowed.join(","), eas.flags.abortWithError);
+                        throw eas.finishSync("nosupportedeasversion::"+allowed.join(", "), eas.flags.abortWithError);
                     }
-                } else if (allowed != "" && !allowed.includes(asversion)) {
-                    throw eas.finishSync("notsupportedeasversion::"+asversion+"::"+allowed.join(","), eas.flags.abortWithError);
+                } else if (allowed.length > 0 && !allowed.includes(asversion)) {
+                    throw eas.finishSync("notsupportedeasversion::"+asversion+"::"+allowed.join(", "), eas.flags.abortWithError);
+                } else {
+                    //just use the value set by the user
+                    tbSync.db.setAccountSetting(syncdata.account, "asversion", asversion);
                 }
                 
                 //do we need to get a new policy key?
