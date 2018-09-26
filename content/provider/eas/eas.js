@@ -501,8 +501,9 @@ var eas = {
                 
                 switch (job) {
                     case "sync":
+                        //set device info
+                        yield eas.setDeviceInformation (syncdata);
                         //get all folders, which need to be synced
-                        //yield eas.getUserInfo(syncdata);
                         yield eas.getPendingFolders(syncdata);
                         //update folder list in GUI
                         Services.obs.notifyObservers(null, "tbsync.updateFolderList", syncdata.account);
@@ -982,6 +983,35 @@ var eas = {
         eas.checkStatus(syncdata, wbxmlData,"Settings.Status");
     }),
 
+    setDeviceInformation: Task.async (function* (syncdata)  {
+        if (!tbSync.db.getAccountSetting(syncdata.account, "allowedEasCommands").split(",").includes("Settings")) {
+            return;
+        }
+            
+        tbSync.setSyncState("prepare.request.setdeviceinfo", syncdata.account);
+
+        let wbxml = wbxmltools.createWBXML();
+        wbxml.switchpage("Settings");
+        wbxml.otag("Settings");
+            wbxml.otag("DeviceInformation");
+                wbxml.otag("Set");
+                    wbxml.atag("Model", "Computer");
+                    wbxml.atag("FriendlyName", "TbSync on Device " + tbSync.db.getAccountSetting(syncdata.account, "deviceId").substring(4));
+                    wbxml.atag("OS", OS.Constants.Sys.Name);
+                    wbxml.atag("UserAgent", tbSync.db.getAccountSetting(syncdata.account, "useragent"));
+                wbxml.ctag();
+            wbxml.ctag();
+        wbxml.ctag();
+
+        tbSync.setSyncState("send.request.setdeviceinfo", syncdata.account);
+        let response = yield eas.sendRequest(wbxml.getBytes(), "Settings", syncdata);
+
+        tbSync.setSyncState("eval.response.setdeviceinfo", syncdata.account);
+        let wbxmlData = eas.getDataFromResponse(response);
+
+        eas.checkStatus(syncdata, wbxmlData,"Settings.Status");
+    }),
+
     deleteFolder: Task.async (function* (syncdata)  {
         if (syncdata.folderID == "") {
             throw eas.finishSync();
@@ -1051,7 +1081,7 @@ var eas = {
             d = Math.floor(d/16);
             return (c=='x' ? r : (r&0x3|0x8)).toString(16);
         });
-        return "mztb" + uuid;
+        return "MZTB" + uuid;
     },
         
     logxml : function (wbxml, what) {

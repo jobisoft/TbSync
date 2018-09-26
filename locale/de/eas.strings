@@ -18,6 +18,10 @@ subscribe.off="##replace.1##" nicht länger abonnieren
 
 recyclebin = Papierkorb
 
+syncstate.prepare.request.setdeviceinfo=Sende Geräteinformationen
+syncstate.send.request.setdeviceinfo=Sende Geräteinformationen
+syncstate.eval.response.setdeviceinfo=Sende Geräteinformationen
+
 syncstate.syncing=Initiiere Synchronisation
 syncstate.preparing=Bereite das nächste Element für die Synchronisation vor
 syncstate.done=Bereite das nächste Element für die Synchronisation vor

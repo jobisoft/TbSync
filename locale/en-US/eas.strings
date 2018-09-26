@@ -18,6 +18,10 @@ subscribe.off=Unsubscribe "##replace.1##"
 
 recyclebin = Trash
 
+syncstate.prepare.request.setdeviceinfo=Sending device information
+syncstate.send.request.setdeviceinfo=Sending device information
+syncstate.eval.response.setdeviceinfo=Sending device information
+
 syncstate.syncing=Initialize synchronization
 syncstate.preparing=Preparing next item for synchronization
 syncstate.done=Preparing next item for synchronization
