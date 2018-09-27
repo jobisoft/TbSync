@@ -490,7 +490,7 @@ var eas = {
                         throw eas.finishSync("notsupportedeasversion::"+asversionselected+"::"+allowedVersionsArray.join(", "), eas.flags.abortWithError);
                     } else {
                         //just use the value set by the user
-                        tbSync.db.setAccountSetting(syncdata.account, "asversionselected", asversion);
+                        tbSync.db.setAccountSetting(syncdata.account, "asversion", asversionselected);
                     }
                 }
                 
