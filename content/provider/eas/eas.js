@@ -984,7 +984,7 @@ var eas = {
     }),
 
     setDeviceInformation: Task.async (function* (syncdata)  {
-        if (!tbSync.db.getAccountSetting(syncdata.account, "allowedEasCommands").split(",").includes("Settings")) {
+        if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5" || !tbSync.db.getAccountSetting(syncdata.account, "allowedEasCommands").split(",").includes("Settings")) {
             return;
         }
             
