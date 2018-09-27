@@ -466,13 +466,13 @@ var eas = {
                     throw eas.finishSync("nouserhost", eas.flags.abortWithError);
                 }
                 
-                //should we recheck options/commands?
-                if ((Date.now() - tbSync.db.getAccountSetting(syncdata.account, "lastEasOptionsUpdate")) > 86400000 ) {
+                //should we recheck options/commands? Always check, if we have no info about asversion!
+                if (tbSync.db.getAccountSetting(syncdata.account, "asversion", "") == "" || (Date.now() - tbSync.db.getAccountSetting(syncdata.account, "lastEasOptionsUpdate")) > 86400000 ) {
                     yield eas.getServerOptions(syncdata);
                 }
                                 
                 //only update the actual used asversion, if we are currently not connected or it has not yet been set
-                if (!tbSync.isConnected(syncdata.account) || tbSync.db.getAccountSetting(syncdata.account, "asversion", "") == "") {
+                if (tbSync.db.getAccountSetting(syncdata.account, "asversion", "") == "" || !tbSync.isConnected(syncdata.account)) {
                     //eval the currently in the UI selected EAS version
                     let asversionselected = tbSync.db.getAccountSetting(syncdata.account, "asversionselected");
                     let allowedVersionsString = tbSync.db.getAccountSetting(syncdata.account, "allowedEasVersions").trim();
@@ -1262,23 +1262,30 @@ var eas = {
                 let responseData = {};
 
                 switch(syncdata.req.status) {
+                    case 401: // AuthError
+                            reject(eas.finishSync("401", eas.flags.abortWithError));
+                        break;
+
                     case 200:
-                        responseData["MS-ASProtocolVersions"] =  syncdata.req.getResponseHeader("MS-ASProtocolVersions");
-                        responseData["MS-ASProtocolCommands"] =  syncdata.req.getResponseHeader("MS-ASProtocolCommands");                        
+                            responseData["MS-ASProtocolVersions"] =  syncdata.req.getResponseHeader("MS-ASProtocolVersions");
+                            responseData["MS-ASProtocolCommands"] =  syncdata.req.getResponseHeader("MS-ASProtocolCommands");                        
 
-                        tbSync.dump("EAS OPTIONS with response (status: 200)", "\n" +
-                        "responseText: " + syncdata.req.responseText + "\n" +
-                        "responseHeader(MS-ASProtocolVersions): " + responseData["MS-ASProtocolVersions"]+"\n" +
-                        "responseHeader(MS-ASProtocolCommands): " + responseData["MS-ASProtocolCommands"]);
+                            tbSync.dump("EAS OPTIONS with response (status: 200)", "\n" +
+                            "responseText: " + syncdata.req.responseText + "\n" +
+                            "responseHeader(MS-ASProtocolVersions): " + responseData["MS-ASProtocolVersions"]+"\n" +
+                            "responseHeader(MS-ASProtocolCommands): " + responseData["MS-ASProtocolCommands"]);
 
-                        if (responseData && responseData["MS-ASProtocolCommands"] && responseData["MS-ASProtocolVersions"]) {
-                            tbSync.db.setAccountSetting(syncdata.account, "allowedEasCommands", responseData["MS-ASProtocolCommands"]);
-                            tbSync.db.setAccountSetting(syncdata.account, "allowedEasVersions", responseData["MS-ASProtocolVersions"]);
-                            tbSync.db.setAccountSetting(syncdata.account, "lastEasOptionsUpdate", Date.now());
-                        }
+                            if (responseData && responseData["MS-ASProtocolCommands"] && responseData["MS-ASProtocolVersions"]) {
+                                tbSync.db.setAccountSetting(syncdata.account, "allowedEasCommands", responseData["MS-ASProtocolCommands"]);
+                                tbSync.db.setAccountSetting(syncdata.account, "allowedEasVersions", responseData["MS-ASProtocolVersions"]);
+                                tbSync.db.setAccountSetting(syncdata.account, "lastEasOptionsUpdate", Date.now());
+                            }
+                            resolve();
+                        break;
 
                     default:
                             resolve();
+                        break;
 
                 }
             };
