@@ -129,10 +129,9 @@ var tbSyncEasNewAccount = {
         if (url) {
             newAccountEntry.host = tbSync.eas.stripAutodiscoverUrl(url);
             newAccountEntry.https = (url.substring(0,5) == "https") ? "1" : "0";
+            //also update password in PasswordManager (only works if url is present)
+            tbSync.setPassword (newAccountEntry, password);
         }
-
-        //also update password in PasswordManager
-        tbSync.setPassword (newAccountEntry, password);
 
         //create a new EAS account and pass its id to updateAccountsList, which will select it
         //the onSelect event of the List will load the selected account
