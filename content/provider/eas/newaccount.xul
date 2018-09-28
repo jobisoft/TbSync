@@ -50,7 +50,7 @@
                 </row>
                 <row id="tbsync.newaccount.url.box">
                     <vbox pack="center"><label value="&add.url;" /></vbox>
-                    <textbox id="tbsync.newaccount.url" oninput="tbSyncEasNewAccount.onUserTextInput();"/>
+                    <textbox id="tbsync.newaccount.url" oninput="tbSyncEasNewAccount.onUserTextInput();" tooltiptext="&add.urldescription;"/>
                 </row>
 
                 <row style="height:40px; margin-top:1ex;margin-bottom:1ex;">
