@@ -33,6 +33,7 @@ var tbSyncEasNewAccount = {
     onLoad: function () {
         this.elementName = document.getElementById('tbsync.newaccount.name');
         this.elementUser = document.getElementById('tbsync.newaccount.user');
+        this.elementUrl = document.getElementById('tbsync.newaccount.url');
         this.elementPass = document.getElementById('tbsync.newaccount.password');
         this.elementServertype = document.getElementById('tbsync.newaccount.servertype');
         
@@ -41,6 +42,7 @@ var tbSyncEasNewAccount = {
         document.getElementById('tbsync.newaccount.autodiscoverlabel').hidden = true;
         document.getElementById('tbsync.newaccount.autodiscoverstatus').hidden = true;
 
+        document.getElementById('tbsync.newaccount.url.box').style.visibility =  (this.elementServertype.value != "custom") ? "hidden" : "visible";
         document.getElementById("tbsync.newaccount.name").focus();
     },
 
@@ -48,11 +50,17 @@ var tbSyncEasNewAccount = {
     },
 
     onUserTextInput: function () {
-        document.documentElement.getButton("extra1").disabled = (this.elementName.value == "" || this.elementUser.value == "" || this.elementPass.value == "");
+        if (this.elementServertype.value != "custom") {
+            document.documentElement.getButton("extra1").disabled = (this.elementName.value.trim() == "" || this.elementUser.value == "" || this.elementPass.value == "");
+        } else {
+            document.documentElement.getButton("extra1").disabled = (this.elementName.value.trim() == "" || this.elementUser.value == "" || this.elementPass.value == "" ||  this.elementUrl.value.trim() == "");
+        }
     },
 
     onUserDropdown: function () {
         document.documentElement.getButton("extra1").label = tbSync.getLocalizedMessage("newaccount.add_" + this.elementServertype.value,"eas");
+        document.getElementById('tbsync.newaccount.url.box').style.visibility = (this.elementServertype.value != "custom") ? "hidden" : "visible";
+        this.onUserTextInput();
     },
 
     onAdd: Task.async (function* () {
@@ -60,10 +68,11 @@ var tbSyncEasNewAccount = {
             let user = this.elementUser.value;
             let password = this.elementPass.value;
             let servertype = this.elementServertype.value;
-            let accountname = this.elementName.value;
+            let accountname = this.elementName.value.trim();
+            let url = this.elementUrl.value.trim();
 
             if (servertype == "custom") {
-                tbSyncEasNewAccount.addAccount(user, password, servertype, accountname);                
+                tbSyncEasNewAccount.addAccount(user, password, servertype, accountname, url);                
             }
             
             if (servertype == "auto") {
@@ -120,13 +129,15 @@ var tbSyncEasNewAccount = {
         document.getElementById('tbsync.newaccount.autodiscoverstatus').value  = tbSync.getLocalizedMessage("autodiscover.Querying","eas") + timeout;
     },
 
-    addAccount (user, password, servertype, accountname, url = "") {
+    addAccount (user, password, servertype, accountname, url) {
         let newAccountEntry = tbSync.eas.getDefaultAccountEntries();
         newAccountEntry.accountname = accountname;
         newAccountEntry.user = user;
         newAccountEntry.servertype = servertype;
 
         if (url) {
+            //if no protocoll is given, prepend "https://"
+            if (url.substring(0,4) != "http" || url.indexOf("://") == -1) url = "https://" + url.split("://").join("/");
             newAccountEntry.host = tbSync.eas.stripAutodiscoverUrl(url);
             newAccountEntry.https = (url.substring(0,5) == "https") ? "1" : "0";
             //also update password in PasswordManager (only works if url is present)

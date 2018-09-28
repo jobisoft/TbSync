@@ -3,6 +3,7 @@
 <!ENTITY add.name "Kontoname:">
 <!ENTITY add.user "Benutzername (E-Mail Adresse):">
 <!ENTITY add.password "Passwort:">
+<!ENTITY add.url "Server Adresse:">
 <!ENTITY add.server "Server Konfiguration:">
 <!ENTITY add.description "Bitte wählen Sie einen Namen für das neue TbSync Konto, tragen den Benutzername für das ActiveSync Konto welches Sie hinzufügen möchten (üblicher Weise eine E-Mail Adresse) ein und wählen Sie die passende Option für die Server Konfiguration aus. ">
 

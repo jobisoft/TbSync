@@ -24,6 +24,18 @@
                 <column flex="2" />
             </columns>
             <rows>
+                <row  style="margin-bottom:1ex;">
+                    <vbox pack="center"><label value="&add.server;" /></vbox>
+                    <menulist id="tbsync.newaccount.servertype" oncommand="tbSyncEasNewAccount.onUserDropdown();">
+                        <menupopup>
+                            <menuitem label="&servertype.auto;" value="auto" />
+                            <menuitem label="&servertype.custom;" value="custom" />
+                            <!--menuseparator/>
+                            <menuitem label="&servertype.outlook.com;" value="outlook.com" /-->
+                        </menupopup>
+                    </menulist>
+                </row>
+
                 <row>
                     <vbox pack="center"><label value="&add.name;" /></vbox>
                     <textbox id="tbsync.newaccount.name" oninput="tbSyncEasNewAccount.onUserTextInput();"/>
@@ -36,16 +48,9 @@
                     <vbox pack="center"><label value="&add.password;" /></vbox>
                     <textbox id="tbsync.newaccount.password" type="password" oninput="tbSyncEasNewAccount.onUserTextInput();"/>
                 </row>
-                <row>
-                    <vbox pack="center"><label value="&add.server;" /></vbox>
-                    <menulist id="tbsync.newaccount.servertype" oncommand="tbSyncEasNewAccount.onUserDropdown();">
-                        <menupopup>
-                            <menuitem label="&servertype.auto;" value="auto" />
-                            <menuitem label="&servertype.custom;" value="custom" />
-                            <!--menuseparator/>
-                            <menuitem label="&servertype.outlook.com;" value="outlook.com" /-->
-                        </menupopup>
-                    </menulist>
+                <row id="tbsync.newaccount.url.box">
+                    <vbox pack="center"><label value="&add.url;" /></vbox>
+                    <textbox id="tbsync.newaccount.url" oninput="tbSyncEasNewAccount.onUserTextInput();"/>
                 </row>
 
                 <row style="height:40px; margin-top:1ex;margin-bottom:1ex;">
