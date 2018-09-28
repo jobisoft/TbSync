@@ -1541,7 +1541,7 @@ var tbSync = {
 
             let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
             foStream.init(file, 0x02 | 0x08 | 0x20, 0x180, 0); // write, create, truncate
-            let binary = atob(data);
+            let binary = atob(data.split(" ").join(""));
             foStream.write(binary, binary.length);
             foStream.close();
 
