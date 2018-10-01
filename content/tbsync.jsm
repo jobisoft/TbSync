@@ -1602,7 +1602,7 @@ var tbSync = {
             deleteItem: function (item) {
                 /* remove card from addressBook */
                 let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-                cardsToDelete.appendElement(item.card, "");
+                cardsToDelete.appendElement(item.card, false);
                 addressbook.deleteCards(cardsToDelete);
             },
 

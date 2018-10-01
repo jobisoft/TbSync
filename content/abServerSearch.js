@@ -107,7 +107,7 @@ serverSearch.clearServerSearchResults = function (window) {
             let oldresults = addressbook.getCardsFromProperty("X-Server-Searchresult", "TbSync", true);
             let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
             while (oldresults.hasMoreElements()) {
-                cardsToDelete.appendElement(oldresults.getNext(), "");
+                cardsToDelete.appendElement(oldresults.getNext(), false);
             }
             addressbook.deleteCards(cardsToDelete);
         } catch (e) {

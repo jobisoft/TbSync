@@ -132,7 +132,7 @@ var tbSyncAccounts = {
                                     let oldresults = addressbook.getCardsFromProperty("PrimaryEmail", "debugcontact@inter.net", true);
                                     let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
                                     while (oldresults.hasMoreElements()) {
-                                        cardsToDelete.appendElement(oldresults.getNext(), "");
+                                        cardsToDelete.appendElement(oldresults.getNext(), false);
                                     }
                                     addressbook.deleteCards(cardsToDelete);
                                 }
