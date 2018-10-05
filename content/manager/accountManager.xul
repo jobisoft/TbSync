@@ -20,7 +20,7 @@
             <vbox id="tbSyncAccountManager.t3" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSyncAccountManager.selectTab(3)"><hbox flex="1" pack="center" style="min-width:60px"><image src="chrome://tbsync/skin/help32.png" style="width: 32px; height: 32px" /></hbox><hbox flex="1"  pack="center"><label value="&manager.help;" /></hbox></vbox>
             <vbox id="tbSyncAccountManager.t4" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSyncAccountManager.selectTab(4)" hidden="true"><hbox flex="1" pack="center" style="min-width:60px"><image src="chrome://tbsync/skin/update32.png" style="width: 32px; height: 32px" /></hbox><hbox flex="1"  pack="center"><label value="&manager.update;" /></hbox></vbox>
         </hbox>
-        <iframe id ="tbSyncAccountManager.contentWindow" type="content" flex="1" />
+        <browser id="tbSyncAccountManager.contentWindow" type="chrome" flex="1"/>
     </vbox>
     
     <script type="text/javascript" src="chrome://tbsync/content/manager/accountManager.js" /> 
