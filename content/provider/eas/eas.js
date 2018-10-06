@@ -1246,7 +1246,7 @@ var eas = {
             syncdata.req.open("OPTIONS", connection.host, true);
             syncdata.req.overrideMimeType("text/plain");
             syncdata.req.setRequestHeader("User-Agent", userAgent);
-            syncdata.req.setRequestHeader("Authorization", 'Basic ' + btoa(connection.user + ':' + password));
+            syncdata.req.setRequestHeader("Authorization", 'Basic ' + tbSync.b64encode(connection.user + ':' + password));
             syncdata.req.timeout = tbSync.prefSettings.getIntPref("timeout");
 
             syncdata.req.ontimeout = function () {
@@ -1318,7 +1318,7 @@ var eas = {
             syncdata.req.overrideMimeType("text/plain");
             syncdata.req.setRequestHeader("User-Agent", userAgent);
             syncdata.req.setRequestHeader("Content-Type", "application/vnd.ms-sync.wbxml");
-            syncdata.req.setRequestHeader("Authorization", 'Basic ' + btoa(connection.user + ':' + password));
+            syncdata.req.setRequestHeader("Authorization", 'Basic ' + tbSync.b64encode(connection.user + ':' + password));
             if (tbSync.db.getAccountSetting(syncdata.account, "asversion") == "2.5") {
                 syncdata.req.setRequestHeader("MS-ASProtocolVersion", "2.5");
             } else {
@@ -1719,7 +1719,7 @@ var eas = {
             if (method == "POST") {
                 req.setRequestHeader("Content-Length", xml.length);
                 req.setRequestHeader("Content-Type", "text/xml");
-                if (secure) req.setRequestHeader("Authorization", "Basic " + btoa(connection.user + ":" + password));                
+                if (secure) req.setRequestHeader("Authorization", "Basic " + tbSync.b64encode(connection.user + ":" + password));                
             }
 
             req.ontimeout = function () {
