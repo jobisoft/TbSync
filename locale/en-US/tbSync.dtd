@@ -32,6 +32,7 @@
 <!ENTITY manager.installprovider.warning "This synchronization provider is not hosted in the official Thunderbird AddOn repository and thus has not been reviewed by Thunderbird staff. The provider could do bad things to your system. Use it at your own risk.">
 
 <!ENTITY manager.supporter.contributers "Contributers">
+<!ENTITY manager.supporter.individualsponsors "Sponsors (individuals)">
 <!ENTITY manager.supporter.sponsors "Sponsors">
 
 <!ENTITY manager.help.needhelp "Need Help?">

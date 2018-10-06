@@ -19,6 +19,12 @@
             </html:p>
 
             <html:p>
+                <html:b>&manager.supporter.individualsponsors;</html:b><html:br/><html:br/>
+                - Michael Biebl provides a Nextcloud test account<html:br/>
+                - Michael Schiessl provides a Tine 2.0 test account and a Exchange 2007 test account<html:br/>
+            </html:p>
+
+            <html:p>
                 <html:b>&manager.supporter.sponsors;</html:b>
             </html:p>
 
