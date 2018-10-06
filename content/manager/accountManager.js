@@ -28,6 +28,14 @@ var tbSyncAccountManager = {
         }
     },
 
+    onloadoptions: function () {
+        window.close();
+    },    
+    
+    onunloadoptions: function () {
+        tbSync.openManagerWindow(0);
+    },
+    
     onload: function () {
         tbSyncAccountManager.selectTab(0);
         Services.obs.addObserver(tbSyncAccountManager.refreshUpdateButtonObserver, "tbsync.refreshUpdateButton", false);

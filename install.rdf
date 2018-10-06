@@ -4,6 +4,7 @@
     <Description about="urn:mozilla:install-manifest">
         <em:id>tbsync@jobisoft.de</em:id>
         <em:type>2</em:type> <!-- type=extension --> 
+        <em:optionsURL>chrome://tbsync/content/manager/addonoptions.xul</em:optionsURL>
         <em:bootstrap>true</em:bootstrap>
         <em:unpack>false</em:unpack>
         <em:multiprocessCompatible>true</em:multiprocessCompatible>
