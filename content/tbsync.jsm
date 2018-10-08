@@ -113,7 +113,7 @@ var tbSync = {
             accountXul: "//dav4tbsync/content/accountSettings.xul",
             homepageUrl: "https://addons.thunderbird.net/en-US/thunderbird/addon/dav-4-tbsync/",
             enabled: false,
-            minVersion: "0.8.23",
+            minVersion: "0.8.26",
         },
     },
     
