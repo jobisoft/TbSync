@@ -77,6 +77,8 @@ var tbSync = {
     bundle: Services.strings.createBundle("chrome://tbsync/locale/tbSync.strings"),
 
     prefWindowObj: null,
+    passWindowObj: null,
+    
     decoder: new TextDecoder(),
     encoder: new TextEncoder(),
 
@@ -364,7 +366,10 @@ var tbSync = {
         if (!event.button) { //catches 0 or undefined
             if (tbSync.enabled) {
                 // check, if a window is already open and just put it in focus
-                if (tbSync.prefWindowObj === null) tbSync.prefWindowObj = tbSync.window.open("chrome://tbsync/content/manager/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen");
+                if (tbSync.prefWindowObj === null) {
+                    tbSync.prefWindowObj = tbSync.window.open("chrome://tbsync/content/manager/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen");
+                    tbSync.prefWindowObj.addEventListener("focus", function(event){if (tbSync.passWindowObj) tbSync.passWindowObj.focus();}, true);                
+                }
                 tbSync.prefWindowObj.focus();
             } else {
                 tbSync.popupNotEnabled();

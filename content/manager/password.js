@@ -31,12 +31,14 @@ var tbSyncPassword = {
     },
 
     doOK: function () {
+        tbSync.passWindowObj = null;
         //call set password function of accounts provider
         tbSync.setPassword(this.accountdata, document.getElementById("tbsync.password").value);
         if (this.callbackOK) this.callbackOK();
     },
 
     doCANCEL: function () {
+        tbSync.passWindowObj = null;
         if (this.callbackCANCEL) this.callbackCANCEL();
     }
     

@@ -47,6 +47,9 @@ var tbSyncAccountManager = {
     onunload: function () {
         Services.obs.removeObserver(tbSyncAccountManager.refreshUpdateButtonObserver, "tbsync.refreshUpdateButton");
         tbSync.prefWindowObj = null;
+        if (tbSync.passWindowObj) {
+            tbSync.passWindowObj.close();
+        }
     },
 
     selectTab: function (t) {
