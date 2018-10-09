@@ -99,7 +99,7 @@
                                     <menuitem label="&pref.seperator.comma;" value="44" />
                                 </menupopup>
                             </menulist>
-                            <label flex="1" id="tbsync.accountsettings.label.seperator" value="&pref.seperator.description;"/>
+                            <description flex="1">&pref.seperator.description;</description>
                         </hbox>
                         
                     </vbox>
