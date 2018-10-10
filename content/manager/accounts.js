@@ -716,7 +716,7 @@ var tbSyncAccounts = {
                 accountsList.removeItemAt(i);
             }
             
-            document.getElementById("tbSyncAccounts.contentFrame").src = "chrome://tbsync/content/manager/noaccounts.xul";
+            document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/noaccounts.xul");
         }
     },
 
@@ -727,7 +727,7 @@ var tbSyncAccounts = {
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
             //get id of selected account from value of selectedItem
             this.selectedAccount = accountsList.selectedItem.value;
-            document.getElementById("tbSyncAccounts.contentFrame").src = "chrome:" + tbSync.providerList[tbSync.db.getAccountSetting(this.selectedAccount, "provider")].accountXul+"?id=" + this.selectedAccount;
+            document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome:" + tbSync.providerList[tbSync.db.getAccountSetting(this.selectedAccount, "provider")].accountXul+"?id=" + this.selectedAccount);
         }
     },
     

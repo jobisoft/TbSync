@@ -63,7 +63,7 @@ var tbSyncAccountManager = {
         }
         
         //load XUL
-        document.getElementById("tbSyncAccountManager.contentWindow").src = "chrome://tbsync/content/manager/"+sources[t];
+        document.getElementById("tbSyncAccountManager.contentWindow").setAttribute("src", "chrome://tbsync/content/manager/"+sources[t]);
     },
     
     getLogPref: function() {

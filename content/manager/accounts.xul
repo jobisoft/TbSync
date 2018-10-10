@@ -143,7 +143,7 @@
              </vbox>
             </hbox>
         </vbox>
-        <browser id="tbSyncAccounts.contentFrame" type="chrome" flex="1"/>	
+        <browser id="tbSyncAccounts.contentFrame" type="chrome" src="" disablehistory="true" flex="1"/>	
     </hbox>
 
     <script type="text/javascript" src="chrome://tbsync/content/manager/accounts.js" /> 
