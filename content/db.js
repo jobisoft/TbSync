@@ -51,6 +51,10 @@ var db = {
 
     writeJSON : {
       observe: function(subject, topic, data) {
+        if (!tbSync.enabled) {
+            // db.* not initialised yet, so don't write anything.
+            return;
+        }
         switch (subject.delay) { //use delay setting to find out, which file is to be saved
             case (db.writeDelay + 1): tbSync.writeAsyncJSON(db.accounts, db.accountsFile); break;
             case (db.writeDelay + 2): tbSync.writeAsyncJSON(db.folders, db.foldersFile); break;
