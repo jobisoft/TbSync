@@ -1,0 +1,60 @@
+<!ENTITY popup.opensettings "Apri il Gestore account TbSync">
+<!ENTITY menu.settingslabel "Impostazioni sincronizzazione (TbSync)">
+
+<!ENTITY toolbar.label " Sincronizza tutti gli account TbSync">
+<!ENTITY toolbar.tooltiptext "Sincronizza le ultime modifiche">
+
+<!ENTITY manager.AccountActions "Azioni account">
+<!ENTITY manager.AddAccount "Aggiungi nuovo account">
+<!ENTITY manager.SyncAll "Sincronizza tutti gli account abilitati">
+
+<!ENTITY manager.SynchronizeAccount "Sincronizza account">
+<!ENTITY manager.EnableAccount "Abilita account e testa la connessione al server">
+<!ENTITY manager.DisableAccount "Disabilita account">
+<!ENTITY manager.DeleteAccount "Elimina account">
+<!ENTITY manager.ShowSyncLog "Visualizza i messaggi di log della sincronizzazione">
+<!ENTITY manager.RetryConnectAccount "Riprova a collegarti al server">
+
+<!ENTITY manager.noaccounts "Non sono stati definiti ancora account.">
+
+<!ENTITY manager.title "Gestore account TbSync">
+<!ENTITY manager.accountsettings "Impostazioni account">
+<!ENTITY manager.help "Aiuto">
+<!ENTITY manager.supporter "Promotori">
+<!ENTITY manager.update "Aggiorna TbSync">
+
+<!ENTITY manager.accounts "Account">
+<!ENTITY manager.status "Stato">
+
+<!ENTITY manager.catman.text "TbSync sincronizza anche le categorie dei contatti, che sono un potente sostituto degli elenchi contatti (non sincronizzabili). Per poterle utilizzare nella Rubrica di Thunderbird è possibile installare il componente aggiuntivo Category Manager, che consente di gestire gruppi di contatti basati su categorie (anche sovrapposte) e che fornisce altre funzionalità legate alle categorie. Lo si può trovare nel repository ufficiale Mozilla dei componenti aggiuntivi:">
+
+<!ENTITY manager.installprovider.link "Clicca sul collegamento seguente per aprire la pagina informativa del provider di sincronizzazione mancante. In essa sarà possibile trovare ulteriori informazioni sul provider e si avrà la possibilità di installarlo:">
+<!ENTITY manager.installprovider.warning "Questo provider di sincronizzazione non è ospitato nel repository ufficiale componenti aggiuntivi di Thunderbird e quindi non è stato esaminato dallo staff di Thunderbird. Il provider potrebbe eseguire azioni malevole sul proprio sistema. Lo si utilizzi a proprio rischio.">
+
+<!ENTITY manager.supporter.contributers "Promotori">
+<!ENTITY manager.supporter.individualsponsors "Sponsor (persone singole)">
+<!ENTITY manager.supporter.sponsors "Sponsor">
+
+<!ENTITY manager.help.needhelp "Serve aiuto?">
+<!ENTITY manager.help.foundabug "Si è trovato un bug?">
+<!ENTITY manager.help.wiki "Si aprano le pagine del wiki del progetto TbSync; queste forniscono informazioni aggiuntive, guide e descrizioni dettagliate sulla configurazione.">
+<!ENTITY manager.help.fixit1 "È possibile correggerlo inviando una segnalazione d'errore.">
+<!ENTITY manager.help.pleaseupdate "Si esegua l'aggiornamento all'ultima versione disponibile di TbSync per controllare se il bug non sia già stato corretto.">
+<!ENTITY manager.help.installedversion "Attualmente si sta utilizzando la versione:">
+<!ENTITY manager.help.latestversion "L'ultima versione disponibile è:">
+<!ENTITY manager.help.fixit2 "Se il bug è ancora presente nell'ultima versione disponibile, è possibile aiutare lo sviluppatore a correggerlo inviando una segnalazione d'errore.">
+<!ENTITY manager.help.enabledebuglog "Abilitare il log di debug per salvare tutti i messaggi di debug e i dati inviati e ricevuti da TbSync in un file di registro.">
+<!ENTITY manager.help.aslongasneeded "Attivare il log di debug solo per il tempo strettamente necessario perché ciò rallenta Thunderbird.">
+<!ENTITY manager.help.createbugreportinfo "Per generare una segnalazione d'errore &quot;pulita&quot;, riavviare Thunderbird, eseguire tutti i passaggi richiesti per riprodurre l'errore e quindi cliccare l'icona sulla destra per inviare la segnalazione allo sviluppatore.">
+<!ENTITY manager.help.opencurrentdebuglog "Apri il registro di debug corrente in una nuova scheda.">
+<!ENTITY manager.help.sendcurrentdebuglog "Invia il registro di debug corrente allo sviluppatore.">
+
+<!ENTITY manager.update.intro "Durante l'ultimo avvio di Thunderbird sono state raccolte le seguenti informazioni sulla versione:">
+<!ENTITY manager.update.installed "Versione installata:">
+<!ENTITY manager.update.amo_stable "Versione ufficiale corrente:">
+<!ENTITY manager.update.github_stable "Ultimo rilascio stabile:">
+<!ENTITY manager.update.github_beta "Ultimo rilascio beta:">
+<!ENTITY manager.update.desc1 "Ogni nuovo rilascio stabile è inviato a Mozilla, dove deve superare un processo di revisione per essere elencato come nuova versione ufficiale di TbSync. Questo processo di revisione può richiedere svariati mesi.">
+<!ENTITY manager.update.desc2 "Se ci si fida dello sviluppatore, è possibile installare l'ultimo rilascio stabile direttamente dal repository GitHub del progetto TbSync.">
+<!ENTITY manager.update.desc3 "Inoltre, è possibile installare l'ultima versione beta per testare nuove funzionalità. Si ricordi che i rilasci beta probabilmente avranno più errori di quelli stabili. Ulteriori informazioni sui rilasci beta e sul cosiddetto canale di rilascio beta possono essere trovate qui:">
+<!ENTITY manager.update.desc4 "È possibile trovare un elenco dettagliato delle modifiche qui:">

@@ -1,0 +1,38 @@
+info.idle=Inattivo
+info.error=Errore
+info.sync=Sincronizzazione in corso
+
+button.syncthis=Sincronizza questo account
+button.tryagain=Riprova a collegarti al server
+button.enableAndConnect=Abilita account e prova a collegarti al server
+button.disableAndEdit=Disabilita l'account per modificarne le impostazioni
+button.connecting=Connessione al server in corso
+button.syncing=Sincronizzazione in corso
+
+prompt.DeleteAccount=Eliminare l'account ##accountName##?
+prompt.Disable=Disabilitare quest'account? Tutte le modifiche locali non ancora sincronizzate andranno perse!
+prompt.Password=Inserire la password per l'utente ##user##:
+prompt.Unsubscribe=Annullare la sottoscrizione a questo elemento? Tutte le modifiche locali non ancora sincronizzate andranno perse!
+prompt.UnlockSettings=La modifica delle impostazioni predefinite del server potrebbe causare errori di sincronizzazione. Sbloccare tutte le impostazioni predefinite del server?
+
+account=Account TbSync [##accountname##]
+
+accountacctions.delete=Elimina l'account "##accountname##"
+accountacctions.sync=Sincronizza l'account "##accountname##"
+accountacctions.enable=Abilita l'account "##accountname##" e tenta la connessione al server
+accountacctions.disable=Disabilita l'account "##accountname##"
+
+update_available=aggiornamento disponibile
+old_beta_version=versione beta meno recente
+amo_repository=Repository componenti aggiuntivi Thunderbird
+github_repository=Repository GitHub TbSync
+update_to_stable=Azione raccomandata: eseguire l'aggiornamento all'ultima versione stabile.
+update_to_beta=Azione raccomandata: eseguire l'aggiornamento all'ultima versione beta.
+
+addressbook.searchall=Cerca in tutte le rubriche
+addressbook.searchthis=Cerca in questa rubrica
+addressbook.searchgal=Cerca in questa rubrica e nella directory globale (##replace.1##)
+
+installProvider.header=Il provider "##replace.1##" per TbSync non è ancora installato.
+
+migrate=Informazioni molto importanti su TbSync\n\nCi dispiace, qualcosa è andato storto durante l'ultimo aggiornamento, e TbSync attualmente è in uno stato sconosciuto e dev'essere ripristinato:\n\n - tutti gli account sono disabilitati\n - è stata eseguita una copia di backup di tutti i calendari e le rubriche locali\n - le rubriche e i calendari con modifiche locali non sincronizzate sono contrassegnate con (*)\n\nCi scusiamo per l'inconveniente.

@@ -1,0 +1,79 @@
+<!ENTITY add.title "Aggiunta account Exchange ActiveSync a TbSync">
+<!ENTITY add.ok "Aggiungi account">
+<!ENTITY add.name "Nome account:">
+<!ENTITY add.user "Nome utente (indirizzo di posta elettronica):">
+<!ENTITY add.password "Password:">
+<!ENTITY add.url "Indirizzo server:">
+<!ENTITY add.urldescription "Dovrebbe essere sufficiente fornire solo il nome del server (ad es. mail.yourserver.com), ma è anche possibile fornire l'URL completo (ad es. https://mail.yourserver.com/Microsoft-Server-ActiveSync).">
+
+<!ENTITY add.server "Configurazione server:">
+<!ENTITY add.description "Immettere un nome per il nuovo account TbSync, il nome utente dell'account ActiveSync che si desidera aggiungere (probabilmente un indirizzo di posta elettronica) e selezionare una delle opzioni di configurazione server disponibili.">
+
+<!ENTITY pref.EnableAccount "Abilita account e prova a collegarti al server">
+<!ENTITY pref.SynchronizeAccount "Sincronizza account">
+<!ENTITY pref.autodetect "miglior opzione disponibile">
+
+<!ENTITY pref.AccountName "Nome account">
+<!ENTITY pref.UserName "Nome utente">
+<!ENTITY pref.UserNameDescription "Il nome utente è solitamente l'indirizzo di posta elettronica del proprio account.">
+<!ENTITY pref.ServerName "Indirizzo server">
+<!ENTITY pref.ServerNameDescription "ad es. mail.yourserver.com">
+<!ENTITY pref.usehttps "Utilizza connessione sicura (connettiti tramite HTTPS)">
+<!ENTITY pref.DeviceId "ID dispositivo">
+<!ENTITY pref.contactoptions "Opzioni di contatto">
+<!ENTITY pref.birthday "Invia informazioni sui compleanni">
+<!ENTITY pref.downloadonly "Annulla modifiche locali (sincronizzazione a una via)">
+<!ENTITY pref.generaloptions "Opzioni generali">
+<!ENTITY pref.syncdefaultfolders "Sottoscrivi e sincronizza tutte le cartelle predefinite dopo aver stabilito la connessione iniziale.">
+<!ENTITY pref.provision "Forza provisioning (opzione richiesta per Kerio)">
+
+<!ENTITY pref.autotime "Intervallo sincronizzazione (minuti)">
+<!ENTITY pref.never "Il valore 0 disabilita la sincronizzazione periodica. La sincronizzazione push non è ancora supportata.">
+<!ENTITY pref.ShowTrashedFolders "Visualizza le cartelle trovate nel Cestino">
+
+<!ENTITY pref.syncstate "Stato sincronizzazione">
+<!ENTITY pref.seperator.comma "Virgola">
+<!ENTITY pref.seperator.linebreak "Separatore riga">
+<!ENTITY pref.seperator.description "Separatore per i campi indirizzo multiriga.">
+<!ENTITY pref.displayoverride "Ignora il Nome visualizzato e mostra Nome + Cognome">
+
+<!ENTITY pref.foldername "Cartella">
+<!ENTITY pref.targetname "Obiettivo sincronizzazione">
+<!ENTITY pref.status "Stato">
+
+<!ENTITY pref.switchFoldersAndConfig "Cliccare due volte per passare dalla visualizzazione cartelle alla visualizzazione impostazioni.">
+
+<!ENTITY servertype.auto "Configurazione automatica tramite rilevamento automatico ActiveSync">
+<!ENTITY servertype.custom "Configurazione personalizzata">
+<!ENTITY servertype.unlock "Cliccare due volte per sbloccare tutte le impostazioni server predefinite.">
+
+<!ENTITY abCard.MiddleName "Secondo nome:">
+<!ENTITY abCard.Email3Address "Indirizzo di posta elettronica alternativo:">
+<!ENTITY abCard.Home2PhoneNumber "Secondo telefono casa:">
+<!ENTITY abCard.Business2PhoneNumber "Secondo telefono ufficio:">
+<!ENTITY abCard.BusinessFaxNumber "Fax ufficio:">
+
+<!ENTITY abCard.ManagerName "Supervisore:">
+<!ENTITY abCard.AssistantPhoneNumber "Telefono assistente:">
+<!ENTITY abCard.AssistantName "Assistente:">
+<!ENTITY abCard.Spouse "Coniuge:">
+<!ENTITY abCard.Anniversary "Anniversario:">
+
+<!ENTITY abCard.CarPhoneNumber "Telefono auto:">
+<!ENTITY abCard.RadioPhoneNumber "Telefono radio:">
+<!ENTITY abCard.CompanyMainPhone "Telefono lavoro principale:">
+
+<!ENTITY abCard.OtherAddress "Indirizzo:">
+<!ENTITY abCard.OtherCity "Città:">
+<!ENTITY abCard.OtherCountry "Paese:">
+<!ENTITY abCard.OtherZip "CAP:">
+<!ENTITY abCard.OtherState "Stato:">
+
+
+<!ENTITY abCard.header.worknumbers "Numeri lavoro aggiuntivi:">
+<!ENTITY abCard.header.homenumbers "Numeri casa aggiuntivi:">
+<!ENTITY abCard.header.othernumbers "Numeri aggiuntivi:">
+<!ENTITY abCard.header.messaging "Messaggeria:">
+<!ENTITY abCard.header.people "Persone:">
+<!ENTITY abCard.header.eas "Altri campi (EAS)">
+<!ENTITY abCard.header.otheraddress "Altro indirizzo (EAS)">
