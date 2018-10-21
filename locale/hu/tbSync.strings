@@ -1,0 +1,38 @@
+info.idle=Tétlen
+info.error=Hiba
+info.sync=Összehangoló
+
+button.syncthis=Fiók összehangolása
+button.tryagain=Próbálkozzon újra a szerverhez való csatlakozással
+button.enableAndConnect=Engedélyezze a fiókot és próbálja meg csatlakozni a szerverhez
+button.disableAndEdit=Letiltja a fiókot a beállítások szerkesztéséhez
+button.connecting=Összekapcsol a szerverhez
+button.syncing=Összehangoló
+
+prompt.DeleteAccount=Biztos benne, hogy törölni szeretne fiók ##accountName##?
+prompt.Disable=Biztosan letiltja ezt a fiókot? Minden helyi módosítás, amely még nincs szinkronizálva, elveszik!
+prompt.Password=Felhasználói ##user## jelszavát:
+prompt.Unsubscribe=Biztosan le szeretné iratkozni ezt az elemet? Minden helyi módosítás, amely még nincs összehangolva, elveszik!
+prompt.UnlockSettings=Az előre meghatározott szerver beállításainak módosítása összehangolási hibákat okozhat. Biztosan fel akarja oldani az összes előre meghatározott szerver beállítását?
+
+account=TbSync fiók [##accountname##]
+
+accountacctions.delete=Fiók törlése „##accountname##”
+accountacctions.sync=Fiók összehangolása „##accountname##”
+accountacctions.enable=Engedélyezze a(z) „##accountname##” fiókot és próbálja meg csatlakozni a szerverhez
+accountacctions.disable=Fiók letiltása „##accountname##”
+
+update_available=frissítés elérhető
+old_beta_version=régebbi bétaverzió
+amo_repository=Thunderbird-kiegészítő adattár
+github_repository=TbSync GitHub adattár
+update_to_stable=Ajánlás: Frissítés a legfrissebb stabil változatra.
+update_to_beta=Ajánlás: Frissítés a legújabb bétaverzióra.
+
+addressbook.searchall=Keresése az összes névjegyzékben
+addressbook.searchthis=Keresése csak ezt a címjegyzékben
+addressbook.searchgal=Keresése ezt a névjegyzékben és a globális könyvtárban (##replace.1##)
+
+installProvider.header=A(z) „##replace.1##” szolgáltató a TbSync-hez még nincs telepítve.
+
+migrate=Nagyon fontos információ a TbSync-ről!\n\nSajnálom, valami hiba történt az utolsó frissítés során, és a TbSync jelenleg ismeretlen állapotban van, ezért vissza kell állítani:\n\n - minden fiók le van tiltva\n - minden helyi naptár és névjegyzék biztonsági mentése\n - a szinkron nélküli helyi változásokkal rendelkező névjegyzékek és naptárak további (*)\n\nFelejtsd ki ezt a helyzetet.
