@@ -1,0 +1,79 @@
+<!ENTITY add.title "Exchange ActiveSync-fiók hozzáadása a TbSync-hez">
+<!ENTITY add.ok "Fiók hozzáadása">
+<!ENTITY add.name "Felhasználónév:">
+<!ENTITY add.user "Felhasználónév (e-mail cím):">
+<!ENTITY add.password "Jelszó:">
+<!ENTITY add.url "Szerver címe:">
+<!ENTITY add.urldescription "Megfelelõnek kell lennie ahhoz, hogy csak az alapkiszolgáló címét adja meg (például: posta.szervered.hu). Azonban a teljes URL-címet is megadhatjuk (például: https://posta.szervered.hu/Microsoft-Server-ActiveSync).">
+
+<!ENTITY add.server "Szerver konfiguráció:">
+<!ENTITY add.description "Adja meg az új TbSync-fiók nevét, a hozzáadni kívánt ActiveSync-fiók (valószínűleg egy e-mail cím) felhasználónevét, és válassza ki az elérhető szerverkonfigurációs beállítások egyikét.">
+
+<!ENTITY pref.EnableAccount "Engedélyezze a fiókot és próbáljon csatlakozni a szerverhez">
+<!ENTITY pref.SynchronizeAccount "Fiók összehangolása">
+<!ENTITY pref.autodetect "az elérhető legjobb">
+
+<!ENTITY pref.AccountName "Fióknév">
+<!ENTITY pref.UserName "Felhasználónév">
+<!ENTITY pref.UserNameDescription "A felhasználónév általában a fiókod e-mail címe.">
+<!ENTITY pref.ServerName "Szerver címe">
+<!ENTITY pref.ServerNameDescription "például: posta.szervered.hu">
+<!ENTITY pref.usehttps "Biztonságos kapcsolat használata (https-kapcsolaton keresztül)">
+<!ENTITY pref.DeviceId "Eszköz azonosító">
+<!ENTITY pref.contactoptions "Kapcsolatfelvételi lehetőségek">
+<!ENTITY pref.birthday "Születésnapi adatok küldése">
+<!ENTITY pref.downloadonly "A helyi változások visszaállítása (egyirányú összehangolás)">
+<!ENTITY pref.generaloptions "Általános beállítások">
+<!ENTITY pref.syncdefaultfolders "Az alapértelmezett mappák feliratkozása és összehangolása a kezdeti kapcsolat létrehozása után.">
+<!ENTITY pref.provision "Ellátás végrehajtása (Kerio követelmény)">
+
+<!ENTITY pref.autotime "Összehangolás időközönként (perc)">
+<!ENTITY pref.never "A 0 beállítás letiltja az időszakos összehangolást.">
+<!ENTITY pref.ShowTrashedFolders "A kukában található mappák megjelenítése" >
+
+<!ENTITY pref.syncstate "Összehangolási állapot">
+<!ENTITY pref.seperator.comma "Vessző">
+<!ENTITY pref.seperator.linebreak "Sortörés">
+<!ENTITY pref.seperator.description "Több címsort tartalmazó elválasztó.">
+<!ENTITY pref.displayoverride "A megjelenítési név felülbírálása „keresztnév” és „második keresztnév”">
+
+<!ENTITY pref.foldername "Mappa">
+<!ENTITY pref.targetname "Összehangolási cél">
+<!ENTITY pref.status "Állapot">
+
+<!ENTITY pref.switchFoldersAndConfig "Kattintson kétszer a mappa nézet és a beállítások nézet közötti váltáshoz.">
+
+<!ENTITY servertype.auto "Automatikus konfigurálás az ActiveSync automatikus felismerésével">
+<!ENTITY servertype.custom "Egyéni konfiguráció">
+<!ENTITY servertype.unlock "Dupla kattintson az összes előre meghatározott szerver beállításának feloldásához.">
+
+<!ENTITY abCard.MiddleName "Második keresztnév:">
+<!ENTITY abCard.Email3Address "Másodlagos e-mail:">
+<!ENTITY abCard.Home2PhoneNumber "2. otthoni telefon:">
+<!ENTITY abCard.Business2PhoneNumber "2. munkahelyi telefon:">
+<!ENTITY abCard.BusinessFaxNumber "Munkahelyi fax:">
+
+<!ENTITY abCard.ManagerName "Vezető:">
+<!ENTITY abCard.AssistantPhoneNumber "Segítői telefon:">
+<!ENTITY abCard.AssistantName "Segítő:">
+<!ENTITY abCard.Spouse "Házastárs:">
+<!ENTITY abCard.Anniversary "Évforduló:">
+
+<!ENTITY abCard.CarPhoneNumber "Autóstelefon:">
+<!ENTITY abCard.RadioPhoneNumber "Rádiótávbeszélő:">
+<!ENTITY abCard.CompanyMainPhone "Fő munkahelyi telefon:">
+
+<!ENTITY abCard.OtherAddress "Cím:">
+<!ENTITY abCard.OtherCity "Város:">
+<!ENTITY abCard.OtherCountry "Ország:">
+<!ENTITY abCard.OtherZip "Irányítószám:">
+<!ENTITY abCard.OtherState "Állam/tartomány:">
+
+
+<!ENTITY abCard.header.worknumbers "További munkahelyi számok:">
+<!ENTITY abCard.header.homenumbers "További otthoni számok:">
+<!ENTITY abCard.header.othernumbers "További számok:">
+<!ENTITY abCard.header.messaging "Üzenetek:">
+<!ENTITY abCard.header.people "Emberek:">
+<!ENTITY abCard.header.eas "Egyéb mezők (EAS)">
+<!ENTITY abCard.header.otheraddress "Egyéb cím (EAS)">
