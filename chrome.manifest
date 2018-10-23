@@ -2,3 +2,4 @@ content tbsync  content/
 skin tbsync  classic/1.0 skin/
 locale tbsync  de    locale/de/
 locale tbsync  en-US locale/en-US/
+locale tbsync  hu    locale/hu/
