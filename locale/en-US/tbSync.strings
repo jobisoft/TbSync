@@ -19,7 +19,7 @@ account=TbSync account [##accountname##]
 
 accountacctions.delete=Delete account “##accountname##”
 accountacctions.sync=Synchronize account “##accountname##”
-accountacctions.enable=Enable account “##accountname##” and try to connect to server
+accountacctions.enable=Enable account “##accountname##” & try to connect to server
 accountacctions.disable=Disable account “##accountname##”
 
 update_available=update available
