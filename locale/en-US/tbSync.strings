@@ -4,7 +4,7 @@ info.sync=Syncing
 
 button.syncthis=Synchronize this account
 button.tryagain=Try again to connect to server
-button.enableAndConnect=Enable account and try to connect to server
+button.enableAndConnect=Enable account & try to connect to server
 button.disableAndEdit=Disable account to edit settings
 button.connecting=Connecting to server
 button.syncing=Synchronizing
