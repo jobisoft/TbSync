@@ -1,0 +1,60 @@
+<!ENTITY popup.opensettings "TbSync fiókkezelő megnyitasa">
+<!ENTITY menu.settingslabel "Összehangolási beállítások (TbSync)">
+
+<!ENTITY toolbar.label "Az összes TbSync fiók összehangolása">
+<!ENTITY toolbar.tooltiptext "A legújabb változtatások összehangolása">
+
+<!ENTITY manager.AccountActions "Fiókműveletek">
+<!ENTITY manager.AddAccount "Új fiók hozzáadása">
+<!ENTITY manager.SyncAll "Az összes engedélyezett fiók összehangolása">
+
+<!ENTITY manager.SynchronizeAccount "Fiók összehangolása">
+<!ENTITY manager.EnableAccount "Engedélyezze a fiókot és próbáljon csatlakozni a szerverhez">
+<!ENTITY manager.DisableAccount "Fiók letiltása">
+<!ENTITY manager.DeleteAccount "Fiók törlése">
+<!ENTITY manager.ShowSyncLog "Összehangolási naplóüzenetek megjelenítése">
+<!ENTITY manager.RetryConnectAccount "Próbálkozzon újra a szerverhez való csatlakozással">
+
+<!ENTITY manager.noaccounts "Még nincsenek fiókok meghatározott.">
+
+<!ENTITY manager.title "TbSync fiókkezelő">
+<!ENTITY manager.accountsettings "Fiók beállítások">
+<!ENTITY manager.help "Súgó">
+<!ENTITY manager.supporter "Támogató">
+<!ENTITY manager.update "A TbSync frissítése">
+
+<!ENTITY manager.accounts "Fiókok">
+<!ENTITY manager.status "Állapot">
+
+<!ENTITY manager.catman.text "A TbSync összehangolja az érintkezési kategóriákat is, amelyek hatékonyan helyettesítik a nem összehangolható kapcsolattartókat. A Thunderbird névjegyzékben való használatához telepítheti a Kategóriakezelő kiegészítőt. Lehetővé teszi az átfedő kategóriákon alapuló kapcsolattartó csoportok kezelését és egy sor más kategóriához kapcsolódó funkciót. Ez megtalálható a hivatalos Thunderbird-kiegészítő adattárban:">
+
+<!ENTITY manager.installprovider.link "Kattintson a következő linkre a hiányzó összhangzós szolgáltató info oldalának megnyitásához. Ott talál további információkat a szolgáltatóról, és lehetősége van a telepítésre:">
+<!ENTITY manager.installprovider.warning "Ez a szinkronizáló szolgáltató nem a hivatalos Thunderbird-kiegészítő adattárban található, így a Thunderbird személyzete nem vizsgálta felül. A szolgáltató rossz dolgokat tehet a rendszerében. Használja saját felelősségére.">
+
+<!ENTITY manager.supporter.contributers "Közreműködők">
+<!ENTITY manager.supporter.individualsponsors "Támogatóink (egyének)">
+<!ENTITY manager.supporter.sponsors "Támogatóink">
+
+<!ENTITY manager.help.needhelp "Kell segítség?">
+<!ENTITY manager.help.foundabug "Talált egy hibát?">
+<!ENTITY manager.help.wiki "Nyissa meg a TbSync projekt wiki oldalát, további információkat, útmutatókat és részletes konfigurációs leírást ad.">
+<!ENTITY manager.help.fixit1 "Segíthet kijavítani hibajelentés formájában.">
+<!ENTITY manager.help.pleaseupdate "Kérjük, frissítse a TbSync legújabb elérhető verzióját, hogy ellenőrizze, hogy a hibája már javításra került-e.">
+<!ENTITY manager.help.installedversion "Jelenleg verziót használ:">
+<!ENTITY manager.help.latestversion "A legfrissebb verzió:">
+<!ENTITY manager.help.fixit2 "Ha a hibája még mindig megtalálható a legfrissebb verzióban, segíthet javítani a hibajelentés elküldésével.">
+<!ENTITY manager.help.enabledebuglog "Engedélyezze a hibakeresési naplózást az összes hibakereső üzenet tárolásához és a TbSync által küldött és fogadott adatokhoz egy naplófájlban.">
+<!ENTITY manager.help.aslongasneeded "A hibakeresés naplózását csak addig aktiválja, amíg a Thunderbird lelassítja.">
+<!ENTITY manager.help.createbugreportinfo "Tiszta hibajelentés létrehozásához indítsa újra a Thunderbird programot, végezze el a hiba indításához szükséges összes lépést, és kattintson jobbra az ikonra, hogy elküldje a jelentést a fejlesztőnek.">
+<!ENTITY manager.help.opencurrentdebuglog "Nyissa meg az aktuális hibakeresési naplót egy új lapon.">
+<!ENTITY manager.help.sendcurrentdebuglog "Küldje el az aktuális hibakeresési naplót a fejlesztőnek.">
+
+<!ENTITY manager.update.intro "A Thunderbird utolsó indításakor a következő verzióadatokat gyűjtötték össze:">
+<!ENTITY manager.update.installed "Telepített verzió:">
+<!ENTITY manager.update.amo_stable "Jelenlegi hivatalos verzió:">
+<!ENTITY manager.update.github_stable "Legújabb stabil verzió:">
+<!ENTITY manager.update.github_beta "Legújabb bétaverzió:">
+<!ENTITY manager.update.desc1 "Minden új stabil verziót elküldünk a Mozilla-nak, ahol át kell adnia egy felülvizsgálati folyamatot, hogy a TbSync új hivatalos verziójává váljon. Ez a felülvizsgálati folyamat azonban akár több hónapig is eltarthat.">
+<!ENTITY manager.update.desc2 "Ha bízik a fejlesztőben, akkor telepítheti a legújabb stabil verziót közvetlenül a TbSync projekt GitHub adattárából.">
+<!ENTITY manager.update.desc3 "Továbbá telepítheti a legújabb bétaverziót az új funkciók tesztelésére. Ne feledje, hogy a bétaverziók valószínűleg több hibát tartalmaznak, mint a stabil verziók. További információ a bétaverziókról és az úgynevezett bétaverzió csatornáról itt olvasható:">
+<!ENTITY manager.update.desc4 "Részletes változási napló itt található:">
