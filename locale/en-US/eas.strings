@@ -1,7 +1,7 @@
 newaccount.add_custom=Add account
 newaccount.add_auto=Autodiscover settings and add account
 
-autodiscover.Querying=Searching for settings ...
+autodiscover.Querying=Searching for settings…
 autodiscover.Ok=Autodiscover completed successfully, you can now check the optional settings and establish the synchronization connection.
 autodiscover.NeedEmail=Autodiscover needs a valid email address as user name.
 
@@ -9,12 +9,12 @@ autodiscover.Failed=Autodiscover for user <##user##> failed.
 autodiscover.FailedUnknown=Either the provided credentials were wrong or your ActiveSync provider has a temporary issue, or does not support Autodiscover.
 autodiscover.FailedSecurity=Also the following certificate errors have been reported, which *might* indicate a problem with your ActiveSync provider:
 
-deletefolder.notallowed=Please unsubscribe folder "##replace.1##" before trying to purge it from trash.
-deletefolder.confirm=Do you really want to PERMANENTLY PURGE folder "##replace.1##" from trash?
+deletefolder.notallowed=Please unsubscribe folder “##replace.1##” before trying to purge it from trash.
+deletefolder.confirm=Do you really want to PERMANENTLY PURGE folder “##replace.1##” from trash?
 
-deletefolder.menuentry=Permanently purge folder "##replace.1##" from trash
-subscribe.on=Subscribe "##replace.1##"
-subscribe.off=Unsubscribe "##replace.1##"
+deletefolder.menuentry=Permanently purge folder “##replace.1##” from trash
+subscribe.on=Subscribe “##replace.1##”
+subscribe.off=Unsubscribe “##replace.1##”
 
 recyclebin = Trash
 
@@ -60,36 +60,36 @@ syncstate.send.request.remotechanges=Waiting for remote changes
 syncstate.eval.response.remotechanges=Processing remote changes
 
 syncstate.prepare.request.localchanges=Sending local changes
-syncstate.send.request.localchanges=Waiting for acknowledgement of local changes
-syncstate.eval.response.localchanges=Processing acknowledgement of local changes
+syncstate.send.request.localchanges=Waiting for acknowledgment of local changes
+syncstate.eval.response.localchanges=Processing acknowledgment of local changes
 
 syncstate.prepare.request.revertlocalchanges=Collecting local changes
 syncstate.send.request.revertlocalchanges=Waiting for most recent versions
 syncstate.eval.response.revertlocalchanges=Reverting local changes
 
 syncstate.prepare.request.localdeletes=Sending local deletes
-syncstate.send.request.localdeletes=Waiting for acknowledgement of local deletes
-syncstate.eval.response.localdeletes=Processing acknowledgement of local deletes
+syncstate.send.request.localdeletes=Waiting for acknowledgment of local deletes
+syncstate.eval.response.localdeletes=Processing acknowledgment of local deletes
 
-status.notsyncronized=Account needs to be syncronized, at least one item is out of sync.
-status.needtorevert=Account needs to be syncronized to revert local changes (one-way sync).
+status.notsyncronized=Account needs to be synchronized, at least one item is out of sync.
+status.needtorevert=Account needs to be synchronized to revert local changes (one-way sync).
 status.disabled=Account is not enabled, synchronization is disabled.
 status.notargets=Aborting Sync, because sync targets could not be created.
 status.nouserhost=Missing username and/or server. Please provide those values.
 status.timeout=Communication timeout.
 status.networkerror=Could not connect to server.
 status.404=User not found (HTTP Error 404).
-status.403=Server rejected connection (forbidden).
-status.401=Could not authenticate, check username and password.
-status.449=Server requests provisioning.
+status.403=Server rejected connection (forbidden) (HTTP Error 403).
+status.401=Could not authenticate, check username and password (HTTP Error 401).
+status.449=Server requests provisioning (HTTP Error 449).
 status.500=Unknown Server Error (HTTP Error 500).
-status.503=Service unavailable.
+status.503=Service unavailable (HTTP Error 503).
 status.httperror=Communication error (HTTP status ##replace.1##).
 status.wbxmlerror=Sync failed. Server responded with status <##replace.1##>.
 status.wbxmlmissingfield=ActiveSync protocol violation: Mandatory field <##replace.1##> is missing from server response.
 status.OK=Ok
 status.nolightning=Lightning Add-On not installed, calendars are not supported.
-status.javascriptError=Javascript error! Check debug log for details.
+status.javascriptError=JavaScript error! Check debug log for details.
 status.mailformed-xml=Could not parse XML. Check debug log for details. 
 status.invalid=Invalid server response (junk).
 status.InvalidServerOptions=The server does not provide information about the supported ActiveSync versions. Is EAS blocked for this user or this client (TbSync)? You could try to set the ActiveSync version manually.
@@ -115,13 +115,13 @@ status.provision=Provisioning failed with status <##replace.1##>
 status.folderDelete.3=Cannot delete a system folder.
 status.folderDelete.6=Command could not be completed, an error occurred on the server.
 
-status.global.101=The request contains WBXML but it could not be decoded into XML (Error 101).
-status.global.102=The request contains WBXML but it could not be decoded into XML (Error 102).
-status.global.103=The XML provided in the request does not follow the protocol requirements (Error 103).
+status.global.101=The request contains WBXML but it could not be decoded into XML (EAS Error 101).
+status.global.102=The request contains WBXML but it could not be decoded into XML (EAS Error 102).
+status.global.103=The XML provided in the request does not follow the protocol requirements (EAS Error 103).
 status.global.clientdenied=The EAS server reports <##replace.2##> (status ##replace.1##) and does not allow TbSync to access your account.||What-if-TbSync-is-blocked-by-my-server%3F||[help]
 
-status.ServerRejectedSomeItems=The EAS server accepted only ##replace.2## of your items and rejected the remaining ones for the following reasons: ##replace.1##. Check the debug log for "Bad item skipped".
-status.ServerRejectedAllItems=The EAS server rejected your items for the following reasons: ##replace.1##. Check the debug log for "Bad item skipped".
+status.ServerRejectedSomeItems=The EAS server accepted only ##replace.2## of your items and rejected the remaining ones for the following reasons: ##replace.1##. Check the debug log for “Bad item skipped”.
+status.ServerRejectedAllItems=The EAS server rejected your items for the following reasons: ##replace.1##. Check the debug log for “Bad item skipped”.
 status.ServerRejectedRequest=The EAS Server rejected our last request. Check the debug log for more information.
 status.TempServerError=Server reported temporary system issue, or bad item. This is frequently a transient condition (so try again later).
 

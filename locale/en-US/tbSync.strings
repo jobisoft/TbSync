@@ -17,15 +17,15 @@ prompt.UnlockSettings=Changing any of the predefined server settings could lead 
 
 account=TbSync account [##accountname##]
 
-accountacctions.delete=Delete account "##accountname##"
-accountacctions.sync=Synchronize account "##accountname##"
-accountacctions.enable=Enable account "##accountname##" & try to connect to server
-accountacctions.disable=Disable account "##accountname##"
+accountacctions.delete=Delete account “##accountname##”
+accountacctions.sync=Synchronize account “##accountname##”
+accountacctions.enable=Enable account “##accountname##” & try to connect to server
+accountacctions.disable=Disable account “##accountname##”
 
 update_available=update available
 old_beta_version=older beta version
-amo_repository=Thunderbird AddOn repository
-github_repository=TbSync github repository
+amo_repository=Thunderbird Add-on repository
+github_repository=TbSync GitHub repository
 update_to_stable=Recommendation: Update to the latest stable version.
 update_to_beta=Recommendation: Update to the latest beta version.
 
@@ -33,6 +33,6 @@ addressbook.searchall=Search all address books
 addressbook.searchthis=Search this address book
 addressbook.searchgal=Search this address book and the global directoy (##replace.1##)
 
-installProvider.header=Provider "##replace.1##" for TbSync is not yet installed.
+installProvider.header=Provider “##replace.1##” for TbSync is not yet installed.
 
 migrate=Very important information about TbSync!\n\nSorry, something went wrong during the last update, and TbSync is currently in an unknown state and needs to be reset:\n\n - all accounts are disabled\n - all local calendars and address books are backuped\n - address books and calendars with unsynchronized local changes have an additional (*)\n\nPlease excuse this situation.
