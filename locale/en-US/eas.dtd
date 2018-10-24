@@ -38,7 +38,7 @@
 <!ENTITY pref.displayoverride "Overide Display Name with “First Name” and “Second Name”">
 
 <!ENTITY pref.foldername "Folder">
-<!ENTITY pref.targetname "SyncTarget">
+<!ENTITY pref.targetname "Sync Target">
 <!ENTITY pref.status "Status">
 
 <!ENTITY pref.switchFoldersAndConfig "Double click to switch between folder view and settings view.">
