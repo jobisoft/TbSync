@@ -1,7 +1,7 @@
 <!ENTITY popup.opensettings "Open TbSync account manager">
 <!ENTITY menu.settingslabel "Synchronization Settings (TbSync)">
 
-<!ENTITY toolbar.label " Synchronize all TbSync accounts">
+<!ENTITY toolbar.label "Synchronize all TbSync accounts">
 <!ENTITY toolbar.tooltiptext "Synchronize latest changes">
 
 <!ENTITY manager.AccountActions "Account actions">
@@ -9,7 +9,7 @@
 <!ENTITY manager.SyncAll "Synchronize all enabled accounts">
 
 <!ENTITY manager.SynchronizeAccount "Synchronize account">
-<!ENTITY manager.EnableAccount "Enable account &amp; try to connect to server">
+<!ENTITY manager.EnableAccount "Enable account and try to connect to server">
 <!ENTITY manager.DisableAccount "Disable account">
 <!ENTITY manager.DeleteAccount "Delete account">
 <!ENTITY manager.ShowSyncLog "Show synchronization log messages">
