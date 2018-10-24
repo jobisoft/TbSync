@@ -35,7 +35,7 @@
 <!ENTITY pref.seperator.comma "Comma">
 <!ENTITY pref.seperator.linebreak "Line break">
 <!ENTITY pref.seperator.description "Separator for multiline address field.">
-<!ENTITY pref.displayoverride "Overide Display Name with “First Name” and “Second Name”">
+<!ENTITY pref.displayoverride "Overide Display Name with “First Name” + “Second Name”">
 
 <!ENTITY pref.foldername "Folder">
 <!ENTITY pref.targetname "Sync Target">
