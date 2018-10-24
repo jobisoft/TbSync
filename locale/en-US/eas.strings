@@ -115,9 +115,9 @@ status.provision=Provisioning failed with status <##replace.1##>
 status.folderDelete.3=Cannot delete a system folder.
 status.folderDelete.6=Command could not be completed, an error occurred on the server.
 
-status.global.101=The request contains WBXML but it could not be decoded into XML (HTTP Error 101).
-status.global.102=The request contains WBXML but it could not be decoded into XML (HTTP Error 102).
-status.global.103=The XML provided in the request does not follow the protocol requirements (HTTP Error 103).
+status.global.101=The request contains WBXML but it could not be decoded into XML (EAS Error 101).
+status.global.102=The request contains WBXML but it could not be decoded into XML (EAS Error 102).
+status.global.103=The XML provided in the request does not follow the protocol requirements (EAS Error 103).
 status.global.clientdenied=The EAS server reports <##replace.2##> (status ##replace.1##) and does not allow TbSync to access your account.||What-if-TbSync-is-blocked-by-my-server%3F||[help]
 
 status.ServerRejectedSomeItems=The EAS server accepted only ##replace.2## of your items and rejected the remaining ones for the following reasons: ##replace.1##. Check the debug log for “Bad item skipped”.
