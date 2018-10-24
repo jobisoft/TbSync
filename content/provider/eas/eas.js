@@ -84,7 +84,7 @@ var eas = {
                     let key = tbSync.getIdentityKey(tbSync.db.getAccountSetting(folders[f].account, "user"));
                     if (key === "") { //TODO: Do this even after manually switching to NONE, not only on restart?
                         //set transient calendar organizer settings based on current best guess and 
-                        calendar.setProperty("organizerId", cal.prependMailTo(tbSync.db.getAccountSetting(folders[f].account, "user")));
+                        calendar.setProperty("organizerId", cal.email.prependMailTo(tbSync.db.getAccountSetting(folders[f].account, "user")));
                         calendar.setProperty("organizerCN",  calendar.getProperty("fallbackOrganizerName"));
                     } else {                      
                         //force switch to found identity
@@ -311,7 +311,7 @@ var eas = {
             //there is no matching email identity - use current default value as best guess and remove association
             //use current best guess 
             newCalendar.setProperty("organizerCN", newCalendar.getProperty("fallbackOrganizerName"));
-            newCalendar.setProperty("organizerId", cal.prependMailTo(tbSync.db.getAccountSetting(account, "user")));
+            newCalendar.setProperty("organizerId", cal.email.prependMailTo(tbSync.db.getAccountSetting(account, "user")));
         }
         
         return newCalendar;

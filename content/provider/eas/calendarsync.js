@@ -111,7 +111,7 @@ eas.sync.Calendar = {
                     //is this attendee the local EAS user?
                     let isSelf = (att[i].Email == tbSync.db.getAccountSetting(syncdata.account, "user"));
                     
-                    attendee["id"] = cal.prependMailTo(att[i].Email);
+                    attendee["id"] = cal.email.prependMailTo(att[i].Email);
                     attendee["commonName"] = att[i].Name;
                     //default is "FALSE", only if THIS attendee isSelf, use ResponseRequested (we cannot respond for other attendee) - ResponseType is not send back to the server, it is just a local information
                     attendee["rsvp"] = (isSelf && data.ResponseRequested) ? "TRUE" : "FALSE";		
@@ -155,7 +155,7 @@ eas.sync.Calendar = {
         if (data.OrganizerName && data.OrganizerEmail && tbSync.isString(data.OrganizerEmail)) {
             //Organizer
             let organizer = cal.createAttendee();
-            organizer.id = cal.prependMailTo(data.OrganizerEmail);
+            organizer.id = cal.email.prependMailTo(data.OrganizerEmail);
             organizer.commonName = data.OrganizerName;
             organizer.rsvp = "FALSE";
             organizer.role = "CHAIR";
