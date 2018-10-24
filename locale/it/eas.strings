@@ -120,8 +120,8 @@ status.global.102=La richiesta contiene WBXML ma non è possibile decodificarlo 
 status.global.103=L'XML fornito nella richiesta non rispetta i requisiti del protocollo (errore 103).
 status.global.clientdenied=Il server EAS segnala <##replace.2##> (stato ##replace.1##) e non consente a TbSync l'accesso al proprio account.||What-if-TbSync-is-blocked-by-my-server%3F||[Guida]
 
-status.ServerRejectedSomeItems=Il server EAS server ha accettato solo ##replace.2## elementi e ha rifiutato quelli rimanenti per i seguenti motivi: ##replace.1##. Controllare il log di debug, in particolare i messaggi "Bad item skipped".
-status.ServerRejectedAllItems=Il server EAS ha rifiutato gli elementi per i seguenti motivi: ##replace.1##. Controllare il log di debug, in particolare i messaggi "Bad item skipped".
+status.ServerRejectedSomeItems=Il server EAS server ha accettato solo ##replace.2## elementi e ha rifiutato quelli rimanenti per i seguenti motivi: ##replace.1##. Controllare il log di debug, in particolare i messaggi "Bad item skipped".||Error:-Bad-item-skipped||[help]
+status.ServerRejectedAllItems=Il server EAS ha rifiutato gli elementi per i seguenti motivi: ##replace.1##. Controllare il log di debug, in particolare i messaggi "Bad item skipped".||Error:-Bad-item-skipped||[help]
 status.ServerRejectedRequest=Il server EAS ha rifiutato l'ultima richiesta. Controllare il log di debug per ulteriori informazioni.
 status.TempServerError=Il server ha segnalato un problema temporaneo di sistema o un elemento errato. Questa condizione è frequentemente temporanea (riprovare in seguito).
 

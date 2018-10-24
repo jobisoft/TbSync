@@ -120,8 +120,8 @@ status.global.102=A kérelem WBXML-t tartalmaz, de XML-ben nem sikerült dekódo
 status.global.103=A kérésben megadott XML nem követi a protokollkövetelményeket (103-ás HTTP-hiba).
 status.global.clientdenied=Az EAS kiszolgáló jelentése <##replace.2##> (állapota ##replace.1##), és nem engedélyezi a TbSync számára a fiók elérését.||What-if-TbSync-is-blocked-by-my-server%3F||[help]
 
-status.ServerRejectedSomeItems=Az EAS kiszolgáló csak ##replace.2##-ját, és elutasította a fennmaradóakat a következő okok miatt: ##replace.1##. Ellenőrizze a hiba naplóját a „Csekély tétel átugrása” miatt.
-status.ServerRejectedAllItems=Az EAS kiszolgáló elutasította az elemeket az alábbi okok miatt: ##replace.1##. Ellenőrizze a hiba naplóját a „Csekély tétel átugrása” miatt.
+status.ServerRejectedSomeItems=Az EAS kiszolgáló csak ##replace.2##-ját, és elutasította a fennmaradóakat a következő okok miatt: ##replace.1##. Ellenőrizze a hiba naplóját a „Csekély tétel átugrása” miatt.||Error:-Bad-item-skipped||[help]
+status.ServerRejectedAllItems=Az EAS kiszolgáló elutasította az elemeket az alábbi okok miatt: ##replace.1##. Ellenőrizze a hiba naplóját a „Csekély tétel átugrása” miatt.||Error:-Bad-item-skipped||[help]
 status.ServerRejectedRequest=Az EAS szerver elutasította az utolsó kérésünket. További információért ellenőrizze a hibakeresési naplót.
 status.TempServerError=A szerver ideiglenes rendszerhibát vagy rossz elemet jelentett be. Ez gyakran átmeneti feltétel (próbálkozz később).
 

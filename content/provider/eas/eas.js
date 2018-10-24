@@ -1475,7 +1475,7 @@ var eas = {
 
             case "Sync:6":
                 //Server does not accept one of our items or the entire request.
-                if (allowSoftFail) return "Invalid item! Mandatory fields missing? Dublicate item?";
+                if (allowSoftFail) return "Invalid item!";
                 throw eas.finishSync("ServerRejectedRequest");                            
 
             case "Sync:7": //The client has changed an item for which the conflict policy indicates that the server's changes take precedence.

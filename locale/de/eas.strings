@@ -94,7 +94,7 @@ status.mailformed-xml=Der XML Baum konnte nicht geparst werden. Prüfen Sie bitt
 status.invalid=Ungültige Serverantwort.
 status.InvalidServerOptions=Der Server sendet keine Informationen zu den unterstützten ActiveSync Versionen. Ist EAS für diesen Benutzer bzw. für dieses Programm (TbSync) freigeschaltet? Sie können versuchen, die ActiveSync Version manuell festzulegen.
 
-status.security=Fehler beim Aufbau einer sicherern Verbindung. Benutzen Sie eventuell ein selbst signiertes Zertifikat oder ein andersartiges nicht vertrauenswürdiges Zertifikat welches nicht in Thunderbird importiert ist? (##replace.1##)||How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F||[help]
+status.security=Fehler beim Aufbau einer sicherern Verbindung. Benutzen Sie eventuell ein selbst signiertes Zertifikat oder ein andersartiges nicht vertrauenswürdiges Zertifikat welches nicht in Thunderbird importiert ist? (##replace.1##)||How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F||[Hilfe]
 status.network=Verbindung zum Server fehlgeschlagen (##replace.1##).
 
 status.syncing=Synchronisierung
@@ -118,10 +118,10 @@ status.folderDelete.6=Das Kommando konnte nicht abgeschlossen werden, auf dem Se
 status.global.101=Das WBXML der Anfrage konnte nicht in gültiges XML dekodiert werden (Fehler 101).
 status.global.102=Das WBXML der Anfrage konnte nicht in gültiges XML dekodiert werden (Fehler 102).
 status.global.103=Das XML der Anfrage entspricht nicht den Protokollanforderungen (Fehler 103).
-status.global.clientdenied=Der EAS Server antwortet mit <##replace.2##> (status ##replace.1##) und verweigert TbSync den Zugriff auf Ihr Konto.||What-if-TbSync-is-blocked-by-my-server%3F||[help]
+status.global.clientdenied=Der EAS Server antwortet mit <##replace.2##> (status ##replace.1##) und verweigert TbSync den Zugriff auf Ihr Konto.||What-if-TbSync-is-blocked-by-my-server%3F||[Hilfe]
 
-status.ServerRejectedSomeItems=Der EAS Server akzeptierte nur ##replace.2## von Ihren Elementen und hat die verbliebenen Elemente mit den folgenden Gründe zurückgewiesen: ##replace.1##. Prüfen Sie den Fehlerbericht auf "Bad item skipped".
-status.ServerRejectedAllItems=Der EAS Server hat Ihre Elemente wegen der folgenden Gründe zurückgewiesen : ##replace.1##. Prüfen Sie den Fehlerbericht auf "Bad item skipped".
+status.ServerRejectedSomeItems=Der EAS Server akzeptierte nur ##replace.2## von Ihren Elementen und hat die verbliebenen Elemente mit den folgenden Gründe zurückgewiesen: ##replace.1##. Prüfen Sie den Fehlerbericht auf "Bad item skipped".||Error:-Bad-item-skipped||[Hilfe]
+status.ServerRejectedAllItems=Der EAS Server hat Ihre Elemente wegen der folgenden Gründe zurückgewiesen : ##replace.1##. Prüfen Sie den Fehlerbericht auf "Bad item skipped".||Error:-Bad-item-skipped||[Hilfe]
 status.ServerRejectedRequest=Der EAS Server hat die letzte Anforderung zurückgewiesen. Prüfen Sie den Fehlerbericht für weitere Informationen.
 status.TempServerError=Der Server meldete einen temporären Systemfehler, oder ein fehlerhaftes Element. Dies ist häufig ein vorübergehender Zustand (versuchen Sie es später erneut).
 
