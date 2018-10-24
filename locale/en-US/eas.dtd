@@ -9,7 +9,7 @@
 <!ENTITY add.server "Server configuration:">
 <!ENTITY add.description "Please enter a name for the new TbSync account, the user name of the ActiveSync account you want to add (probably an email address) and select one of the available server configuration options. ">
 
-<!ENTITY pref.EnableAccount "Enable account and try to connect to server">
+<!ENTITY pref.EnableAccount "Enable account &amp; try to connect to server">
 <!ENTITY pref.SynchronizeAccount "Synchronize account">
 <!ENTITY pref.autodetect "best available">
 
