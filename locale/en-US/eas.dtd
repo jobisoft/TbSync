@@ -4,12 +4,12 @@
 <!ENTITY add.user "User name (email address):">
 <!ENTITY add.password "Password:">
 <!ENTITY add.url "Server address:">
-<!ENTITY add.urldescription "It should be sufficient to provide just the basic server address (e.g.: mail.yourserver.com). However, it is also possible to provide the full url (e.g.: https://mail.yourserver.com/Microsoft-Server-ActiveSync).">
+<!ENTITY add.urldescription "It should be sufficient to provide just the basic server address (e.g.: mail.yourserver.com). However, it is also possible to provide the full URL (e.g.: https://mail.yourserver.com/Microsoft-Server-ActiveSync).">
 
 <!ENTITY add.server "Server configuration:">
 <!ENTITY add.description "Please enter a name for the new TbSync account, the user name of the ActiveSync account you want to add (probably an email address) and select one of the available server configuration options. ">
 
-<!ENTITY pref.EnableAccount "Enable account &amp; try to connect to server">
+<!ENTITY pref.EnableAccount "Enable account and try to connect to server">
 <!ENTITY pref.SynchronizeAccount "Synchronize account">
 <!ENTITY pref.autodetect "best available">
 
@@ -25,17 +25,17 @@
 <!ENTITY pref.downloadonly "Revert local changes (one-way sync)">
 <!ENTITY pref.generaloptions "General options">
 <!ENTITY pref.syncdefaultfolders "Subscribe and sync all default folders after the initial connection has been established.">
-<!ENTITY pref.provision "Enforce provisioning (Kerio needs this)">
+<!ENTITY pref.provision "Enforce provisioning (Kerio requirement)">
 
 <!ENTITY pref.autotime "Sync interval (minutes)">
 <!ENTITY pref.never "A setting of 0 disables periodic sync. Push sync is no yet supported.">
-<!ENTITY pref.ShowTrashedFolders "Show folders found in trash" >
+<!ENTITY pref.ShowTrashedFolders "Show folders found in trash">
 
 <!ENTITY pref.syncstate "Sync status">
 <!ENTITY pref.seperator.comma "Comma">
 <!ENTITY pref.seperator.linebreak "Line break">
-<!ENTITY pref.seperator.description "Seperator for multiline address field.">
-<!ENTITY pref.displayoverride "Overide Display Name with 'First Name' + 'Second Name'">
+<!ENTITY pref.seperator.description "Separator for multiline address field.">
+<!ENTITY pref.displayoverride "Overide Display Name with “First Name” and “Second Name”">
 
 <!ENTITY pref.foldername "Folder">
 <!ENTITY pref.targetname "SyncTarget">
