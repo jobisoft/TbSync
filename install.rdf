@@ -31,6 +31,13 @@
             <em:description>Synchronisiert Kontakte, Aufgaben und Kalender über Exchange ActiveSync oder CalDAV/CardDAV mit Thunderbird</em:description>
           </Description>
         </em:localized>
+        <em:localized>
+          <Description>
+            <em:locale>it-IT</em:locale>
+            <em:name>TbSync</em:name>
+            <em:description>Sincronizza contatti, attività e calendari in Thunderbird tramite Exchange ActiveSync o CalDAV/CardDAV</em:description>
+          </Description>
+        </em:localized>
 
     </Description>
 </RDF>
