@@ -1,7 +1,7 @@
 # TbSync
 
 1. [Introduction](https://github.com/jobisoft/TbSync#introduction)
-2. [Where is this going?](https://github.com/jobisoft/TbSync#vision)
+2. [Where is this going?](https://github.com/jobisoft/TbSync#where-is-this-going)
 3. [External data sources](https://github.com/jobisoft/TbSync#external-data-sources)
 4. [Icon sources and attributions](https://github.com/jobisoft/TbSync#icon-sources-and-attributions)
 
