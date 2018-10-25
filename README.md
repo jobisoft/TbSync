@@ -15,7 +15,7 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 
 ### Where is this going?
 
-I started to work on TbSync, because my wife needed ActiveSync (EAS) support in Thunderbird. Soon after, I realized that the current situation for external accounts is very confusing, there was no central place to set up accounts. The same DAV account had to be setup in lightning and again in the sogo-connector or in CardBook. EWS accounts are setup differently again and for google we need 3 different addons for contacts, calendars and tasks. With TbSync I want to unify that. 
+I started to work on TbSync, because my wife needed ActiveSync (EAS) support in Thunderbird. Soon after, I realized that the current situation for external accounts is very confusing, there was no central place to set up accounts. The same DAV account had to be setup in lightning and again in the sogo-connector or in CardBook. EWS accounts are setup differently again and for google we need 3 different addons for contacts, calendars and tasks. With TbSync I want to unify that: A central manager to setup sync accounts (DAV, EAS, EWS, Google, ...) and get contacts, tasks and calendars.
 
 For the start I left out e-mail support, because it was not clear if JS Account will continue to exist and I also wanted to start fast and thus did not try to mess with the Thunderbird Account Manager, but created a independent Sync Account Manager. Most provider allow IMAP anyway.
 
