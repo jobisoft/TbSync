@@ -19,7 +19,7 @@ I started to work on TbSync, because my wife needed ActiveSync (EAS) support in 
 
 For the start I left out e-mail support, because it was not clear if JS Account will continue to exist and I also wanted to start fast and thus did not try to mess with the Thunderbird Account Manager, but created a independent Sync Account Manager. Most provider allow IMAP anyway.
 
-I knew that I will not able to recreate all the different providers for TbSync and I also will not be able manage to maintain them. I thus created (and still work on) a TbSync API, which allows other Add-Ons to hook into TbSync and re-use most of the glue code. My DAV provider is a proof-of-concept of that API (and a replacement for the sogo-connector, which was not working with TB60 anymore).
+I knew that I will not able to recreate all the different providers for TbSync and I also will not be able to maintain them. I thus created (and still work on) a TbSync API, which allows other Add-Ons to hook into TbSync and re-use most of the glue code. My DAV provider is a proof-of-concept of that API (and a replacement for the sogo-connector, which was not working with TB60 anymore).
 
 The next step is to [cooperate with CardBook](https://github.com/jobisoft/TbSync/issues/105), so it does not matter, if the user wants to use the "old" Thunderbird address book or the new vCard address book. Every provider available for TbSync should be able to sync into CardBook as well. I hope we get this done before the end of this year.
 
