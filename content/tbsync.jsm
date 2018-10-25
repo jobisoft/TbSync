@@ -228,10 +228,14 @@ var tbSync = {
     
     finalizeInitByWaitingForAddons: Task.async (function* (addons) {
         let lightning = false;
+        tbSync.cardbook = false;
         for (let a=0; a < addons.length; a++) {
             if (addons[a].isActive) {
                 tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
                 switch (addons[a].id.toString()) {
+                    case "cardbook@vigneau.philippe":
+                        tbSync.cardbook = true;
+                        break;
                     case "{e2fda1a4-762b-4020-b5ad-a41df1933103}":
                         lightning = true;
                         break;
