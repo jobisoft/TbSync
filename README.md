@@ -15,7 +15,7 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 
 ### Where is this going?
 
-I started to work on TbSync, because my wife needed ActiveSync (EAS) support in Thunderbird. Soon after, I realized that the current situation for external accounts is very confusing, there was no central place to set up accounts. The same DAV account had to be setup in lighning and again in the sogo-connector or in CardBook. EWS accounts are setup differently again and for google we need 3 differnet addons for contacts, calendars and tasks. With TbSync I want to unify that. 
+I started to work on TbSync, because my wife needed ActiveSync (EAS) support in Thunderbird. Soon after, I realized that the current situation for external accounts is very confusing, there was no central place to set up accounts. The same DAV account had to be setup in lightning and again in the sogo-connector or in CardBook. EWS accounts are setup differently again and for google we need 3 different addons for contacts, calendars and tasks. With TbSync I want to unify that. 
 
 For the start I left out e-mail support, because it was not clear if JS Account will continue to exist and I also wanted to start fast and thus did not try to mess with the Thunderbird Account Manager, but created a independent Sync Account Manager. Most provider allow IMAP anyway.
 
@@ -25,7 +25,9 @@ The next step is to [cooperate with CardBook](https://github.com/jobisoft/TbSync
 
 The next step is to work on the EWS-provider for TbSync. The [EWS community](https://github.com/ExchangeCalendar/exchangecalendar) is interested and I started to [work on it](https://github.com/jobisoft/EWS-4-TbSync), but since they managed to get their Add-On working with TB60, I shifted focus a bit. But my intention is to help them to convert their Add-on to become a TbSync provider.
  
-The last thing in my list is a google provider for TbSync. We will see how that goes, nothing is planed yet.
+After that, I would like to create or help others to create a google provider for TbSync. We will see how that goes, nothing is planed yet.
+
+Furthermore, if JS Account will survive and e-mail support can be added to the TbSync API, I would probably merge my Sync Account Manager into the Thunderbird Account Manager.
 
 ### External data sources
 
