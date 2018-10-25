@@ -1,9 +1,31 @@
 # TbSync
+
+1. [Introduction](https://github.com/jobisoft/TbSync#introduction)
+2. [Where is this going?](https://github.com/jobisoft/TbSync#vision)
+3. [External data sources](https://github.com/jobisoft/TbSync#external-data-sources)
+4. [Icon sources and attributions](https://github.com/jobisoft/TbSync#icon-sources-and-attributions)
+
+### Introduction
+
 [Thunderbird Add-On] Sync contacts, tasks and events to Thunderbird. The following servers are supported:
 * Exchange ActiveSync (EAS v2.5 & v14.0)
 * sabre/dav (CalDAV & CardDAV), via [DAV-4-TbSync](https://github.com/jobisoft/DAV-4-TbSync)
 
 Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki) of the TbSync project and in the [how-to-get-started guide](https://github.com/jobisoft/TbSync/wiki/How-to-get-started).
+
+### Where is this going?
+
+I started to work on TbSync, because my wife needed ActiveSync (EAS) support in Thunderbird. Soon after, I realized that the current situation for external accounts is very confusing, there was no central place to set up accounts. The same DAV account had to be setup in lighning and again in the sogo-connector or in CardBook. EWS accounts are setup differently again and for google we need 3 differnet addons for contacts, calendars and tasks. With TbSync I want to unify that. 
+
+For the start I left out e-mail support, because it was not clear if JS Account will continue to exist and I also wanted to start fast and thus did not try to mess with the Thunderbird Account Manager, but created a independent Sync Account Manager. Most provider allow IMAP anyway.
+
+I knew that I will not able to recreate all the different providers for TbSync and I also will not be able manage to maintain them. I thus created (and still work on) a TbSync API, which allows other Add-Ons to hook into TbSync and re-use most of the glue code. My DAV provider is a proof-of-concept of that API (and a replacement for the sogo-connector, which was not working with TB60 anymore).
+
+The next step is to [cooperate with CardBook](https://github.com/jobisoft/TbSync/issues/105), so it does not matter, if the user wants to use the "old" Thunderbird address book or the new vCard address book. Every provider available for TbSync should be able to sync into CardBook as well. I hope we get this done before the end of this year.
+
+The next step is to work on the EWS-provider for TbSync. The [EWS community](https://github.com/ExchangeCalendar/exchangecalendar) is interested and I started to [work on it](https://github.com/jobisoft/EWS-4-TbSync), but since they managed to get their Add-On working with TB60, I shifted focus a bit. But my intention is to help them to convert their Add-on to become a TbSync provider.
+ 
+The last thing in my list is a google provider for TbSync. We will see how that goes, nothing is planed yet.
 
 ### External data sources
 
