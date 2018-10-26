@@ -1905,7 +1905,8 @@ var eas = {
          * @param folder         [in] folder databasse object of requested folder
          * @param syncdata       [in] optional syncdata obj send by updateRowOfFolderList(),
          *                            needed to check if the folder is currently synced
-         */             getFolderRowData: function (folder, syncdata = null) {
+         */
+        getFolderRowData: function (folder, syncdata = null) {
             let rowData = {};
             rowData.folderID = folder.folderID;
             rowData.selected = (folder.selected == "1");
