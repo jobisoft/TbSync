@@ -716,7 +716,7 @@ var tbSync = {
         
         if (folder.selected == "1") {
             //default
-            status = tbSync.getLocalizedMessage("status." + folder.status, provider);
+            status = tbSync.getLocalizedMessage("status." + folder.status, provider).split("||")[0];
 
             switch (folder.status) {
                 case "OK":
