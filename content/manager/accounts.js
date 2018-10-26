@@ -574,13 +574,13 @@ var tbSyncAccounts = {
             
             case "info":
             case "nolightning":
+            case "needtorevert":
+            case "notsyncronized":
+            case "modified":
                 src = "info16.png";
                 break;
 
             case "warning":
-            case "needtorevert":
-            case "notsyncronized":
-            case "modified":
                 src = "warning16.png";
                 break;
 
