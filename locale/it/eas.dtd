@@ -20,7 +20,7 @@
 <!ENTITY pref.ServerNameDescription "ad es. mail.yourserver.com">
 <!ENTITY pref.usehttps "Utilizza connessione sicura (connettiti tramite HTTPS)">
 <!ENTITY pref.DeviceId "ID dispositivo">
-<!ENTITY pref.contactoptions "Opzioni di contatto">
+<!ENTITY pref.contactoptions "Opzioni contatto">
 <!ENTITY pref.birthday "Invia informazioni sui compleanni">
 <!ENTITY pref.downloadonly "Annulla modifiche locali (sincronizzazione a una via)">
 <!ENTITY pref.generaloptions "Opzioni generali">
