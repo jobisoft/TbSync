@@ -1379,9 +1379,7 @@ var tbSync = {
 
                     //update settings window, if open
                     if (folders[0].selected == "1") {
-                        tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "status", "aborted");
-                        if (tbSync.isEnabled(folders[0].account)) tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
-
+                        tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "selected", "0");
                         //update settings window, if open
                          Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
                     }
@@ -2074,9 +2072,7 @@ var tbSync = {
                 tbSync.db.clearChangeLog(aCalendar.id);
 
                 if (folders[0].selected == "1") {
-                    tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "status", "aborted");
-                    if (tbSync.isEnabled(folders[0].account)) tbSync.db.setAccountSetting(folders[0].account, "status", "notsyncronized");
-
+                    tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "selected", "0");
                     //update settings window, if open
                     Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
                 }
