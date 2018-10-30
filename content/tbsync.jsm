@@ -70,6 +70,8 @@ var tbSync = {
     lastVersionCheck: 0,
 
     lightningInitDone: false,
+    cardbook: false,
+    
     cachedTimezoneData: null,
     defaultTimezoneInfo: null,
     windowsTimezoneMap: {},
@@ -227,7 +229,6 @@ var tbSync = {
     
     finalizeInitByWaitingForAddons: Task.async (function* (addons) {
         let lightning = false;
-        tbSync.cardbook = false;
         for (let a=0; a < addons.length; a++) {
             if (addons[a].isActive) {
                 tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
