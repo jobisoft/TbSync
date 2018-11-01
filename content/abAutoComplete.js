@@ -187,14 +187,14 @@ abAutoComplete.Result.prototype = {
      * This returns the string that is displayed in the dropdown
      */
       getLabelAt(aIndex) {
-        return "  " + this.getValueAt(aIndex) + " (" + tbSync.db.getAccountSetting(this.getCommentAt(aIndex), "accountname") + ")";
+        return "  " + this.getValueAt(aIndex) + " ";
       },
 
     /**
      * Get the comment of the result at the given index (holds the account this search result belongs to)
      */
       getCommentAt(aIndex) {
-        return this.comments[aIndex];
+        return tbSync.db.getAccountSetting(this.comments[aIndex], "accountname");
       },
 
     /**
@@ -208,7 +208,7 @@ abAutoComplete.Result.prototype = {
      * Get the image of the result at the given index
      */
       getImageAt(aIndex) {
-        return tbSync[tbSync.db.getAccountSetting(this.getCommentAt(aIndex), "provider")].getProviderIcon();
+        return tbSync[tbSync.db.getAccountSetting(this.comments[aIndex], "provider")].getProviderIcon();
       },
 
     /**
