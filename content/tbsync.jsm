@@ -92,9 +92,9 @@ var tbSync = {
     providerList: {
         eas: {
             name: "Exchange ActiveSync (EAS)", 
-            js: "//tbsync/content/provider/eas/eas.js", 
-            newXul: "//tbsync/content/provider/eas/newaccount.xul", 
-            accountXul: "//tbsync/content/provider/eas/accountSettings.xul",
+            js: "//eas4tbsync/content/eas.js", 
+            newXul: "//eas4tbsync/content/newaccount.xul", 
+            accountXul: "//eas4tbsync/content/accountSettings.xul",
             homepageUrl: "",
             enabled: false,
             minVersion: "0",
@@ -178,7 +178,7 @@ var tbSync = {
             if (addons[a].isActive) {
                 let provider = null;
                 switch (addons[a].id.toString()) {
-                    case "tbsync@jobisoft.de":
+                    case "eas4tbsync@jobisoft.de":
                         provider = "eas";
                         break;
                     case "ews4tbsync@jobisoft.de":
