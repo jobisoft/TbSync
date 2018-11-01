@@ -4,7 +4,8 @@
 
 1. [Introduction](https://github.com/jobisoft/TbSync#introduction)
 2. [Where is this going?](https://github.com/jobisoft/TbSync#where-is-this-going)
-3. [Icon sources and attributions](https://github.com/jobisoft/TbSync#icon-sources-and-attributions)
+3. [External data sources](https://github.com/jobisoft/TbSync#external-data-sources)
+4. [Icon sources and attributions](https://github.com/jobisoft/TbSync#icon-sources-and-attributions)
 
 ## Introduction
 
@@ -29,6 +30,10 @@ The next step is to [cooperate with CardBook](https://github.com/jobisoft/TbSync
 The next step is to work on the EWS-provider for TbSync. The [EWS community](https://github.com/ExchangeCalendar/exchangecalendar) is interested and I started to [work on it](https://github.com/jobisoft/EWS-4-TbSync), but since they managed to get their Add-On working with TB60, I shifted focus a bit. But my intention is to help them to convert their Add-On to become a TbSync provider.
  
 After that, I would like to create or help others to create a google provider for TbSync. We will see how that goes, nothing is planed yet.
+
+## External data sources
+
+* EAS-4-TbSync uses a [timezone mapping](https://github.com/mj1856/TimeZoneConverter/blob/master/src/TimeZoneConverter/Data/Mapping.csv.gz) provided by [Matt Johnson](https://github.com/mj1856)
 
 ## Icon sources and attributions
 
