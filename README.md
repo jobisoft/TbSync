@@ -14,7 +14,7 @@ EAS-4-TbSync is known to work with the following EAS providers:
 * Amazon WorkMail using ActiveSync v2.5
 * mailbox.org
 
-Furthermore, TbSync is known to work with the following server systems:
+Furthermore, EAS-4-TbSync is known to work with the following server systems:
 * Microsoft Exchange [_if supporting Exchange ActiveSync (EAS), and not only Exchange WebServices (EWS)_]
 * SOGo
 * Kopano (Zarafa)
