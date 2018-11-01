@@ -1,6 +1,6 @@
 # EAS-4-TbSync
 
-If this provider Add-On is installed alongside of TbSync, TbSync is able to sync Exchange ActiveSync (EAS) accounts.
+If this provider Add-On is installed alongside of TbSync, TbSync is able to sync Exchange ActiveSync (EAS v2.5 & v14.0) accounts.
 
 ### Supported servers
 
