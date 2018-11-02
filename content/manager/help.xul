@@ -7,7 +7,6 @@
     xmlns:html="http://www.w3.org/1999/xhtml"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-    onload="tbSyncAccountManager.initHelpData();"
     title="Help" >
 
     <hbox flex="1" id="mainframe">
@@ -22,12 +21,12 @@
                 https://github.com/jobisoft/TbSync/wiki
             </html:p>
 
-            <html:p id="bugs.latestVersion" hidden="true">
+            <html:p id="bugs.latestVersion">
                 <html:b>&manager.help.foundabug;</html:b><html:br/><html:br/>
                 &manager.help.fixit1;
             </html:p>
 
-            <html:p id="bugs.olderVersion">
+            <html:p id="bugs.olderVersion" hidden="true">
                 <html:b>&manager.help.foundabug;</html:b><html:br/><html:br/>
                 <html:span>
                     &manager.help.pleaseupdate;<html:br/>

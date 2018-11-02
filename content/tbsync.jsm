@@ -57,8 +57,6 @@ var tbSync = {
 
     enabled: false,
     window: null,
-    versionInfo: {mozilla : {number: "0.0.0", url: ""}, stable : {number: "0.0.0", url: ""}, beta : {number: "0.0.0.0", url: ""}},
-    lastVersionCheck: 0,
 
     lightningInitDone: false,
     cardbook: false,
@@ -83,10 +81,10 @@ var tbSync = {
     providerList: {
         eas: {
             name: "Exchange ActiveSync (EAS)", 
-            js: "//eas4tbsync/content/eas.js", 
-            newXul: "//eas4tbsync/content/newaccount.xul", 
-            accountXul: "//eas4tbsync/content/accountSettings.xul",
-            homepageUrl: "",
+            js: "//eas4tbsync/content/provider/eas/eas.js", 
+            newXul: "//eas4tbsync/content/provider/eas/newaccount.xul", 
+            accountXul: "//eas4tbsync/content/provider/eas/accountSettings.xul",
+            homepageUrl: "https://addons.thunderbird.net/addon/eas-4-tbsync/",
             enabled: false,
             minVersion: "0",
         },  
@@ -200,15 +198,8 @@ var tbSync = {
                     tbSync.dump("PROVIDER", provider + "::" + tbSync.providerList[provider].name);
                     tbSync.includeJS("chrome:" + tbSync.providerList[provider].js);
                     
-                    //before running init, check min version requirements
-                    if (tbSync[provider].minTbSyncVersionRequired && tbSync.cmpVersions(tbSync[provider].minTbSyncVersionRequired, tbSync.providerList.eas.version) > 0) {
-                        if (tbSync.window.confirm("The installed version of the provider for <"+tbSync.providerList[provider].name+">\nrequires a more recent version of TbSync.\nThe provider cannot be loaded until TbSync has been updated to version <"+tbSync[provider].minTbSyncVersionRequired+"> or later.\n\nDo you want to open the project page, to get the latest version of TbSync?")) {
-                            tbSync.openTBtab("https://addons.thunderbird.net/addon/tbsync/");
-                        }
-                    } else {
-                        tbSync.providerList[provider].enabled = true;
-                        yield tbSync[provider].load(tbSync.lightningIsAvailable());
-                    }
+                    tbSync.providerList[provider].enabled = true;
+                    yield tbSync[provider].load(tbSync.lightningIsAvailable());
                 } else {
                     if (tbSync.window.confirm("This version of TbSync requires a more recent version of the provider for\n<"+tbSync.providerList[provider].name+">.\nThe provider cannot be not be loaded until it has been updated to version <"+tbSync.providerList[provider].minVersion+"> or later.\n\nDo you want to open the project page, to get the latest version of this provider?")) {
                             tbSync.openTBtab(tbSync.providerList[provider].homepageUrl);
@@ -309,9 +300,6 @@ var tbSync = {
         tbSync.syncTimer.start();
 
         tbSync.dump("TbSync init","Done");
-
-        //check for updates
-        yield tbSync.check4updates();
     }),
         
     cleanup: function() {
@@ -432,9 +420,7 @@ var tbSync = {
                         label += tbSync.getLocalizedMessage("info.sync");
                     }
                     
-                    if (tbSync.updatesAvailable()) label = label + " (" + tbSync.getLocalizedMessage("update_available") + ")";
-                    status.label = label;      
-                    
+                    status.label = label;
                 }
             }
         }
@@ -515,9 +501,6 @@ var tbSync = {
                         tbSync.syncAccount("sync",accounts.IDs[i]);
                         }
                     }
-
-                    //also use this timer to check for updates
-                    tbSync.check4updates();
                 }
             }
         }
@@ -977,44 +960,7 @@ var tbSync = {
     getAbsolutePath: function(filename) {
         return OS.Path.join(tbSync.storageDirectory, filename);
     },
-
-    check4updates: Task.async (function* () {
-        let checkInterval = tbSync.prefSettings.getIntPref("updateCheckInterval") * 60 * 60 * 1000;
-        if (!(checkInterval > 0 && (Date.now() - tbSync.lastVersionCheck) > checkInterval)) 
-            return;
-
-        let versions = null;
-        let urls = ["https://tbsync.jobisoft.de/VERSION.info"];
-
-        //we do not want to ask the server every 60s if the request failed for some reason, so we set the lastVersionCheck on each ATTEMPT, not on each SUCCESS
-        tbSync.lastVersionCheck = Date.now();
-        
-        for (let u=0; u<urls.length && versions === null; u++) {
-            try {
-                //get latest version info
-                let v = yield tbSync.fetchFile(urls[u]);
-                if (v[0].split(" ")[0] == "mozilla") versions = v;
-            } catch (ex) {
-                tbSync.dump("Get version info failed!", urls[u]);
-            }
-        }
-    
-        if (versions) {
-            for (let i = 0; i<versions.length; i++) {
-                let parts = versions[i].split(" ");
-                if (parts.length == 3) {
-                    let info = {};
-                    info.number = parts[1];
-                    info.url = parts[2];
-                    tbSync.versionInfo[parts[0]] = info;
-                }
-            }
-            //update UI
-            Services.obs.notifyObservers(null, "tbsync.updateSyncstate", null);
-            Services.obs.notifyObservers(null, "tbsync.refreshUpdateButton", null);
-        }        
-    }),
-    
+  
     //read file from within the XPI package
     fetchFile: function (aURL, returnType = "Array") {
         return new Promise((resolve, reject) => {
@@ -1061,16 +1007,6 @@ var tbSync = {
             }
         }
         return segmentsA.length - segmentsB.length;
-    },
-
-    isBeta: function () {
-        return (tbSync.providerList.eas.version.split(".").length > 3);
-    },
-
-    updatesAvailable: function (showBeta = tbSync.prefSettings.getBoolPref("notify4beta")) {
-        let updateBeta = (showBeta || tbSync.isBeta()) && (tbSync.cmpVersions(tbSync.versionInfo.beta.number, tbSync.providerList.eas.version) > 0);
-        let updateStable = (tbSync.cmpVersions(tbSync.versionInfo.stable.number, tbSync.providerList.eas.version)> 0);
-        return (updateBeta || updateStable);
     },
     
     includeJS: function (file, that=this) {
