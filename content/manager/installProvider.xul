@@ -14,10 +14,7 @@
         <vbox flex="1">
 
             <hbox>
-                <vbox flex="1">
-                    <html:p style="font-weight: bold" id="header"></html:p>
-                </vbox>
-                <vbox flex="0"><image src="chrome://tbsync/skin/provider32.png" style='padding-left:16px;' align='center' /></vbox>
+              <html:p style="font-weight: bold" id="header"></html:p>
             </hbox>
 
             <html:p>

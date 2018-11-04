@@ -21,7 +21,7 @@
 <!ENTITY manager.accountsettings "Fiók beállítások">
 <!ENTITY manager.help "Súgó">
 <!ENTITY manager.supporter "Támogató">
-<!ENTITY manager.update "A TbSync frissítése">
+<!ENTITY manager.provider "?? Install Provider ??">
 
 <!ENTITY manager.accounts "Fiókok">
 <!ENTITY manager.status "Állapot">
@@ -41,20 +41,8 @@
 <!ENTITY manager.help.fixit1 "Segíthet kijavítani hibajelentés formájában.">
 <!ENTITY manager.help.pleaseupdate "Kérjük, frissítse a TbSync legújabb elérhető verzióját, hogy ellenőrizze, hogy a hibája már javításra került-e.">
 <!ENTITY manager.help.installedversion "Jelenleg verziót használ:">
-<!ENTITY manager.help.latestversion "A legfrissebb verzió:">
-<!ENTITY manager.help.fixit2 "Ha a hibája még mindig megtalálható a legfrissebb verzióban, segíthet javítani a hibajelentés elküldésével.">
 <!ENTITY manager.help.enabledebuglog "Engedélyezze a hibakeresési naplózást az összes hibakereső üzenet tárolásához és a TbSync által küldött és fogadott adatokhoz egy naplófájlban.">
 <!ENTITY manager.help.aslongasneeded "A hibakeresés naplózását csak addig aktiválja, amíg a Thunderbird lelassítja.">
 <!ENTITY manager.help.createbugreportinfo "Tiszta hibajelentés létrehozásához indítsa újra a Thunderbird programot, végezze el a hiba indításához szükséges összes lépést, és kattintson jobbra az ikonra, hogy elküldje a jelentést a fejlesztőnek.">
 <!ENTITY manager.help.opencurrentdebuglog "Nyissa meg az aktuális hibakeresési naplót egy új lapon.">
 <!ENTITY manager.help.sendcurrentdebuglog "Küldje el az aktuális hibakeresési naplót a fejlesztőnek.">
-
-<!ENTITY manager.update.intro "A Thunderbird utolsó indításakor a következő verzióadatokat gyűjtötték össze:">
-<!ENTITY manager.update.installed "Telepített verzió:">
-<!ENTITY manager.update.amo_stable "Jelenlegi hivatalos verzió:">
-<!ENTITY manager.update.github_stable "Legújabb stabil verzió:">
-<!ENTITY manager.update.github_beta "Legújabb bétaverzió:">
-<!ENTITY manager.update.desc1 "Minden új stabil verziót elküldünk a Mozilla-nak, ahol át kell adnia egy felülvizsgálati folyamatot, hogy a TbSync új hivatalos verziójává váljon. Ez a felülvizsgálati folyamat azonban akár több hónapig is eltarthat.">
-<!ENTITY manager.update.desc2 "Ha bízik a fejlesztőben, akkor telepítheti a legújabb stabil verziót közvetlenül a TbSync projekt GitHub adattárából.">
-<!ENTITY manager.update.desc3 "Továbbá telepítheti a legújabb bétaverziót az új funkciók tesztelésére. Ne feledje, hogy a bétaverziók valószínűleg több hibát tartalmaznak, mint a stabil verziók. További információ a bétaverziókról és az úgynevezett bétaverzió csatornáról itt olvasható:">
-<!ENTITY manager.update.desc4 "Részletes változási napló itt található:">

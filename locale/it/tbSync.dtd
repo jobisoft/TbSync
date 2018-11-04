@@ -21,7 +21,7 @@
 <!ENTITY manager.accountsettings "Impostazioni account">
 <!ENTITY manager.help "Aiuto">
 <!ENTITY manager.supporter "Promotori">
-<!ENTITY manager.update "Aggiorna TbSync">
+<!ENTITY manager.provider "?? Install Provider ??">
 
 <!ENTITY manager.accounts "Account">
 <!ENTITY manager.status "Stato">
@@ -41,20 +41,8 @@
 <!ENTITY manager.help.fixit1 "È possibile correggerlo inviando una segnalazione d'errore.">
 <!ENTITY manager.help.pleaseupdate "Si esegua l'aggiornamento all'ultima versione disponibile di TbSync per controllare se il bug non sia già stato corretto.">
 <!ENTITY manager.help.installedversion "Attualmente si sta utilizzando la versione:">
-<!ENTITY manager.help.latestversion "L'ultima versione disponibile è:">
-<!ENTITY manager.help.fixit2 "Se il bug è ancora presente nell'ultima versione disponibile, è possibile aiutare lo sviluppatore a correggerlo inviando una segnalazione d'errore.">
 <!ENTITY manager.help.enabledebuglog "Abilitare il log di debug per salvare tutti i messaggi di debug e i dati inviati e ricevuti da TbSync in un file di registro.">
 <!ENTITY manager.help.aslongasneeded "Attivare il log di debug solo per il tempo strettamente necessario perché ciò rallenta Thunderbird.">
 <!ENTITY manager.help.createbugreportinfo "Per generare una segnalazione d'errore &quot;pulita&quot;, riavviare Thunderbird, eseguire tutti i passaggi richiesti per riprodurre l'errore e quindi cliccare l'icona sulla destra per inviare la segnalazione allo sviluppatore.">
 <!ENTITY manager.help.opencurrentdebuglog "Apri il registro di debug corrente in una nuova scheda.">
 <!ENTITY manager.help.sendcurrentdebuglog "Invia il registro di debug corrente allo sviluppatore.">
-
-<!ENTITY manager.update.intro "Durante l'ultimo avvio di Thunderbird sono state raccolte le seguenti informazioni sulla versione:">
-<!ENTITY manager.update.installed "Versione installata:">
-<!ENTITY manager.update.amo_stable "Versione ufficiale corrente:">
-<!ENTITY manager.update.github_stable "Ultimo rilascio stabile:">
-<!ENTITY manager.update.github_beta "Ultimo rilascio beta:">
-<!ENTITY manager.update.desc1 "Ogni nuovo rilascio stabile è inviato a Mozilla, dove deve superare un processo di revisione per essere elencato come nuova versione ufficiale di TbSync. Questo processo di revisione può richiedere svariati mesi.">
-<!ENTITY manager.update.desc2 "Se ci si fida dello sviluppatore, è possibile installare l'ultimo rilascio stabile direttamente dal repository GitHub del progetto TbSync.">
-<!ENTITY manager.update.desc3 "Inoltre, è possibile installare l'ultima versione beta per testare nuove funzionalità. Si ricordi che i rilasci beta probabilmente avranno più errori di quelli stabili. Ulteriori informazioni sui rilasci beta e sul cosiddetto canale di rilascio beta possono essere trovate qui:">
-<!ENTITY manager.update.desc4 "È possibile trovare un elenco dettagliato delle modifiche qui:">

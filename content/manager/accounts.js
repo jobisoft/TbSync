@@ -723,7 +723,12 @@ var tbSyncAccounts = {
     },
     
     installProvider: function (provider) {
-        tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.t0").setAttribute("active","false");
-        window.location="chrome://tbsync/content/manager/installProvider.xul?provider="+provider;
+        for (let i=0; i<tbSync.AccountManagerTabs.length; i++) {            
+             tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.t" + i).setAttribute("active","false");
+        }
+        tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").hidden=false;
+        tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").setAttribute("active","true");
+        tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.contentWindow").setAttribute("src", "chrome://tbsync/content/manager/installProvider.xul?provider="+provider);
+        
     }
 };

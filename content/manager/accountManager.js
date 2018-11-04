@@ -22,6 +22,7 @@ var tbSyncAccountManager = {
     },
     
     onload: function () {
+        tbSync.AccountManagerTabs = ["accounts.xul", "catman.xul", "supporter.xul", "help.xul"];
         tbSyncAccountManager.selectTab(0);
     },
     
@@ -34,16 +35,16 @@ var tbSyncAccountManager = {
 
     selectTab: function (t) {
         const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
-        let sources = ["accounts.xul", "catman.xul", "supporter.xul", "help.xul"];
 
         //set active tab (css selector for background color)
-        for (let i=0; i<sources.length; i++) {            
+        for (let i=0; i<tbSync.AccountManagerTabs.length; i++) {            
             if (i==t) document.getElementById("tbSyncAccountManager.t" + i).setAttribute("active","true");
             else document.getElementById("tbSyncAccountManager.t" + i).setAttribute("active","false");
         }
+        tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").hidden=true;
         
         //load XUL
-        document.getElementById("tbSyncAccountManager.contentWindow").setAttribute("src", "chrome://tbsync/content/manager/"+sources[t]);
+        document.getElementById("tbSyncAccountManager.contentWindow").setAttribute("src", "chrome://tbsync/content/manager/"+tbSync.AccountManagerTabs[t]);
     },
     
     getLogPref: function() {

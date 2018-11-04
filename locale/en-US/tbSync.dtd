@@ -21,7 +21,7 @@
 <!ENTITY manager.accountsettings "Account Settings">
 <!ENTITY manager.help "Help">
 <!ENTITY manager.supporter "Supporter">
-<!ENTITY manager.update "Update TbSync">
+<!ENTITY manager.provider "Install Provider">
 
 <!ENTITY manager.accounts "Accounts">
 <!ENTITY manager.status "Status">
@@ -41,20 +41,8 @@
 <!ENTITY manager.help.fixit1 "You can help to fix it by sending in a bug report.">
 <!ENTITY manager.help.pleaseupdate "Please update to the latest available version of TbSync, to check if your bug has been fixed already.">
 <!ENTITY manager.help.installedversion "You are currently using version:">
-<!ENTITY manager.help.latestversion "The latest available version is:">
-<!ENTITY manager.help.fixit2 "If your bug is still present in the latest available version, you can help to fix it by sending in a bug report.">
 <!ENTITY manager.help.enabledebuglog "Enable debug logging to store all debug messages and the data being sent and received by TbSync in a log file.">
 <!ENTITY manager.help.aslongasneeded "Activate debug logging only as long as needed because it slows down Thunderbird.">
 <!ENTITY manager.help.createbugreportinfo "To generate a clean bug report, restart Thunderbird, perform all the steps needed to trigger the bug and than click on the icon to the right to send the report to the developer.">
 <!ENTITY manager.help.opencurrentdebuglog "Open the current debug log in a new tab.">
 <!ENTITY manager.help.sendcurrentdebuglog "Send the current debug log to the developer.">
-
-<!ENTITY manager.update.intro "The following version information were collected during the last start of Thunderbird:">
-<!ENTITY manager.update.installed "Installed version:">
-<!ENTITY manager.update.amo_stable "Current official version:">
-<!ENTITY manager.update.github_stable "Latest stable release:">
-<!ENTITY manager.update.github_beta "Latest beta release:">
-<!ENTITY manager.update.desc1 "Each new stable release is send to Mozilla, where it needs to pass a review process to get listed as the new official version of TbSync. However, this review process can take up to several months. ">
-<!ENTITY manager.update.desc2 "If you trust the developer, you can install the latest stable release directly from the github repository of the TbSync project.">
-<!ENTITY manager.update.desc3 "Furthermore, you may install the latest beta version to test new features. Keep in mind, that beta releases will probably have more bugs than stable releases. More information regarding beta releases and the so called beta-release-channel can be found here:">
-<!ENTITY manager.update.desc4 "A detailed change log can be found here:">
