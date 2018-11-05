@@ -54,7 +54,7 @@
 
         <em:localized>  <!-- Italian -->
           <Description>
-            <em:locale>it-IT</em:locale>
+            <em:locale>it</em:locale>
             <em:name>TbSync</em:name>
             <em:description>Sincronizza contatti, attività e calendari in Thunderbird tramite Exchange ActiveSync o CalDAV/CardDAV</em:description>
             <em:translator>John Bieling (de)</em:translator>
