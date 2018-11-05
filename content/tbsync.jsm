@@ -70,6 +70,7 @@ var tbSync = {
     lastVersionCheck: 0,
 
     lightningInitDone: false,
+    eas4tbsync: false,
     cachedTimezoneData: null,
     defaultTimezoneInfo: null,
     windowsTimezoneMap: {},
@@ -230,6 +231,9 @@ var tbSync = {
             if (addons[a].isActive) {
                 tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
                 switch (addons[a].id.toString()) {
+                    case "eas4tbsync@jobisoft.de":
+                        tbSync.eas4tbsync = true;
+                        break;
                     case "{e2fda1a4-762b-4020-b5ad-a41df1933103}":
                         lightning = true;
                         break;

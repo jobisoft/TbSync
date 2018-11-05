@@ -47,29 +47,17 @@ var eas = {
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/provider/eas/overlays/abCardWindow.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/provider/eas/overlays/addressbookoverlay.xul");
 
-        //fix criticalBug introduced by changing DeviceType, deviceType now is part of the account data
+        //inform users to install EAS provider
         let showMigrationPopup = false;
         let accounts = tbSync.db.getAccounts();
         for (let i = 0; i < accounts.IDs.length; i++) {
-            if (accounts.data[accounts.IDs[i]].provider == "eas" && !accounts.data[accounts.IDs[i]].hasOwnProperty("devicetype")) {
+            if (accounts.data[accounts.IDs[i]].provider == "eas") {
                 showMigrationPopup = true;
-
-                //remove all folders, disable account, set to fixed, create new deviceID
-                tbSync.db.setAccountSetting(accounts.IDs[i], "deviceId", tbSync.eas.getNewDeviceId());
-                tbSync.db.setAccountSetting(accounts.IDs[i], "useragent", tbSync.prefSettings.getCharPref("eas.clientID.useragent"));
-                tbSync.db.setAccountSetting(accounts.IDs[i], "devicetype", tbSync.prefSettings.getCharPref("eas.clientID.type"));                 
-                tbSync.db.setAccountSetting(accounts.IDs[i], "status", "disabled");
-                tbSync.db.setAccountSetting(accounts.IDs[i], "policykey", "0");
-                tbSync.db.setAccountSetting(accounts.IDs[i], "foldersynckey", "0");
-                    
-                let folders = tbSync.db.getFolders(accounts.IDs[i]);
-                for (let f in folders) {
-                    tbSync.takeTargetOffline("eas", folders[f], "[emergency backup by TbSync]");
-                }		    
             }
         }
-        if (showMigrationPopup) tbSync.window.alert(tbSync.getLocalizedMessage("migrate"));
-
+        if (showMigrationPopup && !tbSync.eas4tbsync && tbSync.window.confirm(tbSync.getLocalizedMessage("migrate"))) {
+		tbSync.openTBtab("https://addons.thunderbird.net/de/thunderbird/addon/eas-4-tbsync/");
+	}
         if (lightningIsAvail) {
             //If an EAS calendar is currently NOT associated with an email identity, try to associate, 
             //but do not change any explicitly set association
