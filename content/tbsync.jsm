@@ -1037,11 +1037,6 @@ var tbSync = {
         });
     },
 
-    //obsolete pass trough - since we EncodeUrlComponent everything, there is no need to do char transcoding
-    encode_utf8: function (string) {
-        return string;
-    },
-
     //this is derived from: http://jonisalonen.com/2012/from-utf-16-to-utf-8-in-javascript/
     //javascript strings are utf16, btoa needs utf8 , so we need to encode
     toUTF8: function (str) {
