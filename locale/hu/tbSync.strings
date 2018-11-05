@@ -35,4 +35,4 @@ addressbook.searchgal=Keresése ezt a névjegyzékben és a globális könyvtár
 
 installProvider.header=A(z) „##replace.1##” szolgáltató a TbSync-hez még nincs telepítve.
 
-migrate=Nagyon fontos információ a TbSync-ről!\n\nSajnálom, valami hiba történt az utolsó frissítés során, és a TbSync jelenleg ismeretlen állapotban van, ezért vissza kell állítani:\n\n - minden fiók le van tiltva\n - minden helyi naptár és névjegyzék biztonsági mentése\n - a szinkron nélküli helyi változásokkal rendelkező névjegyzékek és naptárak további (*)\n\nFelejtsd ki ezt a helyzetet.
+migrate=?? TbSync is evolving!\n\nTbSync started as a pure sync Add-On for ActiveSync (EAS) but has since turned into a central sync manager for multiple protocols (for example CalDAV/CardDAV).\n\nTherefore, the next logical step is to move the ActiveSync provider from TbSync into a separate provider Add-On. The next version of TbSync will not include the ActiveSync provider anymore. To get this transition done without any hassle, I strongly suggest to install the separate ActiveSync provider now!\n\nDo you want to open the Add-On page of the ActiveSync provider to install it with just a few clicks? ??
