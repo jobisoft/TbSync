@@ -44,84 +44,88 @@ function uninstall(data, reason) {
 }
 
 function startup(data, reason) {
-    //possible reasons: APP_STARTUP, ADDON_ENABLE, ADDON_INSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE.
+    //Do not do anything, if version > 60
+    if (Services.vc.compare(Services.appinfo.platformVersion, "60.*") <= 0)  {     
+        //possible reasons: APP_STARTUP, ADDON_ENABLE, ADDON_INSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE.
 
-    //set default prefs
-    let branch = Services.prefs.getDefaultBranch("extensions.tbsync.");
-    branch.setBoolPref("notify4beta", false);
-    branch.setIntPref("updateCheckInterval", 6);
-    branch.setIntPref("timeout", 90000);
-    
-    branch.setIntPref("debug.breakpoint", 0);
-    branch.setBoolPref("debug.testoptions", false);
+        //set default prefs
+        let branch = Services.prefs.getDefaultBranch("extensions.tbsync.");
+        branch.setBoolPref("notify4beta", false);
+        branch.setIntPref("updateCheckInterval", 6);
+        branch.setIntPref("timeout", 90000);
+        
+        branch.setIntPref("debug.breakpoint", 0);
+        branch.setBoolPref("debug.testoptions", false);
 
-    branch.setBoolPref("log.toconsole", false);
-    branch.setBoolPref("log.tofile", false);
-    branch.setIntPref("log.userdatalevel", 0); //0 - metadata (no incomming xml/wbxml, only parsed data without userdata (except failing items))   1 - including userdata,  2 - raw xml , 3 - raw wbxml
+        branch.setBoolPref("log.toconsole", false);
+        branch.setBoolPref("log.tofile", false);
+        branch.setIntPref("log.userdatalevel", 0); //0 - metadata (no incomming xml/wbxml, only parsed data without userdata (except failing items))   1 - including userdata,  2 - raw xml , 3 - raw wbxml
 
-    branch.setIntPref("eas.synclimit", 7);
-    branch.setIntPref("eas.maxitems", 50);
-    branch.setCharPref("eas.clientID.type", "TbSync");
-    branch.setCharPref("eas.clientID.useragent", "Thunderbird ActiveSync");    
-    branch.setBoolPref("eas.fix4freedriven", false);
+        branch.setIntPref("eas.synclimit", 7);
+        branch.setIntPref("eas.maxitems", 50);
+        branch.setCharPref("eas.clientID.type", "TbSync");
+        branch.setCharPref("eas.clientID.useragent", "Thunderbird ActiveSync");    
+        branch.setBoolPref("eas.fix4freedriven", false);
 
-    Components.utils.import("chrome://tbsync/content/tbsync.jsm");
-    Components.utils.import("chrome://tbsync/content/OverlayManager.jsm");
+        Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+        Components.utils.import("chrome://tbsync/content/OverlayManager.jsm");
 
-    //Map local writeAsyncJSON into tbSync
-    tbSync.writeAsyncJSON = writeAsyncJSON;
-    
-    //add startup observers
-    Services.obs.addObserver(onLoadObserver, "mail-startup-done", false);
-    Services.obs.addObserver(onLoadObserver, "tbsync.init", false);
-    Services.obs.addObserver(onLoadDoneObserver, "tbsync.init.done", false);
+        //Map local writeAsyncJSON into tbSync
+        tbSync.writeAsyncJSON = writeAsyncJSON;
+        
+        //add startup observers
+        Services.obs.addObserver(onLoadObserver, "mail-startup-done", false);
+        Services.obs.addObserver(onLoadObserver, "tbsync.init", false);
+        Services.obs.addObserver(onLoadDoneObserver, "tbsync.init.done", false);
 
-    tbSync.addonData = data;
-    tbSync.overlayManager = new OverlayManager(data, {verbose:0});
+        tbSync.addonData = data;
+        tbSync.overlayManager = new OverlayManager(data, {verbose:0});
 
-    if (reason != APP_STARTUP) {
-        //during startup, we wait until mail-startup-done fired, for all other reasons we need to fire our own init
-        Services.obs.notifyObservers(null, 'tbsync.init', null)
+        if (reason != APP_STARTUP) {
+            //during startup, we wait until mail-startup-done fired, for all other reasons we need to fire our own init
+            Services.obs.notifyObservers(null, 'tbsync.init', null)
+        }
+        
+        //DO NOT ADD ANYTHING HERE!
+        //The final init of TbSync was triggered by issuing a "tbsync.init". If that is done, it will issue a "tbsync.init.done".
+        //So if there is stuff to do after init is done, add it at the local onLoadDoneObserver
     }
-    
-    //DO NOT ADD ANYTHING HERE!
-    //The final init of TbSync was triggered by issuing a "tbsync.init". If that is done, it will issue a "tbsync.init.done".
-    //So if there is stuff to do after init is done, add it at the local onLoadDoneObserver
 }
 
 function shutdown(data, reason) {
-    //possible reasons: APP_SHUTDOWN, ADDON_DISABLE, ADDON_UNINSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE    
+    if (Services.vc.compare(Services.appinfo.platformVersion, "60.*") <= 0)  {     
+        //possible reasons: APP_SHUTDOWN, ADDON_DISABLE, ADDON_UNINSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE    
 
-    //remove startup observer
-    Services.obs.removeObserver(onLoadObserver, "mail-startup-done");
-    Services.obs.removeObserver(onLoadObserver, "tbsync.init");
-    Services.obs.removeObserver(onLoadDoneObserver, "tbsync.init.done");
-    
-    //call cleanup of the tbSync module
-    forEachOpenWindow(unloadFromWindow);
-    Services.wm.removeListener(WindowListener);
-    tbSync.cleanup();
-    
-    //abort write timers and write current file content to disk 
-    if (tbSync.enabled) {
-        tbSync.db.changelogTimer.cancel();
-        tbSync.db.accountsTimer.cancel();
-        tbSync.db.foldersTimer.cancel();
-        writeAsyncJSON(tbSync.db.accounts, tbSync.db.accountsFile);
-        writeAsyncJSON(tbSync.db.folders, tbSync.db.foldersFile);
-        writeAsyncJSON(tbSync.db.changelog, tbSync.db.changelogFile);
+        //remove startup observer
+        Services.obs.removeObserver(onLoadObserver, "mail-startup-done");
+        Services.obs.removeObserver(onLoadObserver, "tbsync.init");
+        Services.obs.removeObserver(onLoadDoneObserver, "tbsync.init.done");
+        
+        //call cleanup of the tbSync module
+        forEachOpenWindow(unloadFromWindow);
+        Services.wm.removeListener(WindowListener);
+        tbSync.cleanup();
+        
+        //abort write timers and write current file content to disk 
+        if (tbSync.enabled) {
+            tbSync.db.changelogTimer.cancel();
+            tbSync.db.accountsTimer.cancel();
+            tbSync.db.foldersTimer.cancel();
+            writeAsyncJSON(tbSync.db.accounts, tbSync.db.accountsFile);
+            writeAsyncJSON(tbSync.db.folders, tbSync.db.foldersFile);
+            writeAsyncJSON(tbSync.db.changelog, tbSync.db.changelogFile);
+        }
+
+        //unload tbSync module
+        tbSync.dump("TbSync shutdown","Unloading TbSync module.");
+        Components.utils.unload("chrome://tbsync/content/tbsync.jsm");
+        Components.utils.unload("chrome://tbsync/content/OverlayManager.jsm");
+        
+        // HACK WARNING:
+        //  - the Addon Manager does not properly clear all addon related caches on update;
+        //  - in order to fully update images and locales, their caches need clearing here
+        Services.obs.notifyObservers(null, "chrome-flush-caches", null);
     }
-
-    //unload tbSync module
-    tbSync.dump("TbSync shutdown","Unloading TbSync module.");
-    Components.utils.unload("chrome://tbsync/content/tbsync.jsm");
-    Components.utils.unload("chrome://tbsync/content/OverlayManager.jsm");
-    
-    // HACK WARNING:
-    //  - the Addon Manager does not properly clear all addon related caches on update;
-    //  - in order to fully update images and locales, their caches need clearing here
-    Services.obs.notifyObservers(null, "chrome-flush-caches", null);
-
 }
 
 
