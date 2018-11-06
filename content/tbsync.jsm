@@ -372,18 +372,22 @@ var tbSync = {
     },
 
     popupNotEnabled: function () {
-        let msg = "Oops! TbSync was not able to start!\n\n";
         tbSync.dump("Oops", "Trying to open account manager, but init sequence not yet finished");
-        
-        if (!tbSync.prefSettings.getBoolPref("log.tofile")) {
-            if (tbSync.window.confirm(msg + "It is not possible to trace this error, because debug log is currently not enabled. Do you want to enable debug log now, to help fix this error?")) {
-                tbSync.prefSettings.setBoolPref("log.tofile", true);
-                tbSync.window.alert("TbSync debug log has been enabled, please restart Thunderbird and again try to open TbSync.");
+        let msg = tbSync.getLocalizedMessage("OopsMessage") + "\n\n";
+        let v = Services.appinfo.platformVersion; 
+        if (Services.vc.compare(v, "60.*") <= 0 && Services.vc.compare(v, "52.0") >= 0) {
+            if (!tbSync.prefSettings.getBoolPref("log.tofile")) {
+                if (tbSync.window.confirm(msg + tbSync.getLocalizedMessage("UnableToTraceError"))) {
+                    tbSync.prefSettings.setBoolPref("log.tofile", true);
+                    tbSync.window.alert(tbSync.getLocalizedMessage("RestartThunderbirdAndTryAgain"));
+                }
+            } else {
+                if (tbSync.window.confirm(msg + tbSync.getLocalizedMessage("HelpFixStartupError"))) {
+                    tbSync.createBugReport("john.bieling@gmx.de", msg, "");
+                }
             }
         } else {
-            if (tbSync.window.confirm(msg + "To help fix this error, you could send a debug log to the TbSync developer. Prepare that email now?")) {
-                tbSync.createBugReport();
-            }
+            tbSync.window.alert(msg + tbSync.getLocalizedMessage("VersionOfThunderbirdNotSupported"));
         }
     },
 
@@ -893,15 +897,27 @@ var tbSync = {
         return tbSync.openTBtab(tbSync.getAbsolutePath(file));
     },
     
-    createBugReport: function (showAlert = false) {
-        if (showAlert) tbSync.prefWindowObj.alert("Please do not forget to add a bug description, reports without a bug description are ignored!");
-
+    prepareBugReport: function () {
+        if (Services.vc.compare(Services.appinfo.platformVersion, "60.*") <= 0 && Services.vc.compare(Services.appinfo.platformVersion, "52.0") >= 0) {
+            if (!tbSync.debugMode) {
+                tbSync.prefWindowObj.alert(tbSync.getLocalizedMessage("NoDebugLog"));
+            } else {
+                tbSync.prefWindowObj.openDialog("chrome://tbsync/content/manager/support-wizard/support-wizard.xul", "support-wizard", "dialog,centerscreen,chrome,resizable=no");
+            }
+        } else {
+            tbSync.prefWindowObj.alert(tbSync.getLocalizedMessage("VersionOfThunderbirdNotSupported"));
+        }
+    },
+    
+    createBugReport: function (email, subject, description) {
         let fields = Components.classes["@mozilla.org/messengercompose/composefields;1"].createInstance(Components.interfaces.nsIMsgCompFields); 
         let params = Components.classes["@mozilla.org/messengercompose/composeparams;1"].createInstance(Components.interfaces.nsIMsgComposeParams); 
 
-        fields.to = "john.bieling@gmx.de"; 
-        fields.subject = "TbSync " + tbSync.providerList.eas.version + " bug report: ADD SHORT DESCRIPTION "; 
-        fields.body = "Hi John,\n\nattached you find my debug.log.\n\nBUG DESCRIPTION"; 
+        fields.to = email; 
+        fields.subject = "TbSync " + tbSync.version + " bug report: " + subject; 
+        fields.body = "Hi,\n\n" +
+            "attached you find my debug.log for the following error:\n\n" + 
+            description; 
 
         params.composeFields = fields; 
         params.format = Components.interfaces.nsIMsgCompFormat.PlainText; 
@@ -2170,5 +2186,4 @@ if (tbSync.lightningIsAvailable()) {
 
 //clear debug log on start
 tbSync.initFile("debug.log");
-tbSync.dump("Init","Please send this log to john.bieling@gmx.de, if you have encountered an error.");
 Services.console.registerListener(tbSync.consoleListener);

@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE overlay [
+<!ENTITY % abMainOverlayDTD SYSTEM "chrome://tbsync/locale/tbSync.dtd" >
+%abMainOverlayDTD;
+]>
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<wizard 
+      width="600"
+      height="600"
+      id="SupportWizard" 
+      title="&supportwizard.title;"
+      onload="tbSyncAccountManager.initSupportWizard();"
+      onwizardfinish="return tbSyncAccountManager.checkSupportWizard(true);"
+      xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <wizardpage onFirstPage="true" label="&supportwizard.pagetitle;">
+    <label value="&supportwizard.label.faultycomponent;"/>
+    <menulist onselect="tbSyncAccountManager.checkSupportWizard(false)">
+        <menupopup id="tbsync.supportwizard.faultycomponent">
+            <menuitem hidden="true" selected="true" label="&supportwizard.label.selectcomponent;" value="" />
+            <menuitem label="&manager.title;" value="CORE" />
+        </menupopup>
+    </menulist>    
+
+    <label style="margin-top:2em" value="&supportwizard.label.summary;"/>
+    <textbox id="tbsync.supportwizard.summary" oninput="tbSyncAccountManager.checkSupportWizard(false)" />
+   
+    <label style="margin-top:2em" value="&supportwizard.label.description;"/>
+    <textbox flex="1" id="tbsync.supportwizard.description" multiline="true" oninput="tbSyncAccountManager.checkSupportWizard(false)" />
+
+    <description style="margin-top:2em">
+      &supportwizard.footer;
+    </description>  
+  </wizardpage>
+
+  <script type="text/javascript" src="chrome://tbsync/content/manager/accountManager.js" /> 
+
+</wizard>

@@ -55,5 +55,41 @@ var tbSyncAccountManager = {
     toggleLogPref: function() {
         let log = document.getElementById("tbSyncAccountManager.logPrefCheckbox");
         tbSync.prefSettings.setBoolPref("log.tofile", log.checked);
+    },
+    
+    initSupportWizard: function() {
+        document.documentElement.getButton("finish").disabled = true;
+
+        const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+        let menu = document.getElementById("tbsync.supportwizard.faultycomponent");
+
+        let providers = Object.keys(tbSync.providerList);
+        for (let i=0; i < providers.length; i++) {
+            let provider = providers[i];
+            if (tbSync.providerList[provider].enabled) {
+                let item = document.createElementNS(XUL_NS, "menuitem");
+                item.setAttribute("value", providers[i].toUpperCase() + "_" + tbSync.providerList[provider].version);
+                item.setAttribute("label", tbSync.getLocalizedMessage("supportwizard.provider::" + tbSync.providerList[provider].name));
+                menu.appendChild(item); 
+            }
+        }
+    },
+    
+    checkSupportWizard: function(createReport = false) {
+        let module = document.getElementById("tbsync.supportwizard.faultycomponent").parentNode.value;
+        let subject = document.getElementById("tbsync.supportwizard.summary").value;
+        let description = document.getElementById("tbsync.supportwizard.description").value;
+
+        if (createReport) {
+            if (module == "" || subject == "" || description== "") {
+                return false;
+            }
+            tbSync.createBugReport("john.bieling@gmx.de", "[" + module + "] " + subject, description);
+            return true;
+        }
+
+        //just check and update button status
+        document.documentElement.getButton("finish").disabled = (module == "" || subject == "" || description== "");
+        
     }
 };
