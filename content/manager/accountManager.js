@@ -68,7 +68,7 @@ var tbSyncAccountManager = {
             let provider = providers[i];
             if (tbSync.providerList[provider].enabled) {
                 let item = document.createElementNS(XUL_NS, "menuitem");
-                item.setAttribute("value", providers[i].toUpperCase() + "_" + tbSync.providerList[provider].version);
+                item.setAttribute("value", providers[i]);
                 item.setAttribute("label", tbSync.getLocalizedMessage("supportwizard.provider::" + tbSync.providerList[provider].name));
                 menu.appendChild(item); 
             }
@@ -76,20 +76,23 @@ var tbSyncAccountManager = {
     },
     
     checkSupportWizard: function(createReport = false) {
-        let module = document.getElementById("tbsync.supportwizard.faultycomponent").parentNode.value;
+        let provider = document.getElementById("tbsync.supportwizard.faultycomponent").parentNode.value;
         let subject = document.getElementById("tbsync.supportwizard.summary").value;
         let description = document.getElementById("tbsync.supportwizard.description").value;
 
         if (createReport) {
-            if (module == "" || subject == "" || description== "") {
+            if (provider == "" || subject == "" || description== "") {
                 return false;
             }
-            tbSync.createBugReport("john.bieling@gmx.de", "[" + module + "] " + subject, description);
+
+            let email = (tbSync.providerList.hasOwnProperty(provider)) ? tbSync[provider].getMaintainerEmail() : "john.bieling@gmx.de";
+            let version = (tbSync.providerList.hasOwnProperty(provider)) ? tbSync.providerList[provider].version : "";
+            tbSync.createBugReport(email, "[" + provider.toUpperCase() + " " +  version + "] " + subject, description);
             return true;
         }
 
         //just check and update button status
-        document.documentElement.getButton("finish").disabled = (module == "" || subject == "" || description== "");
+        document.documentElement.getButton("finish").disabled = (provider == "" || subject == "" || description== "");
         
     }
 };

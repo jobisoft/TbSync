@@ -21,7 +21,7 @@
     <menulist onselect="tbSyncAccountManager.checkSupportWizard(false)">
         <menupopup id="tbsync.supportwizard.faultycomponent">
             <menuitem hidden="true" selected="true" label="&supportwizard.label.selectcomponent;" value="" />
-            <menuitem label="&manager.title;" value="CORE" />
+            <menuitem label="&manager.title;" value="core" />
         </menupopup>
     </menulist>    
 
