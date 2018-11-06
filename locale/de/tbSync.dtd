@@ -36,13 +36,17 @@
 <!ENTITY manager.supporter.sponsors "Sponsoren">
 
 <!ENTITY manager.help.needhelp "Benötigen Sie Hilfe?">
-<!ENTITY manager.help.foundabug "Sie haben einen Fehler gefunden?">
 <!ENTITY manager.help.wiki "Besuchen Sie die Wikiseiten des TbSync Projektes, diese beinhalten zusätzliche Informationen, Benutzeranleitungen und detaillierte Konfigurationsbeschreibungen.">
-<!ENTITY manager.help.fixit1 "Sie können helfen den Fehler zu korrigieren, indem Sie dem Entwickler einen Fehlerbericht zusenden.">
-<!ENTITY manager.help.pleaseupdate "Bitte aktualisieren Sie auf die zuletzt veröffentlichte Version von TbSync, um zu prüfen ob der Fehler schon beseitigt worden ist.">
-<!ENTITY manager.help.installedversion "Sie benutzen momentan die Version:">
-<!ENTITY manager.help.enabledebuglog "Die Protokollierung von Debug-Meldungen aktivieren, um einen aussagekräftigen Fehlerbericht erstellen zu können. Dabei werden alle Programmmeldungen als auch die Meldungen die TbSync empfängt und versendet, aufgezeichnet.">
-<!ENTITY manager.help.aslongasneeded "Aktivieren Sie die Protokollierung der Debug-Meldungen nur so lange wie nötig, da Thunderbird dadurch signifikant langsamer arbeiten.">
-<!ENTITY manager.help.createbugreportinfo "Um einen neuen Fehlerbericht zu erstellen: Starten Sie Thunderbird neu und wiederholen Sie alle Schritte um das fehlerhafte Verhalten zu reproduzieren und klicken Sie anschließend auf das Icon auf der rechten Seite um den Fehlerbericht an den Entwickler zu verschicken.">
-<!ENTITY manager.help.opencurrentdebuglog "Öffnet den aktuellen Fehlerbericht in einem neuen Reiter.">
-<!ENTITY manager.help.sendcurrentdebuglog "Sendet den aktuellen Fehlerbericht an den Entwickler.">
+
+<!ENTITY manager.help.foundabug "Sie haben einen Fehler gefunden?">
+<!ENTITY manager.help.fixit "Sie können helfen den Fehler zu korrigieren, indem Sie dem Entwickler einen Fehlerbericht zusenden. Bitte aktivieren Sie dazu den Debug-Modus.">
+<!ENTITY manager.help.enabledebuglog "Debug-Modus: Protokollierung aller Programmmeldungen und aller Daten die TbSync empfängt und versendet. Thunderbird arbeitet dadurch unter Umständen signifikant langsamer.">
+<!ENTITY manager.help.createbugreportinfo "Damit TbSync nur die für Ihren Fehlerbericht relevanten Debug-Meldungen sammelt, starten Sie Thunderbird bitte neu und wiederholen dann genau die Schritte, die das fehlerhafte Verhalten reproduzieren. Anschließend können Sie hier Ihren Fehlerbericht erstellen.">
+
+<!ENTITY supportwizard.title "Fehlerbericht erstellen">
+<!ENTITY supportwizard.pagetitle "Erfassung aller relevanten Informationen zur effektiven Bearbeitung des Fehlerberichtes.">
+<!ENTITY supportwizard.label.faultycomponent "Komponente von TbSync, bei der Sie den Fehler beobachtet haben:">
+<!ENTITY supportwizard.label.selectcomponent "Komponente auswählen ...">
+<!ENTITY supportwizard.label.summary "Kurze Zusammenfassung des Fehlers:">
+<!ENTITY supportwizard.label.description "Ausführliche Fehlerbeschreibung:">
+<!ENTITY supportwizard.footer "Aus den hier angegebenen Informationen wird im nächsten Schritt eine E-Mail erzeugt, die Sie nachträglich noch bearbeiten können (z.B. Bildschirmfotos o.Ä. hinzufügen). Erst durch das Absenden der E-Mail, wird der Fehlerbericht verschickt.">

@@ -36,13 +36,17 @@
 <!ENTITY manager.supporter.sponsors "Sponsor">
 
 <!ENTITY manager.help.needhelp "Serve aiuto?">
-<!ENTITY manager.help.foundabug "Si è trovato un bug?">
 <!ENTITY manager.help.wiki "Si aprano le pagine del wiki del progetto TbSync; queste forniscono informazioni aggiuntive, guide e descrizioni dettagliate sulla configurazione.">
-<!ENTITY manager.help.fixit1 "È possibile correggerlo inviando una segnalazione d'errore.">
-<!ENTITY manager.help.pleaseupdate "Si esegua l'aggiornamento all'ultima versione disponibile di TbSync per controllare se il bug non sia già stato corretto.">
-<!ENTITY manager.help.installedversion "Attualmente si sta utilizzando la versione:">
-<!ENTITY manager.help.enabledebuglog "Abilitare il log di debug per salvare tutti i messaggi di debug e i dati inviati e ricevuti da TbSync in un file di registro.">
-<!ENTITY manager.help.aslongasneeded "Attivare il log di debug solo per il tempo strettamente necessario perché ciò rallenta Thunderbird.">
-<!ENTITY manager.help.createbugreportinfo "Per generare una segnalazione d'errore &quot;pulita&quot;, riavviare Thunderbird, eseguire tutti i passaggi richiesti per riprodurre l'errore e quindi cliccare l'icona sulla destra per inviare la segnalazione allo sviluppatore.">
-<!ENTITY manager.help.opencurrentdebuglog "Apri il registro di debug corrente in una nuova scheda.">
-<!ENTITY manager.help.sendcurrentdebuglog "Invia il registro di debug corrente allo sviluppatore.">
+
+<!ENTITY manager.help.foundabug "Si è trovato un bug?">
+<!ENTITY manager.help.fixit "?? You can help to fix it by sending in a bug report. This requires the activation of debug mode.">
+<!ENTITY manager.help.enabledebuglog "?? Debug modus: Logging of all program messages and all data that TbSync receives and sends. Thunderbird may work significantly slower.">
+<!ENTITY manager.help.createbugreportinfo "?? In order for TbSync to collect only the debug messages relevant to your bug report, please restart Thunderbird and then repeat exactly the steps that reproduce the buggy behavior. Then you can create your bug report here.">
+
+<!ENTITY supportwizard.title "?? Create bug report ??">
+<!ENTITY supportwizard.pagetitle "?? Gathering of all relevant information to effectively process the bug report. ??">
+<!ENTITY supportwizard.label.faultycomponent "?? Component of TbSync where you have observed the error: ??">
+<!ENTITY supportwizard.label.selectcomponent "?? Select component ... ??">
+<!ENTITY supportwizard.label.summary "?? Short summary of the error: ??">
+<!ENTITY supportwizard.label.description "?? Detailed error description: ??">
+<!ENTITY supportwizard.footer "?? From the information given here, an e-mail will be generated in the next step, which you can subsequently edit (for example, adding screenshots or similar). Only by actually sending that e-mail, the error report will be sent. ??">
