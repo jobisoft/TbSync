@@ -857,11 +857,6 @@ var tbSync = {
 
 
     // TOOLS    
-    breakpoint: function (v) {
-        let u = tbSync.prefSettings.getIntPref("debug.breakpoint");
-        if (u>0 && v>=u) throw "TbSync: Aborted after breakpoint <"+v+">";
-    },
-
     isString: function (s) {
         return (typeof s == 'string' || s instanceof String);
     },

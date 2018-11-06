@@ -54,7 +54,6 @@ function startup(data, reason) {
         branch.setIntPref("updateCheckInterval", 6);
         branch.setIntPref("timeout", 90000);
         
-        branch.setIntPref("debug.breakpoint", 0);
         branch.setBoolPref("debug.testoptions", false);
 
         branch.setBoolPref("log.toconsole", false);
