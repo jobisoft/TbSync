@@ -60,6 +60,8 @@ var tbSync = {
     
     lightning: false,
     cardbook: false,
+    version: 0,
+    debugMode: false,
     
     lightningInitDone: false,
     cachedTimezoneData: null,
@@ -215,6 +217,9 @@ var tbSync = {
             if (addons[a].isActive) {
                 tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
                 switch (addons[a].id.toString()) {
+                    case "tbsync@jobisoft.de":
+                        tbSync.version = addons[a].version.toString();
+                        break;
                     case "cardbook@vigneau.philippe":
                         tbSync.cardbook = true;
                         break;
@@ -290,6 +295,10 @@ var tbSync = {
         //init stuff for sync process
         tbSync.resetSync();
 
+        
+        //was debug mode enabled during startuo?
+        tbSync.debugMode = tbSync.prefSettings.getBoolPref("log.tofile");
+        
         //enable TbSync
         tbSync.enabled = true;
 
