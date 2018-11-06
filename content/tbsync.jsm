@@ -57,10 +57,11 @@ var tbSync = {
 
     enabled: false,
     window: null,
-
-    lightningInitDone: false,
+    
+    lightning: false,
     cardbook: false,
     
+    lightningInitDone: false,
     cachedTimezoneData: null,
     defaultTimezoneInfo: null,
     windowsTimezoneMap: {},
@@ -98,7 +99,7 @@ var tbSync = {
             minVersion: "0.6",
         },
         dav: {
-            name: "sabre/dav (CalDAV & CardDAV)", 
+            name: "CalDAV & CardDAV", 
             js: "//dav4tbsync/content/dav.js" , 
             newXul: "//dav4tbsync/content/newaccount.xul", 
             accountXul: "//dav4tbsync/content/accountSettings.xul",
@@ -210,7 +211,6 @@ var tbSync = {
     }),
     
     finalizeInitByWaitingForAddons: Task.async (function* (addons) {
-        let lightning = false;
         for (let a=0; a < addons.length; a++) {
             if (addons[a].isActive) {
                 tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
@@ -219,13 +219,13 @@ var tbSync = {
                         tbSync.cardbook = true;
                         break;
                     case "{e2fda1a4-762b-4020-b5ad-a41df1933103}":
-                        lightning = true;
+                        tbSync.lightning = true;
                         break;
                 }
             }
         }
         
-        if (lightning) {
+        if (tbSync.lightning) {
             tbSync.dump("Check4Lightning","Start");
 
             //try to import
