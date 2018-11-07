@@ -159,12 +159,18 @@ eas.sync.Tasks = {
         //ReminderTime and ReminderSet
         let alarms = item.getAlarms({});
         if (alarms.length>0 && (item.entryDate || item.dueDate)) {
-            //create Date obj from entryDate by converting item.entryDate to an extended UTC ISO string, which can be parsed by Date
-            //if entryDate is missing, the startDate of this object is set to its dueDate
-            let UtcDate = new Date(tbSync.getIsoUtcString(item.entryDate ? item.entryDate : item.dueDate, true));
-            //add offset
-            UtcDate.setSeconds(UtcDate.getSeconds() + alarms[0].offset.inSeconds);		
-            wbxml.atag("ReminderTime", UtcDate.toISOString());
+            let reminderTime;
+            if (alarms[0].offset) {
+                //create Date obj from entryDate by converting item.entryDate to an extended UTC ISO string, which can be parsed by Date
+                //if entryDate is missing, the startDate of this object is set to its dueDate
+                let UtcDate = new Date(tbSync.getIsoUtcString(item.entryDate ? item.entryDate : item.dueDate, true));
+                //add offset
+                UtcDate.setSeconds(UtcDate.getSeconds() + alarms[0].offset.inSeconds);
+                reminderTime = UtcDate.toISOString();
+            } else {
+                reminderTime = tbSync.getIsoUtcString(alarms[0].alarmDate, true);
+            }                
+            wbxml.atag("ReminderTime", reminderTime);
             wbxml.atag("ReminderSet", "1");
         } else {
             wbxml.atag("ReminderSet", "0");
