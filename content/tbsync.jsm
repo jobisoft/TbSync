@@ -643,8 +643,8 @@ var tbSync = {
         if (aItem instanceof Components.interfaces.nsIAbCard) {
             return "tb-contact"
         } else {
-            if ((cal.item && cal.item.isEvent(aItem)) || cal.isEvent(aItem)) return "tb-event";
-            if ((cal.item && cal.item.isToDo(aItem)) || cal.isToDo(aItem)) return "tb-todo";
+            if (cal.item.isEvent(aItem)) return "tb-event";
+            if (cal.item.isToDo(aItem)) return "tb-todo";
         }
         return "unknown";
     },
