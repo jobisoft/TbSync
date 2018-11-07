@@ -34,9 +34,10 @@ var eas = {
         abortWithServerError: "abortWithServerError",
     }),
     
-    install: function (aAddonInstall) {
-        aAddonInstall.install();
-    },
+//silent install not allowed...
+//    install: function (aAddonInstall) {
+//        aAddonInstall.install();
+//    },
 
     /**
      * Called during load of external provider extension to init provider.
@@ -57,9 +58,10 @@ var eas = {
                 showMigrationPopup = true;
             }
         }
-        if (showMigrationPopup && !tbSync.eas4tbsync) {// && tbSync.window.confirm(tbSync.getLocalizedMessage("migrate"))) {
-            //tbSync.openTBtab("https://addons.thunderbird.net/de/thunderbird/addon/eas-4-tbsync/");
-            AddonManager.getInstallForURL("https://addons.thunderbird.net/thunderbird/downloads/latest/eas-4-tbsync/addon-986338-latest.xpi", eas.install, "application/x-xpinstall", null, "Exchange ActiveSync (EAS) provider for TbSync");
+        if (showMigrationPopup && !tbSync.eas4tbsync && tbSync.window.confirm(tbSync.getLocalizedMessage("migrate"))) {
+            tbSync.openTBtab("https://addons.thunderbird.net/de/thunderbird/addon/eas-4-tbsync/");
+            //silent install not allowed
+            //AddonManager.getInstallForURL("https://addons.thunderbird.net/thunderbird/downloads/latest/eas-4-tbsync/addon-986338-latest.xpi", eas.install, "application/x-xpinstall", null, "Exchange ActiveSync (EAS) provider for TbSync");
         }
 
         if (lightningIsAvail) {
