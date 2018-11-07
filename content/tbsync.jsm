@@ -149,6 +149,7 @@ var tbSync = {
         tbSync.dump(Services.appinfo.name, Services.appinfo.platformVersion + " on " + OS.Constants.Sys.Name);
 
         // load common subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
+        tbSync.includeJS("chrome://tbsync/content/vcard/vcard.js");
         tbSync.includeJS("chrome://tbsync/content/db.js");
         tbSync.includeJS("chrome://tbsync/content/abServerSearch.js");
         tbSync.includeJS("chrome://tbsync/content/abAutoComplete.js");
