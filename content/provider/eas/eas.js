@@ -59,7 +59,7 @@ var eas = {
             }
         }
         if (showMigrationPopup && !tbSync.eas4tbsync && tbSync.window.confirm(tbSync.getLocalizedMessage("migrate"))) {
-            tbSync.openTBtab("https://addons.thunderbird.net/de/thunderbird/addon/eas-4-tbsync/");
+            tbSync.openTBtab("https://addons.thunderbird.net/addon/eas-4-tbsync/");
             //silent install not allowed
             //AddonManager.getInstallForURL("https://addons.thunderbird.net/thunderbird/downloads/latest/eas-4-tbsync/addon-986338-latest.xpi", eas.install, "application/x-xpinstall", null, "Exchange ActiveSync (EAS) provider for TbSync");
         }

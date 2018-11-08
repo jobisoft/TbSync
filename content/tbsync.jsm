@@ -112,7 +112,7 @@ var tbSync = {
             js: "//dav4tbsync/content/dav.js" , 
             newXul: "//dav4tbsync/content/newaccount.xul", 
             accountXul: "//dav4tbsync/content/accountSettings.xul",
-            homepageUrl: "https://addons.thunderbird.net/en-US/thunderbird/addon/dav-4-tbsync/",
+            homepageUrl: "https://addons.thunderbird.net/addon/dav-4-tbsync/",
             enabled: false,
             minVersion: "0.8.26",
         },
@@ -211,7 +211,7 @@ var tbSync = {
                     //before running init, check min version requirements
                     if (tbSync[provider].minTbSyncVersionRequired && tbSync.cmpVersions(tbSync[provider].minTbSyncVersionRequired, tbSync.providerList.eas.version) > 0) {
                         if (tbSync.window.confirm("The installed version of the provider for <"+tbSync.providerList[provider].name+">\nrequires a more recent version of TbSync.\nThe provider cannot be loaded until TbSync has been updated to version <"+tbSync[provider].minTbSyncVersionRequired+"> or later.\n\nDo you want to open the project page, to get the latest version of TbSync?")) {
-                            tbSync.openTBtab("https://addons.thunderbird.net/de/thunderbird/addon/tbsync/");
+                            tbSync.openTBtab("https://addons.thunderbird.net/addon/tbsync/");
                         }
                     } else {
                         tbSync.providerList[provider].enabled = true;
