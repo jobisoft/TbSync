@@ -89,7 +89,6 @@ var tbSync = {
             accountXul: "//eas4tbsync/content/provider/eas/accountSettings.xul",
             homepageUrl: "https://addons.thunderbird.net/addon/eas-4-tbsync/",
             enabled: false,
-            minVersion: "0",
         },  
         ews: {
             name: "Exchange WebServices (EWS)", 
@@ -98,7 +97,6 @@ var tbSync = {
             accountXul: "//ews4tbsync/content/accountSettings.xul",
             homepageUrl: "",
             enabled: false,
-            minVersion: "0.6",
         },
         dav: {
             name: "CalDAV & CardDAV", 
@@ -107,7 +105,6 @@ var tbSync = {
             accountXul: "//dav4tbsync/content/accountSettings.xul",
             homepageUrl: "https://addons.thunderbird.net/addon/dav-4-tbsync/",
             enabled: false,
-            minVersion: "0.8.26",
         },
     },
     
@@ -163,9 +160,7 @@ var tbSync = {
     }),
         
     checkInstalledProvider: Task.async (function* (addons) {
-        let providers = Object.keys(tbSync.providerList);
-        let wait4activate = [];
-        
+        let providers = Object.keys(tbSync.providerList);        
         for (let a=0; a < addons.length; a++) {
             if (addons[a].isActive) {
                 let provider = null;
@@ -183,31 +178,15 @@ var tbSync = {
 
                 //if this addOn is a registerd provider, activate it
                 if (provider && !tbSync.providerList[provider].enabled) {
-                    wait4activate.push({provider: provider, addon: addons[a]})
-                }
-            }
-        }
-        
-        //use the order of providerList to activate provider (eas first)
-        for (let i = 0; i < providers.length; i++) {
-            let provider = providers[i];
-            let waiting = wait4activate.filter(item => item.provider == provider);
-            if (waiting.length == 1) {
-                let v = waiting[0].addon.version.toString();
-                if (Services.vc.compare(v, tbSync.providerList[provider].minVersion) >= 0) {
-                    tbSync.providerList[provider].version = v;
+                    tbSync.providerList[provider].addon = addons[a];
+                    tbSync.providerList[provider].version = addons[a].version.toString();
                     
                     //load provider subscripts into tbSync 
                     tbSync.dump("PROVIDER", provider + "::" + tbSync.providerList[provider].name);
                     tbSync.includeJS("chrome:" + tbSync.providerList[provider].js);
                     
                     tbSync.providerList[provider].enabled = true;
-                    yield tbSync[provider].load(tbSync.lightningIsAvailable());
-                } else {
-                    if (tbSync.window.confirm("This version of TbSync requires a more recent version of the provider for\n<"+tbSync.providerList[provider].name+">.\nThe provider cannot be not be loaded until it has been updated to version <"+tbSync.providerList[provider].minVersion+"> or later.\n\nDo you want to open the project page, to get the latest version of this provider?")) {
-                            tbSync.openTBtab(tbSync.providerList[provider].homepageUrl);
-                    }
-                }
+                    yield tbSync[provider].load(tbSync.lightningIsAvailable());                }
             }
         }
     }),
