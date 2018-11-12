@@ -11,13 +11,13 @@
         <em:name>TbSync</em:name>
         <em:version>0.7.16.10</em:version>
         <em:description>Synchronize contacts, tasks and calendars via Exchange ActiveSync or CalDAV/CardDAV to Thunderbird</em:description>
-        <em:translator>John Bieling (de)</em:translator>
-        <em:translator>John Bieling (en-US)</em:translator>
-        <em:translator>Óvári (hu)</em:translator>
-        <em:translator>Alessandro Menti (it)</em:translator>
-        <em:creator>John Bieling</em:creator>
         <em:homepageURL>https://github.com/jobisoft/TbSync</em:homepageURL>
         <em:iconURL>chrome://tbsync/skin/tbsync.png</em:iconURL>
+        <em:translator>John Bieling (de)</em:translator>
+        <em:translator>John Bieling (en-US)</em:translator>
+        <em:translator>Alessandro Menti (it)</em:translator>
+        <em:translator>Óvári (hu)</em:translator>
+        <em:creator>John Bieling</em:creator>
 
         <em:targetApplication>
           <!-- Thunderbird -->
@@ -35,8 +35,9 @@
             <em:description>Synchronisiert Kontakte, Aufgaben und Kalender über Exchange ActiveSync oder CalDAV/CardDAV mit Thunderbird</em:description>
             <em:translator>John Bieling (de)</em:translator>
             <em:translator>John Bieling (en-US)</em:translator>
-            <em:translator>Óvári (hu)</em:translator>
             <em:translator>Alessandro Menti (it)</em:translator>
+            <em:translator>Óvári (hu)</em:translator>
+            <em:creator>John Bieling</em:creator>
           </Description>
         </em:localized>
 
@@ -47,8 +48,9 @@
             <em:description>A Thunderbird névjegyzék, feladatok és naptárak összehangolása az Exchange ActiveSync vagy a CalDAV/CardDAV alkalmazással</em:description>
             <em:translator>John Bieling (de)</em:translator>
             <em:translator>John Bieling (en-US)</em:translator>
-            <em:translator>Óvári (hu)</em:translator>
             <em:translator>Alessandro Menti (it)</em:translator>
+            <em:translator>Óvári (hu)</em:translator>
+            <em:creator>John Bieling</em:creator>
           </Description>
         </em:localized>
 
@@ -59,8 +61,9 @@
             <em:description>Sincronizza contatti, attività e calendari in Thunderbird tramite Exchange ActiveSync o CalDAV/CardDAV</em:description>
             <em:translator>John Bieling (de)</em:translator>
             <em:translator>John Bieling (en-US)</em:translator>
-            <em:translator>Óvári (hu)</em:translator>
             <em:translator>Alessandro Menti (it)</em:translator>
+            <em:translator>Óvári (hu)</em:translator>
+            <em:creator>John Bieling</em:creator>
           </Description>
         </em:localized>
 
