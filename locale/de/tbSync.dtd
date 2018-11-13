@@ -44,7 +44,7 @@
 <!ENTITY manager.help.createbugreportinfo "Damit TbSync nur die für Ihren Fehlerbericht relevanten Debug-Meldungen sammelt, starten Sie Thunderbird bitte neu und wiederholen dann genau die Schritte, die das fehlerhafte Verhalten reproduzieren. Anschließend können Sie hier Ihren Fehlerbericht erstellen.">
 
 <!ENTITY supportwizard.title "Fehlerbericht erstellen">
-<!ENTITY supportwizard.pagetitle "Erfassung aller relevanten Informationen zur effektiven Bearbeitung des Fehlerberichtes.">
+<!ENTITY supportwizard.pagetitle "Erfassung aller Informationen zur effektiven Bearbeitung des Fehlerberichtes.">
 <!ENTITY supportwizard.label.faultycomponent "Komponente von TbSync, bei der Sie den Fehler beobachtet haben:">
 <!ENTITY supportwizard.label.selectcomponent "Komponente auswählen ...">
 <!ENTITY supportwizard.label.summary "Kurze Zusammenfassung des Fehlers:">
