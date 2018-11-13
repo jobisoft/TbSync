@@ -47,6 +47,9 @@ var tbSyncAccountManager = {
         document.getElementById("tbSyncAccountManager.contentWindow").setAttribute("src", "chrome://tbsync/content/manager/"+tbSync.AccountManagerTabs[t]);
     },
     
+    
+    
+    //help tab
     getLogPref: function() {
         let log = document.getElementById("tbSyncAccountManager.logPrefCheckbox");
         log.checked =  tbSync.prefSettings.getBoolPref("log.tofile");
@@ -92,7 +95,44 @@ var tbSyncAccountManager = {
         }
 
         //just check and update button status
-        document.documentElement.getButton("finish").disabled = (provider == "" || subject == "" || description== "");
-        
-    }
+        document.documentElement.getButton("finish").disabled = (provider == "" || subject == "" || description== "");        
+    },
+    
+    
+    
+    //community tab
+    initCommunity: function() {
+        let listOfContributors = document.getElementById("listOfContributors");
+        let sponsors = {};
+            
+        let providers = Object.keys(tbSync.providerList);
+        for (let i=0; i < providers.length; i++) {
+            let provider = providers[i];
+            if (tbSync.providerList[provider].enabled) {
+                let template = listOfContributors.firstElementChild.cloneNode(true);
+                template.setAttribute("provider", provider);
+                template.children[0].setAttribute("src", tbSync[provider].getProviderIcon(48));
+                template.children[1].children[0].textContent = tbSync.providerList[provider].name;
+                listOfContributors.appendChild(template);
+                
+                Object.assign(sponsors, tbSync[provider].getSponsors());
+            }
+        }
+        listOfContributors.removeChild(listOfContributors.firstElementChild);
+
+        let listOfSponsors = document.getElementById("listOfSponsors");
+        let sponsorlist = Object.keys(sponsors);
+        sponsorlist.sort();
+        for (let i=0; i < sponsorlist.length; i++) {
+            let sponsor = sponsors[sponsorlist[i]];
+            let template = listOfSponsors.firstElementChild.cloneNode(true);
+            if (sponsor.link) template.setAttribute("link", sponsor.link);
+            if (sponsor.icon) template.children[0].setAttribute("src", sponsor.icon);
+            template.children[1].children[0].textContent = sponsor.name;
+            template.children[1].children[1].textContent = sponsor.description;
+            listOfSponsors.appendChild(template);
+            listOfSponsors.appendChild(template);
+        }
+        listOfSponsors.removeChild(listOfSponsors.firstElementChild);
+    }        
 };

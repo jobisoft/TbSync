@@ -7,47 +7,49 @@
     xmlns:html="http://www.w3.org/1999/xhtml"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-    title="Supporters" >
+    onload="tbSyncAccountManager.initCommunity();"
+    title="Community" >
 
     <hbox flex="1" id="mainframe">
         <vbox flex="1">
             <html:p>
-                <html:b>&manager.supporter.contributers;</html:b><html:br/><html:br/>
-                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('http://c-a-p-e.co.uk');" style="color:blue;text-decoration: underline">Mark Nethersole (C.A.P.E.)</html:span>: initial implementation of EAS contact sync (TzPush)<html:br/>
-                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/ChrisJAllan');" style="color:blue;text-decoration: underline">Chris Allan</html:span>: EAS recurring events<html:br/>
-                - <html:span onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/Heymdall/vcard');" style="color:blue;text-decoration: underline">Alexandr Heymdall</html:span>: vCard parser<html:br/>
+                <html:b>&manager.supporter.contributers;</html:b>
+                <html:div id="listOfContributors" style="margin-top:10px">
+
+                  <html:div provider="" style="width:225px; margin: 0 0 10px 0; float:left;">
+                    <html:img src="" style="width:48px; height:48px; padding:0px; margin:0 0 0 10px; float:left" onclick="tbSync.window.openDialog('chrome://mozapps/content/extensions/about.xul','', '', tbSync.providerList[this.parentNode.getAttribute('provider')].addon);" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
+                    <html:div style="padding-left: 65px; padding-top:4px;">
+                      <html:div>&manager.title;</html:div>
+                      <html:div style="font-style:italic">&manager.provider4tbsync;</html:div>
+                    </html:div>
+                  </html:div>
+
+                  <html:div provider="" style="width:225px; margin: 0 0 10px 0; float:left;">
+                    <html:img src="chrome://tbsync/skin/tbsync.png" style="width:48px; height:48px; padding:0px; margin:0 0 0 10px; float:left" onclick="tbSync.window.openDialog('chrome://mozapps/content/extensions/about.xul','', '', tbSync.addon);" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
+                    <html:div style="padding-left: 65px; padding-top:4px;">
+                      <html:span></html:span>
+                      <html:div>TbSync</html:div>
+                      <html:div style="font-style:italic">&manager.shorttitle;</html:div>
+                    </html:div>
+                  </html:div>
+
+                </html:div> 
             </html:p>
 
-            <html:p>
-                <html:b>&manager.supporter.individualsponsors;</html:b><html:br/><html:br/>
-                - Michael Biebl provides a Nextcloud test account<html:br/>
-                - Kovács László provides a Radicale test account<html:br/>
-                - Michael Schiessl provides a Tine 2.0 test account and a Exchange 2007 test account<html:br/>
-            </html:p>
 
             <html:p>
                 <html:b>&manager.supporter.sponsors;</html:b>
+                <html:div id="listOfSponsors" style="margin-top:10px">
+                  <html:div link="" style="width:225px; margin: 0 0 10px 0; float:left;">
+                    <html:img src="chrome://tbsync/skin/user48.png" style="width:48px; height:48px; padding:0px; margin:0 0 0 10px; border:1px solid #d3d3d3; float:left" onclick="if (this.parentNode.getAttribute('link') != '') {tbSync.openLink(this.parentNode.getAttribute('link'));}" onmouseover="if (this.parentNode.getAttribute('link') != '') {this.style.cursor='pointer'}" onmouseout="this.style.cursor='default'" />
+                    <html:div style="padding-left: 65px;">
+                      <html:div >Name</html:div>
+                      <html:div style="font-style:italic">Description</html:div>
+                    </html:div>
+                  </html:div>
+                </html:div> 
             </html:p>
-
-            <grid flex="1">
-                <columns>
-                    <column flex="0" />
-                    <column flex="0" />
-                </columns>
-
-                <rows>
-                    <row>
-                        <vbox><image src="chrome://tbsync/skin/sponsors/netcup.png" style='padding:1px; margin:3px; border:1px solid black' align='center' onclick="tbSync.openLink('http://www.netcup.de/');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" /></vbox>
-                        <vbox><image src="chrome://tbsync/skin/sponsors/nethinks.png" style='padding:1px; margin:3px; border:1px solid black' align='center' onclick="tbSync.openLink('http://www.nethinks.com/');" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" /></vbox>
-                    </row>
-                    <row>
-                        <description style="text-align: center; width:120px">netcup GmbH sponsors a SOGo test account</description>
-                        <description style="text-align: center; width:120px">nethinks GmbH sponsors a Zarafa test account</description>
-                    </row>
-               </rows>
-
-            </grid>
-
+            
         </vbox>
     </hbox>
     

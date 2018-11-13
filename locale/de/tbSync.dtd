@@ -18,9 +18,11 @@
 <!ENTITY manager.noaccounts "Es sind aktuell noch keine Konten konfiguriert.">
 
 <!ENTITY manager.title "TbSync Kontoverwaltung">
+<!ENTITY manager.shorttitle "Kontoverwaltung">
+<!ENTITY manager.provider4tbsync "Provider für TbSync">
 <!ENTITY manager.accountsettings "Kontoeinstellungen">
 <!ENTITY manager.help "Hilfe">
-<!ENTITY manager.supporter "Unterstützer">
+<!ENTITY manager.community "Community">
 <!ENTITY manager.provider "Provider installieren">
 
 <!ENTITY manager.accounts "Konten">
@@ -31,9 +33,8 @@
 <!ENTITY manager.installprovider.link "Klicken Sie auf den folgenden Link, um die Informationsseite des fehlenden Provider aufzurufen. Auf dieser Seite finden Sie weitere Informationen zu dem Provider und haben die Möglichkeit, diesen zu installieren:">
 <!ENTITY manager.installprovider.warning "Dieser Provider stammt nicht aus dem offiziellen Thunderbird AddOn Verzeichnis und wurde demnach nicht von Thunderbird-Mitarbeitern überprüft. Dieser Provider könnte schlimme Dinge mit Ihrem System anstellen. Benutzung auf eigene Gefahr.">
 
-<!ENTITY manager.supporter.contributers "Mitwirkende">
-<!ENTITY manager.supporter.individualsponsors "Sponsoren (Einzelpersonen)">
-<!ENTITY manager.supporter.sponsors "Sponsoren">
+<!ENTITY manager.supporter.contributers "Mitwirkende &amp; Übersetzer">
+<!ENTITY manager.supporter.sponsors "Sponsoren von Test-Accounts">
 
 <!ENTITY manager.help.needhelp "Benötigen Sie Hilfe?">
 <!ENTITY manager.help.wiki "Besuchen Sie die Wikiseiten des TbSync Projektes, diese beinhalten zusätzliche Informationen, Benutzeranleitungen und detaillierte Konfigurationsbeschreibungen.">

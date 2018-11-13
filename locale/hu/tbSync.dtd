@@ -18,9 +18,11 @@
 <!ENTITY manager.noaccounts "Még nincsenek fiókok meghatározott.">
 
 <!ENTITY manager.title "TbSync fiókkezelő">
+<!ENTITY manager.shorttitle "?? Account manager ??">
+<!ENTITY manager.provider4tbsync "?? Provider for TbSync ??">
 <!ENTITY manager.accountsettings "Fiók beállítások">
 <!ENTITY manager.help "Súgó">
-<!ENTITY manager.supporter "Támogató">
+<!ENTITY manager.community "?? Community ??">
 <!ENTITY manager.provider "?? Install Provider ??">
 
 <!ENTITY manager.accounts "Fiókok">
@@ -31,9 +33,8 @@
 <!ENTITY manager.installprovider.link "Kattintson a következő linkre a hiányzó összhangzós szolgáltató info oldalának megnyitásához. Ott talál további információkat a szolgáltatóról, és lehetősége van a telepítésre:">
 <!ENTITY manager.installprovider.warning "Ez a szinkronizáló szolgáltató nem a hivatalos Thunderbird-kiegészítő adattárban található, így a Thunderbird személyzete nem vizsgálta felül. A szolgáltató rossz dolgokat tehet a rendszerében. Használja saját felelősségére.">
 
-<!ENTITY manager.supporter.contributers "Közreműködők">
-<!ENTITY manager.supporter.individualsponsors "Támogatóink (egyének)">
-<!ENTITY manager.supporter.sponsors "Támogatóink">
+<!ENTITY manager.supporter.contributers "?? Contributers &amp; Translators ??">
+<!ENTITY manager.supporter.sponsors "?? Sponsors of test accounts ??">
 
 <!ENTITY manager.help.needhelp "Kell segítség?">
 <!ENTITY manager.help.wiki "Nyissa meg a TbSync projekt wiki oldalát, további információkat, útmutatókat és részletes konfigurációs leírást ad.">

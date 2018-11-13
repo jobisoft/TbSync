@@ -18,9 +18,11 @@
 <!ENTITY manager.noaccounts "There are not yet any accounts defined.">
 
 <!ENTITY manager.title "TbSync account manager">
+<!ENTITY manager.shorttitle "Account manager">
+<!ENTITY manager.provider4tbsync "Provider for TbSync">
 <!ENTITY manager.accountsettings "Account Settings">
 <!ENTITY manager.help "Help">
-<!ENTITY manager.supporter "Supporter">
+<!ENTITY manager.community "Community">
 <!ENTITY manager.provider "Install Provider">
 
 <!ENTITY manager.accounts "Accounts">
@@ -31,9 +33,8 @@
 <!ENTITY manager.installprovider.link "Click on the following link to open the info page of the missing synchronization provider. There you will find further information about the provider and you will have the option to install it:">
 <!ENTITY manager.installprovider.warning "This synchronization provider is not hosted in the official Thunderbird AddOn repository and thus has not been reviewed by Thunderbird staff. The provider could do bad things to your system. Use it at your own risk.">
 
-<!ENTITY manager.supporter.contributers "Contributers">
-<!ENTITY manager.supporter.individualsponsors "Sponsors (individuals)">
-<!ENTITY manager.supporter.sponsors "Sponsors">
+<!ENTITY manager.supporter.contributers "Contributers &amp; Translators">
+<!ENTITY manager.supporter.sponsors "Sponsors of test accounts">
 
 <!ENTITY manager.help.needhelp "Need Help?">
 <!ENTITY manager.help.wiki "Open the wiki pages of the TbSync project, they provide additional information, guides and detailed configuration descriptions.">

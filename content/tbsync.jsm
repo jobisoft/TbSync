@@ -186,7 +186,8 @@ var tbSync = {
                     tbSync.includeJS("chrome:" + tbSync.providerList[provider].js);
                     
                     tbSync.providerList[provider].enabled = true;
-                    yield tbSync[provider].load(tbSync.lightningIsAvailable());                }
+                    yield tbSync[provider].load(tbSync.lightningIsAvailable());
+                }
             }
         }
     }),
@@ -197,6 +198,7 @@ var tbSync = {
                 tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
                 switch (addons[a].id.toString()) {
                     case "tbsync@jobisoft.de":
+                        tbSync.addon = addons[a];
                         tbSync.version = addons[a].version.toString();
                         break;
                     case "cardbook@vigneau.philippe":
@@ -1009,7 +1011,7 @@ var tbSync = {
     },
     
     includeJS: function (file, that=this) {
-        Services.scriptloader.loadSubScript(file, that);
+        Services.scriptloader.loadSubScript(file, that, "UTF-8");
     },
 
     //async sleep function using Promise to postpone actions to keep UI responsive
