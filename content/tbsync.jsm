@@ -83,7 +83,7 @@ var tbSync = {
     // define all registered provider
     providerList: {
         eas: {
-            name: "Exchange ActiveSync (EAS)", 
+            name: "Exchange ActiveSync", 
             js: "//eas4tbsync/content/provider/eas/eas.js", 
             newXul: "//eas4tbsync/content/provider/eas/newaccount.xul", 
             accountXul: "//eas4tbsync/content/provider/eas/accountSettings.xul",
@@ -91,7 +91,7 @@ var tbSync = {
             enabled: false,
         },  
         ews: {
-            name: "Exchange WebServices (EWS)", 
+            name: "Exchange WebServices", 
             js: "//ews4tbsync/content/ews.js" , 
             newXul: "//ews4tbsync/content/newaccount.xul", 
             accountXul: "//ews4tbsync/content/accountSettings.xul",
