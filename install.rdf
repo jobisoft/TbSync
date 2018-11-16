@@ -9,7 +9,7 @@
         <em:unpack>false</em:unpack>
         <em:multiprocessCompatible>true</em:multiprocessCompatible>
         <em:name>TbSync</em:name>
-        <em:version>0.7.18</em:version>
+        <em:version>0.7.19</em:version>
         <em:description>Synchronize contacts, tasks and calendars via Exchange ActiveSync or CalDAV/CardDAV to Thunderbird</em:description>
         <em:translator>John Bieling (de)</em:translator>
         <em:translator>John Bieling (en-US)</em:translator>
