@@ -992,23 +992,6 @@ var tbSync = {
         });
     },
 
-    //taken from https://stackoverflow.com/questions/6832596/how-to-compare-software-version-number-using-js-only-number
-    cmpVersions: function (a, b) {
-        let i, diff;
-        let regExStrip0 = /(\.0+)+$/;
-        let segmentsA = a.replace(regExStrip0, '').split('.');
-        let segmentsB = b.replace(regExStrip0, '').split('.');
-        let l = Math.min(segmentsA.length, segmentsB.length);
-
-        for (i = 0; i < l; i++) {
-            diff = parseInt(segmentsA[i], 10) - parseInt(segmentsB[i], 10);
-            if (diff) {
-                return diff;
-            }
-        }
-        return segmentsA.length - segmentsB.length;
-    },
-    
     includeJS: function (file, that=this) {
         Services.scriptloader.loadSubScript(file, that, "UTF-8");
     },
