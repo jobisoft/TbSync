@@ -1136,9 +1136,13 @@ var tbSync = {
     
     //XHR FUNCTIONS
     createTCPErrorFromFailedXHR: function (xhr) {
+        return tbSync.createTCPErrorFromFailedChannel(xhr.channel.QueryInterface(Components.interfaces.nsIRequest));
+    },
+    
+    createTCPErrorFromFailedChannel: function (request) {
         //adapted from :
         //https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/How_to_check_the_secruity_state_of_an_XMLHTTPRequest_over_SSL		
-        let status = xhr.channel.QueryInterface(Components.interfaces.nsIRequest).status;
+        let status = request.status;
 
         if ((status & 0xff0000) === 0x5a0000) { // Security module
             const nsINSSErrorsService = Components.interfaces.nsINSSErrorsService;
