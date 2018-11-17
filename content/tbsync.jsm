@@ -812,15 +812,15 @@ var tbSync = {
         
         let folders = tbSync.db.getFolders(account);
         for (let i in folders) {
+            //cache folder - this must be done before removing the folder to be able to differ between "deleted by user" and "deleted by disable"
+            tbSync.db.setFolderSetting(folders[i].account, folders[i].folderID, "cached", "1");
+
             let target = folders[i].target;
             let type = tbSync[provider].getThunderbirdFolderType(folders[i].type);            
             if (target != "") {
                 //remove associated target and clear its changelog
                 tbSync.removeTarget(target, type);
             }
-            
-            //cache folder
-            tbSync.db.setFolderSetting(folders[i].account, folders[i].folderID, "cached", "1");
         }
     },
 
@@ -1287,8 +1287,8 @@ var tbSync = {
                     //delete any pending changelog of the deleted book
                     tbSync.db.clearChangeLog(aItem.URI);			
 
-                    //update settings window, if open
-                    if (folders[0].selected == "1") {
+                    //unselect book if deleted by user (book is cached if delete during disable) and update settings window, if open
+                    if (folders[0].selected == "1" && folders[0].cached != "1") {
                         tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "selected", "0");
                         //update settings window, if open
                          Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
@@ -1934,7 +1934,7 @@ var tbSync = {
             
         onError : function (aCalendar, aErrNo, aMessage) { tbSync.dump("calendarObserver::onError","<" + aCalendar.name + "> had error #"+aErrNo+"("+aMessage+")."); },
 
-        //Properties of the calendar itself (name, color etc.) - OTHER PROVIDER MIGHT NEED MORE OPTIONS HERE
+        //Changed properties of the calendar itself (name, color etc.) - IF A PROVIDER NEEDS TO DO CUSTOM STUFF HERE, HE NEEDS TO ADD ITS OWN LISTENER
         onPropertyChanged : function (aCalendar, aName, aValue, aOldValue) {
             tbSync.dump("calendarObserver::onPropertyChanged","<" + aName + "> changed from <"+aOldValue+"> to <"+aValue+">");
             let folders = tbSync.db.findFoldersWithSetting(["target"], [aCalendar.id]);
@@ -1954,11 +1954,12 @@ var tbSync = {
             }
         },
 
+        //Deleted properties of the calendar itself (name, color etc.) - IF A PROVIDER NEEDS TO DO CUSTOM STUFF HERE, HE NEEDS TO ADD ITS OWN LISTENER
         onPropertyDeleting : function (aCalendar, aName) {
             tbSync.dump("calendarObserver::onPropertyDeleting","<" + aName + "> was deleted");
             let folders = tbSync.db.findFoldersWithSetting(["target"], [aCalendar.id]);
             if (folders.length == 1) {
-                switch (aName) { //OTHER PROVIDER MIGHT NEED MORE OPTIONS HERE
+                switch (aName) {
                     case "color":
                     case "name":
                         //update settings window, if open
@@ -1981,7 +1982,8 @@ var tbSync = {
                 //delete any pending changelog of the deleted calendar
                 tbSync.db.clearChangeLog(aCalendar.id);
 
-                if (folders[0].selected == "1") {
+                //unselect calendar if deleted by user (calendar is cached if delete during disable) and update settings window, if open
+                if (folders[0].selected == "1" && folders[0].cached != "1") {
                     tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "selected", "0");
                     //update settings window, if open
                     Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
