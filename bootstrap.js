@@ -50,21 +50,12 @@ function startup(data, reason) {
 
         //set default prefs
         let branch = Services.prefs.getDefaultBranch("extensions.tbsync.");
-        branch.setBoolPref("notify4beta", false);
-        branch.setIntPref("updateCheckInterval", 6);
         branch.setIntPref("timeout", 90000);
-        
         branch.setBoolPref("debug.testoptions", false);
 
         branch.setBoolPref("log.toconsole", false);
         branch.setBoolPref("log.tofile", false);
         branch.setIntPref("log.userdatalevel", 0); //0 - metadata (no incomming xml/wbxml, only parsed data without userdata (except failing items))   1 - including userdata,  2 - raw xml , 3 - raw wbxml
-
-        branch.setIntPref("eas.synclimit", 7);
-        branch.setIntPref("eas.maxitems", 50);
-        branch.setCharPref("eas.clientID.type", "TbSync");
-        branch.setCharPref("eas.clientID.useragent", "Thunderbird ActiveSync");    
-        branch.setBoolPref("eas.fix4freedriven", false);
 
         Components.utils.import("chrome://tbsync/content/tbsync.jsm");
         Components.utils.import("chrome://tbsync/content/OverlayManager.jsm");
