@@ -882,6 +882,11 @@ eas.sync = {
                     else {
                         let replacement = item.recurrenceInfo.getOccurrenceFor(dateTime);
                         eas.sync.Calendar.setThunderbirdItemFromWbxml(replacement, exception, replacement.id, syncdata);
+                        // Reminders should carry over from parent, but setThunderbirdItemFromWbxml clears all alarms
+                        if (!exception.Reminder && item.getAlarms({}).length) {
+                            replacement.addAlarm(item.getAlarms({})[0]);
+                        }
+                        // Removing a reminder requires EAS 16.0
                         item.recurrenceInfo.modifyException(replacement, true);
                     }
                 }
