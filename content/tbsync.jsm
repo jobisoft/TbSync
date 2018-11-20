@@ -115,8 +115,8 @@ var tbSync = {
         tbSync.window = window;
         Services.obs.addObserver(tbSync.initSyncObserver, "tbsync.initSync", false);
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate", false);
-        Services.obs.addObserver(tbSync.removeProviderObserver, "tbsync.removeProvider", false);
-        Services.obs.addObserver(tbSync.addProviderObserver, "tbsync.addProvider", false);
+        Services.obs.addObserver(tbSync.removeProviderObserver, "tbsync.unregisterProvider", false);
+        Services.obs.addObserver(tbSync.addProviderObserver, "tbsync.registerProvider", false);
 
         // Inject UI before init finished, to give user the option to see Oops message and report bug
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
@@ -293,8 +293,8 @@ var tbSync = {
         if (tbSync.enabled === true) {
             Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate");
             Services.obs.removeObserver(tbSync.initSyncObserver, "tbsync.initSync");
-            Services.obs.removeObserver(tbSync.removeProviderObserver, "tbsync.removeProvider");
-            Services.obs.removeObserver(tbSync.addProviderObserver, "tbsync.addProvider");
+            Services.obs.removeObserver(tbSync.removeProviderObserver, "tbsync.unregisterProvider");
+            Services.obs.removeObserver(tbSync.addProviderObserver, "tbsync.registerProvider");
 
             //close window (if open)
             if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
