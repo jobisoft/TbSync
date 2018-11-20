@@ -9,11 +9,11 @@
 
 ## Introduction
 
-TbSync is a central user interface to manage cloud accounts and access their contact, task and calendar information directly from Thunderbird. For example accounts from outlook.com, Office 365, Exchange, fruux.com and many more. Its main objective is to simplify the setup process for such accounts. The following providers (protocols) are currently supported:
+TbSync is a central user interface to manage cloud accounts and access their contact, task and calendar information directly from Thunderbird. For example accounts from outlook.com, Office 365, Exchange, fruux.com, Nextcloud, ownCloud and many more. Its main objective is to simplify the setup process for such accounts. The following providers (protocols) are currently supported:
 * Exchange ActiveSync (EAS v2.5 & v14.0), via [EAS-4-TbSync](https://github.com/jobisoft/EAS-4-TbSync)
 * CalDAV & CardDAV, via [DAV-4-TbSync](https://github.com/jobisoft/DAV-4-TbSync)
 
-TbSync introduces a Sync API, which allows other addons to hook into TbSync, allowing them to reuse most of the glue code.
+TbSync introduces a Sync API, which allows other addons to hook into TbSync, allowing them to reuse most of the synchronization glue code.
 
 Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki) of the TbSync project and in the [how-to-get-started guide](https://github.com/jobisoft/TbSync/wiki/How-to-get-started).
 
