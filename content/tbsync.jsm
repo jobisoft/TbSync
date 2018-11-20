@@ -427,8 +427,9 @@ var tbSync = {
     //Observer to add provider
     addProviderObserver: {
         observe: Task.async (function* (aSubject, aTopic, aData) {
+            let regData = JSON.parse(aData);
             //Security: only allow to load pre-registered providers
-            if (tbSync.enabled && tbSync.providerList.hasOwnProperty(aData) && !tbSync.providerList[aData].enabled) {
+            if (tbSync.enabled && tbSync.providerList.hasOwnProperty(regData.provider) && !tbSync.providerList[regData.provider].enabled) {
                 //close window (if open)
                 if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
 
