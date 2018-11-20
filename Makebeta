@@ -1,0 +1,35 @@
+#!/bin/bash
+# This file is part of TbSync.
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# $1 link to base web server       : https://tbsync.jobisoft.de/beta
+# $2 local path of base web server : /var/www/jobisoft.de/tbsync/beta
+# $3 name of XPI                   : TbSync.xpi
+# $4 name of update.rdf            : update-tbsync.rdf
+
+git clean -df
+git checkout -- .
+git pull
+
+version=$(cat install.rdf | grep -oPm1 "(?<=<em:version>)[^<]+")
+vlevels=$(grep -o '\.' <<< "$version" | grep -c .)
+
+sed -i "s/%VERSION%/$version/g" "beta-release-channel-update.rdf"
+sed -i "s|%LINK%|$1/$3|g" "beta-release-channel-update.rdf"
+
+if [ $vlevels -gt 1 ]
+then
+ echo "This is a beta release (will include updateURL)"
+ sed -i "s|    <Description about=\"urn:mozilla:install-manifest\">|    <Description about=\"urn:mozilla:install-manifest\">\n        <em:updateURL>$1/$4</em:updateURL>|g" "install.rdf"
+else
+ echo "This is a stable release (will NOT include updateURL)"
+fi
+
+cp beta-release-channel-update.rdf $2/$4
+
+rm $3
+zip -r $3 content locale README.md bootstrap.js install.rdf chrome.manifest LICENSE skin
+cp $3 $2/$3
