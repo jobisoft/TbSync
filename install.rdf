@@ -9,8 +9,8 @@
         <em:unpack>false</em:unpack>
         <em:multiprocessCompatible>true</em:multiprocessCompatible>
         <em:name>TbSync</em:name>
-        <em:version>0.7.16.10</em:version>
-        <em:description>Synchronize contacts, tasks and calendars via Exchange ActiveSync or CalDAV/CardDAV to Thunderbird</em:description>
+        <em:version>1.0</em:version>
+        <em:description>TbSync is a central user interface to manage cloud accounts and to synchronize their contact, task and calendar information with Thunderbird.</em:description>
         <em:homepageURL>https://github.com/jobisoft/TbSync</em:homepageURL>
         <em:iconURL>chrome://tbsync/skin/tbsync.png</em:iconURL>
         <em:translator>John Bieling (de)</em:translator>
@@ -34,7 +34,7 @@
           <Description>
             <em:locale>de</em:locale>
             <em:name>TbSync</em:name>
-            <em:description>Synchronisiert Kontakte, Aufgaben und Kalender über Exchange ActiveSync oder CalDAV/CardDAV mit Thunderbird</em:description>
+            <em:description>TbSync ist eine zentrale Benutzeroberfläche zur Verwaltung von Cloud-Konten und zur Synchronisierung ihrer Kontakt-, Aufgaben- und Kalenderinformationen mit Thunderbird.</em:description>
             <em:translator>John Bieling (de)</em:translator>
             <em:translator>John Bieling (en-US)</em:translator>
             <em:translator>Alessandro Menti (it)</em:translator>
