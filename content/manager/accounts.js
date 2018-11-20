@@ -403,7 +403,7 @@ var tbSyncAccounts = {
     addAccount: function (provider) {
         document.getElementById("tbSyncAccounts.accounts").disabled=true;
         document.getElementById("tbSyncAccounts.btnAccountActions").disabled=true;
-        window.openDialog("chrome:" + tbSync.providerList[provider].newXul, "newaccount", "centerscreen,modal,resizable=no");
+        window.openDialog("chrome:" + tbSync[provider].getCreateAccountXulUrl(), "newaccount", "centerscreen,modal,resizable=no");
         document.getElementById("tbSyncAccounts.accounts").disabled=false;
         document.getElementById("tbSyncAccounts.btnAccountActions").disabled=false;
     },
@@ -718,7 +718,7 @@ var tbSyncAccounts = {
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
             //get id of selected account from value of selectedItem
             this.selectedAccount = accountsList.selectedItem.value;
-            document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome:" + tbSync.providerList[tbSync.db.getAccountSetting(this.selectedAccount, "provider")].accountXul+"?id=" + this.selectedAccount);
+            document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome:" + tbSync[tbSync.db.getAccountSetting(this.selectedAccount, "provider")].getEditAccountXulUrl()+"?id=" + this.selectedAccount);
         }
     },
     
