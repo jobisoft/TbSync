@@ -1,6 +1,6 @@
 # TbSync
 
-**TbSync is currently beeing reorganized: The EAS provider will be removed from TbSync and placed into its own AddOn.**
+**TbSync is currently being reorganized: The EAS provider will be removed from TbSync and placed into its own AddOn.**
 
 1. [Introduction](https://github.com/jobisoft/TbSync#introduction)
 2. [Where is this going?](https://github.com/jobisoft/TbSync#where-is-this-going)
@@ -9,7 +9,7 @@
 
 ## Introduction
 
-TbSync is a central user interface to manage cloud accounts and access their contacts, task and calendar information directly from Thunderbird. For example accounts from outlook.com, Office 365, Exchange, fruux.com and many more. Its main objective is to simplify the setup process for those accounts. The following providers (protocolls) are currently supported:
+TbSync is a central user interface to manage cloud accounts and access their contact, task and calendar information directly from Thunderbird. For example accounts from outlook.com, Office 365, Exchange, fruux.com and many more. Its main objective is to simplify the setup process for such accounts. The following providers (protocols) are currently supported:
 * Exchange ActiveSync (EAS v2.5 & v14.0), via [EAS-4-TbSync](https://github.com/jobisoft/EAS-4-TbSync)
 * CalDAV & CardDAV, via [DAV-4-TbSync](https://github.com/jobisoft/DAV-4-TbSync)
 
@@ -25,7 +25,7 @@ With TbSync I want to unify that: A central manager to setup sync accounts (DAV,
 
 The next step is to [cooperate with CardBook](https://github.com/jobisoft/TbSync/issues/105), so it does not matter, if the user wants to use the "old" Thunderbird address book or the new vCard address book. Every provider available for TbSync should be able to sync into CardBook as well. I hope we get this done before the end of this year.
 
-Later I want to support the [EWS community](https://github.com/ExchangeCalendar/exchangecalendar), which is interested in turning their Add-On into a provider for TbSync. 
+Later I want to support the [EWS community](https://github.com/ExchangeCalendar/exchangecalendar), which is interested in turning their Add-On into a provider for TbSync.
 
 After that, I would like to create or help others to create a google provider for TbSync. We will see how that goes, nothing is planed yet.
 
