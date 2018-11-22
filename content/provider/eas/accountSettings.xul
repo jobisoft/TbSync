@@ -57,7 +57,7 @@
                         </hbox>
 
                         <hbox>
-                            <hbox width="235"><textbox flex="1" style="margin-left:0; margin-right:0" tooltiptext="&pref.ServerNameDescription;" id="tbsync.accountsettings.pref.host" onblur="tbSync.eas.ui.stripHost(document, tbSyncAccountSettings.account);" /></hbox>
+                            <hbox width="235"><textbox flex="1" style="margin-left:0; margin-right:0" tooltiptext="&pref.ServerNameDescription;" id="tbsync.accountsettings.pref.host" onblur="tbSyncAccountSettings.stripHost(document, tbSyncAccountSettings.account);" /></hbox>
                             <vbox flex="1">
                                 <menulist flex="1" style="margin-right:0;" id="tbsync.accountsettings.pref.asversionselected"  >
                                     <menupopup>

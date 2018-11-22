@@ -30,6 +30,24 @@ var tbSyncAccountSettings = {
     viewFolderPane: null,
     updateTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
+
+    stripHost: function (document, account) {
+        let host = document.getElementById('tbsync.accountsettings.pref.host').value;
+        if (host.indexOf("https://") == 0) {
+            host = host.replace("https://","");
+            document.getElementById('tbsync.accountsettings.pref.https').checked = true;
+            tbSync.db.setAccountSetting(account, "https", "1");
+        } else if (host.indexOf("http://") == 0) {
+            host = host.replace("http://","");
+            document.getElementById('tbsync.accountsettings.pref.https').checked = false;
+            tbSync.db.setAccountSetting(account, "https", "0");
+        }
+        
+        while (host.endsWith("/")) { host = host.slice(0,-1); }        
+        document.getElementById('tbsync.accountsettings.pref.host').value = host
+        tbSync.db.setAccountSetting(account, "host", host);
+    },
+
     updateFolderListObserver: {
         observe: function (aSubject, aTopic, aData) {
             //only run if is request for this account and main frame is visible
