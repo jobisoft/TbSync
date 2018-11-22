@@ -129,6 +129,10 @@ var tbSync = {
 
         tbSync.dump("TbSync init","Start");
         tbSync.window = window;
+
+        //New DAV provider needs this as this has changed in the new TbSync (... this is driving me nuts ...)
+        tbSync.loadedProviders = tbSync.providerList;
+        
         Services.obs.addObserver(tbSync.initSyncObserver, "tbsync.initSync", false);
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate", false);
         Services.obs.addObserver(tbSync.removeProviderObserver, "tbsync.removeProvider", false);
