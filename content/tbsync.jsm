@@ -73,10 +73,10 @@ var tbSync = {
     //list of default providers (available in add menu, even if not installed)
     defaultProviders: {
         "eas" : {
-            name: "Exchange ActiveSync (!)", 
+            name: "Exchange ActiveSync", 
             homepageUrl: "https://addons.thunderbird.net/addon/eas-4-tbsync/"},
         "dav" : {
-            name: "CalDAV & CardDAV (!)", 
+            name: "CalDAV & CardDAV", 
             homepageUrl: "https://addons.thunderbird.net/addon/dav-4-tbsync/"}
     },
     loadedProviders: {},
