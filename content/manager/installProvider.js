@@ -15,12 +15,12 @@ var tbSyncInstallProvider = {
     onload: function () {
         let url = window.location.toString();
         let provider = url.split("provider=")[1];
-        window.document.getElementById("header").textContent = tbSync.getLocalizedMessage("installProvider.header::" + tbSync.providerList[provider].name);
+        window.document.getElementById("header").textContent = tbSync.getLocalizedMessage("installProvider.header::" + tbSync.defaultProviders[provider].name);
 
-        window.document.getElementById("link").textContent = tbSync.providerList[provider].homepageUrl;
-        window.document.getElementById("link").setAttribute("link", tbSync.providerList[provider].homepageUrl);
+        window.document.getElementById("link").textContent = tbSync.defaultProviders[provider].homepageUrl;
+        window.document.getElementById("link").setAttribute("link", tbSync.defaultProviders[provider].homepageUrl);
 
-        window.document.getElementById("warning").hidden = tbSync.providerList[provider].homepageUrl.startsWith("https://addons.thunderbird.net"); 
+        window.document.getElementById("warning").hidden = tbSync.defaultProviders[provider].homepageUrl.startsWith("https://addons.thunderbird.net"); 
     },
     
 };

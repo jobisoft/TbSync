@@ -66,15 +66,12 @@ var tbSyncAccountManager = {
         const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
         let menu = document.getElementById("tbsync.supportwizard.faultycomponent");
 
-        let providers = Object.keys(tbSync.providerList);
+        let providers = Object.keys(tbSync.loadedProviders);
         for (let i=0; i < providers.length; i++) {
-            let provider = providers[i];
-            if (tbSync.providerList[provider].enabled) {
-                let item = document.createElementNS(XUL_NS, "menuitem");
-                item.setAttribute("value", providers[i]);
-                item.setAttribute("label", tbSync.getLocalizedMessage("supportwizard.provider::" + tbSync.providerList[provider].name));
-                menu.appendChild(item); 
-            }
+            let item = document.createElementNS(XUL_NS, "menuitem");
+            item.setAttribute("value", providers[i]);
+            item.setAttribute("label", tbSync.getLocalizedMessage("supportwizard.provider::" + tbSync[providers[i]].getNiceProviderName()));
+            menu.appendChild(item); 
         }
     },
     
@@ -88,9 +85,10 @@ var tbSyncAccountManager = {
                 return false;
             }
 
-            let email = (tbSync.providerList.hasOwnProperty(provider)) ? tbSync[provider].getMaintainerEmail() : "john.bieling@gmx.de";
-            let version = (tbSync.providerList.hasOwnProperty(provider)) ? tbSync.providerList[provider].version : "";
-            tbSync.createBugReport(email, "[" + provider.toUpperCase() + " " +  version + "] " + subject, description);
+            //special if core is selected, which is not a provider
+            let email = (tbSync.loadedProviders.hasOwnProperty(provider)) ? tbSync[provider].getMaintainerEmail() : "john.bieling@gmx.de";
+            let version = (tbSync.loadedProviders.hasOwnProperty(provider)) ? " " + tbSync.loadedProviders[provider].version : "";
+            tbSync.createBugReport(email, "[" + provider.toUpperCase() + version + "] " + subject, description);
             return true;
         }
 
@@ -105,18 +103,15 @@ var tbSyncAccountManager = {
         let listOfContributors = document.getElementById("listOfContributors");
         let sponsors = {};
             
-        let providers = Object.keys(tbSync.providerList);
+        let providers = Object.keys(tbSync.loadedProviders);
         for (let i=0; i < providers.length; i++) {
             let provider = providers[i];
-            if (tbSync.providerList[provider].enabled) {
-                let template = listOfContributors.firstElementChild.cloneNode(true);
-                template.setAttribute("provider", provider);
-                template.children[0].setAttribute("src", tbSync[provider].getProviderIcon(48));
-                template.children[1].children[0].textContent = tbSync.providerList[provider].name;
-                listOfContributors.appendChild(template);
-                
-                Object.assign(sponsors, tbSync[provider].getSponsors());
-            }
+            let template = listOfContributors.firstElementChild.cloneNode(true);
+            template.setAttribute("provider", provider);
+            template.children[0].setAttribute("src", tbSync[provider].getProviderIcon(48));
+            template.children[1].children[0].textContent = tbSync[provider].getNiceProviderName();
+            listOfContributors.appendChild(template);
+            Object.assign(sponsors, tbSync[provider].getSponsors());
         }
         listOfContributors.removeChild(listOfContributors.firstElementChild);
 

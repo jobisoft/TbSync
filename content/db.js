@@ -42,14 +42,12 @@ var db = {
 
     writeJSON : {
       observe: function(subject, topic, data) {
-        if (!tbSync.enabled) {
-            // db.* not initialised yet, so don't write anything.
-            return;
-        }
-        switch (subject.delay) { //use delay setting to find out, which file is to be saved
-            case (db.writeDelay + 1): tbSync.writeAsyncJSON(db.accounts, db.accountsFile); break;
-            case (db.writeDelay + 2): tbSync.writeAsyncJSON(db.folders, db.foldersFile); break;
-            case (db.writeDelay + 3): tbSync.writeAsyncJSON(db.changelog, db.changelogFile); break;
+        if (tbSync.enabled) {
+            switch (subject.delay) { //use delay setting to find out, which file is to be saved
+                case (db.writeDelay + 1): tbSync.writeAsyncJSON(db.accounts, db.accountsFile); break;
+                case (db.writeDelay + 2): tbSync.writeAsyncJSON(db.folders, db.foldersFile); break;
+                case (db.writeDelay + 3): tbSync.writeAsyncJSON(db.changelog, db.changelogFile); break;
+            }
         }
       }
     },
@@ -137,8 +135,8 @@ var db = {
 
     getAccounts: function () {
         let accounts = {};
-        //IDs array only contains IDs of accounts whose provider is actually installed
-        accounts.IDs = Object.keys(this.accounts.data).filter(account => (tbSync.providerList.hasOwnProperty(this.accounts.data[account].provider) && tbSync.providerList[this.accounts.data[account].provider].enabled)).sort((a, b) => a - b);
+        accounts.IDs = Object.keys(this.accounts.data).filter(account => tbSync.loadedProviders.hasOwnProperty(this.accounts.data[account].provider)).sort((a, b) => a - b);
+        accounts.allIDs =  Object.keys(this.accounts.data).sort((a, b) => a - b)
         accounts.data = this.accounts.data;
         return accounts;
     },
@@ -158,7 +156,7 @@ var db = {
             return true;
 
         //check if provider is installed
-        if (!tbSync.providerList.hasOwnProperty(provider) || !tbSync.providerList[provider].enabled) {
+        if (!tbSync.loadedProviders.hasOwnProperty(provider)) {
             tbSync.dump("Error @ isValidAccountSetting", "Unknown provider <"+provider+">!");
             return false;
         }
@@ -264,7 +262,7 @@ var db = {
         
         //check if provider is installed
         let provider = this.getAccountSetting(account, "provider");
-        if (!tbSync.providerList.hasOwnProperty(provider) || !tbSync.providerList[provider].enabled) {
+        if (!tbSync.loadedProviders.hasOwnProperty(provider)) {
             tbSync.dump("Error @ isValidFolderSetting", "Unknown provider <"+provider+"> for account <"+account+">!");
             return false;
         }
@@ -356,7 +354,7 @@ var db = {
             }
         
             //skip this folder, if it belongs to an account currently not supported (provider not loaded)
-            if (!tbSync.providerList.hasOwnProperty(this.getAccountSetting(aID, "provider")) || !tbSync.providerList[this.getAccountSetting(aID, "provider")].enabled) {
+            if (!tbSync.loadedProviders.hasOwnProperty(this.getAccountSetting(aID, "provider"))) {
                 continue;
             }
 

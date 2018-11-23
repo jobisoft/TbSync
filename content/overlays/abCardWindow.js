@@ -32,15 +32,13 @@ tbSync.onAbSelectChangeNewCard = function(window) {
     }
 
     //loop over all providers and show/hide container fields
-    for (let provider in tbSync.providerList) {
-        if (tbSync.providerList[provider].enabled) {
-            let items = window.document.getElementsByClassName(provider + "Container");
-            for (let i=0; i < items.length; i++) {
-                items[i].hidden = (cardProvider != provider);
-            }
-            //call custom function to do additional tasks
-            if (tbSync[provider].onAbCardLoad) tbSync[provider].onAbCardLoad(window.document, cardProvider == provider);
+    for (let provider in tbSync.loadedProviders) {
+        let items = window.document.getElementsByClassName(provider + "Container");
+        for (let i=0; i < items.length; i++) {
+            items[i].hidden = (cardProvider != provider);
         }
+        //call custom function to do additional tasks
+        if (tbSync[provider].onAbCardLoad) tbSync[provider].onAbCardLoad(window.document, cardProvider == provider);
     }            
 }
 
@@ -60,15 +58,13 @@ tbSync.onLoadCard = function (aCard, aDocument) {
     }
 
     //loop over all providers and show/hide container fields
-    for (let provider in tbSync.providerList) {
-        if (tbSync.providerList[provider].enabled) {
-            let container = aDocument.getElementsByClassName(provider + "Container");
-            for (let i=0; i < container.length; i++) {
-                container[i].hidden = (cardProvider != provider);
-            }
-            //call custom function to do additional tasks
-            if (tbSync[provider].onAbCardLoad) tbSync[provider].onAbCardLoad(aDocument, cardProvider == provider);
+    for (let provider in tbSync.loadedProviders) {
+        let container = aDocument.getElementsByClassName(provider + "Container");
+        for (let i=0; i < container.length; i++) {
+            container[i].hidden = (cardProvider != provider);
         }
+        //call custom function to do additional tasks
+        if (tbSync[provider].onAbCardLoad) tbSync[provider].onAbCardLoad(aDocument, cardProvider == provider);
     }          
 }
 

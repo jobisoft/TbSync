@@ -23,12 +23,10 @@ tbSync.onRemoveFromAddressbook = function (window) {
 
 tbSync.onAbResultsPaneSelectionChanged = function () {
     //hide all extra fields of all providers
-    for (let provider in tbSync.providerList) {
-        if (tbSync.providerList[provider].enabled) {
-            let container = window.document.getElementsByClassName(provider + "Container");
-            for (let i=0; i < container.length; i++) {
-                container[i].hidden = true;
-            }
+    for (let provider in tbSync.loadedProviders) {
+        let container = window.document.getElementsByClassName(provider + "Container");
+        for (let i=0; i < container.length; i++) {
+            container[i].hidden = true;
         }
     }
     

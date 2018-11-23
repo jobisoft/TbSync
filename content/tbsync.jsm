@@ -58,8 +58,10 @@ var tbSync = {
     enabled: false,
     window: null,
     
-    lightning: false,
-    cardbook: false,
+    lightning: null,
+    cardbook: null,
+    addon: null,
+    
     version: 0,
     debugMode: false,
     
@@ -68,6 +70,20 @@ var tbSync = {
     defaultTimezoneInfo: null,
     windowsTimezoneMap: {},
 
+    //list of default providers (available in add menu, even if not installed)
+    defaultProviders: {
+        "eas" : {
+            name: "Exchange ActiveSync (!)", 
+            homepageUrl: "https://addons.thunderbird.net/addon/eas-4-tbsync/"},
+        "dav" : {
+            name: "CalDAV & CardDAV (!)", 
+            homepageUrl: "https://addons.thunderbird.net/addon/dav-4-tbsync/"}
+    },
+    loadedProviders: {},
+    loadedProviderAddOns: {},
+
+    prefIDs: {},
+        
     bundle: Services.strings.createBundle("chrome://tbsync/locale/tbSync.strings"),
 
     prefWindowObj: null,
@@ -76,32 +92,8 @@ var tbSync = {
     decoder: new TextDecoder(),
     encoder: new TextEncoder(),
 
-    prefIDs: {},
-
     prefSettings: Services.prefs.getBranch("extensions.tbsync."),
 
-    // define all registered provider
-    providerList: {
-        eas: {
-            name: "Exchange ActiveSync", 
-            js: "//eas4tbsync/content/provider/eas/eas.js", 
-            homepageUrl: "https://addons.thunderbird.net/addon/eas-4-tbsync/",
-            enabled: false,
-        },  
-        ews: {
-            name: "Exchange WebServices", 
-            js: "//ews4tbsync/content/ews.js" , 
-            homepageUrl: "",
-            enabled: false,
-        },
-        dav: {
-            name: "CalDAV & CardDAV", 
-            js: "//dav4tbsync/content/dav.js" , 
-            homepageUrl: "https://addons.thunderbird.net/addon/dav-4-tbsync/",
-            enabled: false,
-        },
-    },
-    
     storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
 
 
@@ -113,10 +105,10 @@ var tbSync = {
 
         tbSync.dump("TbSync init","Start");
         tbSync.window = window;
+        tbSync.addon = yield tbSync.getAddonByID("tbsync@jobisoft.de");
+
         Services.obs.addObserver(tbSync.initSyncObserver, "tbsync.initSync", false);
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate", false);
-        Services.obs.addObserver(tbSync.removeProviderObserver, "tbsync.unregisterProvider", false);
-        Services.obs.addObserver(tbSync.addProviderObserver, "tbsync.registerProvider", false);
 
         // Inject UI before init finished, to give user the option to see Oops message and report bug
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
@@ -143,68 +135,12 @@ var tbSync = {
         //init tbSync autocomplete in addressbook
         tbSync.abAutoComplete.init();
         
-        //Wait for all other addons
-        if (Services.vc.compare(Services.appinfo.platformVersion, "61.*") >= 0)  {
-            let addons = yield AddonManager.getAllAddons();
-            yield tbSync.finalizeInitByWaitingForAddons(addons);
-        } else {
-            AddonManager.getAllAddons(tbSync.finalizeInitByWaitingForAddons);
-        }
-    }),
+        //check for cardbook
+        tbSync.cardbook = yield tbSync.getAddonByID("cardbook@vigneau.philippe") ;
         
-    checkInstalledProvider: Task.async (function* (addons) {
-        let providers = Object.keys(tbSync.providerList);        
-        for (let a=0; a < addons.length; a++) {
-            if (addons[a].isActive) {
-                let provider = null;
-                switch (addons[a].id.toString()) {
-                    case "eas4tbsync@jobisoft.de":
-                        provider = "eas";
-                        break;
-                    case "ews4tbsync@jobisoft.de":
-                        provider = "ews";
-                        break;
-                    case "dav4tbsync@jobisoft.de":
-                        provider = "dav";
-                        break;
-                }
-
-                //if this addOn is a registerd provider, activate it
-                if (provider && !tbSync.providerList[provider].enabled) {
-                    tbSync.providerList[provider].addon = addons[a];
-                    tbSync.providerList[provider].version = addons[a].version.toString();
-                    
-                    //load provider subscripts into tbSync 
-                    tbSync.dump("PROVIDER", provider + "::" + tbSync.providerList[provider].name);
-                    tbSync.includeJS("chrome:" + tbSync.providerList[provider].js);
-                    
-                    tbSync.providerList[provider].enabled = true;
-                    yield tbSync[provider].load(tbSync.lightningIsAvailable());
-                }
-            }
-        }
-    }),
-    
-    finalizeInitByWaitingForAddons: Task.async (function* (addons) {
-        for (let a=0; a < addons.length; a++) {
-            if (addons[a].isActive) {
-                tbSync.dump("Active AddOn", addons[a].name + " (" + addons[a].version + ", " + addons[a].id + ")");
-                switch (addons[a].id.toString()) {
-                    case "tbsync@jobisoft.de":
-                        tbSync.addon = addons[a];
-                        tbSync.version = addons[a].version.toString();
-                        break;
-                    case "cardbook@vigneau.philippe":
-                        tbSync.cardbook = true;
-                        break;
-                    case "{e2fda1a4-762b-4020-b5ad-a41df1933103}":
-                        tbSync.lightning = true;
-                        break;
-                }
-            }
-        }
-        
-        if (tbSync.lightning) {
+        //check for lightning
+        tbSync.lightning = yield tbSync.getAddonByID("{e2fda1a4-762b-4020-b5ad-a41df1933103}");
+        if (tbSync.lightning !== null) {
             tbSync.dump("Check4Lightning","Start");
 
             //try to import
@@ -259,16 +195,10 @@ var tbSync = {
             }
         }
 
-        //check and activate installed providers
-        yield tbSync.checkInstalledProvider(addons);
         
         //init stuff for address book
         tbSync.addressbookListener.add();
         tbSync.scanPrefIdsOfAddressBooks();        
-
-        //init stuff for sync process
-        tbSync.resetSync();
-
         
         //was debug mode enabled during startuo?
         tbSync.debugMode = tbSync.prefSettings.getBoolPref("log.tofile");
@@ -284,7 +214,59 @@ var tbSync = {
 
         tbSync.dump("TbSync init","Done");
     }),
-        
+
+    loadProvider:  Task.async (function* (addonId, provider, js) {
+        //only load, if not yet loaded
+        if (!tbSync.loadedProviders.hasOwnProperty(provider)) {
+            try {
+                //load provider subscripts into tbSync 
+                tbSync.includeJS("chrome:" + js);
+
+                //keep track of loaded providers of this provider AddOn
+                if (!tbSync.loadedProviderAddOns.hasOwnProperty(addonId)) {
+                    let addon = yield tbSync.getAddonByID(addonId);
+                    tbSync.loadedProviderAddOns[addonId] = {addon: addon, providers: []};
+                }
+                tbSync.loadedProviderAddOns[addonId].providers.push(provider);
+
+                //Store some quick access data for each provider
+                tbSync.loadedProviders[provider] = {};
+                tbSync.loadedProviders[provider].addonId = addonId;
+                tbSync.loadedProviders[provider].version = tbSync.loadedProviderAddOns[addonId].addon.version.toString();
+                    
+                //load provider
+                yield tbSync[provider].load(tbSync.lightningIsAvailable());
+                tbSync.dump("Loaded provider", provider + "::" + tbSync[provider].getNiceProviderName());
+                tbSync.resetSync(provider);
+                Services.obs.notifyObservers(null, "tbsync.updateAccountsList", provider);
+
+            } catch (e) {
+                tbSync.dump("FAILED to load provider", provider);
+                throw e;
+            }
+
+        }
+    }),
+
+    unloadProviderAddon:  Task.async (function* (addonId) {
+        //unload all loaded providers of this provider AddOn
+        for (let i=0; i < tbSync.loadedProviderAddOns[addonId].providers.length; i++) {
+            let provider = tbSync.loadedProviderAddOns[addonId].providers[i];
+            
+            //only unload, if loaded
+            if (tbSync.loadedProviders.hasOwnProperty(provider)) {
+                yield tbSync[provider].unload(tbSync.lightningIsAvailable());
+                tbSync[provider] = {};
+                delete tbSync.loadedProviders[provider];
+                Services.obs.notifyObservers(null, "tbsync.updateAccountsList", provider);                    
+            }
+        }
+
+        //remove all traces
+        delete tbSync.loadedProviderAddOns[addonId];
+    }),
+    
+
     cleanup: function() {
         //cancel sync timer
         tbSync.syncTimer.cancel();
@@ -293,8 +275,6 @@ var tbSync = {
         if (tbSync.enabled === true) {
             Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate");
             Services.obs.removeObserver(tbSync.initSyncObserver, "tbsync.initSync");
-            Services.obs.removeObserver(tbSync.removeProviderObserver, "tbsync.unregisterProvider");
-            Services.obs.removeObserver(tbSync.addProviderObserver, "tbsync.registerProvider");
 
             //close window (if open)
             if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
@@ -318,15 +298,6 @@ var tbSync = {
                     tbSync.window.document.getElementById("task-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
                 }
             }
-            
-            let providers = Object.keys(tbSync.providerList);
-            for (let i = 0; i < providers.length; i++) {
-                let provider = providers[i];
-                if (tbSync.providerList[provider].enabled) {
-                    tbSync[provider].unload(tbSync.lightningIsAvailable());
-                }
-            }
-            
         }
     },
 
@@ -424,41 +395,6 @@ var tbSync = {
         }
     },
 
-    //Observer to add provider
-    addProviderObserver: {
-        observe: Task.async (function* (aSubject, aTopic, aData) {
-            let regData = JSON.parse(aData);
-            //Security: only allow to load pre-registered providers
-            if (tbSync.enabled && tbSync.providerList.hasOwnProperty(regData.provider) && !tbSync.providerList[regData.provider].enabled) {
-                //close window (if open)
-                if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
-
-                //check for installed providers
-                if (Services.vc.compare(Services.appinfo.platformVersion, "61.*") >= 0)  {
-                    let addons = yield AddonManager.getAllAddons();
-                    yield tbSync.checkInstalledProvider(addons);
-                } else {
-                    AddonManager.getAllAddons(tbSync.checkInstalledProvider);
-                }
-            }
-        })
-    },
-
-    //Observer to remove provider
-    removeProviderObserver: {
-        observe: Task.async (function* (aSubject, aTopic, aData) {
-            //Security: only allow to unload pre-registered providers
-            if (tbSync.enabled &&  tbSync.providerList.hasOwnProperty(aData) && tbSync.providerList[aData].enabled) {
-                tbSync.providerList[aData].enabled = false;
-                yield tbSync[aData].unload(tbSync.lightningIsAvailable());
-                if (tbSync[aData]) tbSync[aData] = {};
-                //close window (if open)
-                if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
-            }
-        })
-    },
-
-
 
 
     // SYNC MANAGEMENT
@@ -479,7 +415,7 @@ var tbSync = {
         event: {
             notify: function (timer) {
                 if (tbSync.enabled) {
-                    //get all accounts and check, which one needs sync (accounts array is without order, extract keys (ids) and loop over them)
+                    //get all accounts and check, which one needs sync
                     let accounts = tbSync.db.getAccounts();
                     for (let i=0; i<accounts.IDs.length; i++) {
                         let syncInterval = accounts.data[accounts.IDs[i]].autosync * 60 * 1000;
@@ -584,23 +520,25 @@ var tbSync = {
         
     },
    
-    resetSync: function () {
+    resetSync: function (provider = null) {
         //get all accounts and set all with syncing status to notsyncronized
         let accounts = tbSync.db.getAccounts();
         for (let i=0; i<accounts.IDs.length; i++) {
-            //reset sync objects
-            tbSync.prepareSyncDataObj(accounts.IDs[i], true);
-            //set all accounts which are syncing to notsyncronized 
-            if (accounts.data[accounts.IDs[i]].status == "syncing") tbSync.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
+            if (provider === null || tbSync.loadedProviders.hasOwnProperty(accounts.data[accounts.IDs[i]].provider)) {
+                //reset sync objects
+                tbSync.prepareSyncDataObj(accounts.IDs[i], true);
+                //set all accounts which are syncing to notsyncronized 
+                if (accounts.data[accounts.IDs[i]].status == "syncing") tbSync.db.setAccountSetting(accounts.IDs[i], "status", "notsyncronized");
 
-            // set each folder with PENDING status to ABORTED
-            let folders = tbSync.db.findFoldersWithSetting("status", "pending", accounts.IDs[i]);
-            for (let f=0; f < folders.length; f++) {
-                tbSync.db.setFolderSetting(accounts.IDs[i], folders[f].folderID, "status", "aborted");
+                // set each folder with PENDING status to ABORTED
+                let folders = tbSync.db.findFoldersWithSetting("status", "pending", accounts.IDs[i]);
+                for (let f=0; f < folders.length; f++) {
+                    tbSync.db.setFolderSetting(accounts.IDs[i], folders[f].folderID, "status", "aborted");
+                }
+                
+                //end current sync and switch to idle
+                tbSync.setSyncState("accountdone", accounts.IDs[i]); 
             }
-            
-            //end current sync and switch to idle
-            tbSync.setSyncState("accountdone", accounts.IDs[i]); 
         }
     },
 
@@ -845,6 +783,17 @@ var tbSync = {
 
 
     // TOOLS    
+
+    // Promisified implementation AddonManager.getAddonByID() (only needed in TB60)
+    getAddonByID  : Task.async (function* (id) {        
+        return new Promise(function(resolve, reject) {
+            function callback (addon) {
+                resolve(addon);
+            }
+            AddonManager.getAddonByID(id, callback);
+        })
+    }),
+
     isString: function (s) {
         return (typeof s == 'string' || s instanceof String);
     },
@@ -889,7 +838,7 @@ var tbSync = {
         let params = Components.classes["@mozilla.org/messengercompose/composeparams;1"].createInstance(Components.interfaces.nsIMsgComposeParams); 
 
         fields.to = email; 
-        fields.subject = "TbSync " + tbSync.version + " bug report: " + subject; 
+        fields.subject = "TbSync " + tbSync.addon.version.toString() + " bug report: " + subject; 
         fields.body = "Hi,\n\n" +
             "attached you find my debug.log for the following error:\n\n" + 
             description; 

@@ -199,7 +199,7 @@ abAutoComplete.Result.prototype = {
      * Get the image of the result at the given index
      */
       getImageAt(aIndex) {
-        return tbSync[tbSync.db.getAccountSetting(this.comments[aIndex], "provider")].getProviderIcon();
+        return tbSync[tbSync.db.getAccountSetting(this.comments[aIndex], "provider")].getProviderIcon(16);
       },
 
     /**
