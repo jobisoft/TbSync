@@ -32,6 +32,7 @@
 
 <!ENTITY manager.installprovider.link "Klicken Sie auf den folgenden Link, um die Informationsseite des fehlenden Provider aufzurufen. Auf dieser Seite finden Sie weitere Informationen zu dem Provider und haben die Möglichkeit, diesen zu installieren:">
 <!ENTITY manager.installprovider.warning "Dieser Provider stammt nicht aus dem offiziellen Thunderbird AddOn Verzeichnis und wurde demnach nicht von Thunderbird-Mitarbeitern überprüft. Dieser Provider könnte schlimme Dinge mit Ihrem System anstellen. Benutzung auf eigene Gefahr.">
+<!ENTITY manager.missingprovider "Der Provider für dieses Konto ist nicht installiert und unbekannt.">
 
 <!ENTITY manager.supporter.contributers "Mitwirkende &amp; Übersetzer">
 <!ENTITY manager.supporter.sponsors "Sponsoren von Test-Accounts">

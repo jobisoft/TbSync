@@ -72,12 +72,12 @@ var tbSync = {
 
     //list of default providers (available in add menu, even if not installed)
     defaultProviders: {
+        "dav" : {
+            name: "CalDAV & CardDAV", 
+            homepageUrl: "https://addons.thunderbird.net/addon/dav-4-tbsync/"},
         "eas" : {
             name: "Exchange ActiveSync", 
             homepageUrl: "https://addons.thunderbird.net/addon/eas-4-tbsync/"},
-        "dav" : {
-            name: "CalDAV & CardDAV", 
-            homepageUrl: "https://addons.thunderbird.net/addon/dav-4-tbsync/"}
     },
     loadedProviders: {},
     loadedProviderAddOns: {},
@@ -109,6 +109,7 @@ var tbSync = {
 
         Services.obs.addObserver(tbSync.initSyncObserver, "tbsync.initSync", false);
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate", false);
+        Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.init.done", false);
 
         // Inject UI before init finished, to give user the option to see Oops message and report bug
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
@@ -259,6 +260,7 @@ var tbSync = {
                 tbSync[provider] = {};
                 delete tbSync.loadedProviders[provider];
                 Services.obs.notifyObservers(null, "tbsync.updateAccountsList", provider);                    
+                Services.obs.notifyObservers(null, "tbsync.updateSyncstate", provider);
             }
         }
 
@@ -275,6 +277,7 @@ var tbSync = {
         if (tbSync.enabled === true) {
             Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate");
             Services.obs.removeObserver(tbSync.initSyncObserver, "tbsync.initSync");
+            Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.init.done");
 
             //close window (if open)
             if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
@@ -354,12 +357,18 @@ var tbSync = {
                     let accounts = tbSync.db.getAccounts();
                     let idle = true;
                     let err = false;
-                    for (let i=0; i<accounts.IDs.length && idle; i++) {
+            
+                    for (let i=0; i<accounts.allIDs.length && idle; i++) {
+                        if (!accounts.IDs.includes(accounts.allIDs[i])) {
+                            err = true;
+                            continue;
+                        }
+            
                         //set idle to false, if at least one account is syncing
-                        if (tbSync.isSyncing(accounts.IDs[i])) idle = false;
+                        if (tbSync.isSyncing(accounts.allIDs[i])) idle = false;
                 
                         //check for errors
-                        switch (tbSync.db.getAccountSetting(accounts.IDs[i], "status")) {
+                        switch (tbSync.db.getAccountSetting(accounts.allIDs[i], "status")) {
                             case "OK":
                             case "disabled":
                             case "notsyncronized":

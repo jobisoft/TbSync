@@ -32,6 +32,7 @@
 
 <!ENTITY manager.installprovider.link "Kattintson a következő linkre a hiányzó összhangzós szolgáltató info oldalának megnyitásához. Ott talál további információkat a szolgáltatóról, és lehetősége van a telepítésre:">
 <!ENTITY manager.installprovider.warning "Ez a szinkronizáló szolgáltató nem a hivatalos Thunderbird-kiegészítő adattárban található, így a Thunderbird személyzete nem vizsgálta felül. A szolgáltató rossz dolgokat tehet a rendszerében. Használja saját felelősségére.">
+<!ENTITY manager.missingprovider "?? The provider for this account is not installed and unknown. ??">
 
 <!ENTITY manager.supporter.contributers "?? Contributers &amp; Translators ??">
 <!ENTITY manager.supporter.sponsors "?? Sponsors of test accounts ??">
