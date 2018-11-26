@@ -46,9 +46,9 @@
 <!ENTITY manager.help.createbugreportinfo "In order for TbSync to collect only the debug messages relevant to your bug report, please restart Thunderbird and then repeat exactly the steps that reproduce the buggy behavior. Then you can create your bug report here.">
 
 <!ENTITY supportwizard.title "Создать отчет об ошибке">
-<!ENTITY supportwizard.pagetitle "Gathering of all information to effectively process the bug report.">
-<!ENTITY supportwizard.label.faultycomponent "Component of TbSync where you have observed the error:">
-<!ENTITY supportwizard.label.selectcomponent "Select component ...">
-<!ENTITY supportwizard.label.summary "Short summary of the error:">
-<!ENTITY supportwizard.label.description "Detailed error description:">
-<!ENTITY supportwizard.footer "From the information given here, an e-mail will be generated in the next step, which you can subsequently edit (for example, adding screenshots or similar). Only by actually sending that e-mail, the error report will be sent.">
+<!ENTITY supportwizard.pagetitle "Сбор всей информации для эффективной обработки отчета об ошибке.">
+<!ENTITY supportwizard.label.faultycomponent "Компонент TbSync, где вы заметили ошибку:">
+<!ENTITY supportwizard.label.selectcomponent "Выбрать компонент ...">
+<!ENTITY supportwizard.label.summary "Краткое описание ошибки:">
+<!ENTITY supportwizard.label.description "Подробное описание ошибки:">
+<!ENTITY supportwizard.footer "Из приведенной здесь информации на следующем шаге будет создано электронное письмо, которое вы можете впоследствии редактировать (например, добавлять скриншоты или аналогичное). Только при отправке этого электронного письма будет отправлен и сам отчет об ошибке.">
