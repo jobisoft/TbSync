@@ -1,11 +1,11 @@
-<!ENTITY popup.opensettings "Открыть менеджер акаунта TbSync">
+<!ENTITY popup.opensettings "Открыть менеджер аккаунта TbSync">
 <!ENTITY menu.settingslabel "Synchronization Settings (TbSync)">
 
-<!ENTITY toolbar.label "Синхронизировать все акаунты TbSync">
-<!ENTITY toolbar.tooltiptext "Synchronize latest changes">
+<!ENTITY toolbar.label "Синхронизировать все аккаунты TbSync">
+<!ENTITY toolbar.tooltiptext "Синхронизировать последние изменения">
 
 <!ENTITY manager.AccountActions "Account actions">
-<!ENTITY manager.AddAccount "Add new account">
+<!ENTITY manager.AddAccount "Добавить новый аккаунт">
 <!ENTITY manager.SyncAll "Synchronize all enabled accounts">
 
 <!ENTITY manager.SynchronizeAccount "Synchronize account">
