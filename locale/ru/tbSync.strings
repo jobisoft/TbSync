@@ -4,23 +4,23 @@ info.sync=Синхронизация
 
 button.syncthis=Синхронизировать этот аккаунт
 button.tryagain=Повторить подсоединение к серверу
-button.enableAndConnect=Enable account & try to connect to server
-button.disableAndEdit=Disable account to edit settings
+button.enableAndConnect=Разрешить аккаунт и подключиться к серверу
+button.disableAndEdit=Запретить аккаунт для редактирования настроек
 button.connecting=Подсоединиться к серверу
 button.syncing=Синхронизировать
 
-prompt.DeleteAccount=Are you sure that you want to delete account ##accountName##?
+prompt.DeleteAccount=Вы уверены, что хотите удалить аккаунт ##accountName##?
 prompt.Disable=Are you sure you want to disable this account? All local modifications, which have not been synced yet, will be lost!
-prompt.Password=Please enter the password for user ##user##:
+prompt.Password=Введите пароль для пользователя ##user##:
 prompt.Unsubscribe=Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!
 prompt.UnlockSettings=Changing any of the predefined server settings could lead to synchronization errors. Are you sure you want to unlock all predefined server settings?
 
 account=TbSync аккаунт [##accountname##]
 
-accountacctions.delete=Delete account “##accountname##”
-accountacctions.sync=Synchronize account “##accountname##”
-accountacctions.enable=Enable account “##accountname##” & try to connect to server
-accountacctions.disable=Disable account “##accountname##”
+accountacctions.delete=Удалить аккаунт “##accountname##”
+accountacctions.sync=Синхронизировать аккаунт “##accountname##”
+accountacctions.enable=Разрешить аккаунт “##accountname##” и подключиться к серверу
+accountacctions.disable=Запретить аккаунт “##accountname##”
 
 update_available=доступно обновление
 old_beta_version=старая бета-версия
