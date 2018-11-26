@@ -22,7 +22,7 @@ accountacctions.sync=Synchronize account “##accountname##”
 accountacctions.enable=Enable account “##accountname##” & try to connect to server
 accountacctions.disable=Disable account “##accountname##”
 
-update_available=update available
+update_available=доступно обновление
 old_beta_version=older beta version
 amo_repository=Thunderbird Add-on repository
 github_repository=TbSync GitHub repository
@@ -33,12 +33,12 @@ addressbook.searchall=Search all address books
 addressbook.searchthis=Search this address book
 addressbook.searchgal=Search this address book and the global directoy (##replace.1##)
 
-installProvider.header=Provider “##replace.1##” for TbSync is not yet installed.
-supportwizard.provider=Provider: ##replace.1## 
+installProvider.header=Провайдер “##replace.1##” для TbSync не установлен.
+supportwizard.provider=Провайдер: ##replace.1## 
 
-VersionOfThunderbirdNotSupported=TbSync is currently only supporting Thunderbird 60. Using Thunderbird Beta will produce errors, which cannot be fixed at the moment.
-OopsMessage=Oops! TbSync was not able to start!
-UnableToTraceError=It is not possible to trace this error, because debug log is currently not enabled. Do you want to enable debug log now, to help fix this error?
-RestartThunderbirdAndTryAgain=TbSync debug log has been enabled, please restart Thunderbird and again try to open TbSync.
-HelpFixStartupError=To help fix this error, you could send a debug log to the TbSync developer. Prepare that email now?
-NoDebugLog=Could not find any useful debug messages. Please activate debug mode, restart Thunderbird and repeat all the steps needed to trigger the erroneous behavior.
+VersionOfThunderbirdNotSupported=В настоящее время TbSync поддерживает только Thunderbird версии 60. Использование Thunderbird Beta приведет к ошибкам, которые в настоящий момент не могут быть исправлены.
+OopsMessage=Неудача! TbSync не смог запуститься!
+UnableToTraceError=Невозможно проследить эту ошибку, поскольку журнал отладки в данный момент не включен. Вы хотите включить журнал отладки сейчас, чтобы исправить эту ошибку?
+RestartThunderbirdAndTryAgain=Журнал отладки TbSync включен, перезапустите Thunderbird и снова попытайтесь открыть TbSync.
+HelpFixStartupError=Чтобы исправить эту ошибку, вы можете отправить журнал отладки разработчику TbSync. Подготовьте это письмо сейчас?
+NoDebugLog=Не удалось найти пригодные отладочные сообщения. Включите режим отладки, перезапустите Thunderbird и повторите все шаги, необходимые для запуска ошибочного поведения.
