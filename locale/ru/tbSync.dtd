@@ -19,11 +19,11 @@
 
 <!ENTITY manager.title "Менеджер аккаунта TbSync">
 <!ENTITY manager.shorttitle "Менеджер аккаунта">
-<!ENTITY manager.provider4tbsync "Поставщик для TbSync">
+<!ENTITY manager.provider4tbsync "Провайдер для TbSync">
 <!ENTITY manager.accountsettings "Настройки аккаунта">
 <!ENTITY manager.help "Справка">
 <!ENTITY manager.community "Сообщество">
-<!ENTITY manager.provider "Установить Поставщика">
+<!ENTITY manager.provider "Установить провайдера">
 
 <!ENTITY manager.accounts "Аккаунты">
 <!ENTITY manager.status "Статус">
@@ -34,10 +34,10 @@
 <!ENTITY manager.installprovider.warning "This synchronization provider is not hosted in the official Thunderbird AddOn repository and thus has not been reviewed by Thunderbird staff. The provider could do bad things to your system. Use it at your own risk.">
 <!ENTITY manager.missingprovider "The provider for this account is not installed and unknown.">
 
-<!ENTITY manager.supporter.contributers "Contributers &amp; Translators">
-<!ENTITY manager.supporter.sponsors "Sponsors of test accounts">
+<!ENTITY manager.supporter.contributers "Помощники &amp; Переводчики">
+<!ENTITY manager.supporter.sponsors "Спонсоры тестовых аккаунтов">
 
-<!ENTITY manager.help.needhelp "Need Help?">
+<!ENTITY manager.help.needhelp "Нужна справка?">
 <!ENTITY manager.help.wiki "Open the wiki pages of the TbSync project, they provide additional information, guides and detailed configuration descriptions.">
 
 <!ENTITY manager.help.foundabug "Found a bug?">
@@ -45,7 +45,7 @@
 <!ENTITY manager.help.enabledebuglog "Debug modus: Logging of all program messages and all data that TbSync receives and sends. Thunderbird may work significantly slower.">
 <!ENTITY manager.help.createbugreportinfo "In order for TbSync to collect only the debug messages relevant to your bug report, please restart Thunderbird and then repeat exactly the steps that reproduce the buggy behavior. Then you can create your bug report here.">
 
-<!ENTITY supportwizard.title "Create bug report">
+<!ENTITY supportwizard.title "Создать отчет об ошибке">
 <!ENTITY supportwizard.pagetitle "Gathering of all information to effectively process the bug report.">
 <!ENTITY supportwizard.label.faultycomponent "Component of TbSync where you have observed the error:">
 <!ENTITY supportwizard.label.selectcomponent "Select component ...">
