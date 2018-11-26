@@ -30,8 +30,8 @@
 
 <!ENTITY manager.catman.text "TbSync также синхронизирует категории контактов, которые являются мощной заменой несинхронизируемых списков контактов. Чтобы иметь возможность использовать их в адресной книге Thunderbird, вы можете установить надстройку Менеджера Категорий. Он позволяет управлять перекрывающимися контактными группами на основе категорий и предоставляет много других функций, связанных с категорией. Его можно найти в официальном репозитории Mozilla Add-On:">
 
-<!ENTITY manager.installprovider.link "Click on the following link to open the info page of the missing synchronization provider. There you will find further information about the provider and you will have the option to install it:">
-<!ENTITY manager.installprovider.warning "This synchronization provider is not hosted in the official Thunderbird AddOn repository and thus has not been reviewed by Thunderbird staff. The provider could do bad things to your system. Use it at your own risk.">
+<!ENTITY manager.installprovider.link "Нажмите на следующую ссылку, чтобы открыть информационную страницу отсутствующего провайдера синхронизации. Там вы найдете дополнительную информацию о провайдере, и у вас будет возможность установить его:">
+<!ENTITY manager.installprovider.warning "Этот поставщик синхронизации не размещен в официальном репозитории Thunderbird AddOn и, таким образом, не был рассмотрен сотрудниками Thunderbird. Поставщик может сделать деструктивные действия в вашей системе. Используйте его на свой страх и риск.">
 <!ENTITY manager.missingprovider "Провайдер этого аккаунта не установлен и неизвестен.">
 
 <!ENTITY manager.supporter.contributers "Помощники &amp; Переводчики">
