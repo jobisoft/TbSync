@@ -1,4 +1,4 @@
-<!ENTITY popup.opensettings "Open TbSync account manager">
+<!ENTITY popup.opensettings "Открыть менеджер акаунтов TbSync">
 <!ENTITY menu.settingslabel "Synchronization Settings (TbSync)">
 
 <!ENTITY toolbar.label "Synchronize all TbSync accounts">
@@ -25,8 +25,8 @@
 <!ENTITY manager.community "Community">
 <!ENTITY manager.provider "Install Provider">
 
-<!ENTITY manager.accounts "Accounts">
-<!ENTITY manager.status "Status">
+<!ENTITY manager.accounts "Аккаунты">
+<!ENTITY manager.status "Статус">
 
 <!ENTITY manager.catman.text "TbSync also syncs contact categories, which are a powerful replacement for the non-syncable contact lists. To be able to use them in the Thunderbird address book you can install the Category Manager Add-On. It allows to manage overlapping category based contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla Add-On repository:">
 
