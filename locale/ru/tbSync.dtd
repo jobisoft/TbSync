@@ -1,19 +1,19 @@
 <!ENTITY popup.opensettings "Открыть менеджер аккаунта TbSync">
-<!ENTITY menu.settingslabel "Synchronization Settings (TbSync)">
+<!ENTITY menu.settingslabel "Настройки синхронизации (TbSync)">
 
 <!ENTITY toolbar.label "Синхронизировать все аккаунты TbSync">
 <!ENTITY toolbar.tooltiptext "Синхронизировать последние изменения">
 
-<!ENTITY manager.AccountActions "Account actions">
+<!ENTITY manager.AccountActions "Действия для аккаунта">
 <!ENTITY manager.AddAccount "Добавить новый аккаунт">
-<!ENTITY manager.SyncAll "Synchronize all enabled accounts">
+<!ENTITY manager.SyncAll "Синхронизировать все разрешенные аккаунты">
 
-<!ENTITY manager.SynchronizeAccount "Synchronize account">
-<!ENTITY manager.EnableAccount "Enable account &amp; try to connect to server">
-<!ENTITY manager.DisableAccount "Disable account">
-<!ENTITY manager.DeleteAccount "Delete account">
-<!ENTITY manager.ShowSyncLog "Show synchronization log messages">
-<!ENTITY manager.RetryConnectAccount "Try again to connect to server">
+<!ENTITY manager.SynchronizeAccount "Синхронизировать аккаунт">
+<!ENTITY manager.EnableAccount "Разрешить аккаунт &amp; подключить к серверу">
+<!ENTITY manager.DisableAccount "Запретить аккаунт">
+<!ENTITY manager.DeleteAccount "Удалить аккаунт">
+<!ENTITY manager.ShowSyncLog "Показать лог сообщений синхронизации">
+<!ENTITY manager.RetryConnectAccount "Повторить подключение к серверу">
 
 <!ENTITY manager.noaccounts "There are not yet any accounts defined.">
 
