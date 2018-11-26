@@ -15,15 +15,15 @@
 <!ENTITY manager.ShowSyncLog "Показать лог сообщений синхронизации">
 <!ENTITY manager.RetryConnectAccount "Повторить подключение к серверу">
 
-<!ENTITY manager.noaccounts "There are not yet any accounts defined.">
+<!ENTITY manager.noaccounts "Определенных аккаунтов пока нет.">
 
-<!ENTITY manager.title "TbSync account manager">
-<!ENTITY manager.shorttitle "Account manager">
-<!ENTITY manager.provider4tbsync "Provider for TbSync">
-<!ENTITY manager.accountsettings "Account Settings">
-<!ENTITY manager.help "Help">
-<!ENTITY manager.community "Community">
-<!ENTITY manager.provider "Install Provider">
+<!ENTITY manager.title "Менеджер аккаунта TbSync">
+<!ENTITY manager.shorttitle "Менеджер аккаунта">
+<!ENTITY manager.provider4tbsync "Поставщик для TbSync">
+<!ENTITY manager.accountsettings "Настройки аккаунта">
+<!ENTITY manager.help "Справка">
+<!ENTITY manager.community "Сообщество">
+<!ENTITY manager.provider "Установить Поставщика">
 
 <!ENTITY manager.accounts "Аккаунты">
 <!ENTITY manager.status "Статус">
