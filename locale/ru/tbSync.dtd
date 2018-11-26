@@ -41,7 +41,7 @@
 <!ENTITY manager.help.wiki "Откройте wiki-страницы проекта TbSync, они предоставят дополнительную информацию, руководства и подробные описания конфигурации.">
 
 <!ENTITY manager.help.foundabug "Нашли ошибку?">
-<!ENTITY manager.help.fixit "You can help to fix it by sending in a bug report. This requires the activation of debug mode.">
+<!ENTITY manager.help.fixit "Вы можете помочь исправить это дополнение, отправив сообщение об ошибке. Для этого требуется активация режима отладки.">
 <!ENTITY manager.help.enabledebuglog "Debug modus: Logging of all program messages and all data that TbSync receives and sends. Thunderbird may work significantly slower.">
 <!ENTITY manager.help.createbugreportinfo "In order for TbSync to collect only the debug messages relevant to your bug report, please restart Thunderbird and then repeat exactly the steps that reproduce the buggy behavior. Then you can create your bug report here.">
 
