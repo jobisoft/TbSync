@@ -17,6 +17,7 @@
         <em:translator>John Bieling (en-US)</em:translator>
         <em:translator>Alessandro Menti (it)</em:translator>
         <em:translator>Óvári (hu)</em:translator>
+        <em:translator>Alexey Sinitsyn (ru)</em:translator>
         <em:contributor>Jan Dagefoerde</em:contributor>
         <em:contributor>Nam Ldmpub</em:contributor>
         <em:creator>John Bieling</em:creator>
@@ -39,6 +40,7 @@
             <em:translator>John Bieling (en-US)</em:translator>
             <em:translator>Alessandro Menti (it)</em:translator>
             <em:translator>Óvári (hu)</em:translator>
+            <em:translator>Alexey Sinitsyn (ru)</em:translator>
             <em:contributor>Jan Dagefoerde</em:contributor>
             <em:contributor>Nam Ldmpub</em:contributor>
             <em:creator>John Bieling</em:creator>
@@ -54,6 +56,7 @@
             <em:translator>John Bieling (en-US)</em:translator>
             <em:translator>Alessandro Menti (it)</em:translator>
             <em:translator>Óvári (hu)</em:translator>
+            <em:translator>Alexey Sinitsyn (ru)</em:translator>
             <em:contributor>Jan Dagefoerde</em:contributor>
             <em:contributor>Nam Ldmpub</em:contributor>
             <em:creator>John Bieling</em:creator>
@@ -69,11 +72,28 @@
             <em:translator>John Bieling (en-US)</em:translator>
             <em:translator>Alessandro Menti (it)</em:translator>
             <em:translator>Óvári (hu)</em:translator>
+            <em:translator>Alexey Sinitsyn (ru)</em:translator>
             <em:contributor>Jan Dagefoerde</em:contributor>
             <em:contributor>Nam Ldmpub</em:contributor>
             <em:creator>John Bieling</em:creator>
           </Description>
         </em:localized>
 
+         <em:localized>  <!-- Russian -->
+          <Description>
+            <em:locale>ru</em:locale>
+            <em:name>TbSync</em:name>
+            <em:description>TbSync - это центральный пользовательский интерфейс для управления облачными учетными записями и синхронизации данных контактов, задач и календаря с Thunderbird.</em:description>
+            <em:translator>John Bieling (de)</em:translator>
+            <em:translator>John Bieling (en-US)</em:translator>
+            <em:translator>Alessandro Menti (it)</em:translator>
+            <em:translator>Óvári (hu)</em:translator>
+            <em:translator>Alexey Sinitsyn (ru)</em:translator>
+            <em:contributor>Jan Dagefoerde</em:contributor>
+            <em:contributor>Nam Ldmpub</em:contributor>
+            <em:creator>John Bieling</em:creator>
+          </Description>
+         </em:localized>
+         
     </Description>
 </RDF>
