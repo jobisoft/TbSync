@@ -32,7 +32,7 @@
 
 <!ENTITY manager.installprovider.link "Click on the following link to open the info page of the missing synchronization provider. There you will find further information about the provider and you will have the option to install it:">
 <!ENTITY manager.installprovider.warning "This synchronization provider is not hosted in the official Thunderbird AddOn repository and thus has not been reviewed by Thunderbird staff. The provider could do bad things to your system. Use it at your own risk.">
-<!ENTITY manager.missingprovider "The provider for this account is not installed and unknown.">
+<!ENTITY manager.missingprovider "The synchronization provider (##provider##) this account is associated with is not installed and unknown.">
 
 <!ENTITY manager.supporter.contributers "Contributers &amp; Translators">
 <!ENTITY manager.supporter.sponsors "Sponsors of test accounts">

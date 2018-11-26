@@ -10,7 +10,7 @@
 
     <hbox flex="1" pack="center">
         <vbox pack="center">
-             <html:p style="font-size:10pt;">&manager.noaccounts;</html:p>
+             <description>&manager.noaccounts;</description>	     
         </vbox>
     </hbox>
     

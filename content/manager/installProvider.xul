@@ -7,7 +7,7 @@
     xmlns:html="http://www.w3.org/1999/xhtml"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-    onload="tbSyncInstallProvider.onload();"
+    onload="tbSyncManageProvider.prepInstall();"
     title="Install additional synchronization provider for TbSync" >
 
     <hbox flex="1" id="mainframe">
@@ -31,6 +31,6 @@
         </vbox>
     </hbox>
     
-    <script type="text/javascript" src="chrome://tbsync/content/manager/installProvider.js" /> 
+    <script type="text/javascript" src="chrome://tbsync/content/manager/manageProvider.js" /> 
     
 </window>
