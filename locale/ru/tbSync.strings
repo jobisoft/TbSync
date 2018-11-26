@@ -10,10 +10,10 @@ button.connecting=Подсоединиться к серверу
 button.syncing=Синхронизировать
 
 prompt.DeleteAccount=Вы уверены, что хотите удалить аккаунт ##accountName##?
-prompt.Disable=Are you sure you want to disable this account? All local modifications, which have not been synced yet, will be lost!
+prompt.Disable=Вы действительно хотите запретить этот аккаунт? Все локальные изменения, которые еще не синхронизированы, будут потеряны!
 prompt.Password=Введите пароль для пользователя ##user##:
-prompt.Unsubscribe=Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!
-prompt.UnlockSettings=Changing any of the predefined server settings could lead to synchronization errors. Are you sure you want to unlock all predefined server settings?
+prompt.Unsubscribe=Вы действительно хотите отменить подписку на этот элемент? Все локальные изменения, которые еще не синхронизированы, будут потеряны!
+prompt.UnlockSettings=Изменение любого из предопределенных параметров сервера может привести к ошибкам синхронизации. Вы действительно хотите разблокировать для изменения все предопределенные параметры сервера?
 
 account=TbSync аккаунт [##accountname##]
 
