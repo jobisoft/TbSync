@@ -23,15 +23,15 @@ accountacctions.enable=Enable account “##accountname##” & try to connect to 
 accountacctions.disable=Disable account “##accountname##”
 
 update_available=доступно обновление
-old_beta_version=older beta version
-amo_repository=Thunderbird Add-on repository
-github_repository=TbSync GitHub repository
-update_to_stable=Recommendation: Update to the latest stable version.
-update_to_beta=Recommendation: Update to the latest beta version.
+old_beta_version=старая бета-версия
+amo_repository=Thunderbird Add-on репозиторий
+github_repository=TbSync GitHub репозиторий
+update_to_stable=Рекомендация: обновить до последней стабильной версии.
+update_to_beta=Рекомендация: обновить до последней бета-версии.
 
-addressbook.searchall=Search all address books
-addressbook.searchthis=Search this address book
-addressbook.searchgal=Search this address book and the global directoy (##replace.1##)
+addressbook.searchall=Поиск по всем адресным книгам
+addressbook.searchthis=Поиск в этой адресной книге
+addressbook.searchgal=Поиск в этой адресной книге и в глобальном каталоге (##replace.1##)
 
 installProvider.header=Провайдер “##replace.1##” для TbSync не установлен.
 supportwizard.provider=Провайдер: ##replace.1## 
