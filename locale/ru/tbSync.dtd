@@ -1,7 +1,7 @@
-<!ENTITY popup.opensettings "Открыть менеджер акаунтов TbSync">
+<!ENTITY popup.opensettings "Открыть менеджер акаунта TbSync">
 <!ENTITY menu.settingslabel "Synchronization Settings (TbSync)">
 
-<!ENTITY toolbar.label "Synchronize all TbSync accounts">
+<!ENTITY toolbar.label "Синхронизировать все акаунты TbSync">
 <!ENTITY toolbar.tooltiptext "Synchronize latest changes">
 
 <!ENTITY manager.AccountActions "Account actions">
