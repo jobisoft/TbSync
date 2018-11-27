@@ -195,24 +195,28 @@ var tbSync = {
         }
     }),
 
-    unloadProviderAddon:  Task.async (function* (addonId) {
+    unloadProviderAddon:  function (addonId) {
+        
         //unload all loaded providers of this provider AddOn
-        for (let i=0; i < tbSync.loadedProviderAddOns[addonId].providers.length; i++) {
-            let provider = tbSync.loadedProviderAddOns[addonId].providers[i];
-            
-            //only unload, if loaded
-            if (tbSync.loadedProviders.hasOwnProperty(provider)) {
-                yield tbSync[provider].unload(tbSync.lightningIsAvailable());
-                tbSync[provider] = {};
-                delete tbSync.loadedProviders[provider];
-                Services.obs.notifyObservers(null, "tbsync.updateAccountsList", provider);                    
-                Services.obs.notifyObservers(null, "tbsync.updateSyncstate", provider);
+        if (tbSync.loadedProviderAddOns.hasOwnProperty(addonId) ) {
+            for (let i=0; i < tbSync.loadedProviderAddOns[addonId].providers.length; i++) {
+                let provider = tbSync.loadedProviderAddOns[addonId].providers[i];
+                
+                //only unload, if loaded
+                if (tbSync.loadedProviders.hasOwnProperty(provider)) {
+                    tbSync[provider].unload(tbSync.lightningIsAvailable());
+                    tbSync[provider] = {};
+                    delete tbSync.loadedProviders[provider];
+                    Services.obs.notifyObservers(null, "tbsync.updateAccountsList", provider);                    
+                    Services.obs.notifyObservers(null, "tbsync.updateSyncstate", provider);
+                }
             }
-        }
 
-        //remove all traces
-        delete tbSync.loadedProviderAddOns[addonId];
-    }),
+            //remove all traces
+            delete tbSync.loadedProviderAddOns[addonId];
+        }
+        
+    },
     
 
     cleanup: function() {
