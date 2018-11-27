@@ -752,6 +752,9 @@ var tbSyncAccounts = {
         } else if (updAddMenu !== false) {
             //update single provider entry
             tbSyncAccounts.updateAddMenuEntry(updAddMenu);
+            if (accountToSelect != -1 && tbSync.db.getAccountSetting(accountToSelect, "provider") == updAddMenu) {
+                tbSyncAccounts.loadSelectedAccount();
+            }
         }
     },
 
