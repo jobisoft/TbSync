@@ -6,12 +6,17 @@
     xmlns:html="http://www.w3.org/1999/xhtml"
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+    onload="tbSyncManageProvider.prepMissing();"
     title="TbSync Account Settings" >
 
     <hbox flex="1" pack="center">
-        <vbox pack="center">
-             <html:p style="font-size:10pt;">&manager.missingprovider;</html:p>
+        <vbox flex="1" pack="center">
+            <description style="text-align:center" id="missing">&manager.missingprovider;</description>
+            <html:p id="link" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openTBtab(this.getAttribute('link'));" style="color:blue; text-decoration: underline; text-align:center;"></html:p>	             
         </vbox>
+
     </hbox>
-    
+
+    <script type="text/javascript" src="chrome://tbsync/content/manager/manageProvider.js" /> 
+
 </window>

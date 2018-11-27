@@ -31,10 +31,6 @@ Later I want to support the [EWS community](https://github.com/ExchangeCalendar/
 
 After that, I would like to create or help others to create a google provider for TbSync. We will see how that goes, nothing is planed yet.
 
-## External data sources
-
-* TbSync uses a [timezone mapping](https://github.com/mj1856/TimeZoneConverter/blob/master/src/TimeZoneConverter/Data/Mapping.csv.gz) provided by [Matt Johnson](https://github.com/mj1856)
-
 ## Icon sources and attributions
 
 #### CC0-1.0

@@ -10,9 +10,9 @@
 
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
-var tbSyncInstallProvider = {
+var tbSyncManageProvider = {
     
-    onload: function () {
+    prepInstall: function () {
         let url = window.location.toString();
         let provider = url.split("provider=")[1];
         window.document.getElementById("header").textContent = tbSync.getLocalizedMessage("installProvider.header::" + tbSync.defaultProviders[provider].name);
@@ -22,5 +22,19 @@ var tbSyncInstallProvider = {
 
         window.document.getElementById("warning").hidden = tbSync.defaultProviders[provider].homepageUrl.startsWith("https://addons.thunderbird.net"); 
     },
-    
+
+    prepMissing: function () {
+        let url = window.location.toString();
+        let provider = url.split("provider=")[1];
+
+        let e = window.document.getElementById("missing");
+        let v = e.textContent;
+        e.textContent = v.replace("##provider##", provider.toUpperCase());
+        
+        if (tbSync.defaultProviders.hasOwnProperty(provider)) {
+            window.document.getElementById("link").textContent = tbSync.defaultProviders[provider].homepageUrl;
+            window.document.getElementById("link").setAttribute("link", tbSync.defaultProviders[provider].homepageUrl);
+        }
+        
+    },    
 };
