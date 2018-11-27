@@ -24,32 +24,6 @@ Components.utils.import("resource:///modules/mailServices.js")
 Components.utils.importGlobalProperties(["XMLHttpRequest"]);
 
 
-//Date has a toISOString method, which returns the Date obj as extended ISO 8601,
-//however EAS MS-ASCAL uses compact/basic ISO 8601,
-//extending Date obj by toBasicISOString method to return compact/basic ISO 8601.
-if (!Date.prototype.toBasicISOString) {
-  (function() {
-
-    function pad(number) {
-      if (number < 10) {
-        return '0' + number;
-      }
-      return number.toString();
-    }
-
-    Date.prototype.toBasicISOString = function() {
-      return pad(this.getUTCFullYear()) +
-        pad(this.getUTCMonth() + 1) +
-        pad(this.getUTCDate()) +
-        'T' + 
-        pad(this.getUTCHours()) +
-        pad(this.getUTCMinutes()) +
-        pad(this.getUTCSeconds()) +
-        'Z';
-    };
-
-  }());
-}
 
 
 
@@ -66,9 +40,6 @@ var tbSync = {
     debugMode: false,
     
     lightningInitDone: false,
-    cachedTimezoneData: null,
-    defaultTimezoneInfo: null,
-    windowsTimezoneMap: {},
 
     //list of default providers (available in add menu, even if not installed)
     defaultProviders: {
@@ -155,31 +126,6 @@ var tbSync = {
                 cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
                 cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
                 
-                //get timezone info of default timezone (old cal. without dtz are depricated)
-                tbSync.defaultTimezone = (cal.dtz && cal.dtz.defaultTimezone) ? cal.dtz.defaultTimezone : cal.calendarDefaultTimezone();
-                tbSync.utcTimezone = (cal.dtz && cal.dtz.UTC) ? cal.dtz.UTC : cal.UTC();
-                //if default timezone is not defined, use utc as default
-                if (tbSync.defaultTimezone.icalComponent) {
-                    tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo(tbSync.defaultTimezone);
-                } else {
-                    tbSync.synclog("Critical Warning","Default timezone is not defined, using UTC!");
-                    tbSync.defaultTimezoneInfo = tbSync.getTimezoneInfo(tbSync.utcTimezone);
-                }
-                
-                //get windows timezone data from CSV
-                let csvData = yield tbSync.fetchFile("chrome://tbsync/content/timezonedata/WindowsTimezone.csv");
-                for (let i = 0; i<csvData.length; i++) {
-                    let lData = csvData[i].split(",");
-                    if (lData.length<3) continue;
-                    
-                    let windowsZoneName = lData[0].toString().trim();
-                    let zoneType = lData[1].toString().trim();
-                    let ianaZoneName = lData[2].toString().trim();
-                    
-                    if (zoneType == "001") tbSync.windowsTimezoneMap[windowsZoneName] = ianaZoneName;
-                    if (ianaZoneName == tbSync.defaultTimezoneInfo.std.id) tbSync.defaultTimezoneInfo.std.windowsZoneName = windowsZoneName;
-                }
-
                 //inject UI elements
                 if (tbSync.window.document.getElementById("calendar-synchronize-button")) {
                     tbSync.window.document.getElementById("calendar-synchronize-button").addEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
@@ -913,37 +859,6 @@ var tbSync = {
     getAbsolutePath: function(filename) {
         return OS.Path.join(tbSync.storageDirectory, filename);
     },
-  
-    //read file from within the XPI package
-    fetchFile: function (aURL, returnType = "Array") {
-        return new Promise((resolve, reject) => {
-            let uri = Services.io.newURI(aURL);
-            let channel = Services.io.newChannelFromURI2(uri,
-                                 null,
-                                 Services.scriptSecurityManager.getSystemPrincipal(),
-                                 null,
-                                 Components.interfaces.nsILoadInfo.SEC_REQUIRE_SAME_ORIGIN_DATA_INHERITS,
-                                 Components.interfaces.nsIContentPolicy.TYPE_OTHER);
-
-            NetUtil.asyncFetch(channel, (inputStream, status) => {
-                if (!Components.isSuccessCode(status)) {
-                    reject(status);
-                    return;
-                }
-
-                try {
-                    let data = NetUtil.readInputStreamToString(inputStream, inputStream.available());
-                    if (returnType == "Array") {
-                        resolve(data.replace("\r","").split("\n"))
-                    } else {
-                        resolve(data);
-                    }
-                } catch (ex) {
-                    reject(ex);
-                }
-            });
-        });
-    },
 
     includeJS: function (file, that=this) {
         Services.scriptloader.loadSubScript(file, that, "UTF-8");
@@ -1483,341 +1398,13 @@ var tbSync = {
         return data;
     },
 
-    promisifyAddressbook: function (addressbook) {
-    /* 
-        Return obj with identical interface to promisifyCalendar. But we currently do not need a promise. 
-            adoptItem(card)
-            modifyItem(newcard, existingcard)
-            deleteItem(card)
-            getItem(id)
-
-        Avail API:
-            addressBook.modifyCard(card);
-            addressBook.getCardFromProperty("localId", ClientId, false);
-            addressBook.deleteCards(cardsToDelete);
-            card.setProperty('ServerId', ServerId);
-    */
-        let apiWrapper = {
-            adoptItem: function (item) { 
-                /* add card to addressbook */
-                addressbook.addCard(item.card);
-            },
-
-            modifyItem: function (newitem, existingitem) {
-                /* modify card */
-                addressbook.modifyCard(newitem.card);
-            },
-
-            deleteItem: function (item) {
-                /* remove card from addressBook */
-                let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-                cardsToDelete.appendElement(item.card, false);
-                addressbook.deleteCards(cardsToDelete);
-            },
-
-            getItem: function (searchId) {
-                /* return array of items matching */
-                let items = [];
-                let card = addressbook.getCardFromProperty("TBSYNCID", searchId, true); //3rd param enables case sensitivity
-                
-                if (card) {
-                    items.push(tbSync.eas.sync.Contacts.createItem(card));
-                }
-                
-                return items;
-            }
-        };
-    
-        return apiWrapper;
-    },
-
-
-
-
-
-    // CALENDAR FUNCTIONS
-
-    // Convert TB date to UTC and return it as  basic or extended ISO 8601  String
-    getIsoUtcString: function(origdate, requireExtendedISO = false, fakeUTC = false) {
-        let date = origdate.clone();
-        //floating timezone cannot be converted to UTC (cause they float) - we have to overwrite it with the local timezone
-        if (date.timezone.tzid == "floating") date.timezone = tbSync.defaultTimezoneInfo.timezone;
-        //to get the UTC string we could use icalString (which does not work on allDayEvents, or calculate it from nativeTime)
-        date.isDate = 0;
-        let UTC = date.getInTimezone(tbSync.utcTimezone);        
-        if (fakeUTC) UTC = date.clone();
-        
-        function pad(number) {
-            if (number < 10) {
-                return '0' + number;
-            }
-            return number;
-        }
-        
-        if (requireExtendedISO) {
-            return UTC.year + 
-                    "-" + pad(UTC.month + 1 ) + 
-                    "-" + pad(UTC.day) +
-                    "T" + pad(UTC.hour) +
-                    ":" + pad(UTC.minute) + 
-                    ":" + pad(UTC.second) + 
-                    "." + "000" +
-                    "Z";            
-        } else {            
-            return UTC.icalString;
-        }
-    },
-
-    //Save replacement for cal.createDateTime, which accepts compact/basic and also extended ISO 8601, 
-    //cal.createDateTime only supports compact/basic
-    createDateTime: function(str) {
-        let datestring = str;
-        if (str.indexOf("-") == 4) {
-            //this looks like extended ISO 8601
-            let tempDate = new Date(str);
-            datestring = tempDate.toBasicISOString();
-        }
-        return cal.createDateTime(datestring);
-    },
-
-
-
-    //guess the IANA timezone (used by TB) based on the current offset (standard or daylight)
-    guessTimezoneByCurrentOffset: function(curOffset, utcDateTime) {
-        //if we only now the current offset and the current date, we need to actually try each TZ.
-        let tzService = cal.getTimezoneService();
-
-        //first try default tz
-        let test = utcDateTime.getInTimezone(tbSync.defaultTimezoneInfo.timezone);
-        tbSync.dump("Matching TZ via current offset: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
-        if (test.timezoneOffset/-60 == curOffset) return test.timezone;
-        
-        //second try UTC
-        test = utcDateTime.getInTimezone(tbSync.utcTimezone);
-        tbSync.dump("Matching TZ via current offset: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
-        if (test.timezoneOffset/-60 == curOffset) return test.timezone;
-        
-        //third try all others
-        let enumerator = tzService.timezoneIds;
-        while (enumerator.hasMore()) {
-            let id = enumerator.getNext();
-            let test = utcDateTime.getInTimezone(tzService.getTimezone(id));
-            tbSync.dump("Matching TZ via current offset: " + test.timezone.tzid + " @ " + curOffset, test.timezoneOffset/-60);
-            if (test.timezoneOffset/-60 == curOffset) return test.timezone;
-        }
-        
-        //return default TZ as fallback
-        return tbSync.defaultTimezoneInfo.timezone;
-    },
-    
-    //guess the IANA timezone (used by TB) based on stdandard offset, daylight offset and standard name
-    guessTimezoneByStdDstOffset: function(stdOffset, dstOffset, stdName = "") {
-                    
-            //get a list of all zones
-            //alternativly use cal.fromRFC3339 - but this is only doing this:
-            //https://dxr.mozilla.org/comm-central/source/calendar/base/modules/calProviderUtils.jsm
-
-            //cache timezone data on first attempt
-            if (tbSync.cachedTimezoneData === null) {
-                tbSync.cachedTimezoneData = {};
-                tbSync.cachedTimezoneData.iana = {};
-                tbSync.cachedTimezoneData.abbreviations = {};
-                tbSync.cachedTimezoneData.stdOffset = {};
-                tbSync.cachedTimezoneData.bothOffsets = {};                    
-                    
-                let tzService = cal.getTimezoneService();
-
-                //cache timezones data from internal IANA data
-                let enumerator = tzService.timezoneIds;
-                while (enumerator.hasMore()) {
-                    let id = enumerator.getNext();
-                    let timezone = tzService.getTimezone(id);
-                    let tzInfo = tbSync.getTimezoneInfo(timezone);
-
-                    tbSync.cachedTimezoneData.bothOffsets[tzInfo.std.offset+":"+tzInfo.dst.offset] = timezone;
-                    tbSync.cachedTimezoneData.stdOffset[tzInfo.std.offset] = timezone;
-
-                    tbSync.cachedTimezoneData.abbreviations[tzInfo.std.abbreviation] = id;
-                    tbSync.cachedTimezoneData.iana[id] = tzInfo;
-                    
-                    //tbSync.dump("TZ ("+ tzInfo.std.id + " :: " + tzInfo.dst.id +  " :: " + tzInfo.std.displayname + " :: " + tzInfo.dst.displayname + " :: " + tzInfo.std.offset + " :: " + tzInfo.dst.offset + ")", tzService.getTimezone(id));
-                }
-
-                //make sure, that UTC timezone is there
-                tbSync.cachedTimezoneData.bothOffsets["0:0"] = tbSync.utcTimezone;
-
-                //multiple TZ share the same offset and abbreviation, make sure the default timezone is present
-                tbSync.cachedTimezoneData.abbreviations[tbSync.defaultTimezoneInfo.std.abbreviation] = tbSync.defaultTimezoneInfo.std.id;
-                tbSync.cachedTimezoneData.bothOffsets[tbSync.defaultTimezoneInfo.std.offset+":"+tbSync.defaultTimezoneInfo.dst.offset] = tbSync.defaultTimezoneInfo.timezone;
-                tbSync.cachedTimezoneData.stdOffset[tbSync.defaultTimezoneInfo.std.offset] = tbSync.defaultTimezoneInfo.timezone;
-                
-            }
-
-            /*
-                1. Try to find name in Windows names and map to IANA -> if found, does the stdOffset match? -> if so, done
-                2. Try to parse our own format, split name and test each chunk for IANA -> if found, does the stdOffset match? -> if so, done
-                3. Try if one of the chunks matches international code -> if found, does the stdOffset match? -> if so, done
-                4. Fallback: Use just the offsets  */
-
-
-            //check for windows timezone name
-            if (tbSync.windowsTimezoneMap[stdName] && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]] && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].std.offset == stdOffset ) {
-                //the windows timezone maps multiple IANA zones to one (Berlin*, Rome, Bruessel)
-                //check the windowsZoneName of the default TZ and of the winning, if they match, use default TZ
-                //so Rome could win, even Berlin is the default IANA zone
-                if (tbSync.defaultTimezoneInfo.std.windowsZoneName && tbSync.windowsTimezoneMap[stdName] != tbSync.defaultTimezoneInfo.std.id && tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].std.offset == tbSync.defaultTimezoneInfo.std.offset && stdName == tbSync.defaultTimezoneInfo.std.windowsZoneName) {
-                    tbSync.dump("Timezone matched via windows timezone name ("+stdName+") with default TZ overtake", tbSync.windowsTimezoneMap[stdName] + " -> " + tbSync.defaultTimezoneInfo.std.id);
-                    return tbSync.defaultTimezoneInfo.timezone;
-                }
-                
-                tbSync.dump("Timezone matched via windows timezone name ("+stdName+")", tbSync.windowsTimezoneMap[stdName]);
-                return tbSync.cachedTimezoneData.iana[tbSync.windowsTimezoneMap[stdName]].timezone;
-            }
-
-            let parts = stdName.replace(/[;,()\[\]]/g," ").split(" ");
-            for (let i = 0; i < parts.length; i++) {
-                //check for IANA
-                if (tbSync.cachedTimezoneData.iana[parts[i]] && tbSync.cachedTimezoneData.iana[parts[i]].std.offset == stdOffset) {
-                    tbSync.dump("Timezone matched via IANA", parts[i]);
-                    return tbSync.cachedTimezoneData.iana[parts[i]].timezone;
-                }
-
-                //check for international abbreviation for standard period (CET, CAT, ...)
-                if (tbSync.cachedTimezoneData.abbreviations[parts[i]] && tbSync.cachedTimezoneData.iana[tbSync.cachedTimezoneData.abbreviations[parts[i]]].std.offset == stdOffset) {
-                    tbSync.dump("Timezone matched via international abbreviation (" + parts[i] +")", tbSync.cachedTimezoneData.abbreviations[parts[i]]);
-                    return tbSync.cachedTimezoneData.iana[tbSync.cachedTimezoneData.abbreviations[parts[i]]].timezone;
-                }
-            }
-
-            //fallback to zone based on stdOffset and dstOffset, if we have that cached
-            if (tbSync.cachedTimezoneData.bothOffsets[stdOffset+":"+dstOffset]) {
-                tbSync.dump("Timezone matched via both offsets (std:" + stdOffset +", dst:" + dstOffset + ")", tbSync.cachedTimezoneData.bothOffsets[stdOffset+":"+dstOffset].tzid);
-                return tbSync.cachedTimezoneData.bothOffsets[stdOffset+":"+dstOffset];
-            }
-
-            //fallback to zone based on stdOffset only, if we have that cached
-            if (tbSync.cachedTimezoneData.stdOffset[stdOffset]) {
-                tbSync.dump("Timezone matched via std offset (" + stdOffset +")", tbSync.cachedTimezoneData.stdOffset[stdOffset].tzid);
-                return tbSync.cachedTimezoneData.stdOffset[stdOffset];
-            }
-            
-            //return default timezone, if everything else fails
-            tbSync.dump("Timezone could not be matched via offsets (std:" + stdOffset +", dst:" + dstOffset + "), using default timezone", tbSync.defaultTimezoneInfo.std.id);
-            return tbSync.defaultTimezoneInfo.timezone;
-    },
-
-    //extract standard and daylight timezone data
-    getTimezoneInfo: function (timezone) {        
-        let tzInfo = {};
-
-        tzInfo.std = tbSync.getTimezoneInfoObject(timezone, "standard");
-        tzInfo.dst = tbSync.getTimezoneInfoObject(timezone, "daylight");
-        
-        if (tzInfo.dst === null) tzInfo.dst  = tzInfo.std;        
-
-        tzInfo.timezone = timezone;
-        return tzInfo;
-    },
-
-    //get timezone info for standard/daylight
-    getTimezoneInfoObject: function (timezone, standardOrDaylight) {       
-        
-        //handle UTC
-        if (timezone.isUTC) {
-            let obj = {}
-            obj.id = "UTC";
-            obj.offset = 0;
-            obj.abbreviation = "UTC";
-            obj.displayname = "Coordinated Universal Time (UTC)";
-            return obj;
-        }
-                
-        //we could parse the icalstring by ourself, but I wanted to use ICAL.parse - TODO try catch
-        let info = ICAL.parse("BEGIN:VCALENDAR\r\n" + timezone.icalComponent.toString() + "\r\nEND:VCALENDAR");
-        let comp = new ICAL.Component(info);
-        let vtimezone =comp.getFirstSubcomponent("vtimezone");
-        let id = vtimezone.getFirstPropertyValue("tzid").toString();
-        let zone = vtimezone.getFirstSubcomponent(standardOrDaylight);
-
-        if (zone) { 
-            let obj = {};
-            obj.id = id;
-            
-            //get offset
-            let utcOffset = zone.getFirstPropertyValue("tzoffsetto").toString();
-            let o = parseInt(utcOffset.replace(":","")); //-330 =  - 3h 30min
-            let h = Math.floor(o / 100); //-3 -> -180min
-            let m = o - (h*100) //-330 - -300 = -30
-            obj.offset = -1*((h*60) + m);
-
-            //get international abbreviation (CEST, CET, CAT ... )
-            obj.abbreviation = "";
-            try {
-                obj.abbreviation = zone.getFirstPropertyValue("tzname").toString();
-            } catch(e) {
-                tbSync.dump("Failed TZ", timezone.icalComponent.toString());
-            }
-            
-            //get displayname
-            obj.displayname = /*"("+utcOffset+") " +*/ obj.id;// + ", " + obj.abbreviation;
-                
-            //get DST switch date
-            let rrule = zone.getFirstPropertyValue("rrule");
-            let dtstart = zone.getFirstPropertyValue("dtstart");
-            if (rrule && dtstart) {
-                /*
-
-                    THE switchdate PART OF THE OBJECT IS MICROSOFT SPECIFIC, EVERYTHING ELSE IS THUNDERBIRD GENERIC, I LET IT SIT HERE ANYHOW
-                    
-                    https://msdn.microsoft.com/en-us/library/windows/desktop/ms725481(v=vs.85).aspx
-
-                    To select the correct day in the month, set the wYear member to zero, the wHour and wMinute members to
-                    the transition time, the wDayOfWeek member to the appropriate weekday, and the wDay member to indicate
-                    the occurrence of the day of the week within the month (1 to 5, where 5 indicates the final occurrence during the
-                    month if that day of the week does not occur 5 times).
-
-                    Using this notation, specify 02:00 on the first Sunday in April as follows: 
-                        wHour = 2, wMonth = 4, wDayOfWeek = 0, wDay = 1. 
-                    Specify 02:00 on the last Thursday in October as follows: 
-                        wHour = 2, wMonth = 10, wDayOfWeek = 4, wDay = 5.
-                        
-                    So we have to parse the RRULE to exract wDay
-                    RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10 */         
-
-                let parts =rrule.toString().split(";");
-                let rules = {};
-                for (let i = 0; i< parts.length; i++) {
-                    let sub = parts[i].split("=");
-                    if (sub.length == 2) rules[sub[0]] = sub[1];
-                }
-                
-                if (rules.FREQ == "YEARLY" && rules.BYDAY && rules.BYMONTH && rules.BYDAY.length > 2) {
-                    obj.switchdate = {};
-                    obj.switchdate.month = parseInt(rules.BYMONTH);
-
-                    let days = ["SU","MO","TU","WE","TH","FR","SA"];
-                    obj.switchdate.dayOfWeek = days.indexOf(rules.BYDAY.substring(rules.BYDAY.length-2));                
-                    obj.switchdate.weekOfMonth = parseInt(rules.BYDAY.substring(0, rules.BYDAY.length-2));
-                    if (obj.switchdate.weekOfMonth<0 || obj.switchdate.weekOfMonth>5) obj.switchdate.weekOfMonth = 5;
-
-                    //get switch time from dtstart
-                    let dttime = tbSync.createDateTime(dtstart.toString());
-                    obj.switchdate.hour = dttime.hour;
-                    obj.switchdate.minute = dttime.minute;
-                    obj.switchdate.second = dttime.second;                                    
-                }            
-            }
-
-            return obj;
-        }
-        return null;
-    },
     
 
 
 
 
-    
+
+    // CALENDAR FUNCTIONS 
     calendarObserver : { 
         onStartBatch : function () {},
         onEndBatch : function () {},
@@ -2091,19 +1678,6 @@ var tbSync = {
     }
 
 };
-
-
-//TODO: Invites
-/*
-if (tbSync.lightningIsAvailable()) {
-    cal.itip.checkAndSendOrigial = cal.itip.checkAndSend;
-    cal.itip.checkAndSend = function(aOpType, aItem, aOriginalItem) {
-        //if this item is added_by_user, do not call checkAndSend yet, because the UID is wrong, we need to sync first to get the correct ID - TODO
-        tbSync.dump("cal.checkAndSend", aOpType);
-        cal.itip.checkAndSendOrigial(aOpType, aItem, aOriginalItem);
-    }
-}
-*/
 
 
 //clear debug log on start
