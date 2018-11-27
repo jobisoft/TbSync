@@ -798,11 +798,9 @@ var tbSyncAccounts = {
             
             if (tbSyncAccounts.hasInstalledProvider(this.selectedAccount)) {
                 document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome:" + tbSync[provider].getEditAccountXulUrl()+"?id=" + this.selectedAccount);
-            } else if (tbSync.defaultProviders.hasOwnProperty(provider)) {
-                document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/installProvider.xul?provider="+provider);
             } else {
                 document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/missingProvider.xul?provider="+provider);
-        }
+            }
         }
     },
     

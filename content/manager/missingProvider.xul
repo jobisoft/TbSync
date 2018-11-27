@@ -10,9 +10,11 @@
     title="TbSync Account Settings" >
 
     <hbox flex="1" pack="center">
-        <vbox pack="center">
-             <description id="missing">&manager.missingprovider;</description>
+        <vbox flex="1" pack="center">
+            <description style="text-align:center" id="missing">&manager.missingprovider;</description>
+            <html:p id="link" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openTBtab(this.getAttribute('link'));" style="color:blue; text-decoration: underline; text-align:center;"></html:p>	             
         </vbox>
+
     </hbox>
 
     <script type="text/javascript" src="chrome://tbsync/content/manager/manageProvider.js" /> 

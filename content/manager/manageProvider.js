@@ -30,5 +30,11 @@ var tbSyncManageProvider = {
         let e = window.document.getElementById("missing");
         let v = e.textContent;
         e.textContent = v.replace("##provider##", provider.toUpperCase());
+        
+        if (tbSync.defaultProviders.hasOwnProperty(provider)) {
+            window.document.getElementById("link").textContent = tbSync.defaultProviders[provider].homepageUrl;
+            window.document.getElementById("link").setAttribute("link", tbSync.defaultProviders[provider].homepageUrl);
+        }
+        
     },    
 };

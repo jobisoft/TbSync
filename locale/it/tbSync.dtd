@@ -32,7 +32,7 @@
 
 <!ENTITY manager.installprovider.link "Clicca sul collegamento seguente per aprire la pagina informativa del provider di sincronizzazione mancante. In essa sarà possibile trovare ulteriori informazioni sul provider e si avrà la possibilità di installarlo:">
 <!ENTITY manager.installprovider.warning "Questo provider di sincronizzazione non è ospitato nel repository ufficiale componenti aggiuntivi di Thunderbird e quindi non è stato esaminato dallo staff di Thunderbird. Il provider potrebbe eseguire azioni malevole sul proprio sistema. Lo si utilizzi a proprio rischio.">
-<!ENTITY manager.missingprovider "?? The synchronization provider (##provider##) this account is associated with is not installed and unknown. ??">
+<!ENTITY manager.missingprovider "?? The synchronization provider (##provider##) this account is associated with is not installed. ??">
 
 <!ENTITY manager.supporter.contributers "?? Contributers &amp; Translators ??">
 <!ENTITY manager.supporter.sponsors "?? Sponsors of test accounts ??">

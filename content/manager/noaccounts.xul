@@ -9,8 +9,8 @@
     title="TbSync Account Settings" >
 
     <hbox flex="1" pack="center">
-        <vbox pack="center">
-             <description>&manager.noaccounts;</description>	     
+        <vbox flex="1" pack="center">
+             <description style="text-align:center">&manager.noaccounts;</description>	     
         </vbox>
     </hbox>
     
