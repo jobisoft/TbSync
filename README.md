@@ -1,6 +1,6 @@
 # TbSync
 
-**TbSync is currently being reorganized: The EAS provider will be removed from TbSync and placed into its own AddOn.**
+**TbSync is currently being reorganized: The EAS provider will be removed from TbSync and placed into its own Add-on.**
 
 1. [Introduction](https://github.com/jobisoft/TbSync#introduction)
 2. [Where is this going?](https://github.com/jobisoft/TbSync#where-is-this-going)
@@ -9,13 +9,21 @@
 
 ## Introduction
 
-TbSync is a central user interface to manage cloud accounts and to synchronize their contact, task and calendar information with Thunderbird. For example accounts from outlook.com, Office 365, Exchange, fruux.com, Nextcloud, ownCloud and many more. Its main objective is to simplify the setup process for such accounts. The following providers (protocols) are currently supported:
-* Exchange ActiveSync (EAS v2.5 & v14.0), via [EAS-4-TbSync](https://github.com/jobisoft/EAS-4-TbSync)
-* CalDAV & CardDAV, via [DAV-4-TbSync](https://github.com/jobisoft/DAV-4-TbSync)
+[TbSync](https://addons.thunderbird.net/addon/tbsync/) is a central user interface to manage cloud accounts and to synchronize their contact, task and calendar information with [Thunderbird](https://www.thunderbird.net/). Its main objective is to simplify the setup process for such accounts. The following providers (protocols) are currently supported [Account compatibility]:
+* CalDAV & CardDAV, via [DAV-4-TbSync](https://github.com/jobisoft/DAV-4-TbSync) 
+[[Account compatibility](https://github.com/jobisoft/DAV-4-TbSync/wiki/Compatibility-list)]
+* Exchange ActiveSync (EAS v2.5 & v14.0), via [EAS-4-TbSync](https://github.com/jobisoft/EAS-4-TbSync) 
+[[Account compatibility](https://github.com/jobisoft/EAS-4-TbSync/wiki/Compatibility-list)]
 
-TbSync introduces a Sync API, which allows other addons to hook into TbSync, allowing them to reuse most of the synchronization glue code.
+TbSync introduces a Sync API, which allows other add-ons to hook into TbSync, allowing them to reuse most of the synchronization glue code.
 
 Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki) of the TbSync project and in the [how-to-get-started guide](https://github.com/jobisoft/TbSync/wiki/How-to-get-started).
+
+## Translations and localizations
+
+* [Localization content best practices](https://developer.mozilla.org/en-US/docs/Mozilla/Localization/Localization_content_best_practices)
+* [Summary table of quotation marks per language](https://en.wikipedia.org/wiki/Quotation_mark#Summary_table)
+* [Transvision](https://transvision.mozfr.org/) provides valid locale codes (in the “Source Locale” and “Target Locale” drop-downs)
 
 ## Where is this going?
 
