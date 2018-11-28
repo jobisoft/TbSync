@@ -9,11 +9,11 @@
 <!ENTITY manager.SyncAll "Az összes engedélyezett fiók összehangolása">
 
 <!ENTITY manager.SynchronizeAccount "Fiók összehangolása">
-<!ENTITY manager.EnableAccount "Engedélyezze a fiókot és próbáljon csatlakozni a szerverhez">
+<!ENTITY manager.EnableAccount "Engedélyezze a fiókot és próbáljon csatlakozni a kiszolgálóhoz">
 <!ENTITY manager.DisableAccount "Fiók letiltása">
 <!ENTITY manager.DeleteAccount "Fiók törlése">
 <!ENTITY manager.ShowSyncLog "Összehangolási naplóüzenetek megjelenítése">
-<!ENTITY manager.RetryConnectAccount "Próbálkozzon újra a szerverhez való csatlakozással">
+<!ENTITY manager.RetryConnectAccount "Próbálkozzon újra a kiszolgálóhoz való csatlakozással">
 
 <!ENTITY manager.noaccounts "Még nincsenek fiókok meghatározott.">
 
