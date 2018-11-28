@@ -51,7 +51,7 @@
             <richlistbox 
                 id="tbSyncAccounts.accounts"
                 flex="1"
-                style="margin-left:0; margin-right:0"
+                style="margin: 0 1px"
                 seltype="single"
                 context="tbsync.accountmanger.ContextMenu"                
                 onkeypress="if (event.keyCode == 46) {tbSyncAccounts.deleteAccount();}"
@@ -62,12 +62,12 @@
                     <listheader style="font-weight:bold;text-align:right;" label="&manager.status;" flex="1" />
                 </listhead>
             </richlistbox>
-            <hbox>
-             <vbox flex="1">
+            <hbox style="margin:0">
+             <vbox style="margin:0" flex="1">
                 <button 
                 id="tbSyncAccounts.btnAccountActions"
                 label="&manager.AccountActions;"
-                style="margin-left:0; margin-right:0"
+                style="margin:0"
                 type="menu">
                         <menupopup id="accountActionsDropdown" onpopupshowing="tbSyncAccounts.updateDropdown('accountActions');">
                             <menu
