@@ -1,6 +1,6 @@
 # TbSync
 
-**TbSync is currently being reorganized: The EAS provider will be removed from TbSync and placed into its own AddOn.**
+**TbSync is currently being reorganized: The EAS provider will be removed from TbSync and placed into its own Add-on.**
 
 1. [Introduction](https://github.com/jobisoft/TbSync#introduction)
 2. [Where is this going?](https://github.com/jobisoft/TbSync#where-is-this-going)
@@ -9,11 +9,18 @@
 
 ## Introduction
 
-TbSync is a central user interface to manage cloud accounts and to synchronize their contact, task and calendar information with Thunderbird. For example accounts from outlook.com, Office 365, Exchange, fruux.com, Nextcloud, ownCloud and many more. Its main objective is to simplify the setup process for such accounts. The following providers (protocols) are currently supported:
+TbSync is a central user interface to manage cloud accounts and to synchronize their contact, task and calendar information with Thunderbird. For example accounts from 
+[Exchange](https://products.office.com/exchange/email), 
+[fruux.com](https://fruux.com/), 
+[Nextcloud](https://nextcloud.com/), 
+[Office 365](https://www.office.com/), 
+[Outlook.com](https://outlook.com/), 
+[ownCloud](https://owncloud.org), 
+and many more. Its main objective is to simplify the setup process for such accounts. The following providers (protocols) are currently supported:
 * Exchange ActiveSync (EAS v2.5 & v14.0), via [EAS-4-TbSync](https://github.com/jobisoft/EAS-4-TbSync)
 * CalDAV & CardDAV, via [DAV-4-TbSync](https://github.com/jobisoft/DAV-4-TbSync)
 
-TbSync introduces a Sync API, which allows other addons to hook into TbSync, allowing them to reuse most of the synchronization glue code.
+TbSync introduces a Sync API, which allows other add-ons to hook into TbSync, allowing them to reuse most of the synchronization glue code.
 
 Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki) of the TbSync project and in the [how-to-get-started guide](https://github.com/jobisoft/TbSync/wiki/How-to-get-started).
 
