@@ -17,6 +17,14 @@ TbSync introduces a Sync API, which allows other addons to hook into TbSync, all
 
 Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki) of the TbSync project and in the [how-to-get-started guide](https://github.com/jobisoft/TbSync/wiki/How-to-get-started).
 
+## Translations and localizations
+
+[Localization content best practices](https://developer.mozilla.org/en-US/docs/Mozilla/Localization/Localization_content_best_practices).
+
+[Transvision](https://transvision.mozfr.org/) provides valid locale codes (in the “Source Locale” and “Target Locale” drop-downs).
+
+[Summary table of quotation marks per language](https://en.wikipedia.org/wiki/Quotation_mark#Summary_table).
+
 ## Where is this going?
 
 I started to work on TbSync, because we needed ActiveSync (EAS) support in Thunderbird. Soon after, I realized that the current situation for sync accounts is very confusing in terms of user experience: There was no central place to set up sync accounts. The same DAV account had to be setup in lightning and again in the sogo-connector or in CardBook. EWS accounts are setup differently again and for google we need 3 different Add-Ons for contacts, calendars and tasks.
