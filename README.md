@@ -20,8 +20,8 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 ## Translations and localizations
 
 * [Localization content best practices](https://developer.mozilla.org/en-US/docs/Mozilla/Localization/Localization_content_best_practices)
-* [Transvision](https://transvision.mozfr.org/) provides valid locale codes (in the “Source Locale” and “Target Locale” drop-downs)
 * [Summary table of quotation marks per language](https://en.wikipedia.org/wiki/Quotation_mark#Summary_table)
+* [Transvision](https://transvision.mozfr.org/) provides valid locale codes (in the “Source Locale” and “Target Locale” drop-downs)
 
 ## Where is this going?
 
