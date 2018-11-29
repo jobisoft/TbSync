@@ -2,7 +2,7 @@ info.idle=Idle
 info.error=Error
 info.sync=Syncing
 
-button.syncthis=Synchronize this account
+button.syncthis=Synchronize now
 button.tryagain=Try again to connect to server
 button.enableAndConnect=Enable account & try to connect to server
 button.disableAndEdit=Disable account to edit settings

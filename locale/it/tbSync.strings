@@ -2,7 +2,7 @@ info.idle=Inattivo
 info.error=Errore
 info.sync=Sincronizzazione in corso
 
-button.syncthis=Sincronizza questo account
+button.syncthis=?? Synchronize now ??
 button.tryagain=Riprova a collegarti al server
 button.enableAndConnect=Abilita account e prova a collegarti al server
 button.disableAndEdit=Disabilita l'account per modificarne le impostazioni

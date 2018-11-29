@@ -2,7 +2,7 @@ info.idle=Ожидание
 info.error=Ошибка
 info.sync=Синхронизация
 
-button.syncthis=Синхронизировать этот аккаунт
+button.syncthis=?? Synchronize now ??
 button.tryagain=Повторить подсоединение к серверу
 button.enableAndConnect=Разрешить аккаунт и подключиться к серверу
 button.disableAndEdit=Запретить аккаунт для редактирования настроек

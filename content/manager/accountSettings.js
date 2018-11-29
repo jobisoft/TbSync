@@ -224,9 +224,6 @@ var tbSyncAccountSettings = {
         document.getElementById('tbsync.accountsettings.folderlist').disabled = isSyncing;
         document.getElementById('tbsync.accountsettings.syncbtn').disabled = isSyncing;
         
-        document.getElementById('tbsync.accountsettings.syncbtn').hidden = !(isEnabled); //TODO based on selected tab
-        document.getElementById('tbsync.accountsettings.enablebtn').hidden = (isEnabled);
-
         if (isEnabled) document.getElementById('tbsync.accountsettings.enablebtn').label = tbSync.getLocalizedMessage("button.disableAndEdit");
         else document.getElementById('tbsync.accountsettings.enablebtn').label = tbSync.getLocalizedMessage("button.enableAndConnect");
 

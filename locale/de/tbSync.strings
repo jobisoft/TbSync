@@ -2,7 +2,7 @@ info.idle=Leerlauf
 info.error=Fehler
 info.sync=Synchronisation
 
-button.syncthis=Konto synchronisieren
+button.syncthis=Jetzt synchronisieren
 button.tryagain=Erneut versuchen mit dem Server zu verbinden
 button.enableAndConnect=Konto aktivieren & mit dem Server verbinden
 button.disableAndEdit=Konto deaktivieren, um Einstellungen zu bearbeiten

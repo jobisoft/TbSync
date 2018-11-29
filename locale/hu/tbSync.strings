@@ -2,7 +2,7 @@ info.idle=Tétlen
 info.error=Hiba
 info.sync=Összehangoló
 
-button.syncthis=Fiók összehangolása
+button.syncthis=?? Synchronize now ??
 button.tryagain=Próbálkozzon újra a kiszolgálóhoz való csatlakozással
 button.enableAndConnect=Engedélyezze a fiókot és próbálja meg csatlakozni a kiszolgálóhoz
 button.disableAndEdit=Letiltja a fiókot a beállítások szerkesztéséhez

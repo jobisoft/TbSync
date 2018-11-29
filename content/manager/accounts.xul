@@ -62,7 +62,7 @@
                     <listheader style="font-weight:bold;text-align:right;" label="&manager.status;" flex="1" />
                 </listhead>
             </richlistbox>
-            <hbox style="margin:0">
+            <hbox style="margin:1ex 0 0 0">
              <vbox style="margin:0" flex="1">
                 <button 
                 id="tbSyncAccounts.btnAccountActions"
