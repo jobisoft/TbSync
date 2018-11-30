@@ -223,7 +223,7 @@ var tbSyncAccountSettings = {
             if (isConnected) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.syncing");
             else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.connecting");            
         } else {
-            document.getElementById('tbsync.accountsettings.syncbtn').label = "Synchronize";//tbSync.getLocalizedMessage("button.syncthis");            
+            document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.syncthis");            
         }
 
         //update settings pane
