@@ -188,10 +188,11 @@ var tbSyncAccountSettings = {
         //show unlock symbol?
         document.getElementById("tbsync.accountsettings.unlock").hidden = (isConnected || tbSyncAccountSettings.servertype == "custom"); 
 
-        if (isConnected) {
+        //what to show? Update visibility of  folder tab basend on connection state
+        if (isConnected && document.getElementById("tbsync.accountsettings.group.folders").hidden) {
             document.getElementById("tbsync.accountsettings.group.folders").hidden = false;
             document.getElementById("tbsync.accountsettings.frame").selectedIndex = 0;
-        } else {
+        } else if ((!isConnected || !isEnabled) && !document.getElementById("tbsync.accountsettings.group.folders").hidden) {
             document.getElementById("tbsync.accountsettings.group.folders").hidden = true;
             document.getElementById("tbsync.accountsettings.frame").selectedIndex = 1;
         }
@@ -200,6 +201,9 @@ var tbSyncAccountSettings = {
         let items = document.getElementsByClassName("lockable");
         for (let i=0; i < items.length; i++) {
             items[i].disabled = isConnected || isSyncing;
+        //is an invalid tab selected?
+        if (document.getElementById("tbsync.accountsettings.group.folders").hidden && !document.getElementById("tbsync.accountsettings.frame").selectedIndex > 0) {
+            document.getElementById("tbsync.accountsettings.frame").selectedIndex = 1;
         }
 
         //change color and boldness of labels, to direct users focus to the sync status
@@ -210,23 +214,23 @@ var tbSyncAccountSettings = {
         }
         
 
-        //update Buttons (get it down to 1 button?)
+        //update folder pane
+        document.getElementById('tbsync.accountsettings.folderlist').disabled = isSyncing;
+        document.getElementById('tbsync.accountsettings.syncbtn').disabled = isSyncing;
         if (isSyncing) {
-            //we are syncing, either still connection or indeed syncing
             if (isConnected) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.syncing");
             else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.connecting");            
         } else {
-            if (isConnected) document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.syncthis");            
-            else document.getElementById('tbsync.accountsettings.syncbtn').label = tbSync.getLocalizedMessage("button.tryagain");            
+            document.getElementById('tbsync.accountsettings.syncbtn').label = "Synchronize";//tbSync.getLocalizedMessage("button.syncthis");            
         }
-        //disable enable/disable btn, sync btn and folderlist during sync, also hide sync button if disabled
-        document.getElementById('tbsync.accountsettings.enablebtn').disabled = isSyncing;
-        document.getElementById('tbsync.accountsettings.folderlist').disabled = isSyncing;
-        document.getElementById('tbsync.accountsettings.syncbtn').disabled = isSyncing;
-        
-        if (isEnabled) document.getElementById('tbsync.accountsettings.enablebtn').label = tbSync.getLocalizedMessage("button.disableAndEdit");
-        else document.getElementById('tbsync.accountsettings.enablebtn').label = tbSync.getLocalizedMessage("button.enableAndConnect");
 
+        //update settings pane
+        document.getElementById('tbsync.accountsettings.enablebtn').disabled = isSyncing;        
+        if (!isConnected) document.getElementById('tbsync.accountsettings.enablebtn').label = tbSync.getLocalizedMessage("button.connect");
+        else document.getElementById('tbsync.accountsettings.enablebtn').label = tbSync.getLocalizedMessage("button.disconnect");
+
+
+    
         tbSyncAccountSettings.updateSyncstate();
     },
 
@@ -242,6 +246,26 @@ var tbSyncAccountSettings = {
         let isEnabled = tbSync.isEnabled(tbSyncAccountSettings.account);
         let syncdata = tbSync.getSyncData(tbSyncAccountSettings.account);
         
+        //global status in server settings (Connected (no errors, but maybe local changes), Not Connected, Syncing, Error)
+        let globalStatus = document.getElementById('globalstatus');
+        if (isSyncing) {
+            if (isConnected) globalStatus.value = tbSync.getLocalizedMessage("globalstatus." + "syncing");
+            else globalStatus.value = tbSync.getLocalizedMessage("globalstatus." + "connecting");
+            document.getElementById('error').hidden = true;
+        } else {
+            if (!isEnabled) {
+                globalStatus.value = tbSync.getLocalizedMessage("globalstatus." + "notconnected");
+                document.getElementById('error').hidden = true;
+            } else if (status == "OK") {
+                globalStatus.value = tbSync.getLocalizedMessage("globalstatus." + "connected");
+                document.getElementById('error').hidden = true;
+            } else {
+                globalStatus.value = tbSync.getLocalizedMessage("globalstatus." + "error");
+                document.getElementById('error').hidden = false;
+            }
+        }
+
+
         if (isSyncing) {
             let accounts = tbSync.db.getAccounts().data;
             let target = "";
