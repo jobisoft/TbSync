@@ -197,15 +197,17 @@ var tbSyncAccountSettings = {
             document.getElementById("tbsync.accountsettings.frame").selectedIndex = 1;
         }
         
-        //disable settings if connected or syncing
-        let items = document.getElementsByClassName("lockable");
-        for (let i=0; i < items.length; i++) {
-            items[i].disabled = isConnected || isSyncing;
         //is an invalid tab selected?
         if (document.getElementById("tbsync.accountsettings.group.folders").hidden && !document.getElementById("tbsync.accountsettings.frame").selectedIndex > 0) {
             document.getElementById("tbsync.accountsettings.frame").selectedIndex = 1;
         }
 
+        //disable settings if connected or syncing
+        let items = document.getElementsByClassName("lockable");
+        for (let i=0; i < items.length; i++) {
+            items[i].disabled = isConnected || isSyncing;
+        }
+    
         //change color and boldness of labels, to direct users focus to the sync status
         items = document.getElementsByClassName("header");
         for (let i=0; i < items.length; i++) {
