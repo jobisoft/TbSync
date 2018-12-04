@@ -183,6 +183,7 @@ var tbSync = {
                     
                 //load provider
                 yield tbSync[provider].load(tbSync.lightningIsAvailable());
+                yield tbSync.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xul?provider="+provider, tbSync[provider].getEditAccountOverlayUrl());        
                 tbSync.dump("Loaded provider", provider + "::" + tbSync[provider].getNiceProviderName());
                 tbSync.resetSync(provider);
                 Services.obs.notifyObservers(null, "tbsync.updateAccountsList", provider);
