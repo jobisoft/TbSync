@@ -169,25 +169,20 @@ var tbSyncAccountSettings = {
         let isSyncing = tbSync.isSyncing(tbSyncAccountSettings.account);
         
         { //disable settings if connected or syncing
-            let items = document.getElementsByClassName("lockable");
+            let items = document.getElementsByClassName("lockIfConnected");
             for (let i=0; i < items.length; i++) {
                 if (isConnected || isSyncing) items[i].setAttribute("disabled", true);
                 else items[i].removeAttribute("disabled");
                 items[i].style["color"] = isConnected || isSyncing ? "darkgrey" : "black";            
             }
         }
+
+        document.getElementById('tbsync.accountsettings.connectbtn.container').hidden = !(isEnabled && !isConnected && !isSyncing); 
         
         { //show elements if connected
             let items = document.getElementsByClassName("showIfConnected");
             for (let i=0; i < items.length; i++) {
                 items[i].hidden = !isConnected;    
-            }
-        }
-
-        { //show elements if not connected
-            let items = document.getElementsByClassName("showIfNotConnected");
-            for (let i=0; i < items.length; i++) {
-                items[i].hidden = isConnected;    
             }
         }
 
