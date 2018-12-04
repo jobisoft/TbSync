@@ -2,18 +2,11 @@ info.idle=Ожидание
 info.error=Ошибка
 info.sync=Синхронизация
 
-button.syncthis=?? Synchronize now ??
-button.tryagain=Повторить подсоединение к серверу
-button.enableAndConnect=Разрешить аккаунт и подключиться к серверу
-button.disableAndEdit=Запретить аккаунт для редактирования настроек
-button.connecting=Подсоединиться к серверу
-button.syncing=Синхронизировать
-
 prompt.DeleteAccount=Вы уверены, что хотите удалить аккаунт ##accountName##?
 prompt.Disable=Вы действительно хотите запретить этот аккаунт? Все локальные изменения, которые еще не синхронизированы, будут потеряны!
 prompt.Password=Введите пароль для пользователя ##user##:
 prompt.Unsubscribe=Вы действительно хотите отменить подписку на этот элемент? Все локальные изменения, которые еще не синхронизированы, будут потеряны!
-prompt.UnlockSettings=Изменение любого из предопределенных параметров сервера может привести к ошибкам синхронизации. Вы действительно хотите разблокировать для изменения все предопределенные параметры сервера?
+prompt.Erase=?? Are you sure to remove this account of an unknown provider from the accounts lists? ??
 
 account=TbSync аккаунт [##accountname##]
 
@@ -22,12 +15,8 @@ accountacctions.sync=Синхронизировать аккаунт “##accoun
 accountacctions.enable=Разрешить аккаунт “##accountname##” и подключиться к серверу
 accountacctions.disable=Запретить аккаунт “##accountname##”
 
-update_available=доступно обновление
-old_beta_version=старая бета-версия
-amo_repository=Thunderbird Add-on репозиторий
-github_repository=TbSync GitHub репозиторий
-update_to_stable=Рекомендация: обновить до последней стабильной версии.
-update_to_beta=Рекомендация: обновить до последней бета-версии.
+manager.tryagain=Повторить подсоединение к серверу
+manager.connecting=Подсоединиться к серверу
 
 addressbook.searchall=Поиск по всем адресным книгам
 addressbook.searchthis=Поиск в этой адресной книге

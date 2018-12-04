@@ -28,6 +28,16 @@
 <!ENTITY manager.accounts "Аккаунты">
 <!ENTITY manager.status "Статус">
 
+<!ENTITY manager.tabs.status "?? Synchronization status ??">
+<!ENTITY manager.tabs.status.general "?? General ??">
+<!ENTITY manager.tabs.status.enableThisAccount "?? Enable and synchronize this account ??">
+<!ENTITY manager.tabs.status.syncSubscibedFolders "?? Synchronize subscribed folders ??">
+<!ENTITY manager.tabs.status.autotime "?? Periodic synchronization (in minutes) ??">
+<!ENTITY manager.tabs.status.never "?? A setting of 0 disables periodic sync. Push sync is no yet implemented. ??">
+<!ENTITY manager.tabs.status.resources "?? Available resources ??">
+<!ENTITY manager.tabs.status.resources.intro "?? The following list contains all found resources. Subscribe to resources (double click) to synchronize them with Thunderbird. ??">
+<!ENTITY manager.lockedsettings.description "?? To prevent synchronization errors, some settings cannot be edited while the account is enabled. ??">
+
 <!ENTITY manager.catman.text "TbSync также синхронизирует категории контактов, которые являются мощной заменой несинхронизируемых списков контактов. Чтобы иметь возможность использовать их в адресной книге Thunderbird, вы можете установить надстройку Менеджера Категорий. Он позволяет управлять перекрывающимися контактными группами на основе категорий и предоставляет много других функций, связанных с категорией. Его можно найти в официальном репозитории Mozilla Add-On:">
 
 <!ENTITY manager.installprovider.link "Нажмите на следующую ссылку, чтобы открыть информационную страницу отсутствующего провайдера синхронизации. Там вы найдете дополнительную информацию о провайдере, и у вас будет возможность установить его:">

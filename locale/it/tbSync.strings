@@ -2,18 +2,11 @@ info.idle=Inattivo
 info.error=Errore
 info.sync=Sincronizzazione in corso
 
-button.syncthis=?? Synchronize now ??
-button.tryagain=Riprova a collegarti al server
-button.enableAndConnect=Abilita account e prova a collegarti al server
-button.disableAndEdit=Disabilita l'account per modificarne le impostazioni
-button.connecting=Connessione al server in corso
-button.syncing=Sincronizzazione in corso
-
 prompt.DeleteAccount=Eliminare l'account ##accountName##?
 prompt.Disable=Disabilitare quest'account? Tutte le modifiche locali non ancora sincronizzate andranno perse!
 prompt.Password=Inserire la password per l'utente ##user##:
 prompt.Unsubscribe=Annullare la sottoscrizione a questo elemento? Tutte le modifiche locali non ancora sincronizzate andranno perse!
-prompt.UnlockSettings=La modifica delle impostazioni predefinite del server potrebbe causare errori di sincronizzazione. Sbloccare tutte le impostazioni predefinite del server?
+prompt.Erase=?? Are you sure to remove this account of an unknown provider from the accounts lists? ??
 
 account=Account TbSync [##accountname##]
 
@@ -22,12 +15,8 @@ accountacctions.sync=Sincronizza l'account "##accountname##"
 accountacctions.enable=Abilita l'account "##accountname##" e tenta la connessione al server
 accountacctions.disable=Disabilita l'account "##accountname##"
 
-update_available=aggiornamento disponibile
-old_beta_version=versione beta meno recente
-amo_repository=Repository componenti aggiuntivi Thunderbird
-github_repository=Repository GitHub TbSync
-update_to_stable=Azione raccomandata: eseguire l'aggiornamento all'ultima versione stabile.
-update_to_beta=Azione raccomandata: eseguire l'aggiornamento all'ultima versione beta.
+manager.tryagain=Riprova a collegarti al server
+manager.connecting=Connessione al server in corso
 
 addressbook.searchall=Cerca in tutte le rubriche
 addressbook.searchthis=Cerca in questa rubrica

@@ -1,19 +1,12 @@
 info.idle=Idle
 info.error=Error
-info.sync=Syncing
-
-button.syncthis=Synchronize now
-button.tryagain=Try again to connect to server
-button.enableAndConnect=Enable account & try to connect to server
-button.disableAndEdit=Disable account to edit settings
-button.connecting=Connecting to server
-button.syncing=Synchronizing
+info.sync=Synchronizing
 
 prompt.DeleteAccount=Are you sure that you want to delete account ##accountName##?
 prompt.Disable=Are you sure you want to disable this account? All local modifications, which have not been synced yet, will be lost!
 prompt.Password=Please enter the password for user ##user##:
 prompt.Unsubscribe=Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!
-prompt.UnlockSettings=Changing any of the predefined server settings could lead to synchronization errors. Are you sure you want to unlock all predefined server settings?
+prompt.Erase=Are you sure to remove this account of an unknown provider from the accounts lists?
 
 account=TbSync account [##accountname##]
 
@@ -22,12 +15,8 @@ accountacctions.sync=Synchronize account “##accountname##”
 accountacctions.enable=Enable account “##accountname##” & try to connect to server
 accountacctions.disable=Disable account “##accountname##”
 
-update_available=update available
-old_beta_version=older beta version
-amo_repository=Thunderbird Add-on repository
-github_repository=TbSync GitHub repository
-update_to_stable=Recommendation: Update to the latest stable version.
-update_to_beta=Recommendation: Update to the latest beta version.
+manager.tryagain=Try again to connect server
+manager.connecting=Connecting to server
 
 addressbook.searchall=Search all address books
 addressbook.searchthis=Search this address book

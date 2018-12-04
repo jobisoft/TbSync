@@ -2,18 +2,11 @@ info.idle=Tétlen
 info.error=Hiba
 info.sync=Összehangoló
 
-button.syncthis=Összehangolás most
-button.tryagain=Próbálkozzon újra a kiszolgálóhoz való csatlakozással
-button.enableAndConnect=Engedélyezze a fiókot és próbálja meg csatlakozni a kiszolgálóhoz
-button.disableAndEdit=Letiltja a fiókot a beállítások szerkesztéséhez
-button.connecting=Kiszolgáló összekapcsolása
-button.syncing=Összehangoló
-
 prompt.DeleteAccount=Biztos benne, hogy törölni szeretne fiók ##accountName##?
 prompt.Disable=Biztosan letiltja ezt a fiókot? Minden helyi módosítás, amely még nincs összehangolva, elveszik!
 prompt.Password=Felhasználói ##user## jelszavát:
 prompt.Unsubscribe=Biztosan le szeretné iratkozni ezt az elemet? Minden helyi módosítás, amely még nincs összehangolva, elveszik!
-prompt.UnlockSettings=Az előre meghatározott kiszolgáló beállításainak módosítása összehangolási hibákat okozhat. Biztosan fel akarja oldani az összes előre meghatározott kiszolgáló beállítását?
+prompt.Erase=?? Are you sure to remove this account of an unknown provider from the accounts lists? ??
 
 account=Thunderbird-összehangolás fiók [##accountname##]
 
@@ -22,12 +15,8 @@ accountacctions.sync=A(z) „##accountname##” fiók összehangolása
 accountacctions.enable=A(z) „##accountname##” fiók engedélyezze és próbálja meg csatlakozni a kiszolgálóhoz
 accountacctions.disable=A(z) „##accountname##” fiók letiltása
 
-update_available=frissítés elérhető
-old_beta_version=régebbi béta-verzió
-amo_repository=Thunderbird-kiegészítő adattár
-github_repository=Thunderbird-összehangolás GitHub adattár
-update_to_stable=Ajánlás: Frissítés a legfrissebb stabil változatra.
-update_to_beta=Ajánlás: Frissítés a legújabb béta-verzióra.
+manager.tryagain=Próbálkozzon újra a kiszolgálóhoz való csatlakozással
+manager.connecting=Kiszolgáló összekapcsolása
 
 addressbook.searchall=Keresése az összes névjegyzékben
 addressbook.searchthis=Keresése csak ezt a címjegyzékben

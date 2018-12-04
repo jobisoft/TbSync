@@ -202,7 +202,7 @@ var tbSyncAccountSettings = {
         document.getElementById('tbsync.accountsettings.folderlist').disabled = isSyncing;
         document.getElementById('tbsync.accountsettings.syncbtn').disabled = isSyncing;
         document.getElementById('tbsync.accountsettings.connectbtn').disabled = isSyncing;
-        document.getElementById('tbsync.accountsettings.connectbtn').label = tbSync.getLocalizedMessage("manager." + (isSyncing ? "connecting" : "connect"));
+        document.getElementById('tbsync.accountsettings.connectbtn').label = tbSync.getLocalizedMessage("manager." + (isSyncing ? "connecting" : "tryagain"));
     
         tbSyncAccountSettings.updateSyncstate();
     },
