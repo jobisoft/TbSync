@@ -178,6 +178,8 @@ var tbSyncAccountSettings = {
         }
 
         document.getElementById('tbsync.accountsettings.connectbtn.container').hidden = !(isEnabled && !isConnected && !isSyncing); 
+        //currently we use a fixed button which is hidden during sync
+        //document.getElementById('tbsync.accountsettings.connectbtn').label = tbSync.getLocalizedMessage("manager." + (isSyncing ? "connecting" : "tryagain"));
         
         { //show elements if connected
             let items = document.getElementsByClassName("showIfConnected");
@@ -197,7 +199,6 @@ var tbSyncAccountSettings = {
         document.getElementById('tbsync.accountsettings.folderlist').disabled = isSyncing;
         document.getElementById('tbsync.accountsettings.syncbtn').disabled = isSyncing;
         document.getElementById('tbsync.accountsettings.connectbtn').disabled = isSyncing;
-        document.getElementById('tbsync.accountsettings.connectbtn').label = tbSync.getLocalizedMessage("manager." + (isSyncing ? "connecting" : "tryagain"));
     
         tbSyncAccountSettings.updateSyncstate();
     },
