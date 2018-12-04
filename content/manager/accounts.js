@@ -797,7 +797,7 @@ var tbSyncAccounts = {
             let provider = tbSync.db.getAccountSetting(this.selectedAccount, "provider");
             
             if (tbSyncAccounts.hasInstalledProvider(this.selectedAccount)) {
-                document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome:" + tbSync[provider].getEditAccountXulUrl()+"?id=" + this.selectedAccount);
+                document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/editAccount.xul?provider="+provider+"&id=" + this.selectedAccount);
             } else {
                 document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/missingProvider.xul?provider="+provider);
             }
