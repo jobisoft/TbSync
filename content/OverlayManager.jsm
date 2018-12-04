@@ -102,13 +102,12 @@ function OverlayManager(addonData, options = {}) {
 
 
 
+    this.injectAllOverlays = function (window, _href = null) {
+        let href = (_href === null ? window.location.href : _href;
 
-    this.injectAllOverlays = function (window) {
-        for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
-            if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] Injecting: " + this.registeredOverlays[window.location.href][i]);
-
-//            let rootNode = this.getDataFromXULString(window, this.overlays[this.registeredOverlays[window.location.href][i]]);
-            let rootNode = this.overlays[this.registeredOverlays[window.location.href][i]];
+        for (let i=0; i < this.registeredOverlays[href].length; i++) {
+            if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] Injecting: " + this.registeredOverlays[href][i]);
+            let rootNode = this.overlays[this.registeredOverlays[href][i]];
 
             if (rootNode) {
                 let overlayNode = rootNode.documentElement;
