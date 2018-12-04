@@ -24,6 +24,7 @@ if [ $vlevels -gt 1 ]
 then
  echo "This is a beta release (will include updateURL)"
  sed -i "s|    <Description about=\"urn:mozilla:install-manifest\">|    <Description about=\"urn:mozilla:install-manifest\">\n        <em:updateURL>$1/$4</em:updateURL>|g" "install.rdf"
+ sed -i "s|</em:name>| [Beta Release Channel]</em:name>|g" "install.rdf"
 else
  echo "This is a stable release (will NOT include updateURL)"
 fi
