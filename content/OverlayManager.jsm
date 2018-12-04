@@ -103,9 +103,9 @@ function OverlayManager(addonData, options = {}) {
 
 
     this.injectAllOverlays = function (window, _href = null) {
-        let href = (_href === null ? window.location.href : _href;
+        let href = (_href === null) ? window.location.href : _href;   
 
-        for (let i=0; i < this.registeredOverlays[href].length; i++) {
+        for (let i=0; this.registeredOverlays[href] && i < this.registeredOverlays[href].length; i++) {
             if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] Injecting: " + this.registeredOverlays[href][i]);
             let rootNode = this.overlays[this.registeredOverlays[href][i]];
 
