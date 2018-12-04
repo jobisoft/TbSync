@@ -32,6 +32,7 @@
 <!ENTITY manager.tabs.status.general "?? General ??">
 <!ENTITY manager.tabs.status.enableThisAccount "?? Enable and synchronize this account ??">
 <!ENTITY manager.tabs.status.syncSubscibedFolders "?? Synchronize subscribed folders ??">
+<!ENTITY manager.tabs.status.tryagain "Повторить подсоединение к серверу">
 <!ENTITY manager.tabs.status.autotime "?? Periodic synchronization (in minutes) ??">
 <!ENTITY manager.tabs.status.never "?? A setting of 0 disables periodic sync. Push sync is no yet implemented. ??">
 <!ENTITY manager.tabs.status.resources "?? Available resources ??">
