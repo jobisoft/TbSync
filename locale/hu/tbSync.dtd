@@ -55,6 +55,7 @@
 <!ENTITY manager.help.fixit "Hibajelentés küldése a javításhoz. Hibakeresési mód bekapcsolása engedélyeket igényel.">
 <!ENTITY manager.help.enabledebuglog "Hibakeresési mód: Minden program üzenet és minden olyan adat regisztrálása, amelyet a Thunderbird-összehangolás küldés és fogadás. A Thunderbird jelentősen lassabban működhet.">
 <!ENTITY manager.help.createbugreportinfo "Indítsa újra a Thunderbird alkalmazást, majd ismételje meg a pontos lépéseket a hiba reprodukálásához. Ez csak a hibajelentéssel kapcsolatos hibajelentéseket gyűjti össze. Hibabejelentés létrehozása itt.">
+<!ENTITY manager.help.createbugreport "?? Create bug report ??">
 
 <!ENTITY supportwizard.title "Hibabejelentés létrehozása">
 <!ENTITY supportwizard.pagetitle "Információgyűjtés a hibajelentés feldolgozásához.">

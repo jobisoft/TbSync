@@ -54,7 +54,8 @@
 <!ENTITY manager.help.foundabug "Found a bug?">
 <!ENTITY manager.help.fixit "You can help to fix it by sending in a bug report. This requires the activation of debug mode.">
 <!ENTITY manager.help.enabledebuglog "Debug mode: Logging of all program messages and all data that TbSync receives and sends. Thunderbird may work significantly slower.">
-<!ENTITY manager.help.createbugreportinfo "In order for TbSync to collect only the debug messages relevant to your bug report, please restart Thunderbird and then repeat exactly the steps that reproduce the buggy behavior. Then you can create your bug report here.">
+<!ENTITY manager.help.createbugreportinfo "In order for TbSync to collect only the debug data relevant to your bug report, please restart Thunderbird and then repeat exactly the steps that reproduce the buggy behavior. Then you can create your bug report here.">
+<!ENTITY manager.help.createbugreport "Create bug report">
 
 <!ENTITY supportwizard.title "Create bug report">
 <!ENTITY supportwizard.pagetitle "Gathering of all information to effectively process the bug report.">

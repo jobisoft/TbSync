@@ -54,7 +54,8 @@
 <!ENTITY manager.help.foundabug "Sie haben einen Fehler gefunden?">
 <!ENTITY manager.help.fixit "Sie können helfen den Fehler zu korrigieren, indem Sie dem Entwickler einen Fehlerbericht zusenden. Bitte aktivieren Sie dazu den Debug-Modus.">
 <!ENTITY manager.help.enabledebuglog "Debug-Modus: Protokollierung aller Programmmeldungen und aller Daten die TbSync empfängt und versendet. Thunderbird arbeitet dadurch unter Umständen signifikant langsamer.">
-<!ENTITY manager.help.createbugreportinfo "Damit TbSync nur die für Ihren Fehlerbericht relevanten Debug-Meldungen sammelt, starten Sie Thunderbird bitte neu und wiederholen dann genau die Schritte, die das fehlerhafte Verhalten reproduzieren. Anschließend können Sie hier Ihren Fehlerbericht erstellen.">
+<!ENTITY manager.help.createbugreportinfo "Damit TbSync nur die für Ihren Fehlerbericht relevanten Debug-Daten sammelt, starten Sie Thunderbird bitte neu und wiederholen dann genau die Schritte, die das fehlerhafte Verhalten reproduzieren. Anschließend können Sie hier Ihren Fehlerbericht erstellen.">
+<!ENTITY manager.help.createbugreport "Fehlerbericht erstellen">
 
 <!ENTITY supportwizard.title "Fehlerbericht erstellen">
 <!ENTITY supportwizard.pagetitle "Erfassung aller Informationen zur effektiven Bearbeitung des Fehlerberichtes.">
