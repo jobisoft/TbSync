@@ -25,6 +25,8 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 * [Summary table of quotation marks per language](https://en.wikipedia.org/wiki/Quotation_mark#Summary_table)
 * [Transvision](https://transvision.mozfr.org/) provides valid locale codes (in the “Source Locale” and “Target Locale” drop-downs)
 
+If you encounter a misspelled translation key, do not correct it but report it to me. The translation keys are only used as variables in the code and are not visible. But changing a translation key requires all other translations and all references to that key in the code to be changed as well. Since translation keys are sometimes build up by string concatenation, it is not as easy as doing a global search and replace.
+
 ## Where is this going?
 
 I started to work on TbSync, because we needed ActiveSync (EAS) support in Thunderbird. Soon after, I realized that the current situation for sync accounts is very confusing in terms of user experience: There was no central place to set up sync accounts. The same DAV account had to be setup in lightning and again in the sogo-connector or in CardBook. EWS accounts are setup differently again and for google we need 3 different Add-Ons for contacts, calendars and tasks.
