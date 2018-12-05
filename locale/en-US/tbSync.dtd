@@ -39,7 +39,7 @@
 <!ENTITY manager.tabs.status.resources.intro "The following list contains all found resources. Subscribe to resources (double click) to synchronize them with Thunderbird.">
 <!ENTITY manager.lockedsettings.description "To prevent synchronization errors, some settings cannot be edited while the account is enabled.">
 
-<!ENTITY manager.catman.text "TbSync also syncs contact categories, which are a powerful replacement for the non-syncable contact lists. To be able to use them in the Thunderbird address book you can install the Category Manager Add-On. It allows to manage overlapping category based contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla Add-On repository:">
+<!ENTITY manager.catman.text "TbSync also syncs contact categories, which are a powerful replacement for the non-syncable contact lists. To be able to use them in the Thunderbird address book you can install the Category Manager add-on. It allows to manage overlapping category based contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla Add-On repository:">
 
 <!ENTITY manager.installprovider.link "Click on the following link to open the info page of the missing synchronization provider. There you will find further information about the provider and you will have the option to install it:">
 <!ENTITY manager.installprovider.warning "This synchronization provider is not hosted in the official Thunderbird AddOn repository and thus has not been reviewed by Thunderbird staff. The provider could do bad things to your system. Use it at your own risk.">

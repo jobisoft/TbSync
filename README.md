@@ -1,6 +1,6 @@
 # TbSync
 
-**TbSync is currently being reorganized: The EAS provider will be removed from TbSync and placed into its own Add-on.**
+**TbSync is currently being reorganized: The EAS provider will be removed from TbSync and placed into its own add-on.**
 
 1. [Introduction](https://github.com/jobisoft/TbSync#introduction)
 2. [Where is this going?](https://github.com/jobisoft/TbSync#where-is-this-going)
@@ -29,15 +29,15 @@ If you encounter a misspelled translation key, do not correct it but report it t
 
 ## Where is this going?
 
-I started to work on TbSync, because we needed ActiveSync (EAS) support in Thunderbird. Soon after, I realized that the current situation for sync accounts is very confusing in terms of user experience: There was no central place to set up sync accounts. The same DAV account had to be setup in lightning and again in the sogo-connector or in CardBook. EWS accounts are setup differently again and for google we need 3 different Add-Ons for contacts, calendars and tasks.
+I started to work on TbSync, because we needed ActiveSync (EAS) support in Thunderbird. Soon after, I realized that the current situation for sync accounts is very confusing in terms of user experience: There was no central place to set up sync accounts. The same DAV account had to be setup in lightning and again in the sogo-connector or in CardBook. EWS accounts are setup differently again and for google we need 3 different add-ons for contacts, calendars and tasks.
 
-With TbSync I want to unify that: A central manager to setup sync accounts (DAV, EAS, EWS, Google, ...) and get contacts, tasks and calendars. I knew that I will not be able to re-create and maintain all the different providers for TbSync by myself. I thus created (and still work on) a TbSync API, which allows other Add-Ons to hook into TbSync and re-use most of the glue code. My DAV provider is a proof-of-concept of that API (and a replacement for the sogo-connector, which was not working with TB60 anymore).
+With TbSync I want to unify that: A central manager to setup sync accounts (DAV, EAS, EWS, Google, ...) and get contacts, tasks and calendars. I knew that I will not be able to re-create and maintain all the different providers for TbSync by myself. I thus created (and still work on) a TbSync API, which allows other add-ons to hook into TbSync and re-use most of the glue code. My DAV provider is a proof-of-concept of that API (and a replacement for the sogo-connector, which was not working with TB60 anymore).
 
 I am in contact with Thunderbird staff and we are trying to get TbSync integrated directly into Thunderbird. No ETA yet.
 
 The next step is to [cooperate with CardBook](https://github.com/jobisoft/TbSync/issues/105), so it does not matter, if the user wants to use the "old" Thunderbird address book or the new vCard address book. Every provider available for TbSync should be able to sync into CardBook as well. I hope we get this done before the end of this year.
 
-Later I want to support the [EWS community](https://github.com/ExchangeCalendar/exchangecalendar), which is interested in turning their Add-On into a provider for TbSync.
+Later I want to support the [EWS community](https://github.com/ExchangeCalendar/exchangecalendar), which is interested in turning their add-on into a provider for TbSync.
 
 After that, I would like to create or help others to create a google provider for TbSync. We will see how that goes, nothing is planed yet.
 
