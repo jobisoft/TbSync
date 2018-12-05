@@ -201,6 +201,21 @@ var tbSyncAccountSettings = {
         document.getElementById('tbsync.accountsettings.connectbtn').disabled = isSyncing;
     
         tbSyncAccountSettings.updateSyncstate();
+    
+        //change color of syncstate according to status
+        switch (status) {
+            case "OK":
+            case "disabled":
+            case "notsyncronized":
+            case "nolightning":
+            case "syncing":
+                document.getElementById('syncstate').removeAttribute("style");
+            break;
+            
+            default:
+                document.getElementById('syncstate').setAttribute("style","color: red");
+        }
+    
     },
 
     updateSyncstate: function () {
@@ -217,11 +232,11 @@ var tbSyncAccountSettings = {
 
         if (isSyncing) {
             let accounts = tbSync.db.getAccounts().data;
-            let target = "";
+//            let target = "";
 
-            if (accounts.hasOwnProperty(syncdata.account) && syncdata.folderID !== "" && syncdata.syncstate != "done") { //if "Done" do not print folder info syncstate
-                target = " [" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "]";
-            }
+//            if (accounts.hasOwnProperty(syncdata.account) && syncdata.folderID !== "" && syncdata.syncstate != "done") { //if "Done" do not print folder info syncstate
+//                target = " [" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "]";
+//            }
             
             let parts = syncdata.syncstate.split("||");
             let syncstate = parts[0];
@@ -231,7 +246,7 @@ var tbSyncAccountSettings = {
             let msg = tbSync.getLocalizedMessage("syncstate." + syncstate, tbSyncAccountSettings.provider);
             if (diff > 2000) msg = msg + " (" + Math.round((tbSync.prefSettings.getIntPref("timeout") - diff)/1000) + "s)";
 
-            document.getElementById('syncstate').textContent = msg + target;
+            document.getElementById('syncstate').textContent = msg;// + target;
         
             if (syncstate.split(".")[0] == "send") {
                 //re-schedule update, if this is a waiting syncstate
@@ -244,6 +259,7 @@ var tbSyncAccountSettings = {
             //check, if this localized string contains a link
             let parts = localized.split("||");
             document.getElementById('syncstate').textContent = parts[0];
+        
             if (parts.length==3) {
                     document.getElementById('syncstate_link').setAttribute("dest", parts[1]);
                     document.getElementById('syncstate_link').textContent = parts[2];
