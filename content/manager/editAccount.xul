@@ -58,7 +58,7 @@
                                     <label control="tbsync.accountsettings.pref.autosync" value="&manager.tabs.status.autotime;" tooltiptext="&manager.tabs.status.never;" />
                                 </vbox>
                                 <textbox style="width:50px;margin-bottom:0; margin-top:0" id="tbsync.accountsettings.pref.autosync" tooltiptext="&manager.tabs.status.never;" />
-                                <button id="tbsync.accountsettings.syncbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.syncSubscibedFolders;" oncommand="tbSync.syncAccount('sync', tbSyncAccountSettings.account)" />
+                                <button id="tbsync.accountsettings.syncbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.sync;" oncommand="tbSync.syncAccount('sync', tbSyncAccountSettings.account)" />
                             </hbox>
                         </vbox>
         </vbox>
