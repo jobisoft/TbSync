@@ -36,7 +36,7 @@
 <!ENTITY manager.tabs.status.autotime "?? Periodic synchronization (in minutes) ??">
 <!ENTITY manager.tabs.status.never "?? A setting of 0 disables periodic sync. Push sync is no yet implemented. ??">
 <!ENTITY manager.tabs.status.resources "?? Available resources ??">
-<!ENTITY manager.tabs.status.resources.intro "?? The following list contains all found resources. Select which resources should be synchronized with Thunderbird. ??">
+<!ENTITY manager.tabs.status.resources.intro "?? Select which of the found resources should be synchronized with Thunderbird. ??">
 <!ENTITY manager.lockedsettings.description "?? To prevent synchronization errors, some settings cannot be edited while the account is enabled. ??">
 
 <!ENTITY manager.catman.text "TbSync sincronizza anche le categorie dei contatti, che sono un potente sostituto degli elenchi contatti (non sincronizzabili). Per poterle utilizzare nella Rubrica di Thunderbird è possibile installare il componente aggiuntivo Category Manager, che consente di gestire gruppi di contatti basati su categorie (anche sovrapposte) e che fornisce altre funzionalità legate alle categorie. Lo si può trovare nel repository ufficiale Mozilla dei componenti aggiuntivi:">
