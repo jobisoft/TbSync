@@ -32,7 +32,7 @@
             <tabpanel  id="manager.tabpanels.status"><!-- STATUS -->
                 <vbox flex="1">
                     <label class="header" style="margin-left:0; margin-bottom:1ex;" value="&manager.tabs.status.general;" />
-                    <checkbox id="tbsync.accountsettings.enabled" oncommand="tbSyncAccountSettings.toggleEnableState();" label="&manager.tabs.status.enableThisAccount;"  />
+                    <checkbox id="tbsync.accountsettings.enabled" oncommand="tbSyncAccountSettings.toggleEnableState(this);" label="&manager.tabs.status.enableThisAccount;"  />
 
                     <label class="header showIfEnabled" style="margin-left:0; margin-bottom:1ex; margin-top:2ex;" value="&manager.status;" />
                     <html:div class="showIfEnabled" style="margin-left:1ex"><html:span id="syncstate"></html:span> <html:span id="syncstate_link" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" dest="" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/wiki/' + this.getAttribute('dest'));" style="color:blue;text-decoration: underline"></html:span></html:div>
@@ -48,8 +48,9 @@
                               context="tbsync.accountsettings.FolderListContextMenu"
                               seltype="single"
                               ondblclick="tbSyncAccountSettings.toggleFolder();">
-                              <listhead id="tbsync.accountsettings.folderlist.header" style="border-bottom: 1px solid lightgrey;">
-                              </listhead>
+                                <listhead id="tbsync.accountsettings.folderlist.header" style="border-bottom: 1px solid lightgrey;">
+                                    <listheader width="30" label="" />
+                                </listhead>
                             </richlistbox>
                             <hbox flex="0" style="margin:1ex 0 0 0;">
                                 <vbox flex="1"/>
@@ -60,12 +61,12 @@
                                 <button id="tbsync.accountsettings.syncbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.syncSubscibedFolders;" oncommand="tbSync.syncAccount('sync', tbSyncAccountSettings.account)" />
                             </hbox>
                         </vbox>
-		</vbox>
+        </vbox>
 
-		<hbox id="tbsync.accountsettings.connectbtn.container" flex="0" style="margin:1ex 0 0 0;" pack="end">
-		    <button id="tbsync.accountsettings.connectbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.tryagain;" oncommand="tbSync.syncAccount('sync', tbSyncAccountSettings.account)" />
-		</hbox>
-		
+        <hbox id="tbsync.accountsettings.connectbtn.container" flex="0" style="margin:1ex 0 0 0;" pack="end">
+            <button id="tbsync.accountsettings.connectbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.tryagain;" oncommand="tbSync.syncAccount('sync', tbSyncAccountSettings.account)" />
+        </hbox>
+        
                 </vbox>
             </tabpanel>
         </tabpanels>

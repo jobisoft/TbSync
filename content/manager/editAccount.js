@@ -209,6 +209,7 @@ var tbSyncAccountSettings = {
         }
         
         document.getElementById('tbsync.accountsettings.enabled').checked = isEnabled;
+        document.getElementById('tbsync.accountsettings.enabled').disabled = isSyncing;
         document.getElementById('tbsync.accountsettings.folderlist').disabled = isSyncing;
         document.getElementById('tbsync.accountsettings.syncbtn').disabled = isSyncing;
         document.getElementById('tbsync.accountsettings.connectbtn').disabled = isSyncing;
@@ -313,6 +314,17 @@ var tbSyncAccountSettings = {
             let newListItem = document.createElement("richlistitem");
             newListItem.setAttribute("value", folderData[i].folderID);
 
+            //add select checkbox
+            let itemSelectedCell = document.createElement("listcell");
+            itemSelectedCell.setAttribute("class", "checkbox");
+            itemSelectedCell.setAttribute("width", "30");
+                let itemSelect = document.createElement("checkbox");
+                if (folderData[i].selected) itemSelect.setAttribute("checked", true);
+                itemSelect.setAttribute("oncommand", "tbSyncAccountSettings.toggleFolder(this);");
+                itemSelectedCell.appendChild(itemSelect);
+            newListItem.appendChild(itemSelectedCell);
+
+            //add all other entries
             tbSync[tbSyncAccountSettings.provider].folderList.addRow(document, newListItem, folderData[i]);
             
             //ensureElementIsVisible also forces internal update of rowCount, which sometimes is not updated automatically upon appendChild
@@ -342,13 +354,22 @@ var tbSyncAccountSettings = {
         tbSync.db.saveAccounts(); //write modified accounts to disk
     },
 
-    toggleEnableState: function () {
-        //ignore request, if button is disabled or a sync is ongoing
-        if (tbSync.isSyncing(tbSyncAccountSettings.account)) return;
-        Services.obs.notifyObservers(null, "tbsync.toggleEnableState", tbSyncAccountSettings.account);        
+    toggleEnableState: function (element) {
+        if (!tbSync.isConnected(tbSyncAccountSettings.account)) {
+            //if not connected, we can toggle without prompt
+            Services.obs.notifyObservers(null, "tbsync.toggleEnableState", tbSyncAccountSettings.account);
+            return;
+        }      
+
+        if (window.confirm(tbSync.getLocalizedMessage("prompt.Disable"))) {
+            Services.obs.notifyObservers(null, "tbsync.toggleEnableState", tbSyncAccountSettings.account);
+        } else {
+            //invalid, toggle checkbox back
+            element.setAttribute("checked", true);
+        }
     },
 
-    toggleFolder: function () {
+    toggleFolder: function (element) {
         let folderList = document.getElementById("tbsync.accountsettings.folderlist");
         if (folderList.selectedItem !== null && !folderList.disabled) {
             let fID =  folderList.selectedItem.value;
@@ -363,6 +384,10 @@ var tbSyncAccountSettings = {
                     folder.selected = "0";
                     //remove folder, which will trigger the listener in tbsync which will clean up everything
                     tbSync.removeTarget(folder.target, tbSync[tbSyncAccountSettings.provider].getThunderbirdFolderType(folder.type)); 
+                } else {
+                    if (element) {
+                        element.setAttribute("checked", true);
+                    }
                 }
             } else {
                 //select and update status
