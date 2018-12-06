@@ -31,7 +31,7 @@
 <!ENTITY manager.tabs.status "Status">
 <!ENTITY manager.tabs.status.general "General">
 <!ENTITY manager.tabs.status.enableThisAccount "Konto aktivieren und synchronisieren">
-<!ENTITY manager.tabs.status.syncSubscibedFolders "Abonnierte Ordner synchronisieren">
+<!ENTITY manager.tabs.status.syncSubscibedFolders "Ausgewählte Ressourcen synchronisieren">
 <!ENTITY manager.tabs.status.tryagain "Erneut versuchen mit dem Server zu verbinden">
 <!ENTITY manager.tabs.status.autotime "Periodische Synchronisation (in Minuten)">
 <!ENTITY manager.tabs.status.never "Eine Einstellung von 0 deaktiviert periodische Synchronisation. Push Synchronisation wird noch nicht unterstützt.">
