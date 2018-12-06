@@ -17,6 +17,8 @@ accountacctions.disable=A(z) „##accountname##” fiók letiltása
 
 manager.tryagain=Próbálkozzon újra a kiszolgálóhoz való csatlakozással
 manager.connecting=Kiszolgáló összekapcsolása
+manager.resource=Mappa
+manager.status=Állapot
 
 addressbook.searchall=Keresése az összes névjegyzékben
 addressbook.searchthis=Keresése csak ezt a címjegyzékben

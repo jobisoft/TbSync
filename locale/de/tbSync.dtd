@@ -36,7 +36,7 @@
 <!ENTITY manager.tabs.status.autotime "Periodische Synchronisation (in Minuten)">
 <!ENTITY manager.tabs.status.never "Eine Einstellung von 0 deaktiviert periodische Synchronisation. Push Synchronisation wird noch nicht unterstützt.">
 <!ENTITY manager.tabs.status.resources "Verfügbare Ressourcen">
-<!ENTITY manager.tabs.status.resources.intro "Die folgende Liste enthält alle gefundenen Ressourcen. Abonnieren Sie Ressourcen (Doppelklick), um sie mit Thunderbird zu synchronisieren.">
+<!ENTITY manager.tabs.status.resources.intro "Die folgende Liste enthält alle gefundenen Ressourcen. Wählen Sie die Ressourcen aus, die mit Thunderbird synchronisiert werden sollen.">
 <!ENTITY manager.lockedsettings.description "Um Synchronisierungsfehler zu vermeiden, können einige Einstellungen nicht bearbeitet werden, während das Konto aktiviert ist.">
 
 <!ENTITY manager.catman.text "TbSync synchronisiert auch Kontaktkategorien, die einen effizienten Ersatz für die nicht synchronisierbaren Kontaktlisten darstellen. Um diese im Thunderbird Adressbuch zu nutzen, können Sie das Add-On 'Category Manager' installieren. Dieses Add-On ermöglicht die Verwaltung überlappender kategoriebasierter Kontaktgruppen und stellt eine Reihe anderer kategoriespezifischer Funktionen bereit. Es kann aus dem offiziellen Mozilla Add-On Repository heruntergeladen werden:">

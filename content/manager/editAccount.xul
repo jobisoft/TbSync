@@ -48,11 +48,8 @@
                               context="tbsync.accountsettings.FolderListContextMenu"
                               seltype="single"
                               ondblclick="tbSyncAccountSettings.toggleFolder();">
-                              <!--listhead style="border-bottom: 1px solid lightgrey;">
-                                  <listheader style="font-weight:bold;" label="" width="24" />
-                                  <listheader style="font-weight:bold;" label="pref.foldername;" width="145" />
-                                  <listheader style="font-weight:bold;" label="pref.status;" flex="1" />
-                              </listhead-->
+                              <listhead id="tbsync.accountsettings.folderlist.header" style="border-bottom: 1px solid lightgrey;">
+                              </listhead>
                             </richlistbox>
                             <hbox flex="0" style="margin:1ex 0 0 0;">
                                 <vbox flex="1"/>

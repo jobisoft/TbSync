@@ -17,6 +17,8 @@ accountacctions.disable=Disabilita l'account "##accountname##"
 
 manager.tryagain=Riprova a collegarti al server
 manager.connecting=Connessione al server in corso
+manager.resource=Cartella
+manager.status=Stato
 
 addressbook.searchall=Cerca in tutte le rubriche
 addressbook.searchthis=Cerca in questa rubrica

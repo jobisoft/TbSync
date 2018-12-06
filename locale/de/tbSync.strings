@@ -17,6 +17,8 @@ accountacctions.disable=Konto "##accountname##" deaktivieren
 
 manager.tryagain=Erneut versuchen mit dem Server zu verbinden
 manager.connecting=Verbindung wird hergestellt
+manager.resource=Ressource
+manager.status=Status
 
 addressbook.searchall=Alle Adressbücher durchsuchen
 addressbook.searchthis=Dieses Adressbuch durchsuchen

@@ -17,6 +17,8 @@ accountacctions.disable=Disable account “##accountname##”
 
 manager.tryagain=Try again to connect server
 manager.connecting=Connecting to server
+manager.resource=Resource
+manager.status=Status
 
 addressbook.searchall=Search all address books
 addressbook.searchthis=Search this address book

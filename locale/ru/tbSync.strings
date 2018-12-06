@@ -17,6 +17,8 @@ accountacctions.disable=Запретить аккаунт “##accountname##”
 
 manager.tryagain=Повторить подсоединение к серверу
 manager.connecting=Подсоединиться к серверу
+manager.resource=Папка
+manager.status=Статус
 
 addressbook.searchall=Поиск по всем адресным книгам
 addressbook.searchthis=Поиск в этой адресной книге

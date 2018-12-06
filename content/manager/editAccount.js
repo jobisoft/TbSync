@@ -98,6 +98,19 @@ var tbSyncAccountSettings = {
         tbSyncAccountSettings.provider = tbSync.db.getAccountSetting(tbSyncAccountSettings.account, "provider");
         tbSyncAccountSettings.settings = Object.keys(tbSync[tbSyncAccountSettings.provider].getDefaultAccountEntries()).sort();
 
+        //add header to folderlist
+        let header = tbSync[tbSyncAccountSettings.provider].folderList.getHeader();
+        let folderlistHeader = window.document.getElementById('tbsync.accountsettings.folderlist.header');
+        for (let h=0; h < header.length; h++) {
+            let listheader = window.document.createElement("listheader");
+            for (let a in header[h]) {
+                if (header[h].hasOwnProperty(a)) {
+                    listheader.setAttribute(a, header[h][a]);
+                }
+            }
+            folderlistHeader.appendChild(listheader);
+        }        
+        
         //load overlays from the provider (if any)
         tbSync.overlayManager.injectAllOverlays(window, "chrome://tbsync/content/manager/editAccount.xul?provider=" + tbSyncAccountSettings.provider);
     
