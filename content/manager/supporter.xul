@@ -17,7 +17,7 @@
                 <html:div id="listOfContributors" style="margin-top:10px">
 
                   <html:div provider="" style="width:225px; margin: 0 0 10px 0; float:left;">
-                    <html:img src="" style="width:48px; height:48px; padding:0px; margin:0 0 0 10px; float:left" onclick="tbSync.window.openDialog('chrome://mozapps/content/extensions/about.xul','', '', tbSync.loadedProviderAddOns[tbSync.loadedProviders[this.parentNode.getAttribute('provider')].addonId].addon);" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
+                    <html:img src="" style="width:48px; height:48px; padding:0px; margin:0 0 0 10px; float:left" onclick="tbSync.window.openDialog('chrome://tbsync/content/manager/about.xul','', '', tbSync.loadedProviderAddOns[tbSync.loadedProviders[this.parentNode.getAttribute('provider')].addonId].addon);" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
                     <html:div style="padding-left: 65px; padding-top:4px;">
                       <html:div>&manager.title;</html:div>
                       <html:div style="font-style:italic">&manager.provider4tbsync;</html:div>
@@ -25,7 +25,7 @@
                   </html:div>
 
                   <html:div provider="" style="width:225px; margin: 0 0 10px 0; float:left;">
-                    <html:img src="chrome://tbsync/skin/tbsync64.png" style="width:48px; height:48px; padding:0px; margin:0 0 0 10px; float:left" onclick="tbSync.window.openDialog('chrome://mozapps/content/extensions/about.xul','', '', tbSync.addon);" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
+                    <html:img src="chrome://tbsync/skin/tbsync64.png" style="width:48px; height:48px; padding:0px; margin:0 0 0 10px; float:left" onclick="tbSync.window.openDialog('chrome://tbsync/content/manager/about.xul','', '', tbSync.addon);" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" />
                     <html:div style="padding-left: 65px; padding-top:4px;">
                       <html:span></html:span>
                       <html:div>TbSync</html:div>

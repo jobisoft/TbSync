@@ -28,11 +28,22 @@
 <!ENTITY manager.accounts "Konten">
 <!ENTITY manager.status "Status">
 
+<!ENTITY manager.tabs.status "Status">
+<!ENTITY manager.tabs.status.general "General">
+<!ENTITY manager.tabs.status.enableThisAccount "Konto aktivieren und synchronisieren">
+<!ENTITY manager.tabs.status.sync "Jetzt synchronisieren">
+<!ENTITY manager.tabs.status.tryagain "Erneut versuchen mit dem Server zu verbinden">
+<!ENTITY manager.tabs.status.autotime "Periodische Synchronisation (in Minuten)">
+<!ENTITY manager.tabs.status.never "Eine Einstellung von 0 deaktiviert periodische Synchronisation. Push Synchronisation wird noch nicht unterstützt.">
+<!ENTITY manager.tabs.status.resources "Verfügbare Ressourcen">
+<!ENTITY manager.tabs.status.resources.intro "Wählen Sie aus, welche der gefundenen Ressourcen mit Thunderbird synchronisiert werden sollen.">
+<!ENTITY manager.lockedsettings.description "Um Synchronisierungsfehler zu vermeiden, können einige Einstellungen nicht bearbeitet werden, während das Konto aktiviert ist.">
+
 <!ENTITY manager.catman.text "TbSync synchronisiert auch Kontaktkategorien, die einen effizienten Ersatz für die nicht synchronisierbaren Kontaktlisten darstellen. Um diese im Thunderbird Adressbuch zu nutzen, können Sie das Add-On 'Category Manager' installieren. Dieses Add-On ermöglicht die Verwaltung überlappender kategoriebasierter Kontaktgruppen und stellt eine Reihe anderer kategoriespezifischer Funktionen bereit. Es kann aus dem offiziellen Mozilla Add-On Repository heruntergeladen werden:">
 
 <!ENTITY manager.installprovider.link "Klicken Sie auf den folgenden Link, um die Informationsseite des fehlenden Provider aufzurufen. Auf dieser Seite finden Sie weitere Informationen zu dem Provider und haben die Möglichkeit, diesen zu installieren:">
 <!ENTITY manager.installprovider.warning "Dieser Provider stammt nicht aus dem offiziellen Thunderbird AddOn Verzeichnis und wurde demnach nicht von Thunderbird-Mitarbeitern überprüft. Dieser Provider könnte schlimme Dinge mit Ihrem System anstellen. Benutzung auf eigene Gefahr.">
-<!ENTITY manager.missingprovider "Der mit diesem Konto verknüpfte Synchronisationsprovider (##provider##) ist nicht installiert.">
+<!ENTITY manager.missingprovider "Dieses Konto benötigt den ##provider## Synchronisationsprovider, der zur Zeit aber nicht installiert ist.">
 
 <!ENTITY manager.supporter.contributers "Mitwirkende &amp; Übersetzer">
 <!ENTITY manager.supporter.sponsors "Sponsoren von Test-Accounts">
@@ -43,7 +54,8 @@
 <!ENTITY manager.help.foundabug "Sie haben einen Fehler gefunden?">
 <!ENTITY manager.help.fixit "Sie können helfen den Fehler zu korrigieren, indem Sie dem Entwickler einen Fehlerbericht zusenden. Bitte aktivieren Sie dazu den Debug-Modus.">
 <!ENTITY manager.help.enabledebuglog "Debug-Modus: Protokollierung aller Programmmeldungen und aller Daten die TbSync empfängt und versendet. Thunderbird arbeitet dadurch unter Umständen signifikant langsamer.">
-<!ENTITY manager.help.createbugreportinfo "Damit TbSync nur die für Ihren Fehlerbericht relevanten Debug-Meldungen sammelt, starten Sie Thunderbird bitte neu und wiederholen dann genau die Schritte, die das fehlerhafte Verhalten reproduzieren. Anschließend können Sie hier Ihren Fehlerbericht erstellen.">
+<!ENTITY manager.help.createbugreportinfo "Damit TbSync nur die für Ihren Fehlerbericht relevanten Debug-Daten sammelt, starten Sie Thunderbird bitte neu und wiederholen dann genau die Schritte, die das fehlerhafte Verhalten reproduzieren. Anschließend können Sie hier Ihren Fehlerbericht erstellen.">
+<!ENTITY manager.help.createbugreport "Fehlerbericht erstellen">
 
 <!ENTITY supportwizard.title "Fehlerbericht erstellen">
 <!ENTITY supportwizard.pagetitle "Erfassung aller Informationen zur effektiven Bearbeitung des Fehlerberichtes.">

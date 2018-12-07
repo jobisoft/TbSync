@@ -41,7 +41,7 @@ var tbSyncAccounts = {
     debugToggleAll: function () {
         let accounts = tbSync.db.getAccounts();
         for (let i=0; i < accounts.IDs.length; i++) {
-            tbSyncAccounts.toggleAccountEnableState(accounts.IDs[i], true);
+            tbSyncAccounts.toggleAccountEnableState(accounts.IDs[i]);
         }
     },
     
@@ -501,35 +501,36 @@ var tbSyncAccounts = {
         }
     },
 
+    toggleEnableState: function () {
+        let accountsList = document.getElementById("tbSyncAccounts.accounts");
+        
+        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value) && !tbSync.isSyncing(accountsList.selectedItem.value)) {            
+            let isConnected = tbSync.isConnected(accountsList.selectedItem.value);
+            if (!isConnected || window.confirm(tbSync.getLocalizedMessage("prompt.Disable"))) {           
+                tbSyncAccounts.toggleAccountEnableState(accountsList.selectedItem.value);
+            }
+        }
+    },
 
     /* * *
     * Observer to catch enable state toggle
     */
     toggleEnableStateObserver: {
         observe: function (aSubject, aTopic, aData) {
-            tbSyncAccounts.toggleAccountEnableState(aData, false);
-        }
-    },
-
-    toggleEnableState: function () {
-        let accountsList = document.getElementById("tbSyncAccounts.accounts");
-        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value) && !tbSync.isSyncing(accountsList.selectedItem.value)) {            
-            tbSyncAccounts.toggleAccountEnableState(accountsList.selectedItem.value, false);
+            tbSyncAccounts.toggleAccountEnableState(aData);
         }
     },
     
-    toggleAccountEnableState: function (account, doNotAsk) {
+    //is not prompting, this is doing the actual toggle
+    toggleAccountEnableState: function (account) {
         if (tbSyncAccounts.hasInstalledProvider(account)) {
-            let isConnected = tbSync.isConnected(account);
             let isEnabled = tbSync.isEnabled(account);
             
             if (isEnabled) {
                 //we are enabled and want to disable (do not ask, if not connected)
-                if (doNotAsk || !isConnected || window.confirm(tbSync.getLocalizedMessage("prompt.Disable"))) {
-                    tbSync.disableAccount(account);
-                    Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
-                    tbSyncAccounts.updateAccountStatus(account);
-                }
+                tbSync.disableAccount(account);
+                Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
+                tbSyncAccounts.updateAccountStatus(account);
             } else {
                 //we are disabled and want to enabled
                 tbSync.enableAccount(account);
@@ -797,7 +798,7 @@ var tbSyncAccounts = {
             let provider = tbSync.db.getAccountSetting(this.selectedAccount, "provider");
             
             if (tbSyncAccounts.hasInstalledProvider(this.selectedAccount)) {
-                document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome:" + tbSync[provider].getEditAccountXulUrl()+"?id=" + this.selectedAccount);
+                document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/editAccount.xul?provider="+provider+"&id=" + this.selectedAccount);
             } else {
                 document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/missingProvider.xul?provider="+provider);
             }
