@@ -6,7 +6,7 @@ prompt.DeleteAccount=Eliminare l'account ##accountName##?
 prompt.Disable=Disabilitare quest'account? Tutte le modifiche locali non ancora sincronizzate andranno perse!
 prompt.Password=Inserire la password per l'utente ##user##:
 prompt.Unsubscribe=Annullare la sottoscrizione a questo elemento? Tutte le modifiche locali non ancora sincronizzate andranno perse!
-prompt.Erase=?? Are you sure to remove this account of an unknown provider from the accounts lists? ??
+prompt.Erase=Rimuovere quest'account di un provider sconosciuto dall'elenco degli account?
 
 account=Account TbSync [##accountname##]
 
