@@ -28,16 +28,16 @@
 <!ENTITY manager.accounts "Account">
 <!ENTITY manager.status "Stato">
 
-<!ENTITY manager.tabs.status "?? Synchronization status ??">
-<!ENTITY manager.tabs.status.general "?? General ??">
-<!ENTITY manager.tabs.status.enableThisAccount "?? Enable and synchronize this account ??">
-<!ENTITY manager.tabs.status.sync "?? Synchronize now ??">
+<!ENTITY manager.tabs.status "Stato sincronizzazione">
+<!ENTITY manager.tabs.status.general "Generale">
+<!ENTITY manager.tabs.status.enableThisAccount "Abilita e sincronizza quest'account">
+<!ENTITY manager.tabs.status.sync "Sincronizza ora">
 <!ENTITY manager.tabs.status.tryagain "Riprova a collegarti al server">
-<!ENTITY manager.tabs.status.autotime "?? Periodic synchronization (in minutes) ??">
-<!ENTITY manager.tabs.status.never "?? A setting of 0 disables periodic sync. Push sync is no yet implemented. ??">
-<!ENTITY manager.tabs.status.resources "?? Available resources ??">
-<!ENTITY manager.tabs.status.resources.intro "?? Select which of the found resources should be synchronized with Thunderbird. ??">
-<!ENTITY manager.lockedsettings.description "?? To prevent synchronization errors, some settings cannot be edited while the account is enabled. ??">
+<!ENTITY manager.tabs.status.autotime "Sincronizza periodicamente ogni (minuti)">
+<!ENTITY manager.tabs.status.never "Se l'impostazione è a 0, la sincronizzazione periodica è disabilitata. La sincronizzazione push non è ancora stata implementata.">
+<!ENTITY manager.tabs.status.resources "Risorse disponibili">
+<!ENTITY manager.tabs.status.resources.intro "Selezionare le risorse fra quelle trovate che devono essere sincronizzate con Thunderbird.">
+<!ENTITY manager.lockedsettings.description "Per prevenire errori di sincronizzazione, alcune impostazioni non possono essere modificate quando l'account è abilitato.">
 
 <!ENTITY manager.catman.text "TbSync sincronizza anche le categorie dei contatti, che sono un potente sostituto degli elenchi contatti (non sincronizzabili). Per poterle utilizzare nella Rubrica di Thunderbird è possibile installare il componente aggiuntivo Category Manager, che consente di gestire gruppi di contatti basati su categorie (anche sovrapposte) e che fornisce altre funzionalità legate alle categorie. Lo si può trovare nel repository ufficiale Mozilla dei componenti aggiuntivi:">
 
@@ -55,7 +55,7 @@
 <!ENTITY manager.help.fixit "Puoi contribuire a correggerlo inviando una segnalazione d'errore. Quest'operazione richiede di attivare la modalità di debug.">
 <!ENTITY manager.help.enabledebuglog "Modalità di debug: registra tutti i messaggi del programma e tutti i dati ricevuti e inviati da TbSync. Il funzionamento di Thunderbird potrebbe essere notevolmente rallentato..">
 <!ENTITY manager.help.createbugreportinfo "Per far sì che TbSync raccolga solo i messaggi di debug significativi per la segnalazione d'errore, riavvia Thunderbird e ripeti esattamente i passaggi necessari per riprodurre il comportamento errato. In seguito puoi creare qui la segnalazione d'errore.">
-<!ENTITY manager.help.createbugreport "?? Create bug report ??">
+<!ENTITY manager.help.createbugreport "Crea segnalazione d'errore">
 
 <!ENTITY supportwizard.title "Crea segnalazione d'errore'">
 <!ENTITY supportwizard.pagetitle "Raccolta di tutte le informazioni necessarie per gestire efficacemente la segnalazione d'errore.">
