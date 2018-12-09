@@ -817,7 +817,8 @@ var tbSync = {
     },
     
     getHost4PasswordManager: function (accountdata) {
-        return accountdata.provider + "://" + accountdata.host;
+        let uri = Services.io.newURI("http://" +  accountdata.host);
+        return accountdata.provider + "://" + uri.host;
     },
 
     getPassword: function (accountdata) {
