@@ -397,27 +397,16 @@ var tbSyncAccountSettings = {
 
     onFolderListContextMenuShowing: function () {
         let folderList = document.getElementById("tbsync.accountsettings.folderlist");
-        let hideContextMenuToggleSubscription = true;
         let aFolderIsSelected = (!folderList.disabled && folderList.selectedItem !== null && folderList.selectedItem.value !== undefined);
         
         if (aFolderIsSelected) {
             let fID =  folderList.selectedItem.value;
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.account, fID, true);
-
-            //if any folder is selected,  show ContextMenuToggleSubscription
-            hideContextMenuToggleSubscription = false;
-            if (folder.selected == "1") {
-                document.getElementById("tbsync.accountsettings.FolderListContextMenuToggleSubscription").label = tbSync.getLocalizedMessage("subscribe.off::" + folder.name, tbSyncAccountSettings.provider);
-            } else {
-                document.getElementById("tbsync.accountsettings.FolderListContextMenuToggleSubscription").label = tbSync.getLocalizedMessage("subscribe.on::" + folder.name, tbSyncAccountSettings.provider);
-            }
             
             tbSync[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, folder);
         } else {
             tbSync[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, null);
         }
-        
-        document.getElementById("tbsync.accountsettings.FolderListContextMenuToggleSubscription").hidden = hideContextMenuToggleSubscription;                    
     }
 
 };

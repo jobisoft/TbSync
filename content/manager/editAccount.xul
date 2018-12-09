@@ -18,7 +18,6 @@
 
     <popupset>
         <menupopup id="tbsync.accountsettings.FolderListContextMenu" onpopupshowing="tbSyncAccountSettings.onFolderListContextMenuShowing();">
-            <menuitem id="tbsync.accountsettings.FolderListContextMenuToggleSubscription" label="toggle" oncommand="tbSyncAccountSettings.toggleFolder();"/>
         </menupopup>
     </popupset>
     
@@ -46,8 +45,7 @@
                               flex="1"
                               style="margin: 0 1px 1px 1ex;padding:0;"
                               context="tbsync.accountsettings.FolderListContextMenu"
-                              seltype="single"
-                              ondblclick="tbSyncAccountSettings.toggleFolder();">
+                              seltype="single">
                                 <listhead id="tbsync.accountsettings.folderlist.header" style="border-bottom: 1px solid lightgrey;">
                                     <listheader width="30" label="" />
                                 </listhead>
