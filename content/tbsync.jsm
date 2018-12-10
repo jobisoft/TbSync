@@ -816,13 +816,13 @@ var tbSync = {
         MailServices.compose.OpenComposeWindowWithParams (null, params);    
     },
     
-    getHost4PasswordManager: function (accountdata) {
-        let uri = Services.io.newURI("http://" +  accountdata.host);
-        return accountdata.provider + "://" + uri.host;
+    getHost4PasswordManager: function (provider, url) {
+        let uri = Services.io.newURI("http://" + url.replace("https://","").replace("http://",""));
+        return provider + "://" + uri.host;
     },
 
     getPassword: function (accountdata) {
-        let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata);
+        let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata.provider, accountdata.host);
         let logins = Services.logins.findLogins({}, host4PasswordManager, null, "TbSync");
         for (let i = 0; i < logins.length; i++) {
             if (logins[i].username == accountdata.user) {
@@ -858,7 +858,7 @@ var tbSync = {
     },
     
     setPassword: function (accountdata, newPassword) {
-        let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata);
+        let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata.provider, accountdata.host);
         tbSync.setLoginInfo(host4PasswordManager, "TbSync", accountdata.user, newPassword);
     },
     
