@@ -14,7 +14,6 @@ Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 var tbSyncAccountSettings = {
 
     account: null,
-    servertype: null,
     provider: null,
     settings: null,
     updateTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
@@ -115,6 +114,7 @@ var tbSyncAccountSettings = {
         tbSync.overlayManager.injectAllOverlays(window, "chrome://tbsync/content/manager/editAccount.xul?provider=" + tbSyncAccountSettings.provider);
     
         tbSync.prepareSyncDataObj(tbSyncAccountSettings.account);
+        tbSync[tbSyncAccountSettings.provider].onSettingsGUILoad(window, tbSyncAccountSettings.account);
         tbSyncAccountSettings.loadSettings();
         
         //done, folderlist must be updated while visible
@@ -144,8 +144,6 @@ var tbSyncAccountSettings = {
      * field in the settings dialog, fill it with the stored value.
      */
     loadSettings: function () {
-        tbSyncAccountSettings.servertype = tbSync.db.getAccountSetting(tbSyncAccountSettings.account, "servertype");
-
         for (let i=0; i < tbSyncAccountSettings.settings.length; i++) {
             let pref = document.getElementById("tbsync.accountsettings.pref." + tbSyncAccountSettings.settings[i]);
             let label = document.getElementById("tbsync.accountsettings.label." + tbSyncAccountSettings.settings[i]);
@@ -160,15 +158,8 @@ var tbSyncAccountSettings = {
                     //Not BOOL
                     pref.setAttribute("value", tbSync.db.getAccountSetting(tbSyncAccountSettings.account, tbSyncAccountSettings.settings[i]));
                 }
-                
                 pref.onblur = function() {tbSyncAccountSettings.instantSaveSetting(this)};
             }
-        }
-
-        // special treatment for configuration label, which is a permanent setting and will not change by switching modes (only by unlocking, which will handle that)
-        let configlabel = document.getElementById("tbsync.accountsettings.label.config");
-        if (configlabel) {
-            configlabel.setAttribute("value", tbSync.getLocalizedMessage("config." + tbSyncAccountSettings.servertype, tbSyncAccountSettings.provider));
         }
         
         tbSyncAccountSettings.updateGui();        
@@ -184,9 +175,13 @@ var tbSyncAccountSettings = {
         { //disable settings if connected or syncing
             let items = document.getElementsByClassName("lockIfConnected");
             for (let i=0; i < items.length; i++) {
-                if (isConnected || isSyncing) items[i].setAttribute("disabled", true);
-                else items[i].removeAttribute("disabled");
-                items[i].style["color"] = isConnected || isSyncing ? "darkgrey" : "black";            
+                if (isConnected || isSyncing || items[i].getAttribute("alwaysDisabled") == "true") {
+                    items[i].setAttribute("disabled", true);
+                    items[i].style["color"] =  "darkgrey";            
+                } else {
+                    items[i].removeAttribute("disabled");
+                    items[i].style["color"] = "black";
+                }                    
             }
         }
 
@@ -230,6 +225,7 @@ var tbSyncAccountSettings = {
                 document.getElementById('syncstate').setAttribute("style","color: red");
         }
     
+        tbSync[tbSyncAccountSettings.provider].onSettingsGUIUpdate(window, tbSyncAccountSettings.account);
     },
 
     updateSyncstate: function () {
@@ -401,27 +397,16 @@ var tbSyncAccountSettings = {
 
     onFolderListContextMenuShowing: function () {
         let folderList = document.getElementById("tbsync.accountsettings.folderlist");
-        let hideContextMenuToggleSubscription = true;
         let aFolderIsSelected = (!folderList.disabled && folderList.selectedItem !== null && folderList.selectedItem.value !== undefined);
         
         if (aFolderIsSelected) {
             let fID =  folderList.selectedItem.value;
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.account, fID, true);
-
-            //if any folder is selected,  show ContextMenuToggleSubscription
-            hideContextMenuToggleSubscription = false;
-            if (folder.selected == "1") {
-                document.getElementById("tbsync.accountsettings.FolderListContextMenuToggleSubscription").label = tbSync.getLocalizedMessage("subscribe.off::" + folder.name, tbSyncAccountSettings.provider);
-            } else {
-                document.getElementById("tbsync.accountsettings.FolderListContextMenuToggleSubscription").label = tbSync.getLocalizedMessage("subscribe.on::" + folder.name, tbSyncAccountSettings.provider);
-            }
             
             tbSync[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, folder);
         } else {
             tbSync[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, null);
         }
-        
-        document.getElementById("tbsync.accountsettings.FolderListContextMenuToggleSubscription").hidden = hideContextMenuToggleSubscription;                    
     }
 
 };
