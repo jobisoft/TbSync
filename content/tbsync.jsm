@@ -821,18 +821,6 @@ var tbSync = {
         return provider + "://" + uri.host;
     },
 
-    getPassword: function (accountdata, hostField = "host") {
-        let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata.provider, accountdata[hostField]);
-        let logins = Services.logins.findLogins({}, host4PasswordManager, null, "TbSync");
-        for (let i = 0; i < logins.length; i++) {
-            if (logins[i].username == accountdata.user) {
-                return logins[i].password;
-            }
-        }
-        //No password found - we should ask for one - this will be triggered by the 401 response, which also catches wrong passwords
-        return null;
-    },
-
     setLoginInfo: function(origin, realm, user, password) {
         let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
 
@@ -857,9 +845,14 @@ var tbSync = {
         }
     },
     
-    setPassword: function (accountdata, newPassword, hostField = "host") {
-        let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata.provider, accountdata[hostField]);
-        tbSync.setLoginInfo(host4PasswordManager, "TbSync", accountdata.user, newPassword);
+    getLoginInfo: function(origin, realm, user) {
+        let logins = Services.logins.findLogins({}, origin, null, realm);
+        for (let i = 0; i < logins.length; i++) {
+            if (logins[i].username == user) {
+                return logins[i].password;
+            }
+        }
+        return null;
     },
     
     getAbsolutePath: function(filename) {
