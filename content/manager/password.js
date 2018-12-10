@@ -24,7 +24,7 @@ var tbSyncPassword = {
     doOK: function () {
         tbSync.passWindowObj = null;
         //call set password function of accounts provider
-        tbSync.setPassword(this.accountdata, document.getElementById("tbsync.password").value);
+        tbSync[this.accountdata.provider].setPassword(this.accountdata, document.getElementById("tbsync.password").value);
         if (this.callbackOK) this.callbackOK();
     },
 
