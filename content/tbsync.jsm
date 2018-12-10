@@ -821,8 +821,8 @@ var tbSync = {
         return provider + "://" + uri.host;
     },
 
-    getPassword: function (accountdata) {
-        let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata.provider, accountdata.host);
+    getPassword: function (accountdata, hostField = "host") {
+        let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata.provider, accountdata[hostField]);
         let logins = Services.logins.findLogins({}, host4PasswordManager, null, "TbSync");
         for (let i = 0; i < logins.length; i++) {
             if (logins[i].username == accountdata.user) {
@@ -857,8 +857,8 @@ var tbSync = {
         }
     },
     
-    setPassword: function (accountdata, newPassword) {
-        let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata.provider, accountdata.host);
+    setPassword: function (accountdata, newPassword, hostField = "host") {
+        let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata.provider, accountdata[hostField]);
         tbSync.setLoginInfo(host4PasswordManager, "TbSync", accountdata.user, newPassword);
     },
     
