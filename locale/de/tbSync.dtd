@@ -28,7 +28,7 @@
 <!ENTITY manager.accounts "Konten">
 <!ENTITY manager.status "Status">
 
-<!ENTITY manager.tabs.status "Status">
+<!ENTITY manager.tabs.status "Synchronisationsstatus">
 <!ENTITY manager.tabs.status.general "General">
 <!ENTITY manager.tabs.status.enableThisAccount "Konto aktivieren und synchronisieren">
 <!ENTITY manager.tabs.status.sync "Jetzt synchronisieren">
