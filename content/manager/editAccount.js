@@ -310,16 +310,6 @@ var tbSyncAccountSettings = {
             let newListItem = document.createElement("richlistitem");
             newListItem.setAttribute("value", folderData[i].folderID);
 
-            //add select checkbox
-            let itemSelectedCell = document.createElement("listcell");
-            itemSelectedCell.setAttribute("class", "checkbox");
-            itemSelectedCell.setAttribute("width", "30");
-                let itemSelect = document.createElement("checkbox");
-                if (folderData[i].selected) itemSelect.setAttribute("checked", true);
-                itemSelect.setAttribute("oncommand", "tbSyncAccountSettings.toggleFolder(this);");
-                itemSelectedCell.appendChild(itemSelect);
-            newListItem.appendChild(itemSelectedCell);
-
             //add all other entries
             tbSync[tbSyncAccountSettings.provider].folderList.addRow(document, newListItem, folderData[i]);
             
