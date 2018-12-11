@@ -626,7 +626,7 @@ var tbSync = {
             for (let i in folders) {
                 let folderstatus = folders[i].status.split(".")[0];
                 if (folderstatus != "" && folderstatus != "OK" && folderstatus != "aborted") {
-                    status = folders[i].status;
+                    status = "foldererror";
                     break;
                 }
             }
