@@ -816,21 +816,9 @@ var tbSync = {
         MailServices.compose.OpenComposeWindowWithParams (null, params);    
     },
     
-    getHost4PasswordManager: function (accountdata) {
-        let uri = Services.io.newURI("http://" +  accountdata.host);
-        return accountdata.provider + "://" + uri.host;
-    },
-
-    getPassword: function (accountdata) {
-        let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata);
-        let logins = Services.logins.findLogins({}, host4PasswordManager, null, "TbSync");
-        for (let i = 0; i < logins.length; i++) {
-            if (logins[i].username == accountdata.user) {
-                return logins[i].password;
-            }
-        }
-        //No password found - we should ask for one - this will be triggered by the 401 response, which also catches wrong passwords
-        return null;
+    getHost4PasswordManager: function (provider, url) {
+        let uri = Services.io.newURI("http://" + url.replace("https://","").replace("http://",""));
+        return provider + "://" + uri.host;
     },
 
     setLoginInfo: function(origin, realm, user, password) {
@@ -857,9 +845,14 @@ var tbSync = {
         }
     },
     
-    setPassword: function (accountdata, newPassword) {
-        let host4PasswordManager = tbSync.getHost4PasswordManager(accountdata);
-        tbSync.setLoginInfo(host4PasswordManager, "TbSync", accountdata.user, newPassword);
+    getLoginInfo: function(origin, realm, user) {
+        let logins = Services.logins.findLogins({}, origin, null, realm);
+        for (let i = 0; i < logins.length; i++) {
+            if (logins[i].username == user) {
+                return logins[i].password;
+            }
+        }
+        return null;
     },
     
     getAbsolutePath: function(filename) {
