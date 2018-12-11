@@ -215,12 +215,12 @@ var tbSyncAccountSettings = {
         switch (status) {
             case "OK":
             case "disabled":
-            case "notsyncronized":
             case "nolightning":
             case "syncing":
                 document.getElementById('syncstate').removeAttribute("style");
             break;
             
+            case "notsyncronized":
             default:
                 document.getElementById('syncstate').setAttribute("style","color: red");
         }
