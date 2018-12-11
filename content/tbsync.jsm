@@ -602,7 +602,6 @@ var tbSync = {
                         }
                     }
 
-                    status = status + " ...";
                     break;            
             }
         } else {
@@ -610,14 +609,6 @@ var tbSync = {
         }        
 
         return status;
-    },
-
-    updateListItemCell: function (e, attribs, value) {
-        if (e.getAttribute(attribs[0]) != value) {
-            for (let i=0; i<attribs.length; i++) {
-                e.setAttribute(attribs[i],value);
-            }
-        }
     },
 
     finishAccountSync: function (syncdata, error) {
