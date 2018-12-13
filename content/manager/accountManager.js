@@ -73,27 +73,34 @@ var tbSyncAccountManager = {
             item.setAttribute("label", tbSync.getLocalizedMessage("supportwizard.provider::" + tbSync[providers[i]].getNiceProviderName()));
             menu.appendChild(item); 
         }
+    
+    let menulist = document.getElementById("tbsync.supportwizard.faultycomponent.menulist");
+    menulist.addEventListener("select", tbSyncAccountManager.checkSupportWizard);
     },
     
-    checkSupportWizard: function(createReport = false) {
+    checkSupportWizard: function() {
         let provider = document.getElementById("tbsync.supportwizard.faultycomponent").parentNode.value;
         let subject = document.getElementById("tbsync.supportwizard.summary").value;
         let description = document.getElementById("tbsync.supportwizard.description").value;
 
-        if (createReport) {
-            if (provider == "" || subject == "" || description== "") {
-                return false;
-            }
-
-            //special if core is selected, which is not a provider
-            let email = (tbSync.loadedProviders.hasOwnProperty(provider)) ? tbSync[provider].getMaintainerEmail() : "john.bieling@gmx.de";
-            let version = (tbSync.loadedProviders.hasOwnProperty(provider)) ? " " + tbSync.loadedProviders[provider].version : "";
-            tbSync.createBugReport(email, "[" + provider.toUpperCase() + version + "] " + subject, description);
-            return true;
-        }
-
         //just check and update button status
         document.documentElement.getButton("finish").disabled = (provider == "" || subject == "" || description== "");        
+    },
+
+    prepareBugReport: function() {
+        let provider = document.getElementById("tbsync.supportwizard.faultycomponent").parentNode.value;
+        let subject = document.getElementById("tbsync.supportwizard.summary").value;
+        let description = document.getElementById("tbsync.supportwizard.description").value;
+
+        if (provider == "" || subject == "" || description== "") {
+            return false;
+        }
+
+        //special if core is selected, which is not a provider
+        let email = (tbSync.loadedProviders.hasOwnProperty(provider)) ? tbSync[provider].getMaintainerEmail() : "john.bieling@gmx.de";
+        let version = (tbSync.loadedProviders.hasOwnProperty(provider)) ? " " + tbSync.loadedProviders[provider].version : "";
+        tbSync.createBugReport(email, "[" + provider.toUpperCase() + version + "] " + subject, description);
+        return true;
     },
     
     
