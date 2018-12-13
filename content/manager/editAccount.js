@@ -310,11 +310,20 @@ var tbSyncAccountSettings = {
             let newListItem = document.createElement("richlistitem");
             newListItem.setAttribute("value", folderData[i].folderID);
 
-            //add all other entries
-            tbSync[tbSyncAccountSettings.provider].folderList.addRow(document, newListItem, folderData[i]);
+            //create checkBox for select state
+            let itemSelected = document.createElement("checkbox");
+            if (folderData[i].selected) itemSelected.setAttribute("checked", true);
+            itemSelected.setAttribute("oncommand", "tbSyncAccountSettings.toggleFolder(this);");
+
+            //add row
+            tbSync[tbSyncAccountSettings.provider].folderList.addRow(document, newListItem, folderData[i], itemSelected);
+            let addedItem = folderList.appendChild(newListItem);
+            
+            //update row
+            tbSync[tbSyncAccountSettings.provider].folderList.updateRow(document, addedItem, folderData[i]);
             
             //ensureElementIsVisible also forces internal update of rowCount, which sometimes is not updated automatically upon appendChild
-            folderList.ensureElementIsVisible(folderList.appendChild(newListItem));
+            folderList.ensureElementIsVisible(addedItem);
         }
     },
 
