@@ -74,9 +74,9 @@ var tbSync = {
     // GLOBAL INIT
     init: Task.async (function* (window)  { 
 
-        tbSync.dump("TbSync init","Start");
         tbSync.window = window;
         tbSync.addon = yield tbSync.getAddonByID("tbsync@jobisoft.de");
+        tbSync.dump("TbSync init","Start (" + tbSync.addon.version.toString() + ")");
 
         Services.obs.addObserver(tbSync.initSyncObserver, "tbsync.initSync", false);
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate", false);
@@ -184,7 +184,7 @@ var tbSync = {
                 //load provider
                 yield tbSync[provider].load(tbSync.lightningIsAvailable());
                 yield tbSync.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xul?provider="+provider, tbSync[provider].getEditAccountOverlayUrl());        
-                tbSync.dump("Loaded provider", provider + "::" + tbSync[provider].getNiceProviderName());
+                tbSync.dump("Loaded provider", provider + "::" + tbSync[provider].getNiceProviderName() + " ("+tbSync.loadedProviders[provider].version+")");
                 tbSync.resetSync(provider);
                 Services.obs.notifyObservers(null, "tbsync.updateAccountsList", provider);
 
@@ -602,7 +602,6 @@ var tbSync = {
                         }
                     }
 
-                    status = status + " ...";
                     break;            
             }
         } else {
@@ -610,14 +609,6 @@ var tbSync = {
         }        
 
         return status;
-    },
-
-    updateListItemCell: function (e, attribs, value) {
-        if (e.getAttribute(attribs[0]) != value) {
-            for (let i=0; i<attribs.length; i++) {
-                e.setAttribute(attribs[i],value);
-            }
-        }
     },
 
     finishAccountSync: function (syncdata, error) {
@@ -635,7 +626,7 @@ var tbSync = {
             for (let i in folders) {
                 let folderstatus = folders[i].status.split(".")[0];
                 if (folderstatus != "" && folderstatus != "OK" && folderstatus != "aborted") {
-                    status = folders[i].status;
+                    status = "foldererror";
                     break;
                 }
             }

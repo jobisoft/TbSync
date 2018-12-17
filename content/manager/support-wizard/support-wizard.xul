@@ -13,12 +13,12 @@
       id="SupportWizard" 
       title="&supportwizard.title;"
       onload="tbSyncAccountManager.initSupportWizard();"
-      onwizardfinish="return tbSyncAccountManager.checkSupportWizard(true);"
+      onwizardfinish="return tbSyncAccountManager.prepareBugReport();"
       xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <wizardpage onFirstPage="true" label="&supportwizard.pagetitle;">
     <label value="&supportwizard.label.faultycomponent;"/>
-    <menulist onselect="tbSyncAccountManager.checkSupportWizard(false)">
+    <menulist id="tbsync.supportwizard.faultycomponent.menulist">
         <menupopup id="tbsync.supportwizard.faultycomponent">
             <menuitem hidden="true" selected="true" label="&supportwizard.label.selectcomponent;" value="" />
             <menuitem label="&manager.title;" value="core" />
@@ -26,10 +26,10 @@
     </menulist>    
 
     <label style="margin-top:1em" value="&supportwizard.label.summary;"/>
-    <textbox id="tbsync.supportwizard.summary" oninput="tbSyncAccountManager.checkSupportWizard(false)" />
+    <textbox id="tbsync.supportwizard.summary" oninput="tbSyncAccountManager.checkSupportWizard()" />
    
     <label style="margin-top:1em" value="&supportwizard.label.description;"/>
-    <textbox flex="1" id="tbsync.supportwizard.description" multiline="true" oninput="tbSyncAccountManager.checkSupportWizard(false)" />
+    <textbox flex="1" id="tbsync.supportwizard.description" multiline="true" oninput="tbSyncAccountManager.checkSupportWizard()" />
 
     <description style="margin-top:1em">
       &supportwizard.footer;

@@ -215,12 +215,12 @@ var tbSyncAccountSettings = {
         switch (status) {
             case "OK":
             case "disabled":
-            case "notsyncronized":
             case "nolightning":
             case "syncing":
                 document.getElementById('syncstate').removeAttribute("style");
             break;
             
+            case "notsyncronized":
             default:
                 document.getElementById('syncstate').setAttribute("style","color: red");
         }
@@ -310,21 +310,20 @@ var tbSyncAccountSettings = {
             let newListItem = document.createElement("richlistitem");
             newListItem.setAttribute("value", folderData[i].folderID);
 
-            //add select checkbox
-            let itemSelectedCell = document.createElement("listcell");
-            itemSelectedCell.setAttribute("class", "checkbox");
-            itemSelectedCell.setAttribute("width", "30");
-                let itemSelect = document.createElement("checkbox");
-                if (folderData[i].selected) itemSelect.setAttribute("checked", true);
-                itemSelect.setAttribute("oncommand", "tbSyncAccountSettings.toggleFolder(this);");
-                itemSelectedCell.appendChild(itemSelect);
-            newListItem.appendChild(itemSelectedCell);
+            //create checkBox for select state
+            let itemSelected = document.createElement("checkbox");
+            if (folderData[i].selected) itemSelected.setAttribute("checked", true);
+            itemSelected.setAttribute("oncommand", "tbSyncAccountSettings.toggleFolder(this);");
 
-            //add all other entries
-            tbSync[tbSyncAccountSettings.provider].folderList.addRow(document, newListItem, folderData[i]);
+            //add row
+            tbSync[tbSyncAccountSettings.provider].folderList.addRow(document, newListItem, folderData[i], itemSelected);
+            let addedItem = folderList.appendChild(newListItem);
+            
+            //update row
+            tbSync[tbSyncAccountSettings.provider].folderList.updateRow(document, addedItem, folderData[i]);
             
             //ensureElementIsVisible also forces internal update of rowCount, which sometimes is not updated automatically upon appendChild
-            folderList.ensureElementIsVisible(folderList.appendChild(newListItem));
+            folderList.ensureElementIsVisible(addedItem);
         }
     },
 

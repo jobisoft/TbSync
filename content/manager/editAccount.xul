@@ -47,23 +47,21 @@
                               context="tbsync.accountsettings.FolderListContextMenu"
                               seltype="single">
                                 <listhead id="tbsync.accountsettings.folderlist.header" style="border-bottom: 1px solid lightgrey;">
-                                    <listheader width="30" label="" />
                                 </listhead>
                             </richlistbox>
-                            <hbox flex="0" style="margin:1ex 0 0 0;">
-                                <vbox flex="1"/>
-                                <vbox pack="center">
-                                    <label control="tbsync.accountsettings.pref.autosync" value="&manager.tabs.status.autotime;" tooltiptext="&manager.tabs.status.never;" />
-                                </vbox>
-                                <textbox style="width:50px;margin-bottom:0; margin-top:0" id="tbsync.accountsettings.pref.autosync" tooltiptext="&manager.tabs.status.never;" />
-                                <button id="tbsync.accountsettings.syncbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.sync;" oncommand="tbSync.syncAccount('sync', tbSyncAccountSettings.account)" />
-                            </hbox>
+                            <vbox flex="0" style="margin:1ex 0 0 0;">
+                                <hbox flex="1" align="center" pack="end">
+                                    <description style="text-align:right" flex="1" control="tbsync.accountsettings.pref.autosync" tooltiptext="&manager.tabs.status.never;">&manager.tabs.status.autotime;</description>
+                                    <textbox style="width:50px;margin-bottom:0; margin-top:0" id="tbsync.accountsettings.pref.autosync" tooltiptext="&manager.tabs.status.never;" />
+                                    <button id="tbsync.accountsettings.syncbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.sync;" oncommand="tbSync.syncAccount('sync', tbSyncAccountSettings.account)" />
+                                </hbox>
+                            </vbox>
                         </vbox>
-        </vbox>
+                    </vbox>
 
-        <hbox id="tbsync.accountsettings.connectbtn.container" flex="0" style="margin:1ex 0 0 0;" pack="end">
-            <button id="tbsync.accountsettings.connectbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.tryagain;" oncommand="tbSync.syncAccount('sync', tbSyncAccountSettings.account)" />
-        </hbox>
+                    <hbox id="tbsync.accountsettings.connectbtn.container" flex="0" style="margin:1ex 0 0 0;" pack="end">
+                        <button id="tbsync.accountsettings.connectbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.tryagain;" oncommand="tbSync.syncAccount('sync', tbSyncAccountSettings.account)" />
+                    </hbox>
         
                 </vbox>
             </tabpanel>
