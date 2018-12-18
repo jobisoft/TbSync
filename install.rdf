@@ -9,7 +9,7 @@
         <em:unpack>false</em:unpack>
         <em:multiprocessCompatible>true</em:multiprocessCompatible>
         <em:name>TbSync</em:name>
-        <em:version>1.0.6</em:version>
+        <em:version>1.0.7</em:version>
         <em:description>TbSync is a central user interface to manage cloud accounts and to synchronize their contact, task and calendar information with Thunderbird.</em:description>
         <em:homepageURL>https://github.com/jobisoft/TbSync</em:homepageURL>
         <em:iconURL>chrome://tbsync/skin/tbsync.png</em:iconURL>
