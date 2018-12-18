@@ -12,7 +12,7 @@
 <!ENTITY manager.EnableAccount "Konto aktivieren &amp; mit dem Server verbinden">
 <!ENTITY manager.DisableAccount "Konto deaktivieren">
 <!ENTITY manager.DeleteAccount "Konto löschen">
-<!ENTITY manager.ShowSyncLog "Synchronisationsmeldungen anzeigen">
+<!ENTITY manager.ShowErrorLog "Fehlerprotokoll anzeigen">
 <!ENTITY manager.RetryConnectAccount "Erneut versuchen mit dem  Server zu verbinden">
 
 <!ENTITY manager.noaccounts "Es sind aktuell noch keine Konten konfiguriert.">

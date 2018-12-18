@@ -41,6 +41,8 @@ var tbSync = {
     
     lightningInitDone: false,
 
+    errors: [],
+    
     //list of default providers (available in add menu, even if not installed)
     defaultProviders: {
         "dav" : {
@@ -945,9 +947,9 @@ var tbSync = {
         }
     },
 
-    synclog: function (type, message, details = null) {
-        //placeholder function, until a synclog is implemented
-        tbSync.dump("SyncLog ("+type+")", message + (details !== null ? "\n" + details : ""));
+    errorlog: function (type, message, details = null) {
+        tbSync.dump("ErrorLog ("+type+")", message + (details !== null ? "\n" + details : ""));
+        tbSync.errors.push({type: type, message: message, details: details});
     },
 
     getIdentityKey: function (email) {

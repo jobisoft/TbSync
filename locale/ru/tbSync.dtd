@@ -12,7 +12,7 @@
 <!ENTITY manager.EnableAccount "Разрешить аккаунт &amp; подключить к серверу">
 <!ENTITY manager.DisableAccount "Запретить аккаунт">
 <!ENTITY manager.DeleteAccount "Удалить аккаунт">
-<!ENTITY manager.ShowSyncLog "Показать лог сообщений синхронизации">
+<!ENTITY manager.ShowErrorLog "Показать журнал ошибок">
 <!ENTITY manager.RetryConnectAccount "Повторить подключение к серверу">
 
 <!ENTITY manager.noaccounts "Определенных аккаунтов пока нет.">

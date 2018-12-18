@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
+
+<dialog
+    width="500"
+    height="600"
+    title="ErrorLog"
+    buttons="accept"
+    onload="tbSyncErrorLog.onload();"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
+
+    <script type="application/javascript" src="chrome://tbsync/content/manager/errorlog/errorlog.js"/>
+
+    <vbox flex="1">
+        <richlistbox id="tbsync.errorlog" flex="1" seltype="single" ondblclick="alert(tbSync.errors[this.selectedItem.getAttribute('value')].details)"/>
+    </vbox>
+</dialog>

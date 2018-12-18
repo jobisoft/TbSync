@@ -12,7 +12,7 @@
 <!ENTITY manager.EnableAccount "Enable account &amp; try to connect to server">
 <!ENTITY manager.DisableAccount "Disable account">
 <!ENTITY manager.DeleteAccount "Delete account">
-<!ENTITY manager.ShowSyncLog "Show synchronization log messages">
+<!ENTITY manager.ShowErrorLog "Show error log">
 <!ENTITY manager.RetryConnectAccount "Try again to connect to server">
 
 <!ENTITY manager.noaccounts "There are not yet any accounts defined.">

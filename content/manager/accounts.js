@@ -425,8 +425,8 @@ var tbSyncAccounts = {
         document.getElementById(selector + "RetryConnectAccount").hidden = (selectedAccount === null) || isConnected || !isEnabled || !isInstalled;
 
         //Not yet implemented
-        document.getElementById(selector + "ShowSyncLog").hidden = true;//(selectedAccount === null) || !isEnabled;
-        document.getElementById(selector + "ShowSyncLog").disabled = true;
+        document.getElementById(selector + "ShowErrorLog").hidden = false;
+        document.getElementById(selector + "ShowErrorLog").disabled = isSyncing;
         
         if (selectedAccount !== null) {
             //disable if currently syncing (and displayed)
@@ -834,5 +834,10 @@ var tbSyncAccounts = {
         tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").hidden=false;
         tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").setAttribute("active","true");
         tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.contentWindow").setAttribute("src", "chrome://tbsync/content/manager/installProvider.xul?provider="+provider);        
-    }
+    },
+    
+    openErrorLog: function () {
+	tbSync.prefWindowObj.openDialog("chrome://tbsync/content/manager/errorlog/errorlog.xul", "TbSyncErrorLog", "dialog,centerscreen,chrome,resizable=no");
+    },
+        
 };
