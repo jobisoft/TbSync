@@ -28,16 +28,16 @@
 <!ENTITY manager.accounts "Fiókok">
 <!ENTITY manager.status "Állapot">
 
-<!ENTITY manager.tabs.status "?? Synchronization status ??">
-<!ENTITY manager.tabs.status.general "?? General ??">
-<!ENTITY manager.tabs.status.enableThisAccount "?? Enable and synchronize this account ??">
-<!ENTITY manager.tabs.status.sync "?? Synchronize now ??">
+<!ENTITY manager.tabs.status "Összehangolási állapot">
+<!ENTITY manager.tabs.status.general "Általános">
+<!ENTITY manager.tabs.status.enableThisAccount "Fiók engedélyezze és összehangolása">
+<!ENTITY manager.tabs.status.sync "Összehangolás">
 <!ENTITY manager.tabs.status.tryagain "Próbálkozzon újra a kiszolgálóhoz való csatlakozással">
-<!ENTITY manager.tabs.status.autotime "?? Periodic synchronization (in minutes) ??">
-<!ENTITY manager.tabs.status.never "?? A setting of 0 disables periodic sync. Push sync is no yet implemented. ??">
-<!ENTITY manager.tabs.status.resources "?? Available resources ??">
-<!ENTITY manager.tabs.status.resources.intro "?? Select which of the found resources should be synchronized with Thunderbird. ??">
-<!ENTITY manager.lockedsettings.description "?? To prevent synchronization errors, some settings cannot be edited while the account is enabled. ??">
+<!ENTITY manager.tabs.status.autotime "Időszakos összehangolás (perc)">
+<!ENTITY manager.tabs.status.never "A 0 beállítás letiltja az időszakos összehangolást. A nyomösszehangolást még meg nem valósult.">
+<!ENTITY manager.tabs.status.resources "Elérhető erőforrások">
+<!ENTITY manager.tabs.status.resources.intro "Válassza ki, hogy a talált erőforrások közül melyiket összehangolni kell a Thunderbird programmal.">
+<!ENTITY manager.lockedsettings.description "A összehangolási hibák elkerülése érdekében egyes beállítások nem szerkeszthetők a fiók engedélyezése közben.">
 
 <!ENTITY manager.catman.text "A Thunderbird-összehangolásja az érintkezési kategóriákat is, amelyek hatékonyan helyettesítik a nem összehangolható kapcsolattartókat. A Thunderbird névjegyzékben való használatához telepítheti a Kategóriakezelő kiegészítőt. Lehetővé teszi az átfedő kategóriákon alapuló kapcsolattartó csoportok kezelését és egy sor más kategóriához kapcsolódó funkciót. Ez megtalálható a hivatalos Thunderbird-kiegészítő adattárban:">
 
@@ -55,7 +55,7 @@
 <!ENTITY manager.help.fixit "Hibajelentés küldése a javításhoz. Hibakeresési mód bekapcsolása engedélyeket igényel.">
 <!ENTITY manager.help.enabledebuglog "Hibakeresési mód: Minden program üzenet és minden olyan adat regisztrálása, amelyet a Thunderbird-összehangolás küldés és fogadás. A Thunderbird jelentősen lassabban működhet.">
 <!ENTITY manager.help.createbugreportinfo "Indítsa újra a Thunderbird alkalmazást, majd ismételje meg a pontos lépéseket a hiba reprodukálásához. Ez csak a hibajelentéssel kapcsolatos hibajelentéseket gyűjti össze. Hibabejelentés létrehozása itt.">
-<!ENTITY manager.help.createbugreport "?? Create bug report ??">
+<!ENTITY manager.help.createbugreport "Hibabejelentés létrehozása">
 
 <!ENTITY supportwizard.title "Hibabejelentés létrehozása">
 <!ENTITY supportwizard.pagetitle "Információgyűjtés a hibajelentés feldolgozásához.">

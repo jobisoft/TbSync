@@ -6,7 +6,7 @@ prompt.DeleteAccount=Biztos benne, hogy törölni szeretne fiók ##accountName##
 prompt.Disable=Biztosan letiltja ezt a fiókot? Minden helyi módosítás, amely még nincs összehangolva, elveszik!
 prompt.Password=Felhasználói ##user## jelszavát:
 prompt.Unsubscribe=Biztosan le szeretné iratkozni ezt az elemet? Minden helyi módosítás, amely még nincs összehangolva, elveszik!
-prompt.Erase=?? Are you sure to remove this account of an unknown provider from the accounts lists? ??
+prompt.Erase=Biztosan eltávolít egy ismeretlen szolgáltató fiókját a fiókok listáiról?
 
 account=Thunderbird-összehangolás fiók [##accountname##]
 
