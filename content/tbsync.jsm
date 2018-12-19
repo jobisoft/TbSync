@@ -127,15 +127,7 @@ var tbSync = {
                 //adding a global observer
                 cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
                 cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
-                
-                //inject UI elements
-                if (tbSync.window.document.getElementById("calendar-synchronize-button")) {
-                    tbSync.window.document.getElementById("calendar-synchronize-button").addEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
-                }
-                if (tbSync.window.document.getElementById("task-synchronize-button")) {
-                    tbSync.window.document.getElementById("task-synchronize-button").addEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
-                }
-                
+
                 //indicate, that we have initialized 
                 tbSync.lightningInitDone = true;
                 tbSync.dump("Check4Lightning","Done");                            
