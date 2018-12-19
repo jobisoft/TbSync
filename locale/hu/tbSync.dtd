@@ -45,7 +45,7 @@
 <!ENTITY manager.installprovider.warning "Ez az összehangoló szolgáltató nem a hivatalos Thunderbird-kiegészítő adattárban található, így a Thunderbird személyzete nem vizsgálta felül. A szolgáltató rossz dolgokat tehet a rendszerében. Használja saját felelősségére.">
 <!ENTITY manager.missingprovider "A összehangolás szolgáltató (##provider##), amelyhez a fiók társítva van, nincs telepítve.">
 
-<!ENTITY manager.supporter.contributers "Közreműködők és fordítók">
+<!ENTITY manager.supporter.contributors "Közreműködők és fordítók">
 <!ENTITY manager.supporter.sponsors "Tesztszámla támogatók">
 
 <!ENTITY manager.help.needhelp "Segítségre van szüksége?">
