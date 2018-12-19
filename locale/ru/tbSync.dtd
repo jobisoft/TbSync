@@ -45,7 +45,7 @@
 <!ENTITY manager.installprovider.warning "Этот провайдер синхронизации не размещен в официальном репозитории Thunderbird AddOn и, таким образом, не был рассмотрен сотрудниками Thunderbird. Провайдер синхронизации может сделать деструктивные действия в вашей системе. Используйте его на свой страх и риск.">
 <!ENTITY manager.missingprovider "Провайдер синхронизации (## provider ##), с которым связана эта учетная запись, не установлен.">
 
-<!ENTITY manager.supporter.contributers "Помощники &amp; Переводчики">
+<!ENTITY manager.supporter.contributors "Помощники &amp; Переводчики">
 <!ENTITY manager.supporter.sponsors "Спонсоры тестовых аккаунтов">
 
 <!ENTITY manager.help.needhelp "Нужна справка?">

@@ -45,7 +45,7 @@
 <!ENTITY manager.installprovider.warning "Dieser Provider stammt nicht aus dem offiziellen Thunderbird AddOn Verzeichnis und wurde demnach nicht von Thunderbird-Mitarbeitern überprüft. Dieser Provider könnte schlimme Dinge mit Ihrem System anstellen. Benutzung auf eigene Gefahr.">
 <!ENTITY manager.missingprovider "Dieses Konto benötigt den ##provider## Synchronisationsprovider, der zur Zeit aber nicht installiert ist.">
 
-<!ENTITY manager.supporter.contributers "Mitwirkende &amp; Übersetzer">
+<!ENTITY manager.supporter.contributors "Mitwirkende &amp; Übersetzer">
 <!ENTITY manager.supporter.sponsors "Sponsoren von Test-Accounts">
 
 <!ENTITY manager.help.needhelp "Benötigen Sie Hilfe?">
