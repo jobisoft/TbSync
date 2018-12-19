@@ -45,7 +45,7 @@
 <!ENTITY manager.installprovider.warning "Questo provider di sincronizzazione non è ospitato nel repository ufficiale componenti aggiuntivi di Thunderbird e quindi non è stato esaminato dallo staff di Thunderbird. Il provider potrebbe eseguire azioni malevole sul proprio sistema. Lo si utilizzi a proprio rischio.">
 <!ENTITY manager.missingprovider "Il provider di sincronizzazione a cui è associato quest'account (##provider##) non è installato.">
 
-<!ENTITY manager.supporter.contributers "Collaboratori e traduttori">
+<!ENTITY manager.supporter.contributors "Collaboratori e traduttori">
 <!ENTITY manager.supporter.sponsors "Sponsor per account di test">
 
 <!ENTITY manager.help.needhelp "Serve aiuto?">
