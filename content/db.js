@@ -391,7 +391,7 @@ var db = {
 
         //DB Concept:
         //-- on application start, data is read async from json file into object
-        //-- AddOn only works on object
+        //-- add-on only works on object
         //-- each time data is changed, an async write job is initiated 2s in the future and is resceduled, if another request arrives within that time
 
         //load changelog from file

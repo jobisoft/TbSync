@@ -42,7 +42,7 @@
 <!ENTITY manager.catman.text "TbSync synchronisiert auch Kontaktkategorien, die einen effizienten Ersatz für die nicht synchronisierbaren Kontaktlisten darstellen. Um diese im Thunderbird Adressbuch zu nutzen, können Sie das Add-On 'Category Manager' installieren. Dieses Add-On ermöglicht die Verwaltung überlappender kategoriebasierter Kontaktgruppen und stellt eine Reihe anderer kategoriespezifischer Funktionen bereit. Es kann aus dem offiziellen Mozilla Add-On Repository heruntergeladen werden:">
 
 <!ENTITY manager.installprovider.link "Klicken Sie auf den folgenden Link, um die Informationsseite des fehlenden Provider aufzurufen. Auf dieser Seite finden Sie weitere Informationen zu dem Provider und haben die Möglichkeit, diesen zu installieren:">
-<!ENTITY manager.installprovider.warning "Dieser Provider stammt nicht aus dem offiziellen Thunderbird AddOn Verzeichnis und wurde demnach nicht von Thunderbird-Mitarbeitern überprüft. Dieser Provider könnte schlimme Dinge mit Ihrem System anstellen. Benutzung auf eigene Gefahr.">
+<!ENTITY manager.installprovider.warning "Dieser Provider stammt nicht aus dem offiziellen Thunderbird Add-On Verzeichnis und wurde demnach nicht von Thunderbird-Mitarbeitern überprüft. Dieser Provider könnte schlimme Dinge mit Ihrem System anstellen. Benutzung auf eigene Gefahr.">
 <!ENTITY manager.missingprovider "Dieses Konto benötigt den ##provider## Synchronisationsprovider, der zur Zeit aber nicht installiert ist.">
 
 <!ENTITY manager.supporter.contributors "Mitwirkende &amp; Übersetzer">

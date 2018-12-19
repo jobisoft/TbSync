@@ -171,7 +171,7 @@ var tbSync = {
                 //load provider subscripts into tbSync 
                 tbSync.includeJS("chrome:" + js);
 
-                //keep track of loaded providers of this provider AddOn
+                //keep track of loaded providers of this provider add-on
                 if (!tbSync.loadedProviderAddOns.hasOwnProperty(addonId)) {
                     let addon = yield tbSync.getAddonByID(addonId);
                     tbSync.loadedProviderAddOns[addonId] = {addon: addon, providers: []};
@@ -200,7 +200,7 @@ var tbSync = {
 
     unloadProviderAddon:  function (addonId) {
         
-        //unload all loaded providers of this provider AddOn
+        //unload all loaded providers of this provider add-on
         if (tbSync.loadedProviderAddOns.hasOwnProperty(addonId) ) {
             for (let i=0; i < tbSync.loadedProviderAddOns[addonId].providers.length; i++) {
                 let provider = tbSync.loadedProviderAddOns[addonId].providers[i];
