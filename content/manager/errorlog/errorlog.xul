@@ -3,8 +3,8 @@
 <!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
 
 <dialog
-    width="500"
-    height="600"
+    width="600"
+    height="400"
     title="ErrorLog"
     buttons="accept"
     onload="tbSyncErrorLog.onload();"
@@ -13,6 +13,6 @@
     <script type="application/javascript" src="chrome://tbsync/content/manager/errorlog/errorlog.js"/>
 
     <vbox flex="1">
-        <richlistbox id="tbsync.errorlog" flex="1" seltype="single" ondblclick="alert(tbSync.errors[this.selectedItem.getAttribute('value')].details)"/>
+        <richlistbox id="tbsync.errorlog" flex="1" seltype="single" />
     </vbox>
 </dialog>

@@ -939,9 +939,21 @@ var tbSync = {
         }
     },
 
-    errorlog: function (type, message, details = null) {
-        tbSync.dump("ErrorLog ("+type+")", message + (details !== null ? "\n" + details : ""));
-        tbSync.errors.push({type: type, message: message, details: details});
+    errorlog: function (syncdata, message, details = null) {
+        let entry = {
+            timestamp: Date.now(),
+            message: message, 
+            details: details};
+
+        if (syncdata) {
+            entry.provider = tbSync.db.getAccountSetting(syncdata.account, "provider");
+            entry.accountname = tbSync.db.getAccountSetting(syncdata.account, "accountname");
+            entry.foldername = (syncdata.folderID) ? tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") : "";
+        }
+        
+        tbSync.dump("ErrorLog", message + (details !== null ? "\n" + details : ""));
+        tbSync.errors.unshift(entry);
+        if (tbSync.errors.length > 100) tbSync.errors.pop();
     },
 
     getIdentityKey: function (email) {

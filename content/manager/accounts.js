@@ -837,7 +837,7 @@ var tbSyncAccounts = {
     },
     
     openErrorLog: function () {
-	tbSync.prefWindowObj.openDialog("chrome://tbsync/content/manager/errorlog/errorlog.xul", "TbSyncErrorLog", "dialog,centerscreen,chrome,resizable=no");
+	tbSync.prefWindowObj.open("chrome://tbsync/content/manager/errorlog/errorlog.xul", "TbSyncErrorLog", "centerscreen,chrome,resizable");
     },
         
 };
