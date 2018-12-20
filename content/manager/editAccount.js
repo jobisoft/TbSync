@@ -217,12 +217,12 @@ var tbSyncAccountSettings = {
             case "disabled":
             case "nolightning":
             case "syncing":
-                document.getElementById('syncstate').removeAttribute("style");
+                document.getElementById("syncstate").removeAttribute("style");
             break;
             
             case "notsyncronized":
             default:
-                document.getElementById('syncstate').setAttribute("style","color: red");
+                document.getElementById("syncstate").setAttribute("style","color: red");
         }
     
         tbSync[tbSyncAccountSettings.provider].onSettingsGUIUpdate(window, tbSyncAccountSettings.account);
@@ -242,11 +242,6 @@ var tbSyncAccountSettings = {
 
         if (isSyncing) {
             let accounts = tbSync.db.getAccounts().data;
-//            let target = "";
-
-//            if (accounts.hasOwnProperty(syncdata.account) && syncdata.folderID !== "" && syncdata.syncstate != "done") { //if "Done" do not print folder info syncstate
-//                target = " [" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "]";
-//            }
             
             let parts = syncdata.syncstate.split("||");
             let syncstate = parts[0];
@@ -256,7 +251,7 @@ var tbSyncAccountSettings = {
             let msg = tbSync.getLocalizedMessage("syncstate." + syncstate, tbSyncAccountSettings.provider);
             if (diff > 2000) msg = msg + " (" + Math.round((tbSync.prefSettings.getIntPref("timeout") - diff)/1000) + "s)";
 
-            document.getElementById('syncstate').textContent = msg;// + target;
+            document.getElementById("syncstate").textContent = msg;
         
             if (syncstate.split(".")[0] == "send") {
                 //re-schedule update, if this is a waiting syncstate
