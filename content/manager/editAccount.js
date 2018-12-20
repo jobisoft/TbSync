@@ -212,26 +212,31 @@ var tbSyncAccountSettings = {
         tbSyncAccountSettings.updateSyncstate();
     
         //change color of syncstate according to status
+        let showErrorLogButton = false;
         switch (status) {
             case "OK":
             case "disabled":
             case "nolightning":
             case "syncing":
                 document.getElementById("syncstate").removeAttribute("style");
-            break;
+                break;
             
             case "notsyncronized":
+                document.getElementById("syncstate").setAttribute("style","color: red");
+                break;
+            
             default:
                 document.getElementById("syncstate").setAttribute("style","color: red");
+                showErrorLogButton = true;
         }
+        document.getElementById('tbsync.accountsettings.errorlogbtn').hidden = !showErrorLogButton;
+
     
         tbSync[tbSyncAccountSettings.provider].onSettingsGUIUpdate(window, tbSyncAccountSettings.account);
     },
 
     updateSyncstate: function () {
         tbSyncAccountSettings.updateTimer.cancel();
-        document.getElementById('syncstate_link').textContent = "";
-        document.getElementById('syncstate_link').setAttribute("dest", "");
 
         // if this account is beeing synced, display syncstate, otherwise print status
         let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.account, "status");
@@ -258,17 +263,8 @@ var tbSyncAccountSettings = {
                 tbSyncAccountSettings.updateTimer.init(tbSyncAccountSettings.updateSyncstate, 1000, 0);
             }            
         } else {
-            let localized = tbSync.getLocalizedMessage("status." + status, tbSyncAccountSettings.provider);
-            if (!isEnabled) localized = tbSync.getLocalizedMessage("status." + "disabled", tbSyncAccountSettings.provider);
-
-            //check, if this localized string contains a link
-            let parts = localized.split("||");
-            document.getElementById('syncstate').textContent = parts[0];
-        
-            if (parts.length==3) {
-                    document.getElementById('syncstate_link').setAttribute("dest", parts[1]);
-                    document.getElementById('syncstate_link').textContent = parts[2];
-            }
+            let localized = tbSync.getLocalizedMessage("status." + (isEnabled ? status : "disabled"), tbSyncAccountSettings.provider);
+            document.getElementById("syncstate").textContent = localized;
         }
                 
         //update syncstates of folders in folderlist, if visible
@@ -401,6 +397,10 @@ var tbSyncAccountSettings = {
         } else {
             tbSync[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, null);
         }
-    }
+    },
+    
+    openErrorLog: function () {
+        tbSync.prefWindowObj.open("chrome://tbsync/content/manager/errorlog/errorlog.xul", "TbSyncErrorLog", "centerscreen,chrome,resizable");
+    },    
 
 };
