@@ -13,6 +13,7 @@
 <!ENTITY manager.DisableAccount "Konto deaktivieren">
 <!ENTITY manager.DeleteAccount "Konto löschen">
 <!ENTITY manager.ShowErrorLog "Fehlerprotokoll anzeigen">
+<!ENTITY manager.ErrorLog "Fehlerprotokoll">
 <!ENTITY manager.RetryConnectAccount "Erneut versuchen mit dem  Server zu verbinden">
 
 <!ENTITY manager.noaccounts "Es sind aktuell noch keine Konten konfiguriert.">

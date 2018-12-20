@@ -13,6 +13,7 @@
 <!ENTITY manager.DisableAccount "Disabilita account">
 <!ENTITY manager.DeleteAccount "Elimina account">
 <!ENTITY manager.ShowErrorLog "Mostra registro errori">
+<!ENTITY manager.ErrorLog "Registro errori">
 <!ENTITY manager.RetryConnectAccount "Riprova a collegarti al server">
 
 <!ENTITY manager.noaccounts "Non sono stati definiti ancora account.">

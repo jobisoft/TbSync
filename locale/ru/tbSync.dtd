@@ -13,6 +13,7 @@
 <!ENTITY manager.DisableAccount "Запретить аккаунт">
 <!ENTITY manager.DeleteAccount "Удалить аккаунт">
 <!ENTITY manager.ShowErrorLog "Показать журнал ошибок">
+<!ENTITY manager.ErrorLog "Журнал ошибок">
 <!ENTITY manager.RetryConnectAccount "Повторить подключение к серверу">
 
 <!ENTITY manager.noaccounts "Определенных аккаунтов пока нет.">

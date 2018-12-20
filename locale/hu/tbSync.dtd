@@ -13,6 +13,7 @@
 <!ENTITY manager.DisableAccount "Fiók letiltása">
 <!ENTITY manager.DeleteAccount "Fiók törlése">
 <!ENTITY manager.ShowErrorLog "A hibaüzenet megjelenítése">
+<!ENTITY manager.ErrorLog "Hibaüzenet">
 <!ENTITY manager.RetryConnectAccount "Próbálkozzon újra a kiszolgálóhoz való csatlakozással">
 
 <!ENTITY manager.noaccounts "Még nincsenek fiókok meghatározott.">

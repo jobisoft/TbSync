@@ -5,7 +5,7 @@
 <dialog
     width="600"
     height="400"
-    title="ErrorLog"
+    title="&manager.ErrorLog;"
     buttons="accept"
     onload="tbSyncErrorLog.onload();"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
