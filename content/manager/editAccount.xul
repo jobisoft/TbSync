@@ -33,11 +33,11 @@
                     <label class="header" style="margin-left:0; margin-bottom:1ex;" value="&manager.tabs.status.general;" />
                     <checkbox id="tbsync.accountsettings.enabled" oncommand="tbSyncAccountSettings.toggleEnableState(this);" label="&manager.tabs.status.enableThisAccount;"  />
 
-                    <label class="header showIfEnabled" style="margin-left:0; margin-bottom:1ex; margin-top:2ex;" value="&manager.status;" />
-                    <hbox align="center" class="showIfEnabled" style="margin-left:1ex;">
-                      <description flex="1" id="syncstate"></description>
-                      <button id="tbsync.accountsettings.errorlogbtn" label="&manager.ShowErrorLog;" oncommand="tbSyncAccountSettings.openErrorLog()" />
-                    </hbox>
+                    <vbox class="showIfEnabled">
+                        <label class="header" style="margin-left:0; margin-bottom:1ex; margin-top:2ex;" value="&manager.status;" />
+                        <description flex="1" id="syncstate"></description>
+                        <hbox><button id="tbsync.accountsettings.errorlogbtn" label="&manager.ShowErrorLog;" oncommand="tbSyncAccountSettings.openErrorLog()" /></hbox>
+                    </vbox>
                     
                     <vbox flex="1">
                         <vbox class="showIfConnected" flex="1">
