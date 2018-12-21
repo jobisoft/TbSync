@@ -943,7 +943,12 @@ var tbSync = {
         let entry = {
             timestamp: Date.now(),
             message: message, 
-            details: details};
+            details: details
+        };
+
+        if (message == "JavaScriptError" && details && details.message && details.fileName && details.lineNumber && details.stack) {
+            entry.details = details.message + "\n\nfile: " + details.fileName + "\nline: " + details.lineNumber + "\n\n" + details.stack;
+        }
 
         if (syncdata) {
             entry.provider = tbSync.db.getAccountSetting(syncdata.account, "provider");
@@ -951,7 +956,7 @@ var tbSync = {
             entry.foldername = (syncdata.folderID) ? tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") : "";
         }
         
-        tbSync.dump("ErrorLog", message + (details !== null ? "\n" + details : ""));
+        tbSync.dump("ErrorLog", entry.message + (entry.details !== null ? "\n" + entry.details : ""));
         tbSync.errors.unshift(entry);
         if (tbSync.errors.length > 100) tbSync.errors.pop();
     },
