@@ -19,6 +19,7 @@ manager.tryagain=Riprova a collegarti al server
 manager.connecting=Connessione al server in corso
 manager.resource=Cartella
 manager.status=Stato
+manager.help=Aiuto
 
 addressbook.searchall=Cerca in tutte le rubriche
 addressbook.searchthis=Cerca in questa rubrica

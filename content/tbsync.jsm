@@ -418,6 +418,7 @@ var tbSync = {
         }
     
         tbSync.syncDataObj[account].account = account;
+        tbSync.syncDataObj[account].provider = tbSync.db.getAccountSetting(account, "provider");
     },
     
     getSyncData: function (account, field = "") {
@@ -648,7 +649,7 @@ var tbSync = {
             status = error;
             time = "";
         }
-        tbSync.dump("finishFolderSync(" + info + ")", tbSync.getLocalizedMessage("status." + status, tbSync.db.getAccountSetting(syncdata.account, "provider")));
+        tbSync.dump("finishFolderSync(" + info + ")", tbSync.getLocalizedMessage("status." + status, syncdata.provider));
         
         if (syncdata.folderID != "") {
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", status);
@@ -943,6 +944,7 @@ var tbSync = {
         let entry = {
             timestamp: Date.now(),
             message: message, 
+            link: null, 
             details: details
         };
 
@@ -950,13 +952,34 @@ var tbSync = {
             entry.details = details.message + "\n\nfile: " + details.fileName + "\nline: " + details.lineNumber + "\n\n" + details.stack;
         }
 
+        let localized = "";
+        let link = "";
         if (syncdata) {
-            entry.provider = tbSync.db.getAccountSetting(syncdata.account, "provider");
+            entry.provider = syncdata.provider;
             entry.accountname = tbSync.db.getAccountSetting(syncdata.account, "accountname");
             entry.foldername = (syncdata.folderID) ? tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") : "";
+
+            //try to get localized string from message from provider
+            localized = tbSync.getLocalizedMessage("status." + message, syncdata.provider);
+            link = tbSync.getLocalizedMessage("helplink." + message, syncdata.provider);
+        } else {
+            //try to get localized string from message from tbSync
+            localized = tbSync.getLocalizedMessage("status." + message);
+            link = tbSync.getLocalizedMessage("helplink." + message);
         }
         
-        tbSync.dump("ErrorLog", entry.message + (entry.details !== null ? "\n" + entry.details : ""));
+        //can we provide a localized version of the error msg?
+        if (localized != "status."+message) {
+            entry.message = localized;
+        }
+
+        //is there a help link?
+        if (link != "helplink." + message) {
+            entry.link = link;
+        }
+
+        //dump the non-localized message into debug log
+        tbSync.dump("ErrorLog", message + (entry.details !== null ? "\n" + entry.details : ""));
         tbSync.errors.unshift(entry);
         if (tbSync.errors.length > 100) tbSync.errors.pop();
     },

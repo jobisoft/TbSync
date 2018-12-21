@@ -29,31 +29,58 @@ var tbSyncErrorLog = {
     addLogEntry: function (entry) {
         
         //left column
+        let leftColumn = document.createElement("vbox");
+
         let image = document.createElement("image");
         image.setAttribute("src", "chrome://tbsync/skin/" + "warning16.png");
         image.setAttribute("style", "margin:2px 4px 4px 4px;");
-
-        let leftColumn = document.createElement("vbox");
         leftColumn.appendChild(image);
         
         //right column        
-        let d = new Date(entry.timestamp);
-        let msg = document.createElement("description");
-        msg.setAttribute("flex", "1");
-        msg.setAttribute("class", "header");
-        msg.textContent = d.toLocaleTimeString() + " : " + entry.message;
-
-        let account = document.createElement("label");
-        account.setAttribute("value",  "Account: " + entry.accountname);
-
-        let folder = document.createElement("label");
-        folder.setAttribute("value",  "Resource: " + entry.foldername);
-        
         let rightColumn = document.createElement("vbox");
         rightColumn.setAttribute("flex","1");
-        rightColumn.appendChild(msg);
-        if (entry.accountname) rightColumn.appendChild(account);
-        if (entry.foldername) rightColumn.appendChild(folder);
+
+        let d = new Date(entry.timestamp);
+        let timestamp = document.createElement("description");
+        timestamp.setAttribute("flex", "1");
+        timestamp.setAttribute("class", "header");
+        timestamp.textContent = d.toLocaleTimeString();
+        rightColumn.appendChild(timestamp);
+
+            let hBox = document.createElement("hbox");
+            let vBoxLeft = document.createElement("vbox");
+            let vBoxSpacer = document.createElement("vbox");
+            let vBoxRight = document.createElement("vbox");
+            vBoxSpacer.flex = "1";
+            hBox.appendChild(vBoxLeft);
+            hBox.appendChild(vBoxSpacer);
+            hBox.appendChild(vBoxRight);
+            rightColumn.appendChild(hBox);
+            
+            let msg = document.createElement("description");
+            msg.setAttribute("flex", "1");
+            msg.setAttribute("class", "header");
+            msg.textContent = entry.message;
+            vBoxLeft.appendChild(msg);
+
+            if (entry.link) {
+                let link = document.createElement("button");
+                link.setAttribute("label",  tbSync.getLocalizedMessage("manager.help"));
+                link.setAttribute("oncommand",  "tbSync.openLink('" + entry.link + "')");
+                vBoxRight.appendChild(link);
+            }
+
+        if (entry.accountname) {
+            let account = document.createElement("label");
+            account.setAttribute("value",  "Account: " + entry.accountname);
+            rightColumn.appendChild(account);
+        }
+
+        if (entry.foldername) {
+            let folder = document.createElement("label");
+            folder.setAttribute("value",  "Resource: " + entry.foldername);
+            rightColumn.appendChild(folder);
+        }
 
         if (entry.details) {
             let lines = entry.details.split("\n");
