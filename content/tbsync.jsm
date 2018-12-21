@@ -573,7 +573,7 @@ var tbSync = {
             //default
             status = tbSync.getLocalizedMessage("status." + folder.status, provider).split("||")[0];
 
-            switch (folder.status) {
+            switch (folder.status.split(".")[0]) { //the status may have a sub-decleration
                 case "OK":
                 case "modified":
                     switch (tbSync[provider].getThunderbirdFolderType(folder.type)) {
@@ -956,6 +956,7 @@ var tbSync = {
         let link = "";
         if (syncdata) {
             entry.provider = syncdata.provider;
+            entry.account = syncdata.account;
             entry.accountname = tbSync.db.getAccountSetting(syncdata.account, "accountname");
             entry.foldername = (syncdata.folderID) ? tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") : "";
 

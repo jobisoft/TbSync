@@ -227,7 +227,7 @@ var tbSyncAccountSettings = {
             
             default:
                 document.getElementById("syncstate").setAttribute("style","color: red");
-                showErrorLogButton = true;
+                showErrorLogButton = tbSync.errors.filter(e => e.account == tbSyncAccountSettings.account).length > 0;
         }
         document.getElementById('tbsync.accountsettings.errorlogbtn').hidden = !showErrorLogButton;
 
