@@ -20,16 +20,16 @@
         <em:translator>Alexey Sinitsyn (ru)</em:translator>
         <em:contributor>Jan Dagefoerde</em:contributor>
         <em:contributor>Nam Ldmpub</em:contributor>
-        <em:contributor>Exchange 2007 account: Michael Schiessl</em:contributor>
-        <em:contributor>Horde account: Stephan Jau</em:contributor>
-        <em:contributor>Nextcloud account: Michael Biebl</em:contributor>
-        <em:contributor>Posteo account: David Lütticke</em:contributor>
-        <em:contributor>Radicale account: László Kovács</em:contributor>
-        <em:contributor>SOGo account: netcup GmbH</em:contributor>
-        <em:contributor>Tine 2.0 account: Michael Schiessl</em:contributor>
-        <em:contributor>Zarafa account: nethinks GmbH</em:contributor>
-        <em:contributor>Zimbra account: Marc Thoben</em:contributor>
-        <em:contributor>Zoho account: Zavar</em:contributor>
+        <em:contributor>Michael Schiessl (Exchange 2007 account)</em:contributor>
+        <em:contributor>Stephan Jau (Horde account)</em:contributor>
+        <em:contributor>Michael Biebl (Nextcloud account)</em:contributor>
+        <em:contributor>David Lütticke (Posteo account)</em:contributor>
+        <em:contributor>László Kovács (Radicale account)</em:contributor>
+        <em:contributor>netcup GmbH (SOGo account)</em:contributor>
+        <em:contributor>Michael Schiessl (Tine 2.0 account)</em:contributor>
+        <em:contributor>nethinks GmbH (Zarafa account)</em:contributor>
+        <em:contributor>Marc Thoben (Zimbra account)</em:contributor>
+        <em:contributor>Zavar (Zoho account)</em:contributor>
         <em:creator>John Bieling</em:creator>
         <em:targetApplication>
           <!-- Thunderbird -->
@@ -52,16 +52,16 @@
             <em:translator>Alexey Sinitsyn (ru)</em:translator>
             <em:contributor>Jan Dagefoerde</em:contributor>
             <em:contributor>Nam Ldmpub</em:contributor>
-            <em:contributor>Exchange 2007 Konto: Michael Schiessl</em:contributor>
-            <em:contributor>Horde Konto: Stephan Jau</em:contributor>
-            <em:contributor>Nextcloud Konto: Michael Biebl</em:contributor>
-            <em:contributor>Posteo Konto: David Lütticke</em:contributor>
-            <em:contributor>Radicale Konto: László Kovács</em:contributor>
-            <em:contributor>SOGo Konto: netcup GmbH</em:contributor>
-            <em:contributor>Tine 2.0 Konto: Michael Schiessl</em:contributor>
-            <em:contributor>Zarafa Konto: nethinks GmbH</em:contributor>
-            <em:contributor>Zimbra Konto: Marc Thoben</em:contributor>
-            <em:contributor>Zoho Konto: Zavar</em:contributor>
+            <em:contributor>Michael Schiessl (Exchange 2007 Konto)</em:contributor>
+            <em:contributor>Stephan Jau (Horde Konto)</em:contributor>
+            <em:contributor>Michael Biebl (Nextcloud Konto)</em:contributor>
+            <em:contributor>David Lütticke (Posteo Konto)</em:contributor>
+            <em:contributor>László Kovács (Radicale Konto)</em:contributor>
+            <em:contributor>netcup GmbH (SOGo Konto)</em:contributor>
+            <em:contributor>Michael Schiessl (Tine 2.0 Konto)</em:contributor>
+            <em:contributor>nethinks GmbH (Zarafa Konto)</em:contributor>
+            <em:contributor>Marc Thoben (Zimbra Konto)</em:contributor>
+            <em:contributor>Zavar (Zoho Konto)</em:contributor>
             <em:creator>John Bieling</em:creator>
           </Description>
         </em:localized>
@@ -78,16 +78,16 @@
             <em:translator>Sinitsyn Alexey (ru)</em:translator>
             <em:contributor>Dagefoerde Jan</em:contributor>
             <em:contributor>Ldmpub Nam</em:contributor>
-            <em:contributor>Exchange 2007 fiók: Schiessl Michael</em:contributor>
-            <em:contributor>Horde fiók: Jau Stephan</em:contributor>
-            <em:contributor>Nextcloud fiók: Biebl Michael</em:contributor>
-            <em:contributor>Posteo fiók: Lütticke David</em:contributor>
-            <em:contributor>Radicale fiók: Kovács László</em:contributor>
-            <em:contributor>SOGo fiók: netcup GmbH</em:contributor>
-            <em:contributor>Tine 2.0 fiók: Schiessl Michael</em:contributor>
-            <em:contributor>Zarafa fiók: nethinks GmbH</em:contributor>
-            <em:contributor>Zimbra fiók: Thoben Marc</em:contributor>
-            <em:contributor>Zoho fiók: Zavar</em:contributor>
+            <em:contributor>Schiessl Michael (Exchange 2007 fiók)</em:contributor>
+            <em:contributor>Jau Stephan (Horde fiók)</em:contributor>
+            <em:contributor>Biebl Michael (Nextcloud fiók)</em:contributor>
+            <em:contributor>Lütticke David (Posteo fiók)</em:contributor>
+            <em:contributor>Kovács László (Radicale fiók)</em:contributor>
+            <em:contributor>netcup GmbH (SOGo fiók)</em:contributor>
+            <em:contributor>Schiessl Michael (Tine 2.0 fiók)</em:contributor>
+            <em:contributor>nethinks GmbH (Zarafa fiók)</em:contributor>
+            <em:contributor>Thoben Marc (Zimbra fiók)</em:contributor>
+            <em:contributor>Zavar (Zoho fiók)</em:contributor>
             <em:creator>Bieling John</em:creator>
           </Description>
         </em:localized>
@@ -104,16 +104,16 @@
             <em:translator>Alexey Sinitsyn (ru)</em:translator>
             <em:contributor>Jan Dagefoerde</em:contributor>
             <em:contributor>Nam Ldmpub</em:contributor>
-            <em:contributor>Exchange 2007 account: Michael Schiessl</em:contributor>
-            <em:contributor>Horde account: Stephan Jau</em:contributor>
-            <em:contributor>Nextcloud account: Michael Biebl</em:contributor>
-            <em:contributor>Posteo account: David Lütticke</em:contributor>
-            <em:contributor>Radicale account: Kovács László</em:contributor>
-            <em:contributor>SOGo account: netcup GmbH</em:contributor>
-            <em:contributor>Tine 2.0 account: Michael Schiessl</em:contributor>
-            <em:contributor>Zarafa account: nethinks GmbH</em:contributor>
-            <em:contributor>Zimbra account: Marc Thoben</em:contributor>
-            <em:contributor>Zoho account: Zavar</em:contributor>
+            <em:contributor>Michael Schiessl (Exchange 2007 account)</em:contributor>
+            <em:contributor>Stephan Jau (Horde account)</em:contributor>
+            <em:contributor>Michael Biebl (Nextcloud account)</em:contributor>
+            <em:contributor>David Lütticke (Posteo account)</em:contributor>
+            <em:contributor>Kovács László (Radicale account)</em:contributor>
+            <em:contributor>netcup GmbH (SOGo account)</em:contributor>
+            <em:contributor>Michael Schiessl (Tine 2.0 account)</em:contributor>
+            <em:contributor>nethinks GmbH (Zarafa account)</em:contributor>
+            <em:contributor>Marc Thoben (Zimbra account)</em:contributor>
+            <em:contributor>Zavar (Zoho account)</em:contributor>
             <em:creator>John Bieling</em:creator>
           </Description>
         </em:localized>
@@ -130,16 +130,16 @@
             <em:translator>Alexey Sinitsyn (ru)</em:translator>
             <em:contributor>Jan Dagefoerde</em:contributor>
             <em:contributor>Nam Ldmpub</em:contributor>
-            <em:contributor>Exchange 2007 Учётная запись: Michael Schiessl</em:contributor>
-            <em:contributor>Horde Учётная запись: Stephan Jau</em:contributor>
-            <em:contributor>Nextcloud Учётная запись: Michael Biebl</em:contributor>
-            <em:contributor>Posteo Учётная запись: David Lütticke</em:contributor>
-            <em:contributor>Radicale Учётная запись: Kovács László</em:contributor>
-            <em:contributor>SOGo Учётная запись: netcup GmbH</em:contributor>
-            <em:contributor>Tine 2.0 Учётная запись: Michael Schiessl</em:contributor>
-            <em:contributor>Zarafa Учётная запись: nethinks GmbH</em:contributor>
-            <em:contributor>Zimbra Учётная запись: Marc Thoben</em:contributor>
-            <em:contributor>Zoho Учётная запись: Zavar</em:contributor>
+            <em:contributor>Michael Schiessl (Exchange 2007 Учётная запись)</em:contributor>
+            <em:contributor>Stephan Jau (Horde Учётная запись)</em:contributor>
+            <em:contributor>Michael Biebl (Nextcloud Учётная запись)</em:contributor>
+            <em:contributor>David Lütticke (Posteo Учётная запись)</em:contributor>
+            <em:contributor>Kovács László (Radicale Учётная запись)</em:contributor>
+            <em:contributor>netcup GmbH (SOGo Учётная запись)</em:contributor>
+            <em:contributor>Michael Schiessl (Tine 2.0 Учётная запись)</em:contributor>
+            <em:contributor>nethinks GmbH (Zarafa Учётная запись)</em:contributor>
+            <em:contributor>Marc Thoben (Zimbra Учётная запись)</em:contributor>
+            <em:contributor>Zavar (Zoho Учётная запись)</em:contributor>
             <em:creator>John Bieling</em:creator>
           </Description>
          </em:localized>
