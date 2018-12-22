@@ -646,12 +646,12 @@ var tbSync = {
             info += "." + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name");
         }
         
-        if (error !== "") {
-            status = error;
+        if (error.message !== "") {
+            status = error.message;
             time = "";
+            tbSync.errorlog(syncdata, error.message, error.details ? error.details : null);
         }
-        tbSync.dump("finishFolderSync(" + info + ")", tbSync.getLocalizedMessage("status." + status, syncdata.provider));
-        
+
         if (syncdata.folderID != "") {
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", status);
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime", time);
