@@ -158,7 +158,7 @@ var tbSyncAccountSettings = {
                     //Not BOOL
                     pref.setAttribute("value", tbSync.db.getAccountSetting(tbSyncAccountSettings.account, tbSyncAccountSettings.settings[i]));
                 }
-                pref.onblur = function() {tbSyncAccountSettings.instantSaveSetting(this)};
+                pref.onblur = function() {tbSync.errorlog(null, "Executed InstantSave", null); tbSyncAccountSettings.instantSaveSetting(this)};
             }
         }
         
