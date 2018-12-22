@@ -23,12 +23,12 @@
     
     <tabbox id="tbsync.accountsettings.frame" hidden="true" flex="1">
 
-        <tabs  id="manager.tabs">
+        <tabs  id="manager.tabs" orient="horizontal" value="">
             <tab id="manager.tabs.status" label="&manager.tabs.status;" />
         </tabs>
       
         <tabpanels flex="1" id="manager.tabpanels" style="margin:0;padding:1ex;">
-            <tabpanel  id="manager.tabpanels.status"><!-- STATUS -->
+            <tabpanel  id="manager.tabpanels.status" orient="vertical"><!-- STATUS -->
                 <vbox flex="1">
                     <label class="header" style="margin-left:0; margin-bottom:1ex;" value="&manager.tabs.status.general;" />
                     <checkbox id="tbsync.accountsettings.enabled" oncommand="tbSyncAccountSettings.toggleEnableState(this);" label="&manager.tabs.status.enableThisAccount;"  />
