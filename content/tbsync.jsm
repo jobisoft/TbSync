@@ -615,7 +615,7 @@ var tbSync = {
 
         //update account status
         let status = "OK";
-        if (error == "" || error == "OK") {
+        if (error.message == "" || error.message == "OK") {
             //search for folders with error
             folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);
             for (let i in folders) {
@@ -626,7 +626,8 @@ var tbSync = {
                 }
             }
         } else {
-            status = error;
+            status = error.message;
+            tbSync.errorlog(syncdata, error.message, error.details ? error.details : null);
         }
         
         //done
@@ -947,10 +948,6 @@ var tbSync = {
             link: null, 
             details: details
         };
-
-        if (message == "JavaScriptError" && details && details.message && details.fileName && details.lineNumber && details.stack) {
-            entry.details = details.message + "\n\nfile: " + details.fileName + "\nline: " + details.lineNumber + "\n\n" + details.stack;
-        }
 
         let localized = "";
         let link = "";
