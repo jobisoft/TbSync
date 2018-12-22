@@ -615,8 +615,8 @@ var tbSync = {
 
         //update account status
         let status = "OK";
-        if (error.message == "" || error.message == "OK") {
-            //search for folders with error
+        if (!error.failed) {
+            //account itself is ok, search for folders with error
             folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);
             for (let i in folders) {
                 let folderstatus = folders[i].status.split(".")[0];
@@ -646,22 +646,22 @@ var tbSync = {
         //a folder has been finished, update status
         let time = Date.now();
         let status = "OK";
-        
-        let info = tbSync.db.getAccountSetting(syncdata.account, "accountname");
-        if (syncdata.folderID != "") {
-            info += "." + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name");
-        }
-        
+
         if (error.type == "JavaScriptError") {
             status = error.type;
             time = "";
             //do not log javascript errors here, let finishAccountSync handle that
-        } else if (error.message !== "") {
+        } else if (error.failed) {
             status = error.message;
             time = "";
             tbSync.errorlog(syncdata, status, error.details ? error.details : null);
             //set this error as logged so it does not get logged again by finishAccountSync in case of re-throw
             error.logged = true;
+        } else {
+            //succeeded, but custom msg?
+            if (error.message) {
+                status = error.message;
+            }
         }
 
         if (syncdata.folderID != "") {
