@@ -625,9 +625,15 @@ var tbSync = {
                     break;
                 }
             }
+        } else if (error.type == "JavaScriptError") {
+            status = error.type;
+            tbSync.errorlog(syncdata, status, error.message + "\n\n" + error.stack);
         } else {
             status = error.message;
-            tbSync.errorlog(syncdata, error.message, error.details ? error.details : null);
+            //log this error, if it has not been logged already
+            if (!error.logged) { 
+                tbSync.errorlog(syncdata, status, error.details ? error.details : null);
+            }
         }
         
         //done
@@ -646,10 +652,16 @@ var tbSync = {
             info += "." + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name");
         }
         
-        if (error.message !== "") {
+        if (error.type == "JavaScriptError") {
+            status = error.type;
+            time = "";
+            //do not log javascript errors here, let finishAccountSync handle that
+        } else if (error.message !== "") {
             status = error.message;
             time = "";
-            tbSync.errorlog(syncdata, error.message, error.details ? error.details : null);
+            tbSync.errorlog(syncdata, status, error.details ? error.details : null);
+            //set this error as logged so it does not get logged again by finishAccountSync in case of re-throw
+            error.logged = true;
         }
 
         if (syncdata.folderID != "") {
