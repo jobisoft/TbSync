@@ -48,14 +48,10 @@ var tbSyncErrorLog = {
         rightColumn.appendChild(timestamp);
 
             let hBox = document.createElement("hbox");
+            hBox.flex = "1";
             let vBoxLeft = document.createElement("vbox");
-            let vBoxSpacer = document.createElement("vbox");
+            vBoxLeft.flex = "1";
             let vBoxRight = document.createElement("vbox");
-            vBoxSpacer.flex = "1";
-            hBox.appendChild(vBoxLeft);
-            hBox.appendChild(vBoxSpacer);
-            hBox.appendChild(vBoxRight);
-            rightColumn.appendChild(hBox);
             
             let msg = document.createElement("description");
             msg.setAttribute("flex", "1");
@@ -70,6 +66,10 @@ var tbSyncErrorLog = {
                 vBoxRight.appendChild(link);
             }
 
+            hBox.appendChild(vBoxLeft);
+            hBox.appendChild(vBoxRight);
+            rightColumn.appendChild(hBox);
+	    
         if (entry.accountname) {
             let account = document.createElement("label");
             account.setAttribute("value",  "Account: " + entry.accountname);
