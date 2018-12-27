@@ -990,8 +990,9 @@ var tbSync = {
 
         //dump the non-localized message into debug log
         tbSync.dump("ErrorLog", message + (entry.details !== null ? "\n" + entry.details : ""));
-        tbSync.errors.unshift(entry);
-        if (tbSync.errors.length > 100) tbSync.errors.pop();
+        tbSync.errors.push(entry);
+        if (tbSync.errors.length > 100) tbSync.errors.shift();
+        Services.obs.notifyObservers(null, "tbSyncErrorLog.update", null);
     },
 
     getIdentityKey: function (email) {

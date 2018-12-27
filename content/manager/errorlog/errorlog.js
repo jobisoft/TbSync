@@ -9,10 +9,13 @@
  "use strict";
 
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+Components.utils.import("resource://gre/modules/Services.jsm");
 
 var tbSyncErrorLog = {
     
     onload: function () {
+        Services.obs.addObserver(tbSyncErrorLog.updateErrorLog, "tbSyncErrorLog.update", false);
+
         let errorlog = document.getElementById('tbsync.errorlog');
         errorlog.hidden = true;
         
@@ -23,6 +26,24 @@ var tbSyncErrorLog = {
         }
 
         errorlog.hidden = false;
+    },
+    
+    onunload: function () {
+        Services.obs.removeObserver(tbSyncErrorLog.updateErrorLog, "tbSyncErrorLog.update");
+    },
+
+    updateErrorLog: {
+        observe: function (aSubject, aTopic, aData) {
+            let errorlog = document.getElementById('tbsync.errorlog');
+            errorlog.hidden = true;
+            
+            let item = tbSyncErrorLog.addLogEntry(tbSync.errors[tbSync.errors.length-1]);
+            errorlog.appendChild(item);
+
+            errorlog.hidden = false;
+
+            errorlog.ensureIndexIsVisible(errorlog.getRowCount()-1);
+        }
     },
 
     
@@ -69,7 +90,7 @@ var tbSyncErrorLog = {
             hBox.appendChild(vBoxLeft);
             hBox.appendChild(vBoxRight);
             rightColumn.appendChild(hBox);
-	    
+        
         if (entry.accountname) {
             let account = document.createElement("label");
             account.setAttribute("value",  "Account: " + entry.accountname);

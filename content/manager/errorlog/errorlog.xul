@@ -8,6 +8,7 @@
     title="&manager.ErrorLog;"
     buttons="accept"
     onload="tbSyncErrorLog.onload();"
+    onunload="tbSyncErrorLog.onunload();"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
 
     <script type="application/javascript" src="chrome://tbsync/content/manager/errorlog/errorlog.js"/>
