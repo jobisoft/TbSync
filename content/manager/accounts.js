@@ -426,7 +426,7 @@ var tbSyncAccounts = {
 
         //Not yet implemented
         document.getElementById(selector + "ShowErrorLog").hidden = false;
-        document.getElementById(selector + "ShowErrorLog").disabled = isSyncing;
+        document.getElementById(selector + "ShowErrorLog").disabled = false;
         
         if (selectedAccount !== null) {
             //disable if currently syncing (and displayed)
