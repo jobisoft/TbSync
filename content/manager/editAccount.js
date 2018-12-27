@@ -158,6 +158,7 @@ var tbSyncAccountSettings = {
                     //Not BOOL
                     pref.setAttribute("value", tbSync.db.getAccountSetting(tbSyncAccountSettings.account, tbSyncAccountSettings.settings[i]));
                 }
+                pref.addEventListener("click", function() {tbSync.errorlog(null, "Debug (not an error)", "onclick eventlistener for instant save of <" + this.id + "> called"); });
                 pref.addEventListener("blur", function() {tbSync.errorlog(null, "Debug (not an error)", "onblur eventlistener for instant save of <" + this.id + "> called"); });
                 pref.onblur = function() {tbSync.errorlog(null, "Debug (not an error)", "onblur method for instant save of <" + this.id + "> called"); tbSyncAccountSettings.instantSaveSetting(this)};
             }
