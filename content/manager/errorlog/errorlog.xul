@@ -5,8 +5,10 @@
 <dialog
     width="600"
     height="400"
-    title="&manager.ErrorLog;"
-    buttons="accept"
+    title="&errorlog.title;"
+    buttons="cancel, extra1"
+    buttonlabelcancel="&errorlog.close;"
+    buttonlabelextra1="&errorlog.clear;"
     onload="tbSyncErrorLog.onload();"
     onunload="tbSyncErrorLog.onunload();"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >

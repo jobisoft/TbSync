@@ -13,7 +13,6 @@
 <!ENTITY manager.DisableAccount "Konto deaktivieren">
 <!ENTITY manager.DeleteAccount "Konto löschen">
 <!ENTITY manager.ShowErrorLog "Fehlerprotokoll anzeigen">
-<!ENTITY manager.ErrorLog "Fehlerprotokoll">
 <!ENTITY manager.RetryConnectAccount "Erneut versuchen mit dem  Server zu verbinden">
 
 <!ENTITY manager.noaccounts "Es sind aktuell noch keine Konten konfiguriert.">
@@ -65,3 +64,7 @@
 <!ENTITY supportwizard.label.summary "Kurze Zusammenfassung des Fehlers:">
 <!ENTITY supportwizard.label.description "Ausführliche Fehlerbeschreibung:">
 <!ENTITY supportwizard.footer "Aus den hier angegebenen Informationen wird im nächsten Schritt eine E-Mail erzeugt, die Sie nachträglich noch bearbeiten können (z.B. Bildschirmfotos o.Ä. hinzufügen). Erst durch das Absenden der E-Mail, wird der Fehlerbericht verschickt.">
+
+<!ENTITY errorlog.title "Fehlerprotokoll">
+<!ENTITY errorlog.close "Schließen">
+<!ENTITY errorlog.clear "Leeren">

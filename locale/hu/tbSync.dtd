@@ -13,7 +13,6 @@
 <!ENTITY manager.DisableAccount "Fiók letiltása">
 <!ENTITY manager.DeleteAccount "Fiók törlése">
 <!ENTITY manager.ShowErrorLog "A hibaüzenet megjelenítése">
-<!ENTITY manager.ErrorLog "Hibaüzenet">
 <!ENTITY manager.RetryConnectAccount "Próbálkozzon újra a kiszolgálóhoz való csatlakozással">
 
 <!ENTITY manager.noaccounts "Még nincsenek fiókok meghatározott.">
@@ -65,3 +64,7 @@
 <!ENTITY supportwizard.label.summary "A hiba rövid összefoglalása:">
 <!ENTITY supportwizard.label.description "Részletes hiba leírása:">
 <!ENTITY supportwizard.footer "Ebből az információból e-mail készül. További tájékoztatás adhatók hozzá, pl. képernyőképek. A hibajelentés elküldéséhez az e-mailt el kell küldeni.">
+
+<!ENTITY errorlog.title "Hibaüzenet">
+<!ENTITY errorlog.close "közel">
+<!ENTITY errorlog.clear "üres">

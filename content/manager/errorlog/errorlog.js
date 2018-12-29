@@ -26,6 +26,22 @@ var tbSyncErrorLog = {
         }
 
         errorlog.hidden = false;
+        errorlog.ensureIndexIsVisible(errorlog.getRowCount()-1);
+        document.documentElement.getButton("extra1").onclick = tbSyncErrorLog.onclear;
+
+    },
+
+    onclear: function () {
+        tbSync.errors = [];
+
+        let errorlog = document.getElementById('tbsync.errorlog');
+        errorlog.hidden = true;
+
+        for (let i=errorlog.getRowCount()-1; i>=0; i--) {
+            errorlog.removeItemAt(i);
+        }
+        
+        errorlog.hidden = false;
     },
     
     onunload: function () {
@@ -41,7 +57,6 @@ var tbSyncErrorLog = {
             errorlog.appendChild(item);
 
             errorlog.hidden = false;
-
             errorlog.ensureIndexIsVisible(errorlog.getRowCount()-1);
         }
     },

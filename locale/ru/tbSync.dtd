@@ -13,7 +13,6 @@
 <!ENTITY manager.DisableAccount "Запретить аккаунт">
 <!ENTITY manager.DeleteAccount "Удалить аккаунт">
 <!ENTITY manager.ShowErrorLog "Показать журнал ошибок">
-<!ENTITY manager.ErrorLog "Журнал ошибок">
 <!ENTITY manager.RetryConnectAccount "Повторить подключение к серверу">
 
 <!ENTITY manager.noaccounts "Определенных аккаунтов пока нет.">
@@ -65,3 +64,7 @@
 <!ENTITY supportwizard.label.summary "Краткое описание ошибки:">
 <!ENTITY supportwizard.label.description "Подробное описание ошибки:">
 <!ENTITY supportwizard.footer "Из приведенной здесь информации на следующем шаге будет создано электронное письмо, которое вы можете впоследствии редактировать (например, добавлять скриншоты или аналогичное). Только при отправке этого электронного письма будет отправлен и сам отчет об ошибке.">
+
+<!ENTITY errorlog.title "Журнал ошибок">
+<!ENTITY errorlog.close "близко">
+<!ENTITY errorlog.clear "пустой">

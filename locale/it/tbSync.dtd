@@ -13,7 +13,6 @@
 <!ENTITY manager.DisableAccount "Disabilita account">
 <!ENTITY manager.DeleteAccount "Elimina account">
 <!ENTITY manager.ShowErrorLog "Mostra registro errori">
-<!ENTITY manager.ErrorLog "Registro errori">
 <!ENTITY manager.RetryConnectAccount "Riprova a collegarti al server">
 
 <!ENTITY manager.noaccounts "Non sono stati definiti ancora account.">
@@ -65,3 +64,7 @@
 <!ENTITY supportwizard.label.summary "Breve riassunto dell'errore:'">
 <!ENTITY supportwizard.label.description "Descrizione dettagliata dell'errore:'">
 <!ENTITY supportwizard.footer "Nel prossimo passaggio sarà generato un messaggio di posta elettronica a partire dalle informazioni fornite qui; puoi modificarlo in seguito (ad esempio, aggiungendo schermate o simili). La segnalazione d'errore verrà inviata solo inviando tale messaggio.">
+
+<!ENTITY errorlog.title "Registro errori">
+<!ENTITY errorlog.close "vicino">
+<!ENTITY errorlog.clear "vuoto">

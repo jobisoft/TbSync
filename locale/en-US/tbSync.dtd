@@ -13,7 +13,6 @@
 <!ENTITY manager.DisableAccount "Disable account">
 <!ENTITY manager.DeleteAccount "Delete account">
 <!ENTITY manager.ShowErrorLog "Open error log">
-<!ENTITY manager.ErrorLog "Error log">
 <!ENTITY manager.RetryConnectAccount "Try again to connect to server">
 
 <!ENTITY manager.noaccounts "There are not yet any accounts defined.">
@@ -65,3 +64,7 @@
 <!ENTITY supportwizard.label.summary "Short summary of the error:">
 <!ENTITY supportwizard.label.description "Detailed error description:">
 <!ENTITY supportwizard.footer "From the information given here, an e-mail will be generated in the next step, which you can subsequently edit (for example, adding screenshots or similar). Only by actually sending that e-mail, the error report will be sent.">
+
+<!ENTITY errorlog.title "Error log">
+<!ENTITY errorlog.close "Close">
+<!ENTITY errorlog.clear "Clear">
