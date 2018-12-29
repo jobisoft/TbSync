@@ -150,17 +150,20 @@ var tbSyncAccountSettings = {
 
             if (pref) {
                 //is this a checkbox?
+                let event = "blur";
                 if (pref.tagName == "checkbox") {
                     //BOOL
                     if (tbSync.db.getAccountSetting(tbSyncAccountSettings.account, tbSyncAccountSettings.settings[i])  == "1") pref.setAttribute("checked", true);
                     else pref.setAttribute("checked", false);
+                    event = "command";
                 } else {
                     //Not BOOL
                     pref.setAttribute("value", tbSync.db.getAccountSetting(tbSyncAccountSettings.account, tbSyncAccountSettings.settings[i]));
+                    if (pref.tagName == "menulist") {
+                        event = "command";
+                    }
                 }
-                pref.addEventListener("click", function() {tbSync.errorlog(null, "Debug (not an error)", "onclick eventlistener for instant save of <" + this.id + "> called"); });
-                pref.addEventListener("blur", function() {tbSync.errorlog(null, "Debug (not an error)", "onblur eventlistener for instant save of <" + this.id + "> called"); });
-                pref.onblur = function() {tbSync.errorlog(null, "Debug (not an error)", "onblur method for instant save of <" + this.id + "> called"); tbSyncAccountSettings.instantSaveSetting(this)};
+                pref.addEventListener(event, function() {tbSyncAccountSettings.instantSaveSetting(this)});
             }
         }
         
@@ -334,6 +337,7 @@ var tbSyncAccountSettings = {
         } else {
             value = field.value;
         }
+        tbSync.errorlog(null, "Debug (not an error)", "instant save of <" + tbSyncAccountSettings.account + "/" + setting + "> :  <"+value+">");  
         tbSync.db.setAccountSetting(tbSyncAccountSettings.account, setting, value);
         
         if (setting == "accountname") {
