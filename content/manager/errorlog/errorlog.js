@@ -68,6 +68,7 @@ var tbSyncErrorLog = {
         
         //left column
         let leftColumn = document.createElement("vbox");
+        leftColumn.setAttribute("width", "24");
 
         let image = document.createElement("image");
         image.setAttribute("src", "chrome://tbsync/skin/" + "warning16.png");
