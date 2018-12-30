@@ -50,14 +50,16 @@ var tbSyncErrorLog = {
 
     updateErrorLog: {
         observe: function (aSubject, aTopic, aData) {
-            let errorlog = document.getElementById('tbsync.errorlog');
-            errorlog.hidden = true;
-            
-            let item = tbSyncErrorLog.addLogEntry(tbSync.errors[tbSync.errors.length-1]);
-            errorlog.appendChild(item);
+            if (tbSync.errors.length > 0) {
+                let errorlog = document.getElementById('tbsync.errorlog');
+                errorlog.hidden = true;
+                
+                let item = tbSyncErrorLog.addLogEntry(tbSync.errors[tbSync.errors.length-1]);
+                errorlog.appendChild(item);
 
-            errorlog.hidden = false;
-            errorlog.ensureIndexIsVisible(errorlog.getRowCount()-1);
+                errorlog.hidden = false;
+                errorlog.ensureIndexIsVisible(errorlog.getRowCount()-1);
+            }
         }
     },
 
