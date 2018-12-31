@@ -293,34 +293,56 @@ var tbSyncAccountSettings = {
         if (!tbSyncAccountSettings.folderListVisible()) 
             return;
         
-        //clear folderlist
+        //get updated list of folderIDs
+        let folderData = tbSync[tbSyncAccountSettings.provider].folderList.getSortedData(tbSyncAccountSettings.account);
+        let foldersFound = [];
+        for (let i=0; i < folderData.length; i++) {
+            foldersFound.push(folderData[i].folderID);
+        }
+        
+        //remove entries from folderlist, which no longer exists and build reference array with  current elements
         let folderList = document.getElementById("tbsync.accountsettings.folderlist");
+        folderList.hidden=true;
+
+        let foldersElements = {};
         for (let i=folderList.getRowCount()-1; i>=0; i--) {
-            folderList.removeItemAt(i);
+            if (!foldersFound.includes(folderList.getItemAtIndex(i).getAttribute("value"))) {
+                folderList.removeItemAt(i);
+            } else {
+                foldersElements[folderList.getItemAtIndex(i).getAttribute("value")] = folderList.getItemAtIndex(i);
+            }
         }
 
-        //rebuild folderlist
-        let folderData = tbSync[tbSyncAccountSettings.provider].folderList.getSortedData(tbSyncAccountSettings.account);
+        //update folderlist
         for (let i=0; i < folderData.length; i++) {
-            //add new entry
-            let newListItem = document.createElement("richlistitem");
-            newListItem.setAttribute("value", folderData[i].folderID);
+            let nextItem = null;
 
-            //create checkBox for select state
-            let itemSelected = document.createElement("checkbox");
-            if (folderData[i].selected) itemSelected.setAttribute("checked", true);
-            itemSelected.setAttribute("oncommand", "tbSyncAccountSettings.toggleFolder(this);");
+            //if this entry does not exist, create it
+            if (foldersElements.hasOwnProperty(folderData[i].folderID)) {
+                //get reference to current element
+                nextItem = foldersElements[folderData[i].folderID];
+            } else {
+                //add new entry
+                nextItem = document.createElement("richlistitem");
+                nextItem.setAttribute("value", folderData[i].folderID);
 
-            //add row
-            tbSync[tbSyncAccountSettings.provider].folderList.addRow(document, newListItem, folderData[i], itemSelected);
-            let addedItem = folderList.appendChild(newListItem);
-            
-            //update row
+                //create checkBox for select state
+                let itemSelected = document.createElement("checkbox");
+                if (folderData[i].selected) itemSelected.setAttribute("checked", true);
+                itemSelected.setAttribute("oncommand", "tbSyncAccountSettings.toggleFolder(this);");
+
+                //add row
+                nextItem.appendChild(tbSync[tbSyncAccountSettings.provider].folderList.getRow(document, folderData[i], itemSelected));
+            }
+
+            //add/move row and update its content
+            let addedItem = folderList.appendChild(nextItem);
             tbSync[tbSyncAccountSettings.provider].folderList.updateRow(document, addedItem, folderData[i]);
             
             //ensureElementIsVisible also forces internal update of rowCount, which sometimes is not updated automatically upon appendChild
             folderList.ensureElementIsVisible(addedItem);
         }
+        folderList.hidden = false;
     },
 
 
