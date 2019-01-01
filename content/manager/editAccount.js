@@ -359,7 +359,6 @@ var tbSyncAccountSettings = {
         } else {
             value = field.value;
         }
-        tbSync.errorlog(null, "Debug (not an error)", "instant save of <" + tbSyncAccountSettings.account + "/" + setting + "> :  <"+value+">");  
         tbSync.db.setAccountSetting(tbSyncAccountSettings.account, setting, value);
         
         if (setting == "accountname") {
