@@ -996,29 +996,14 @@ var tbSync = {
     },
 
     getIdentityKey: function (email) {
-            let acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
-            let accounts = acctMgr.accounts;
-            for (let a = 0; a < accounts.length; a++) {
-                let account = accounts.queryElementAt(a, Components.interfaces.nsIMsgAccount);
-                if (account.defaultIdentity && account.defaultIdentity.email == email) return account.defaultIdentity.key;
-            }
-            return "";
-        },            
-
-    consoleListener: {
-        observe : function (aMessage) {
-            if (tbSync.prefSettings.getBoolPref("log.tofile")) {
-                let now = new Date();
-                aMessage.QueryInterface(Components.interfaces.nsIScriptError);
-                //errorFlag	0x0	Error messages. A pseudo-flag for the default, error case.
-                //warningFlag	0x1	Warning messages.
-                //exceptionFlag	0x2	An exception was thrown for this case - exception-aware hosts can ignore this.
-                //strictFlag	0x4	One of the flags declared in nsIScriptError.
-                //infoFlag	0x8	Just a log message
-                if (!(aMessage.flags & 0x1 || aMessage.flags & 0x8)) tbSync.appendToFile("debug.log", "** " + now.toString() + " **\n" + aMessage + "\n\n");
-            }
+        let acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
+        let accounts = acctMgr.accounts;
+        for (let a = 0; a < accounts.length; a++) {
+            let account = accounts.queryElementAt(a, Components.interfaces.nsIMsgAccount);
+            if (account.defaultIdentity && account.defaultIdentity.email == email) return account.defaultIdentity.key;
         }
-    },
+        return "";
+    },            
 
     initFile: function (filename) {
         let file = FileUtils.getFile("ProfD", ["TbSync",filename]);
@@ -1717,4 +1702,3 @@ var tbSync = {
 
 //clear debug log on start
 tbSync.initFile("debug.log");
-Services.console.registerListener(tbSync.consoleListener);
