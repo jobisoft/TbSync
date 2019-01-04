@@ -133,9 +133,11 @@ abAutoComplete.Search.prototype = {
                 if (status == "disabled" || !tbSync[provider].hasAutocompleteSupport(accounts.data[account], "autocomplete")) continue;
                 
                 //start all requests parallel (do not wait till done here, no yield, push the promise)
-                try {
-                    requests.push(tbSync[provider].abServerSearch (account, aSearchString));
-                } catch (e) {}
+                if (tbSync[provider].abServerSearch) {
+                    try {
+                        requests.push(tbSync[provider].abServerSearch (account, aSearchString, "autocomplete"));
+                    } catch (e) {}
+                }
             }
             
             //wait for all requests to finish (only have to wait for the slowest, all others are done)
