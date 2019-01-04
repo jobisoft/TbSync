@@ -130,14 +130,12 @@ abAutoComplete.Search.prototype = {
                 let provider = accounts.data[account].provider;
                 let status = accounts.data[account].status;
                 
-                if (status == "disabled") continue;
+                if (status == "disabled" || !tbSync[provider].hasAutocompleteSupport(accounts.data[account], "autocomplete")) continue;
                 
                 //start all requests parallel (do not wait till done here, no yield, push the promise)
-                if (tbSync[provider].abServerSearch) {
-                    try {
-                        requests.push(tbSync[provider].abServerSearch (account, aSearchString));
-                    } catch (e) {}
-                }
+                try {
+                    requests.push(tbSync[provider].abServerSearch (account, aSearchString));
+                } catch (e) {}
             }
             
             //wait for all requests to finish (only have to wait for the slowest, all others are done)
