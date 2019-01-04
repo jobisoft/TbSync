@@ -316,19 +316,25 @@ var tbSyncAccountSettings = {
         //update folderlist
         for (let i=0; i < folderData.length; i++) {
             let nextItem = null;
+            
+            //create new rowId, to be used for newly created rows
+            let rowId = Date.now() + "_" + i;
 
             //if this entry does not exist, create it
             if (foldersElements.hasOwnProperty(folderData[i].folderID)) {
                 //get reference to current element
                 nextItem = foldersElements[folderData[i].folderID];
+                //get its rowId
+                rowId = nextItem.id;
             } else {
                 //add new entry
                 nextItem = document.createElement("richlistitem");
                 nextItem.setAttribute("value", folderData[i].folderID);
+                nextItem.setAttribute("id", rowId);
 
                 //create checkBox for select state
                 let itemSelected = document.createElement("checkbox");
-                if (folderData[i].selected) itemSelected.setAttribute("checked", true);
+                itemSelected.setAttribute("id", "selbox_" + rowId);
                 itemSelected.setAttribute("oncommand", "tbSyncAccountSettings.toggleFolder(this);");
 
                 //add row
@@ -339,6 +345,14 @@ var tbSyncAccountSettings = {
             let addedItem = folderList.appendChild(nextItem);
             tbSync[tbSyncAccountSettings.provider].folderList.updateRow(document, addedItem, folderData[i]);
             
+            //update selbox
+            let selbox = document.getElementById("selbox_" + rowId);
+            if (folderData[i].selected) {
+                selbox.setAttribute("checked", true);
+            } else {
+                selbox.removeAttribute("checked");
+            }
+
             //ensureElementIsVisible also forces internal update of rowCount, which sometimes is not updated automatically upon appendChild
             folderList.ensureElementIsVisible(addedItem);
         }
