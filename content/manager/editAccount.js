@@ -396,7 +396,7 @@ var tbSyncAccountSettings = {
                 return;
         
             if (folder.selected == "1") {
-                if (window.confirm(tbSync.getLocalizedMessage("prompt.Unsubscribe"))) {
+                if (folder.target == "" || window.confirm(tbSync.getLocalizedMessage("prompt.Unsubscribe"))) {
                     //deselect folder
                     folder.selected = "0";
                     //remove folder, which will trigger the listener in tbsync which will clean up everything

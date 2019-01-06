@@ -25,7 +25,7 @@
 <!ENTITY manager.community "Сообщество">
 <!ENTITY manager.provider "Установить провайдера">
 
-<!ENTITY password.title "Запрос пароля TbSync">
+<!ENTITY password.title "Запрос учетных данных TbSync">
 <!ENTITY password.description "Обновите учетные данные для следующей учетной записи TbSync:">
 <!ENTITY password.account "учетная запись:">
 <!ENTITY password.user "пользователь:">

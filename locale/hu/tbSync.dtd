@@ -25,7 +25,7 @@
 <!ENTITY manager.community "Közösség">
 <!ENTITY manager.provider "Szolgáltató telepítése">
 
-<!ENTITY password.title "TbSync jelszó kérése">
+<!ENTITY password.title "TbSync hitelesítési kérés">
 <!ENTITY password.description "Kérjük, frissítse a következő TbSync-fiók hitelesítő adatait:">
 <!ENTITY password.account "Számla:">
 <!ENTITY password.user "Használó:">

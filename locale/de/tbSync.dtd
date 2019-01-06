@@ -25,7 +25,7 @@
 <!ENTITY manager.community "Community">
 <!ENTITY manager.provider "Provider installieren">
 
-<!ENTITY password.title "TbSync Kennwortabfrage">
+<!ENTITY password.title "TbSync Anmeldeinformationen">
 <!ENTITY password.description "Bitte aktualisieren Sie die Anmeldeinformationen für das folgende TbSync-Konto:">
 <!ENTITY password.account "Konto:">
 <!ENTITY password.user "Benutzer:">

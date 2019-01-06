@@ -17,13 +17,27 @@ var tbSyncPassword = {
         this.callbackOK = window.arguments[1];
         this.callbackCANCEL = window.arguments[2];
         document.getElementById("tbsync.account").value = this.accountdata.accountname;
-        document.getElementById("tbsync.user").value = this.accountdata.user;
+        
+        this.userfield = document.getElementById("tbsync.user");
+        this.userfield.value = this.accountdata.user;
+        //allow to change username only if not connected
+        if (tbSync.isConnected(this.accountdata.account)) {
+            this.userfield.disabled=true;
+        }
+        
+        document.getElementById("tbsync.password").focus();
     },
 
     doOK: function () {
         tbSync.passWindowObj[this.accountdata.account] = null;
-        //call set password function of accounts provider
-        tbSync[this.accountdata.provider].setPassword(this.accountdata, document.getElementById("tbsync.password").value);
+        //update username if changeable
+        if (!this.userfield.disabled) {
+            tbSync.db.setAccountSetting(this.accountdata.account, "user", this.userfield.value);
+        }
+        
+        //update password by calling setPassword function of accounts provider
+        let pass = document.getElementById("tbsync.password").value;
+        tbSync[this.accountdata.provider].setPassword(this.accountdata, pass);
         if (this.callbackOK) this.callbackOK();
     },
 
