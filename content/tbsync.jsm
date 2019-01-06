@@ -60,7 +60,7 @@ var tbSync = {
     bundle: Services.strings.createBundle("chrome://tbsync/locale/tbSync.strings"),
 
     prefWindowObj: null,
-    passWindowObj: null,
+    passWindowObj: {}, //hold references to passWindows for every account
     
     decoder: new TextDecoder(),
     encoder: new TextEncoder(),
@@ -226,7 +226,14 @@ var tbSync = {
 
             //close window (if open)
             if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
-            
+
+            //close all open password prompts
+            for (var w in tbSync.passWindowObj) {
+                if (tbSync.passWindowObj.hasOwnProperty(w) && tbSync.passWindowObj[w] !== null) {
+                    tbSync.passWindowObj[w].close();
+                }
+            }
+        
             //remove listener
             tbSync.addressbookListener.remove();
 
@@ -255,7 +262,6 @@ var tbSync = {
                 // check, if a window is already open and just put it in focus
                 if (tbSync.prefWindowObj === null) {
                     tbSync.prefWindowObj = tbSync.window.open("chrome://tbsync/content/manager/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen");
-                    tbSync.prefWindowObj.addEventListener("focus", function(event){if (tbSync.passWindowObj) tbSync.passWindowObj.focus();}, true);                
                 }
                 tbSync.prefWindowObj.focus();
             } else {

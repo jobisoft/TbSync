@@ -24,8 +24,17 @@ var tbSyncMessenger = {
         observe: function (aSubject, aTopic, aData) {
             let account = aData;            
             let syncstate = tbSync.getSyncData(account,"syncstate");
-            let status = tbSync.db.getAccountSetting(account, "status");
-            Services.console.logStringMessage("[TbSyncMessenger] " + syncstate + " : " + status);
+            if (syncstate == "accountdone") {
+                let status = tbSync.db.getAccountSetting(account, "status");
+                switch (status) {
+                    case "401":
+                        //only popup one password prompt window
+                        if (!tbSync.passWindowObj.hasOwnProperty[account] || tbSync.passWindowObj[account] === null) {
+                            tbSync.passWindowObj[account] = tbSync.window.openDialog("chrome://tbsync/content/manager/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.db.getAccount(account), function() {tbSync.syncAccount("sync", account);});
+                        }
+                        break;
+                }
+            }
         }
     },
     

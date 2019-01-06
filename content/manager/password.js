@@ -22,14 +22,14 @@ var tbSyncPassword = {
     },
 
     doOK: function () {
-        tbSync.passWindowObj = null;
+        tbSync.passWindowObj[this.accountdata.account] = null;
         //call set password function of accounts provider
         tbSync[this.accountdata.provider].setPassword(this.accountdata, document.getElementById("tbsync.password").value);
         if (this.callbackOK) this.callbackOK();
     },
 
     doCANCEL: function () {
-        tbSync.passWindowObj = null;
+        tbSync.passWindowObj[this.accountdata.account] = null;
         if (this.callbackCANCEL) this.callbackCANCEL();
     }
     

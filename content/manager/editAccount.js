@@ -62,18 +62,8 @@ var tbSyncAccountSettings = {
             //only run if is request for this account and main frame is visible
             let account = aData;            
             if (account == tbSyncAccountSettings.account && !document.getElementById('tbsync.accountsettings.frame').hidden) {
-                
                 let syncstate = tbSync.getSyncData(account,"syncstate");
                 if (syncstate == "accountdone") {
-                        let status = tbSync.db.getAccountSetting(account, "status");
-                        switch (status) {
-                            case "401":
-                                //only popup one password prompt window
-                                if (tbSync.passWindowObj === null) {
-                                    tbSync.passWindowObj = window.openDialog("chrome://tbsync/content/manager/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.db.getAccount(account), function() {tbSync.syncAccount("sync", account);});
-                                }
-                                break;
-                        }
                     tbSyncAccountSettings.updateGui();
                 } else {
                     tbSyncAccountSettings.updateSyncstate();

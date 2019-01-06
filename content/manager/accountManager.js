@@ -28,9 +28,6 @@ var tbSyncAccountManager = {
     
     onunload: function () {
         tbSync.prefWindowObj = null;
-        if (tbSync.passWindowObj) {
-            tbSync.passWindowObj.close();
-        }
     },
 
     selectTab: function (t) {
