@@ -25,6 +25,12 @@
 <!ENTITY manager.community "Community">
 <!ENTITY manager.provider "Install Provider">
 
+<!ENTITY password.title "TbSync Password Prompt">
+<!ENTITY password.description "Please update the credentials for the following TbSync account:">
+<!ENTITY password.account "Account:">
+<!ENTITY password.user "User:">
+<!ENTITY password.password "Password:">
+
 <!ENTITY manager.accounts "Accounts">
 <!ENTITY manager.status "Status">
 

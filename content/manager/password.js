@@ -16,9 +16,8 @@ var tbSyncPassword = {
         this.accountdata = window.arguments[0];
         this.callbackOK = window.arguments[1];
         this.callbackCANCEL = window.arguments[2];
-        document.title = tbSync.getLocalizedMessage("account").replace("##accountname##", this.accountdata.accountname)
-
-        document.getElementById("tbsync.password.description").textContent = tbSync.getLocalizedMessage("prompt.Password").replace("##user##", this.accountdata.user);
+        document.getElementById("tbsync.account").value = this.accountdata.accountname;
+        document.getElementById("tbsync.user").value = this.accountdata.user;
     },
 
     doOK: function () {
