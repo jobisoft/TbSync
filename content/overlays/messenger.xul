@@ -2,8 +2,12 @@
 <!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
 
 <overlay 
-	id="messengeroverlay" 
-	xmlns:html="http://www.w3.org/1999/xhtml">
+    id="messengeroverlay" 
+    oninject="tbSyncMessenger.onInjectIntoMessenger(window)"
+    onremove="tbSyncMessenger.onRemoveFromMessenger(window)"
+    xmlns:html="http://www.w3.org/1999/xhtml">
+
+    <script type="application/javascript" src="chrome://tbsync/content/overlays/messenger.js" />
 
     <toolbarpalette id="MailToolbarPalette">
         <toolbarbutton 
