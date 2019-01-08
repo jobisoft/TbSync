@@ -59,6 +59,7 @@ After that, I would like to create or help others to create a google provider fo
 * [info16.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/64363/info_rhombus_icon)
 * [warning16.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/36026/)
 * [calendar16.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/35805/)
+* [calendar/contacts16_shared.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/64490/network_share_icon)
 * [provider16.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/64634)
 * [report_send.png] based on work by FatCow Web Hosting [#1](https://www.iconfinder.com/icons/36365/) and [#2](https://www.iconfinder.com/icons/93180)
 * [report_open.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/36373)
