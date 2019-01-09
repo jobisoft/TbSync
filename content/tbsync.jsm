@@ -505,7 +505,7 @@ var tbSync = {
 
     setTargetModified : function (folder) {
         if (/*folder.status == "OK" && */ tbSync.isEnabled(folder.account)) {
-            tbSync.db.setAccountSetting(folder.account, "status", tbSync.db.getFolderSetting(folder.account, folder.folderID, "downloadonly") == "1" ? "needtorevert" : "notsyncronized");
+            tbSync.db.setAccountSetting(folder.account, "status", "notsyncronized");
             tbSync.db.setFolderSetting(folder.account, folder.folderID, "status", "modified");
             //notify settings gui to update status
              Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folder.account);
