@@ -126,8 +126,9 @@ var tbSyncErrorLog = {
             let line = document.createElement("textbox");
             line.setAttribute("readonly", "true");                
             line.setAttribute("multiline", "true");                
+            line.setAttribute("wrap", "off");                           
             line.setAttribute("rows", lines.length);                
-            line.setAttribute("style", "font-family: monospace; font-size: 10px; overflow: auto;");                
+            line.setAttribute("style", "font-family: monospace; font-size: 10px;");                
             line.setAttribute("class", "plain");                
             line.setAttribute("value", entry.details.trim());
             
