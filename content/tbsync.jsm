@@ -621,7 +621,10 @@ var tbSync = {
 
         //update account status
         let status = "OK";
-        if (!error.failed) {
+        if (error.type == "JavaScriptError") {
+            status = error.type;
+            tbSync.errorlog(syncdata, status, error.message + "\n\n" + error.stack);
+        } else if (!error.failed) {
             //account itself is ok, search for folders with error
             folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);
             for (let i in folders) {
@@ -631,9 +634,6 @@ var tbSync = {
                     break;
                 }
             }
-        } else if (error.type == "JavaScriptError") {
-            status = error.type;
-            tbSync.errorlog(syncdata, status, error.message + "\n\n" + error.stack);
         } else {
             status = error.message;
             //log this error, if it has not been logged already
