@@ -87,6 +87,15 @@ var db = {
         }
     },
 
+    removeAllItemsFromChangeLogWithStatus: function (parentId, status) {
+        for (let i=this.changelog.length-1; i>-1; i-- ) {
+            if (this.changelog[i].parentId == parentId && this.changelog[i].status == status) {
+                let row = this.changelog.splice(i,1);
+            }
+        }
+        this.saveChangelog();
+    },
+
     // Remove all cards of a parentId from ChangeLog
     clearChangeLog: function (parentId) {
         for (let i=this.changelog.length-1; i>-1; i-- ) {
