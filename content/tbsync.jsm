@@ -1109,31 +1109,48 @@ var tbSync = {
                 }
             }
 
-            if (aItem instanceof Components.interfaces.nsIAbCard && !aItem.isMailList) {
+            if (aItem instanceof Components.interfaces.nsIAbCard) {
                 let aParentDirURI = tbSync.getUriFromPrefId(aItem.directoryId.split("&")[0]);
                 if (aParentDirURI) { //could be undefined
-
                     let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDirURI,"1"]);
                     if (folders.length == 1) {
-                                                
-                        //THIS CODE ONLY ACTS ON TBSYNC CARDS
-                        let cardId = aItem.getProperty("TBSYNCID", "");
-                        if (cardId) {
-                            //Problem: A card modified by server should not trigger a changelog entry, so they are pretagged with modified_by_server
-                            let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
-                            if (itemStatus == "modified_by_server") {
-                                tbSync.db.removeItemFromChangeLog(aParentDirURI, cardId);
-                            } else  if (itemStatus != "added_by_user" && itemStatus != "added_by_server") { 
-                                //added_by_user -> it is a local unprocessed add do not re-add it to changelog
-                                //added_by_server -> it was just added by the server but our onItemAdd has not yet seen it, do not overwrite it - race condition - this local change is probably not caused by the user - ignore it?
-                                tbSync.setTargetModified(folders[0]);
-                                tbSync.db.addItemToChangeLog(aParentDirURI, cardId, "modified_by_user");
+
+                        if (aItem.isMailList) {
+                            let cardId = aItem.getProperty("NickName", ""); //yes, this is sad                            
+                            if (cardId) {
+                                let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
+                                if (itemStatus == "locked_by_mailinglist_operations") {
+                                    //Mailinglist operations from the server side produce tons of notifications on the added/removed cards and
+                                    //we cannot precatch all of them, so a special lock mode (locked_by_mailinglist_operations) is used to
+                                    //disable notifications during these operations.
+                                    //The last step of such a Mailinglist operation is to actually write the modifications into the mailListCard,
+                                    //which will trigger THIS notification, which we use to unlock all cards again.
+                                    tbSync.db.removeAllItemsFromChangeLogWithStatus(aParentDirURI, "locked_by_mailinglist_operations");                                    
+                                } else {
+                                    Services.console.logStringMessage("MailList MOD: " + itemStatus);                                    
+                                }
                             }
+
+                        } else {
+                            //THIS CODE ONLY ACTS ON TBSYNC CARDS
+                            let cardId = aItem.getProperty("TBSYNCID", "");
+                            if (cardId) {
+                                //Problem: A card modified by server should not trigger a changelog entry, so they are pretagged with modified_by_server
+                                let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
+                                if (itemStatus == "modified_by_server") {
+                                    tbSync.db.removeItemFromChangeLog(aParentDirURI, cardId);
+                                } else if (itemStatus != "locked_by_mailinglist_operations" && itemStatus != "added_by_user" && itemStatus != "added_by_server") { 
+                                    //added_by_user -> it is a local unprocessed add do not re-add it to changelog
+                                    //added_by_server -> it was just added by the server but our onItemAdd has not yet seen it, do not overwrite it - race condition - this local change is probably not caused by the user - ignore it?
+                                    Services.console.logStringMessage("LOCAL BAD MOD");
+                                    tbSync.setTargetModified(folders[0]);
+                                    tbSync.db.addItemToChangeLog(aParentDirURI, cardId, "modified_by_user");
+                                }
+                            }
+                            //END
                         }
-                        //END
                         
                     }
-                    
                 }
             }
         },
