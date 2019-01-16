@@ -1146,7 +1146,6 @@ var tbSync = {
                                 } else if (itemStatus != "locked_by_mailinglist_operations" && itemStatus != "added_by_user" && itemStatus != "added_by_server") { 
                                     //added_by_user -> it is a local unprocessed add do not re-add it to changelog
                                     //added_by_server -> it was just added by the server but our onItemAdd has not yet seen it, do not overwrite it - race condition - this local change is probably not caused by the user - ignore it?
-                                    Services.console.logStringMessage("LOCAL BAD MOD");
                                     tbSync.setTargetModified(folders[0]);
                                     tbSync.db.addItemToChangeLog(aParentDirURI, cardId, "modified_by_user");
                                 }
