@@ -1125,9 +1125,13 @@ var tbSync = {
                                     //disable notifications during these operations.
                                     //The last step of such a Mailinglist operation is to actually write the modifications into the mailListCard,
                                     //which will trigger THIS notification, which we use to unlock all cards again.
-                                    tbSync.db.removeAllItemsFromChangeLogWithStatus(aParentDirURI, "locked_by_mailinglist_operations");                                    
-                                } else {
-                                    Services.console.logStringMessage("MailList MOD: " + itemStatus);                                    
+                                    tbSync.db.removeAllItemsFromChangeLogWithStatus(aParentDirURI, "locked_by_mailinglist_operations");
+                                    
+                                    //We do not care at all about notifications for ML, because we get notifications for its members. The only
+                                    //purpose of locked_by_mailinglist_operations is to supress the local modification status when the server is
+                                    //updating mailinglists
+                                    
+                                    //We have to manually check on each sync, if the ML data actually changed.
                                 }
                             }
 
