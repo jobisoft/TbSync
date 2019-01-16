@@ -1167,12 +1167,12 @@ var tbSync = {
              * If a card is removed from the addressbook we are syncing, keep track of the
              * deletions and log them to a file in the profile folder
              */
-            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
+            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory) {
                 let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDir.URI,"1"]);
                 if (folders.length == 1) {
                     
                     //THIS CODE ONLY ACTS ON TBSYNC CARDS
-                    let cardId = aItem.getProperty("TBSYNCID", "");
+                    let cardId = aItem.isMailList ? aItem.getProperty("NickName", "") : aItem.getProperty("TBSYNCID", "");
                     if (cardId) {
                         //Problem: A card deleted by server should not trigger a changelog entry, so they are pretagged with deleted_by_server
                         let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
