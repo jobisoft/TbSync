@@ -32,7 +32,13 @@ tbSync.onAbResultsPaneSelectionChanged = function () {
     
     let cards = window.GetSelectedAbCards();
     if (cards.length == 1) {
-        let aParentDirURI = tbSync.getUriFromDirectoryId(cards[0].directoryId);
+        let aParentDirURI = window.GetSelectedDirectory();
+        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+        let selectedBook = abManager.getDirectory(aParentDirURI);
+        if (selectedBook.isMailList) {
+            aParentDirURI = aParentDirURI.substring(0, aParentDirURI.lastIndexOf("/"));
+        }
+
         if (aParentDirURI) { //could be undefined
             let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
             if (folders.length == 1) {
