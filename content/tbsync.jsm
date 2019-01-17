@@ -55,8 +55,6 @@ var tbSync = {
     loadedProviders: {},
     loadedProviderAddOns: {},
 
-    prefIDs: {},
-        
     bundle: Services.strings.createBundle("chrome://tbsync/locale/tbSync.strings"),
 
     prefWindowObj: null,
@@ -139,7 +137,6 @@ var tbSync = {
         
         //init stuff for address book
         tbSync.addressbookListener.add();
-        tbSync.scanPrefIdsOfAddressBooks();        
         
         //was debug mode enabled during startuo?
         tbSync.debugMode = tbSync.prefSettings.getBoolPref("log.tofile");
@@ -1110,7 +1107,7 @@ var tbSync = {
             }
 
             if (aItem instanceof Components.interfaces.nsIAbCard) {
-                let aParentDirURI = tbSync.getUriFromPrefId(aItem.directoryId.split("&")[0]);
+                let aParentDirURI = tbSync.getUriFromDirectoryId(aItem.directoryId);
                 if (aParentDirURI) { //could be undefined
                     let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDirURI,"1"]);
                     if (folders.length == 1) {
@@ -1213,16 +1210,7 @@ var tbSync = {
             }
         },
 
-        onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {
-            //if a new book is added, get its prefId (which we need to get the parentDir of a modified card)
-            if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                if (!aItem.isRemote && aItem.dirPrefId) {
-                    tbSync.prefIDs[aItem.dirPrefId] = aItem.URI;
-                    tbSync.dump("PREFID: Single Add", "<" + aItem.dirPrefId + "> = <" + aItem.URI + ">")
-                }
-                return;
-            }
-            
+        onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {          
             if (aParentDir instanceof Components.interfaces.nsIAbDirectory) {
                 aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
             }
@@ -1355,22 +1343,17 @@ var tbSync = {
         return null;
     },
 
-    getUriFromPrefId : function(id) {
-        return tbSync.prefIDs[id];
-    },
-        
-    scanPrefIdsOfAddressBooks : function () {
-        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);        
-        let allAddressBooks = abManager.directories;
-        while (allAddressBooks.hasMoreElements()) {
-            let addressBook = allAddressBooks.getNext().QueryInterface(Components.interfaces.nsIAbDirectory);
-            if (!addressBook.isRemote&& addressBook.dirPrefId) {
-                tbSync.dump("PREFID: Group Add", "<" + addressBook.dirPrefId + "> = <" + addressBook.URI + ">")
-                tbSync.prefIDs[addressBook.dirPrefId] = addressBook.URI;
-            }
+    getUriFromDirectoryId : function(directoryId) {
+        let prefId = directoryId.split("&")[0];
+        let prefs = Services.prefs.getBranch(prefId + ".");
+        switch (prefs.getIntPref("dirType")) {
+            case 2:
+                return "moz-abmdbdirectory://" + prefs.getStringPref("filename");
+            default:
+                return null;
         }
     },
-    
+        
     checkAddressbook: function (account, folderID) {
         let folder = tbSync.db.getFolder(account, folderID);
         let targetName = tbSync.getAddressBookName(folder.target);

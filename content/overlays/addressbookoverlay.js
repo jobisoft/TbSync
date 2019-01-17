@@ -32,7 +32,7 @@ tbSync.onAbResultsPaneSelectionChanged = function () {
     
     let cards = window.GetSelectedAbCards();
     if (cards.length == 1) {
-        let aParentDirURI = tbSync.getUriFromPrefId(cards[0].directoryId.split("&")[0]);
+        let aParentDirURI = tbSync.getUriFromDirectoryId(cards[0].directoryId);
         if (aParentDirURI) { //could be undefined
             let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
             if (folders.length == 1) {
