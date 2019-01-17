@@ -1227,7 +1227,7 @@ var tbSync = {
                 aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
             }
 
-            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
+            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory) {
                 
                 let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDir.URI,"1"]);
                 if (folders.length == 1) {
@@ -1237,13 +1237,13 @@ var tbSync = {
                     if (searchResultProvider) return;
 
                     let itemStatus = null;
-                    let cardId = aItem.getProperty("TBSYNCID", "");
+                    let cardId = aItem.isMailList ? aItem.getProperty("NickName", "") : aItem.getProperty("TBSYNCID", "");
                     if (cardId) {
                         itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
                         if (itemStatus == "added_by_server") {
                             tbSync.db.removeItemFromChangeLog(aParentDir.URI, cardId);
                             return;
-                        } 
+                        }
                     }
                                 
                     //if this point is reached, either new card (no TBSYNCID), or moved card (old TBSYNCID) -> reset TBSYNCID 
@@ -1253,8 +1253,20 @@ var tbSync = {
                         tbSync.setTargetModified(folders[0]);
                         let newCardID = tbSync[provider].getNewCardID(aItem, folders[0]);
                         tbSync.db.addItemToChangeLog(aParentDir.URI, newCardID, "added_by_user");
-                        aItem.setProperty("TBSYNCID", newCardID);
-                        aParentDir.modifyCard(aItem);
+
+                        if (aItem.isMailList) {
+                            aItem.QueryInterface(Components.interfaces.nsIAbCard);
+                            // get underlying directory
+                            let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+                            let mailListDirectory = abManager.getDirectory(aItem.mailListURI);
+                            //for mailinglist we currently use the NickName to store the ID in mailinglists
+                            mailListDirectory.listNickName = newCardID;               
+                            mailListDirectory.editMailListToDatabase(aItem);            
+                        } else {
+                            aItem.setProperty("TBSYNCID", newCardID);
+                            aParentDir.modifyCard(aItem);
+                        }
+
                     }
                 }
                 
@@ -1273,6 +1285,34 @@ var tbSync = {
                 .getService(Components.interfaces.nsIAbManager)
                 .removeAddressBookListener(tbSync.addressbookListener);
         }
+    },
+
+    //helper function to get cards and mailinglists based on TBSYNCID 
+    //finds contacts and mailinglists (mailinglists discard custom properties, need to missuse NickName)
+    getCardFromID: function (addressBook, id) {
+        let searchContact = "(and(IsMailList,=,FALSE)(TBSYNCID,=,"+id+"))";
+        let searchMailList = "(and(IsMailList,=,TRUE)(NickName,=,"+id+"))";
+
+        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+        let result = abManager.getDirectory(addressBook.URI +  "?(or"+searchContact + searchMailList +")").childCards;
+        while (result.hasMoreElements()) {
+            return result.getNext().QueryInterface(Components.interfaces.nsIAbCard);
+        }
+        return null;
+    },
+
+    //helper function to find a mailinglist member by some property 
+    //I could not get nsIArray.indexOf() working, so I have to loop with queryElementAt()
+    findIndexOfMailingListMemberWithProperty: function(dir, prop, value) {
+        if (value != "") {
+            for (let i=0; i < dir.addressLists.length; i++) {
+                let member = dir.addressLists.queryElementAt(i, Components.interfaces.nsIAbCard);
+                if (member.getProperty(prop, "") == value) {
+                    return i;
+                }
+            }
+        }
+        return -1;
     },
 
     removeBook: function (uri) { 
