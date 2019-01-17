@@ -1105,6 +1105,8 @@ var tbSync = {
                      Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
                 }
             }
+                        if (aItem.isMailList) {            Services.console.logStringMessage("[LIST CHNAGE] "); }
+
 
             if (aItem instanceof Components.interfaces.nsIAbCard) {
                 let aParentDirURI = tbSync.getUriFromDirectoryId(aItem.directoryId);
@@ -1113,7 +1115,7 @@ var tbSync = {
                     if (folders.length == 1) {
 
                         if (aItem.isMailList) {
-                            let cardId = aItem.getProperty("NickName", ""); //yes, this is sad                            
+                            let cardId = tbSync.getPropertyOfCard(aItem, "TBSYNCID");
                             if (cardId) {
                                 let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
                                 if (itemStatus == "locked_by_mailinglist_operations") {
@@ -1169,7 +1171,7 @@ var tbSync = {
                 if (folders.length == 1) {
                     
                     //THIS CODE ONLY ACTS ON TBSYNC CARDS
-                    let cardId = aItem.isMailList ? aItem.getProperty("NickName", "") : aItem.getProperty("TBSYNCID", "");
+                    let cardId = tbSync.getPropertyOfCard(aItem, "TBSYNCID");
                     if (cardId) {
                         //Problem: A card deleted by server should not trigger a changelog entry, so they are pretagged with deleted_by_server
                         let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
@@ -1215,7 +1217,8 @@ var tbSync = {
                 aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
             }
 
-            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory) {
+            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
+                //we cannot set the ID of new lists before they are created, so we cannot detect this case
                 
                 let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDir.URI,"1"]);
                 if (folders.length == 1) {
@@ -1225,7 +1228,7 @@ var tbSync = {
                     if (searchResultProvider) return;
 
                     let itemStatus = null;
-                    let cardId = aItem.isMailList ? aItem.getProperty("NickName", "") : aItem.getProperty("TBSYNCID", "");
+                    let cardId = tbSync.getPropertyOfCard (aItem, "TBSYNCID");
                     if (cardId) {
                         itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
                         if (itemStatus == "added_by_server") {
@@ -1237,19 +1240,14 @@ var tbSync = {
                     //if this point is reached, either new card (no TBSYNCID), or moved card (old TBSYNCID) -> reset TBSYNCID 
                     //whatever happens, if this item has an entry in the changelog, it is not a new item added by the user
                     if (itemStatus === null) {
+                        let provider = tbSync.db.getAccountSetting(folders[0].account, "provider");
                         tbSync.setTargetModified(folders[0]);
-                        if (aItem.isMailList) {
-                            //it is not possible to modify the ID (NickName) at this stage, ML will not accept it
-                            //so we have to search for ML by hand later and add missing IDs
-                            //since we also do not get changelog entries for mod, we can handle add/mod identically 
-                        } else {
-                            let provider = tbSync.db.getAccountSetting(folders[0].account, "provider");
-                            let newCardID = tbSync[provider].getNewCardID(aItem, folders[0]);
-                            tbSync.db.addItemToChangeLog(aParentDir.URI, newCardID, "added_by_user");
-                            aItem.setProperty("TBSYNCID", newCardID);
-                            aParentDir.modifyCard(aItem);
-                        }
-
+                        let newCardID = tbSync[provider].getNewCardID(aItem, folders[0]);
+                        tbSync.db.addItemToChangeLog(aParentDir.URI, newCardID, "added_by_user");
+                        
+                        //mailinglist aware property setter
+                        tbSync.setPropertyOfCard (aItem, "TBSYNCID", newCardID);
+                        aParentDir.modifyCard(aItem);
                     }
                 }
                 
@@ -1270,18 +1268,56 @@ var tbSync = {
         }
     },
 
-    //helper function to get cards and mailinglists based on TBSYNCID 
-    //finds contacts and mailinglists (mailinglists discard custom properties, need to missuse NickName)
-    getCardFromID: function (addressBook, id) {
-        let searchContact = "(and(IsMailList,=,FALSE)(TBSYNCID,=,"+id+"))";
-        let searchMailList = "(and(IsMailList,=,TRUE)(NickName,=,"+id+"))";
-
+    //mailinglist aware method to get card based on a property (mailinglist properties need to be stored in prefs of parent book)
+    getCardFromProperty: function (addressBook, property, value) {
         let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-        let result = abManager.getDirectory(addressBook.URI +  "?(or"+searchContact + searchMailList +")").childCards;
+        let searchContact = "(and(IsMailList,=,FALSE)("+property+",=,"+value+"))";
+        let searchList = "(IsMailList,=,TRUE)";
+        let result = abManager.getDirectory(addressBook.URI +  "?(or"+searchContact + searchList+")").childCards;
         while (result.hasMoreElements()) {
-            return result.getNext().QueryInterface(Components.interfaces.nsIAbCard);
+            let card = result.getNext().QueryInterface(Components.interfaces.nsIAbCard);
+            //if it is not a list, we know the search found the desired contact, no need to check the property again
+            if (card.isMailList) {
+                //does this list card have the req prop?
+                if (tbSync.getPropertyOfCard(card, property) == value) {
+                    return card;
+                }
+            } else {
+                return card;
+            }
         }
         return null;
+    },
+    
+    //mailinglist aware method to get properties of cards (mailinglist properties need to be stored in prefs of parent book)
+	getPropertyOfCard: function (card, property, fallback = "") {
+	    if (card.isMailList) {
+            try {
+                let parentBookPrefId = card.directoryId.split("&")[0];
+                let parentPrefs = Services.prefs.getBranch(parentBookPrefId + ".");
+                let value = parentPrefs.getStringPref("mailinglists." + btoa(card.mailListURI) + "." + property, fallback);
+                return value;
+            } catch (e) {
+                return fallback;
+            }                
+        } else {
+            return card.getProperty(property, fallback);
+        }
+    },
+
+    //mailinglist aware method to set properties of cards (mailinglist properties need to be stored in prefs of parent book)
+	setPropertyOfCard: function (card, property, value) {
+	    if (card.isMailList) {
+            let parentBookPrefId = card.directoryId.split("&")[0];
+            tbSync.addPropertyToParentPrefs(parentBookPrefId, card.mailListURI, property, value);
+        } else {
+            card.setProperty(property, value);
+        }
+    },
+    
+	addPropertyToParentPrefs: function (parentBookPrefId, mailListURI, property, value) {
+        let parentPrefs = Services.prefs.getBranch(parentBookPrefId + ".");
+        parentPrefs.setStringPref("mailinglists." + btoa(mailListURI) + "." + property, value);
     },
 
     //helper function to find a mailinglist member by some property 
@@ -1345,13 +1381,14 @@ var tbSync = {
 
     getUriFromDirectoryId : function(directoryId) {
         let prefId = directoryId.split("&")[0];
-        let prefs = Services.prefs.getBranch(prefId + ".");
-        switch (prefs.getIntPref("dirType")) {
-            case 2:
-                return "moz-abmdbdirectory://" + prefs.getStringPref("filename");
-            default:
-                return null;
+        if (prefId) {
+            let prefs = Services.prefs.getBranch(prefId + ".");
+            switch (prefs.getIntPref("dirType")) {
+                case 2:
+                    return "moz-abmdbdirectory://" + prefs.getStringPref("filename");
+            }
         }
+        return null;
     },
         
     checkAddressbook: function (account, folderID) {
