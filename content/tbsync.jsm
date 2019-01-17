@@ -1249,20 +1249,15 @@ var tbSync = {
                     //if this point is reached, either new card (no TBSYNCID), or moved card (old TBSYNCID) -> reset TBSYNCID 
                     //whatever happens, if this item has an entry in the changelog, it is not a new item added by the user
                     if (itemStatus === null) {
-                        let provider = tbSync.db.getAccountSetting(folders[0].account, "provider");
                         tbSync.setTargetModified(folders[0]);
-                        let newCardID = tbSync[provider].getNewCardID(aItem, folders[0]);
-                        tbSync.db.addItemToChangeLog(aParentDir.URI, newCardID, "added_by_user");
-
                         if (aItem.isMailList) {
-                            aItem.QueryInterface(Components.interfaces.nsIAbCard);
-                            // get underlying directory
-                            let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-                            let mailListDirectory = abManager.getDirectory(aItem.mailListURI);
-                            //for mailinglist we currently use the NickName to store the ID in mailinglists
-                            mailListDirectory.listNickName = newCardID;               
-                            mailListDirectory.editMailListToDatabase(aItem);            
+                            //it is not possible to modify the ID (NickName) at this stage, ML will not accept it
+                            //so we have to search for ML by hand later and add missing IDs
+                            //since we also do not get changelog entries for mod, we can handle add/mod identically 
                         } else {
+                            let provider = tbSync.db.getAccountSetting(folders[0].account, "provider");
+                            let newCardID = tbSync[provider].getNewCardID(aItem, folders[0]);
+                            tbSync.db.addItemToChangeLog(aParentDir.URI, newCardID, "added_by_user");
                             aItem.setProperty("TBSYNCID", newCardID);
                             aParentDir.modifyCard(aItem);
                         }
