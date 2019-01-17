@@ -1105,8 +1105,6 @@ var tbSync = {
                      Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folders[0].account);
                 }
             }
-                        if (aItem.isMailList) {            Services.console.logStringMessage("[LIST CHNAGE] "); }
-
 
             if (aItem instanceof Components.interfaces.nsIAbCard) {
                 let aParentDirURI = tbSync.getUriFromDirectoryId(aItem.directoryId);
@@ -1114,8 +1112,9 @@ var tbSync = {
                     let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDirURI,"1"]);
                     if (folders.length == 1) {
 
+                        let cardId = tbSync.getPropertyOfCard(aItem, "TBSYNCID");
+                        
                         if (aItem.isMailList) {
-                            let cardId = tbSync.getPropertyOfCard(aItem, "TBSYNCID");
                             if (cardId) {
                                 let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
                                 if (itemStatus == "locked_by_mailinglist_operations") {
@@ -1136,7 +1135,6 @@ var tbSync = {
 
                         } else {
                             //THIS CODE ONLY ACTS ON TBSYNC CARDS
-                            let cardId = aItem.getProperty("TBSYNCID", "");
                             if (cardId) {
                                 //Problem: A card modified by server should not trigger a changelog entry, so they are pretagged with modified_by_server
                                 let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
@@ -1150,8 +1148,8 @@ var tbSync = {
                                 }
                             }
                             //END
+
                         }
-                        
                     }
                 }
             }
