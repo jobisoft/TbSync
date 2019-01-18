@@ -43,7 +43,7 @@ tbSync.onAbSelectChangeNewCard = function(window) {
 }
 
 tbSync.onLoadCard = function (aCard, aDocument) {
-    let aParentDirURI = tbSync.getUriFromPrefId(aCard.directoryId.split("&")[0]);
+    let aParentDirURI = tbSync.getUriFromDirectoryId(aCard.directoryId);
     let cardProvider = "";
     if (aParentDirURI) { //could be undefined
         let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
@@ -70,7 +70,7 @@ tbSync.onLoadCard = function (aCard, aDocument) {
 
 
 tbSync.onSaveCard = function (aCard, aDocument) {
-    let aParentDirURI = tbSync.getUriFromPrefId(aCard.directoryId.split("&")[0]);
+    let aParentDirURI = tbSync.getUriFromDirectoryId(aCard.directoryId);
     let cardProvider = "";
     if (aParentDirURI) { //could be undefined
         let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);

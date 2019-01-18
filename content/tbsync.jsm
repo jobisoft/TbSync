@@ -41,6 +41,8 @@ var tbSync = {
     
     lightningInitDone: false,
 
+    errors: [],
+    
     //list of default providers (available in add menu, even if not installed)
     defaultProviders: {
         "dav" : {
@@ -53,12 +55,10 @@ var tbSync = {
     loadedProviders: {},
     loadedProviderAddOns: {},
 
-    prefIDs: {},
-        
     bundle: Services.strings.createBundle("chrome://tbsync/locale/tbSync.strings"),
 
     prefWindowObj: null,
-    passWindowObj: null,
+    passWindowObj: {}, //hold references to passWindows for every account
     
     decoder: new TextDecoder(),
     encoder: new TextEncoder(),
@@ -125,15 +125,7 @@ var tbSync = {
                 //adding a global observer
                 cal.getCalendarManager().addCalendarObserver(tbSync.calendarObserver);
                 cal.getCalendarManager().addObserver(tbSync.calendarManagerObserver);
-                
-                //inject UI elements
-                if (tbSync.window.document.getElementById("calendar-synchronize-button")) {
-                    tbSync.window.document.getElementById("calendar-synchronize-button").addEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
-                }
-                if (tbSync.window.document.getElementById("task-synchronize-button")) {
-                    tbSync.window.document.getElementById("task-synchronize-button").addEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.initSync', null);}, false);
-                }
-                
+
                 //indicate, that we have initialized 
                 tbSync.lightningInitDone = true;
                 tbSync.dump("Check4Lightning","Done");                            
@@ -145,7 +137,6 @@ var tbSync = {
         
         //init stuff for address book
         tbSync.addressbookListener.add();
-        tbSync.scanPrefIdsOfAddressBooks();        
         
         //was debug mode enabled during startuo?
         tbSync.debugMode = tbSync.prefSettings.getBoolPref("log.tofile");
@@ -169,7 +160,7 @@ var tbSync = {
                 //load provider subscripts into tbSync 
                 tbSync.includeJS("chrome:" + js);
 
-                //keep track of loaded providers of this provider AddOn
+                //keep track of loaded providers of this provider add-on
                 if (!tbSync.loadedProviderAddOns.hasOwnProperty(addonId)) {
                     let addon = yield tbSync.getAddonByID(addonId);
                     tbSync.loadedProviderAddOns[addonId] = {addon: addon, providers: []};
@@ -198,7 +189,7 @@ var tbSync = {
 
     unloadProviderAddon:  function (addonId) {
         
-        //unload all loaded providers of this provider AddOn
+        //unload all loaded providers of this provider add-on
         if (tbSync.loadedProviderAddOns.hasOwnProperty(addonId) ) {
             for (let i=0; i < tbSync.loadedProviderAddOns[addonId].providers.length; i++) {
                 let provider = tbSync.loadedProviderAddOns[addonId].providers[i];
@@ -232,7 +223,14 @@ var tbSync = {
 
             //close window (if open)
             if (tbSync.prefWindowObj !== null) tbSync.prefWindowObj.close();
-            
+
+            //close all open password prompts
+            for (var w in tbSync.passWindowObj) {
+                if (tbSync.passWindowObj.hasOwnProperty(w) && tbSync.passWindowObj[w] !== null) {
+                    tbSync.passWindowObj[w].close();
+                }
+            }
+        
             //remove listener
             tbSync.addressbookListener.remove();
 
@@ -261,7 +259,6 @@ var tbSync = {
                 // check, if a window is already open and just put it in focus
                 if (tbSync.prefWindowObj === null) {
                     tbSync.prefWindowObj = tbSync.window.open("chrome://tbsync/content/manager/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen");
-                    tbSync.prefWindowObj.addEventListener("focus", function(event){if (tbSync.passWindowObj) tbSync.passWindowObj.focus();}, true);                
                 }
                 tbSync.prefWindowObj.focus();
             } else {
@@ -424,6 +421,7 @@ var tbSync = {
         }
     
         tbSync.syncDataObj[account].account = account;
+        tbSync.syncDataObj[account].provider = tbSync.db.getAccountSetting(account, "provider");
     },
     
     getSyncData: function (account, field = "") {
@@ -504,7 +502,7 @@ var tbSync = {
 
     setTargetModified : function (folder) {
         if (/*folder.status == "OK" && */ tbSync.isEnabled(folder.account)) {
-            tbSync.db.setAccountSetting(folder.account, "status", tbSync.db.getFolderSetting(folder.account, folder.folderID, "downloadonly") == "1" ? "needtorevert" : "notsyncronized");
+            tbSync.db.setAccountSetting(folder.account, "status", "notsyncronized");
             tbSync.db.setFolderSetting(folder.account, folder.folderID, "status", "modified");
             //notify settings gui to update status
              Services.obs.notifyObservers(null, "tbsync.updateSyncstate", folder.account);
@@ -578,7 +576,7 @@ var tbSync = {
             //default
             status = tbSync.getLocalizedMessage("status." + folder.status, provider).split("||")[0];
 
-            switch (folder.status) {
+            switch (folder.status.split(".")[0]) { //the status may have a sub-decleration
                 case "OK":
                 case "modified":
                     switch (tbSync[provider].getThunderbirdFolderType(folder.type)) {
@@ -620,8 +618,11 @@ var tbSync = {
 
         //update account status
         let status = "OK";
-        if (error == "" || error == "OK") {
-            //search for folders with error
+        if (error.type == "JavaScriptError") {
+            status = error.type;
+            tbSync.errorlog(syncdata, status, error.message + "\n\n" + error.stack);
+        } else if (!error.failed) {
+            //account itself is ok, search for folders with error
             folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);
             for (let i in folders) {
                 let folderstatus = folders[i].status.split(".")[0];
@@ -631,7 +632,11 @@ var tbSync = {
                 }
             }
         } else {
-            status = error;
+            status = error.message;
+            //log this error, if it has not been logged already
+            if (!error.logged) { 
+                tbSync.errorlog(syncdata, status, error.details ? error.details : null);
+            }
         }
         
         //done
@@ -644,18 +649,24 @@ var tbSync = {
         //a folder has been finished, update status
         let time = Date.now();
         let status = "OK";
-        
-        let info = tbSync.db.getAccountSetting(syncdata.account, "accountname");
-        if (syncdata.folderID != "") {
-            info += "." + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name");
-        }
-        
-        if (error !== "") {
-            status = error;
+
+        if (error.type == "JavaScriptError") {
+            status = error.type;
             time = "";
+            //do not log javascript errors here, let finishAccountSync handle that
+        } else if (error.failed) {
+            status = error.message;
+            time = "";
+            tbSync.errorlog(syncdata, status, error.details ? error.details : null);
+            //set this error as logged so it does not get logged again by finishAccountSync in case of re-throw
+            error.logged = true;
+        } else {
+            //succeeded, but custom msg?
+            if (error.message) {
+                status = error.message;
+            }
         }
-        tbSync.dump("finishFolderSync(" + info + ")", tbSync.getLocalizedMessage("status." + status, tbSync.db.getAccountSetting(syncdata.account, "provider")));
-        
+
         if (syncdata.folderID != "") {
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "status", status);
             tbSync.db.setFolderSetting(syncdata.account, syncdata.folderID, "lastsynctime", time);
@@ -945,35 +956,57 @@ var tbSync = {
         }
     },
 
-    synclog: function (type, message, details = null) {
-        //placeholder function, until a synclog is implemented
-        tbSync.dump("SyncLog ("+type+")", message + (details !== null ? "\n" + details : ""));
+    errorlog: function (syncdata, message, details = null) {
+        let entry = {
+            timestamp: Date.now(),
+            message: message, 
+            link: null, 
+            details: details
+        };
+
+        let localized = "";
+        let link = "";
+        if (syncdata) {
+            entry.provider = syncdata.provider;
+            entry.account = syncdata.account;
+            entry.accountname = tbSync.db.getAccountSetting(syncdata.account, "accountname");
+            entry.foldername = (syncdata.folderID) ? tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") : "";
+
+            //try to get localized string from message from provider
+            localized = tbSync.getLocalizedMessage("status." + message, syncdata.provider);
+            link = tbSync.getLocalizedMessage("helplink." + message, syncdata.provider);
+        } else {
+            //try to get localized string from message from tbSync
+            localized = tbSync.getLocalizedMessage("status." + message);
+            link = tbSync.getLocalizedMessage("helplink." + message);
+        }
+        
+        //can we provide a localized version of the error msg?
+        if (localized != "status."+message) {
+            entry.message = localized;
+        }
+
+        //is there a help link?
+        if (link != "helplink." + message) {
+            entry.link = link;
+        }
+
+        //dump the non-localized message into debug log
+        tbSync.dump("ErrorLog", message + (entry.details !== null ? "\n" + entry.details : ""));
+        tbSync.errors.push(entry);
+        if (tbSync.errors.length > 100) tbSync.errors.shift();
+        Services.obs.notifyObservers(null, "tbSyncErrorLog.update", null);
     },
 
     getIdentityKey: function (email) {
-            let acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
-            let accounts = acctMgr.accounts;
-            for (let a = 0; a < accounts.length; a++) {
-                let account = accounts.queryElementAt(a, Components.interfaces.nsIMsgAccount);
-                if (account.defaultIdentity && account.defaultIdentity.email == email) return account.defaultIdentity.key;
-            }
-            return "";
-        },            
-
-    consoleListener: {
-        observe : function (aMessage) {
-            if (tbSync.prefSettings.getBoolPref("log.tofile")) {
-                let now = new Date();
-                aMessage.QueryInterface(Components.interfaces.nsIScriptError);
-                //errorFlag	0x0	Error messages. A pseudo-flag for the default, error case.
-                //warningFlag	0x1	Warning messages.
-                //exceptionFlag	0x2	An exception was thrown for this case - exception-aware hosts can ignore this.
-                //strictFlag	0x4	One of the flags declared in nsIScriptError.
-                //infoFlag	0x8	Just a log message
-                if (!(aMessage.flags & 0x1 || aMessage.flags & 0x8)) tbSync.appendToFile("debug.log", "** " + now.toString() + " **\n" + aMessage + "\n\n");
-            }
+        let acctMgr = Components.classes["@mozilla.org/messenger/account-manager;1"].getService(Components.interfaces.nsIMsgAccountManager);
+        let accounts = acctMgr.accounts;
+        for (let a = 0; a < accounts.length; a++) {
+            let account = accounts.queryElementAt(a, Components.interfaces.nsIMsgAccount);
+            if (account.defaultIdentity && account.defaultIdentity.email == email) return account.defaultIdentity.key;
         }
-    },
+        return "";
+    },            
 
     initFile: function (filename) {
         let file = FileUtils.getFile("ProfD", ["TbSync",filename]);
@@ -1073,31 +1106,51 @@ var tbSync = {
                 }
             }
 
-            if (aItem instanceof Components.interfaces.nsIAbCard && !aItem.isMailList) {
-                let aParentDirURI = tbSync.getUriFromPrefId(aItem.directoryId.split("&")[0]);
+            if (aItem instanceof Components.interfaces.nsIAbCard) {
+                let aParentDirURI = tbSync.getUriFromDirectoryId(aItem.directoryId);
                 if (aParentDirURI) { //could be undefined
-
                     let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDirURI,"1"]);
                     if (folders.length == 1) {
-                                                
-                        //THIS CODE ONLY ACTS ON TBSYNC CARDS
-                        let cardId = aItem.getProperty("TBSYNCID", "");
-                        if (cardId) {
-                            //Problem: A card modified by server should not trigger a changelog entry, so they are pretagged with modified_by_server
-                            let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
-                            if (itemStatus == "modified_by_server") {
-                                tbSync.db.removeItemFromChangeLog(aParentDirURI, cardId);
-                            } else  if (itemStatus != "added_by_user" && itemStatus != "added_by_server") { 
-                                //added_by_user -> it is a local unprocessed add do not re-add it to changelog
-                                //added_by_server -> it was just added by the server but our onItemAdd has not yet seen it, do not overwrite it - race condition - this local change is probably not caused by the user - ignore it?
-                                tbSync.setTargetModified(folders[0]);
-                                tbSync.db.addItemToChangeLog(aParentDirURI, cardId, "modified_by_user");
-                            }
-                        }
-                        //END
+
+                        let cardId = tbSync.getPropertyOfCard(aItem, "TBSYNCID");
                         
+                        if (aItem.isMailList) {
+                            if (cardId) {
+                                let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
+                                if (itemStatus == "locked_by_mailinglist_operations") {
+                                    //Mailinglist operations from the server side produce tons of notifications on the added/removed cards and
+                                    //we cannot precatch all of them, so a special lock mode (locked_by_mailinglist_operations) is used to
+                                    //disable notifications during these operations.
+                                    //The last step of such a Mailinglist operation is to actually write the modifications into the mailListCard,
+                                    //which will trigger THIS notification, which we use to unlock all cards again.
+                                    tbSync.db.removeAllItemsFromChangeLogWithStatus(aParentDirURI, "locked_by_mailinglist_operations");
+                                    
+                                    //We do not care at all about notifications for ML, because we get notifications for its members. The only
+                                    //purpose of locked_by_mailinglist_operations is to supress the local modification status when the server is
+                                    //updating mailinglists
+                                    
+                                    //We have to manually check on each sync, if the ML data actually changed.
+                                }
+                            }
+
+                        } else {
+                            //THIS CODE ONLY ACTS ON TBSYNC CARDS
+                            if (cardId) {
+                                //Problem: A card modified by server should not trigger a changelog entry, so they are pretagged with modified_by_server
+                                let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
+                                if (itemStatus == "modified_by_server") {
+                                    tbSync.db.removeItemFromChangeLog(aParentDirURI, cardId);
+                                } else if (itemStatus != "locked_by_mailinglist_operations" && itemStatus != "added_by_user" && itemStatus != "added_by_server") { 
+                                    //added_by_user -> it is a local unprocessed add do not re-add it to changelog
+                                    //added_by_server -> it was just added by the server but our onItemAdd has not yet seen it, do not overwrite it - race condition - this local change is probably not caused by the user - ignore it?
+                                    tbSync.setTargetModified(folders[0]);
+                                    tbSync.db.addItemToChangeLog(aParentDirURI, cardId, "modified_by_user");
+                                }
+                            }
+                            //END
+
+                        }
                     }
-                    
                 }
             }
         },
@@ -1111,12 +1164,12 @@ var tbSync = {
              * If a card is removed from the addressbook we are syncing, keep track of the
              * deletions and log them to a file in the profile folder
              */
-            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
+            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory) {
                 let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDir.URI,"1"]);
                 if (folders.length == 1) {
                     
                     //THIS CODE ONLY ACTS ON TBSYNC CARDS
-                    let cardId = aItem.getProperty("TBSYNCID", "");
+                    let cardId = tbSync.getPropertyOfCard(aItem, "TBSYNCID");
                     if (cardId) {
                         //Problem: A card deleted by server should not trigger a changelog entry, so they are pretagged with deleted_by_server
                         let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
@@ -1157,21 +1210,13 @@ var tbSync = {
             }
         },
 
-        onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {
-            //if a new book is added, get its prefId (which we need to get the parentDir of a modified card)
-            if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                if (!aItem.isRemote && aItem.dirPrefId) {
-                    tbSync.prefIDs[aItem.dirPrefId] = aItem.URI;
-                    tbSync.dump("PREFID: Single Add", "<" + aItem.dirPrefId + "> = <" + aItem.URI + ">")
-                }
-                return;
-            }
-            
+        onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {          
             if (aParentDir instanceof Components.interfaces.nsIAbDirectory) {
                 aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
             }
 
             if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
+                //we cannot set the ID of new lists before they are created, so we cannot detect this case
                 
                 let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDir.URI,"1"]);
                 if (folders.length == 1) {
@@ -1181,13 +1226,13 @@ var tbSync = {
                     if (searchResultProvider) return;
 
                     let itemStatus = null;
-                    let cardId = aItem.getProperty("TBSYNCID", "");
+                    let cardId = tbSync.getPropertyOfCard (aItem, "TBSYNCID");
                     if (cardId) {
                         itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
                         if (itemStatus == "added_by_server") {
                             tbSync.db.removeItemFromChangeLog(aParentDir.URI, cardId);
                             return;
-                        } 
+                        }
                     }
                                 
                     //if this point is reached, either new card (no TBSYNCID), or moved card (old TBSYNCID) -> reset TBSYNCID 
@@ -1197,7 +1242,9 @@ var tbSync = {
                         tbSync.setTargetModified(folders[0]);
                         let newCardID = tbSync[provider].getNewCardID(aItem, folders[0]);
                         tbSync.db.addItemToChangeLog(aParentDir.URI, newCardID, "added_by_user");
-                        aItem.setProperty("TBSYNCID", newCardID);
+                        
+                        //mailinglist aware property setter
+                        tbSync.setPropertyOfCard (aItem, "TBSYNCID", newCardID);
                         aParentDir.modifyCard(aItem);
                     }
                 }
@@ -1217,6 +1264,72 @@ var tbSync = {
                 .getService(Components.interfaces.nsIAbManager)
                 .removeAddressBookListener(tbSync.addressbookListener);
         }
+    },
+
+    //mailinglist aware method to get card based on a property (mailinglist properties need to be stored in prefs of parent book)
+    getCardFromProperty: function (addressBook, property, value) {
+        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+        let searchContact = "(and(IsMailList,=,FALSE)("+property+",=,"+value+"))";
+        let searchList = "(IsMailList,=,TRUE)";
+        let result = abManager.getDirectory(addressBook.URI +  "?(or"+searchContact + searchList+")").childCards;
+        while (result.hasMoreElements()) {
+            let card = result.getNext().QueryInterface(Components.interfaces.nsIAbCard);
+            //if it is not a list, we know the search found the desired contact, no need to check the property again
+            if (card.isMailList) {
+                //does this list card have the req prop?
+                if (tbSync.getPropertyOfCard(card, property) == value) {
+                    return card;
+                }
+            } else {
+                return card;
+            }
+        }
+        return null;
+    },
+    
+    //mailinglist aware method to get properties of cards (mailinglist properties need to be stored in prefs of parent book)
+	getPropertyOfCard: function (card, property, fallback = "") {
+	    if (card.isMailList) {
+            try {
+                let parentBookPrefId = card.directoryId.split("&")[0];
+                let parentPrefs = Services.prefs.getBranch(parentBookPrefId + ".");
+                let value = parentPrefs.getStringPref("mailinglists." + btoa(card.mailListURI) + "." + property, fallback);
+                return value;
+            } catch (e) {
+                return fallback;
+            }                
+        } else {
+            return card.getProperty(property, fallback);
+        }
+    },
+
+    //mailinglist aware method to set properties of cards (mailinglist properties need to be stored in prefs of parent book)
+	setPropertyOfCard: function (card, property, value) {
+	    if (card.isMailList) {
+            let parentBookPrefId = card.directoryId.split("&")[0];
+            tbSync.addPropertyToParentPrefs(parentBookPrefId, card.mailListURI, property, value);
+        } else {
+            card.setProperty(property, value);
+        }
+    },
+    
+	addPropertyToParentPrefs: function (parentBookPrefId, mailListURI, property, value) {
+        let parentPrefs = Services.prefs.getBranch(parentBookPrefId + ".");
+        parentPrefs.setStringPref("mailinglists." + btoa(mailListURI) + "." + property, value);
+    },
+
+    //helper function to find a mailinglist member by some property 
+    //I could not get nsIArray.indexOf() working, so I have to loop with queryElementAt()
+    findIndexOfMailingListMemberWithProperty: function(dir, prop, value) {
+        if (value != "") {
+            for (let i=0; i < dir.addressLists.length; i++) {
+                let member = dir.addressLists.queryElementAt(i, Components.interfaces.nsIAbCard);
+                if (member.getProperty(prop, "") == value) {
+                    return i;
+                }
+            }
+        }
+        return -1;
     },
 
     removeBook: function (uri) { 
@@ -1264,22 +1377,18 @@ var tbSync = {
         return null;
     },
 
-    getUriFromPrefId : function(id) {
-        return tbSync.prefIDs[id];
-    },
-        
-    scanPrefIdsOfAddressBooks : function () {
-        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);        
-        let allAddressBooks = abManager.directories;
-        while (allAddressBooks.hasMoreElements()) {
-            let addressBook = allAddressBooks.getNext().QueryInterface(Components.interfaces.nsIAbDirectory);
-            if (!addressBook.isRemote&& addressBook.dirPrefId) {
-                tbSync.dump("PREFID: Group Add", "<" + addressBook.dirPrefId + "> = <" + addressBook.URI + ">")
-                tbSync.prefIDs[addressBook.dirPrefId] = addressBook.URI;
+    getUriFromDirectoryId : function(directoryId) {
+        let prefId = directoryId.split("&")[0];
+        if (prefId) {
+            let prefs = Services.prefs.getBranch(prefId + ".");
+            switch (prefs.getIntPref("dirType")) {
+                case 2:
+                    return "moz-abmdbdirectory://" + prefs.getStringPref("filename");
             }
         }
+        return null;
     },
-    
+        
     checkAddressbook: function (account, folderID) {
         let folder = tbSync.db.getFolder(account, folderID);
         let targetName = tbSync.getAddressBookName(folder.target);
@@ -1672,4 +1781,3 @@ var tbSync = {
 
 //clear debug log on start
 tbSync.initFile("debug.log");
-Services.console.registerListener(tbSync.consoleListener);

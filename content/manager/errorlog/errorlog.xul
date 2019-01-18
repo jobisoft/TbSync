@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
+
+<dialog
+    width="600"
+    height="400"
+    title="&errorlog.title;"
+    buttons="cancel, extra1"
+    buttonlabelcancel="&errorlog.close;"
+    buttonlabelextra1="&errorlog.clear;"
+    onload="tbSyncErrorLog.onload();"
+    onunload="tbSyncErrorLog.onunload();"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
+
+    <script type="application/javascript" src="chrome://tbsync/content/manager/errorlog/errorlog.js"/>
+
+    <vbox flex="1">
+        <richlistbox id="tbsync.errorlog" flex="1" seltype="single" />
+    </vbox>
+</dialog>

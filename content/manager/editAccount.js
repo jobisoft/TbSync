@@ -62,18 +62,8 @@ var tbSyncAccountSettings = {
             //only run if is request for this account and main frame is visible
             let account = aData;            
             if (account == tbSyncAccountSettings.account && !document.getElementById('tbsync.accountsettings.frame').hidden) {
-                
                 let syncstate = tbSync.getSyncData(account,"syncstate");
                 if (syncstate == "accountdone") {
-                        let status = tbSync.db.getAccountSetting(account, "status");
-                        switch (status) {
-                            case "401":
-                                //only popup one password prompt window
-                                if (tbSync.passWindowObj === null) {
-                                    tbSync.passWindowObj = window.openDialog("chrome://tbsync/content/manager/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.db.getAccount(account), function() {tbSync.syncAccount("sync", account);});
-                                }
-                                break;
-                        }
                     tbSyncAccountSettings.updateGui();
                 } else {
                     tbSyncAccountSettings.updateSyncstate();
@@ -150,15 +140,20 @@ var tbSyncAccountSettings = {
 
             if (pref) {
                 //is this a checkbox?
+                let event = "blur";
                 if (pref.tagName == "checkbox") {
                     //BOOL
                     if (tbSync.db.getAccountSetting(tbSyncAccountSettings.account, tbSyncAccountSettings.settings[i])  == "1") pref.setAttribute("checked", true);
                     else pref.setAttribute("checked", false);
+                    event = "command";
                 } else {
                     //Not BOOL
                     pref.setAttribute("value", tbSync.db.getAccountSetting(tbSyncAccountSettings.account, tbSyncAccountSettings.settings[i]));
+                    if (pref.tagName == "menulist") {
+                        event = "command";
+                    }
                 }
-                pref.onblur = function() {tbSyncAccountSettings.instantSaveSetting(this)};
+                pref.addEventListener(event, function() {tbSyncAccountSettings.instantSaveSetting(this)});
             }
         }
         
@@ -212,26 +207,31 @@ var tbSyncAccountSettings = {
         tbSyncAccountSettings.updateSyncstate();
     
         //change color of syncstate according to status
+        let showErrorLogButton = false;
         switch (status) {
             case "OK":
             case "disabled":
             case "nolightning":
             case "syncing":
-                document.getElementById('syncstate').removeAttribute("style");
-            break;
+                document.getElementById("syncstate").removeAttribute("style");
+                break;
             
             case "notsyncronized":
+                document.getElementById("syncstate").setAttribute("style","color: red");
+                break;
+            
             default:
-                document.getElementById('syncstate').setAttribute("style","color: red");
+                document.getElementById("syncstate").setAttribute("style","color: red");
+                showErrorLogButton = tbSync.errors.filter(e => e.account == tbSyncAccountSettings.account).length > 0;
         }
+        document.getElementById('tbsync.accountsettings.errorlogbtn').hidden = !showErrorLogButton;
+
     
         tbSync[tbSyncAccountSettings.provider].onSettingsGUIUpdate(window, tbSyncAccountSettings.account);
     },
 
     updateSyncstate: function () {
         tbSyncAccountSettings.updateTimer.cancel();
-        document.getElementById('syncstate_link').textContent = "";
-        document.getElementById('syncstate_link').setAttribute("dest", "");
 
         // if this account is beeing synced, display syncstate, otherwise print status
         let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.account, "status");
@@ -242,11 +242,6 @@ var tbSyncAccountSettings = {
 
         if (isSyncing) {
             let accounts = tbSync.db.getAccounts().data;
-//            let target = "";
-
-//            if (accounts.hasOwnProperty(syncdata.account) && syncdata.folderID !== "" && syncdata.syncstate != "done") { //if "Done" do not print folder info syncstate
-//                target = " [" + tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") + "]";
-//            }
             
             let parts = syncdata.syncstate.split("||");
             let syncstate = parts[0];
@@ -256,24 +251,15 @@ var tbSyncAccountSettings = {
             let msg = tbSync.getLocalizedMessage("syncstate." + syncstate, tbSyncAccountSettings.provider);
             if (diff > 2000) msg = msg + " (" + Math.round((tbSync.prefSettings.getIntPref("timeout") - diff)/1000) + "s)";
 
-            document.getElementById('syncstate').textContent = msg;// + target;
+            document.getElementById("syncstate").textContent = msg;
         
             if (syncstate.split(".")[0] == "send") {
                 //re-schedule update, if this is a waiting syncstate
                 tbSyncAccountSettings.updateTimer.init(tbSyncAccountSettings.updateSyncstate, 1000, 0);
             }            
         } else {
-            let localized = tbSync.getLocalizedMessage("status." + status, tbSyncAccountSettings.provider);
-            if (!isEnabled) localized = tbSync.getLocalizedMessage("status." + "disabled", tbSyncAccountSettings.provider);
-
-            //check, if this localized string contains a link
-            let parts = localized.split("||");
-            document.getElementById('syncstate').textContent = parts[0];
-        
-            if (parts.length==3) {
-                    document.getElementById('syncstate_link').setAttribute("dest", parts[1]);
-                    document.getElementById('syncstate_link').textContent = parts[2];
-            }
+            let localized = tbSync.getLocalizedMessage("status." + (isEnabled ? status : "disabled"), tbSyncAccountSettings.provider);
+            document.getElementById("syncstate").textContent = localized;
         }
                 
         //update syncstates of folders in folderlist, if visible
@@ -297,34 +283,70 @@ var tbSyncAccountSettings = {
         if (!tbSyncAccountSettings.folderListVisible()) 
             return;
         
-        //clear folderlist
+        //get updated list of folderIDs
+        let folderData = tbSync[tbSyncAccountSettings.provider].folderList.getSortedData(tbSyncAccountSettings.account);
+        let foldersFound = [];
+        for (let i=0; i < folderData.length; i++) {
+            foldersFound.push(folderData[i].folderID);
+        }
+        
+        //remove entries from folderlist, which no longer exists and build reference array with  current elements
         let folderList = document.getElementById("tbsync.accountsettings.folderlist");
+        folderList.hidden=true;
+
+        let foldersElements = {};
         for (let i=folderList.getRowCount()-1; i>=0; i--) {
-            folderList.removeItemAt(i);
+            if (!foldersFound.includes(folderList.getItemAtIndex(i).getAttribute("value"))) {
+                folderList.removeItemAt(i);
+            } else {
+                foldersElements[folderList.getItemAtIndex(i).getAttribute("value")] = folderList.getItemAtIndex(i);
+            }
         }
 
-        //rebuild folderlist
-        let folderData = tbSync[tbSyncAccountSettings.provider].folderList.getSortedData(tbSyncAccountSettings.account);
+        //update folderlist
         for (let i=0; i < folderData.length; i++) {
-            //add new entry
-            let newListItem = document.createElement("richlistitem");
-            newListItem.setAttribute("value", folderData[i].folderID);
-
-            //create checkBox for select state
-            let itemSelected = document.createElement("checkbox");
-            if (folderData[i].selected) itemSelected.setAttribute("checked", true);
-            itemSelected.setAttribute("oncommand", "tbSyncAccountSettings.toggleFolder(this);");
-
-            //add row
-            tbSync[tbSyncAccountSettings.provider].folderList.addRow(document, newListItem, folderData[i], itemSelected);
-            let addedItem = folderList.appendChild(newListItem);
+            let nextItem = null;
             
-            //update row
+            //create new rowId, to be used for newly created rows
+            let rowId = Date.now() + "_" + i;
+
+            //if this entry does not exist, create it
+            if (foldersElements.hasOwnProperty(folderData[i].folderID)) {
+                //get reference to current element
+                nextItem = foldersElements[folderData[i].folderID];
+                //get its rowId
+                rowId = nextItem.id;
+            } else {
+                //add new entry
+                nextItem = document.createElement("richlistitem");
+                nextItem.setAttribute("value", folderData[i].folderID);
+                nextItem.setAttribute("id", rowId);
+
+                //create checkBox for select state
+                let itemSelected = document.createElement("checkbox");
+                itemSelected.setAttribute("id", "selbox_" + rowId);
+                itemSelected.setAttribute("oncommand", "tbSyncAccountSettings.toggleFolder(this);");
+
+                //add row
+                nextItem.appendChild(tbSync[tbSyncAccountSettings.provider].folderList.getRow(document, folderData[i], itemSelected));
+            }
+
+            //add/move row and update its content
+            let addedItem = folderList.appendChild(nextItem);
             tbSync[tbSyncAccountSettings.provider].folderList.updateRow(document, addedItem, folderData[i]);
             
+            //update selbox
+            let selbox = document.getElementById("selbox_" + rowId);
+            if (folderData[i].selected) {
+                selbox.setAttribute("checked", true);
+            } else {
+                selbox.removeAttribute("checked");
+            }
+
             //ensureElementIsVisible also forces internal update of rowCount, which sometimes is not updated automatically upon appendChild
             folderList.ensureElementIsVisible(addedItem);
         }
+        folderList.hidden = false;
     },
 
 
@@ -374,7 +396,7 @@ var tbSyncAccountSettings = {
                 return;
         
             if (folder.selected == "1") {
-                if (window.confirm(tbSync.getLocalizedMessage("prompt.Unsubscribe"))) {
+                if (folder.target == "" || window.confirm(tbSync.getLocalizedMessage("prompt.Unsubscribe"))) {
                     //deselect folder
                     folder.selected = "0";
                     //remove folder, which will trigger the listener in tbsync which will clean up everything
@@ -406,6 +428,10 @@ var tbSyncAccountSettings = {
         } else {
             tbSync[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, null);
         }
-    }
+    },
+    
+    openErrorLog: function () {
+        tbSync.prefWindowObj.open("chrome://tbsync/content/manager/errorlog/errorlog.xul", "TbSyncErrorLog", "centerscreen,chrome,resizable");
+    },    
 
 };

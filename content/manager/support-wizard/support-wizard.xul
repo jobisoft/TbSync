@@ -1,11 +1,6 @@
 <?xml version="1.0"?>
-
-<!DOCTYPE overlay [
-<!ENTITY % abMainOverlayDTD SYSTEM "chrome://tbsync/locale/tbSync.dtd" >
-%abMainOverlayDTD;
-]>
-
-<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
 
 <wizard 
       width="500"

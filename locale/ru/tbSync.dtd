@@ -12,7 +12,7 @@
 <!ENTITY manager.EnableAccount "Разрешить аккаунт &amp; подключить к серверу">
 <!ENTITY manager.DisableAccount "Запретить аккаунт">
 <!ENTITY manager.DeleteAccount "Удалить аккаунт">
-<!ENTITY manager.ShowSyncLog "Показать лог сообщений синхронизации">
+<!ENTITY manager.ShowErrorLog "Показать журнал ошибок">
 <!ENTITY manager.RetryConnectAccount "Повторить подключение к серверу">
 
 <!ENTITY manager.noaccounts "Определенных аккаунтов пока нет.">
@@ -24,6 +24,12 @@
 <!ENTITY manager.help "Справка">
 <!ENTITY manager.community "Сообщество">
 <!ENTITY manager.provider "Установить провайдера">
+
+<!ENTITY password.title "Запрос учетных данных TbSync">
+<!ENTITY password.description "Обновите учетные данные для следующей учетной записи TbSync:">
+<!ENTITY password.account "учетная запись:">
+<!ENTITY password.user "пользователь:">
+<!ENTITY password.password "пароль:">
 
 <!ENTITY manager.accounts "Аккаунты">
 <!ENTITY manager.status "Статус">
@@ -45,7 +51,7 @@
 <!ENTITY manager.installprovider.warning "Этот провайдер синхронизации не размещен в официальном репозитории Thunderbird AddOn и, таким образом, не был рассмотрен сотрудниками Thunderbird. Провайдер синхронизации может сделать деструктивные действия в вашей системе. Используйте его на свой страх и риск.">
 <!ENTITY manager.missingprovider "Провайдер синхронизации (## provider ##), с которым связана эта учетная запись, не установлен.">
 
-<!ENTITY manager.supporter.contributers "Помощники &amp; Переводчики">
+<!ENTITY manager.supporter.contributors "Помощники &amp; Переводчики">
 <!ENTITY manager.supporter.sponsors "Спонсоры тестовых аккаунтов">
 
 <!ENTITY manager.help.needhelp "Нужна справка?">
@@ -64,3 +70,7 @@
 <!ENTITY supportwizard.label.summary "Краткое описание ошибки:">
 <!ENTITY supportwizard.label.description "Подробное описание ошибки:">
 <!ENTITY supportwizard.footer "Из приведенной здесь информации на следующем шаге будет создано электронное письмо, которое вы можете впоследствии редактировать (например, добавлять скриншоты или аналогичное). Только при отправке этого электронного письма будет отправлен и сам отчет об ошибке.">
+
+<!ENTITY errorlog.title "Журнал ошибок">
+<!ENTITY errorlog.close "близко">
+<!ENTITY errorlog.clear "пустой">

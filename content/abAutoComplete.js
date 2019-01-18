@@ -135,7 +135,7 @@ abAutoComplete.Search.prototype = {
                 //start all requests parallel (do not wait till done here, no yield, push the promise)
                 if (tbSync[provider].abServerSearch) {
                     try {
-                        requests.push(tbSync[provider].abServerSearch (account, aSearchString));
+                        requests.push(tbSync[provider].abServerSearch (account, aSearchString, "autocomplete"));
                     } catch (e) {}
                 }
             }

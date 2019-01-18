@@ -16,20 +16,33 @@ var tbSyncPassword = {
         this.accountdata = window.arguments[0];
         this.callbackOK = window.arguments[1];
         this.callbackCANCEL = window.arguments[2];
-        document.title = tbSync.getLocalizedMessage("account").replace("##accountname##", this.accountdata.accountname)
-
-        document.getElementById("tbsync.password.description").textContent = tbSync.getLocalizedMessage("prompt.Password").replace("##user##", this.accountdata.user);
+        document.getElementById("tbsync.account").value = this.accountdata.accountname;
+        
+        this.userfield = document.getElementById("tbsync.user");
+        this.userfield.value = this.accountdata.user;
+        //allow to change username only if not connected
+        if (tbSync.isConnected(this.accountdata.account)) {
+            this.userfield.disabled=true;
+        }
+        
+        document.getElementById("tbsync.password").focus();
     },
 
     doOK: function () {
-        tbSync.passWindowObj = null;
-        //call set password function of accounts provider
-        tbSync[this.accountdata.provider].setPassword(this.accountdata, document.getElementById("tbsync.password").value);
+        tbSync.passWindowObj[this.accountdata.account] = null;
+        //update username if changeable
+        if (!this.userfield.disabled) {
+            tbSync.db.setAccountSetting(this.accountdata.account, "user", this.userfield.value);
+        }
+        
+        //update password by calling setPassword function of accounts provider
+        let pass = document.getElementById("tbsync.password").value;
+        tbSync[this.accountdata.provider].setPassword(this.accountdata, pass);
         if (this.callbackOK) this.callbackOK();
     },
 
     doCANCEL: function () {
-        tbSync.passWindowObj = null;
+        tbSync.passWindowObj[this.accountdata.account] = null;
         if (this.callbackCANCEL) this.callbackCANCEL();
     }
     

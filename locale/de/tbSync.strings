@@ -4,11 +4,8 @@ info.sync=Synchronisation
 
 prompt.DeleteAccount=Sind Sie sicher, dass Sie das Konto ##accountName## löschen möchten?
 prompt.Disable=Sind Sie sicher, dass Sie dieses Konto deaktivieren möchten? Alle lokalen Veränderungen, die noch nicht synchronisiert wurden, gehen dabei verloren!
-prompt.Password=Bitte geben Sie das Passwort für den Benutzer ##user## ein:
 prompt.Unsubscribe=Sind Sie sicher, dass Sie dieses Element nicht länger abonnieren möchten? Alle lokalen Veränderungen, die noch nicht synchronisiert wurden, gehen dabei verloren!
 prompt.Erase=Sind Sie sicher, dass Sie dieses Konto eines unbekannten Providers aus der Konotliste entfernen möchten?
-
-account=TbSync Konto [##accountname##]
 
 accountacctions.delete=Konto "##accountname##" löschen 
 accountacctions.sync=Konto "##accountname##" synchronisieren 
@@ -19,6 +16,7 @@ manager.tryagain=Erneut versuchen mit dem Server zu verbinden
 manager.connecting=Verbindung wird hergestellt
 manager.resource=Ressource
 manager.status=Status
+manager.help=Hilfe
 
 addressbook.searchall=Alle Adressbücher durchsuchen
 addressbook.searchthis=Dieses Adressbuch durchsuchen

@@ -28,9 +28,6 @@ var tbSyncAccountManager = {
     
     onunload: function () {
         tbSync.prefWindowObj = null;
-        if (tbSync.passWindowObj) {
-            tbSync.passWindowObj.close();
-        }
     },
 
     selectTab: function (t) {
@@ -74,8 +71,8 @@ var tbSyncAccountManager = {
             menu.appendChild(item); 
         }
     
-    let menulist = document.getElementById("tbsync.supportwizard.faultycomponent.menulist");
-    menulist.addEventListener("select", tbSyncAccountManager.checkSupportWizard);
+        let menulist = document.getElementById("tbsync.supportwizard.faultycomponent.menulist");
+        menulist.addEventListener("select", tbSyncAccountManager.checkSupportWizard);
     },
     
     checkSupportWizard: function() {

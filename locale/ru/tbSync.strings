@@ -4,11 +4,8 @@ info.sync=Синхронизация
 
 prompt.DeleteAccount=Вы уверены, что хотите удалить аккаунт ##accountName##?
 prompt.Disable=Вы действительно хотите запретить этот аккаунт? Все локальные изменения, которые еще не синхронизированы, будут потеряны!
-prompt.Password=Введите пароль для пользователя ##user##:
 prompt.Unsubscribe=Вы действительно хотите отменить подписку на этот элемент? Все локальные изменения, которые еще не синхронизированы, будут потеряны!
 prompt.Erase=Вы действительно хотите удалить этот аккаунт неизвестного провайдера из списка аккаунтов?
-
-account=TbSync аккаунт [##accountname##]
 
 accountacctions.delete=Удалить аккаунт “##accountname##”
 accountacctions.sync=Синхронизировать аккаунт “##accountname##”
@@ -19,6 +16,7 @@ manager.tryagain=Повторить подсоединение к серверу
 manager.connecting=Подсоединиться к серверу
 manager.resource=Папка
 manager.status=Статус
+manager.help=помощь
 
 addressbook.searchall=Поиск по всем адресным книгам
 addressbook.searchthis=Поиск в этой адресной книге

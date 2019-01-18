@@ -136,7 +136,7 @@ serverSearch.onSearchInputChanged = Task.async (function* (window) {
                         yield tbSync.sleep(1000);
                         let currentQuery = window.tbSync_serverSearchNextQuery;
                         window.tbSync_serverSearchNextQuery = "";
-                        let results = yield tbSync[provider].abServerSearch (account, currentQuery);
+                        let results = yield tbSync[provider].abServerSearch (account, currentQuery, "search");
 
                         //delete all old results
                         serverSearch.clearServerSearchResults(window);

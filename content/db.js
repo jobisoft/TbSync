@@ -87,6 +87,15 @@ var db = {
         }
     },
 
+    removeAllItemsFromChangeLogWithStatus: function (parentId, status) {
+        for (let i=this.changelog.length-1; i>-1; i-- ) {
+            if (this.changelog[i].parentId == parentId && this.changelog[i].status == status) {
+                let row = this.changelog.splice(i,1);
+            }
+        }
+        this.saveChangelog();
+    },
+
     // Remove all cards of a parentId from ChangeLog
     clearChangeLog: function (parentId) {
         for (let i=this.changelog.length-1; i>-1; i-- ) {
@@ -391,7 +400,7 @@ var db = {
 
         //DB Concept:
         //-- on application start, data is read async from json file into object
-        //-- AddOn only works on object
+        //-- add-on only works on object
         //-- each time data is changed, an async write job is initiated 2s in the future and is resceduled, if another request arrives within that time
 
         //load changelog from file

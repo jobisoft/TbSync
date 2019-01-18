@@ -12,7 +12,7 @@
 <!ENTITY manager.EnableAccount "Abilita account e testa la connessione al server">
 <!ENTITY manager.DisableAccount "Disabilita account">
 <!ENTITY manager.DeleteAccount "Elimina account">
-<!ENTITY manager.ShowSyncLog "Visualizza i messaggi di log della sincronizzazione">
+<!ENTITY manager.ShowErrorLog "Mostra registro errori">
 <!ENTITY manager.RetryConnectAccount "Riprova a collegarti al server">
 
 <!ENTITY manager.noaccounts "Non sono stati definiti ancora account.">
@@ -24,6 +24,12 @@
 <!ENTITY manager.help "Aiuto">
 <!ENTITY manager.community "Comunità">
 <!ENTITY manager.provider "Installa provider">
+
+<!ENTITY password.title "Richiesta credenziali TbSync">
+<!ENTITY password.description "Aggiorna le credenziali per il seguente account TbSync:">
+<!ENTITY password.account "Account:">
+<!ENTITY password.user "Utente:">
+<!ENTITY password.password "Password:">
 
 <!ENTITY manager.accounts "Account">
 <!ENTITY manager.status "Stato">
@@ -45,7 +51,7 @@
 <!ENTITY manager.installprovider.warning "Questo provider di sincronizzazione non è ospitato nel repository ufficiale componenti aggiuntivi di Thunderbird e quindi non è stato esaminato dallo staff di Thunderbird. Il provider potrebbe eseguire azioni malevole sul proprio sistema. Lo si utilizzi a proprio rischio.">
 <!ENTITY manager.missingprovider "Il provider di sincronizzazione a cui è associato quest'account (##provider##) non è installato.">
 
-<!ENTITY manager.supporter.contributers "Collaboratori e traduttori">
+<!ENTITY manager.supporter.contributors "Collaboratori e traduttori">
 <!ENTITY manager.supporter.sponsors "Sponsor per account di test">
 
 <!ENTITY manager.help.needhelp "Serve aiuto?">
@@ -64,3 +70,7 @@
 <!ENTITY supportwizard.label.summary "Breve riassunto dell'errore:'">
 <!ENTITY supportwizard.label.description "Descrizione dettagliata dell'errore:'">
 <!ENTITY supportwizard.footer "Nel prossimo passaggio sarà generato un messaggio di posta elettronica a partire dalle informazioni fornite qui; puoi modificarlo in seguito (ad esempio, aggiungendo schermate o simili). La segnalazione d'errore verrà inviata solo inviando tale messaggio.">
+
+<!ENTITY errorlog.title "Registro errori">
+<!ENTITY errorlog.close "vicino">
+<!ENTITY errorlog.clear "vuoto">

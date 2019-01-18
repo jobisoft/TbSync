@@ -13,7 +13,7 @@
     <hbox flex="1" id="mainframe">
         <vbox flex="1">
             <html:p>
-                <html:b>&manager.supporter.contributers;</html:b>
+                <html:b>&manager.supporter.contributors;</html:b>
                 <html:div id="listOfContributors" style="margin-top:10px">
 
                   <html:div provider="" style="width:225px; margin: 0 0 10px 0; float:left;">
