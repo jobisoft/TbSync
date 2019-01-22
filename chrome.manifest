@@ -5,3 +5,4 @@ locale tbsync  en-US locale/en-US/
 locale tbsync  hu    locale/hu/
 locale tbsync  it    locale/it/
 locale tbsync  ru    locale/ru/
+locale tbsync  pt-BR locale/pt-BR/
