@@ -40,7 +40,7 @@
 <!ENTITY manager.tabs.status.sync "Synchronize now">
 <!ENTITY manager.tabs.status.tryagain "Try again to connect server">
 <!ENTITY manager.tabs.status.autotime "Periodic synchronization (in minutes)">
-<!ENTITY manager.tabs.status.never "A setting of 0 disables periodic sync. Push sync is no yet implemented.">
+<!ENTITY manager.tabs.status.never "A setting of 0 disables periodic sync. Push sync is not yet implemented.">
 <!ENTITY manager.tabs.status.resources "Available resources">
 <!ENTITY manager.tabs.status.resources.intro "Select which of the found resources should be synchronized with Thunderbird.">
 <!ENTITY manager.lockedsettings.description "To prevent synchronization errors, some settings cannot be edited while the account is enabled.">
