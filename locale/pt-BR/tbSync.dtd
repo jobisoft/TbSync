@@ -1,5 +1,5 @@
 <!ENTITY popup.opensettings "Abra o gerenciador de contas do TbSync">
-<!ENTITY menu.settingslabel "Configurações de Sincronização (TbSync)">
+<!ENTITY menu.settingslabel "Configurações de sincronização (TbSync)">
 
 <!ENTITY toolbar.label "Sincronizar todas as contas do TbSync">
 <!ENTITY toolbar.tooltiptext "Sincronizar as alterações mais recentes">
@@ -9,7 +9,7 @@
 <!ENTITY manager.SyncAll "Sincronizar todas as contas ativadas">
 
 <!ENTITY manager.SynchronizeAccount "Sincronizar conta">
-<!ENTITY manager.EnableAccount "Ativar conta &amp; tentar se conectar ao servidor">
+<!ENTITY manager.EnableAccount "Ativar conta e tentar conectar ao servidor">
 <!ENTITY manager.DisableAccount "Desativar conta">
 <!ENTITY manager.DeleteAccount "Excluir conta">
 <!ENTITY manager.ShowErrorLog "Abrir log de erros">
