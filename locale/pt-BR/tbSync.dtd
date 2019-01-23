@@ -45,7 +45,7 @@
 <!ENTITY manager.tabs.status.resources.intro "Selecione qual dos recursos encontrados deve ser sincronizado com o Thunderbird.">
 <!ENTITY manager.lockedsettings.description "Para evitar erros de sincronização, algumas configurações não podem ser editadas enquanto a conta está ativada.">
 
-<!ENTITY manager.catman.text "O TbSync também sincroniza as categorias de contatos, que são um poderoso substituto para as listas de contatos não sincronizáveis. Para poder usá-los no catálogo de endereços do Thunderbird, você pode instalar o complemento do "Category Manager". Ele permite gerenciar grupos de contatos com base em categorias sobrepostas e fornece vários outros recursos relacionados a categorias. Pode ser encontrado no repositório oficial do Mozilla:">
+<!ENTITY manager.catman.text "O TbSync também sincroniza as categorias de contatos, que são um poderoso substituto para as listas de contatos não sincronizáveis. Para poder usá-los no catálogo de endereços do Thunderbird, você pode instalar o complemento do 'Category Manager'. Ele permite gerenciar grupos de contatos com base em categorias sobrepostas e fornece vários outros recursos relacionados a categorias. Pode ser encontrado no repositório oficial do Mozilla:">
 
 <!ENTITY manager.installprovider.link "Clique no link a seguir para abrir a página de informações do provedor de sincronização ausente. Lá você encontrará mais informações sobre o provedor e terá a opção de instalá-lo:">
 <!ENTITY manager.installprovider.warning "Este provedor de sincronização não é hospedado no repositório oficial do Thunderbird e, portanto, não foi revisado pela equipe do Thunderbird. O provedor pode prejudicar o seu sistema. Use por sua conta e risco.">
