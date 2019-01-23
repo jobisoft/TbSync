@@ -1287,13 +1287,14 @@ var tbSync = {
         return null;
     },
     
-    //mailinglist aware method to get properties of cards (mailinglist properties need to be stored in prefs of parent book)
+    //mailinglist aware method to get properties of cards (mailinglist properties cannot be stored in mailinglists themselves)
     getPropertyOfCard: function (card, property, fallback = "") {
         if (card.isMailList) {
             try {
-                let parentBookPrefId = card.directoryId.split("&")[0];
-                let parentPrefs = Services.prefs.getBranch(parentBookPrefId + ".");
-                let value = parentPrefs.getStringPref("mailinglists." + btoa(card.mailListURI) + "." + property, fallback);
+                //let parentBookPrefId = card.directoryId.split("&")[0];
+                //let parentPrefs = Services.prefs.getBranch(parentBookPrefId + ".");
+                //let value = parentPrefs.getStringPref("mailinglists." + btoa(card.mailListURI) + "." + property, fallback);
+                let value = tbSync.db.getItemStatusFromChangeLog(tbSync.getUriFromDirectoryId(card.directoryId), card.mailListURI + "#" + property) || fallback;
                 return value;
             } catch (e) {
                 return fallback;
@@ -1306,8 +1307,9 @@ var tbSync = {
     //mailinglist aware method to set properties of cards (mailinglist properties need to be stored in prefs of parent book)
     setPropertyOfCard: function (card, property, value) {
         if (card.isMailList) {
-            let parentBookPrefId = card.directoryId.split("&")[0];
-            tbSync.addPropertyToParentPrefs(parentBookPrefId, card.mailListURI, property, value);
+            tbSync.db.addItemToChangeLog(tbSync.getUriFromDirectoryId(card.directoryId), card.mailListURI + "#" + property, value);
+            //let parentBookPrefId = card.directoryId.split("&")[0];
+            //tbSync.addPropertyToParentPrefs(parentBookPrefId, card.mailListURI, property, value);
         } else {
             card.setProperty(property, value);
         }
@@ -1323,7 +1325,8 @@ var tbSync = {
         //We do not get the list card after creating the list directory and would not be able to find the card without ID,
         //so we add the TBSYNCID property directly to the pref of the parent book, (which is what setPropertyOfCard would do).
         //If the list implementation is changing back to "real" card properties, this must be updated.
-        tbSync.addPropertyToParentPrefs(addressBook.dirPrefId, mailListDirectory.URI, "TBSYNCID", id);
+        //tbSync.addPropertyToParentPrefs(addressBook.dirPrefId, mailListDirectory.URI, "TBSYNCID", id);
+        tbSync.db.addItemToChangeLog(addressBook.URI, mailListDirectory.URI + "#" + "TBSYNCID", id);
 
         //Furthermore, we cannot create a list with a given ID, so we can also not precatch this creation, because it would not find the entry in the changelog
         
