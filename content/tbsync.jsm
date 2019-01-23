@@ -1291,13 +1291,9 @@ var tbSync = {
     getPropertyOfCard: function (card, property, fallback = "") {
         if (card.isMailList) {
             try {
-                let parentBookPrefId = card.directoryId.split("&")[0];
-                let parentPrefs = Services.prefs.getBranch(parentBookPrefId + ".mailinglists." + btoa(card.mailListURI) + ".");
-                let oldvalue = parentPrefs.getStringPref(property, "");
-                if (oldvalue) {
-                    tbSync.setPropertyOfCard(card, property, oldvalue);
-                    return oldvalue;                    
-                }                    
+                //let parentBookPrefId = card.directoryId.split("&")[0];
+                //let parentPrefs = Services.prefs.getBranch(parentBookPrefId + ".");
+                //let value = parentPrefs.getStringPref("mailinglists." + btoa(card.mailListURI) + "." + property, fallback);
                 let value = tbSync.db.getItemStatusFromChangeLog(tbSync.getUriFromDirectoryId(card.directoryId), card.mailListURI + "#" + property) || fallback;
                 return value;
             } catch (e) {
@@ -1312,10 +1308,8 @@ var tbSync = {
     setPropertyOfCard: function (card, property, value) {
         if (card.isMailList) {
             tbSync.db.addItemToChangeLog(tbSync.getUriFromDirectoryId(card.directoryId), card.mailListURI + "#" + property, value);
-            //clear current pref setting, so it will not be used anymore
-            let parentBookPrefId = card.directoryId.split("&")[0];
-            let parentPrefs = Services.prefs.getBranch(parentBookPrefId + ".");
-            parentPrefs.setStringPref("mailinglists." + btoa(card.mailListURI) + "." + property, "");
+            //let parentBookPrefId = card.directoryId.split("&")[0];
+            //tbSync.addPropertyToParentPrefs(parentBookPrefId, card.mailListURI, property, value);
         } else {
             card.setProperty(property, value);
         }
@@ -1340,6 +1334,11 @@ var tbSync = {
         return tbSync.getCardFromProperty(addressBook, "TBSYNCID", id);
     },
     
+    addPropertyToParentPrefs: function (parentBookPrefId, mailListURI, property, value) {
+        let parentPrefs = Services.prefs.getBranch(parentBookPrefId + ".");
+        parentPrefs.setStringPref("mailinglists." + btoa(mailListURI) + "." + property, value);
+    },
+
     //helper function to find a mailinglist member by some property 
     //I could not get nsIArray.indexOf() working, so I have to loop with queryElementAt()
     findIndexOfMailingListMemberWithProperty: function(dir, prop, value, startIndex = 0) {
