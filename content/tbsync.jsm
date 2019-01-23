@@ -1338,13 +1338,11 @@ var tbSync = {
 
     //helper function to find a mailinglist member by some property 
     //I could not get nsIArray.indexOf() working, so I have to loop with queryElementAt()
-    findIndexOfMailingListMemberWithProperty: function(dir, prop, value) {
-        if (value != "") {
-            for (let i=0; i < dir.addressLists.length; i++) {
-                let member = dir.addressLists.queryElementAt(i, Components.interfaces.nsIAbCard);
-                if (member.getProperty(prop, "") == value) {
-                    return i;
-                }
+    findIndexOfMailingListMemberWithProperty: function(dir, prop, value, startIndex = 0) {
+        for (let i=startIndex; i < dir.addressLists.length; i++) {
+            let member = dir.addressLists.queryElementAt(i, Components.interfaces.nsIAbCard);
+            if (member.getProperty(prop, "") == value) {
+                return i;
             }
         }
         return -1;
