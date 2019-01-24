@@ -1268,20 +1268,21 @@ var tbSync = {
 
     //mailinglist aware method to get card based on a property (mailinglist properties need to be stored in prefs of parent book)
     getCardFromProperty: function (addressBook, property, value) {
+        //try to use the standard contact card method first
+        let card = addressBook.getCardFromProperty(property, value, true);
+        if (card) {
+            return card;
+        }
+        
+        //search for list cards
         let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-        let searchContact = "(and(IsMailList,=,FALSE)("+property+",=,"+value+"))";
         let searchList = "(IsMailList,=,TRUE)";
-        let result = abManager.getDirectory(addressBook.URI +  "?(or"+searchContact + searchList+")").childCards;
+        let result = abManager.getDirectory(addressBook.URI +  "?(or" + searchList+")").childCards;
         while (result.hasMoreElements()) {
             let card = result.getNext().QueryInterface(Components.interfaces.nsIAbCard);
-            //if it is not a list, we know the search found the desired contact, no need to check the property again
-            if (card.isMailList) {
-                //does this list card have the req prop?
-                if (tbSync.getPropertyOfCard(card, property) == value) {
+            //does this list card have the req prop?
+            if (tbSync.getPropertyOfCard(card, property) == value) {
                     return card;
-                }
-            } else {
-                return card;
             }
         }
         return null;
