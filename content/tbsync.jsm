@@ -253,6 +253,10 @@ var tbSync = {
         }
     },
 
+    openErrorLog: function (accountID, folderID) {
+        tbSync.prefWindowObj.open("chrome://tbsync/content/manager/errorlog/errorlog.xul", "TbSyncErrorLog", "centerscreen,chrome,resizable");
+    },
+
     openManagerWindow: function(event) {
         if (!event.button) { //catches 0 or undefined
             if (tbSync.enabled) {
@@ -620,7 +624,7 @@ var tbSync = {
         let status = "OK";
         if (error.type == "JavaScriptError") {
             status = error.type;
-            tbSync.errorlog(syncdata, status, error.message + "\n\n" + error.stack);
+            tbSync.errorlog("warning", syncdata, status, error.message + "\n\n" + error.stack);
         } else if (!error.failed) {
             //account itself is ok, search for folders with error
             folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);
@@ -635,7 +639,7 @@ var tbSync = {
             status = error.message;
             //log this error, if it has not been logged already
             if (!error.logged) { 
-                tbSync.errorlog(syncdata, status, error.details ? error.details : null);
+                tbSync.errorlog("warning", syncdata, status, error.details ? error.details : null);
             }
         }
         
@@ -657,7 +661,7 @@ var tbSync = {
         } else if (error.failed) {
             status = error.message;
             time = "";
-            tbSync.errorlog(syncdata, status, error.details ? error.details : null);
+            tbSync.errorlog("warning", syncdata, status, error.details ? error.details : null);
             //set this error as logged so it does not get logged again by finishAccountSync in case of re-throw
             error.logged = true;
         } else {
@@ -956,10 +960,11 @@ var tbSync = {
         }
     },
 
-    errorlog: function (syncdata, message, details = null) {
+    errorlog: function (type, syncdata, message, details = null) {
         let entry = {
             timestamp: Date.now(),
             message: message, 
+            type: type,
             link: null, 
             details: details
         };

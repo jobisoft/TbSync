@@ -80,7 +80,7 @@
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/warning16.png"
                                     label="&manager.ShowErrorLog;"
-                                    oncommand="tbSyncAccounts.openErrorLog()"/>
+                                    oncommand="tbSync.openErrorLog()"/>
                             <menuseparator id="accountActionsSeparator"/>
                             <menuitem id="accountActionsDebugToggleAll"
                                     class="menuitem-iconic"

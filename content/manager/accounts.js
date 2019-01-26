@@ -836,9 +836,5 @@ var tbSyncAccounts = {
         tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").setAttribute("active","true");
         tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.contentWindow").setAttribute("src", "chrome://tbsync/content/manager/installProvider.xul?provider="+provider);        
     },
-    
-    openErrorLog: function () {
-        tbSync.prefWindowObj.open("chrome://tbsync/content/manager/errorlog/errorlog.xul", "TbSyncErrorLog", "centerscreen,chrome,resizable");
-    },
-        
+            
 };

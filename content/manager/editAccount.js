@@ -397,13 +397,16 @@ var tbSyncAccountSettings = {
     onFolderListContextMenuShowing: function () {
         let folderList = document.getElementById("tbsync.accountsettings.folderlist");
         let aFolderIsSelected = (!folderList.disabled && folderList.selectedItem !== null && folderList.selectedItem.value !== undefined);
+        let menupopup = document.getElementById("tbsync.accountsettings.FolderListContextMenu");
         
         if (aFolderIsSelected) {
             let fID =  folderList.selectedItem.value;
+            menupopup.setAttribute("folderID", fID);
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.account, fID, true);
             
             tbSync[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, folder);
         } else {
+            menupopup.setAttribute("folderID", "");
             tbSync[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, null);
         }
     },
