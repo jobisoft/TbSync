@@ -53,7 +53,7 @@
 
 <!ENTITY manager.supporter.contributors "Помощники &amp; Переводчики">
 <!ENTITY manager.supporter.sponsors "Спонсоры тестовых аккаунтов">
-<!ENTITY manager.supporter.details "?? Details ??">
+<!ENTITY manager.supporter.details "Подробности">
 
 <!ENTITY manager.help.needhelp "Нужна справка?">
 <!ENTITY manager.help.wiki "Откройте wiki-страницы проекта TbSync, они предоставят дополнительную информацию, руководства и подробные описания конфигурации.">
