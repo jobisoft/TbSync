@@ -18,23 +18,6 @@ var tbSyncAccountSettings = {
     settings: null,
     updateTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
-    stripHost: function (document, account) {
-        let host = document.getElementById('tbsync.accountsettings.pref.host').value;
-        if (host.indexOf("https://") == 0) {
-            host = host.replace("https://","");
-            document.getElementById('tbsync.accountsettings.pref.https').checked = true;
-            tbSync.db.setAccountSetting(account, "https", "1");
-        } else if (host.indexOf("http://") == 0) {
-            host = host.replace("http://","");
-            document.getElementById('tbsync.accountsettings.pref.https').checked = false;
-            tbSync.db.setAccountSetting(account, "https", "0");
-        }
-        
-        while (host.endsWith("/")) { host = host.slice(0,-1); }        
-        document.getElementById('tbsync.accountsettings.pref.host').value = host
-        tbSync.db.setAccountSetting(account, "host", host);
-    },
-
     updateFolderListObserver: {
         observe: function (aSubject, aTopic, aData) {
             //only run if is request for this account and main frame is visible
@@ -101,10 +84,8 @@ var tbSyncAccountSettings = {
         }        
         
         //load overlays from the provider (if any)
-        tbSync.overlayManager.injectAllOverlays(window, "chrome://tbsync/content/manager/editAccount.xul?provider=" + tbSyncAccountSettings.provider);
-    
         tbSync.prepareSyncDataObj(tbSyncAccountSettings.account);
-        tbSync[tbSyncAccountSettings.provider].onSettingsGUILoad(window, tbSyncAccountSettings.account);
+        tbSync.overlayManager.injectAllOverlays(window, "chrome://tbsync/content/manager/editAccount.xul?provider=" + tbSyncAccountSettings.provider);
         tbSyncAccountSettings.loadSettings();
         
         //done, folderlist must be updated while visible
@@ -225,9 +206,6 @@ var tbSyncAccountSettings = {
                 showErrorLogButton = tbSync.errors.filter(e => e.account == tbSyncAccountSettings.account).length > 0;
         }
         document.getElementById('tbsync.accountsettings.errorlogbtn').hidden = !showErrorLogButton;
-
-    
-        tbSync[tbSyncAccountSettings.provider].onSettingsGUIUpdate(window, tbSyncAccountSettings.account);
     },
 
     updateSyncstate: function () {
@@ -419,13 +397,16 @@ var tbSyncAccountSettings = {
     onFolderListContextMenuShowing: function () {
         let folderList = document.getElementById("tbsync.accountsettings.folderlist");
         let aFolderIsSelected = (!folderList.disabled && folderList.selectedItem !== null && folderList.selectedItem.value !== undefined);
+        let menupopup = document.getElementById("tbsync.accountsettings.FolderListContextMenu");
         
         if (aFolderIsSelected) {
             let fID =  folderList.selectedItem.value;
+            menupopup.setAttribute("folderID", fID);
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.account, fID, true);
             
             tbSync[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, folder);
         } else {
+            menupopup.setAttribute("folderID", "");
             tbSync[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, null);
         }
     },

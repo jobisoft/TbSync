@@ -17,7 +17,15 @@
     <script type="text/javascript" src="chrome://tbsync/content/manager/editAccount.js" /> 
 
     <popupset>
-        <menupopup id="tbsync.accountsettings.FolderListContextMenu" onpopupshowing="tbSyncAccountSettings.onFolderListContextMenuShowing();">
+        <menupopup 
+        id="tbsync.accountsettings.FolderListContextMenu" 
+        folderID=""
+        onpopupshowing="tbSyncAccountSettings.onFolderListContextMenuShowing();">
+            <menuitem 
+            class="menuitem-iconic"
+            image="chrome://tbsync/skin/warning16.png"
+            label="&manager.ShowErrorLog;"
+            oncommand="tbSync.openErrorLog(tbSyncAccountSettings.account, this.parentNode.getAttribute('folderID'));"/>
         </menupopup>
     </popupset>
     
@@ -41,7 +49,7 @@
                             </vbox>
                             <vbox flex="0">
                                 <label class="header" style="margin-left:0; margin-bottom:1ex; margin-top:1ex; visibility: hidden" value="nix" />
-                                <button id="tbsync.accountsettings.errorlogbtn" label="&manager.ShowErrorLog;" oncommand="tbSyncAccountSettings.openErrorLog()" />
+                                <button id="tbsync.accountsettings.errorlogbtn" label="&manager.ShowErrorLog;" oncommand="tbSync.openErrorLog()" />
                             </vbox>
                         </hbox>
                     </vbox>

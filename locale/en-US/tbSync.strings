@@ -20,7 +20,7 @@ manager.help=Help
 
 addressbook.searchall=Search all address books
 addressbook.searchthis=Search this address book
-addressbook.searchgal=Search this address book and the global directoy (##replace.1##)
+addressbook.searchgal=Search this address book and the global directory (##replace.1##)
 
 installProvider.header=Provider “##replace.1##” for TbSync is not yet installed.
 supportwizard.provider=Provider: ##replace.1## 

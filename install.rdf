@@ -9,7 +9,7 @@
         <em:unpack>false</em:unpack>
         <em:multiprocessCompatible>true</em:multiprocessCompatible>
         <em:name>TbSync</em:name>
-        <em:version>1.0.23</em:version>
+        <em:version>1.0.32</em:version>
         <em:description>TbSync is a central user interface to manage cloud accounts and to synchronize their contact, task and calendar information with Thunderbird.</em:description>
         <em:homepageURL>https://github.com/jobisoft/TbSync</em:homepageURL>
         <em:iconURL>chrome://tbsync/skin/tbsync.png</em:iconURL>
@@ -18,6 +18,7 @@
         <em:translator>Alessandro Menti (it)</em:translator>
         <em:translator>Óvári (hu)</em:translator>
         <em:translator>Alexey Sinitsyn (ru)</em:translator>
+        <em:translator>Wanderlei Hüttel (pt-BR)</em:translator>
         <em:contributor>Jan Dagefoerde</em:contributor>
         <em:contributor>Nam Ldmpub</em:contributor>
         <em:creator>John Bieling</em:creator>
@@ -41,6 +42,7 @@
             <em:translator>Alessandro Menti (it)</em:translator>
             <em:translator>Óvári (hu)</em:translator>
             <em:translator>Alexey Sinitsyn (ru)</em:translator>
+            <em:translator>Wanderlei Hüttel (pt-BR)</em:translator>
             <em:contributor>Jan Dagefoerde</em:contributor>
             <em:contributor>Nam Ldmpub</em:contributor>
             <em:creator>John Bieling</em:creator>
@@ -57,6 +59,7 @@
             <em:translator>Alessandro Menti (it)</em:translator>
             <em:translator>Óvári (hu)</em:translator>
             <em:translator>Alexey Sinitsyn (ru)</em:translator>
+            <em:translator>Wanderlei Hüttel (pt-BR)</em:translator>
             <em:contributor>Jan Dagefoerde</em:contributor>
             <em:contributor>Nam Ldmpub</em:contributor>
             <em:creator>John Bieling</em:creator>
@@ -73,6 +76,7 @@
             <em:translator>Alessandro Menti (it)</em:translator>
             <em:translator>Óvári (hu)</em:translator>
             <em:translator>Alexey Sinitsyn (ru)</em:translator>
+            <em:translator>Wanderlei Hüttel (pt-BR)</em:translator>
             <em:contributor>Jan Dagefoerde</em:contributor>
             <em:contributor>Nam Ldmpub</em:contributor>
             <em:creator>John Bieling</em:creator>
@@ -89,11 +93,29 @@
             <em:translator>Alessandro Menti (it)</em:translator>
             <em:translator>Óvári (hu)</em:translator>
             <em:translator>Alexey Sinitsyn (ru)</em:translator>
+            <em:translator>Wanderlei Hüttel (pt-BR)</em:translator>
             <em:contributor>Jan Dagefoerde</em:contributor>
             <em:contributor>Nam Ldmpub</em:contributor>
             <em:creator>John Bieling</em:creator>
           </Description>
          </em:localized>
-         
+
+        <em:localized> <!-- Portuguese Brazilian -->
+          <Description>
+            <em:locale>pt-BR</em:locale>
+            <em:name>TbSync</em:name>
+            <em:description>O TbSync é uma central para gerenciar contas em nuvem e para sincronizar as informações de contatos, tarefas e calendários com o Thunderbird.</em:description>
+            <em:translator>John Bieling (de)</em:translator>
+            <em:translator>John Bieling (en-US)</em:translator>
+            <em:translator>Alessandro Menti (it)</em:translator>
+            <em:translator>Óvári (hu)</em:translator>
+            <em:translator>Alexey Sinitsyn (ru)</em:translator>
+            <em:translator>Wanderlei Hüttel (pt-BR)</em:translator>
+            <em:contributor>Jan Dagefoerde</em:contributor>
+            <em:contributor>Nam Ldmpub</em:contributor>
+            <em:creator>John Bieling</em:creator>
+          </Description>
+        </em:localized>
+
     </Description>
 </RDF>
