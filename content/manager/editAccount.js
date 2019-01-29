@@ -94,7 +94,7 @@ var tbSyncAccountSettings = {
         tbSyncAccountSettings.updateFolderList();      
 
         if (OS.Constants.Sys.Name == "Darwin") { //we might need to find a way to detect MacOS like styling, other themes move the header bar into the tabpanel as well
-            document.getElementById('manager.tabpanels').style["padding-top"] = "2ex";
+            document.getElementById('manager.tabpanels').style["padding-top"] = "3ex";
         }
     },
 
