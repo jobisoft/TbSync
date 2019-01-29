@@ -74,6 +74,9 @@ var tbSync = {
     // GLOBAL INIT
     init: Task.async (function* (window)  { 
 
+        //clear debug log on start
+        tbSync.initFile("debug.log");
+
         tbSync.window = window;
         tbSync.addon = yield tbSync.getAddonByID("tbsync@jobisoft.de");
         tbSync.dump("TbSync init","Start (" + tbSync.addon.version.toString() + ")");
@@ -1786,7 +1789,3 @@ var tbSync = {
     }
 
 };
-
-
-//clear debug log on start
-tbSync.initFile("debug.log");
