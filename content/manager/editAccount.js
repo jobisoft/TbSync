@@ -9,6 +9,7 @@
  "use strict";
 
 Components.utils.import("resource://gre/modules/Services.jsm");
+Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncAccountSettings = {
@@ -90,7 +91,11 @@ var tbSyncAccountSettings = {
         
         //done, folderlist must be updated while visible
         document.getElementById('tbsync.accountsettings.frame').hidden = false;	    
-        tbSyncAccountSettings.updateFolderList();        
+        tbSyncAccountSettings.updateFolderList();      
+
+        if (OS.Constants.Sys.Name == "Darwin") { //we might need to find a way to detect MacOS like styling, other themes move the header bar into the tabpanel as well
+            document.getElementById('manager.tabpanels').style["padding-top"] = "2ex";
+        }
     },
 
 
