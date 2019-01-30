@@ -779,6 +779,15 @@ var tbSync = {
         return (tabmail !== null);
     },
 
+    openTranslatedLink: function (url) {
+        let googleCode = tbSync.getLocalizedMessage("google.translate.code");
+        if (googleCode != "en" && googleCode != "google.translate.code") {
+            tbSync.openLink("https://translate.google.com/translate?hl=en&sl=en&tl="+tbSync.getLocalizedMessage("google.translate.code")+"&u="+url);
+        } else {
+            tbSync.openLink(url);
+        }
+    },
+
     openLink: function (url) {
         let ioservice = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);
         let uriToOpen = ioservice.newURI(url, null, null);

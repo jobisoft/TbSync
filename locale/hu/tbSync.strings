@@ -2,6 +2,8 @@ info.idle=Tétlen
 info.error=Hiba
 info.sync=Összehangoló
 
+google.translate.code=hu
+
 prompt.DeleteAccount=Biztos benne, hogy törölni szeretne fiók ##accountName##?
 prompt.Disable=Biztosan letiltja ezt a fiókot? Minden helyi módosítás, amely még nincs összehangolva, elveszik!
 prompt.Unsubscribe=Biztosan le szeretné iratkozni ezt az elemet? Minden helyi módosítás, amely még nincs összehangolva, elveszik!

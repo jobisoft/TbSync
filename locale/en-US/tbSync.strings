@@ -2,6 +2,8 @@ info.idle=Idle
 info.error=Error
 info.sync=Synchronizing
 
+google.translate.code=en
+
 prompt.DeleteAccount=Are you sure you want to delete account ##accountName##?
 prompt.Disable=Are you sure you want to disable this account? All local modifications, which have not been synced yet, will be lost!
 prompt.Unsubscribe=Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!

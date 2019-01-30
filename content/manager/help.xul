@@ -18,7 +18,7 @@
                 &manager.help.wiki;
             </html:p>
 
-            <html:p onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openLink('https://github.com/jobisoft/TbSync/wiki');" style="color:blue;text-decoration: underline;padding-left:1em;margin:0 0 24px 0">
+            <html:p onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openTranslatedLink('https://github.com/jobisoft/TbSync/wiki');" style="color:blue;text-decoration: underline;padding-left:1em;margin:0 0 24px 0">
                 https://github.com/jobisoft/TbSync/wiki
             </html:p>
 

@@ -2,6 +2,8 @@ info.idle=Ocioso
 info.error=Erro
 info.sync=Sincronizando
 
+google.translate.code=pt
+
 prompt.DeleteAccount=Tem certeza de que deseja excluir a conta ##accountName##?
 prompt.Disable=Tem certeza de que deseja desativar esta conta? Todas as modificações locais, que ainda não foram sincronizadas, serão perdidas!
 prompt.Unsubscribe=Tem certeza de que deseja cancelar a inscrição deste item? Todas as modificações locais, que ainda não foram sincronizadas, serão perdidas!
