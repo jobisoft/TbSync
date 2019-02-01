@@ -44,6 +44,9 @@ After that, I would like to create or help others to create a google provider fo
 
 ## Icon sources and attributions
 
+#### WTFPL
+* [spinner.gif] by [Yannick Croissant](http://www.ajaxload.info/)
+
 #### CC0-1.0
 * [add16.png] by [Jean Victor Balin](https://openclipart.org/detail/16950/add)
 * [del16.png] by [Jean Victor Balin](https://openclipart.org/detail/16982/cross)
