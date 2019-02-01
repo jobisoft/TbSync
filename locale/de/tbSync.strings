@@ -2,6 +2,8 @@ info.idle=Leerlauf
 info.error=Fehler
 info.sync=Synchronisation
 
+google.translate.code=de
+
 prompt.DeleteAccount=Sind Sie sicher, dass Sie das Konto ##accountName## löschen möchten?
 prompt.Disable=Sind Sie sicher, dass Sie dieses Konto deaktivieren möchten? Alle lokalen Veränderungen, die noch nicht synchronisiert wurden, gehen dabei verloren!
 prompt.Unsubscribe=Sind Sie sicher, dass Sie dieses Element nicht länger abonnieren möchten? Alle lokalen Veränderungen, die noch nicht synchronisiert wurden, gehen dabei verloren!

@@ -23,7 +23,8 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 
 * [Localization content best practices](https://developer.mozilla.org/en-US/docs/Mozilla/Localization/Localization_content_best_practices)
 * [Summary table of quotation marks per language](https://en.wikipedia.org/wiki/Quotation_mark#Summary_table)
-* [Transvision](https://transvision.mozfr.org/) provides valid locale codes (in the “Source Locale” and “Target Locale” drop-downs)
+* [Transvision](https://transvision.mozfr.org/) provides translations for various languages
+* by Thunderbird supported [locale codes](https://searchfox.org/comm-central/source/mail/locales/all-locales)
 
 If you encounter a misspelled translation key, do not correct it but report it to me. The translation keys are only used as variables in the code and are not visible. But changing a translation key requires all other translations and all references to that key in the code to be changed as well. Since translation keys are sometimes build up by string concatenation, it is not as easy as doing a global find and replace.
 
@@ -60,6 +61,7 @@ After that, I would like to create or help others to create a google provider fo
 * [warning16.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/36026/)
 * [calendar16.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/35805/)
 * [calendar/contacts16_shared.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/64490/network_share_icon)
+* [trash16.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/35727/bin_empty_metal_icon)
 * [acl_rw.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/36322/pencil_icon)
 * [acl_ro.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/36324/delete_pencil_icon)
 * [provider16.png] by [FatCow Web Hosting](https://www.iconfinder.com/icons/64634)

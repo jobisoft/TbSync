@@ -74,6 +74,9 @@ var tbSync = {
     // GLOBAL INIT
     init: Task.async (function* (window)  { 
 
+        //clear debug log on start
+        tbSync.initFile("debug.log");
+
         tbSync.window = window;
         tbSync.addon = yield tbSync.getAddonByID("tbsync@jobisoft.de");
         tbSync.dump("TbSync init","Start (" + tbSync.addon.version.toString() + ")");
@@ -251,6 +254,10 @@ var tbSync = {
                 }
             }
         }
+    },
+
+    openErrorLog: function (accountID, folderID) {
+        tbSync.prefWindowObj.open("chrome://tbsync/content/manager/errorlog/errorlog.xul", "TbSyncErrorLog", "centerscreen,chrome,resizable");
     },
 
     openManagerWindow: function(event) {
@@ -620,7 +627,7 @@ var tbSync = {
         let status = "OK";
         if (error.type == "JavaScriptError") {
             status = error.type;
-            tbSync.errorlog(syncdata, status, error.message + "\n\n" + error.stack);
+            tbSync.errorlog("warning", syncdata, status, error.message + "\n\n" + error.stack);
         } else if (!error.failed) {
             //account itself is ok, search for folders with error
             folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);
@@ -635,7 +642,7 @@ var tbSync = {
             status = error.message;
             //log this error, if it has not been logged already
             if (!error.logged) { 
-                tbSync.errorlog(syncdata, status, error.details ? error.details : null);
+                tbSync.errorlog("warning", syncdata, status, error.details ? error.details : null);
             }
         }
         
@@ -657,7 +664,7 @@ var tbSync = {
         } else if (error.failed) {
             status = error.message;
             time = "";
-            tbSync.errorlog(syncdata, status, error.details ? error.details : null);
+            tbSync.errorlog("warning", syncdata, status, error.details ? error.details : null);
             //set this error as logged so it does not get logged again by finishAccountSync in case of re-throw
             error.logged = true;
         } else {
@@ -770,6 +777,15 @@ var tbSync = {
             });
         }
         return (tabmail !== null);
+    },
+
+    openTranslatedLink: function (url) {
+        let googleCode = tbSync.getLocalizedMessage("google.translate.code");
+        if (googleCode != "en" && googleCode != "google.translate.code") {
+            tbSync.openLink("https://translate.google.com/translate?hl=en&sl=en&tl="+tbSync.getLocalizedMessage("google.translate.code")+"&u="+url);
+        } else {
+            tbSync.openLink(url);
+        }
     },
 
     openLink: function (url) {
@@ -956,10 +972,11 @@ var tbSync = {
         }
     },
 
-    errorlog: function (syncdata, message, details = null) {
+    errorlog: function (type, syncdata, message, details = null) {
         let entry = {
             timestamp: Date.now(),
             message: message, 
+            type: type,
             link: null, 
             details: details
         };
@@ -1268,36 +1285,31 @@ var tbSync = {
 
     //mailinglist aware method to get card based on a property (mailinglist properties need to be stored in prefs of parent book)
     getCardFromProperty: function (addressBook, property, value) {
+        //try to use the standard contact card method first
+        let card = addressBook.getCardFromProperty(property, value, true);
+        if (card) {
+            return card;
+        }
+        
+        //search for list cards
         let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-        let searchContact = "(and(IsMailList,=,FALSE)("+property+",=,"+value+"))";
         let searchList = "(IsMailList,=,TRUE)";
-        let result = abManager.getDirectory(addressBook.URI +  "?(or"+searchContact + searchList+")").childCards;
+        let result = abManager.getDirectory(addressBook.URI +  "?(or" + searchList+")").childCards;
         while (result.hasMoreElements()) {
             let card = result.getNext().QueryInterface(Components.interfaces.nsIAbCard);
-            //if it is not a list, we know the search found the desired contact, no need to check the property again
-            if (card.isMailList) {
-                //does this list card have the req prop?
-                if (tbSync.getPropertyOfCard(card, property) == value) {
+            //does this list card have the req prop?
+            if (tbSync.getPropertyOfCard(card, property) == value) {
                     return card;
-                }
-            } else {
-                return card;
             }
         }
         return null;
     },
     
-    //mailinglist aware method to get properties of cards (mailinglist properties need to be stored in prefs of parent book)
+    //mailinglist aware method to get properties of cards (mailinglist properties cannot be stored in mailinglists themselves)
     getPropertyOfCard: function (card, property, fallback = "") {
         if (card.isMailList) {
-            try {
-                let parentBookPrefId = card.directoryId.split("&")[0];
-                let parentPrefs = Services.prefs.getBranch(parentBookPrefId + ".");
-                let value = parentPrefs.getStringPref("mailinglists." + btoa(card.mailListURI) + "." + property, fallback);
-                return value;
-            } catch (e) {
-                return fallback;
-            }                
+            let value = tbSync.db.getItemStatusFromChangeLog(tbSync.getUriFromDirectoryId(card.directoryId), card.mailListURI + "#" + property);
+            return value ? value : fallback;    
         } else {
             return card.getProperty(property, fallback);
         }
@@ -1306,8 +1318,7 @@ var tbSync = {
     //mailinglist aware method to set properties of cards (mailinglist properties need to be stored in prefs of parent book)
     setPropertyOfCard: function (card, property, value) {
         if (card.isMailList) {
-            let parentBookPrefId = card.directoryId.split("&")[0];
-            tbSync.addPropertyToParentPrefs(parentBookPrefId, card.mailListURI, property, value);
+            tbSync.db.addItemToChangeLog(tbSync.getUriFromDirectoryId(card.directoryId), card.mailListURI + "#" + property, value);
         } else {
             card.setProperty(property, value);
         }
@@ -1321,9 +1332,8 @@ var tbSync = {
         let mailListDirectory = addressBook.addMailList(mailList);
 
         //We do not get the list card after creating the list directory and would not be able to find the card without ID,
-        //so we add the TBSYNCID property directly to the pref of the parent book, (which is what setPropertyOfCard would do).
-        //If the list implementation is changing back to "real" card properties, this must be updated.
-        tbSync.addPropertyToParentPrefs(addressBook.dirPrefId, mailListDirectory.URI, "TBSYNCID", id);
+        //so we add the TBSYNCID property manually
+        tbSync.db.addItemToChangeLog(addressBook.URI, mailListDirectory.URI + "#" + "TBSYNCID", id);
 
         //Furthermore, we cannot create a list with a given ID, so we can also not precatch this creation, because it would not find the entry in the changelog
         
@@ -1331,20 +1341,13 @@ var tbSync = {
         return tbSync.getCardFromProperty(addressBook, "TBSYNCID", id);
     },
     
-    addPropertyToParentPrefs: function (parentBookPrefId, mailListURI, property, value) {
-        let parentPrefs = Services.prefs.getBranch(parentBookPrefId + ".");
-        parentPrefs.setStringPref("mailinglists." + btoa(mailListURI) + "." + property, value);
-    },
-
     //helper function to find a mailinglist member by some property 
     //I could not get nsIArray.indexOf() working, so I have to loop with queryElementAt()
-    findIndexOfMailingListMemberWithProperty: function(dir, prop, value) {
-        if (value != "") {
-            for (let i=0; i < dir.addressLists.length; i++) {
-                let member = dir.addressLists.queryElementAt(i, Components.interfaces.nsIAbCard);
-                if (member.getProperty(prop, "") == value) {
-                    return i;
-                }
+    findIndexOfMailingListMemberWithProperty: function(dir, prop, value, startIndex = 0) {
+        for (let i=startIndex; i < dir.addressLists.length; i++) {
+            let member = dir.addressLists.queryElementAt(i, Components.interfaces.nsIAbCard);
+            if (member.getProperty(prop, "") == value) {
+                return i;
             }
         }
         return -1;
@@ -1795,7 +1798,3 @@ var tbSync = {
     }
 
 };
-
-
-//clear debug log on start
-tbSync.initFile("debug.log");

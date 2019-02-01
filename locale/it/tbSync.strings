@@ -2,6 +2,8 @@ info.idle=Inattivo
 info.error=Errore
 info.sync=Sincronizzazione in corso
 
+google.translate.code=it
+
 prompt.DeleteAccount=Eliminare l'account ##accountName##?
 prompt.Disable=Disabilitare quest'account? Tutte le modifiche locali non ancora sincronizzate andranno perse!
 prompt.Unsubscribe=Annullare la sottoscrizione a questo elemento? Tutte le modifiche locali non ancora sincronizzate andranno perse!
