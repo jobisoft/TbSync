@@ -972,6 +972,7 @@ var tbSync = {
         }
     },
 
+    //from syncdata this uses account and folderID
     errorlog: function (type, syncdata, message, details = null) {
         let entry = {
             timestamp: Date.now(),
@@ -983,15 +984,15 @@ var tbSync = {
 
         let localized = "";
         let link = "";
-        if (syncdata) {
-            entry.provider = syncdata.provider;
+        if (syncdata && syncdata.account) {
             entry.account = syncdata.account;
+            entry.provider = tbSync.db.getAccountSetting(syncdata.account, "provider");
             entry.accountname = tbSync.db.getAccountSetting(syncdata.account, "accountname");
             entry.foldername = (syncdata.folderID) ? tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") : "";
 
             //try to get localized string from message from provider
-            localized = tbSync.getLocalizedMessage("status." + message, syncdata.provider);
-            link = tbSync.getLocalizedMessage("helplink." + message, syncdata.provider);
+            localized = tbSync.getLocalizedMessage("status." + message, entry.provider);
+            link = tbSync.getLocalizedMessage("helplink." + message, entry.provider);
         } else {
             //try to get localized string from message from tbSync
             localized = tbSync.getLocalizedMessage("status." + message);
