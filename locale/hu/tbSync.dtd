@@ -53,7 +53,7 @@
 
 <!ENTITY manager.supporter.contributors "Közreműködők és fordítók">
 <!ENTITY manager.supporter.sponsors "Tesztszámla támogatók">
-<!ENTITY manager.supporter.details "?? Details ??">
+<!ENTITY manager.supporter.details "Részletek">
 
 <!ENTITY manager.help.needhelp "Segítségre van szüksége?">
 <!ENTITY manager.help.wiki "További tudnivalók, útmutatók és részletes beállítások, olvassa el a Thunderbird-összehangolás projekt wiki oldalát.">
