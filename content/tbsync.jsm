@@ -256,7 +256,7 @@ var tbSync = {
         }
     },
 
-    openErrorLog: function (accountID, folderID) {
+    openErrorLog: function (accountID = null, folderID = null) {
         tbSync.prefWindowObj.open("chrome://tbsync/content/manager/errorlog/errorlog.xul", "TbSyncErrorLog", "centerscreen,chrome,resizable");
     },
 
@@ -981,16 +981,21 @@ var tbSync = {
             link: null, 
             details: details
         };
-
-        let localized = "";
-        let link = "";
+    
         if (syncdata && syncdata.account) {
             entry.account = syncdata.account;
             entry.provider = tbSync.db.getAccountSetting(syncdata.account, "provider");
             entry.accountname = tbSync.db.getAccountSetting(syncdata.account, "accountname");
             entry.foldername = (syncdata.folderID) ? tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") : "";
+        } else {
+            if (syncdata.provider) entry.provider = syncdata.provider
+            if (syncdata.accountname) entry.accountname = syncdata.accountname
+            if (syncdata.foldername) entry.foldername = syncdata.foldername
+        }
 
-            //try to get localized string from message from provider
+        let localized = "";
+        let link = "";        
+        if (entry.provider) {
             localized = tbSync.getLocalizedMessage("status." + message, entry.provider);
             link = tbSync.getLocalizedMessage("helplink." + message, entry.provider);
         } else {
@@ -998,7 +1003,7 @@ var tbSync = {
             localized = tbSync.getLocalizedMessage("status." + message);
             link = tbSync.getLocalizedMessage("helplink." + message);
         }
-        
+    
         //can we provide a localized version of the error msg?
         if (localized != "status."+message) {
             entry.message = localized;
