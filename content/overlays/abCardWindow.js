@@ -42,8 +42,29 @@ tbSync.onAbSelectChangeNewCard = function(window) {
     }            
 }
 
+tbSync.getSelectedAbFromArgument = function (arg) {
+    let abURI = "";
+    if (arg.hasOwnProperty("abURI")) {
+        abURI = arg.abURI;
+    } else if (arg.hasOwnProperty("selectedAB")) {
+        abURI = arg.selectedAB;
+    }
+    
+    if (abURI) {
+        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
+        let ab = abManager.getDirectory(abURI);
+        if (ab.isMailList) {
+            let parts = abURI.split("/");
+            parts.pop();
+            return parts.join("/");
+        }
+    }
+    return abURI;
+},
+
 tbSync.onLoadCard = function (aCard, aDocument) {
-    let aParentDirURI = tbSync.getUriFromDirectoryId(aCard.directoryId);
+    let aParentDirURI = tbSync.getSelectedAbFromArgument(window.arguments[0]);
+
     let cardProvider = "";
     if (aParentDirURI) { //could be undefined
         let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
@@ -70,7 +91,8 @@ tbSync.onLoadCard = function (aCard, aDocument) {
 
 
 tbSync.onSaveCard = function (aCard, aDocument) {
-    let aParentDirURI = tbSync.getUriFromDirectoryId(aCard.directoryId);
+    let aParentDirURI = tbSync.getSelectedAbFromArgument(window.arguments[0]);
+    
     let cardProvider = "";
     if (aParentDirURI) { //could be undefined
         let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
