@@ -85,7 +85,7 @@ tbSync.onLoadCard = function (aCard, aDocument) {
             container[i].hidden = (cardProvider != provider);
         }
         //call custom function to do additional tasks
-        if (tbSync[provider].onAbCardLoad) tbSync[provider].onAbCardLoad(aDocument, cardProvider == provider);
+        if (tbSync[provider].onAbCardLoad) tbSync[provider].onAbCardLoad(aDocument, cardProvider == provider, aCard);
     }          
 }
 
