@@ -1434,7 +1434,7 @@ var tbSync = {
         
         // Get cached or new unique name for new address book
         let cachedName = tbSync.db.getFolderSetting(account, folderID, "targetName");                         
-        let testname = cachedName == "" ? folder.name + " (" + tbSync.db.getAccountSetting(account, "accountname") + ")" : cachedName;
+        let testname = cachedName == "" ? tbSync.db.getAccountSetting(account, "accountname") + " (" + folder.name + ")" : cachedName;
 
         let count = 1;
         let unique = false;
