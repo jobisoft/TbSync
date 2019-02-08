@@ -10,7 +10,8 @@
 
 tbSync.onInjectIntoAddressbook = function (window) {
     if (window.document.getElementById("abResultsTree")) {
-    window.document.getElementById("abResultsTree").addEventListener("select", tbSync.onAbResultsPaneSelectionChanged, false);
+        window.document.getElementById("abResultsTree").addEventListener("select", tbSync.onAbResultsPaneSelectionChanged, false);
+        window.document.getElementById("abResultsTree").addEventListener("focus", tbSync.onAbResultsPaneSelectionChanged, false);
         tbSync.onAbResultsPaneSelectionChanged();
     }
     
@@ -35,6 +36,7 @@ tbSync.onInjectIntoAddressbook = function (window) {
 tbSync.onRemoveFromAddressbook = function (window) {
     if (window.document.getElementById("abResultsTree")) {
         window.document.getElementById("abResultsTree").removeEventListener("select", tbSync.onAbResultsPaneSelectionChanged, false);
+        window.document.getElementById("abResultsTree").removeEventListener("focus", tbSync.onAbResultsPaneSelectionChanged, false);
     }
     //remove our injection
     window.abDirTreeItem.prototype.getProperties = window.abDirTreeItem.prototype._origBeforeTbSyncGetProperties;   
