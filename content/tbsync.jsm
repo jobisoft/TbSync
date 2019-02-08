@@ -1461,8 +1461,9 @@ var tbSync = {
         let data = abManager.getDirectoryFromId(dirPrefId);
         if (data instanceof Components.interfaces.nsIAbDirectory && data.dirPrefId == dirPrefId) {
             tbSync[provider].onResetTarget(account, folderID);
-            tbSync.db.setFolderSetting(account, folderID, "target", data.URI); 
-            //tbSync.db.setFolderSetting(account, folderID, "targetName", newname); 
+            tbSync.db.setFolderSetting(account, folderID, "target", data.URI);
+            //tbSync.db.setFolderSetting(account, folderID, "targetName", newname);
+            data.setStringValue("tbSyncType", provider);
             return true;
         }
         
