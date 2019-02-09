@@ -1463,7 +1463,7 @@ var tbSync = {
             tbSync[provider].onResetTarget(account, folderID);
             tbSync.db.setFolderSetting(account, folderID, "target", data.URI);
             //tbSync.db.setFolderSetting(account, folderID, "targetName", newname);
-            data.setStringValue("tbSyncType", provider);
+            data.setStringValue("tbSyncProvider", provider);
             return true;
         }
         
