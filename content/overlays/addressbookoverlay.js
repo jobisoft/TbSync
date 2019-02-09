@@ -50,6 +50,13 @@ tbSync.onAbResultsPaneSelectionChanged = function () {
             container[i].hidden = true;
         }
     }
+
+    //unhide all default elements, which have been hidden by some provider
+    //provider must add class "defaultElement" to the elements it is hiding
+    let defaultElements = window.document.getElementsByClassName("defaultElement");
+    for (let i=0; i < defaultElements.length; i++) {
+        defaultElements[i].hidden = false;
+    }
     
     let cards = window.GetSelectedAbCards();
     if (cards.length == 1) {
