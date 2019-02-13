@@ -982,15 +982,17 @@ var tbSync = {
             details: details
         };
     
-        if (syncdata && syncdata.account) {
-            entry.account = syncdata.account;
-            entry.provider = tbSync.db.getAccountSetting(syncdata.account, "provider");
-            entry.accountname = tbSync.db.getAccountSetting(syncdata.account, "accountname");
-            entry.foldername = (syncdata.folderID) ? tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") : "";
-        } else {
-            if (syncdata.provider) entry.provider = syncdata.provider
-            if (syncdata.accountname) entry.accountname = syncdata.accountname
-            if (syncdata.foldername) entry.foldername = syncdata.foldername
+        if (syncdata) {
+            if (syncdata.account) {
+                entry.account = syncdata.account;
+                entry.provider = tbSync.db.getAccountSetting(syncdata.account, "provider");
+                entry.accountname = tbSync.db.getAccountSetting(syncdata.account, "accountname");
+                entry.foldername = (syncdata.folderID) ? tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") : "";
+            } else {
+                if (syncdata.provider) entry.provider = syncdata.provider;
+                if (syncdata.accountname) entry.accountname = syncdata.accountname;
+                if (syncdata.foldername) entry.foldername = syncdata.foldername;
+            }
         }
 
         let localized = "";
