@@ -88,6 +88,7 @@ var tbSync = {
         // Inject UI before init finished, to give user the option to see Oops message and report bug
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messengercompose/messengercompose.xul", "chrome://tbsync/content/overlays/messengercompose.xul");
+        yield tbSync.overlayManager.registerOverlay("chrome://calendar/content/calendar-event-dialog-attendees.xul", "chrome://tbsync/content/overlays/calendar-event-dialog-attendees.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/abServerSearch.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abContactsPanel.xul", "chrome://tbsync/content/overlays/abServerSearch.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/addressbookoverlay.xul");
