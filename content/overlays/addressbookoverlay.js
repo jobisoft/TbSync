@@ -16,20 +16,22 @@ tbSync.onInjectIntoAddressbook = function (window) {
     }
     
     //hook into getProperties of abDirTreeItem to inject our own icons for the address books
-    window.abDirTreeItem.prototype._origBeforeTbSyncGetProperties = window.abDirTreeItem.prototype.getProperties;
-    window.abDirTreeItem.prototype.getProperties = function () {
-        //get original properties
-        let properties = this._origBeforeTbSyncGetProperties().split(" ");
-        
-        let type = "";
-        if (!this._directory.isMailList && !this._directory.isRemote) {
-            try {
-                type = this._directory.getStringValue("tbSyncIcon", "");
-            } catch (e) {}
+    if (!window.abDirTreeItem.prototype.hasOwnProperty("_origBeforeTbSyncGetProperties")) {
+        window.abDirTreeItem.prototype._origBeforeTbSyncGetProperties = window.abDirTreeItem.prototype.getProperties;
+        window.abDirTreeItem.prototype.getProperties = function () {
+            //get original properties
+            let properties = this._origBeforeTbSyncGetProperties().split(" ");
+            
+            let type = "";
+            if (!this._directory.isMailList && !this._directory.isRemote) {
+                try {
+                    type = this._directory.getStringValue("tbSyncIcon", "");
+                } catch (e) {}
+            }
+            
+            if (type) properties.push(type);
+            return properties.join(" ");
         }
-        
-        if (type) properties.push(type);
-        return properties.join(" ");
     }
 }
 
@@ -39,7 +41,8 @@ tbSync.onRemoveFromAddressbook = function (window) {
         window.document.getElementById("abResultsTree").removeEventListener("focus", tbSync.onAbResultsPaneSelectionChanged, false);
     }
     //remove our injection
-    window.abDirTreeItem.prototype.getProperties = window.abDirTreeItem.prototype._origBeforeTbSyncGetProperties;   
+    window.abDirTreeItem.prototype.getProperties = window.abDirTreeItem.prototype._origBeforeTbSyncGetProperties;
+    delete window.abDirTreeItem.prototype._origBeforeTbSyncGetProperties;
 }
 
 tbSync.onAbResultsPaneSelectionChanged = function () {
