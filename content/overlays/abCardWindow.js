@@ -31,15 +31,36 @@ tbSync.onAbSelectChangeNewCard = function(window) {
         cardProvider = tbSync.db.getAccountSetting(folders[0].account, "provider");
     }
 
-    //loop over all providers and show/hide container fields
+    //loop over all tbsync providers and show/hide container fields
+    //we need to execute this even if this is not a tbsync book, because the last book
+    //could have been a tbsync book and we thus need to remove our UI elements
     for (let provider in tbSync.loadedProviders) {
         let items = window.document.getElementsByClassName(provider + "Container");
         for (let i=0; i < items.length; i++) {
             items[i].hidden = (cardProvider != provider);
         }
-        //call custom function to do additional tasks
-        if (tbSync[provider].onAbCardLoad) tbSync[provider].onAbCardLoad(window.document, cardProvider == provider);
-    }            
+
+        //if the current view has default elements hidded by the provider, which was loaded last, restore that
+        let hiddenItems = window.document.getElementsByClassName(provider + "Hidden");
+        for (let i=0; i < hiddenItems.length; i++) {
+            hiddenItems[i].hidden = false;
+            let classArr = hiddenItems[i].getAttribute("class").split(" ").filter(e => e != provider + "Hidden");
+            if (classArr.length > 0) hiddenItems[i].setAttribute("class", classArr.join(" "));
+            else hiddenItems[i].removeAttribute("class");
+        }
+        
+        //if the current view has default elements disabled by the provider, which was loaded last, restore that
+        let disabledItems = window.document.getElementsByClassName(provider + "Disabled");
+        for (let i=0; i < disabledItems.length; i++) {
+            disabledItems[i].disabled = false;
+            let classArr = disabledItems[i].getAttribute("class").split(" ").filter(e => e != provider + "Disabled");
+            if (classArr.length > 0) disabledItems[i].setAttribute("class", classArr.join(" "));
+            else disabledItems[i].removeAttribute("class");
+        }
+    }
+    
+    //call custom function to do additional tasks
+    if (cardProvider && tbSync[cardProvider].onAbCardLoad) tbSync[cardProvider].onAbCardLoad(window.document);
 }
 
 tbSync.getSelectedAbFromArgument = function (arg) {
@@ -73,20 +94,23 @@ tbSync.onLoadCard = function (aCard, aDocument) {
         }
     }
     
-    let items = aDocument.getElementsByClassName(cardProvider + "Property");
-    for (let i=0; i < items.length; i++) {
-        items[i].value = aCard.getProperty(items[i].id, "");
-    }
-
-    //loop over all providers and show/hide container fields
-    for (let provider in tbSync.loadedProviders) {
-        let container = aDocument.getElementsByClassName(provider + "Container");
-        for (let i=0; i < container.length; i++) {
-            container[i].hidden = (cardProvider != provider);
+    //onLoadCard is only executed for the editDialog and thus we do not need to run over all providers
+    if (cardProvider) {
+        //Load fields
+        let items = aDocument.getElementsByClassName(cardProvider + "Property");
+        for (let i=0; i < items.length; i++) {
+            items[i].value = aCard.getProperty(items[i].id, "");
         }
+
+        //show extra provider UI elements
+        let container = aDocument.getElementsByClassName(cardProvider + "Container");
+        for (let i=0; i < container.length; i++) {
+            container[i].hidden = false;
+        }
+
         //call custom function to do additional tasks
-        if (tbSync[provider].onAbCardLoad) tbSync[provider].onAbCardLoad(aDocument, cardProvider == provider, aCard);
-    }          
+        if (tbSync[cardProvider].onAbCardLoad) tbSync[cardProvider].onAbCardLoad(aDocument, aCard);
+    }    
 }
 
 
@@ -101,8 +125,10 @@ tbSync.onSaveCard = function (aCard, aDocument) {
         }
     }
 
-    let items = aDocument.getElementsByClassName(cardProvider + "Property");
-    for (let i=0; i < items.length; i++) {
-        aCard.setProperty(items[i].id, items[i].value);
+    if (cardProvider) {
+        let items = aDocument.getElementsByClassName(cardProvider + "Property");
+        for (let i=0; i < items.length; i++) {
+            aCard.setProperty(items[i].id, items[i].value);
+        }
     }
 }
