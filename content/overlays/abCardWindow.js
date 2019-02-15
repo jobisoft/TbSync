@@ -40,22 +40,28 @@ tbSync.onAbSelectChangeNewCard = function(window) {
             items[i].hidden = (cardProvider != provider);
         }
 
-        //if the current view has default elements hidded by the provider, which was loaded last, restore that
-        let hiddenItems = window.document.getElementsByClassName(provider + "Hidden");
-        for (let i=0; i < hiddenItems.length; i++) {
-            hiddenItems[i].hidden = false;
-            let classArr = hiddenItems[i].getAttribute("class").split(" ").filter(e => e != provider + "Hidden");
-            if (classArr.length > 0) hiddenItems[i].setAttribute("class", classArr.join(" "));
-            else hiddenItems[i].removeAttribute("class");
-        }
-        
-        //if the current view has default elements disabled by the provider, which was loaded last, restore that
-        let disabledItems = window.document.getElementsByClassName(provider + "Disabled");
-        for (let i=0; i < disabledItems.length; i++) {
-            disabledItems[i].disabled = false;
-            let classArr = disabledItems[i].getAttribute("class").split(" ").filter(e => e != provider + "Disabled");
-            if (classArr.length > 0) disabledItems[i].setAttribute("class", classArr.join(" "));
-            else disabledItems[i].removeAttribute("class");
+        if (provider != cardProvider) {
+            //if the current view has default elements hidded by the provider, which was loaded last, restore that
+            let hiddenItems = window.document.getElementsByClassName(provider + "Hidden");
+            //this is a live collection!
+            for (let i=hiddenItems.length-1; i >= 0 ; i--) {
+                if (hiddenItems[i]) {
+                    hiddenItems[i].hidden = false;
+                    let classArr = hiddenItems[i].getAttribute("class").split(" ").filter(e => e != provider + "Hidden");
+                    hiddenItems[i].setAttribute("class", classArr.join(" "));
+                }                
+            }
+            
+            //if the current view has default elements disabled by the provider, which was loaded last, restore that
+            let disabledItems = window.document.getElementsByClassName(provider + "Disabled");
+            //this is a live collection!
+            for (let i=disabledItems.length-1; i >= 0 ; i--) {
+                if (disabledItems[i]) {
+                    disabledItems[i].disabled = false;
+                    let classArr = disabledItems[i].getAttribute("class").split(" ").filter(e => e != provider + "Disabled");
+                    disabledItems[i].setAttribute("class", classArr.join(" "));
+                }
+            }
         }
     }
     
