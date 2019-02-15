@@ -90,7 +90,7 @@ tbSync.getSelectedAbFromArgument = function (arg) {
 },
 
 tbSync.onLoadCard = function (aCard, aDocument) {
-    let aParentDirURI = tbSync.getSelectedAbFromArgument(window.arguments[0]);
+    let aParentDirURI = tbSync.getSelectedAbFromArgument(aDocument.defaultView.arguments[0]);
 
     let cardProvider = "";
     if (aParentDirURI) { //could be undefined
@@ -121,7 +121,7 @@ tbSync.onLoadCard = function (aCard, aDocument) {
 
 
 tbSync.onSaveCard = function (aCard, aDocument) {
-    let aParentDirURI = tbSync.getSelectedAbFromArgument(window.arguments[0]);
+    let aParentDirURI = tbSync.getSelectedAbFromArgument(aDocument.defaultView.arguments[0]);
     
     let cardProvider = "";
     if (aParentDirURI) { //could be undefined
