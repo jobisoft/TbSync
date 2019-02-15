@@ -44,19 +44,21 @@ tbSync.onRemoveFromAddressbook = function (window) {
 
 tbSync.onAbResultsPaneSelectionChanged = function () {
     //hide all extra fields of all providers
-    for (let provider in tbSync.loadedProviders) {
-        let container = window.document.getElementsByClassName(provider + "Container");
-        for (let i=0; i < container.length; i++) {
-            container[i].hidden = true;
-        }
+    let container = window.document.getElementsByClassName("tbsyncContainer");
+    for (let i=0; i < container.length; i++) {
+        container[i].collapsed = true;
     }
 
     //unhide all default elements, which have been hidden by some provider
-    //provider must add class "defaultElement" to the elements it is hiding
-    let defaultElements = window.document.getElementsByClassName("defaultElement");
-    for (let i=0; i < defaultElements.length; i++) {
-        defaultElements[i].hidden = false;
-    }
+    //provider must add class "tbsyncHidden" to the elements it is hiding
+    let hiddenElements = window.document.getElementsByClassName("tbsyncHidden");
+    for (let i=hiddenElements.length-1; i >= 0 ; i--) {
+        if (hiddenElements[i]) {
+            hiddenElements[i].collapsed = false;
+            let classArr = hiddenElements[i].getAttribute("class").split(" ").filter(e => e != "tbsyncHidden");
+            hiddenElements[i].setAttribute("class", classArr.join(" "));
+        }                
+    }    
     
     let cards = window.GetSelectedAbCards();
     if (cards.length == 1) {
@@ -70,9 +72,9 @@ tbSync.onAbResultsPaneSelectionChanged = function () {
         if (aParentDirURI) { //could be undefined
             let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
             if (folders.length == 1) {
-                let provider = tbSync.db.getAccountSetting(folders[0].account, "provider");
-                if (tbSync[provider].onAbResultsPaneSelectionChanged) {
-                    tbSync[provider].onAbResultsPaneSelectionChanged(window, cards[0]);
+                let cardProvider = tbSync.db.getAccountSetting(folders[0].account, "provider");
+                if (tbSync[cardProvider].onAbResultsPaneSelectionChanged) {
+                    tbSync[cardProvider].onAbResultsPaneSelectionChanged(window, cards[0]);
                 }
             }
         }

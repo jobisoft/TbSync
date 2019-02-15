@@ -204,7 +204,7 @@ var tbSync = {
                     tbSync[provider] = {};
                     delete tbSync.loadedProviders[provider];
                     Services.obs.notifyObservers(null, "tbsync.updateAccountsList", provider);                    
-                    Services.obs.notifyObservers(null, "tbsync.updateSyncstate", provider);
+                    Services.obs.notifyObservers(null, "tbsync.updateSyncstate", null);
                 }
             }
 
