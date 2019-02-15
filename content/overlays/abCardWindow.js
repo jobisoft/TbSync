@@ -37,7 +37,7 @@ tbSync.onAbSelectChangeNewCard = function(window) {
     for (let provider in tbSync.loadedProviders) {
         let items = window.document.getElementsByClassName(provider + "Container");
         for (let i=0; i < items.length; i++) {
-            items[i].hidden = (cardProvider != provider);
+            items[i].collapsed = (cardProvider != provider);
         }
 
         if (provider != cardProvider) {
@@ -46,7 +46,7 @@ tbSync.onAbSelectChangeNewCard = function(window) {
             //this is a live collection!
             for (let i=hiddenItems.length-1; i >= 0 ; i--) {
                 if (hiddenItems[i]) {
-                    hiddenItems[i].hidden = false;
+                    hiddenItems[i].collapsed = false;
                     let classArr = hiddenItems[i].getAttribute("class").split(" ").filter(e => e != provider + "Hidden");
                     hiddenItems[i].setAttribute("class", classArr.join(" "));
                 }                
@@ -111,7 +111,7 @@ tbSync.onLoadCard = function (aCard, aDocument) {
         //show extra provider UI elements
         let container = aDocument.getElementsByClassName(cardProvider + "Container");
         for (let i=0; i < container.length; i++) {
-            container[i].hidden = false;
+            container[i].collapsed = false;
         }
 
         //call custom function to do additional tasks
