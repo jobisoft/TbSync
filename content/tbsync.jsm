@@ -86,7 +86,7 @@ var tbSync = {
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate", false);
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.init.done", false);
 
-        tbSync.overlayManager = new OverlayManager({verbose: 5});
+        tbSync.overlayManager = new OverlayManager({verbose: 0});
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messengercompose/messengercompose.xul", "chrome://tbsync/content/overlays/messengercompose.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://calendar/content/calendar-event-dialog-attendees.xul", "chrome://tbsync/content/overlays/calendar-event-dialog-attendees.xul");
