@@ -14,8 +14,7 @@ Components.utils.import("resource://gre/modules/NetUtil.jsm");
 Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 
-function OverlayManager(addonData, options = {}) {
-    this.addonData = addonData;
+function OverlayManager(options = {}) {
     this.registeredOverlays = {};
     this.overlays =  {};
     this.stylesheets = {};
@@ -51,7 +50,7 @@ function OverlayManager(addonData, options = {}) {
     
 
 
-    this.injectOverlaysIntoAllOpenWindows = function () {
+    this.startObserving = function () {
         let windows = Services.wm.getEnumerator(null);
         while (windows.hasMoreElements()) {
             let window = windows.getNext().QueryInterface(Components.interfaces.nsIDOMWindow);
@@ -62,7 +61,7 @@ function OverlayManager(addonData, options = {}) {
         Services.wm.addListener(this.windowListener);
     };
 
-    this.removeOverlaysFromAllOpenWindows = function () {
+    this.stopObserving = function () {
         Services.wm.removeListener(this.windowListener);
 
         let  windows = Services.wm.getEnumerator(null);
