@@ -15,10 +15,38 @@ Components.utils.import("resource://gre/modules/Services.jsm");
 //this is used in multiple places (addressbook + contactsidebar) so we cannot use objects of tbSync to store states, but need to store distinct variables
 //in the window scope -> window.tbSync_XY
 
-if (!tbSync.hasOwnProperty("serverSearch")) {
-    tbSync.serverSearch = {};
+var tbSyncAbServerSearch = {
 
-    tbSync.serverSearch.eventHandlerWindowReference = function (window) {
+    onInject: function (window) {
+        window.tbSync_eventHandler = tbSyncAbServerSearch.eventHandlerWindowReference(window);
+        
+        let searchbox =  window.document.getElementById("peopleSearchInput");
+        if (searchbox) {
+            window.tbSync_searchValue = searchbox.value;
+            window.tbSync_searchValuePollHandler = window.setInterval(function(){tbSyncAbServerSearch.searchValuePoll(window, searchbox)}, 200);
+            window.tbSync_eventHandler.addEventListener(searchbox, "input", false);
+        }
+        
+        let dirtree = window.document.getElementById("dirTree");
+        if (dirtree) {
+            window.tbSync_eventHandler.addEventListener(dirtree, "select", false);        
+        }
+    },
+    
+    onRemove: function (window) {
+        let searchbox =  window.document.getElementById("peopleSearchInput");
+        if (searchbox) {
+            window.tbSync_eventHandler.removeEventListener(searchbox, "input", false);
+            window.clearInterval(window.tbSync_searchValuePollHandler);
+        }
+
+        let dirtree = window.document.getElementById("dirTree");
+        if (dirtree) {
+            window.tbSync_eventHandler.removeEventListener(dirtree, "select", false);        
+        }
+    },    
+
+    eventHandlerWindowReference: function (window) {
         this.window = window;
         
         this.removeEventListener = function (element, type, bubble) {
@@ -32,11 +60,11 @@ if (!tbSync.hasOwnProperty("serverSearch")) {
         this.handleEvent = function(event) {
             switch(event.type) {
                 case 'input':
-                    tbSync.serverSearch.onSearchInputChanged(this.window);
+                    tbSyncAbServerSearch.onSearchInputChanged(this.window);
                     break;
                 case "select":
                     {
-                        tbSync.serverSearch.clearServerSearchResults(this.window);
+                        tbSyncAbServerSearch.clearServerSearchResults(this.window);
                         let searchbox =  window.document.getElementById("peopleSearchInput");
                         let target = window.GetSelectedDirectory();
                         if (searchbox && target) {
@@ -52,46 +80,17 @@ if (!tbSync.hasOwnProperty("serverSearch")) {
             }
         };
         return this;
-    }
+    },
 
-    tbSync.serverSearch.searchValuePoll = function (window, searchbox) {
+    searchValuePoll: function (window, searchbox) {
         let value = searchbox.value;
         if (window.tbSync_searchValue != "" && value == "") {
-            tbSync.serverSearch.clearServerSearchResults(window);
+            tbSyncAbServerSearch.clearServerSearchResults(window);
         }
         window.tbSync_searchValue = value;
-    }
+    },
 
-    tbSync.serverSearch.onInjectIntoAddressbook = function (window) {
-        window.tbSync_eventHandler = tbSync.serverSearch.eventHandlerWindowReference(window);
-        
-        let searchbox =  window.document.getElementById("peopleSearchInput");
-        if (searchbox) {
-            window.tbSync_searchValue = searchbox.value;
-            window.tbSync_searchValuePollHandler = window.setInterval(function(){tbSync.serverSearch.searchValuePoll(window, searchbox)}, 200);
-            window.tbSync_eventHandler.addEventListener(searchbox, "input", false);
-        }
-        
-        let dirtree = window.document.getElementById("dirTree");
-        if (dirtree) {
-            window.tbSync_eventHandler.addEventListener(dirtree, "select", false);        
-        }
-    }
-
-    tbSync.serverSearch.onRemoveFromAddressbook = function (window) {
-        let searchbox =  window.document.getElementById("peopleSearchInput");
-        if (searchbox) {
-            window.tbSync_eventHandler.removeEventListener(searchbox, "input", false);
-            window.clearInterval(window.tbSync_searchValuePollHandler);
-        }
-
-        let dirtree = window.document.getElementById("dirTree");
-        if (dirtree) {
-            window.tbSync_eventHandler.removeEventListener(dirtree, "select", false);        
-        }
-    }
-
-    tbSync.serverSearch.clearServerSearchResults = function (window) {
+    clearServerSearchResults: function (window) {
         let target = window.GetSelectedDirectory();
         if (target == "moz-abdirectory://?") return; //global search not yet(?) supported
         
@@ -108,9 +107,9 @@ if (!tbSync.hasOwnProperty("serverSearch")) {
                 //if  getCardsFromProperty is not implemented, do nothing
             }
         }
-    }
+    },
 
-    tbSync.serverSearch.onSearchInputChanged = Task.async (function* (window) {
+    onSearchInputChanged: Task.async (function* (window) {
         let target = window.GetSelectedDirectory();
         if (target == "moz-abdirectory://?") return; //global search not yet(?) supported
         
@@ -127,7 +126,7 @@ if (!tbSync.hasOwnProperty("serverSearch")) {
 
                 if (query.length<3) {
                     //delete all old results
-                    tbSync.serverSearch.clearServerSearchResults(window);
+                    tbSyncAbServerSearch.clearServerSearchResults(window);
                     window.onEnterInSearchBar();
                 } else {
                     window.tbSync_serverSearchNextQuery = query;                
@@ -142,7 +141,7 @@ if (!tbSync.hasOwnProperty("serverSearch")) {
                             let results = yield tbSync[provider].abServerSearch (account, currentQuery, "search");
 
                             //delete all old results
-                            tbSync.serverSearch.clearServerSearchResults(window);
+                            tbSyncAbServerSearch.clearServerSearchResults(window);
 
                             for (let count = 0; count < results.length; count++) {
                                 let newItem = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
