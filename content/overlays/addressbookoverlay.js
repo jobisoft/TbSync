@@ -68,7 +68,7 @@ var tbSyncAddressBook = {
         }    
         
         let cards = window.GetSelectedAbCards();
-        if (cards.length == 1) {
+        if (tbSync && tbSync.db && cards.length == 1) { //TODO: tbSync.db seems not to be avail during inject, if open
             let aParentDirURI = window.GetSelectedDirectory();
             let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
             let selectedBook = abManager.getDirectory(aParentDirURI);

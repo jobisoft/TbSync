@@ -97,7 +97,7 @@ var tbSyncAbCardWindow = {
         let aParentDirURI = tbSyncAbCardWindow.getSelectedAbFromArgument(aDocument.defaultView.arguments[0]);
 
         let cardProvider = "";
-        if (aParentDirURI) { //could be undefined
+        if (aParentDirURI && tbSync && tbSync.db) { //could be undefined, TODO: tbSync.db seems not to be avail during inject, if open
             let folders = tbSync.db.findFoldersWithSetting("target", aParentDirURI);
             if (folders.length == 1) {
                 cardProvider = tbSync.db.getAccountSetting(folders[0].account, "provider");
