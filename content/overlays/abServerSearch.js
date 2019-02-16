@@ -12,37 +12,34 @@ Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("resource://gre/modules/Services.jsm");
 
-//this is used in multiple places (addressbook + contactsidebar) so we cannot use objects of tbSync to store states, but need to store distinct variables
-//in the window scope -> window.tbSync_XY
-
 var tbSyncAbServerSearch = {
 
     onInject: function (window) {
-        window.tbSync_eventHandler = tbSyncAbServerSearch.eventHandlerWindowReference(window);
+        this._eventHandler = tbSyncAbServerSearch.eventHandlerWindowReference(window);
         
         let searchbox =  window.document.getElementById("peopleSearchInput");
         if (searchbox) {
-            window.tbSync_searchValue = searchbox.value;
-            window.tbSync_searchValuePollHandler = window.setInterval(function(){tbSyncAbServerSearch.searchValuePoll(window, searchbox)}, 200);
-            window.tbSync_eventHandler.addEventListener(searchbox, "input", false);
+            this._searchValue = searchbox.value;
+            this._searchValuePollHandler = window.setInterval(function(){tbSyncAbServerSearch.searchValuePoll(window, searchbox)}, 200);
+            this._eventHandler.addEventListener(searchbox, "input", false);
         }
         
         let dirtree = window.document.getElementById("dirTree");
         if (dirtree) {
-            window.tbSync_eventHandler.addEventListener(dirtree, "select", false);        
+            this._eventHandler.addEventListener(dirtree, "select", false);        
         }
     },
     
     onRemove: function (window) {
         let searchbox =  window.document.getElementById("peopleSearchInput");
         if (searchbox) {
-            window.tbSync_eventHandler.removeEventListener(searchbox, "input", false);
-            window.clearInterval(window.tbSync_searchValuePollHandler);
+            this._eventHandler.removeEventListener(searchbox, "input", false);
+            window.clearInterval(this._searchValuePollHandler);
         }
 
         let dirtree = window.document.getElementById("dirTree");
         if (dirtree) {
-            window.tbSync_eventHandler.removeEventListener(dirtree, "select", false);        
+            this._eventHandler.removeEventListener(dirtree, "select", false);        
         }
     },    
 
@@ -84,10 +81,10 @@ var tbSyncAbServerSearch = {
 
     searchValuePoll: function (window, searchbox) {
         let value = searchbox.value;
-        if (window.tbSync_searchValue != "" && value == "") {
+        if (this._searchValue != "" && value == "") {
             tbSyncAbServerSearch.clearServerSearchResults(window);
         }
-        window.tbSync_searchValue = value;
+        this._searchValue = value;
     },
 
     clearServerSearchResults: function (window) {
@@ -129,15 +126,16 @@ var tbSyncAbServerSearch = {
                     tbSyncAbServerSearch.clearServerSearchResults(window);
                     window.onEnterInSearchBar();
                 } else {
-                    window.tbSync_serverSearchNextQuery = query;                
-                    if (window.tbSync_serverSearchBusy) {
+                    this._serverSearchNextQuery = query;                
+                    if (this._serverSearchBusy) {
+                        //NOOP
                     } else {
-                        window.tbSync_serverSearchBusy = true;
-                        while (window.tbSync_serverSearchBusy) {
+                        this._serverSearchBusy = true;
+                        while (this._serverSearchBusy) {
 
                             yield tbSync.sleep(1000);
-                            let currentQuery = window.tbSync_serverSearchNextQuery;
-                            window.tbSync_serverSearchNextQuery = "";
+                            let currentQuery = this._serverSearchNextQuery;
+                            this._serverSearchNextQuery = "";
                             let results = yield tbSync[provider].abServerSearch (account, currentQuery, "search");
 
                             //delete all old results
@@ -154,7 +152,7 @@ var tbSyncAbServerSearch = {
                                 addressbook.addCard(newItem);
                             }   
                             window.onEnterInSearchBar();
-                            if (window.tbSync_serverSearchNextQuery == "") window.tbSync_serverSearchBusy = false;
+                            if (this._serverSearchNextQuery == "") this._serverSearchBusy = false;
                         }
                     }
                 }            
