@@ -8,6 +8,8 @@
  
  "use strict";
 
+Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+
 tbSync.onInjectIntoCardEditWindow = function (window) {
     if (window.location.href=="chrome://messenger/content/addressbook/abNewCardDialog.xul") {
         //add handler for ab switching    

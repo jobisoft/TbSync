@@ -9,6 +9,7 @@
  "use strict";
 
 Components.utils.import("resource://gre/modules/Services.jsm");
+Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncMessenger = {
 

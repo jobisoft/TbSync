@@ -9,6 +9,7 @@
  "use strict";
 
 Components.utils.import("resource://gre/modules/Task.jsm");
+Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 /*
     The contact sidebar is loaded inside a browser element. That load is not seen by the windowlistener and thus overlays are not injected.
@@ -23,10 +24,7 @@ tbSync.onInjectIntoMessengerCompose = function (window) {
                 let targetWindow = window.document.getElementById("sidebar").contentWindow.wrappedJSObject;
                 if (targetWindow) {
                     window.clearInterval(tbSync.messengerComposeObserverTimer);
-                    if (tbSync.overlayManager.hasRegisteredOverlays(targetWindow)) {
-                        targetWindow.tbSync = tbSync;
-                        tbSync.overlayManager.injectAllOverlays(targetWindow);
-                    }                        
+                    tbSync.overlayManager.injectAllOverlays(targetWindow);
                 }
             }, 1000);  
       });    

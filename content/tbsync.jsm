@@ -31,7 +31,7 @@ var tbSync = {
 
     enabled: false,
     window: null,
-    
+    test: "john",
     lightning: null,
     cardbook: null,
     addon: null,
@@ -85,6 +85,9 @@ var tbSync = {
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate", false);
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.init.done", false);
 
+        Components.utils.import("chrome://tbsync/content/OverlayManager.jsm");
+        tbSync.overlayManager = new OverlayManager(tbSync.addonData, {verbose: 5});
+
         // Inject UI before init finished, to give user the option to see Oops message and report bug
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messengercompose/messengercompose.xul", "chrome://tbsync/content/overlays/messengercompose.xul");
@@ -95,14 +98,13 @@ var tbSync = {
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abEditCardDialog.xul", "chrome://tbsync/content/overlays/abCardWindow.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/overlays/abCardWindow.xul");
         
-        tbSync.overlayManager.injectAllOverlays(tbSync.window);
+        tbSync.overlayManager.injectOverlaysIntoAllOpenWindows();
 
         //print information about Thunderbird version and OS
         tbSync.dump(Services.appinfo.name, Services.appinfo.platformVersion + " on " + OS.Constants.Sys.Name);
 
         // load common subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
         tbSync.includeJS("chrome://tbsync/content/db.js");
-        tbSync.includeJS("chrome://tbsync/content/abServerSearch.js");
         tbSync.includeJS("chrome://tbsync/content/abAutoComplete.js");
 
         //init DB
@@ -218,6 +220,9 @@ var tbSync = {
     cleanup: function() {
         //cancel sync timer
         tbSync.syncTimer.cancel();
+
+        //unload overlays
+        tbSync.overlayManager.removeOverlaysFromAllOpenWindows();
 
         //remove observer
         if (tbSync.enabled === true) {

@@ -8,6 +8,8 @@
  
  "use strict";
 
+Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+
 tbSync.onInjectIntoAddressbook = function (window) {
     if (window.document.getElementById("abResultsTree")) {
         window.document.getElementById("abResultsTree").addEventListener("select", tbSync.onAbResultsPaneSelectionChanged, false);

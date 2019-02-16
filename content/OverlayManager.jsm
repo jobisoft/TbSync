@@ -28,12 +28,50 @@ function OverlayManager(addonData, options = {}) {
 
 
 
+/* 
+ could be replaced in TB61:
+  - https://dxr.mozilla.org/comm-central/rev/18881dd127e3b0c0d3f97390c9094e309d4dd9c1/mail/test/resources/jsbridge/jsbridge/extension/bootstrap.js#17
+  - https://dxr.mozilla.org/comm-central/rev/18881dd127e3b0c0d3f97390c9094e309d4dd9c1/common/src/extensionSupport.jsm#151
+*/
+    this.windowListener = {
+        that : this,
+        onOpenWindow: function(xulWindow) {
+            let window = xulWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor).getInterface(Components.interfaces.nsIDOMWindow);
+            
+            function onWindowLoad() {
+                //window.removeEventListener("load", onWindowLoad);
+                this.injectAllOverlays(window);
+            }
+            window.addEventListener("load", onWindowLoad.bind(this.that));
+        },
+        onCloseWindow: function(xulWindow) { },
+        onWindowTitleChange: function(xulWindow, newTitle) { }
+    };
+
+    
 
 
+    this.injectOverlaysIntoAllOpenWindows = function () {
+        let windows = Services.wm.getEnumerator(null);
+        while (windows.hasMoreElements()) {
+            let window = windows.getNext().QueryInterface(Components.interfaces.nsIDOMWindow);
+            //inject overlays for this window
+            this.injectAllOverlays(window);
+        }
 
+        Services.wm.addListener(this.windowListener);
+    };
 
+    this.removeOverlaysFromAllOpenWindows = function () {
+        Services.wm.removeListener(this.windowListener);
 
-
+        let  windows = Services.wm.getEnumerator(null);
+        while (windows.hasMoreElements()) {
+            let window = windows.getNext().QueryInterface(Components.interfaces.nsIDOMWindow);            
+            //remove overlays (if any)
+            this.removeAllOverlays(window);
+        }
+    };
 
     this.hasRegisteredOverlays = function (window) {
         return this.registeredOverlays.hasOwnProperty(window.location.href);
@@ -104,9 +142,13 @@ function OverlayManager(addonData, options = {}) {
 
     this.injectAllOverlays = function (window, _href = null) {
         let href = (_href === null) ? window.location.href : _href;   
+        if (!window.hasOwnProperty("injectedOverlays")) window.injectedOverlays = [];
 
         for (let i=0; this.registeredOverlays[href] && i < this.registeredOverlays[href].length; i++) {
+            if (window.injectedOverlays.includes(this.registeredOverlays[href][i])) continue;
             if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] Injecting: " + this.registeredOverlays[href][i]);
+            window.injectedOverlays.push(this.registeredOverlays[href][i]);
+            
             let rootNode = this.overlays[this.registeredOverlays[href][i]];
 
             if (rootNode) {
@@ -156,8 +198,14 @@ function OverlayManager(addonData, options = {}) {
     };
     
     this.removeAllOverlays = function (window) {
+        if (!this.hasRegisteredOverlays(window))
+            return;
+        
+        if (!window.hasOwnProperty("injectedOverlays")) window.injectedOverlays = [];
+
         for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
             if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] Removing: " + this.registeredOverlays[window.location.href][i]);
+            window.injectedOverlays = window.injectedOverlays.filter(e => (e != this.registeredOverlays[window.location.href][i]));
             
 //            let rootNode = this.getDataFromXULString(window, this.overlays[this.registeredOverlays[window.location.href][i]]);
             let rootNode = this.overlays[this.registeredOverlays[window.location.href][i]];
@@ -180,7 +228,7 @@ function OverlayManager(addonData, options = {}) {
                     element.parentNode.removeChild(element);
                 }
             }
-        }
+        }        
     };
 
 

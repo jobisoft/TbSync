@@ -7,6 +7,7 @@
  */
  
  "use strict";
+Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 tbSync.onInjectIntoAttendeeEventDialog = function (window) {    
     // Add autoComplete for TbSync
