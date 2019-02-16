@@ -184,14 +184,13 @@ var tbSync = {
 
             } catch (e) {
                 tbSync.dump("FAILED to load provider", provider);
-                throw e;
+                Components.utils.reportError(e);
             }
 
         }
     }),
 
-    unloadProviderAddon:  function (addonId) {
-        
+    unloadProviderAddon:  function (addonId) {        
         //unload all loaded providers of this provider add-on
         if (tbSync.loadedProviderAddOns.hasOwnProperty(addonId) ) {
             for (let i=0; i < tbSync.loadedProviderAddOns[addonId].providers.length; i++) {
@@ -210,7 +209,12 @@ var tbSync = {
             //remove all traces
             delete tbSync.loadedProviderAddOns[addonId];
         }
-        
+    },
+    
+    unloadAllProviderAddons: function () {
+        for (let addonId in tbSync.loadedProviderAddOns) {
+            tbSync.unloadProviderAddon(addonId);
+        }
     },
     
 
@@ -221,6 +225,8 @@ var tbSync = {
         //unload overlays
         tbSync.overlayManager.stopObserving();
 
+        tbSync.unloadAllProviderAddons();
+        
         //remove observer
         if (tbSync.enabled === true) {
             Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate");
