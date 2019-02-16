@@ -144,7 +144,10 @@ function OverlayManager(options = {}) {
         if (!window.hasOwnProperty("injectedOverlays")) window.injectedOverlays = [];
 
         for (let i=0; this.registeredOverlays[href] && i < this.registeredOverlays[href].length; i++) {
-            if (window.injectedOverlays.includes(this.registeredOverlays[href][i])) continue;
+            if (window.injectedOverlays.includes(this.registeredOverlays[href][i])) {
+                Services.console.logStringMessage("[OverlayManager] NOT Injecting: " + this.registeredOverlays[href][i]);
+                continue;
+            }
             
             if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] Injecting: " + this.registeredOverlays[href][i]);
             window.injectedOverlays.push(this.registeredOverlays[href][i]);
@@ -204,7 +207,10 @@ function OverlayManager(options = {}) {
         if (!window.hasOwnProperty("injectedOverlays")) window.injectedOverlays = [];
 
         for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
-            if (!window.injectedOverlays.includes(this.registeredOverlays[window.location.href][i])) continue;
+            if (!window.injectedOverlays.includes(this.registeredOverlays[window.location.href][i])) {
+                Services.console.logStringMessage("[OverlayManager] NOT Removing: " + this.registeredOverlays[window.location.href][i]);
+                continue;
+            }
             
             if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] Removing: " + this.registeredOverlays[window.location.href][i]);
             window.injectedOverlays = window.injectedOverlays.filter(e => (e != this.registeredOverlays[window.location.href][i]));
