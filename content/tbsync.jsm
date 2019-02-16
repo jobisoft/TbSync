@@ -95,7 +95,6 @@ var tbSync = {
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/addressbookoverlay.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abEditCardDialog.xul", "chrome://tbsync/content/overlays/abCardWindow.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/overlays/abCardWindow.xul");        
-        tbSync.overlayManager.startObserving();
 
         //print information about Thunderbird version and OS
         tbSync.dump(Services.appinfo.name, Services.appinfo.platformVersion + " on " + OS.Constants.Sys.Name);
@@ -144,6 +143,9 @@ var tbSync = {
         //was debug mode enabled during startuo?
         tbSync.debugMode = tbSync.prefSettings.getBoolPref("log.tofile");
         
+        //inject overlays
+        tbSync.overlayManager.startObserving();
+
         //enable TbSync
         tbSync.enabled = true;
 
