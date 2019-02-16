@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <overlay 
-	id="AttendeeEventDialogOverlay" 
-	oninject="tbSync.onInjectIntoAttendeeEventDialog(window)"
-	onremove="tbSync.onRemoveFromAttendeeEventDialog(window)"
+	id="TbSyncAttendeeEventDialogOverlay" 
+	oninject="tbSyncAttendeeEventDialog.onInject(window)"
+	onremove="tbSyncAttendeeEventDialog.onRemove(window)"
 	xmlns:html="http://www.w3.org/1999/xhtml">
 
    <script type="application/javascript" src="chrome://tbsync/content/overlays/calendar-event-dialog-attendees.js" />

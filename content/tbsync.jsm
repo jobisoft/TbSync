@@ -20,7 +20,8 @@ Components.utils.import("resource://gre/modules/osfile.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("resource://gre/modules/AddonManager.jsm");
 Components.utils.import("resource://gre/modules/NetUtil.jsm");
-Components.utils.import("resource:///modules/mailServices.js")
+Components.utils.import("resource:///modules/mailServices.js");
+Components.utils.import("chrome://tbsync/content/OverlayManager.jsm");
 Components.utils.importGlobalProperties(["XMLHttpRequest"]);
 
 
@@ -31,7 +32,7 @@ var tbSync = {
 
     enabled: false,
     window: null,
-    
+
     lightning: null,
     cardbook: null,
     addon: null,
@@ -85,7 +86,7 @@ var tbSync = {
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate", false);
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.init.done", false);
 
-        // Inject UI before init finished, to give user the option to see Oops message and report bug
+        tbSync.overlayManager = new OverlayManager({verbose: 0});
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messengercompose/messengercompose.xul", "chrome://tbsync/content/overlays/messengercompose.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://calendar/content/calendar-event-dialog-attendees.xul", "chrome://tbsync/content/overlays/calendar-event-dialog-attendees.xul");
@@ -93,16 +94,14 @@ var tbSync = {
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abContactsPanel.xul", "chrome://tbsync/content/overlays/abServerSearch.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/addressbookoverlay.xul");
         yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abEditCardDialog.xul", "chrome://tbsync/content/overlays/abCardWindow.xul");
-        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/overlays/abCardWindow.xul");
-        
-        tbSync.overlayManager.injectAllOverlays(tbSync.window);
+        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/overlays/abCardWindow.xul");        
+        tbSync.overlayManager.startObserving();
 
         //print information about Thunderbird version and OS
         tbSync.dump(Services.appinfo.name, Services.appinfo.platformVersion + " on " + OS.Constants.Sys.Name);
 
         // load common subscripts into tbSync (each subscript will be able to access functions/members of other subscripts, loading order does not matter)
         tbSync.includeJS("chrome://tbsync/content/db.js");
-        tbSync.includeJS("chrome://tbsync/content/abServerSearch.js");
         tbSync.includeJS("chrome://tbsync/content/abAutoComplete.js");
 
         //init DB
@@ -185,14 +184,13 @@ var tbSync = {
 
             } catch (e) {
                 tbSync.dump("FAILED to load provider", provider);
-                throw e;
+                Components.utils.reportError(e);
             }
 
         }
     }),
 
-    unloadProviderAddon:  function (addonId) {
-        
+    unloadProviderAddon:  function (addonId) {        
         //unload all loaded providers of this provider add-on
         if (tbSync.loadedProviderAddOns.hasOwnProperty(addonId) ) {
             for (let i=0; i < tbSync.loadedProviderAddOns[addonId].providers.length; i++) {
@@ -211,7 +209,12 @@ var tbSync = {
             //remove all traces
             delete tbSync.loadedProviderAddOns[addonId];
         }
-        
+    },
+    
+    unloadAllProviderAddons: function () {
+        for (let addonId in tbSync.loadedProviderAddOns) {
+            tbSync.unloadProviderAddon(addonId);
+        }
     },
     
 
@@ -219,6 +222,11 @@ var tbSync = {
         //cancel sync timer
         tbSync.syncTimer.cancel();
 
+        //unload overlays
+        tbSync.overlayManager.stopObserving();
+
+        tbSync.unloadAllProviderAddons();
+        
         //remove observer
         if (tbSync.enabled === true) {
             Services.obs.removeObserver(tbSync.syncstateObserver, "tbsync.updateSyncstate");

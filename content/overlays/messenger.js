@@ -9,14 +9,15 @@
  "use strict";
 
 Components.utils.import("resource://gre/modules/Services.jsm");
+Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncMessenger = {
 
-    onInjectIntoMessenger: function (window) {
+    onInject: function (window) {
         Services.obs.addObserver(tbSyncMessenger.updateSyncstateObserver, "tbsync.updateSyncstate", false);
     },
 
-    onRemoveFromMessenger: function (window) {
+    onRemove: function (window) {
         Services.obs.removeObserver(tbSyncMessenger.updateSyncstateObserver, "tbsync.updateSyncstate");
     },
     
@@ -38,7 +39,6 @@ var tbSyncMessenger = {
                 }
             }
         }
-    },
-    
-    
+    }
+
 };

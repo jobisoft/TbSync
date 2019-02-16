@@ -2,8 +2,8 @@
 <!DOCTYPE window SYSTEM "chrome://tbsync/locale/eas.dtd">
 
 <overlay 
-	id="abCardWindow" 
-	oninject="tbSync.onInjectIntoCardEditWindow(window)"
+	id="TbSyncAbCardWindowOverlay" 
+	oninject="tbSyncAbCardWindow.onInject(window)"
 	xmlns:html="http://www.w3.org/1999/xhtml">
 	
    <script type="application/javascript" src="chrome://tbsync/content/overlays/abCardWindow.js" />
