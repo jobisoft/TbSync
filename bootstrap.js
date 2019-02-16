@@ -21,6 +21,7 @@ let onLoadObserver = {
         let mainWindow = Services.wm.getMostRecentWindow("mail:3pane");
         if (mainWindow) {
             //init TbSync
+            mainWindow.tbSyncReference = tbSync;
             tbSync.init(mainWindow); 
         } else {
             tbSync.dump("FAIL", "Could not init TbSync, because mail:3pane window not found.");
@@ -80,6 +81,9 @@ function shutdown(data, reason) {
         
         //call cleanup of the tbSync module
         tbSync.cleanup();
+
+        let mainWindow = Services.wm.getMostRecentWindow("mail:3pane");
+        delete mainWindow.tbSyncReference;
         
         //abort write timers and write current file content to disk 
         if (tbSync.enabled) {
