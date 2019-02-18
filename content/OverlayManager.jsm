@@ -145,12 +145,11 @@ function OverlayManager(options = {}) {
 
         for (let i=0; this.registeredOverlays[href] && i < this.registeredOverlays[href].length; i++) {
             if (window.injectedOverlays.includes(this.registeredOverlays[href][i])) {
-                Services.console.logStringMessage("[OverlayManager] NOT Injecting: " + this.registeredOverlays[href][i]);
+                if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] NOT Injecting: " + this.registeredOverlays[href][i]);
                 continue;
             }
             
             if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] Injecting: " + this.registeredOverlays[href][i]);
-            window.injectedOverlays.push(this.registeredOverlays[href][i]);
             
             let rootNode = this.overlays[this.registeredOverlays[href][i]];
 
@@ -173,7 +172,9 @@ function OverlayManager(options = {}) {
                         inject = window.eval(onbeforeinject);
                     }
 
-                    if (inject) {                        
+                    if (inject) {
+                        window.injectedOverlays.push(this.registeredOverlays[href][i]);
+                        
                         //get urls of stylesheets to add preloaded files
                         let styleSheetUrls = this.getStyleSheetUrls(rootNode);
                         for (let i=0; i<styleSheetUrls.length; i++) {
@@ -208,7 +209,7 @@ function OverlayManager(options = {}) {
 
         for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
             if (!window.injectedOverlays.includes(this.registeredOverlays[window.location.href][i])) {
-                Services.console.logStringMessage("[OverlayManager] NOT Removing: " + this.registeredOverlays[window.location.href][i]);
+                if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] NOT Removing: " + this.registeredOverlays[window.location.href][i]);
                 continue;
             }
             
