@@ -25,14 +25,16 @@ var tbSyncAbNewCardWindow = {
         //remove overlays of all providers (if injected)
         for (let provider in tbSync.loadedProviders) {
             if (tbSync.loadedProviders.hasOwnProperty(provider)) {
-                tbSync[provider].getOverlayManager().removeAllOverlays(tbSyncAbNewCardWindow.w);
+                let overlayManager = tbSync[provider].getOverlayManager();
+                if (overlayManager) overlayManager.removeAllOverlays(tbSyncAbNewCardWindow.w);
             }
         }
         
         //inject overlays of all providers (their onbeforeinject will cause only the needed one to be inserted)
         for (let provider in tbSync.loadedProviders) {
             if (tbSync.loadedProviders.hasOwnProperty(provider)) {
-                tbSync[provider].getOverlayManager().injectAllOverlays(tbSyncAbNewCardWindow.w);
+                let overlayManager = tbSync[provider].getOverlayManager();
+                if (overlayManager) overlayManager.injectAllOverlays(tbSyncAbNewCardWindow.w);
             }
         }        
     },
