@@ -21,17 +21,20 @@ var tbSyncAbNewCardWindow = {
         window.document.getElementById("abPopup").removeEventListener("select", tbSyncAbNewCardWindow.onAbSelectChangeNewCard, false);
     },
 
-    onAbSelectChangeNewCard: function () {
-        //remove all overlays of all providers and insert them again (their onbeforeinject will cause only the needed one to be inserted)
-        tbSync.dav.overlayManager.removeAllOverlays(tbSyncAbNewCardWindow.w);
-        tbSync.dav.overlayManager.injectAllOverlays(tbSyncAbNewCardWindow.w);
+    onAbSelectChangeNewCard: function () {        
+        //remove overlays of all providers (if injected)
+        for (let provider in tbSync.loadedProviders) {
+            if (tbSync.loadedProviders.hasOwnProperty(provider)) {
+                tbSync[provider].getOverlayManager().removeAllOverlays(tbSyncAbNewCardWindow.w);
+            }
+        }
         
-        /*let folders = tbSync.db.findFoldersWithSetting("target", window.document.getElementById("abPopup").value);
-        let cardProvider = "";
-        if (folders.length == 1) {
-            cardProvider = tbSync.db.getAccountSetting(folders[0].account, "provider");
-        }*/
-
+        //inject overlays of all providers (their onbeforeinject will cause only the needed one to be inserted)
+        for (let provider in tbSync.loadedProviders) {
+            if (tbSync.loadedProviders.hasOwnProperty(provider)) {
+                tbSync[provider].getOverlayManager().injectAllOverlays(tbSyncAbNewCardWindow.w);
+            }
+        }        
     },
         
 }
