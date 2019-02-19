@@ -135,110 +135,118 @@ function OverlayManager(options = {}) {
 
 
 
-
-
-
-
     this.injectAllOverlays = function (window, _href = null) {
         let href = (_href === null) ? window.location.href : _href;   
+        for (let i=0; this.registeredOverlays[href] && i < this.registeredOverlays[href].length; i++) {
+            this.injectOverlay(window, this.registeredOverlays[href][i]);
+        }
+    };
+
+    this.removeAllOverlays = function (window) {
+        if (!this.hasRegisteredOverlays(window))
+            return;
+        
+        for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {            
+            this.removeOverlay(window, this.registeredOverlays[window.location.href][i]);
+        }        
+    };
+
+
+
+
+
+    this.injectOverlay = function (window, overlay) {
         if (!window.hasOwnProperty("injectedOverlays")) window.injectedOverlays = [];
 
-        for (let i=0; this.registeredOverlays[href] && i < this.registeredOverlays[href].length; i++) {
-            if (window.injectedOverlays.includes(this.registeredOverlays[href][i])) {
-                if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] NOT Injecting: " + this.registeredOverlays[href][i]);
-                continue;
-            }
-            
-            if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] Injecting: " + this.registeredOverlays[href][i]);
-            
-            let rootNode = this.overlays[this.registeredOverlays[href][i]];
+        if (window.injectedOverlays.includes(overlay)) {
+            if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] NOT Injecting: " + overlay);
+            return;
+        }            
+        
+        let rootNode = this.overlays[overlay];
 
-            if (rootNode) {
-                let overlayNode = rootNode.documentElement;
-                if (overlayNode) {
-                    //get and load scripts
-                    let scripts = this.getScripts(rootNode, overlayNode);
-                    for (let i=0; i < scripts.length; i++){
-                        if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Loading: " + scripts[i]);
-                        Services.scriptloader.loadSubScript(scripts[i], window);
-                    }
+        if (rootNode) {
+            let overlayNode = rootNode.documentElement;
+            if (overlayNode) {
+                //get and load scripts
+                let scripts = this.getScripts(rootNode, overlayNode);
+                for (let i=0; i < scripts.length; i++){
+                    if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Loading: " + scripts[i]);
+                    Services.scriptloader.loadSubScript(scripts[i], window);
+                }
 
-                    //eval onbeforeinject, if that returns false, inject is aborted
-                    let inject = true;
-                    if (overlayNode.hasAttribute("onbeforeinject")) {
-                        let onbeforeinject = overlayNode.getAttribute("onbeforeinject");
-                        if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Executing: " + onbeforeinject);
+                //eval onbeforeinject, if that returns false, inject is aborted
+                let inject = true;
+                if (overlayNode.hasAttribute("onbeforeinject")) {
+                    let onbeforeinject = overlayNode.getAttribute("onbeforeinject");
+                    if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Executing: " + onbeforeinject);
+                    // the source for this eval is part of this XPI, cannot be changed by user.
+                    inject = window.eval(onbeforeinject);
+                }
+
+                if (inject) {
+                    if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] Injecting: " + overlay);
+                    window.injectedOverlays.push(overlay);
+                    
+                    //get urls of stylesheets to add preloaded files
+                    let styleSheetUrls = this.getStyleSheetUrls(rootNode);
+                    for (let i=0; i<styleSheetUrls.length; i++) {
+                        let namespace = overlayNode.lookupNamespaceURI("html");
+                        let element = window.document.createElementNS(namespace, "style");
+                        element.id = styleSheetUrls[i];
+                        element.textContent = this.stylesheets[styleSheetUrls[i]];
+                        window.document.documentElement.appendChild(element);
+                        if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Stylesheet: " + styleSheetUrls[i]);
+                    }                        
+
+                    this.insertXulOverlay(window, overlayNode.children);
+                    
+                    //execute oninject
+                    if (overlayNode.hasAttribute("oninject")) {
+                        let oninject = overlayNode.getAttribute("oninject");
+                        if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Executing: " + oninject);
                         // the source for this eval is part of this XPI, cannot be changed by user.
-                        inject = window.eval(onbeforeinject);
-                    }
-
-                    if (inject) {
-                        window.injectedOverlays.push(this.registeredOverlays[href][i]);
-                        
-                        //get urls of stylesheets to add preloaded files
-                        let styleSheetUrls = this.getStyleSheetUrls(rootNode);
-                        for (let i=0; i<styleSheetUrls.length; i++) {
-                            let namespace = overlayNode.lookupNamespaceURI("html");
-                            let element = window.document.createElementNS(namespace, "style");
-                            element.id = styleSheetUrls[i];
-                            element.textContent = this.stylesheets[styleSheetUrls[i]];
-                            window.document.documentElement.appendChild(element);
-                            if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Stylesheet: " + styleSheetUrls[i]);
-                        }                        
-
-                        this.insertXulOverlay(window, overlayNode.children);
-                        
-                        //execute oninject
-                        if (overlayNode.hasAttribute("oninject")) {
-                            let oninject = overlayNode.getAttribute("oninject");
-                            if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Executing: " + oninject);
-                            // the source for this eval is part of this XPI, cannot be changed by user.
-                            window.eval(oninject);
-                        }
+                        window.eval(oninject);
                     }
                 }
             }
         }
     };
-    
-    this.removeAllOverlays = function (window) {
-        if (!this.hasRegisteredOverlays(window))
-            return;
-        
+
+    this.removeOverlay = function (window, overlay) {
         if (!window.hasOwnProperty("injectedOverlays")) window.injectedOverlays = [];
 
-        for (let i=0; i < this.registeredOverlays[window.location.href].length; i++) {
-            if (!window.injectedOverlays.includes(this.registeredOverlays[window.location.href][i])) {
-                if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] NOT Removing: " + this.registeredOverlays[window.location.href][i]);
-                continue;
-            }
-            
-            if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] Removing: " + this.registeredOverlays[window.location.href][i]);
-            window.injectedOverlays = window.injectedOverlays.filter(e => (e != this.registeredOverlays[window.location.href][i]));
-            
-//            let rootNode = this.getDataFromXULString(window, this.overlays[this.registeredOverlays[window.location.href][i]]);
-            let rootNode = this.overlays[this.registeredOverlays[window.location.href][i]];
-            let overlayNode = rootNode.documentElement;
-            
-            if (overlayNode.hasAttribute("onremove")) {
-                let onremove = overlayNode.getAttribute("onremove");
-                if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Executing: " + onremove);
-                // the source for this eval is part of this XPI, cannot be changed by user.
-                window.eval(onremove);
-            }
+        if (!window.injectedOverlays.includes(overlay)) {
+            if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] NOT Removing: " + overlay);
+            return;
+        }
 
-            this.removeXulOverlay(window, overlayNode.children);
+        if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] Removing: " + overlay);
+        window.injectedOverlays = window.injectedOverlays.filter(e => (e != overlay));
+        
+//            let rootNode = this.getDataFromXULString(window, this.overlays[overlay]);
+        let rootNode = this.overlays[overlay];
+        let overlayNode = rootNode.documentElement;
+        
+        if (overlayNode.hasAttribute("onremove")) {
+            let onremove = overlayNode.getAttribute("onremove");
+            if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Executing: " + onremove);
+            // the source for this eval is part of this XPI, cannot be changed by user.
+            window.eval(onremove);
+        }
 
-            //get urls of stylesheets to remove styte tag
-            let styleSheetUrls = this.getStyleSheetUrls(rootNode);
-            for (let i=0; i<styleSheetUrls.length; i++) {
-                let element = window.document.getElementById(styleSheetUrls[i]);
-                if (element) {
-                    element.parentNode.removeChild(element);
-                }
+        this.removeXulOverlay(window, overlayNode.children);
+
+        //get urls of stylesheets to remove styte tag
+        let styleSheetUrls = this.getStyleSheetUrls(rootNode);
+        for (let i=0; i<styleSheetUrls.length; i++) {
+            let element = window.document.getElementById(styleSheetUrls[i]);
+            if (element) {
+                element.parentNode.removeChild(element);
             }
-        }        
+        }
     };
+    
 
 
 
