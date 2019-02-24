@@ -1476,6 +1476,8 @@ var tbSync = {
             tbSync.db.setFolderSetting(account, folderID, "target", data.URI);
             //tbSync.db.setFolderSetting(account, folderID, "targetName", newname);
             data.setStringValue("tbSyncProvider", provider);
+            //notify about new created address book
+            Services.obs.notifyObservers(null, 'tbsync.addressbook.created', null)
             return true;
         }
         
