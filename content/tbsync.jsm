@@ -1513,7 +1513,6 @@ var tbSync = {
                 binary = atob(data.split(" ").join(""));
             } catch (e) {
                 tbSync.dump("Failed to decode base64 string:", data);
-                throw e;
             }
             foStream.write(binary, binary.length);
             foStream.close();
