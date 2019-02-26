@@ -518,7 +518,7 @@ var tbSync = {
     },
 
     setTargetModified : function (folder) {
-        if (/*folder.status == "OK" && */ tbSync.isEnabled(folder.account)) {
+        if (!tbSync.isSyncing(folder.account) && tbSync.isEnabled(folder.account)) {
             tbSync.db.setAccountSetting(folder.account, "status", "notsyncronized");
             tbSync.db.setFolderSetting(folder.account, folder.folderID, "status", "modified");
             //notify settings gui to update status
