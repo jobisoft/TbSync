@@ -763,6 +763,19 @@ var tbSync = {
 
     // TOOLS    
 
+    getContainerIdForUser: function(username) {
+        let offset = 1000;
+        let range = 1000;
+        if (!(tbSync.containers && tbSync.containers.length < range)) {
+            tbSync.containers = [];
+            let authenticationManager = Components.classes["@mozilla.org/network/http-auth-manager;1"].getService(Components.interfaces.nsIHttpAuthManager); 
+            authenticationManager.clearAll();
+        }
+        
+        let idx = tbSync.containers.indexOf(username);
+        return (idx == -1) ? tbSync.containers.push(username) - 1 + offset : (idx + offset);
+    },
+
     // Promisified implementation AddonManager.getAddonByID() (only needed in TB60)
     getAddonByID  : Task.async (function* (id) {        
         return new Promise(function(resolve, reject) {
