@@ -768,8 +768,12 @@ var tbSync = {
         let range = 1000;
         if (!(tbSync.containers && tbSync.containers.length < range)) {
             tbSync.containers = [];
+            //this needs improvement
+            // - we only want to clear our own slots, not everything
+            // - we want to clear all caches of our slots, not just creds and cookies
             let authenticationManager = Components.classes["@mozilla.org/network/http-auth-manager;1"].getService(Components.interfaces.nsIHttpAuthManager); 
             authenticationManager.clearAll();
+            Services.cookies.removeAll();
         }
         
         let idx = tbSync.containers.indexOf(username);
