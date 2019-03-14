@@ -764,20 +764,30 @@ var tbSync = {
     // TOOLS    
 
     getContainerIdForUser: function(username) {
-        let offset = 1000;
-        let range = 1000;
-        if (!(tbSync.containers && tbSync.containers.length < range)) {
-            tbSync.containers = [];
-            //this needs improvement
-            // - we only want to clear our own slots, not everything
-            // - we want to clear all caches of our slots, not just creds and cookies
-            let authenticationManager = Components.classes["@mozilla.org/network/http-auth-manager;1"].getService(Components.interfaces.nsIHttpAuthManager); 
-            authenticationManager.clearAll();
-            Services.cookies.removeAll();
+        //define the allowed range of container ids to be used
+        let min = 1000;
+        let max = 1999;
+        
+        //we need to store the container map in the main window, so it is persistent and survives a restart of this bootstrapped addon
+        //TODO: is there a better way to store this container map globally? Can there be TWO main windows?
+        let mainWindow = Services.wm.getMostRecentWindow("mail:3pane");
+
+        //init
+        if (!(mainWindow._containers)) {
+            mainWindow._containers = [];
         }
         
-        let idx = tbSync.containers.indexOf(username);
-        return (idx == -1) ? tbSync.containers.push(username) - 1 + offset : (idx + offset);
+        //reset if adding an entry will exceed allowed range
+        if (mainWindow._containers.length > (max-min) && mainWindow._containers.indexOf(username) == -1) {
+            for (let i=0; i < mainWindow._containers.length; i++) {
+                //Services.clearData.deleteDataFromOriginAttributesPattern({ userContextId: i + min });
+                Services.obs.notifyObservers(null, "clear-origin-attributes-data", JSON.stringify({ userContextId: i + min }));
+            }
+            mainWindow._containers = [];
+        }
+        
+        let idx = mainWindow._containers.indexOf(username);
+        return (idx == -1) ? mainWindow._containers.push(username) - 1 + min : (idx + min);
     },
 
     // Promisified implementation AddonManager.getAddonByID() (only needed in TB60)
