@@ -54,7 +54,6 @@ var tbSync = {
             homepageUrl: "https://addons.thunderbird.net/addon/eas-4-tbsync/"},
     },
     loadedProviders: {},
-    loadedProviderAddOns: {},
 
     bundle: Services.strings.createBundle("chrome://tbsync/locale/tbSync.strings"),
 
@@ -164,17 +163,13 @@ var tbSync = {
                 //load provider subscripts into tbSync 
                 tbSync.includeJS("chrome:" + js);
 
-                //keep track of loaded providers of this provider add-on
-                if (!tbSync.loadedProviderAddOns.hasOwnProperty(addonId)) {
-                    let addon = yield tbSync.getAddonByID(addonId);
-                    tbSync.loadedProviderAddOns[addonId] = {addon: addon, providers: []};
-                }
-                tbSync.loadedProviderAddOns[addonId].providers.push(provider);
+                let addon = yield tbSync.getAddonByID(addonId);
 
                 //Store some quick access data for each provider
                 tbSync.loadedProviders[provider] = {};
+                tbSync.loadedProviders[provider].addon = addon;
                 tbSync.loadedProviders[provider].addonId = addonId;
-                tbSync.loadedProviders[provider].version = tbSync.loadedProviderAddOns[addonId].addon.version.toString();
+                tbSync.loadedProviders[provider].version = addon.version.toString();
                     
                 //load provider
                 yield tbSync[provider].load(tbSync.lightningIsAvailable());
@@ -191,30 +186,19 @@ var tbSync = {
         }
     }),
 
-    unloadProviderAddon:  function (addonId) {        
-        //unload all loaded providers of this provider add-on
-        if (tbSync.loadedProviderAddOns.hasOwnProperty(addonId) ) {
-            for (let i=0; i < tbSync.loadedProviderAddOns[addonId].providers.length; i++) {
-                let provider = tbSync.loadedProviderAddOns[addonId].providers[i];
-                
-                //only unload, if loaded
-                if (tbSync.loadedProviders.hasOwnProperty(provider)) {
-                    tbSync[provider].unload(tbSync.lightningIsAvailable());
-                    tbSync[provider] = {};
-                    delete tbSync.loadedProviders[provider];
-                    Services.obs.notifyObservers(null, "tbsync.updateAccountsList", provider);                    
-                    Services.obs.notifyObservers(null, "tbsync.updateSyncstate", null);
-                }
-            }
-
-            //remove all traces
-            delete tbSync.loadedProviderAddOns[addonId];
+    unloadProvider:  function (provider) {        
+        if (tbSync.loadedProviders.hasOwnProperty(provider)) {
+            tbSync[provider].unload(tbSync.lightningIsAvailable());
+            tbSync[provider] = {};
+            delete tbSync.loadedProviders[provider];
+            Services.obs.notifyObservers(null, "tbsync.updateAccountsList", provider);                    
+            Services.obs.notifyObservers(null, "tbsync.updateSyncstate", null);
         }
     },
     
-    unloadAllProviderAddons: function () {
-        for (let addonId in tbSync.loadedProviderAddOns) {
-            tbSync.unloadProviderAddon(addonId);
+    unloadAllProviders: function () {
+        for (let provider in tbSync.loadedProviders) {
+            tbSync.unloadProvider(provider);
         }
     },
     
@@ -226,7 +210,7 @@ var tbSync = {
         //unload overlays
         tbSync.overlayManager.stopObserving();
 
-        tbSync.unloadAllProviderAddons();
+        tbSync.unloadAllProviders();
         
         //remove observer
         if (tbSync.enabled === true) {
