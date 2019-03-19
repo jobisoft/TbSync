@@ -10,9 +10,11 @@
 
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
-var tbSyncNewCardIcons = {
+var tbSyncNewCardWindow = {
 
     onInject: function (window) {
+        window.document.getElementById("abPopup").parentNode.addEventListener("select", tbSyncNewCardWindow.onAbSelectChangeNewCard, false);
+        
         let items = window.document.getElementsByClassName("abMenuItem");
         for (let i=0; i < items.length; i++) {
             let icon = "";
@@ -35,11 +37,16 @@ var tbSyncNewCardIcons = {
     },
 
     onRemove: function (window) {
+        window.document.getElementById("abPopup").parentNode.removeEventListener("select", tbSyncNewCardWindow.onAbSelectChangeNewCard, false);
         let items = window.document.getElementsByClassName("abMenuItem");
         for (let i=0; i < items.length; i++) {
             if (items[i].getAttribute("TbSyncIcon")) {
                 items[i].removeAttribute("TbSyncIcon");
             }
         }
-    }
+    },
+    
+    onAbSelectChangeNewCard: function () {        
+        window.sizeToContent();
+    },    
 }

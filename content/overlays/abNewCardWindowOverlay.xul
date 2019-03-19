@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<overlay 
+	id="TbSyncNewCardWindow" 
+	oninject="tbSyncNewCardWindow.onInject(window)"
+	onremove="tbSyncNewCardWindow.onRemove(window)"
+	xmlns:html="http://www.w3.org/1999/xhtml">
+
+   <script type="application/javascript" src="chrome://tbsync/content/overlays/abNewCardWindowOverlay.js" />
+
+</overlay>        
