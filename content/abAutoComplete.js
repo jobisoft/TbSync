@@ -96,10 +96,9 @@ abAutoComplete.Search.prototype = {
       constructor: abAutoComplete.Search,
 
       // nsIAutoCompleteSearch implementation
-      startSearch : Task.async (function* (aSearchString, aSearchParam, aPreviousResult, aListener) {
-        var result = yield this.getAutoCompleteResultFor(aSearchString);
-        aListener.onSearchResult(this, result);
-      }),
+      startSearch : function (aSearchString, aSearchParam, aPreviousResult, aListener) {
+        this.getAutoCompleteResultFor(aSearchString).then(result => aListener.onSearchResult(this, result));
+      },
 
       stopSearch() {},
 
@@ -117,7 +116,7 @@ abAutoComplete.Search.prototype = {
       /**
        * Return AutoCompleteResult for the given search string.
        */
-      getAutoCompleteResultFor : Task.async (function* (aSearchString) {
+      getAutoCompleteResultFor : async function (aSearchString) {
         //check each account and init server request
         let accounts = tbSync.db.getAccounts();
         let requests = [];
@@ -132,7 +131,7 @@ abAutoComplete.Search.prototype = {
                 
                 if (status == "disabled") continue;
                 
-                //start all requests parallel (do not wait till done here, no yield, push the promise)
+                //start all requests parallel (do not wait till done here, no await, push the promise)
                 if (tbSync[provider].abServerSearch) {
                     try {
                         requests.push(tbSync[provider].abServerSearch (account, aSearchString, "autocomplete"));
@@ -143,7 +142,7 @@ abAutoComplete.Search.prototype = {
             //wait for all requests to finish (only have to wait for the slowest, all others are done)
             for (let r=0; r < requests.length; r++) {
                 try {
-                    let results = yield requests[r];
+                    let results = await requests[r];
                     for (let count=0; count < results.length; count++) {
                         if (results[count].autocomplete) {
                             values.push(results[count].autocomplete.value);
@@ -155,7 +154,7 @@ abAutoComplete.Search.prototype = {
         }
         
         return new abAutoComplete.Result(values, comments);
-      })
+      }
 }
 
 abAutoComplete.Result.prototype = {

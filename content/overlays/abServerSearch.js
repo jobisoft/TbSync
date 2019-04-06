@@ -9,7 +9,6 @@
  "use strict";
 
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
-Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("resource://gre/modules/Services.jsm");
 
 var tbSyncAbServerSearch = {
@@ -106,7 +105,7 @@ var tbSyncAbServerSearch = {
         }
     },
 
-    onSearchInputChanged: Task.async (function* (window) {
+    onSearchInputChanged: async function (window) {
         let target = window.GetSelectedDirectory();
         if (target == "moz-abdirectory://?") return; //global search not yet(?) supported
         
@@ -133,10 +132,10 @@ var tbSyncAbServerSearch = {
                         this._serverSearchBusy = true;
                         while (this._serverSearchBusy) {
 
-                            yield tbSync.sleep(1000);
+                            await tbSync.sleep(1000);
                             let currentQuery = this._serverSearchNextQuery;
                             this._serverSearchNextQuery = "";
-                            let results = yield tbSync[provider].abServerSearch (account, currentQuery, "search");
+                            let results = await tbSync[provider].abServerSearch (account, currentQuery, "search");
 
                             //delete all old results
                             tbSyncAbServerSearch.clearServerSearchResults(window);
@@ -158,5 +157,5 @@ var tbSyncAbServerSearch = {
                 }            
             }
         }
-    })
+    }
 }

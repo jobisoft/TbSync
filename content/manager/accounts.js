@@ -75,7 +75,7 @@ var tbSyncAccounts = {
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
                                     let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
                                     
-                                    //promisify calender, so it can be used together with yield
+                                    //promisify calender, so it can be used async
                                     let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
                                     let results = await targetObj.getAllItems();
                                         
@@ -120,7 +120,7 @@ var tbSyncAccounts = {
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
                                     let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
                                     
-                                    //promisify calender, so it can be used together with yield
+                                    //promisify calender, so it can be used async
                                     let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
                                     let results = await targetObj.getAllItems();
                                     for (let r=0; r < results.length; r++) {
@@ -228,7 +228,7 @@ var tbSyncAccounts = {
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
                                     let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
                                     
-                                    //promisify calender, so it can be used together with yield
+                                    //promisify calender, so it can be used async
                                     let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
                                     let item = cal.createEvent();
                                     if (set == 1) item.icalString = [
@@ -298,7 +298,7 @@ var tbSyncAccounts = {
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
                                     let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
                                     
-                                    //promisify calender, so it can be used together with yield
+                                    //promisify calender, so it can be used async
                                     let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
                                     let item = cal.createTodo();
                                     if (set == 1) item.icalString = [

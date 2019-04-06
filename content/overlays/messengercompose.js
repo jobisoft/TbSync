@@ -8,7 +8,6 @@
  
  "use strict";
 
-Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 
 /*

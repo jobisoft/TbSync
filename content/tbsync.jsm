@@ -17,7 +17,6 @@ const Ci = Components.interfaces;
 Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("resource://gre/modules/FileUtils.jsm");
 Components.utils.import("resource://gre/modules/osfile.jsm");
-Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("resource://gre/modules/AddonManager.jsm");
 Components.utils.import("resource://gre/modules/NetUtil.jsm");
 Components.utils.import("resource:///modules/mailServices.js");
@@ -72,13 +71,13 @@ var tbSync = {
 
 
     // GLOBAL INIT
-    init: Task.async (function* (window)  { 
+    init: async function (window) { 
 
         //clear debug log on start
         tbSync.initFile("debug.log");
 
         tbSync.window = window;
-        tbSync.addon = yield tbSync.getAddonByID("tbsync@jobisoft.de");
+        tbSync.addon = await tbSync.getAddonByID("tbsync@jobisoft.de");
         tbSync.dump("TbSync init","Start (" + tbSync.addon.version.toString() + ")");
 
         Services.obs.addObserver(tbSync.initSyncObserver, "tbsync.initSync", false);
@@ -86,13 +85,13 @@ var tbSync = {
         Services.obs.addObserver(tbSync.syncstateObserver, "tbsync.init.done", false);
 
         tbSync.overlayManager = new OverlayManager({verbose: 0});
-        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
-        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/messengercompose/messengercompose.xul", "chrome://tbsync/content/overlays/messengercompose.xul");
-        yield tbSync.overlayManager.registerOverlay("chrome://calendar/content/calendar-event-dialog-attendees.xul", "chrome://tbsync/content/overlays/calendar-event-dialog-attendees.xul");
-        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/abServerSearch.xul");
-        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abContactsPanel.xul", "chrome://tbsync/content/overlays/abServerSearch.xul");
-        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/addressbookiconsoverlay.xul");
-        yield tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/overlays/abNewCardWindowOverlay.xul");
+        await tbSync.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
+        await tbSync.overlayManager.registerOverlay("chrome://messenger/content/messengercompose/messengercompose.xul", "chrome://tbsync/content/overlays/messengercompose.xul");
+        await tbSync.overlayManager.registerOverlay("chrome://calendar/content/calendar-event-dialog-attendees.xul", "chrome://tbsync/content/overlays/calendar-event-dialog-attendees.xul");
+        await tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/abServerSearch.xul");
+        await tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abContactsPanel.xul", "chrome://tbsync/content/overlays/abServerSearch.xul");
+        await tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/addressbookiconsoverlay.xul");
+        await tbSync.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/overlays/abNewCardWindowOverlay.xul");
 
         //print information about Thunderbird version and OS
         tbSync.dump(Services.appinfo.name, Services.appinfo.platformVersion + " on " + OS.Constants.Sys.Name);
@@ -102,16 +101,16 @@ var tbSync = {
         tbSync.includeJS("chrome://tbsync/content/abAutoComplete.js");
 
         //init DB
-        yield tbSync.db.init();
+        await tbSync.db.init();
 
         //init tbSync autocomplete in addressbook
         tbSync.abAutoComplete.init();
         
         //check for cardbook
-        tbSync.cardbook = yield tbSync.getAddonByID("cardbook@vigneau.philippe") ;
+        tbSync.cardbook = await tbSync.getAddonByID("cardbook@vigneau.philippe") ;
         
         //check for lightning
-        tbSync.lightning = yield tbSync.getAddonByID("{e2fda1a4-762b-4020-b5ad-a41df1933103}");
+        tbSync.lightning = await tbSync.getAddonByID("{e2fda1a4-762b-4020-b5ad-a41df1933103}");
         if (tbSync.lightning !== null) {
             tbSync.dump("Check4Lightning","Start");
 
@@ -154,16 +153,16 @@ var tbSync = {
         tbSync.syncTimer.start();
 
         tbSync.dump("TbSync init","Done");
-    }),
+    },
 
-    loadProvider:  Task.async (function* (addonId, provider, js) {
+    loadProvider:  async function (addonId, provider, js) {
         //only load, if not yet loaded
         if (!tbSync.loadedProviders.hasOwnProperty(provider)) {
             try {
                 //load provider subscripts into tbSync 
                 tbSync.includeJS("chrome:" + js);
 
-                let addon = yield tbSync.getAddonByID(addonId);
+                let addon = await tbSync.getAddonByID(addonId);
 
                 //Store some quick access data for each provider
                 tbSync.loadedProviders[provider] = {};
@@ -172,8 +171,8 @@ var tbSync = {
                 tbSync.loadedProviders[provider].version = addon.version.toString();
                     
                 //load provider
-                yield tbSync[provider].load(tbSync.lightningIsAvailable());
-                yield tbSync.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xul?provider="+provider, tbSync[provider].getEditAccountOverlayUrl());        
+                await tbSync[provider].load(tbSync.lightningIsAvailable());
+                await tbSync.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xul?provider="+provider, tbSync[provider].getEditAccountOverlayUrl());        
                 tbSync.dump("Loaded provider", provider + "::" + tbSync[provider].getNiceProviderName() + " ("+tbSync.loadedProviders[provider].version+")");
                 tbSync.resetSync(provider);
                 Services.obs.notifyObservers(null, "tbsync.updateAccountsList", provider);
@@ -184,7 +183,7 @@ var tbSync = {
             }
 
         }
-    }),
+    },
 
     unloadProvider:  function (provider) {        
         if (tbSync.loadedProviders.hasOwnProperty(provider)) {
@@ -775,14 +774,14 @@ var tbSync = {
     },
 
     // Promisified implementation AddonManager.getAddonByID() (only needed in TB60)
-    getAddonByID  : Task.async (function* (id) {        
+    getAddonByID : async function (id) {        
         return new Promise(function(resolve, reject) {
             function callback (addon) {
                 resolve(addon);
             }
             AddonManager.getAddonByID(id, callback);
         })
-    }),
+    },
 
     isString: function (s) {
         return (typeof s == 'string' || s instanceof String);

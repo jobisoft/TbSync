@@ -12,7 +12,6 @@ var EXPORTED_SYMBOLS = ["OverlayManager"];
 
 Components.utils.import("resource://gre/modules/NetUtil.jsm");
 Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("resource://gre/modules/Task.jsm");
 
 function OverlayManager(options = {}) {
     this.registeredOverlays = {};
@@ -76,9 +75,9 @@ function OverlayManager(options = {}) {
         return this.registeredOverlays.hasOwnProperty(window.location.href);
     };
 
-    this.registerOverlay = Task.async (function* (dst, overlay) {
+    this.registerOverlay = async function (dst, overlay) {
         if (overlay.startsWith("chrome://")) {
-            let xul = yield this.readChromeFile(overlay);
+            let xul = await this.readChromeFile(overlay);
             let rootNode = this.getDataFromXULString(null, xul);
     
             //get urls of stylesheets to load them
@@ -86,7 +85,7 @@ function OverlayManager(options = {}) {
             for (let i=0; i<styleSheetUrls.length; i++) {
                 //we must replace, since we do not know, if it changed - could have been an update
                 //if (!this.stylesheets.hasOwnProperty(styleSheetUrls[i])) {
-                    this.stylesheets[styleSheetUrls[i]] = yield this.readChromeFile(styleSheetUrls[i]);
+                    this.stylesheets[styleSheetUrls[i]] = await this.readChromeFile(styleSheetUrls[i]);
                 //}
             }
             
@@ -96,7 +95,7 @@ function OverlayManager(options = {}) {
         } else {
             throw "Only chrome:// URIs can be registered as overlays."
         }
-    });  
+    };  
 
     this.getDataFromXULString = function (window, str) {
         let data = null;

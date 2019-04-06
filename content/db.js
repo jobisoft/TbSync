@@ -394,7 +394,7 @@ var db = {
     
     
         
-    init: Task.async (function* ()  {
+    init: async function ()  {
         
         tbSync.dump("INIT","DB");
 
@@ -405,7 +405,7 @@ var db = {
 
         //load changelog from file
         try {
-            let data = yield OS.File.read(tbSync.getAbsolutePath(db.changelogFile));
+            let data = await OS.File.read(tbSync.getAbsolutePath(db.changelogFile));
             db.changelog = JSON.parse(tbSync.decoder.decode(data));
         } catch (ex) {
             //if there is no file, there is no file...
@@ -413,7 +413,7 @@ var db = {
 
         //load accounts from file
         try {
-            let data = yield OS.File.read(tbSync.getAbsolutePath(db.accountsFile));
+            let data = await OS.File.read(tbSync.getAbsolutePath(db.accountsFile));
             db.accounts = JSON.parse(tbSync.decoder.decode(data));
         } catch (ex) {
             //if there is no file, there is no file...
@@ -421,13 +421,12 @@ var db = {
 
         //load folders from file
         try {
-            let data = yield OS.File.read(tbSync.getAbsolutePath(db.foldersFile));
+            let data = await OS.File.read(tbSync.getAbsolutePath(db.foldersFile));
             db.folders = JSON.parse(tbSync.decoder.decode(data));
         } catch (ex) {
             //if there is no file, there is no file...
         }
             
-    }),
-
+    }
 
 };
