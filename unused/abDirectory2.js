@@ -120,9 +120,7 @@ abDirectory.Directory.prototype = {
                      + "', URI '" + this.mValue + "' ?):" + e + "\n");
             }
 
-            let abManager = Components.classes["@mozilla.org/abmanager;1"]
-                                      .getService(Components.interfaces.nsIAbManager);
-            abManager.notifyItemPropertyChanged(this, "DirName", oldValue, val);
+            MailServices.ab.notifyItemPropertyChanged(this, "DirName", oldValue, val);
         }
     },
 

@@ -1305,15 +1305,11 @@ var tbSync = {
 
         add: function addressbookListener_add () {
             let flags = Components.interfaces.nsIAbListener;
-            Components.classes["@mozilla.org/abmanager;1"]
-                .getService(Components.interfaces.nsIAbManager)
-                .addAddressBookListener(tbSync.addressbookListener, flags.all);
+            MailServices.ab.addAddressBookListener(tbSync.addressbookListener, flags.all);
         },
 
         remove: function addressbookListener_remove () {
-            Components.classes["@mozilla.org/abmanager;1"]
-                .getService(Components.interfaces.nsIAbManager)
-                .removeAddressBookListener(tbSync.addressbookListener);
+            MailServices.ab.removeAddressBookListener(tbSync.addressbookListener);
         }
     },
 
@@ -1326,9 +1322,8 @@ var tbSync = {
         }
         
         //search for list cards
-        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
         let searchList = "(IsMailList,=,TRUE)";
-        let result = abManager.getDirectory(addressBook.URI +  "?(or" + searchList+")").childCards;
+        let result = MailServices.ab.getDirectory(addressBook.URI +  "?(or" + searchList+")").childCards;
         while (result.hasMoreElements()) {
             let card = result.getNext().QueryInterface(Components.interfaces.nsIAbCard);
             //does this list card have the req prop?
@@ -1389,17 +1384,15 @@ var tbSync = {
 
     removeBook: function (uri) { 
         // get all address books
-        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
         try {
-            if (abManager.getDirectory(uri) instanceof Components.interfaces.nsIAbDirectory) {
-                abManager.deleteAddressBook(uri);
+            if (MailServices.ab.getDirectory(uri) instanceof Components.interfaces.nsIAbDirectory) {
+                MailServices.ab.deleteAddressBook(uri);
             }
         } catch (e) {}
     },
 
     changeNameOfBook: function (uri, newname) { 
-        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-        let allAddressBooks = abManager.directories;
+        let allAddressBooks = MailServices.ab.directories;
         while (allAddressBooks.hasMoreElements()) {
             let addressBook = allAddressBooks.getNext();
             if (addressBook instanceof Components.interfaces.nsIAbDirectory && addressBook.URI == uri) {
@@ -1410,9 +1403,8 @@ var tbSync = {
     },
 
     getAddressBookObject: function (uri) {
-        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
         try {
-            let addressBook = abManager.getDirectory(uri);
+            let addressBook = MailServices.ab.getDirectory(uri);
             if (addressBook instanceof Components.interfaces.nsIAbDirectory) {
                 return addressBook;
             }
@@ -1421,8 +1413,7 @@ var tbSync = {
     },
 
     getAddressBookName: function (uri) {
-        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-        let allAddressBooks = abManager.directories;
+        let allAddressBooks = MailServices.ab.directories;
         while (allAddressBooks.hasMoreElements()) {
             let addressBook = allAddressBooks.getNext();
             if (addressBook instanceof Components.interfaces.nsIAbDirectory && addressBook.URI == uri) {
@@ -1469,7 +1460,7 @@ var tbSync = {
         let newname = testname;
         do {
             unique = true;
-            let booksIter = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager).directories;
+            let booksIter = MailServices.ab.directories;
             while (booksIter.hasMoreElements()) {
                 let data = booksIter.getNext();
                 if (data instanceof Components.interfaces.nsIAbDirectory && data.dirName == newname) {

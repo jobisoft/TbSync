@@ -21,8 +21,7 @@ var tbSyncNewCardWindow = {
             let abURI = items[i].value;
             
             if (abURI) {
-                let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-                let ab = abManager.getDirectory(abURI);
+                let ab = MailServices.ab.getDirectory(abURI);
                 if (!ab.isMailList && !ab.isRemote) {
                     try {
                         icon = ab.getStringValue("tbSyncIcon", "");
