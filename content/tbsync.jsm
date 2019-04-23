@@ -1484,14 +1484,12 @@ var tbSync = {
         } while (!unique);
         
         //Create the new book with the unique name
-        let dirPrefId = tbSync[tbSync.db.getAccountSetting(account, "provider")].createAddressBook(newname, account, folderID);
-        let abManager = Components.classes["@mozilla.org/abmanager;1"].getService(Components.interfaces.nsIAbManager);
-        let data = abManager.getDirectoryFromId(dirPrefId);
-        if (data instanceof Components.interfaces.nsIAbDirectory && data.dirPrefId == dirPrefId) {
+        let directory = tbSync[tbSync.db.getAccountSetting(account, "provider")].createAddressBook(newname, account, folderID);
+        if (directory && directory instanceof Components.interfaces.nsIAbDirectory) {
+            directory.setStringValue("tbSyncProvider", provider);
             tbSync[provider].onResetTarget(account, folderID);
-            tbSync.db.setFolderSetting(account, folderID, "target", data.URI);
+            tbSync.db.setFolderSetting(account, folderID, "target", directory.URI);
             //tbSync.db.setFolderSetting(account, folderID, "targetName", newname);
-            data.setStringValue("tbSyncProvider", provider);
             //notify about new created address book
             Services.obs.notifyObservers(null, 'tbsync.addressbook.created', null)
             return true;
