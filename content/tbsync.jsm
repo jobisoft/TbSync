@@ -564,9 +564,8 @@ var tbSync = {
                         tbSync.dump("tbSync.takeTargetOffline","Unknown type <"+folder.type+">");
                 }
             }
-            
-            if (deleteFolder) tbSync.db.deleteFolder(folder.account, folder.folderID);            
         }
+        if (deleteFolder) tbSync.db.deleteFolder(folder.account, folder.folderID);            
     },
 
     getSyncStatusMsg: function (folder, syncdata, provider) {
