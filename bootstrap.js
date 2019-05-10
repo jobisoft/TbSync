@@ -9,20 +9,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
  
-//no need to create namespace, we are in a sandbox
-
 Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("resource://gre/modules/Task.jsm");
 Components.utils.import("resource://gre/modules/osfile.jsm");
 
-//Observer to catch loading of thunderbird main window
+// observer to catch loading of thunderbird main window
 let onLoadObserver = {
     observe: function(aSubject, aTopic, aData) {        
         let mainWindow = Services.wm.getMostRecentWindow("mail:3pane");
         if (mainWindow) {
-            //init TbSync
-            mainWindow.tbSyncReference = tbSync;
-            tbSync.init(mainWindow); 
+            tbSync.load(mainWindow); 
         } else {
             tbSync.dump("FAIL", "Could not init TbSync, because mail:3pane window not found.");
         }
@@ -36,90 +32,51 @@ function uninstall(data, reason) {
 }
 
 function startup(data, reason) {
-    //Do not do anything, if version > 60
+    // do not do anything, if version > 60
     if (Services.vc.compare(Services.appinfo.platformVersion, "60.*") <= 0)  {     
-        //possible reasons: APP_STARTUP, ADDON_ENABLE, ADDON_INSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE.
+        // possible reasons: APP_STARTUP, ADDON_ENABLE, ADDON_INSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE.
 
-        //set default prefs
-        let branch = Services.prefs.getDefaultBranch("extensions.tbsync.");
-        branch.setIntPref("timeout", 90000);
-        branch.setBoolPref("debug.testoptions", false);
+        // set default prefs
+        let defaults = Services.prefs.getDefaultBranch("extensions.tbsync.");
+        defaults.setIntPref("timeout", 90000);
+        defaults.setBoolPref("debug.testoptions", false);
 
-        branch.setBoolPref("log.toconsole", false);
-        branch.setBoolPref("log.tofile", false);
-        branch.setIntPref("log.userdatalevel", 0); //0 - metadata (no incomming xml/wbxml, only parsed data without userdata (except failing items))   1 - including userdata,  2 - raw xml , 3 - raw wbxml
+        defaults.setBoolPref("log.toconsole", false);
+        defaults.setBoolPref("log.tofile", false);
+        defaults.setIntPref("log.userdatalevel", 0); //0 - metadata only (except errors)   1 - including userdata,  2 - redacted xml , 3 - raw xml + wbxml
 
         Components.utils.import("chrome://tbsync/content/tbsync.jsm");
-
-        //Map local writeAsyncJSON into tbSync
-        tbSync.writeAsyncJSON = writeAsyncJSON;
         
         //add startup observers
         Services.obs.addObserver(onLoadObserver, "mail-startup-done", false);
-        Services.obs.addObserver(onLoadObserver, "tbsync.init", false);
-
-        tbSync.addonData = data;
 
         if (reason != APP_STARTUP) {
             //during startup, we wait until mail-startup-done fired, for all other reasons we need to fire our own init
-            Services.obs.notifyObservers(null, 'tbsync.init', null)
+            onLoadObserver.observe();
         }
         
         //DO NOT ADD ANYTHING HERE!
-        //The final init of TbSync was triggered by issuing a "tbsync.init". If that is done, it will issue a "tbsync.init.done".
-        //So if there is stuff to do after init is done, add it at the local onLoadDoneObserver
+        //If there is stuff to do after init is done, add it at the local onLoadDoneObserver
     }
 }
 
 function shutdown(data, reason) {
+    //possible reasons: APP_SHUTDOWN, ADDON_DISABLE, ADDON_UNINSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE    
     if (Services.vc.compare(Services.appinfo.platformVersion, "60.*") <= 0)  {     
-        //possible reasons: APP_SHUTDOWN, ADDON_DISABLE, ADDON_UNINSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE    
+        tbSync.enabled = false;
 
         //remove startup observer
         Services.obs.removeObserver(onLoadObserver, "mail-startup-done");
-        Services.obs.removeObserver(onLoadObserver, "tbsync.init");
-        
-        //call cleanup of the tbSync module
-        tbSync.cleanup();
-
-        let mainWindow = Services.wm.getMostRecentWindow("mail:3pane");
-        delete mainWindow.tbSyncReference;
-        
-        //abort write timers and write current file content to disk 
-        if (tbSync.enabled) {
-            tbSync.db.changelogTimer.cancel();
-            tbSync.db.accountsTimer.cancel();
-            tbSync.db.foldersTimer.cancel();
-            writeAsyncJSON(tbSync.db.accounts, tbSync.db.accountsFile);
-            writeAsyncJSON(tbSync.db.folders, tbSync.db.foldersFile);
-            writeAsyncJSON(tbSync.db.changelog, tbSync.db.changelogFile);
-        }
 
         //unload tbSync module
-        tbSync.dump("TbSync shutdown","Unloading TbSync module.");
-        Components.utils.unload("chrome://tbsync/content/tbsync.jsm");
-        Components.utils.unload("chrome://tbsync/content/OverlayManager.jsm");
-        
-        // HACK WARNING:
-        //  - the Addon Manager does not properly clear all addon related caches on update;
-        //  - in order to fully update images and locales, their caches need clearing here
-        Services.obs.notifyObservers(null, "chrome-flush-caches", null);
+        tbSync.dump("TbSync shutdown","Unloading TbSync modules.");
+        tbSync.unload().then(function() {
+            Components.utils.unload("chrome://tbsync/content/tbsync.jsm");
+            Components.utils.unload("chrome://tbsync/content/OverlayManager.jsm");
+            // HACK WARNING:
+            //  - the Addon Manager does not properly clear all addon related caches on update;
+            //  - in order to fully update images and locales, their caches need clearing here
+            Services.obs.notifyObservers(null, "chrome-flush-caches", null);            
+        });
     }
-}
-
-
-
-
-
-function writeAsyncJSON (obj, filename) {
-    let filepath = tbSync.getAbsolutePath(filename);
-    let storageDirectory = tbSync.storageDirectory;
-    let json = tbSync.encoder.encode(JSON.stringify(obj));
-    
-    //no tbSync function/methods inside spawn, because it could run after tbSync was unloaded
-    Task.spawn(function* () {
-        //MDN states, instead of checking if dir exists, just create it and catch error on exist (but it does not even throw)
-        yield OS.File.makeDir(storageDirectory);
-        yield OS.File.writeAtomic(filepath, json, {tmpPath: filepath + ".tmp"});
-    }).catch(Components.utils.reportError);
 }

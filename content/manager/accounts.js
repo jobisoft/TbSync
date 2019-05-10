@@ -25,17 +25,17 @@ var tbSyncAccounts = {
         //also update/init add menu
         this.updateAccountsList(-1, true); 
         
-        Services.obs.addObserver(tbSyncAccounts.updateAccountsListObserver, "tbsync.updateAccountsList", false);
-        Services.obs.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.updateSyncstate", false);
-        Services.obs.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.updateAccountName", false);
-        Services.obs.addObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.toggleEnableState", false);
+        Services.obs.addObserver(tbSyncAccounts.updateAccountsListObserver, "tbsync.observer.manager.updateAccountsList", false);
+        Services.obs.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.observer.manager.updateSyncstate", false);
+        Services.obs.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.observer.manager.updateAccountName", false);
+        Services.obs.addObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.observer.manager.toggleEnableState", false);
     },
 
     onunload: function () {
-        Services.obs.removeObserver(tbSyncAccounts.updateAccountsListObserver, "tbsync.updateAccountsList");
-        Services.obs.removeObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.updateSyncstate");
-        Services.obs.removeObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.updateAccountName");
-        Services.obs.removeObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.toggleEnableState");
+        Services.obs.removeObserver(tbSyncAccounts.updateAccountsListObserver, "tbsync.observer.manager.updateAccountsList");
+        Services.obs.removeObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.observer.manager.updateSyncstate");
+        Services.obs.removeObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.observer.manager.updateAccountName");
+        Services.obs.removeObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.observer.manager.toggleEnableState");
     },
 
     debugToggleAll: function () {
@@ -48,7 +48,7 @@ var tbSyncAccounts = {
     debugMod: async function () { 
         let accounts = tbSync.db.getAccounts();
         for (let i=0; i < accounts.IDs.length; i++) {
-            if (tbSync.isEnabled(accounts.IDs[i])) {
+            if (tbSync.core.isEnabled(accounts.IDs[i])) {
                 let folders = tbSync.db.getFolders(accounts.IDs[i]);
                 for (let f in folders) {
                     if (folders[f].selected == "1") {
@@ -57,7 +57,7 @@ var tbSyncAccounts = {
                             case "tb-contact": 
                                 {
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                    let addressbook = tbSync.getAddressBookObject(targetId);
+                                    let addressbook = tbSync.addressbook.getAddressBookObject(targetId);
                                     let oldresults = addressbook.getCardsFromProperty("PrimaryEmail", "debugcontact@inter.net", true);
                                     while (oldresults.hasMoreElements()) {
                                         let card = oldresults.getNext();
@@ -96,7 +96,7 @@ var tbSyncAccounts = {
     debugDel: async function () { 
         let accounts = tbSync.db.getAccounts();
         for (let i=0; i < accounts.IDs.length; i++) {
-            if (tbSync.isEnabled(accounts.IDs[i])) {
+            if (tbSync.core.isEnabled(accounts.IDs[i])) {
                 let folders = tbSync.db.getFolders(accounts.IDs[i]);
                 for (let f in folders) {
                     if (folders[f].selected == "1") {
@@ -104,7 +104,7 @@ var tbSyncAccounts = {
                             case "tb-contact": 
                                 {                            
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                    let addressbook = tbSync.getAddressBookObject(targetId);
+                                    let addressbook = tbSync.addressbook.getAddressBookObject(targetId);
                                     let oldresults = addressbook.getCardsFromProperty("PrimaryEmail", "debugcontact@inter.net", true);
                                     let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
                                     while (oldresults.hasMoreElements()) {
@@ -138,7 +138,7 @@ var tbSyncAccounts = {
     debugAdd: function (set) { 
         let accounts = tbSync.db.getAccounts();
         for (let i=0; i < accounts.IDs.length; i++) {
-            if (tbSync.isEnabled(accounts.IDs[i])) {
+            if (tbSync.core.isEnabled(accounts.IDs[i])) {
                 let folders = tbSync.db.getFolders(accounts.IDs[i]);
                 for (let f in folders) {
                     if (folders[f].selected == "1") {
@@ -146,7 +146,7 @@ var tbSyncAccounts = {
                             case "tb-contact": 
                                 { 
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                    let addressbook = tbSync.getAddressBookObject(targetId);
+                                    let addressbook = tbSync.addressbook.getAddressBookObject(targetId);
                                     //the two sets differ by number of contacts
                                     let max = (set == 1) ? 2 : 10;
                                     for (let m=0; m < max; m++) {
@@ -388,7 +388,7 @@ var tbSyncAccounts = {
     
     hasInstalledProvider: function (accountID) {
         let provider = tbSync.db.getAccountSetting(accountID, "provider");
-        return tbSync.loadedProviders.hasOwnProperty(provider);
+        return tbSync.providers.loadedProviders.hasOwnProperty(provider);
     },
 
     updateDropdown: function (selector) {
@@ -407,9 +407,9 @@ var tbSyncAccounts = {
             let selectedItem = accountsList.selectedItem;
             selectedAccount = selectedItem.value;
             selectedAccountName = selectedItem.getAttribute("label");
-            isSyncing = tbSync.isSyncing(selectedAccount);
-            isConnected = tbSync.isConnected(selectedAccount);
-            isEnabled = tbSync.isEnabled(selectedAccount);
+            isSyncing = tbSync.core.isSyncing(selectedAccount);
+            isConnected = tbSync.core.isConnected(selectedAccount);
+            isEnabled = tbSync.core.isEnabled(selectedAccount);
             isInstalled = tbSyncAccounts.hasInstalledProvider(selectedAccount);
         }
         
@@ -437,35 +437,35 @@ var tbSyncAccounts = {
             document.getElementById(selector + "EnableAccount").disabled = isSyncing;
             document.getElementById(selector + "SyncAccount").disabled = isSyncing;
             //adjust labels - only in global actions dropdown
-            if (isActionsDropdown) document.getElementById(selector + "DeleteAccount").label = tbSync.getLocalizedMessage("accountacctions.delete").replace("##accountname##", selectedAccountName);
-            if (isActionsDropdown) document.getElementById(selector + "SyncAccount").label = tbSync.getLocalizedMessage("accountacctions.sync").replace("##accountname##", selectedAccountName);
-            if (isActionsDropdown) document.getElementById(selector + "EnableAccount").label = tbSync.getLocalizedMessage("accountacctions.enable").replace("##accountname##", selectedAccountName);
-            if (isActionsDropdown) document.getElementById(selector + "DisableAccount").label = tbSync.getLocalizedMessage("accountacctions.disable").replace("##accountname##", selectedAccountName);
+            if (isActionsDropdown) document.getElementById(selector + "DeleteAccount").label = tbSync.tools.getLocalizedMessage("accountacctions.delete").replace("##accountname##", selectedAccountName);
+            if (isActionsDropdown) document.getElementById(selector + "SyncAccount").label = tbSync.tools.getLocalizedMessage("accountacctions.sync").replace("##accountname##", selectedAccountName);
+            if (isActionsDropdown) document.getElementById(selector + "EnableAccount").label = tbSync.tools.getLocalizedMessage("accountacctions.enable").replace("##accountname##", selectedAccountName);
+            if (isActionsDropdown) document.getElementById(selector + "DisableAccount").label = tbSync.tools.getLocalizedMessage("accountacctions.disable").replace("##accountname##", selectedAccountName);
         }
     
         //Debug Options
         if (isActionsDropdown) {
-            document.getElementById("accountActionsDebugToggleAll").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
-            document.getElementById("accountActionsDebugAdd1").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
-            document.getElementById("accountActionsDebugAdd2").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
-            document.getElementById("accountActionsDebugMod").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
-            document.getElementById("accountActionsDebugDel").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
-            document.getElementById("accountActionsSeparatorDebug").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
+            document.getElementById("accountActionsDebugToggleAll").hidden = !tbSync.prefs.getBoolPref("debug.testoptions");
+            document.getElementById("accountActionsDebugAdd1").hidden = !tbSync.prefs.getBoolPref("debug.testoptions");
+            document.getElementById("accountActionsDebugAdd2").hidden = !tbSync.prefs.getBoolPref("debug.testoptions");
+            document.getElementById("accountActionsDebugMod").hidden = !tbSync.prefs.getBoolPref("debug.testoptions");
+            document.getElementById("accountActionsDebugDel").hidden = !tbSync.prefs.getBoolPref("debug.testoptions");
+            document.getElementById("accountActionsSeparatorDebug").hidden = !tbSync.prefs.getBoolPref("debug.testoptions");
         }
     },
     
     synchronizeAccount: function () {
         let accountsList = document.getElementById("tbSyncAccounts.accounts");
-        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)  && !tbSync.isSyncing(accountsList.selectedItem.value)) {            
+        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)  && !tbSync.core.isSyncing(accountsList.selectedItem.value)) {            
             if (tbSyncAccounts.hasInstalledProvider(accountsList.selectedItem.value)) {
-                tbSync.syncAccount('sync', accountsList.selectedItem.value);
+                tbSync.core.syncAccount('sync', accountsList.selectedItem.value);
             }
         }
     },
 
     deleteAccount: function () {
         let accountsList = document.getElementById("tbSyncAccounts.accounts");
-        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)  && !tbSync.isSyncing(accountsList.selectedItem.value)) {
+        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)  && !tbSync.core.isSyncing(accountsList.selectedItem.value)) {
             let nextAccount =  -1;
             if (accountsList.selectedIndex > 0) {
                 //first try to select the item after this one, otherwise take the one before
@@ -474,15 +474,15 @@ var tbSyncAccounts = {
             }
             
             if (!tbSyncAccounts.hasInstalledProvider(accountsList.selectedItem.value)) {
-                if (confirm(tbSync.getLocalizedMessage("prompt.EraseAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
+                if (confirm(tbSync.tools.getLocalizedMessage("prompt.EraseAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
                     //delete account and all folders from db
                     tbSync.db.removeAccount(accountsList.selectedItem.value);
                     //update list
                     this.updateAccountsList(nextAccount);
                 } 
-            } else if (confirm(tbSync.getLocalizedMessage("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
+            } else if (confirm(tbSync.tools.getLocalizedMessage("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
                 //cache all folders and remove associated targets 
-                tbSync.disableAccount(accountsList.selectedItem.value);
+                tbSync.core.disableAccount(accountsList.selectedItem.value);
                 //delete account and all folders from db
                 tbSync.db.removeAccount(accountsList.selectedItem.value);
                 //update list
@@ -506,9 +506,9 @@ var tbSyncAccounts = {
     toggleEnableState: function () {
         let accountsList = document.getElementById("tbSyncAccounts.accounts");
         
-        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value) && !tbSync.isSyncing(accountsList.selectedItem.value)) {            
-            let isConnected = tbSync.isConnected(accountsList.selectedItem.value);
-            if (!isConnected || window.confirm(tbSync.getLocalizedMessage("prompt.Disable"))) {           
+        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value) && !tbSync.core.isSyncing(accountsList.selectedItem.value)) {            
+            let isConnected = tbSync.core.isConnected(accountsList.selectedItem.value);
+            if (!isConnected || window.confirm(tbSync.tools.getLocalizedMessage("prompt.Disable"))) {           
                 tbSyncAccounts.toggleAccountEnableState(accountsList.selectedItem.value);
             }
         }
@@ -526,18 +526,18 @@ var tbSyncAccounts = {
     //is not prompting, this is doing the actual toggle
     toggleAccountEnableState: function (account) {
         if (tbSyncAccounts.hasInstalledProvider(account)) {
-            let isEnabled = tbSync.isEnabled(account);
+            let isEnabled = tbSync.core.isEnabled(account);
             
             if (isEnabled) {
                 //we are enabled and want to disable (do not ask, if not connected)
-                tbSync.disableAccount(account);
-                Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
+                tbSync.core.disableAccount(account);
+                Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", account);
                 tbSyncAccounts.updateAccountStatus(account);
             } else {
                 //we are disabled and want to enabled
-                tbSync.enableAccount(account);
-                Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
-                tbSync.syncAccount("sync", account);
+                tbSync.core.enableAccount(account);
+                Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", account);
+                tbSync.core.syncAccount("sync", account);
             }
         }
     },
@@ -603,13 +603,13 @@ var tbSyncAccounts = {
                             break;
                         default: 
                             src = "sync16_1.png";
-                            tbSync.setSyncData(account, "accountManagerLastUpdated", 0)
+                            tbSync.core.setSyncData(account, "accountManagerLastUpdated", 0)
                             break;
                     }                
-                    if ((Date.now() - tbSync.getSyncData(account, "accountManagerLastUpdated")) < 300) {
+                    if ((Date.now() - tbSync.core.getSyncData(account, "accountManagerLastUpdated")) < 300) {
                         return current;
                     }
-                    tbSync.setSyncData(account, "accountManagerLastUpdated", Date.now());
+                    tbSync.core.setSyncData(account, "accountManagerLastUpdated", Date.now());
                     break;
 
                 default:
@@ -744,11 +744,11 @@ var tbSyncAccounts = {
         // - a string (add/remove given provider)
         if (updAddMenu === true) {
             //add default providers
-            for (let provider in tbSync.defaultProviders) {
+            for (let provider in tbSync.providers.defaultProviders) {
                 tbSyncAccounts.updateAddMenuEntry(provider);
             }
             //update/add all remaining installed providers
-            for (let provider in tbSync.loadedProviders) {
+            for (let provider in tbSync.providers.loadedProviders) {
                 tbSyncAccounts.updateAddMenuEntry(provider);
             }
         } else if (updAddMenu !== false) {
@@ -761,8 +761,8 @@ var tbSyncAccounts = {
     },
 
     updateAddMenuEntry: function (provider) {
-        let isDefault = tbSync.defaultProviders.hasOwnProperty(provider);
-        let isInstalled = tbSync.loadedProviders.hasOwnProperty(provider);
+        let isDefault = tbSync.providers.defaultProviders.hasOwnProperty(provider);
+        let isInstalled = tbSync.providers.loadedProviders.hasOwnProperty(provider);
         
         let entry = document.getElementById("addMenuEntry_" + provider);
         if (entry === null) {
@@ -782,7 +782,7 @@ var tbSyncAccounts = {
             entry.setAttribute("src", tbSync[provider].getProviderIcon(16));
             entry.setAttribute("hidden", false);
         } else if (isDefault) {
-            entry.setAttribute("label", tbSync.defaultProviders[provider].name);
+            entry.setAttribute("label", tbSync.providers.defaultProviders[provider].name);
             entry.setAttribute("src", "chrome://tbsync/skin/provider16.png");                    
             entry.setAttribute("hidden", false);
         } else {
@@ -810,8 +810,8 @@ var tbSyncAccounts = {
 
 
     addAccountAction: function (provider) {
-        let isDefault = tbSync.defaultProviders.hasOwnProperty(provider);
-        let isInstalled = tbSync.loadedProviders.hasOwnProperty(provider);
+        let isDefault = tbSync.providers.defaultProviders.hasOwnProperty(provider);
+        let isInstalled = tbSync.providers.loadedProviders.hasOwnProperty(provider);
         
         if (isInstalled) {
             tbSyncAccounts.addAccount(provider);
@@ -830,11 +830,11 @@ var tbSyncAccounts = {
 
     installProvider: function (provider) {
         for (let i=0; i<tbSync.AccountManagerTabs.length; i++) {            
-             tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.t" + i).setAttribute("active","false");
+             tbSync.manager.prefWindowObj.document.getElementById("tbSyncAccountManager.t" + i).setAttribute("active","false");
         }
-        tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").hidden=false;
-        tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").setAttribute("active","true");
-        tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.contentWindow").setAttribute("src", "chrome://tbsync/content/manager/installProvider.xul?provider="+provider);        
+        tbSync.manager.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").hidden=false;
+        tbSync.manager.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").setAttribute("active","true");
+        tbSync.manager.prefWindowObj.document.getElementById("tbSyncAccountManager.contentWindow").setAttribute("src", "chrome://tbsync/content/manager/installProvider.xul?provider="+provider);        
     },
             
 };

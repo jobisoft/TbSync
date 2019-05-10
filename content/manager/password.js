@@ -21,7 +21,7 @@ var tbSyncPassword = {
         this.userfield = document.getElementById("tbsync.user");
         this.userfield.value = this.accountdata.user;
         //allow to change username only if not connected
-        if (tbSync.isConnected(this.accountdata.account)) {
+        if (tbSync.core.isConnected(this.accountdata.account)) {
             this.userfield.disabled=true;
         }
         
@@ -29,7 +29,7 @@ var tbSyncPassword = {
     },
 
     doOK: function () {
-        tbSync.passWindowObj[this.accountdata.account] = null;
+        tbSync.manager.passWindowObjs[this.accountdata.account] = null;
         //update username if changeable
         if (!this.userfield.disabled) {
             tbSync.db.setAccountSetting(this.accountdata.account, "user", this.userfield.value);
@@ -42,7 +42,7 @@ var tbSyncPassword = {
     },
 
     doCANCEL: function () {
-        tbSync.passWindowObj[this.accountdata.account] = null;
+        tbSync.manager.passWindowObjs[this.accountdata.account] = null;
         if (this.callbackCANCEL) this.callbackCANCEL();
     }
     

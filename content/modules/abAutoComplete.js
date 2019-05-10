@@ -18,7 +18,7 @@ var abAutoComplete = {
     /**
      * Register 'tbSyncAutoCompleteSearch' AutoCompleteSearch.
      */
-    init : function () {
+    load : function () {
       abAutoComplete.tbSyncAutoCompleteSearch = new abAutoComplete.Search("tbSyncAutoCompleteSearch");
       abAutoComplete.register(abAutoComplete.tbSyncAutoCompleteSearch, "AutoCompleteSearch");
     },
@@ -26,7 +26,7 @@ var abAutoComplete = {
     /**
      * Unregister 'tbSyncAutoCompleteSearch' AutoCompleteSearch.
      */
-    shutdown : function () {
+    unload : function () {
       abAutoComplete.unregister(abAutoComplete.tbSyncAutoCompleteSearch);
       abAutoComplete.tbSyncAutoCompleteSearch.cid = null;
       abAutoComplete.tbSyncAutoCompleteSearch = null;

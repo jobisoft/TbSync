@@ -8,55 +8,106 @@
  
  "use strict";
 
+Components.utils.import("resource://gre/modules/DeferredTask.jsm");
+
 var db = {
 
-    changelogFile : "changelog.json",
-    changelog: [], 
+    loaded: false,
 
-    accountsFile : "accounts.json",
-    accounts: { sequence: 0, data : {} }, //data[account] = {row}
-
-    foldersFile : "folders.json",
-    folders: {}, //assoziative array of assoziative array : folders[<int>accountID][<string>folderID] = {row} 
-
-    accountsTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
-    foldersTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
-    changelogTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
-
-    writeDelay : 6000,
+    files: {
+        accounts: {
+            name: "accounts.json", 
+            default: JSON.stringify({ sequence: 0, data : {} })
+            //data[account] = {row}
+            },
+        folders: {
+            name: "folders.json", 
+            default: JSON.stringify({})
+            //assoziative array of assoziative array : folders[<int>accountID][<string>folderID] = {row} 
+            },
+        changelog: {
+            name: "changelog.json", 
+            default: JSON.stringify([]),
+            },
+    },
         
+    load: async function ()  {
+        //DB Concept:
+        //-- on application start, data is read async from json file into object
+        //-- add-on only works on object
+        //-- each time data is changed, an async write job is initiated <writeDelay>ms in the future and is resceduled, if another request arrives within that time
+
+        for (let f in this.files) {
+            this.files[f].write = new DeferredTask(() => this.writeAsync(f), 6000);
+            
+            try {
+                let data = await OS.File.read(tbSync.io.getAbsolutePath(this.files[f].name));
+                this[f] = JSON.parse(tbSync.decoder.decode(data));
+                this.files[f].found = true;
+            } catch (e) {
+                //if there is no file, there is no file...
+                this[f] = JSON.parse(this.files[f].default);                
+                this.files[f].found = false;
+                Components.utils.reportError(e);
+            }
+        }
+        
+        this.loaded = true;
+    },
+    
+    unload: async function ()  {
+        if (this.loaded) {
+            for (let f in this.files) {
+                try{ 
+                    //abort write delay timers and write current file content to disk 
+                    await this.files[f].write.finalize();
+                } catch (e) {
+                    Components.utils.reportError(e);
+                }                
+            }
+        }
+    },
+    
+
+    saveFile: function (f) {
+        if (this.loaded) {
+            //cancel any pending write and schedule a new delayed write
+            this.files[f].write.disarm();
+            this.files[f].write.arm();
+        }
+    },
+
+    writeAsync: async function (f) {
+        // if this file was not found/read on load, do not write default content to prevent clearing of data in case of read-errors
+        if (!this.files[f].found && JSON.stringify(this[f]) == this.files[f].default) {
+            return;
+        }
+        
+        let filepath = tbSync.io.getAbsolutePath(this.files[f].name);
+        let json = tbSync.encoder.encode(JSON.stringify(this[f]));
+        
+        await OS.File.makeDir(tbSync.io.storageDirectory);
+        await OS.File.writeAtomic(filepath, json, {tmpPath: filepath + ".tmp"});
+    },
+
+
+
+    // simple convenience wrapper
     saveAccounts: function () {
-        db.accountsTimer.cancel();
-        db.accountsTimer.init(db.writeJSON, db.writeDelay + 1, 0);
+        this.saveFile("accounts");
     },
 
     saveFolders: function () {
-        db.foldersTimer.cancel();
-        db.foldersTimer.init(db.writeJSON, db.writeDelay + 2, 0);
+        this.saveFile("folders");
     },
 
     saveChangelog: function () {
-        db.changelogTimer.cancel();
-        db.changelogTimer.init(db.writeJSON, db.writeDelay + 3, 0);
+        this.saveFile("changelog");
     },
 
-    writeJSON : {
-      observe: function(subject, topic, data) {
-        if (tbSync.enabled) {
-            switch (subject.delay) { //use delay setting to find out, which file is to be saved
-                case (db.writeDelay + 1): tbSync.writeAsyncJSON(db.accounts, db.accountsFile); break;
-                case (db.writeDelay + 2): tbSync.writeAsyncJSON(db.folders, db.foldersFile); break;
-                case (db.writeDelay + 3): tbSync.writeAsyncJSON(db.changelog, db.changelogFile); break;
-            }
-        }
-      }
-    },
-
-
-
+    
 
     // CHANGELOG FUNCTIONS
-
     getItemStatusFromChangeLog: function (parentId, itemId) {   
         for (let i=0; i<this.changelog.length; i++) {
             if (this.changelog[i].parentId == parentId && this.changelog[i].itemId == itemId) return this.changelog[i].status;
@@ -144,7 +195,7 @@ var db = {
 
     getAccounts: function () {
         let accounts = {};
-        accounts.IDs = Object.keys(this.accounts.data).filter(account => tbSync.loadedProviders.hasOwnProperty(this.accounts.data[account].provider)).sort((a, b) => a - b);
+        accounts.IDs = Object.keys(this.accounts.data).filter(account => tbSync.providers.loadedProviders.hasOwnProperty(this.accounts.data[account].provider)).sort((a, b) => a - b);
         accounts.allIDs =  Object.keys(this.accounts.data).sort((a, b) => a - b)
         accounts.data = this.accounts.data;
         return accounts;
@@ -165,7 +216,7 @@ var db = {
             return true;
 
         //check if provider is installed
-        if (!tbSync.loadedProviders.hasOwnProperty(provider)) {
+        if (!tbSync.providers.loadedProviders.hasOwnProperty(provider)) {
             tbSync.dump("Error @ isValidAccountSetting", "Unknown provider <"+provider+">!");
             return false;
         }
@@ -271,7 +322,7 @@ var db = {
         
         //check if provider is installed
         let provider = this.getAccountSetting(account, "provider");
-        if (!tbSync.loadedProviders.hasOwnProperty(provider)) {
+        if (!tbSync.providers.loadedProviders.hasOwnProperty(provider)) {
             tbSync.dump("Error @ isValidFolderSetting", "Unknown provider <"+provider+"> for account <"+account+">!");
             return false;
         }
@@ -363,7 +414,7 @@ var db = {
             }
         
             //skip this folder, if it belongs to an account currently not supported (provider not loaded)
-            if (!tbSync.loadedProviders.hasOwnProperty(this.getAccountSetting(aID, "provider"))) {
+            if (!tbSync.providers.loadedProviders.hasOwnProperty(this.getAccountSetting(aID, "provider"))) {
                 continue;
             }
 
@@ -387,46 +438,5 @@ var db = {
 
         //still a reference to the original data
         return data;
-    },
-    
-    
-    
-    
-    
-        
-    init: async function ()  {
-        
-        tbSync.dump("INIT","DB");
-
-        //DB Concept:
-        //-- on application start, data is read async from json file into object
-        //-- add-on only works on object
-        //-- each time data is changed, an async write job is initiated 2s in the future and is resceduled, if another request arrives within that time
-
-        //load changelog from file
-        try {
-            let data = await OS.File.read(tbSync.getAbsolutePath(db.changelogFile));
-            db.changelog = JSON.parse(tbSync.decoder.decode(data));
-        } catch (ex) {
-            //if there is no file, there is no file...
-        }
-
-        //load accounts from file
-        try {
-            let data = await OS.File.read(tbSync.getAbsolutePath(db.accountsFile));
-            db.accounts = JSON.parse(tbSync.decoder.decode(data));
-        } catch (ex) {
-            //if there is no file, there is no file...
-        }
-
-        //load folders from file
-        try {
-            let data = await OS.File.read(tbSync.getAbsolutePath(db.foldersFile));
-            db.folders = JSON.parse(tbSync.decoder.decode(data));
-        } catch (ex) {
-            //if there is no file, there is no file...
-        }
-            
     }
-
 };

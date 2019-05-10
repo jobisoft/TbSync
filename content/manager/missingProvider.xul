@@ -12,7 +12,7 @@
     <hbox flex="1" pack="center">
         <vbox flex="1" pack="center">
             <description style="text-align:center" id="missing">&manager.missingprovider;</description>
-            <html:p id="link" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.openTBtab(this.getAttribute('link'));" style="color:blue; text-decoration: underline; text-align:center;"></html:p>	             
+            <html:p id="link" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="tbSync.manager.openTBtab(this.getAttribute('link'));" style="color:blue; text-decoration: underline; text-align:center;"></html:p>	             
         </vbox>
 
     </hbox>

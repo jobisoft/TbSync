@@ -42,7 +42,7 @@
       <label id="extensionCreatorLabel" class="sectionTitle">&creator.label;</label>
       <hbox id="creatorBox" class="boxIndent">
         <label id="extensionCreator" flex="1" crop="end"/>
-        <label id="extensionHomepage" onclick="if (event.button == 0) { tbSync.openLink(this.getAttribute('homepageURL')) }"
+        <label id="extensionHomepage" onclick="if (event.button == 0) { tbSync.manager.openLink(this.getAttribute('homepageURL')) }"
                class="text-link" value="&homepage.label;"/>
       </hbox>
   

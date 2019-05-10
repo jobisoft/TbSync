@@ -25,7 +25,7 @@ var tbSyncMessengerCompose = {
                     let targetWindow = window.document.getElementById("sidebar").contentWindow.wrappedJSObject;
                     if (targetWindow) {
                         window.clearInterval(tbSyncMessengerCompose.timer);
-                        tbSync.overlayManager.injectAllOverlays(targetWindow);
+                        tbSync.messenger.overlayManager.injectAllOverlays(targetWindow);
                     }
                 }, 1000);  
             });    
@@ -44,7 +44,7 @@ var tbSyncMessengerCompose = {
 
     onRemove: function (window) {
         let targetWindow = window.document.getElementById("sidebar").contentWindow.wrappedJSObject;
-        tbSync.overlayManager.removeAllOverlays(targetWindow);
+        tbSync.messenger.overlayManager.removeAllOverlays(targetWindow);
         tbSyncMessengerCompose.mObserver.disconnect();
         
         // Remove autoComplete for TbSync

@@ -75,12 +75,12 @@
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/sync16.png"
                                     label="&manager.SyncAll;"
-                                    oncommand="tbSync.syncAccount('sync');"/>
+                                    oncommand="tbSync.core.syncAccount('sync');"/>
                             <menuitem id="accountActionsShowErrorLog"
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/warning16.png"
                                     label="&manager.ShowErrorLog;"
-                                    oncommand="tbSync.openErrorLog()"/>
+                                    oncommand="tbSync.errorlog.open()"/>
                             <menuseparator id="accountActionsSeparator"/>
                             <menuitem id="accountActionsDebugToggleAll"
                                     class="menuitem-iconic"

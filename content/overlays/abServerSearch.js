@@ -66,9 +66,9 @@ var tbSyncAbServerSearch = {
                         if (searchbox && target) {
                             let folders = tbSync.db.findFoldersWithSetting("target", target);
                             if (folders.length == 1 && tbSync[tbSync.db.getAccountSetting(folders[0].account, "provider")].abServerSearch) {
-                                searchbox.setAttribute("placeholder", tbSync.getLocalizedMessage("addressbook.searchgal::" + tbSync.db.getAccountSetting(folders[0].account, "accountname")));
+                                searchbox.setAttribute("placeholder", tbSync.tools.getLocalizedMessage("addressbook.searchgal::" + tbSync.db.getAccountSetting(folders[0].account, "accountname")));
                             } else {
-                                searchbox.setAttribute("placeholder", tbSync.getLocalizedMessage((target == "moz-abdirectory://?") ? "addressbook.searchall" : "addressbook.searchthis"));
+                                searchbox.setAttribute("placeholder", tbSync.tools.getLocalizedMessage((target == "moz-abdirectory://?") ? "addressbook.searchall" : "addressbook.searchthis"));
                             }
                         }
                     }
@@ -90,7 +90,7 @@ var tbSyncAbServerSearch = {
         let target = window.GetSelectedDirectory();
         if (target == "moz-abdirectory://?") return; //global search not yet(?) supported
         
-        let addressbook = tbSync.getAddressBookObject(target);
+        let addressbook = tbSync.addressbook.getAddressBookObject(target);
         if (addressbook) {
             try {
                 let oldresults = addressbook.getCardsFromProperty("X-Server-Searchresult", "TbSync", true);
@@ -113,7 +113,7 @@ var tbSyncAbServerSearch = {
         if (folders.length == 1) {
             let searchbox = window.document.getElementById("peopleSearchInput");
             let query = searchbox.value;        
-            let addressbook = tbSync.getAddressBookObject(target);
+            let addressbook = tbSync.addressbook.getAddressBookObject(target);
 
             let account = folders[0].account;
             let provider = tbSync.db.getAccountSetting(account, "provider");
@@ -132,7 +132,7 @@ var tbSyncAbServerSearch = {
                         this._serverSearchBusy = true;
                         while (this._serverSearchBusy) {
 
-                            await tbSync.sleep(1000);
+                            await tbSync.tools.sleep(1000);
                             let currentQuery = this._serverSearchNextQuery;
                             this._serverSearchNextQuery = "";
                             let results = await tbSync[provider].abServerSearch (account, currentQuery, "search");

@@ -9,22 +9,13 @@
 
     <script type="application/javascript" src="chrome://tbsync/content/overlays/messenger.js" />
 
-    <toolbarpalette id="MailToolbarPalette">
-        <toolbarbutton 
-            id ="tbsync-toolbarbutton" 
-            class="toolbarbutton"
-            label="&toolbar.label;" 
-            tooltiptext="&toolbar.tooltiptext;"	    
-            oncommand="if (tbSync.enabled) tbSync.syncAccount('sync'); else tbSyncMessenger.popupNotEnabled();"/>
-    </toolbarpalette>
-
     <menupopup id="tbsync.statusmenu">
-        <menuitem label="&popup.opensettings;" oncommand="tbSync.openManagerWindow(event);" />
+        <menuitem label="&popup.opensettings;" oncommand="tbSync.manager.openManagerWindow(event);" />
     </menupopup>
     
-    <statusbarpanel id="tbsync.status" appendto="status-bar" label="TbSync" context="tbsync.statusmenu" onclick="tbSync.openManagerWindow(event);" />
+    <statusbarpanel id="tbsync.status" appendto="status-bar" label="TbSync" context="tbsync.statusmenu" onclick="tbSync.manager.openManagerWindow(event);" />
 
-    <!--menuitem id="tbsync.taskPopupEntry" label="&menu.settingslabel;" appendto="taskPopup" onclick="tbSync.openManagerWindow(event);" / -->
-    <menuitem id="tbsync.accountmgrEntry" label="&menu.settingslabel;" insertbefore="menu_accountmgr" oncommand="tbSync.openManagerWindow(event);" />
+    <!--menuitem id="tbsync.taskPopupEntry" label="&menu.settingslabel;" appendto="taskPopup" onclick="tbSync.manager.openManagerWindow(event);" / -->
+    <menuitem id="tbsync.accountmgrEntry" label="&menu.settingslabel;" insertbefore="menu_accountmgr" oncommand="tbSync.manager.openManagerWindow(event);" />
 
 </overlay>        

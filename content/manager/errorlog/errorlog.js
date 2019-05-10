@@ -14,25 +14,25 @@ Components.utils.import("resource://gre/modules/Services.jsm");
 var tbSyncErrorLog = {
     
     onload: function () {
-        Services.obs.addObserver(tbSyncErrorLog.updateErrorLog, "tbSyncErrorLog.update", false);
+        Services.obs.addObserver(tbSyncErrorLog.updateErrorLog, "tbsync.observer.errorlog.update", false);
 
         let errorlog = document.getElementById('tbsync.errorlog');
         errorlog.hidden = true;
         
         //init list
-        for (let i=0; i < tbSync.errors.length; i++) {
-            let item = tbSyncErrorLog.addLogEntry(tbSync.errors[i]);
+        let errors = tbSync.errorlog.get();
+        for (let i=0; i < errors.length; i++) {
+            let item = tbSyncErrorLog.addLogEntry(errors[i]);
             errorlog.appendChild(item);
         }
 
         errorlog.hidden = false;
         errorlog.ensureIndexIsVisible(errorlog.getRowCount()-1);
         document.documentElement.getButton("extra1").onclick = tbSyncErrorLog.onclear;
-
     },
 
     onclear: function () {
-        tbSync.errors = [];
+        tbSync.errorlog.clear();
 
         let errorlog = document.getElementById('tbsync.errorlog');
         errorlog.hidden = true;
@@ -45,16 +45,17 @@ var tbSyncErrorLog = {
     },
     
     onunload: function () {
-        Services.obs.removeObserver(tbSyncErrorLog.updateErrorLog, "tbSyncErrorLog.update");
+        Services.obs.removeObserver(tbSyncErrorLog.updateErrorLog, "tbsync.observer.errorlog.update");
     },
 
     updateErrorLog: {
         observe: function (aSubject, aTopic, aData) {
-            if (tbSync.errors.length > 0) {
+            let errors = tbSync.errorlog.get();
+            if (errors.length > 0) {
                 let errorlog = document.getElementById('tbsync.errorlog');
                 errorlog.hidden = true;
                 
-                let item = tbSyncErrorLog.addLogEntry(tbSync.errors[tbSync.errors.length-1]);
+                let item = tbSyncErrorLog.addLogEntry(errors[errors.length-1]);
                 errorlog.appendChild(item);
 
                 errorlog.hidden = false;
@@ -100,8 +101,8 @@ var tbSyncErrorLog = {
 
             if (entry.link) {
                 let link = document.createElement("button");
-                link.setAttribute("label",  tbSync.getLocalizedMessage("manager.help"));
-                link.setAttribute("oncommand",  "tbSync.openLink('" + entry.link + "')");
+                link.setAttribute("label",  tbSync.tools.getLocalizedMessage("manager.help"));
+                link.setAttribute("oncommand",  "tbSync.manager.openLink('" + entry.link + "')");
                 vBoxRight.appendChild(link);
             }
 
