@@ -69,10 +69,10 @@ var tbSyncAccountSettings = {
 
         //get information for that acount
         tbSyncAccountSettings.provider = tbSync.db.getAccountSetting(tbSyncAccountSettings.account, "provider");
-        tbSyncAccountSettings.settings = Object.keys(tbSync[tbSyncAccountSettings.provider].getDefaultAccountEntries()).sort();
+        tbSyncAccountSettings.settings = Object.keys(tbSync.providers[tbSyncAccountSettings.provider].api.getDefaultAccountEntries()).sort();
 
         //add header to folderlist
-        let header = tbSync[tbSyncAccountSettings.provider].folderList.getHeader();
+        let header = tbSync.providers[tbSyncAccountSettings.provider].folderList.getHeader();
         let folderlistHeader = window.document.getElementById('tbsync.accountsettings.folderlist.header');
         for (let h=0; h < header.length; h++) {
             let listheader = window.document.createElement("listheader");
@@ -253,8 +253,8 @@ var tbSyncAccountSettings = {
                 let folder = tbSync.db.getFolder(tbSyncAccountSettings.account, item.value);           
                 if (folder) {
 
-                    let rowData = tbSync[tbSyncAccountSettings.provider].folderList.getRowData(folder, syncdata);
-                    tbSync[tbSyncAccountSettings.provider].folderList.updateRow(document, item, rowData);
+                    let rowData = tbSync.providers[tbSyncAccountSettings.provider].folderList.getRowData(folder, syncdata);
+                    tbSync.providers[tbSyncAccountSettings.provider].folderList.updateRow(document, item, rowData);
                     
                 }
             }
@@ -267,7 +267,7 @@ var tbSyncAccountSettings = {
             return;
         
         //get updated list of folderIDs
-        let folderData = tbSync[tbSyncAccountSettings.provider].folderList.getSortedData(tbSyncAccountSettings.account);
+        let folderData = tbSync.providers[tbSyncAccountSettings.provider].folderList.getSortedData(tbSyncAccountSettings.account);
         let foldersFound = [];
         for (let i=0; i < folderData.length; i++) {
             foldersFound.push(folderData[i].folderID);
@@ -311,12 +311,12 @@ var tbSyncAccountSettings = {
                 itemSelected.setAttribute("oncommand", "tbSyncAccountSettings.toggleFolder(this);");
 
                 //add row
-                nextItem.appendChild(tbSync[tbSyncAccountSettings.provider].folderList.getRow(document, folderData[i], itemSelected));
+                nextItem.appendChild(tbSync.providers[tbSyncAccountSettings.provider].folderList.getRow(document, folderData[i], itemSelected));
             }
 
             //add/move row and update its content
             let addedItem = folderList.appendChild(nextItem);
-            tbSync[tbSyncAccountSettings.provider].folderList.updateRow(document, addedItem, folderData[i]);
+            tbSync.providers[tbSyncAccountSettings.provider].folderList.updateRow(document, addedItem, folderData[i]);
             
             //update selbox
             let selbox = document.getElementById("selbox_" + rowId);
@@ -383,7 +383,7 @@ var tbSyncAccountSettings = {
                     //deselect folder
                     folder.selected = "0";
                     //remove folder, which will trigger the listener in tbsync which will clean up everything
-                    tbSync.core.removeTarget(folder.target, tbSync[tbSyncAccountSettings.provider].getThunderbirdFolderType(folder.type)); 
+                    tbSync.core.removeTarget(folder.target, tbSync.providers[tbSyncAccountSettings.provider].api.getThunderbirdFolderType(folder.type)); 
                 } else {
                     if (element) {
                         element.setAttribute("checked", true);
@@ -409,10 +409,10 @@ var tbSyncAccountSettings = {
             menupopup.setAttribute("folderID", fID);
             let folder = tbSync.db.getFolder(tbSyncAccountSettings.account, fID, true);
             
-            tbSync[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, folder);
+            tbSync.providers[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, folder);
         } else {
             menupopup.setAttribute("folderID", "");
-            tbSync[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, null);
+            tbSync.providers[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, null);
         }
     },
 

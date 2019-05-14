@@ -37,7 +37,7 @@ var tbSyncPassword = {
         
         //update password by calling setPassword function of accounts provider
         let pass = document.getElementById("tbsync.password").value;
-        tbSync[this.accountdata.provider].setPassword(this.accountdata, pass);
+        tbSync.providers[this.accountdata.provider].api.setPassword(this.accountdata, pass);
         if (this.callbackOK) this.callbackOK();
     },
 

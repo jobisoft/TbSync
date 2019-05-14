@@ -65,7 +65,7 @@ var tbSyncAbServerSearch = {
                         let target = window.GetSelectedDirectory();
                         if (searchbox && target) {
                             let folders = tbSync.db.findFoldersWithSetting("target", target);
-                            if (folders.length == 1 && tbSync[tbSync.db.getAccountSetting(folders[0].account, "provider")].abServerSearch) {
+                            if (folders.length == 1 && tbSync.providers[tbSync.db.getAccountSetting(folders[0].account, "provider")].api.abServerSearch) {
                                 searchbox.setAttribute("placeholder", tbSync.tools.getLocalizedMessage("addressbook.searchgal::" + tbSync.db.getAccountSetting(folders[0].account, "accountname")));
                             } else {
                                 searchbox.setAttribute("placeholder", tbSync.tools.getLocalizedMessage((target == "moz-abdirectory://?") ? "addressbook.searchall" : "addressbook.searchthis"));
@@ -118,7 +118,7 @@ var tbSyncAbServerSearch = {
             let account = folders[0].account;
             let provider = tbSync.db.getAccountSetting(account, "provider");
             let accountname = tbSync.db.getAccountSetting(account, "accountname");
-            if (tbSync[provider].abServerSearch) {
+            if (tbSync.providers[provider].api.abServerSearch) {
 
                 if (query.length<3) {
                     //delete all old results
@@ -135,7 +135,7 @@ var tbSyncAbServerSearch = {
                             await tbSync.tools.sleep(1000);
                             let currentQuery = this._serverSearchNextQuery;
                             this._serverSearchNextQuery = "";
-                            let results = await tbSync[provider].abServerSearch (account, currentQuery, "search");
+                            let results = await tbSync.providers[provider].api.abServerSearch (account, currentQuery, "search");
 
                             //delete all old results
                             tbSyncAbServerSearch.clearServerSearchResults(window);

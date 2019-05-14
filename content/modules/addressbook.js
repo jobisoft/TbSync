@@ -11,12 +11,12 @@
 var addressbook = {
 
     load : function () {
-        Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-created", false);
-        Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-updated", false);
-        Services.obs.addObserver(this.addressbookObserver, "addrbook-list-member-added", false);
-        Services.obs.addObserver(this.addressbookObserver, "addrbook-list-updated", false);
-        Services.obs.addObserver(this.addressbookObserver, "tbsync.observer.addrbook.listCreated", false);
-        Services.obs.addObserver(this.addressbookObserver, "tbsync.observer.addrbook.cardCreated", false);
+        //Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-created", false);
+        //Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-updated", false);
+        //Services.obs.addObserver(this.addressbookObserver, "addrbook-list-member-added", false);
+        //Services.obs.addObserver(this.addressbookObserver, "addrbook-list-updated", false);
+        //Services.obs.addObserver(this.addressbookObserver, "tbsync.observer.addrbook.listCreated", false);
+        //Services.obs.addObserver(this.addressbookObserver, "tbsync.observer.addrbook.cardCreated", false);
         this.addressbookListener.add();
 
         //missing
@@ -25,25 +25,25 @@ var addressbook = {
     },
 
     unload : function () {
-            Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-created");
-            Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-updated");
-            Services.obs.removeObserver(this.addressbookObserver, "addrbook-list-member-added");
-            Services.obs.removeObserver(this.addressbookObserver, "addrbook-list-updated");
-            Services.obs.removeObserver(this.addressbookObserver, "tbsync.observer.addrbook.listCreated");
-            Services.obs.removeObserver(this.addressbookObserver, "tbsync.observer.addrbook.cardCreated");
+            //Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-created");
+            //Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-updated");
+            //Services.obs.removeObserver(this.addressbookObserver, "addrbook-list-member-added");
+            //Services.obs.removeObserver(this.addressbookObserver, "addrbook-list-updated");
+            //Services.obs.removeObserver(this.addressbookObserver, "tbsync.observer.addrbook.listCreated");
+            //Services.obs.removeObserver(this.addressbookObserver, "tbsync.observer.addrbook.cardCreated");
         
             //remove listener
             this.addressbookListener.remove();
     },
 
-    addressbookObserver: {
+    /*addressbookObserver: {
         observe: function (aSubject, aTopic, aData) {
             Services.console.logStringMessage("[addressbookObserver] "  + aTopic);
             Services.console.logStringMessage("[aSubject] "  + aSubject);
             Services.console.logStringMessage("[aData] "  + aData);
 
             //aData is UID of parent directory
-/*            let folders = tbSync.db.findFoldersWithSetting(["target"], [aData]);
+            let folders = tbSync.db.findFoldersWithSetting(["target"], [aData]);
                 if (folders.length == 1) {
                     let provider = tbSync.db.getAccountSetting(folders[0].account, "provider");
                     Services.console.logStringMessage("[addressbookObserver] mailingitem created "  + 
@@ -55,32 +55,32 @@ var addressbook = {
             //aSubject is item
             //aData is parent URI or UUID
             
-            Services.console.logStringMessage("[addressbookObserver1] " + aSubject + " : " aSubject.getProperty("UID", "") + " : " + aSubject.uuid + " : " + aTopic + " : " + aData);*/
+            Services.console.logStringMessage("[addressbookObserver1] " + aSubject + " : " aSubject.getProperty("UID", "") + " : " + aSubject.uuid + " : " + aTopic + " : " + aData);
         }
-    },
+    },*/
     
     addressbookListener: {
 
         //if a contact in one of the synced books is modified, update status of target and account
         onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
-/*            // change on book itself, or on card?
+            // change on book itself, or on card?
             if (aItem instanceof Components.interfaces.nsIAbDirectory) {
                 let folders =  tbSync.db.findFoldersWithSetting(["target"], [aItem.URI]); //changelog is not used here, we should always catch these changes
                 if (folders.length == 1) {
                     //store current/new name of target
-                    tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetName", this.getAddressBookName(folders[0].target));                         
+                    tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetName", tbSync.addressbook.getAddressBookName(folders[0].target));                         
                     //update settings window, if open
                      Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folders[0].account);
                 }
             }
 
             if (aItem instanceof Components.interfaces.nsIAbCard) {
-                let aParentDirURI = this.getUriFromDirectoryId(aItem.directoryId);
+                let aParentDirURI = tbSync.addressbook.getUriFromDirectoryId(aItem.directoryId);
                 if (aParentDirURI) { //could be undefined
                     let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDirURI,"1"]);
                     if (folders.length == 1) {
 
-                        let cardId = this.getPropertyOfCard(aItem, "TBSYNCID");
+                        let cardId = tbSync.addressbook.getPropertyOfCard(aItem, "TBSYNCID");
                         
                         if (aItem.isMailList) {
                             if (cardId) {
@@ -120,7 +120,7 @@ var addressbook = {
                         }
                     }
                 }
-            }*/
+            }
         },
 
         onItemRemoved: function addressbookListener_onItemRemoved (aParentDir, aItem) {
@@ -137,7 +137,7 @@ var addressbook = {
                 if (folders.length == 1) {
                     
                     //THIS CODE ONLY ACTS ON TBSYNC CARDS
-                    let cardId = this.getPropertyOfCard(aItem, "TBSYNCID");
+                    let cardId = tbSync.addressbook.getPropertyOfCard(aItem, "TBSYNCID");
                     if (cardId) {
                         //Problem: A card deleted by server should not trigger a changelog entry, so they are pretagged with deleted_by_server
                         let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
@@ -184,14 +184,14 @@ var addressbook = {
             }
 
             if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && aItem.isMailList) {
-                tbSync.addressbook.addressbookObserver.observe(aItem, "tbsync-addrbook-list-created", aParentDir.URI);
+                //tbSync.addressbook.addressbookObserver.observe(aItem, "tbsync-addrbook-list-created", aParentDir.URI);
             }
             
             if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
-                tbSync.addressbook.addressbookObserver.observe(aItem, "tbsync-addrbook-card-created", aParentDir.URI);
+                //tbSync.addressbook.addressbookObserver.observe(aItem, "tbsync-addrbook-card-created", aParentDir.URI);
             }            
 
-            /*if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
+            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
                 //we cannot set the ID of new lists before they are created, so we cannot detect this case
                 
                 let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDir.URI,"1"]);
@@ -202,7 +202,7 @@ var addressbook = {
                     if (searchResultProvider) return;
 
                     let itemStatus = null;
-                    let cardId = this.getPropertyOfCard (aItem, "TBSYNCID");
+                    let cardId = tbSync.addressbook.getPropertyOfCard (aItem, "TBSYNCID");
                     if (cardId) {
                         itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
                         if (itemStatus == "added_by_server") {
@@ -223,7 +223,7 @@ var addressbook = {
                     if (cardId) {
                         tbSync.db.removeItemFromChangeLog(aParentDir.URI, cardId);
                     }
-                    let newCardID = tbSync[provider].getNewCardID(aItem, folders[0]);
+                    let newCardID = tbSync.providers[provider].api.getNewCardID(aItem, folders[0]);
                     tbSync.db.addItemToChangeLog(aParentDir.URI, newCardID, "added_by_user");
                     
                     //mailinglist aware property setter
@@ -231,7 +231,7 @@ var addressbook = {
                     //aParentDir.modifyCard(aItem);
                 }
                 
-            } */
+            }
         },
 
         add: function addressbookListener_add () {
@@ -406,10 +406,10 @@ var addressbook = {
         } while (!unique);
         
         //Create the new book with the unique name
-        let directory = tbSync[tbSync.db.getAccountSetting(account, "provider")].createAddressBook(newname, account, folderID);
+        let directory = tbSync.providers[tbSync.db.getAccountSetting(account, "provider")].api.createAddressBook(newname, account, folderID);
         if (directory && directory instanceof Components.interfaces.nsIAbDirectory) {
             directory.setStringValue("tbSyncProvider", provider);
-            tbSync[provider].onResetTarget(account, folderID);
+            tbSync.providers[provider].api.onResetTarget(account, folderID);
             tbSync.db.setFolderSetting(account, folderID, "target", directory.URI);
             //tbSync.db.setFolderSetting(account, folderID, "targetName", newname);
             //notify about new created address book

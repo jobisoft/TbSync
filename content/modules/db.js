@@ -221,7 +221,7 @@ var db = {
             return false;
         }
         
-        if (tbSync[provider].getDefaultAccountEntries().hasOwnProperty(name)) {
+        if (tbSync.providers[provider].api.getDefaultAccountEntries().hasOwnProperty(name)) {
             return true;
         } else {
             tbSync.dump("Error @ isValidAccountSetting", "Unknown account setting <"+name+">!");
@@ -237,7 +237,7 @@ var db = {
         //check if field is allowed and get value or default value if setting is not set
         if (this.isValidAccountSetting(data.provider, name)) {
             if (data.hasOwnProperty(name)) return data[name];
-            else return tbSync[data.provider].getDefaultAccountEntries()[name];
+            else return tbSync.providers[data.provider].api.getDefaultAccountEntries()[name];
         }
     }, 
 
@@ -255,7 +255,7 @@ var db = {
     resetAccountSetting: function (account , name) {
         // if the requested account does not exist, getAccount() will fail
         let data = this.getAccount(account);
-        let defaults = tbSync[data.provider].getDefaultAccountEntries();        
+        let defaults = tbSync.providers[data.provider].api.getDefaultAccountEntries();        
 
         //check if field is allowed, and set given value 
         if (this.isValidAccountSetting(data.provider, name)) {
@@ -273,7 +273,7 @@ var db = {
         let provider = this.getAccountSetting(account, "provider");
 
         //create folder with default settings
-        let newFolderSettings = tbSync[provider].getDefaultFolderEntries(account);
+        let newFolderSettings = tbSync.providers[provider].api.getDefaultFolderEntries(account);
         
         //add custom settings
         for (let d in data) {
@@ -285,7 +285,7 @@ var db = {
         //merge cached/persistent values (if there exists a folder with the given folderID)
         let folder = this.getFolder(account, newFolderSettings.folderID);
         if (folder !== null) {
-            let persistentSettings = tbSync[provider].getPersistentFolderSettings();
+            let persistentSettings = tbSync.providers[provider].api.getPersistentFolderSettings();
             for (let s=0; s < persistentSettings.length; s++) {
                 if (folder[persistentSettings[s]]) newFolderSettings[persistentSettings[s]] = folder[persistentSettings[s]];
             }
@@ -327,7 +327,7 @@ var db = {
             return false;
         }
 
-        if (tbSync[provider].getDefaultFolderEntries(account).hasOwnProperty(field)) {
+        if (tbSync.providers[provider].api.getDefaultFolderEntries(account).hasOwnProperty(field)) {
             return true;
         } else {
             tbSync.dump("Error @ isValidFolderSetting", "Unknown folder setting <"+field+"> for account <"+account+">!");
@@ -345,7 +345,7 @@ var db = {
                 return folder[field];
             } else {
                 let provider = this.getAccountSetting(account, "provider");
-                let defaultFolder = tbSync[provider].getDefaultFolderEntries(account);
+                let defaultFolder = tbSync.providers[provider].api.getDefaultFolderEntries(account);
                 //handle internal fields, that do not have a default value (see isValidFolderSetting)
                 return (defaultFolder[field] ? defaultFolder[field] : "");
             }
@@ -368,7 +368,7 @@ var db = {
     
     resetFolderSetting: function (account, folderID, field) {
         let provider = this.getAccountSetting(account, "provider");
-        let defaults = tbSync[provider].getDefaultFolderEntries(account);        
+        let defaults = tbSync.providers[provider].api.getDefaultFolderEntries(account);        
         //this function can update ALL folders for a given account (if folderID == "") or just a specific folder
         if (this.isValidFolderSetting(account, field)) {
             if (folderID == "") {

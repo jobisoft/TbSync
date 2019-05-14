@@ -76,7 +76,7 @@ var messenger = {
                     }
 
                     if (idle) {
-                        if (err) label +=tbSync.tools.getLocalizedMessage("info.error");   
+                        if (err) label += tbSync.tools.getLocalizedMessage("info.error");   
                         else label += tbSync.tools.getLocalizedMessage("info.idle");   
                     } else {
                         label += tbSync.tools.getLocalizedMessage("info.sync");

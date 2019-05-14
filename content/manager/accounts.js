@@ -52,7 +52,7 @@ var tbSyncAccounts = {
                 let folders = tbSync.db.getFolders(accounts.IDs[i]);
                 for (let f in folders) {
                     if (folders[f].selected == "1") {
-                        let tbType = tbSync[accounts.data[accounts.IDs[i]].provider].getThunderbirdFolderType(folders[f].type);
+                        let tbType = tbSync.providers[accounts.data[accounts.IDs[i]].provider].api.getThunderbirdFolderType(folders[f].type);
                         switch (tbType) {
                             case "tb-contact": 
                                 {
@@ -100,7 +100,7 @@ var tbSyncAccounts = {
                 let folders = tbSync.db.getFolders(accounts.IDs[i]);
                 for (let f in folders) {
                     if (folders[f].selected == "1") {
-                        switch (tbSync[accounts.data[accounts.IDs[i]].provider].getThunderbirdFolderType(folders[f].type)) {
+                        switch (tbSync.providers[accounts.data[accounts.IDs[i]].provider].api.getThunderbirdFolderType(folders[f].type)) {
                             case "tb-contact": 
                                 {                            
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
@@ -142,7 +142,7 @@ var tbSyncAccounts = {
                 let folders = tbSync.db.getFolders(accounts.IDs[i]);
                 for (let f in folders) {
                     if (folders[f].selected == "1") {
-                        switch (tbSync[accounts.data[accounts.IDs[i]].provider].getThunderbirdFolderType(folders[f].type)) {
+                        switch (tbSync.providers[accounts.data[accounts.IDs[i]].provider].api.getThunderbirdFolderType(folders[f].type)) {
                             case "tb-contact": 
                                 { 
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
@@ -624,7 +624,7 @@ var tbSyncAccounts = {
         let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
         if (listItem) {
             let obj = listItem.childNodes[0].firstChild
-            obj.src = tbSyncAccounts.hasInstalledProvider(id) ? tbSync[tbSync.db.getAccountSetting(id,"provider")].getProviderIcon(16, id) : "chrome://tbsync/skin/provider16.png";
+            obj.src = tbSyncAccounts.hasInstalledProvider(id) ? tbSync.providers[tbSync.db.getAccountSetting(id,"provider")].api.getProviderIcon(16, id) : "chrome://tbsync/skin/provider16.png";
         }
     },
 
@@ -778,8 +778,8 @@ var tbSyncAccounts = {
         
         //Update label, icon and hidden according to isDefault and isInstalled
         if (isInstalled) {
-            entry.setAttribute("label",  tbSync[provider].getNiceProviderName());
-            entry.setAttribute("src", tbSync[provider].getProviderIcon(16));
+            entry.setAttribute("label",  tbSync.providers[provider].api.getNiceProviderName());
+            entry.setAttribute("src", tbSync.providers[provider].api.getProviderIcon(16));
             entry.setAttribute("hidden", false);
         } else if (isDefault) {
             entry.setAttribute("label", tbSync.providers.defaultProviders[provider].name);
@@ -823,7 +823,7 @@ var tbSyncAccounts = {
     addAccount: function (provider) {
         document.getElementById("tbSyncAccounts.accounts").disabled=true;
         document.getElementById("tbSyncAccounts.btnAccountActions").disabled=true;
-        window.openDialog(tbSync[provider].getCreateAccountXulUrl(), "newaccount", "centerscreen,modal,resizable=no");
+        window.openDialog(tbSync.providers[provider].api.getCreateAccountXulUrl(), "newaccount", "centerscreen,modal,resizable=no");
         document.getElementById("tbSyncAccounts.accounts").disabled=false;
         document.getElementById("tbSyncAccounts.btnAccountActions").disabled=false;
     },

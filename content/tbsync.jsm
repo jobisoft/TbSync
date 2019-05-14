@@ -40,11 +40,6 @@ var tbSync = {
     encoder: new TextEncoder(),
 
     modules : [],
-
-    // wrapper for scriptloader
-    includeJS: function (file, that=this) {
-        Services.scriptloader.loadSubScript(file, that, "UTF-8");
-    },
     
     // simple dumper, who can dump to file or console
     dump: function (what, aMessage) {
@@ -72,17 +67,17 @@ var tbSync = {
     load: async function (window) { 
         
         //IO module needs to be loaded beforehand
-       this.includeJS("chrome://tbsync/content/modules/io.js");
+	Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/io.js", this, "UTF-8");
 
         //clear debug log on start
         this.io.initFile("debug.log");
 
         this.window = window;
         this.addon = await this.getAddonByID("tbsync@jobisoft.de");
-//        this.dump("TbSync init","Start (" + this.addon.version.toString() + ")");
+        this.dump("TbSync init","Start (" + this.addon.version.toString() + ")");
 
         //print information about Thunderbird version and OS
-//        this.dump(Services.appinfo.name, Services.appinfo.platformVersion + " on " + OS.Constants.Sys.Name);
+        this.dump(Services.appinfo.name, Services.appinfo.platformVersion + " on " + OS.Constants.Sys.Name);
 
         // register modules to be used by TbSync
         this.modules.push({name: "db", state: 0});
@@ -101,7 +96,7 @@ var tbSync = {
         //load modules
         for (let module of this.modules) {
             try {
-               this.includeJS("chrome://tbsync/content/modules/" + module.name + ".js", this, "UTF-8");
+		Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/" + module.name + ".js", this, "UTF-8");
                 module.state = 1;
                 this.dump("Loading module <" + module.name + ">", "OK");
             } catch (e) {
@@ -180,8 +175,8 @@ var tbSync = {
                         let syncInterval = accounts.data[accounts.IDs[i]].autosync * 60 * 1000;
                         let lastsynctime = accounts.data[accounts.IDs[i]].lastsynctime;
                         
-                        if (this.isEnabled(accounts.IDs[i]) && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval)) {
-                        this.syncAccount("sync", accounts.IDs[i]);
+                        if (this.core.isEnabled(accounts.IDs[i]) && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval)) {
+                        this.core.syncAccount("sync", accounts.IDs[i]);
                         }
                     }
                 }

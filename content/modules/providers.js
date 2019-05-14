@@ -29,7 +29,7 @@ var providers = {
 
     unload: async function () {
         for (let provider in this.loadedProviders) {
-            this.unloadProvider(provider);
+            await this.unloadProvider(provider);
         }
     },
 
@@ -38,24 +38,25 @@ var providers = {
     
     
     loadProvider:  async function (addonId, provider, js) {
-        //only load, if not yet loaded
-        if (!this.loadedProviders.hasOwnProperty(provider)) {
+        //only load, if not yet loaded and if the provider name does not shadow a fuction inside provider.js
+        if (!this.loadedProviders.hasOwnProperty(provider) && !this.hasOwnProperty(provider) && js.startsWith("chrome://")) {
             try {
-                //load provider subscripts into tbSync 
-                tbSync.includeJS("chrome:" + js);
-
                 let addon = await tbSync.getAddonByID(addonId);
 
-                //Store some quick access data for each provider
+                this[provider] = {};
                 this.loadedProviders[provider] = {};
                 this.loadedProviders[provider].addon = addon;
                 this.loadedProviders[provider].addonId = addonId;
                 this.loadedProviders[provider].version = addon.version.toString();
+
+                //load provider subscripts into tbSync
+                Services.scriptloader.loadSubScript(js, this[provider], "UTF-8");
                     
                 //load provider
-                await tbSync[provider].load(tbSync.lightning.isAvailable());
-                await tbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xul?provider="+provider, tbSync[provider].getEditAccountOverlayUrl());        
-                tbSync.dump("Loaded provider", provider + "::" + tbSync[provider].getNiceProviderName() + " ("+this.loadedProviders[provider].version+")");
+                await this[provider].api.load(tbSync.lightning.isAvailable());
+
+                await tbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xul?provider=" + provider, this[provider].api.getEditAccountOverlayUrl());        
+                tbSync.dump("Loaded provider", provider + "::" + this[provider].api.getNiceProviderName() + " ("+this.loadedProviders[provider].version+")");
                 tbSync.core.resetSync(provider);
                 Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountsList", provider);
 
@@ -67,13 +68,13 @@ var providers = {
         }
     },
 
-    unloadProvider:  function (provider) {        
+    unloadProvider: async function (provider) {        
         if (this.loadedProviders.hasOwnProperty(provider)) {
             tbSync.dump("Unloading provider", provider);
-            tbSync[provider].unload(tbSync.lightning.isAvailable());
-            tbSync[provider] = {};
+            await this[provider].api.unload(tbSync.lightning.isAvailable());
             delete this.loadedProviders[provider];
-            Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountsList", provider);                    
+            delete this[provider];            
+            Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountsList", provider);
             Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
         }
     },
