@@ -25,7 +25,7 @@ var tbSyncMessenger = {
         observe: function (aSubject, aTopic, aData) {
             let account = aData;            
             if (account) {
-                let syncstate = tbSync.core.getSyncData(account, "syncstate");
+                let syncstate = tbSync.core.getSyncDataObject(account).getSyncState();
                 if (syncstate == "accountdone") {
                     let status = tbSync.db.getAccountSetting(account, "status");
                     switch (status) {

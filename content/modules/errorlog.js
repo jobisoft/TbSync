@@ -37,7 +37,8 @@ var errorlog = {
             message: message, 
             type: type,
             link: null, 
-            details: details
+            //some details are just true, which is not a useful detail, ignore
+            details: details === true ? null : details,
         };
     
         if (syncdata) {

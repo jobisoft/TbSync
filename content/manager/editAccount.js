@@ -46,7 +46,7 @@ var tbSyncAccountSettings = {
             //only run if is request for this account and main frame is visible
             let account = aData;            
             if (account == tbSyncAccountSettings.account && !document.getElementById('tbsync.accountsettings.frame').hidden) {
-                let syncstate = tbSync.core.getSyncData(account,"syncstate");
+                let syncstate = tbSync.core.getSyncDataObject(account).getSyncState();
                 if (syncstate == "accountdone") {
                     tbSyncAccountSettings.updateGui();
                 } else {
@@ -221,12 +221,12 @@ var tbSyncAccountSettings = {
         let isSyncing = tbSync.core.isSyncing(tbSyncAccountSettings.account);
         let isConnected = tbSync.core.isConnected(tbSyncAccountSettings.account);
         let isEnabled = tbSync.core.isEnabled(tbSyncAccountSettings.account);
-        let syncdata = tbSync.core.getSyncData(tbSyncAccountSettings.account);
+        let syncdata = tbSync.core.getSyncDataObject(tbSyncAccountSettings.account);
 
         if (isSyncing) {
             let accounts = tbSync.db.getAccounts().data;
             
-            let parts = syncdata.syncstate.split("||");
+            let parts = syncdata.getSyncState().split("||");
             let syncstate = parts[0];
             let synctime = (parts.length>1 ? parts[1] : Date.now());
 

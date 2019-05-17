@@ -603,13 +603,13 @@ var tbSyncAccounts = {
                             break;
                         default: 
                             src = "sync16_1.png";
-                            tbSync.core.setSyncData(account, "accountManagerLastUpdated", 0)
+                            tbSync.core.getSyncDataObject(account).accountManagerLastUpdated = 0;
                             break;
                     }                
-                    if ((Date.now() - tbSync.core.getSyncData(account, "accountManagerLastUpdated")) < 300) {
+                    if ((Date.now() - tbSync.core.getSyncDataObject(account).accountManagerLastUpdated) < 300) {
                         return current;
                     }
-                    tbSync.core.setSyncData(account, "accountManagerLastUpdated", Date.now());
+                    tbSync.core.getSyncDataObject(account).accountManagerLastUpdated = Date.now();
                     break;
 
                 default:
