@@ -198,7 +198,8 @@ abAutoComplete.Result.prototype = {
      * Get the image of the result at the given index
      */
       getImageAt(aIndex) {
-        return tbSync.providers[tbSync.db.getAccountSetting(this.comments[aIndex], "provider")].api.getProviderIcon(16, this.comments[aIndex]);
+        let accountObject = tbSync.core.newAccountObject(this.comments[aIndex]);
+        return tbSync.providers[accountObject.getAccountSetting("provider")].api.getProviderIcon(16, accountObject);
       },
 
     /**

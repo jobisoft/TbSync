@@ -8,33 +8,82 @@
  
  "use strict";
  
- class SyncDataObject {
-    constructor(account, provider) {
+ 
+ class AccountObject {
+    constructor(account, folderID = "") {
         //internal (private, not to be touched by provider)
         this.account = account;
-        this.provider = provider;
+        this.folderID = folderID;
+    }
+
+    getAccountSetting(field) {
+        return tbSync.db.getAccountSetting(this.account, field);
+    }
+
+    setAccountSetting(field, value) {
+        tbSync.db.setAccountSetting(this.account, field, value);
+    }
+    
+    resetAccountSetting(field) {
+        tbSync.db.resetAccountSetting(this.account, field);
+    }
+
+   getFolderSetting(field) {
+        if (this.folderID !== "") {
+            return tbSync.db.getFolderSetting(this.account, this.folderID, field);
+        }
+        throw "No folder set.";
+    }
+    
+    setFolderSetting(field, value) {
+        if (this.folderID !== "") {
+            tbSync.db.setFolderSetting(this.account, this.folderID, field, value);
+        }
+        throw "No folder set.";
+    }
+
+    resetFolderSetting(field) {
+        if (this.folderID !== "") {
+            tbSync.db.resetFolderSetting(this.account, this.folderID, field);
+        }
+        throw "No folder set.";
+    }    
+}
+
+//there is only one syncdata object per account which contains the current state of the sync
+//if you just need an object to manipulate an account or folder, use AccountObject
+class SyncDataObject  extends AccountObject {
+    constructor(account) {
+        super(account)
+
+        //internal (private, not to be touched by provider)
         this._syncstate = "";
         this.jsErrorCached = null;
         this.isFolderSync = false;
         this.hasError = false;
 
-        // is set each time a new folder is synced (setter/ getter?)
-        this.folderID = "";
-
         // used by getSyncStatus (getter / setter )  ? 
+        //resetProcess(done, todo)
+        //incrementProcess(value)
+        //setProcess(value)
         this.todo = 0;
         this.done = 0;
     }
-    
+
     //all functions provider should use should be in here
     //providers should not modify properties directly
     //try to eliminate account and folderID usage
     //icons must use db check and not just directory property, to see "dead" folders
     //get setSyncStatus out of the loop and let functions return an object with the needed data
     //hide cache management
-    //if we have the account, we can get the syncdataObj
-    //tbSync.core.getSyncDataObject(tbSyncAccountSettings.account)
-    //rename getSyncData to getSyncDataObject
+
+    //when getSyncDataObj is used never change the folder id as a sync may be going on!
+    
+    //setTargetModified
+    //takeTargetOffline
+    //removeTarget
+    
+    //global calendar observer: return a temp syncdata object (not the rea on, which could be used by sync)
 
     setSyncState(syncstate) {
         //set new syncstate
@@ -56,39 +105,21 @@
     getSyncState() {
         return this._syncstate;
     }
-    
-    getFolderSetting(field) {
-        return tbSync.db.getFolderSetting(this.account, this.folderID, field);
-    }
-    
-    setFolderSetting(field, value) {
-        if (this.folderID) {
-            tbSync.db.setFolderSetting(this.account, this.folderID, field, value);
-        }
-    }    
-    
-    getAccountSetting(field) {
-        return tbSync.db.getAccountSetting(this.account, field);
-    }
-    
-    setAccountSetting(field, value) {
-        tbSync.db.setAccountSetting(this.account, field, value);
-    }
-
+        
     getSyncStatus(folder) {
         let status = "";
         
         if (folder.selected == "1") {
             //default
-            status = tbSync.tools.getLocalizedMessage("status." + folder.status, this.provider).split("||")[0];
+            status = tbSync.tools.getLocalizedMessage("status." + folder.status, this.getAccountSetting("provider")).split("||")[0];
 
             switch (folder.status.split(".")[0]) { //the status may have a sub-decleration
                 case "OK":
                 case "modified":
-                    switch (tbSync.providers[this.provider].api.getThunderbirdFolderType(folder.type)) {
+                    switch (tbSync.providers[this.getAccountSetting("provider")].api.getThunderbirdFolderType(folder.type)) {
                         case "tb-todo": 
                         case "tb-event": 
-                            status = tbSync.lightning.isAvailable() ? status + ": "+ tbSync.lightning.getCalendarName(folder.target) : tbSync.tools.getLocalizedMessage("status.nolightning", this.provider);
+                            status = tbSync.lightning.isAvailable() ? status + ": "+ tbSync.lightning.getCalendarName(folder.target) : tbSync.tools.getLocalizedMessage("status.nolightning", this.getAccountSetting("provider"));
                             break;
                         case "tb-contact": 
                             status =status + ": "+ tbSync.addressbook.getAddressBookName(folder.target);
@@ -99,7 +130,7 @@
                 case "pending":
                     if (folder.folderID == this.folderID) {
                         //syncing (there is no extra state for this)
-                        status = tbSync.tools.getLocalizedMessage("status.syncing", this.provider);
+                        status = tbSync.tools.getLocalizedMessage("status.syncing", this.getAccountSetting("provider"));
                         if (["send","eval","prepare"].includes(this._syncstate.split(".")[0]) && (this.todo + this.done) > 0) {
                             //add progress information
                             status = status + " (" + this.done + (this.todo > 0 ? "/" + this.todo : "") + ")"; 
@@ -121,8 +152,9 @@
         } else {
             tbSync.core.finishAccountSync(this, msg, details);
         }
-    }
+    }    
 }
+
 
 var core = {
 
@@ -154,12 +186,10 @@ var core = {
     },
     
     prepareSyncDataObj: function (account, forceResetOfSyncData = false) {
-        let provider = tbSync.db.getAccountSetting(account, "provider");
         if (!this.syncDataObj.hasOwnProperty(account) || forceResetOfSyncData) {
-            this.syncDataObj[account] = new SyncDataObject(account, provider);          
+            this.syncDataObj[account] = new SyncDataObject(account);          
         } else {
             this.syncDataObj[account].account = account;
-            this.syncDataObj[account].provider = provider;
         }
     },
     
@@ -168,6 +198,11 @@ var core = {
         return this.syncDataObj[account];        
     },
 
+    newAccountObject: function (account) {
+        let accountObject = new AccountObject(account);
+        return accountObject;
+    },
+    
     syncAccount: function (job, account = "", folderID = "") {
         //get info of all accounts
         let accounts = tbSync.db.getAccounts();
@@ -206,7 +241,7 @@ var core = {
    
     getNextPendingFolder: function (syncdata) {
         //using getSortedData, to sync in the same order as shown in the list
-        let sortedFolders = tbSync.providers[syncdata.provider].folderList.getSortedData(syncdata.account);
+        let sortedFolders = tbSync.providers[syncdata.getAccountSetting("provider")].folderList.getSortedData(syncdata.account);
         for (let i=0; i < sortedFolders.length; i++) {
             if (sortedFolders[i].statusCode != "pending") continue;
             syncdata.folderID = sortedFolders[i].folderID;
@@ -221,7 +256,7 @@ var core = {
         //check for default sync job
         if (job == "sync") {
             
-            await tbSync.providers[syncdata.provider].api.syncFolderList(syncdata);
+            await tbSync.providers[syncdata.getAccountSetting("provider")].api.syncFolderList(syncdata);
             //if we have an error during folderList sync, there is no need to go on
             if (syncdata.hasError) {
                 return;
@@ -242,7 +277,7 @@ var core = {
                     if (!this.getNextPendingFolder(syncdata)) {
                         break;
                     }
-                    let doNext = await tbSync.providers[syncdata.provider].api.syncFolder(syncdata);
+                    let doNext = await tbSync.providers[syncdata.getAccountSetting("provider")].api.syncFolder(syncdata);
                     if (!doNext) { //use hasError??
                         break;
                     }
@@ -334,15 +369,15 @@ var core = {
     },
     
     enableAccount: function(account) {
-        let provider = tbSync.db.getAccountSetting(account, "provider");
-        tbSync.providers[provider].api.onEnableAccount(account);
-        tbSync.db.setAccountSetting(account, "status", "notsyncronized");
+        let accountObject = tbSync.core.newAccountObject(account);
+        tbSync.providers[accountObject.getAccountSetting("provider")].api.onEnableAccount(accountObject);
+        accountObject.setAccountSetting("status", "notsyncronized");
     },
 
     disableAccount: function(account) {
-        let provider = tbSync.db.getAccountSetting(account, "provider");
-        tbSync.providers[provider].api.onDisableAccount(account);
-        tbSync.db.setAccountSetting(account, "status", "disabled");
+        let accountObject = tbSync.core.newAccountObject(account);
+        tbSync.providers[accountObject.getAccountSetting("provider")].api.onDisableAccount(accountObject);
+        accountObject.setAccountSetting("status", "disabled");
         
         let folders = tbSync.db.getFolders(account);
         for (let i in folders) {
@@ -350,7 +385,7 @@ var core = {
             tbSync.db.setFolderSetting(folders[i].account, folders[i].folderID, "cached", "1");
 
             let target = folders[i].target;
-            let type = tbSync.providers[provider].api.getThunderbirdFolderType(folders[i].type);            
+            let type = tbSync.providers[accountObject.getAccountSetting("provider")].api.getThunderbirdFolderType(folders[i].type);            
             if (target != "") {
                 //remove associated target and clear its changelog
                 this.removeTarget(target, type);

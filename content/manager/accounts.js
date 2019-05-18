@@ -621,10 +621,11 @@ var tbSyncAccounts = {
     },
 
     updateAccountLogo: function (id) {
+        let accountObject = tbSync.core.newAccountObject(id);
         let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
         if (listItem) {
             let obj = listItem.childNodes[0].firstChild
-            obj.src = tbSyncAccounts.hasInstalledProvider(id) ? tbSync.providers[tbSync.db.getAccountSetting(id,"provider")].api.getProviderIcon(16, id) : "chrome://tbsync/skin/provider16.png";
+            obj.src = tbSyncAccounts.hasInstalledProvider(id) ? tbSync.providers[accountObject.getAccountSetting("provider")].api.getProviderIcon(16, accountObject) : "chrome://tbsync/skin/provider16.png";
         }
     },
 
