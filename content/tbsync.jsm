@@ -67,7 +67,7 @@ var tbSync = {
     load: async function (window) { 
         
         //IO module needs to be loaded beforehand
-	Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/io.js", this, "UTF-8");
+        Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/io.js", this, "UTF-8");
 
         //clear debug log on start
         this.io.initFile("debug.log");
@@ -96,7 +96,7 @@ var tbSync = {
         //load modules
         for (let module of this.modules) {
             try {
-		Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/" + module.name + ".js", this, "UTF-8");
+                Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/" + module.name + ".js", this, "UTF-8");
                 module.state = 1;
                 this.dump("Loading module <" + module.name + ">", "OK");
             } catch (e) {

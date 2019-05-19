@@ -21,7 +21,7 @@ var tools = {
         let localized = msg;
         let parts = msg.split("::");
 
-        let bundle = (provider == "") ? tbSync.bundle : tbSync.providers.getStringBundle(provider);
+        let bundle = (provider == "") ? tbSync.bundle : tbSync.providers.loadedProviders[provider].bundle;
             
         try {
             //spezial treatment of strings with :: like status.httperror::403

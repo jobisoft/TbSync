@@ -8,6 +8,23 @@
  
  "use strict";
  
+ var ProviderInfoObject = class {
+    constructor(provider) {
+        if (!providers.hasOwnProperty(provider)) {
+            throw new Error("Provider <" + provider + "> has not been loaded. Failed to create ProviderInfoObject.");
+        }
+        this.provider = provider;
+    }
+    
+    getVersion() {
+        return providers.loadedProviders[this.provider].version;
+    }
+    
+    getStringBundle() {
+        return providers.loadedProviders[this.provider].bundle;
+    }
+}
+ 
 var providers = {
 
     //list of default providers (available in add menu, even if not installed)
@@ -47,11 +64,12 @@ var providers = {
                 this.loadedProviders[provider].addon = addon;
                 this.loadedProviders[provider].addonId = addonId;
                 this.loadedProviders[provider].version = addon.version.toString();
-
+                
                 //load provider subscripts into tbSync
                 Services.scriptloader.loadSubScript(js, this[provider], "UTF-8");
                 this.loadedProviders[provider].bundle = Services.strings.createBundle(this[provider].api.getStringBundleUrl());
-                    
+                this.loadedProviders[provider].info = new ProviderInfoObject(provider);
+
                 //load provider
                 await this[provider].api.load(tbSync.lightning.isAvailable());
 
@@ -66,14 +84,6 @@ var providers = {
             }
 
         }
-    },
-
-    getStringBundle: function (provider) {
-        return this.loadedProviders[provider].bundle;
-    },
-    
-    getVersion: function (provider) {
-        return this.loadedProviders[provider].version;
     },
     
     unloadProvider: async function (provider) {        

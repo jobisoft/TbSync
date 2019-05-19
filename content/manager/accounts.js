@@ -621,7 +621,7 @@ var tbSyncAccounts = {
     },
 
     updateAccountLogo: function (id) {
-        let accountObject = tbSync.core.newAccountObject(id);
+        let accountObject = new tbSync.AccountObject(id);
         let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
         if (listItem) {
             let obj = listItem.childNodes[0].firstChild

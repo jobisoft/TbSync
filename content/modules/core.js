@@ -7,9 +7,8 @@
  */
  
  "use strict";
- 
- 
- class AccountObject {
+
+var AccountObject = class {
     constructor(account, folderID = "") {
         //internal (private, not to be touched by provider)
         this.account = account;
@@ -52,14 +51,14 @@
         }
     }
     
-    getProviderVersion() {
-        return tbSync.providers.getVersion(this.getAccountSetting("provider"));
+    get providerInfo() {
+        return tbSync.providers.loadedProviders[this.getAccountSetting("provider")].info;
     }
 }
 
 //there is only one syncdata object per account which contains the current state of the sync
 //if you just need an object to manipulate an account or folder, use AccountObject
-class SyncDataObject  extends AccountObject {
+var SyncDataObject = class extends AccountObject {
     constructor(account) {
         super(account)
 
@@ -203,11 +202,6 @@ var core = {
     getSyncDataObject: function (account) {
         this.prepareSyncDataObj(account);
         return this.syncDataObj[account];        
-    },
-
-    newAccountObject: function (accountID, folderID = "") {
-        let accountObject = new AccountObject(accountID, folderID);
-        return accountObject;
     },
     
     syncAccount: function (job, account = "", folderID = "") {
@@ -376,14 +370,14 @@ var core = {
     },
     
     enableAccount: function(account) {
-        let accountObject = tbSync.core.newAccountObject(account);
+        let accountObject = new AccountObject(account);
         tbSync.providers[accountObject.getAccountSetting("provider")].api.onEnableAccount(accountObject);
         accountObject.setAccountSetting("status", "notsyncronized");
         accountObject.resetAccountSetting("lastsynctime");        
     },
 
     disableAccount: function(account) {
-        let accountObject = tbSync.core.newAccountObject(account);
+        let accountObject = new AccountObject(account);
         tbSync.providers[accountObject.getAccountSetting("provider")].api.onDisableAccount(accountObject);
         accountObject.setAccountSetting("status", "disabled");
         
