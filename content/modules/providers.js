@@ -20,8 +20,7 @@ var providers = {
             homepageUrl: "https://addons.thunderbird.net/addon/eas-4-tbsync/"},
     },
     
-    loadedProviders: null,
-    
+    loadedProviders: null,    
     
     load: async function () {
         this.loadedProviders = {};
@@ -51,6 +50,7 @@ var providers = {
 
                 //load provider subscripts into tbSync
                 Services.scriptloader.loadSubScript(js, this[provider], "UTF-8");
+                this.loadedProviders[provider].bundle = Services.strings.createBundle(this[provider].api.getStringBundleUrl());
                     
                 //load provider
                 await this[provider].api.load(tbSync.lightning.isAvailable());
@@ -68,6 +68,10 @@ var providers = {
         }
     },
 
+    getStringBundle: function (provider) {
+        return this.loadedProviders[provider].bundle;
+    },
+    
     unloadProvider: async function (provider) {        
         if (this.loadedProviders.hasOwnProperty(provider)) {
             tbSync.dump("Unloading provider", provider);
