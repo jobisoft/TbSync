@@ -47,13 +47,13 @@
     resetFolderSetting(field) {
         if (this.folderID !== "") {
             tbSync.db.resetFolderSetting(this.account, this.folderID, field);
-        } else
+        } else {
             throw new Error("No folder set.");
         }
     }
     
     getProviderVersion() {
-        return tbSync.provider.getVersion(this.getAccountSetting("provider"));
+        return tbSync.providers.getVersion(this.getAccountSetting("provider"));
     }
 }
 
