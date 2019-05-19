@@ -221,14 +221,14 @@ var lightning = {
 
     
     //this function actually creates a calendar if missing
-    checkCalender: function (account, folderID) {
-        let folder = tbSync.db.getFolder(account, folderID);
+    checkCalender: function (accountObject) {       
+        let target = accountObject.getFolderSetting("target");
         let calManager = cal.getCalendarManager();
-        let targetCal = calManager.getCalendarById(folder.target);
+        let targetCal = calManager.getCalendarById(target);
         
         if (targetCal !== null)  {
             //check for double targets - just to make sure
-            let folders = tbSync.db.findFoldersWithSetting("target", folder.target);
+            let folders = tbSync.db.findFoldersWithSetting("target", target);
             if (folders.length == 1) {
                 return true;
             } else {
@@ -238,8 +238,8 @@ var lightning = {
 
         
         //check if  there is a known/cached name, and use that as starting point to generate unique name for new calendar 
-        let cachedName = tbSync.db.getFolderSetting(account, folderID, "targetName");                         
-        let testname = cachedName == "" ? folder.name + " (" + tbSync.db.getAccountSetting(account, "accountname") + ")" : cachedName;
+        let cachedName = accountObject.getFolderSetting("targetName");                         
+        let testname = cachedName == "" ?  accountObject.getFolderSetting("name") + " (" + accountObject.getAccountSetting("accountname") + ")" : cachedName;
 
         let count = 1;
         let unique = false;
@@ -260,7 +260,7 @@ var lightning = {
 
 
         //check if there is a cached or preloaded color - if not, chose one
-        if (!tbSync.db.getFolderSetting(account, folderID, "targetColor")) {
+        if (!accountObject.getFolderSetting("targetColor")) {
             //define color set
             let allColors = [
                 "#3366CC",
@@ -308,21 +308,18 @@ var lightning = {
             
             //filter by minCount
             let freeColors = statColors.filter(item => (minCount == null || item.count == minCount));
-            tbSync.db.setFolderSetting(account, folderID, "targetColor", freeColors[0].color);        
+            accountObject.setFolderSetting("targetColor", freeColors[0].color);        
         }
         
         //create and register new calendar
-        let provider = tbSync.db.getAccountSetting(account, "provider");
-        let newCalendar = tbSync.providers[provider].api.createCalendar(newname, account, folderID);
-
-        //temp
-        let accountData = tbSync.core.newAccountObject(account, folderID);
-        tbSync.providers[provider].api.onResetTarget(accountData);
+        let provider = accountObject.getAccountSetting("provider");
+        let newCalendar = tbSync.providers[provider].api.createCalendar(newname, accountObject);
+        tbSync.providers[provider].api.onResetTarget(accountObject);
         
         //store id of calendar as target in DB
-        tbSync.db.setFolderSetting(account, folderID, "target", newCalendar.id); 
-        //tbSync.db.setFolderSetting(account, folderID, "targetName", newCalendar.name); 
-        tbSync.db.setFolderSetting(account, folderID, "targetColor",  newCalendar.getProperty("color"));
+        accountObject.setFolderSetting("target", newCalendar.id); 
+        //accountObject.setFolderSetting("targetName", newCalendar.name); 
+       accountObject.setFolderSetting("targetColor",  newCalendar.getProperty("color"));
         return true;        
     }
     
