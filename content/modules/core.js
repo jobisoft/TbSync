@@ -31,22 +31,25 @@
    getFolderSetting(field) {
         if (this.folderID !== "") {
             return tbSync.db.getFolderSetting(this.account, this.folderID, field);
+        } else {
+            throw new Error("No folder set.");
         }
-        throw "No folder set.";
     }
     
     setFolderSetting(field, value) {
         if (this.folderID !== "") {
             tbSync.db.setFolderSetting(this.account, this.folderID, field, value);
+        } else {
+            throw new Error("No folder set.");
         }
-        throw "No folder set.";
     }
 
     resetFolderSetting(field) {
         if (this.folderID !== "") {
             tbSync.db.resetFolderSetting(this.account, this.folderID, field);
+        } else
+            throw new Error("No folder set.");
         }
-        throw "No folder set.";
     }
     
     getProviderVersion() {
