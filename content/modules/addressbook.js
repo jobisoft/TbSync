@@ -367,27 +367,24 @@ var addressbook = {
     },
         
     checkAddressbook: function (accountObject) {
-        let account = accountObject.account;
-        let folderID = accountObject.folderID;
-        
-        let folder = tbSync.db.getFolder(account, folderID);
-        let targetName = this.getAddressBookName(folder.target);
-        let targetObject = this.getAddressBookObject(folder.target);
-        let provider = tbSync.db.getAccountSetting(account, "provider");
+        let target = accountObject.getFolderSetting("target");
+        let targetName = this.getAddressBookName(target);
+        let targetObject = this.getAddressBookObject(target);
+        let provider = accountObject.getAccountSetting("provider");
         
         if (targetName !== null && targetObject !== null && targetObject instanceof Components.interfaces.nsIAbDirectory) {
             //check for double targets - just to make sure
-            let folders = tbSync.db.findFoldersWithSetting("target", folder.target);
+            let folders = tbSync.db.findFoldersWithSetting("target", target);
             if (folders.length == 1) {
                 return true;
             } else {
-                throw "Target with multiple source folders found! Forcing hard fail ("+folder.target+")."; 
+                throw "Target with multiple source folders found! Forcing hard fail ("+target+")."; 
             }
         }
         
         // Get cached or new unique name for new address book
-        let cachedName = tbSync.db.getFolderSetting(account, folderID, "targetName");                         
-        let testname = cachedName == "" ? tbSync.db.getAccountSetting(account, "accountname") + " (" + folder.name + ")" : cachedName;
+        let cachedName = accountObject.getFolderSetting("targetName");                         
+        let testname = cachedName == "" ? accountObject.getAccountSetting("accountname") + " (" + accountObject.getFolderSetting("name ")+ ")" : cachedName;
 
         let count = 1;
         let unique = false;
@@ -409,14 +406,14 @@ var addressbook = {
         } while (!unique);
         
         //Create the new book with the unique name
-        let directory = tbSync.providers[tbSync.db.getAccountSetting(account, "provider")].api.createAddressBook(newname, accountObject);
+        let directory = tbSync.providers[accountObject.getAccountSetting("provider")].api.createAddressBook(newname, accountObject);
         if (directory && directory instanceof Components.interfaces.nsIAbDirectory) {
             directory.setStringValue("tbSyncProvider", provider);
             
             tbSync.providers[provider].api.onResetTarget(accountObject);
             
-            tbSync.db.setFolderSetting(account, folderID, "target", directory.URI);
-            //tbSync.db.setFolderSetting(account, folderID, "targetName", newname);
+            accountObject.setFolderSetting("target", directory.URI);
+            //accountObject.setFolderSetting("targetName", newname);
             //notify about new created address book
             Services.obs.notifyObservers(null, 'tbsync.observer.addressbook.created', null)
             return true;

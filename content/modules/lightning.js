@@ -232,7 +232,7 @@ var lightning = {
             if (folders.length == 1) {
                 return true;
             } else {
-                throw "Target with multiple source folders found! Forcing hard fail."; 
+                throw "Target with multiple source folders found! Forcing hard fail (" + target +" )."; 
             }
         }
 
