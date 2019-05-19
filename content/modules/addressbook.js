@@ -366,7 +366,10 @@ var addressbook = {
         return null;
     },
         
-    checkAddressbook: function (account, folderID) {
+    checkAddressbook: function (accountObject) {
+        let account = accountObject.account;
+        let folderID = accountObject.folderID;
+        
         let folder = tbSync.db.getFolder(account, folderID);
         let targetName = this.getAddressBookName(folder.target);
         let targetObject = this.getAddressBookObject(folder.target);
@@ -406,13 +409,11 @@ var addressbook = {
         } while (!unique);
         
         //Create the new book with the unique name
-        let directory = tbSync.providers[tbSync.db.getAccountSetting(account, "provider")].api.createAddressBook(newname, account, folderID);
+        let directory = tbSync.providers[tbSync.db.getAccountSetting(account, "provider")].api.createAddressBook(newname, accountObject);
         if (directory && directory instanceof Components.interfaces.nsIAbDirectory) {
             directory.setStringValue("tbSyncProvider", provider);
             
-            //temp
-            let accountData = tbSync.core.newAccountObject(account, folderID);
-            tbSync.providers[provider].api.onResetTarget(accountData);
+            tbSync.providers[provider].api.onResetTarget(accountObject);
             
             tbSync.db.setFolderSetting(account, folderID, "target", directory.URI);
             //tbSync.db.setFolderSetting(account, folderID, "targetName", newname);
