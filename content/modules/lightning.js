@@ -315,8 +315,11 @@ var lightning = {
         let provider = tbSync.db.getAccountSetting(account, "provider");
         let newCalendar = tbSync.providers[provider].api.createCalendar(newname, account, folderID);
 
+        //temp
+        let accountData = tbSync.core.newAccountObject(account, folderID);
+        tbSync.providers[provider].api.onResetTarget(accountData);
+        
         //store id of calendar as target in DB
-        tbSync.providers[provider].api.onResetTarget(account, folderID);
         tbSync.db.setFolderSetting(account, folderID, "target", newCalendar.id); 
         //tbSync.db.setFolderSetting(account, folderID, "targetName", newCalendar.name); 
         tbSync.db.setFolderSetting(account, folderID, "targetColor",  newCalendar.getProperty("color"));

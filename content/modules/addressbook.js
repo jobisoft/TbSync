@@ -409,7 +409,11 @@ var addressbook = {
         let directory = tbSync.providers[tbSync.db.getAccountSetting(account, "provider")].api.createAddressBook(newname, account, folderID);
         if (directory && directory instanceof Components.interfaces.nsIAbDirectory) {
             directory.setStringValue("tbSyncProvider", provider);
-            tbSync.providers[provider].api.onResetTarget(account, folderID);
+            
+            //temp
+            let accountData = tbSync.core.newAccountObject(account, folderID);
+            tbSync.providers[provider].api.onResetTarget(accountData);
+            
             tbSync.db.setFolderSetting(account, folderID, "target", directory.URI);
             //tbSync.db.setFolderSetting(account, folderID, "targetName", newname);
             //notify about new created address book
