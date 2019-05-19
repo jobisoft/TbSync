@@ -202,8 +202,8 @@ var core = {
         return this.syncDataObj[account];        
     },
 
-    newAccountObject: function (account) {
-        let accountObject = new AccountObject(account);
+    newAccountObject: function (accountID, folderID = "") {
+        let accountObject = new AccountObject(accountID, folderID);
         return accountObject;
     },
     
