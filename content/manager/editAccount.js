@@ -69,7 +69,7 @@ var tbSyncAccountSettings = {
 
         //get information for that acount
         tbSyncAccountSettings.provider = tbSync.db.getAccountSetting(tbSyncAccountSettings.account, "provider");
-        tbSyncAccountSettings.settings = Object.keys(tbSync.providers[tbSyncAccountSettings.provider].api.getDefaultAccountEntries()).sort();
+        tbSyncAccountSettings.settings = Object.keys(tbSync.providers.getDefaultAccountEntries(tbSyncAccountSettings.provider)).sort();
 
         //add header to folderlist
         let header = tbSync.providers[tbSyncAccountSettings.provider].folderList.getHeader();

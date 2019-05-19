@@ -372,6 +372,7 @@ var core = {
         let accountObject = tbSync.core.newAccountObject(account);
         tbSync.providers[accountObject.getAccountSetting("provider")].api.onEnableAccount(accountObject);
         accountObject.setAccountSetting("status", "notsyncronized");
+        accountObject.resetAccountSetting("lastsynctime");        
     },
 
     disableAccount: function(account) {

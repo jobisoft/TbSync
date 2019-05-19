@@ -78,4 +78,30 @@ var providers = {
             Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
         }
     },
+    
+    getDefaultAccountEntries: function (provider) {
+        let defaults = tbSync.providers[provider].api.getDefaultAccountEntries();
+        
+        //add system properties
+        defaults.provider = provider;
+        defaults.account = "";
+        defaults.lastsynctime = "0";
+        defaults.status = "disabled"; //global status: disabled, OK, syncing, notsyncronized, nolightning, ...
+        defaults.autosync = "0";
+        defaults.accountname = "";
+
+        return defaults;
+    },
+    
+    getDefaultFolderEntries: function (accountID) {
+        let provider = tbSync.db.getAccountSetting(accountID, "provider");
+        let defaults = tbSync.providers[provider].api.getDefaultFolderEntries();
+        
+        //add system properties
+        defaults.account = accountID;
+        defaults.folderID = "";
+
+        return defaults;
+    }
+    
 }
