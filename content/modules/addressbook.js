@@ -384,7 +384,7 @@ var addressbook = {
         
         // Get cached or new unique name for new address book
         let cachedName = accountObject.getFolderSetting("targetName");                         
-        let testname = cachedName == "" ? accountObject.getAccountSetting("accountname") + " (" + accountObject.getFolderSetting("name ")+ ")" : cachedName;
+        let testname = cachedName == "" ? accountObject.getAccountSetting("accountname") + " (" + accountObject.getFolderSetting("name")+ ")" : cachedName;
 
         let count = 1;
         let unique = false;

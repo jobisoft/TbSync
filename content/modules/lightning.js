@@ -239,7 +239,7 @@ var lightning = {
         
         //check if  there is a known/cached name, and use that as starting point to generate unique name for new calendar 
         let cachedName = accountObject.getFolderSetting("targetName");                         
-        let testname = cachedName == "" ?  accountObject.getFolderSetting("name") + " (" + accountObject.getAccountSetting("accountname") + ")" : cachedName;
+        let testname = cachedName == "" ? accountObject.getAccountSetting("accountname") + " (" + accountObject.getFolderSetting("name") + ")" : cachedName;
 
         let count = 1;
         let unique = false;
