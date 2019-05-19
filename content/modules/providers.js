@@ -72,6 +72,10 @@ var providers = {
         return this.loadedProviders[provider].bundle;
     },
     
+    getVersion: function (provider) {
+        return this.loadedProviders[provider].version;
+    },
+    
     unloadProvider: async function (provider) {        
         if (this.loadedProviders.hasOwnProperty(provider)) {
             tbSync.dump("Unloading provider", provider);

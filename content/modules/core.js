@@ -47,7 +47,11 @@
             tbSync.db.resetFolderSetting(this.account, this.folderID, field);
         }
         throw "No folder set.";
-    }    
+    }
+    
+    getProviderVersion() {
+        return tbSync.provider.getVersion(this.getAccountSetting("provider"));
+    }
 }
 
 //there is only one syncdata object per account which contains the current state of the sync
