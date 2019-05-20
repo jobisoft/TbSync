@@ -25,15 +25,13 @@ var tbSyncMessenger = {
         observe: function (aSubject, aTopic, aData) {
             let account = aData;            
             if (account) {
-                let syncstate = tbSync.core.getSyncDataObject(account).getSyncState();
+                let syncdata = tbSync.core.getSyncDataObject(account);
+                let syncstate = syncdata.getSyncState();
                 if (syncstate == "accountdone") {
                     let status = tbSync.db.getAccountSetting(account, "status");
                     switch (status) {
                         case "401":
-                            //only popup one password prompt window
-                            if (!tbSync.manager.passWindowObjs.hasOwnProperty[account] || tbSync.manager.passWindowObjs[account] === null) {
-                                tbSync.manager.passWindowObjs[account] = tbSync.window.openDialog("chrome://tbsync/content/manager/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.db.getAccount(account), function() {tbSync.core.syncAccount("sync", account);});
-                            }
+                            syncdata.passwordPrompt();
                             break;
                     }
                 }

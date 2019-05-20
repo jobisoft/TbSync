@@ -40,7 +40,37 @@ var AccountObject = class {
             this.getAccountSetting("provider"),
         );
     }    
+
+    passwordPrompt(window = null) {
+        // default to main Thunderbird window
+        let w = window ? window : tbSync.window;
+        
+        // only popup one password prompt per account
+        if (!tbSync.manager.passWindowObjs.hasOwnProperty[this.account] || tbSync.manager.passWindowObjs[this.account] === null) {
+            let defaultUrl = "chrome://tbsync/content/manager/password.xul";
+            let userUrl = tbSync.providers[this.getAccountSetting("provider")].auth.getPassPromptXulUrl();
+            tbSync.manager.passWindowObjs[this.account] = w.openDialog(userUrl ? userUrl : defaultUrl, "passwordprompt", "centerscreen,chrome,resizable=no", this);
+        }        
+    }
+
+    // shortcuts
+    sync(job = "sync") {
+        tbSync.core.syncAccount(job, this.account)
+    }
+
+    isSyncing() {
+        return tbSync.core.isSyncing(this.account);
+    }
     
+    isEnabled() {
+        return tbSync.core.isEnabled(this.account);
+    }
+
+    isConnected() {
+        return tbSync.core.isConnected(this.account);
+    }
+    
+
     getAccountSetting(field) {
         return tbSync.db.getAccountSetting(this.account, field);
     }
@@ -53,7 +83,8 @@ var AccountObject = class {
         tbSync.db.resetAccountSetting(this.account, field);
     }
 
-   getFolderSetting(field) {
+
+    getFolderSetting(field) {
         if (this.hasFolderData()) {
             return tbSync.db.getFolderSetting(this.account, this.folderID, field);
         } else {

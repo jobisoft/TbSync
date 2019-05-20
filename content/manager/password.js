@@ -13,37 +13,36 @@ Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 var tbSyncPassword = {
     
     onload: function () {
-        this.accountdata = window.arguments[0];
-        this.callbackOK = window.arguments[1];
-        this.callbackCANCEL = window.arguments[2];
-        document.getElementById("tbsync.account").value = this.accountdata.accountname;
-        
+        this.accountObject = window.arguments[0];
+        this.auth = new tbSync.DefaultAuthentication(this.accountObject);
+
+        this.namefield =  document.getElementById("tbsync.account");
+        this.passfield = document.getElementById("tbsync.password");
         this.userfield = document.getElementById("tbsync.user");
-        this.userfield.value = this.accountdata.user;
+
+        this.namefield.value = this.accountObject.getAccountSetting("accountname");
+        this.userfield.value =  this.auth.getUsername();
+
         //allow to change username only if not connected
-        if (tbSync.core.isConnected(this.accountdata.account)) {
+        if (this.accountObject.isConnected()) {
             this.userfield.disabled=true;
         }
         
         document.getElementById("tbsync.password").focus();
     },
 
-    doOK: function () {
-        tbSync.manager.passWindowObjs[this.accountdata.account] = null;
-        //update username if changeable
+    doOK: function () {        
+        //update username if changeable (must be set before password)
         if (!this.userfield.disabled) {
-            tbSync.db.setAccountSetting(this.accountdata.account, "user", this.userfield.value);
+            this.auth.setUsername(this.userfield.value);            
         }
         
-        //update password by calling setPassword function of accounts provider
-        let pass = document.getElementById("tbsync.password").value;
-        tbSync.providers[this.accountdata.provider].api.setPassword(this.accountdata, pass);
-        if (this.callbackOK) this.callbackOK();
+        //update password
+        this.auth.setPassword(this.passfield.value);
+        this.accountObject.sync();
     },
 
     doCANCEL: function () {
-        tbSync.manager.passWindowObjs[this.accountdata.account] = null;
-        if (this.callbackCANCEL) this.callbackCANCEL();
     }
     
 };

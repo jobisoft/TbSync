@@ -7,25 +7,33 @@
  */
  
  "use strict";
-var AuthObject = class {
-    constructor(user, host, provider) {
-        this.provider = provider
-        this.user = user;
-        this.host = host;
+
+var DefaultAuthentication = class {
+    constructor(accountObject) {
+        this.accountObject = accountObject;
+        this.provider = accountObject.getAccountSetting("provider");
+        this.userField = tbSync.providers[this.provider].auth.getUserField4PasswordManager(accountObject);
+        this.hostField = tbSync.providers[this.provider].auth.getHostField4PasswordManager(accountObject);
     }
     
     getUsername() {
-        return this.user;
+        return this.accountObject.getAccountSetting(this.userField);
     }
     
     getPassword() {
-        let origin = authentication.getOrigin4PasswordManager(this.provider, this.host);
-        return authentication.getLoginInfo(origin, "TbSync", this.user);
+        let host = this.accountObject.getAccountSetting(this.hostField)
+        let origin = authentication.getOrigin4PasswordManager(this.provider, host);
+        return authentication.getLoginInfo(origin, "TbSync", this.getUsername());
+    }
+    
+    setUsername(newUsername) {
+        this.accountObject.setAccountSetting(this.userField, newUsername);        
     }
     
     setPassword(newPassword) {
-        let origin = authentication.getOrigin4PasswordManager(this.provider, this.host);
-        authentication.setLoginInfo(origin, "TbSync", this.user, newPassword);
+        let host = this.accountObject.getAccountSetting(this.hostField)
+        let origin = authentication.getOrigin4PasswordManager(this.provider, host);
+        authentication.setLoginInfo(origin, "TbSync", this.getUsername(), newPassword);
     }
 }
 
