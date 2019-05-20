@@ -17,9 +17,9 @@ var OwnerInfoObject = class {
 }
 
 var AccountObject = class {
-    constructor(account, folderID = "") {
+    constructor(accountID, folderID = "") {
         //internal (private, not to be touched by provider)
-        this.account = account;
+        this.account = accountID;
         this.folderID = folderID;
     }
 
@@ -27,6 +27,7 @@ var AccountObject = class {
         return (this.folderID !== "");
     }
     
+    // get data objects
     get ownerInfo() {
         return new OwnerInfoObject(
             this.getAccountSetting("provider"),
