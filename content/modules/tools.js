@@ -35,46 +35,6 @@ var tools = {
         return localized;
     }, 
 
-    // TbSync uses the provider name as URI scheme
-    getOrigin4PasswordManager: function (provider, url) {
-        let uri = Services.io.newURI((!url.startsWith("http://") && !url.startsWith("https://")) ? "http://" + url : url);
-        return provider + "://" + uri.host;
-    },
-
-    setLoginInfo: function(origin, realm, user, password) {
-        let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
-
-        //remove any existing entry
-        let logins = Services.logins.findLogins({}, origin, null, realm);
-        for (let i = 0; i < logins.length; i++) {
-            if (logins[i].username == user) {
-                let currentLoginInfo = new nsLoginInfo(origin, null, realm, user, logins[i].password, "", "");
-                try {
-                    Services.logins.removeLogin(currentLoginInfo);
-                } catch (e) {
-                    tbSync.dump("Error removing loginInfo", e);
-                }
-            }
-        }
-        
-        let newLoginInfo = new nsLoginInfo(origin, null, realm, user, password, "", "");
-        try {
-            Services.logins.addLogin(newLoginInfo);
-        } catch (e) {
-            tbSync.dump("Error adding loginInfo", e);
-        }
-    },
-    
-    getLoginInfo: function(origin, realm, user) {
-        let logins = Services.logins.findLogins({}, origin, null, realm);
-        for (let i = 0; i < logins.length; i++) {
-            if (logins[i].username == user) {
-                return logins[i].password;
-            }
-        }
-        return null;
-    },
-
     // async sleep function using Promise to postpone actions to keep UI responsive
     sleep : function (_delay, useRequestIdleCallback = true) {
         let useIdleCallback = false;
