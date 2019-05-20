@@ -8,6 +8,14 @@
  
  "use strict";
 
+var OwnerInfoObject = class {
+    constructor(provider, accountname, foldername = "") {
+        this.provider = provider;
+        this.accountname = accountname;
+        this.foldername = foldername;
+    }
+}
+
 var AccountObject = class {
     constructor(account, folderID = "") {
         //internal (private, not to be touched by provider)
@@ -18,6 +26,20 @@ var AccountObject = class {
     hasFolderData() {
         return (this.folderID !== "");
     }
+    
+    get ownerInfo() {
+        return new OwnerInfoObject(
+            this.getAccountSetting("provider"),
+            this.getAccountSetting("accountname"),
+            this.hasFolderData() ? this.getFolderSetting("name") : "",
+        );
+    }
+
+    get providerInfo() {
+        return new ProviderInfoObject(
+            this.getAccountSetting("provider"),
+        );
+    }    
     
     getAccountSetting(field) {
         return tbSync.db.getAccountSetting(this.account, field);
@@ -54,10 +76,7 @@ var AccountObject = class {
             throw new Error("No folder set.");
         }
     }
-    
-    get providerInfo() {
-        return tbSync.providers.loadedProviders[this.getAccountSetting("provider")].info;
-    }
+
 }
 
 //there is only one syncdata object per account which contains the current state of the sync
@@ -426,7 +445,7 @@ var core = {
         syncdata.jsErrorCached = (msg == "JavaScriptError") ? {msg, details} : null;
         
         if (!msg.startsWith("OK") && !syncdata.jsErrorCached) {
-             tbSync.errorlog.add("warning", syncdata, msg, details);
+             tbSync.errorlog.add("warning", syncdata.ownerInfo, msg, details);
         }
 
         if (syncdata.folderID) {
@@ -451,11 +470,11 @@ var core = {
         if (syncdata.jsErrorCached) {
             //report cached js error 
             status = syncdata.jsErrorCached.msg;
-            tbSync.errorlog.add("warning", syncdata, syncdata.jsErrorCached.msg, syncdata.jsErrorCached.details);
+            tbSync.errorlog.add("warning", syncdata.ownerInfo, syncdata.jsErrorCached.msg, syncdata.jsErrorCached.details);
             syncdata.jsErrorCached = null;
         } else if (!msg.startsWith("OK")) {
             //report local error
-            tbSync.errorlog.add("warning", syncdata, msg, details);
+            tbSync.errorlog.add("warning", syncdata.ownerInfo, msg, details);
         } else {
             //account itself is ok, search for folders with error
             folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);

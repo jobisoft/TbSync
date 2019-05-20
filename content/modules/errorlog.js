@@ -31,7 +31,7 @@ var errorlog = {
         this.errors = [];
     },
     
-    add: function (type, syncdata, message, details = null) {
+    add: function (type, ownerInfo, message, details = null) {
         let entry = {
             timestamp: Date.now(),
             message: message, 
@@ -39,19 +39,15 @@ var errorlog = {
             link: null, 
             //some details are just true, which is not a useful detail, ignore
             details: details === true ? null : details,
+            provider: "",
+            accountname: "",
+            foldername: "",
         };
     
-        if (syncdata) {
-            if (syncdata.account) {
-                entry.account = syncdata.account;
-                entry.provider = tbSync.db.getAccountSetting(syncdata.account, "provider");
-                entry.accountname = tbSync.db.getAccountSetting(syncdata.account, "accountname");
-                entry.foldername = (syncdata.folderID) ? tbSync.db.getFolderSetting(syncdata.account, syncdata.folderID, "name") : "";
-            } else {
-                if (syncdata.provider) entry.provider = syncdata.provider;
-                if (syncdata.accountname) entry.accountname = syncdata.accountname;
-                if (syncdata.foldername) entry.foldername = syncdata.foldername;
-            }
+        if (ownerInfo) {
+            if (ownerInfo.provider) entry.provider = ownerInfo.provider;
+            if (ownerInfo.accountname) entry.accountname = ownerInfo.accountname;
+            if (ownerInfo.foldername) entry.foldername = ownerInfo.foldername;
         }
 
         let localized = "";

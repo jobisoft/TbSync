@@ -68,7 +68,6 @@ var providers = {
                 //load provider subscripts into tbSync
                 Services.scriptloader.loadSubScript(js, this[provider], "UTF-8");
                 this.loadedProviders[provider].bundle = Services.strings.createBundle(this[provider].api.getStringBundleUrl());
-                this.loadedProviders[provider].info = new ProviderInfoObject(provider);
 
                 //load provider
                 await this[provider].api.load(tbSync.lightning.isAvailable());
