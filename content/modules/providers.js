@@ -23,6 +23,18 @@
     getStringBundle() {
         return providers.loadedProviders[this.provider].bundle;
     }
+    
+    getAccountObjects() {
+        let accounts = tbSync.db.getAccounts();
+        let accountObjects = [];
+        for (let i=0; i<accounts.IDs.length; i++) {
+            let accountID = accounts.IDs[i];
+            if (accounts.data[accountID].provider == this.provider) {
+                accountObjects.push(new tbSync.AccountObject(accountID));
+            }
+        }
+        return accountObjects;
+    }
 }
  
 var providers = {
