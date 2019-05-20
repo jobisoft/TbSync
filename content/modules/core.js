@@ -15,6 +15,10 @@ var AccountObject = class {
         this.folderID = folderID;
     }
 
+    hasFolderData() {
+        return (this.folderID !== "");
+    }
+    
     getAccountSetting(field) {
         return tbSync.db.getAccountSetting(this.account, field);
     }
@@ -28,7 +32,7 @@ var AccountObject = class {
     }
 
    getFolderSetting(field) {
-        if (this.folderID !== "") {
+        if (this.hasFolderData()) {
             return tbSync.db.getFolderSetting(this.account, this.folderID, field);
         } else {
             throw new Error("No folder set.");
@@ -36,7 +40,7 @@ var AccountObject = class {
     }
     
     setFolderSetting(field, value) {
-        if (this.folderID !== "") {
+        if (this.hasFolderData()) {
             tbSync.db.setFolderSetting(this.account, this.folderID, field, value);
         } else {
             throw new Error("No folder set.");
@@ -44,7 +48,7 @@ var AccountObject = class {
     }
 
     resetFolderSetting(field) {
-        if (this.folderID !== "") {
+        if (this.hasFolderData()) {
             tbSync.db.resetFolderSetting(this.account, this.folderID, field);
         } else {
             throw new Error("No folder set.");
