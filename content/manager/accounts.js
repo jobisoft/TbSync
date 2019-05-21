@@ -23,8 +23,9 @@ var tbSyncAccounts = {
         //scan accounts, update list and select first entry (because no id is passed to updateAccountList)
         //the onSelect event of the List will load the selected account
         //also update/init add menu
-        this.updateAccountsList(-1, true); 
+        this.updateAvailableProvider(); 
         
+        Services.obs.addObserver(tbSyncAccounts.updateProviderListObserver, "tbsync.observer.manager.updateProviderList", false);
         Services.obs.addObserver(tbSyncAccounts.updateAccountsListObserver, "tbsync.observer.manager.updateAccountsList", false);
         Services.obs.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.observer.manager.updateSyncstate", false);
         Services.obs.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.observer.manager.updateAccountName", false);
@@ -32,6 +33,7 @@ var tbSyncAccounts = {
     },
 
     onunload: function () {
+        Services.obs.removeObserver(tbSyncAccounts.updateProviderListObserver, "tbsync.observer.manager.updateProviderList");
         Services.obs.removeObserver(tbSyncAccounts.updateAccountsListObserver, "tbsync.observer.manager.updateAccountsList");
         Services.obs.removeObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.observer.manager.updateSyncstate");
         Services.obs.removeObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.observer.manager.updateAccountName");
@@ -498,10 +500,18 @@ var tbSyncAccounts = {
     */
     updateAccountsListObserver: {
         observe: function (aSubject, aTopic, aData) {
-            //-2 = try to keep current selection while adding/removing provider aData
-            tbSyncAccounts.updateAccountsList(-2, aData); 
+            //aData is the accountID to be selected
+            //if missing, it will try to not change selection
+            tbSyncAccounts.updateAccountsList(aData); 
         }
     },
+    
+    updateProviderListObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            //aData is a provider
+            tbSyncAccounts.updateAvailableProvider(aData); 
+        }
+    },    
 
     toggleEnableState: function () {
         let accountsList = document.getElementById("tbSyncAccounts.accounts");
@@ -621,11 +631,11 @@ var tbSyncAccounts = {
     },
 
     updateAccountLogo: function (id) {
-        let accountObject = new tbSync.AccountObject(id);
+        let accountData = new tbSync.AccountData(id);
         let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
         if (listItem) {
             let obj = listItem.childNodes[0].firstChild
-            obj.src = tbSyncAccounts.hasInstalledProvider(id) ? tbSync.providers[accountObject.getAccountSetting("provider")].api.getProviderIcon(16, accountObject) : "chrome://tbsync/skin/provider16.png";
+            obj.src = tbSyncAccounts.hasInstalledProvider(id) ? tbSync.providers[accountData.getAccountSetting("provider")].api.getProviderIcon(16, accountData) : "chrome://tbsync/skin/provider16.png";
         }
     },
 
@@ -654,14 +664,41 @@ var tbSyncAccounts = {
         }
     },
     
-    updateAccountsList: function (accountToSelect = -1, updAddMenu = false) {
+    updateAvailableProvider: function (provider = null) {        
+        //either add/remove a specific provider, or rebuild the list from scratch
+        if (provider) {
+            //update single provider entry
+            tbSyncAccounts.updateAddMenuEntry(provider);
+        } else {
+            //add default providers
+            for (let provider in tbSync.providers.defaultProviders) {
+                tbSyncAccounts.updateAddMenuEntry(provider);
+            }
+            //update/add all remaining installed providers
+            for (let provider in tbSync.providers.loadedProviders) {
+                tbSyncAccounts.updateAddMenuEntry(provider);
+            }
+        }
+        
+        this.updateAccountsList();
+        
+        let selectedAccount = this.getSelectedAccount();
+        if (selectedAccount !== null && tbSync.db.getAccountSetting(selectedAccount, "provider") == provider) {
+            tbSyncAccounts.loadSelectedAccount();
+        }
+    },
+    
+    updateAccountsList: function (accountToSelect = null) {
         let accountsList = document.getElementById("tbSyncAccounts.accounts");
         let accounts = tbSync.db.getAccounts();
 
-        //try to keep the currently selected account, if accountToSelect == -2
-        if (accountToSelect == -2) {
+        // try to keep the currently selected account, if accountToSelect is not given
+        if (accountToSelect === null) {
             let s = accountsList.getItemAtIndex(accountsList.selectedIndex);
-            accountToSelect = s ? s.value : -1;
+            if (s) {
+                // there is an entry selected, do not change it
+                accountToSelect = s.value;
+            }
         }
         
         if (accounts.allIDs.length > null) {
@@ -723,7 +760,7 @@ var tbSyncAccounts = {
             
             //find selected item
             for (let i=0; i<accountsList.getRowCount(); i++) {
-                if (accountToSelect == accountsList.getItemAtIndex(i).value || accountToSelect == -1) {
+                if (accountToSelect === null || accountToSelect == accountsList.getItemAtIndex(i).value) {
                     accountsList.selectedIndex = i;
                     accountsList.ensureIndexIsVisible(i);
                     break;
@@ -736,28 +773,6 @@ var tbSyncAccounts = {
                 accountsList.removeItemAt(i);
             }
             document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/noaccounts.xul");
-        }
-        
-        
-        //updAddMenu can be 
-        // - true (build from scratch)
-        // - false (do nothing)
-        // - a string (add/remove given provider)
-        if (updAddMenu === true) {
-            //add default providers
-            for (let provider in tbSync.providers.defaultProviders) {
-                tbSyncAccounts.updateAddMenuEntry(provider);
-            }
-            //update/add all remaining installed providers
-            for (let provider in tbSync.providers.loadedProviders) {
-                tbSyncAccounts.updateAddMenuEntry(provider);
-            }
-        } else if (updAddMenu !== false) {
-            //update single provider entry
-            tbSyncAccounts.updateAddMenuEntry(updAddMenu);
-            if (accountToSelect != -1 && tbSync.db.getAccountSetting(accountToSelect, "provider") == updAddMenu) {
-                tbSyncAccounts.loadSelectedAccount();
-            }
         }
     },
 
@@ -791,16 +806,23 @@ var tbSyncAccounts = {
         }
     },
 
-    //load the pref page for the currently selected account (triggered by onSelect)
-    loadSelectedAccount: function () {
+    getSelectedAccount: function () {
         let accountsList = document.getElementById("tbSyncAccounts.accounts");
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
             //get id of selected account from value of selectedItem
-            this.selectedAccount = accountsList.selectedItem.value;
-            let provider = tbSync.db.getAccountSetting(this.selectedAccount, "provider");
-            
-            if (tbSyncAccounts.hasInstalledProvider(this.selectedAccount)) {
-                document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/editAccount.xul?provider="+provider+"&id=" + this.selectedAccount);
+            return accountsList.selectedItem.value;
+        }
+        return null;
+    },
+    
+    //load the pref page for the currently selected account (triggered by onSelect)
+    loadSelectedAccount: function () {
+        let selectedAccount = this.getSelectedAccount();
+        
+        if (selectedAccount !== null) { //account id could be 0, so need to check for null explicitly
+            let provider = tbSync.db.getAccountSetting(selectedAccount, "provider");            
+            if (tbSyncAccounts.hasInstalledProvider(selectedAccount)) {
+                document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/editAccount.xul?provider="+provider+"&id=" + selectedAccount);
             } else {
                 document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/missingProvider.xul?provider="+provider);
             }
@@ -822,9 +844,11 @@ var tbSyncAccounts = {
     },
     
     addAccount: function (provider) {
+        let providerData = new tbSync.ProviderData(provider);
+        
         document.getElementById("tbSyncAccounts.accounts").disabled=true;
         document.getElementById("tbSyncAccounts.btnAccountActions").disabled=true;
-        window.openDialog(tbSync.providers[provider].api.getCreateAccountXulUrl(), "newaccount", "centerscreen,modal,resizable=no");
+        window.openDialog(tbSync.providers[provider].api.getCreateAccountXulUrl(), "newaccount", "centerscreen,modal,resizable=no", providerData);
         document.getElementById("tbSyncAccounts.accounts").disabled=false;
         document.getElementById("tbSyncAccounts.btnAccountActions").disabled=false;
     },
