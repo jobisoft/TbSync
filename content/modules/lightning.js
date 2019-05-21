@@ -221,8 +221,8 @@ var lightning = {
 
     
     //this function actually creates a calendar if missing
-    checkCalender: function (accountObject) {       
-        let target = accountObject.getFolderSetting("target");
+    checkCalender: function (accountData) {       
+        let target = accountData.getFolderSetting("target");
         let calManager = cal.getCalendarManager();
         let targetCal = calManager.getCalendarById(target);
         
@@ -238,8 +238,8 @@ var lightning = {
 
         
         //check if  there is a known/cached name, and use that as starting point to generate unique name for new calendar 
-        let cachedName = accountObject.getFolderSetting("targetName");                         
-        let testname = cachedName == "" ? accountObject.getAccountSetting("accountname") + " (" + accountObject.getFolderSetting("name") + ")" : cachedName;
+        let cachedName = accountData.getFolderSetting("targetName");                         
+        let testname = cachedName == "" ? accountData.getAccountSetting("accountname") + " (" + accountData.getFolderSetting("name") + ")" : cachedName;
 
         let count = 1;
         let unique = false;
@@ -260,7 +260,7 @@ var lightning = {
 
 
         //check if there is a cached or preloaded color - if not, chose one
-        if (!accountObject.getFolderSetting("targetColor")) {
+        if (!accountData.getFolderSetting("targetColor")) {
             //define color set
             let allColors = [
                 "#3366CC",
@@ -308,18 +308,18 @@ var lightning = {
             
             //filter by minCount
             let freeColors = statColors.filter(item => (minCount == null || item.count == minCount));
-            accountObject.setFolderSetting("targetColor", freeColors[0].color);        
+            accountData.setFolderSetting("targetColor", freeColors[0].color);        
         }
         
         //create and register new calendar
-        let provider = accountObject.getAccountSetting("provider");
-        let newCalendar = tbSync.providers[provider].api.createCalendar(newname, accountObject);
-        tbSync.providers[provider].api.onResetTarget(accountObject);
+        let provider = accountData.getAccountSetting("provider");
+        let newCalendar = tbSync.providers[provider].api.createCalendar(newname, accountData);
+        tbSync.providers[provider].api.onResetTarget(accountData);
         
         //store id of calendar as target in DB
-        accountObject.setFolderSetting("target", newCalendar.id); 
-        //accountObject.setFolderSetting("targetName", newCalendar.name); 
-       accountObject.setFolderSetting("targetColor",  newCalendar.getProperty("color"));
+        accountData.setFolderSetting("target", newCalendar.id); 
+        //accountData.setFolderSetting("targetName", newCalendar.name); 
+       accountData.setFolderSetting("targetColor",  newCalendar.getProperty("color"));
         return true;        
     }
     

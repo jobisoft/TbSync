@@ -8,30 +8,30 @@
  
  "use strict";
 
-var DefaultAuthentication = class {
-    constructor(accountObject) {
-        this.accountObject = accountObject;
-        this.provider = accountObject.getAccountSetting("provider");
-        this.userField = tbSync.providers[this.provider].auth.getUserField4PasswordManager(accountObject);
-        this.hostField = tbSync.providers[this.provider].auth.getHostField4PasswordManager(accountObject);
+var PasswordAuthData = class {
+    constructor(accountData) {
+        this.accountData = accountData;
+        this.provider = accountData.getAccountSetting("provider");
+        this.userField = tbSync.providers[this.provider].auth.getUserField4PasswordManager(accountData);
+        this.hostField = tbSync.providers[this.provider].auth.getHostField4PasswordManager(accountData);
     }
     
     getUsername() {
-        return this.accountObject.getAccountSetting(this.userField);
+        return this.accountData.getAccountSetting(this.userField);
     }
     
     getPassword() {
-        let host = this.accountObject.getAccountSetting(this.hostField)
+        let host = this.accountData.getAccountSetting(this.hostField)
         let origin = authentication.getOrigin4PasswordManager(this.provider, host);
         return authentication.getLoginInfo(origin, "TbSync", this.getUsername());
     }
     
     setUsername(newUsername) {
-        this.accountObject.setAccountSetting(this.userField, newUsername);        
+        this.accountData.setAccountSetting(this.userField, newUsername);        
     }
     
     setPassword(newPassword) {
-        let host = this.accountObject.getAccountSetting(this.hostField)
+        let host = this.accountData.getAccountSetting(this.hostField)
         let origin = authentication.getOrigin4PasswordManager(this.provider, host);
         authentication.setLoginInfo(origin, "TbSync", this.getUsername(), newPassword);
     }

@@ -212,6 +212,9 @@ var db = {
     }, 
 
     isValidAccountSetting: function (provider, name) {
+        if (["provider"].includes(name)) //internal properties, do not need to be defined by user/provider
+            return true;
+
         //check if provider is installed
         if (!tbSync.providers.loadedProviders.hasOwnProperty(provider)) {
             tbSync.dump("Error @ isValidAccountSetting", "Unknown provider <"+provider+">!");
@@ -223,8 +226,7 @@ var db = {
         } else {
             tbSync.dump("Error @ isValidAccountSetting", "Unknown account setting <"+name+">!");
             return false;
-        }
-            
+        }            
     },
 
     getAccountSetting: function (account, name) {

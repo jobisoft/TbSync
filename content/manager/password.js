@@ -13,18 +13,18 @@ Components.utils.import("chrome://tbsync/content/tbsync.jsm");
 var tbSyncPassword = {
     
     onload: function () {
-        this.accountObject = window.arguments[0];
-        this.auth = new tbSync.DefaultAuthentication(this.accountObject);
+        this.accountData = window.arguments[0];
+        this.auth = new tbSync.PasswordAuthData(this.accountData);
 
         this.namefield =  document.getElementById("tbsync.account");
         this.passfield = document.getElementById("tbsync.password");
         this.userfield = document.getElementById("tbsync.user");
 
-        this.namefield.value = this.accountObject.getAccountSetting("accountname");
+        this.namefield.value = this.accountData.getAccountSetting("accountname");
         this.userfield.value =  this.auth.getUsername();
 
         //allow to change username only if not connected
-        if (this.accountObject.isConnected()) {
+        if (this.accountData.isConnected()) {
             this.userfield.disabled=true;
         }
         
@@ -39,7 +39,7 @@ var tbSyncPassword = {
         
         //update password
         this.auth.setPassword(this.passfield.value);
-        this.accountObject.sync();
+        this.accountData.sync();
     },
 
     doCANCEL: function () {

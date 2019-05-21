@@ -8,10 +8,10 @@
  
  "use strict";
  
- var ProviderInfoObject = class {
+ var ProviderData = class {
     constructor(provider) {
         if (!providers.hasOwnProperty(provider)) {
-            throw new Error("Provider <" + provider + "> has not been loaded. Failed to create ProviderInfoObject.");
+            throw new Error("Provider <" + provider + "> has not been loaded. Failed to create ProviderData.");
         }
         this.provider = provider;
     }
@@ -24,16 +24,26 @@
         return providers.loadedProviders[this.provider].bundle;
     }
     
-    getAccountObjects() {
+    getAllAccounts() {
         let accounts = tbSync.db.getAccounts();
-        let accountObjects = [];
+        let allAccounts = [];
         for (let i=0; i<accounts.IDs.length; i++) {
             let accountID = accounts.IDs[i];
             if (accounts.data[accountID].provider == this.provider) {
-                accountObjects.push(new tbSync.AccountObject(accountID));
+                allAccounts.push(new tbSync.AccountData(accountID));
             }
         }
-        return accountObjects;
+        return allAccounts;
+    }
+    
+    getDefaultAccountEntries() {
+        return  tbSync.providers.getDefaultAccountEntries(this.provider)
+    }
+    
+    addAccount(accountName, accountOptions) {
+        let newAccountID = tbSync.db.addAccount(accountName, accountOptions);
+        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountsList", newAccountID);
+        return new tbSync.AccountData(newAccountID);        
     }
 }
  
@@ -87,7 +97,7 @@ var providers = {
                 await tbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xul?provider=" + provider, this[provider].api.getEditAccountOverlayUrl());        
                 tbSync.dump("Loaded provider", provider + "::" + this[provider].api.getNiceProviderName() + " ("+this.loadedProviders[provider].version+")");
                 tbSync.core.resetSync(provider);
-                Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountsList", provider);
+                Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", provider);
 
             } catch (e) {
                 tbSync.dump("FAILED to load provider", provider);
@@ -103,7 +113,7 @@ var providers = {
             await this[provider].api.unload(tbSync.lightning.isAvailable());
             delete this.loadedProviders[provider];
             delete this[provider];            
-            Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountsList", provider);
+            Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", provider);
             Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
         }
     },

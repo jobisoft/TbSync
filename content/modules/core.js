@@ -8,7 +8,7 @@
  
  "use strict";
 
-var OwnerInfoObject = class {
+var OwnerData = class {
     constructor(provider, accountname, foldername = "") {
         this.provider = provider;
         this.accountname = accountname;
@@ -16,11 +16,19 @@ var OwnerInfoObject = class {
     }
 }
 
-var AccountObject = class {
+var AccountData = class { //rename to AccountDataObject
     constructor(accountID, folderID = "") {
         //internal (private, not to be touched by provider)
         this.account = accountID;
         this.folderID = folderID;
+
+        if (tbSync.db.accounts.data.hasOwnProperty(accountID) == false ) {
+            throw new Error("An account with ID <" + accountID + "> does not exist. Failed to create AccountData.");
+        }
+
+        if (this.hasFolderData() && !tbSync.db.folders[accountID].hasOwnProperty(folderID)) {
+            throw new Error("A folder with ID <" + folderID + "> does not exist for the given account. Failed to create AccountData.");
+        }
     }
 
     hasFolderData() {
@@ -28,16 +36,16 @@ var AccountObject = class {
     }
     
     // get data objects
-    get ownerInfo() {
-        return new OwnerInfoObject(
+    get ownerData() {
+        return new OwnerData(
             this.getAccountSetting("provider"),
             this.getAccountSetting("accountname"),
             this.hasFolderData() ? this.getFolderSetting("name") : "",
         );
     }
 
-    get providerInfo() {
-        return new ProviderInfoObject(
+    get providerData() {
+        return new ProviderData(
             this.getAccountSetting("provider"),
         );
     }    
@@ -112,8 +120,8 @@ var AccountObject = class {
 }
 
 //there is only one syncdata object per account which contains the current state of the sync
-//if you just need an object to manipulate an account or folder, use AccountObject
-var SyncDataObject = class extends AccountObject {
+//if you just need an object to manipulate an account or folder, use AccountData
+var SyncData = class extends AccountData {
     constructor(account) {
         super(account)
 
@@ -144,8 +152,6 @@ var SyncDataObject = class extends AccountObject {
     //takeTargetOffline
     //removeTarget
     
-    //global calendar observer: return a temp syncdata object (not the rea on, which could be used by sync)
-
     setSyncState(syncstate) {
         //set new syncstate
         let msg = "State: " + syncstate;
@@ -248,7 +254,7 @@ var core = {
     
     prepareSyncDataObj: function (account, forceResetOfSyncData = false) {
         if (!this.syncDataObj.hasOwnProperty(account) || forceResetOfSyncData) {
-            this.syncDataObj[account] = new SyncDataObject(account);          
+            this.syncDataObj[account] = new SyncData(account);          
         } else {
             this.syncDataObj[account].account = account;
         }
@@ -425,16 +431,16 @@ var core = {
     },
     
     enableAccount: function(account) {
-        let accountObject = new AccountObject(account);
-        tbSync.providers[accountObject.getAccountSetting("provider")].api.onEnableAccount(accountObject);
-        accountObject.setAccountSetting("status", "notsyncronized");
-        accountObject.resetAccountSetting("lastsynctime");        
+        let accountData = new AccountData(account);
+        tbSync.providers[accountData.getAccountSetting("provider")].api.onEnableAccount(accountData);
+        accountData.setAccountSetting("status", "notsyncronized");
+        accountData.resetAccountSetting("lastsynctime");        
     },
 
     disableAccount: function(account) {
-        let accountObject = new AccountObject(account);
-        tbSync.providers[accountObject.getAccountSetting("provider")].api.onDisableAccount(accountObject);
-        accountObject.setAccountSetting("status", "disabled");
+        let accountData = new AccountData(account);
+        tbSync.providers[accountData.getAccountSetting("provider")].api.onDisableAccount(accountData);
+        accountData.setAccountSetting("status", "disabled");
         
         let folders = tbSync.db.getFolders(account);
         for (let i in folders) {
@@ -442,7 +448,7 @@ var core = {
             tbSync.db.setFolderSetting(folders[i].account, folders[i].folderID, "cached", "1");
 
             let target = folders[i].target;
-            let type = tbSync.providers[accountObject.getAccountSetting("provider")].api.getThunderbirdFolderType(folders[i].type);            
+            let type = tbSync.providers[accountData.getAccountSetting("provider")].api.getThunderbirdFolderType(folders[i].type);            
             if (target != "") {
                 //remove associated target and clear its changelog
                 this.removeTarget(target, type);
@@ -477,7 +483,7 @@ var core = {
         syncdata.jsErrorCached = (msg == "JavaScriptError") ? {msg, details} : null;
         
         if (!msg.startsWith("OK") && !syncdata.jsErrorCached) {
-             tbSync.errorlog.add("warning", syncdata.ownerInfo, msg, details);
+             tbSync.errorlog.add("warning", syncdata.ownerData, msg, details);
         }
 
         if (syncdata.folderID) {
@@ -502,11 +508,11 @@ var core = {
         if (syncdata.jsErrorCached) {
             //report cached js error 
             status = syncdata.jsErrorCached.msg;
-            tbSync.errorlog.add("warning", syncdata.ownerInfo, syncdata.jsErrorCached.msg, syncdata.jsErrorCached.details);
+            tbSync.errorlog.add("warning", syncdata.ownerData, syncdata.jsErrorCached.msg, syncdata.jsErrorCached.details);
             syncdata.jsErrorCached = null;
         } else if (!msg.startsWith("OK")) {
             //report local error
-            tbSync.errorlog.add("warning", syncdata.ownerInfo, msg, details);
+            tbSync.errorlog.add("warning", syncdata.ownerData, msg, details);
         } else {
             //account itself is ok, search for folders with error
             folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);

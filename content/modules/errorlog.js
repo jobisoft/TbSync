@@ -31,7 +31,7 @@ var errorlog = {
         this.errors = [];
     },
     
-    add: function (type, ownerInfo, message, details = null) {
+    add: function (type, ownerData, message, details = null) {
         let entry = {
             timestamp: Date.now(),
             message: message, 
@@ -44,10 +44,10 @@ var errorlog = {
             foldername: "",
         };
     
-        if (ownerInfo) {
-            if (ownerInfo.provider) entry.provider = ownerInfo.provider;
-            if (ownerInfo.accountname) entry.accountname = ownerInfo.accountname;
-            if (ownerInfo.foldername) entry.foldername = ownerInfo.foldername;
+        if (ownerData) {
+            if (ownerData.provider) entry.provider = ownerData.provider;
+            if (ownerData.accountname) entry.accountname = ownerData.accountname;
+            if (ownerData.foldername) entry.foldername = ownerData.foldername;
         }
 
         let localized = "";

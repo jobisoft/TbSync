@@ -366,11 +366,11 @@ var addressbook = {
         return null;
     },
         
-    checkAddressbook: function (accountObject) {
-        let target = accountObject.getFolderSetting("target");
+    checkAddressbook: function (accountData) {
+        let target = accountData.getFolderSetting("target");
         let targetName = this.getAddressBookName(target);
         let targetObject = this.getAddressBookObject(target);
-        let provider = accountObject.getAccountSetting("provider");
+        let provider = accountData.getAccountSetting("provider");
         
         if (targetName !== null && targetObject !== null && targetObject instanceof Components.interfaces.nsIAbDirectory) {
             //check for double targets - just to make sure
@@ -383,8 +383,8 @@ var addressbook = {
         }
         
         // Get cached or new unique name for new address book
-        let cachedName = accountObject.getFolderSetting("targetName");                         
-        let testname = cachedName == "" ? accountObject.getAccountSetting("accountname") + " (" + accountObject.getFolderSetting("name")+ ")" : cachedName;
+        let cachedName = accountData.getFolderSetting("targetName");                         
+        let testname = cachedName == "" ? accountData.getAccountSetting("accountname") + " (" + accountData.getFolderSetting("name")+ ")" : cachedName;
 
         let count = 1;
         let unique = false;
@@ -406,14 +406,14 @@ var addressbook = {
         } while (!unique);
         
         //Create the new book with the unique name
-        let directory = tbSync.providers[accountObject.getAccountSetting("provider")].api.createAddressBook(newname, accountObject);
+        let directory = tbSync.providers[accountData.getAccountSetting("provider")].api.createAddressBook(newname, accountData);
         if (directory && directory instanceof Components.interfaces.nsIAbDirectory) {
             directory.setStringValue("tbSyncProvider", provider);
             
-            tbSync.providers[provider].api.onResetTarget(accountObject);
+            tbSync.providers[provider].api.onResetTarget(accountData);
             
-            accountObject.setFolderSetting("target", directory.URI);
-            //accountObject.setFolderSetting("targetName", newname);
+            accountData.setFolderSetting("target", directory.URI);
+            //accountData.setFolderSetting("targetName", newname);
             //notify about new created address book
             Services.obs.notifyObservers(null, 'tbsync.observer.addressbook.created', null)
             return true;
