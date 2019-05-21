@@ -210,19 +210,38 @@ var AccountData = class {
 
 }
 
+var ProgessData = class {
+    constructor() {
+        this._todo = 0;
+        this._done = 0;
+     }
+     
+     reset(done = 0, todo = 0) {
+        this._todo = todo;
+        this._done = done;
+     }
+     
+     inc(value = 1) {
+         this._done += value;
+     }
+     
+     get todo() {
+         return this._todo;
+     }
+     
+     get done() {
+         return this._done;
+     }
+}
+
 //there is only one syncdata object per account which contains the current state of the sync
-//if you just need an object to manipulate an account or folder, use AccountData
 var SyncData = class extends AccountData {
     constructor(account) {
         super(account)
 
         //internal (private, not to be touched by provider)
         this._syncstate = "";
-
-
-     
-        this.todo = 0;  
-        this.done = 0;  
+        this._progress = new ProgessData();
     }
 
     //all functions provider should use should be in here
@@ -230,12 +249,15 @@ var SyncData = class extends AccountData {
     //try to eliminate account and folderID usage
     //icons must use db check and not just directory property, to see "dead" folders
     //hide cache management
-
     //when getSyncDataObj is used never change the folder id as a sync may be going on!
     
     //setTargetModified
     //takeTargetOffline
     //removeTarget
+    
+    get progress() {
+        return this._progress;
+    }
     
     setSyncState(syncstate) {
         //set new syncstate
@@ -283,9 +305,9 @@ var SyncData = class extends AccountData {
                     if (folder.folderID == this.folderID) {
                         //syncing (there is no extra state for this)
                         status = tbSync.getString("status.syncing", this.getAccountSetting("provider"));
-                        if (["send","eval","prepare"].includes(this._syncstate.split(".")[0]) && (this.todo + this.done) > 0) {
+                        if (["send","eval","prepare"].includes(this._syncstate.split(".")[0]) && (this.progress.todo + this.progress.done) > 0) {
                             //add progress information
-                            status = status + " (" + this.done + (this.todo > 0 ? "/" + this.todo : "") + ")"; 
+                            status = status + " (" + this.progress.done + (this.progress.todo > 0 ? "/" + this.progress.todo : "") + ")"; 
                         }
                     }
 
