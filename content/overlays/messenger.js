@@ -31,7 +31,7 @@ var tbSyncMessenger = {
                     let status = tbSync.db.getAccountSetting(account, "status");
                     switch (status) {
                         case "401":
-                            syncdata.passwordPrompt();
+                            syncdata.authPrompt();
                             break;
                     }
                 }

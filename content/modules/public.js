@@ -137,15 +137,15 @@ var AccountData = class {
         );
     }    
 
-    passwordPrompt(window = null) {
+    authPrompt(window = null) {
         // default to main Thunderbird window
         let w = window ? window : tbSync.window;
         
         // only popup one password prompt per account
-        if (!tbSync.manager.passWindowObjs.hasOwnProperty[this.account] || tbSync.manager.passWindowObjs[this.account] === null) {
+        if (!tbSync.manager.authWindowObjs.hasOwnProperty[this.account] || tbSync.manager.authWindowObjs[this.account] === null) {
             let defaultUrl = "chrome://tbsync/content/manager/password.xul";
             let userUrl = tbSync.providers[this.getAccountSetting("provider")].auth.getAuthPromptXulUrl();
-            tbSync.manager.passWindowObjs[this.account] = w.openDialog(userUrl ? userUrl : defaultUrl, "passwordprompt", "centerscreen,chrome,resizable=no", this);
+            tbSync.manager.authWindowObjs[this.account] = w.openDialog(userUrl ? userUrl : defaultUrl, "authPrompt", "centerscreen,chrome,resizable=no", this);
         }        
     }
 
