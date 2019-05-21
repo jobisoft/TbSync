@@ -195,7 +195,7 @@ var tbSyncAccountSettings = {
         //change color of syncstate according to status
         let showErrorLogButton = false;
         switch (status) {
-            case "OK":
+            case "success":
             case "disabled":
             case "nolightning":
             case "syncing":

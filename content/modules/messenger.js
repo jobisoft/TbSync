@@ -64,7 +64,7 @@ var messenger = {
                 
                         //check for errors
                         switch (tbSync.db.getAccountSetting(accounts.allIDs[i], "status")) {
-                            case "OK":
+                            case "success":
                             case "disabled":
                             case "notsyncronized":
                             case "nolightning":

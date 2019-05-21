@@ -8,35 +8,6 @@
  
  "use strict";
 
-var PasswordAuthData = class {
-    constructor(accountData) {
-        this.accountData = accountData;
-        this.provider = accountData.getAccountSetting("provider");
-        this.userField = tbSync.providers[this.provider].auth.getUserField4PasswordManager(accountData);
-        this.hostField = tbSync.providers[this.provider].auth.getHostField4PasswordManager(accountData);
-    }
-    
-    getUsername() {
-        return this.accountData.getAccountSetting(this.userField);
-    }
-    
-    getPassword() {
-        let host = this.accountData.getAccountSetting(this.hostField)
-        let origin = passwordAuth.getOrigin4PasswordManager(this.provider, host);
-        return passwordAuth.getLoginInfo(origin, "TbSync", this.getUsername());
-    }
-    
-    setUsername(newUsername) { //updating just the username should also trigger an update of the LoginInfo, we need a removeLoginInfo function
-        this.accountData.setAccountSetting(this.userField, newUsername);        
-    }
-    
-    setPassword(newPassword) {
-        let host = this.accountData.getAccountSetting(this.hostField)
-        let origin = passwordAuth.getOrigin4PasswordManager(this.provider, host);
-        passwordAuth.setLoginInfo(origin, "TbSync", this.getUsername(), newPassword);
-    }
-}
-
 var passwordAuth = {
 
     load: async function () {

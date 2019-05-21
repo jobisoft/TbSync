@@ -578,7 +578,7 @@ var tbSyncAccounts = {
             src = "error16.png";
         } else {
             switch (tbSync.db.getAccountSetting(account, "status").split(".")[0]) {
-                case "OK":
+                case "success":
                     src = "tick16.png";
                     break;
                 

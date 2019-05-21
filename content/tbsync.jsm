@@ -41,51 +41,11 @@ var tbSync = {
 
     modules : [],
     
-    // simple dumper, who can dump to file or console
-    dump: function (what, aMessage) {
-        if (this.prefs.getBoolPref("log.toconsole")) {
-            Services.console.logStringMessage("[TbSync] " + what + " : " + aMessage);
-        }
-        
-        if (this.prefs.getBoolPref("log.tofile")) {
-            let now = new Date();
-            this.io.appendToFile("debug.log", "** " + now.toString() + " **\n[" + what + "] : " + aMessage + "\n\n");
-        }
-    },
-    
-    // get localized string from core or provider (if possible)
-    getString: function (msg, provider) {
-        let localized = msg;
-        let parts = msg.split("::");
-        
-        let bundle = (provider && tbSync.providers.loadedProviders.hasOwnProperty(provider)) ? tbSync.providers.loadedProviders[provider].bundle : tbSync.bundle;
-            
-        try {
-            //spezial treatment of strings with :: like status.httperror::403
-            localized = bundle.GetStringFromName(parts[0]);
-            for (let i = 0; i<parts.length; i++) {
-                let regex = new RegExp( "##replace\."+i+"##", "g");
-                localized = localized.replace(regex, parts[i]);
-            }
-        } catch (e) {}
-
-        return localized;
-    }, 
-
-    // promisified implementation AddonManager.getAddonByID() (only needed in TB60)
-    getAddonByID : async function (id) {        
-        return new Promise(function(resolve, reject) {
-            function callback (addon) {
-                resolve(addon);
-            }
-            AddonManager.getAddonByID(id, callback);
-        })
-    },    
-
     // global load
     load: async function (window) { 
         
-        //IO module needs to be loaded beforehand
+        //public module and IO module needs to be loaded beforehand
+        Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/public.js", this, "UTF-8");
         Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/io.js", this, "UTF-8");
 
         //clear debug log on start
