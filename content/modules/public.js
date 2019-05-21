@@ -22,19 +22,35 @@ var dump = function (what, aMessage) {
     
 // get localized string from core or provider (if possible)
 var getString = function (msg, provider) {
+    let success = false;
     let localized = msg;
-    let parts = msg.split("::");
     
-    let bundle = (provider && tbSync.providers.loadedProviders.hasOwnProperty(provider)) ? tbSync.providers.loadedProviders[provider].bundle : tbSync.bundle;
-        
-    try {
-        //spezial treatment of strings with :: like status.httperror::403
-        localized = bundle.GetStringFromName(parts[0]);
+    //spezial treatment of strings with :: like status.httperror::403
+    let parts = msg.split("::");
+
+    // if a provider is given, try to get the string from the provider
+    if (provider && tbSync.providers.loadedProviders.hasOwnProperty(provider)) {
+        try {
+            localized = tbSync.providers.loadedProviders[provider].bundle.GetStringFromName(parts[0]);
+            success = true;
+        } catch (e) {}        
+    }
+
+    // if we did not yet succeed, request the tbsync bundle
+    if (!success) {
+        try {
+            localized = tbSync.bundle.GetStringFromName(parts[0]);
+            success = true;
+        } catch (e) {}                    
+    }
+
+    //replace placeholders in returned string
+    if (success) {
         for (let i = 0; i<parts.length; i++) {
             let regex = new RegExp( "##replace\."+i+"##", "g");
             localized = localized.replace(regex, parts[i]);
         }
-    } catch (e) {}
+    }
 
     return localized;
 }
@@ -234,7 +250,7 @@ var ProgessData = class {
      }
 }
 
-//there is only one syncdata object per account which contains the current state of the sync
+// there is only one syncdata object per account which contains the current state of the sync
 var SyncData = class extends AccountData {
     constructor(account) {
         super(account)
