@@ -22,8 +22,8 @@ var PasswordAuthData = class {
     
     getPassword() {
         let host = this.accountData.getAccountSetting(this.hostField)
-        let origin = authentication.getOrigin4PasswordManager(this.provider, host);
-        return authentication.getLoginInfo(origin, "TbSync", this.getUsername());
+        let origin = passwordAuth.getOrigin4PasswordManager(this.provider, host);
+        return passwordAuth.getLoginInfo(origin, "TbSync", this.getUsername());
     }
     
     setUsername(newUsername) { //updating just the username should also trigger an update of the LoginInfo, we need a removeLoginInfo function
@@ -32,8 +32,8 @@ var PasswordAuthData = class {
     
     setPassword(newPassword) {
         let host = this.accountData.getAccountSetting(this.hostField)
-        let origin = authentication.getOrigin4PasswordManager(this.provider, host);
-        authentication.setLoginInfo(origin, "TbSync", this.getUsername(), newPassword);
+        let origin = passwordAuth.getOrigin4PasswordManager(this.provider, host);
+        passwordAuth.setLoginInfo(origin, "TbSync", this.getUsername(), newPassword);
     }
 }
 
