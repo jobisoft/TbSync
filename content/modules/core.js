@@ -49,7 +49,7 @@ var AccountObject = class {
         // only popup one password prompt per account
         if (!tbSync.manager.passWindowObjs.hasOwnProperty[this.account] || tbSync.manager.passWindowObjs[this.account] === null) {
             let defaultUrl = "chrome://tbsync/content/manager/password.xul";
-            let userUrl = tbSync.providers[this.getAccountSetting("provider")].auth.getPassPromptXulUrl();
+            let userUrl = tbSync.providers[this.getAccountSetting("provider")].auth.getAuthPromptXulUrl();
             tbSync.manager.passWindowObjs[this.account] = w.openDialog(userUrl ? userUrl : defaultUrl, "passwordprompt", "centerscreen,chrome,resizable=no", this);
         }        
     }
