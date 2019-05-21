@@ -108,8 +108,20 @@ var PasswordAuthData = class {
         return passwordAuth.getLoginInfo(origin, "TbSync", this.getUsername());
     }
     
-    setUsername(newUsername) { 
-        this.accountData.setAccountSetting(this.userField, newUsername);        
+    setUsername(newUsername) {
+        // as updating the username is a bit more work, only do it, if it changed
+        if (newUsername != this.getUsername()) {        
+            let host = this.accountData.getAccountSetting(this.hostField)
+            let origin = passwordAuth.getOrigin4PasswordManager(this.provider, host);
+
+            //temp store the old password, as we have to remove the current entry from the password manager
+            let oldPassword = this.getPassword();
+            // try to remove the current/old entry
+            passwordAuth.removeLoginInfo(origin, "TbSync", this.getUsername())
+            //update username
+            this.accountData.setAccountSetting(this.userField, newUsername);
+            passwordAuth.setLoginInfo(origin, "TbSync", newUsername, oldPassword);
+        }
     }
     
     setPassword(newPassword) {

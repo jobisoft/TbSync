@@ -21,10 +21,9 @@ var passwordAuth = {
         return provider + "://" + uri.host;
     },
 
-    setLoginInfo: function(origin, realm, user, password) {
+    removeLoginInfo: function(origin, realm, user) {
         let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
 
-        //remove any existing entry
         let logins = Services.logins.findLogins({}, origin, null, realm);
         for (let i = 0; i < logins.length; i++) {
             if (logins[i].username == user) {
@@ -36,6 +35,12 @@ var passwordAuth = {
                 }
             }
         }
+    },
+
+    setLoginInfo: function(origin, realm, user, password) {
+        let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
+        
+        this.removeLoginInfo(origin, realm, user);
         
         let newLoginInfo = new nsLoginInfo(origin, null, realm, user, password, "", "");
         try {
