@@ -439,10 +439,10 @@ var tbSyncAccounts = {
             document.getElementById(selector + "EnableAccount").disabled = isSyncing;
             document.getElementById(selector + "SyncAccount").disabled = isSyncing;
             //adjust labels - only in global actions dropdown
-            if (isActionsDropdown) document.getElementById(selector + "DeleteAccount").label = tbSync.tools.getLocalizedMessage("accountacctions.delete").replace("##accountname##", selectedAccountName);
-            if (isActionsDropdown) document.getElementById(selector + "SyncAccount").label = tbSync.tools.getLocalizedMessage("accountacctions.sync").replace("##accountname##", selectedAccountName);
-            if (isActionsDropdown) document.getElementById(selector + "EnableAccount").label = tbSync.tools.getLocalizedMessage("accountacctions.enable").replace("##accountname##", selectedAccountName);
-            if (isActionsDropdown) document.getElementById(selector + "DisableAccount").label = tbSync.tools.getLocalizedMessage("accountacctions.disable").replace("##accountname##", selectedAccountName);
+            if (isActionsDropdown) document.getElementById(selector + "DeleteAccount").label = tbSync.getString("accountacctions.delete").replace("##accountname##", selectedAccountName);
+            if (isActionsDropdown) document.getElementById(selector + "SyncAccount").label = tbSync.getString("accountacctions.sync").replace("##accountname##", selectedAccountName);
+            if (isActionsDropdown) document.getElementById(selector + "EnableAccount").label = tbSync.getString("accountacctions.enable").replace("##accountname##", selectedAccountName);
+            if (isActionsDropdown) document.getElementById(selector + "DisableAccount").label = tbSync.getString("accountacctions.disable").replace("##accountname##", selectedAccountName);
         }
     
         //Debug Options
@@ -476,13 +476,13 @@ var tbSyncAccounts = {
             }
             
             if (!tbSyncAccounts.hasInstalledProvider(accountsList.selectedItem.value)) {
-                if (confirm(tbSync.tools.getLocalizedMessage("prompt.EraseAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
+                if (confirm(tbSync.getString("prompt.EraseAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
                     //delete account and all folders from db
                     tbSync.db.removeAccount(accountsList.selectedItem.value);
                     //update list
                     this.updateAccountsList(nextAccount);
                 } 
-            } else if (confirm(tbSync.tools.getLocalizedMessage("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
+            } else if (confirm(tbSync.getString("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
                 //cache all folders and remove associated targets 
                 tbSync.core.disableAccount(accountsList.selectedItem.value);
                 //delete account and all folders from db
@@ -518,7 +518,7 @@ var tbSyncAccounts = {
         
         if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value) && !tbSync.core.isSyncing(accountsList.selectedItem.value)) {            
             let isConnected = tbSync.core.isConnected(accountsList.selectedItem.value);
-            if (!isConnected || window.confirm(tbSync.tools.getLocalizedMessage("prompt.Disable"))) {           
+            if (!isConnected || window.confirm(tbSync.getString("prompt.Disable"))) {           
                 tbSyncAccounts.toggleAccountEnableState(accountsList.selectedItem.value);
             }
         }

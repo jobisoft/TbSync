@@ -76,10 +76,10 @@ var messenger = {
                     }
 
                     if (idle) {
-                        if (err) label += tbSync.tools.getLocalizedMessage("info.error");   
-                        else label += tbSync.tools.getLocalizedMessage("info.idle");   
+                        if (err) label += tbSync.getString("info.error");   
+                        else label += tbSync.getString("info.idle");   
                     } else {
-                        label += tbSync.tools.getLocalizedMessage("info.sync");
+                        label += tbSync.getString("info.sync");
                     }
                     
                     status.label = label;

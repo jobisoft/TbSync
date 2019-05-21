@@ -182,7 +182,7 @@ var SyncData = class extends AccountData {
         
         if (folder.selected == "1") {
             //default
-            status = tbSync.tools.getLocalizedMessage("status." + folder.status, this.getAccountSetting("provider")).split("||")[0];
+            status = tbSync.getString("status." + folder.status, this.getAccountSetting("provider")).split("||")[0];
 
             switch (folder.status.split(".")[0]) { //the status may have a sub-decleration
                 case "OK":
@@ -190,7 +190,7 @@ var SyncData = class extends AccountData {
                     switch (tbSync.providers[this.getAccountSetting("provider")].api.getThunderbirdFolderType(folder.type)) {
                         case "tb-todo": 
                         case "tb-event": 
-                            status = tbSync.lightning.isAvailable() ? status + ": "+ tbSync.lightning.getCalendarName(folder.target) : tbSync.tools.getLocalizedMessage("status.nolightning", this.getAccountSetting("provider"));
+                            status = tbSync.lightning.isAvailable() ? status + ": "+ tbSync.lightning.getCalendarName(folder.target) : tbSync.getString("status.nolightning", this.getAccountSetting("provider"));
                             break;
                         case "tb-contact": 
                             status =status + ": "+ tbSync.addressbook.getAddressBookName(folder.target);
@@ -201,7 +201,7 @@ var SyncData = class extends AccountData {
                 case "pending":
                     if (folder.folderID == this.folderID) {
                         //syncing (there is no extra state for this)
-                        status = tbSync.tools.getLocalizedMessage("status.syncing", this.getAccountSetting("provider"));
+                        status = tbSync.getString("status.syncing", this.getAccountSetting("provider"));
                         if (["send","eval","prepare"].includes(this._syncstate.split(".")[0]) && (this.todo + this.done) > 0) {
                             //add progress information
                             status = status + " (" + this.done + (this.todo > 0 ? "/" + this.todo : "") + ")"; 

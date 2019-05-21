@@ -53,12 +53,12 @@ var errorlog = {
         let localized = "";
         let link = "";        
         if (entry.provider) {
-            localized = tbSync.tools.getLocalizedMessage("status." + message, entry.provider);
-            link = tbSync.tools.getLocalizedMessage("helplink." + message, entry.provider);
+            localized = tbSync.getString("status." + message, entry.provider);
+            link = tbSync.getString("helplink." + message, entry.provider);
         } else {
             //try to get localized string from message from tbSync
-            localized = tbSync.tools.getLocalizedMessage("status." + message);
-            link = tbSync.tools.getLocalizedMessage("helplink." + message);
+            localized = tbSync.getString("status." + message);
+            link = tbSync.getString("helplink." + message);
         }
     
         //can we provide a localized version of the error msg?

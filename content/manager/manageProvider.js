@@ -15,7 +15,7 @@ var tbSyncManageProvider = {
     prepInstall: function () {
         let url = window.location.toString();
         let provider = url.split("provider=")[1];
-        window.document.getElementById("header").textContent = tbSync.tools.getLocalizedMessage("installProvider.header::" + tbSync.providers.defaultProviders[provider].name);
+        window.document.getElementById("header").textContent = tbSync.getString("installProvider.header::" + tbSync.providers.defaultProviders[provider].name);
 
         window.document.getElementById("link").textContent = tbSync.providers.defaultProviders[provider].homepageUrl;
         window.document.getElementById("link").setAttribute("link", tbSync.providers.defaultProviders[provider].homepageUrl);

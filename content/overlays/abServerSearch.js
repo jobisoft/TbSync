@@ -66,9 +66,9 @@ var tbSyncAbServerSearch = {
                         if (searchbox && target) {
                             let folders = tbSync.db.findFoldersWithSetting("target", target);
                             if (folders.length == 1 && tbSync.providers[tbSync.db.getAccountSetting(folders[0].account, "provider")].api.abServerSearch) {
-                                searchbox.setAttribute("placeholder", tbSync.tools.getLocalizedMessage("addressbook.searchgal::" + tbSync.db.getAccountSetting(folders[0].account, "accountname")));
+                                searchbox.setAttribute("placeholder", tbSync.getString("addressbook.searchgal::" + tbSync.db.getAccountSetting(folders[0].account, "accountname")));
                             } else {
-                                searchbox.setAttribute("placeholder", tbSync.tools.getLocalizedMessage((target == "moz-abdirectory://?") ? "addressbook.searchall" : "addressbook.searchthis"));
+                                searchbox.setAttribute("placeholder", tbSync.getString((target == "moz-abdirectory://?") ? "addressbook.searchall" : "addressbook.searchthis"));
                             }
                         }
                     }

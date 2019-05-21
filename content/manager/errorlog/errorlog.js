@@ -101,7 +101,7 @@ var tbSyncErrorLog = {
 
             if (entry.link) {
                 let link = document.createElement("button");
-                link.setAttribute("label",  tbSync.tools.getLocalizedMessage("manager.help"));
+                link.setAttribute("label",  tbSync.getString("manager.help"));
                 link.setAttribute("oncommand",  "tbSync.manager.openLink('" + entry.link + "')");
                 vBoxRight.appendChild(link);
             }

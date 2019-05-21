@@ -53,6 +53,25 @@ var tbSync = {
         }
     },
     
+    // get localized string from core or provider (if possible)
+    getString: function (msg, provider) {
+        let localized = msg;
+        let parts = msg.split("::");
+        
+        let bundle = (provider && tbSync.providers.loadedProviders.hasOwnProperty(provider)) ? tbSync.providers.loadedProviders[provider].bundle : tbSync.bundle;
+            
+        try {
+            //spezial treatment of strings with :: like status.httperror::403
+            localized = bundle.GetStringFromName(parts[0]);
+            for (let i = 0; i<parts.length; i++) {
+                let regex = new RegExp( "##replace\."+i+"##", "g");
+                localized = localized.replace(regex, parts[i]);
+            }
+        } catch (e) {}
+
+        return localized;
+    }, 
+
     // promisified implementation AddonManager.getAddonByID() (only needed in TB60)
     getAddonByID : async function (id) {        
         return new Promise(function(resolve, reject) {

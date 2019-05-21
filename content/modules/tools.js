@@ -16,25 +16,6 @@ var tools = {
     unload: async function () {
     },
 
-    // get localized string from core or provider (if possible)
-    getLocalizedMessage: function (msg, provider = "") {
-        let localized = msg;
-        let parts = msg.split("::");
-
-        let bundle = (provider == "") ? tbSync.bundle : tbSync.providers.loadedProviders[provider].bundle;
-            
-        try {
-            //spezial treatment of strings with :: like status.httperror::403
-            localized = bundle.GetStringFromName(parts[0]);
-            for (let i = 0; i<parts.length; i++) {
-                let regex = new RegExp( "##replace\."+i+"##", "g");
-                localized = localized.replace(regex, parts[i]);
-            }
-        } catch (e) {}
-
-        return localized;
-    }, 
-
     // async sleep function using Promise to postpone actions to keep UI responsive
     sleep : function (_delay, useRequestIdleCallback = true) {
         let useIdleCallback = false;

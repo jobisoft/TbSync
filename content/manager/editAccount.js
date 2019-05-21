@@ -168,7 +168,7 @@ var tbSyncAccountSettings = {
 
         document.getElementById('tbsync.accountsettings.connectbtn.container').hidden = !(isEnabled && !isConnected && !isSyncing); 
         //currently we use a fixed button which is hidden during sync
-        //document.getElementById('tbsync.accountsettings.connectbtn').label = tbSync.tools.getLocalizedMessage("manager." + (isSyncing ? "connecting" : "tryagain"));
+        //document.getElementById('tbsync.accountsettings.connectbtn').label = tbSync.getString("manager." + (isSyncing ? "connecting" : "tryagain"));
         
         { //show elements if connected
             let items = document.getElementsByClassName("showIfConnected");
@@ -231,7 +231,7 @@ var tbSyncAccountSettings = {
             let synctime = (parts.length>1 ? parts[1] : Date.now());
 
             let diff = Date.now() - synctime;
-            let msg = tbSync.tools.getLocalizedMessage("syncstate." + syncstate, tbSyncAccountSettings.provider);
+            let msg = tbSync.getString("syncstate." + syncstate, tbSyncAccountSettings.provider);
             if (diff > 2000) msg = msg + " (" + Math.round((tbSync.prefs.getIntPref("timeout") - diff)/1000) + "s)";
 
             document.getElementById("syncstate").textContent = msg;
@@ -241,7 +241,7 @@ var tbSyncAccountSettings = {
                 tbSyncAccountSettings.updateTimer.init(tbSyncAccountSettings.updateSyncstate, 1000, 0);
             }            
         } else {
-            let localized = tbSync.tools.getLocalizedMessage("status." + (isEnabled ? status : "disabled"), tbSyncAccountSettings.provider);
+            let localized = tbSync.getString("status." + (isEnabled ? status : "disabled"), tbSyncAccountSettings.provider);
             document.getElementById("syncstate").textContent = localized;
         }
                 
@@ -361,7 +361,7 @@ var tbSyncAccountSettings = {
             return;
         }      
 
-        if (window.confirm(tbSync.tools.getLocalizedMessage("prompt.Disable"))) {
+        if (window.confirm(tbSync.getString("prompt.Disable"))) {
             Services.obs.notifyObservers(null, "tbsync.observer.manager.toggleEnableState", tbSyncAccountSettings.account);
         } else {
             //invalid, toggle checkbox back
@@ -379,7 +379,7 @@ var tbSyncAccountSettings = {
                 return;
         
             if (folder.selected == "1") {
-                if (folder.target == "" || window.confirm(tbSync.tools.getLocalizedMessage("prompt.Unsubscribe"))) {
+                if (folder.target == "" || window.confirm(tbSync.getString("prompt.Unsubscribe"))) {
                     //deselect folder
                     folder.selected = "0";
                     //remove folder, which will trigger the listener in tbsync which will clean up everything

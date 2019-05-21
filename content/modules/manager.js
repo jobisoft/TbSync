@@ -48,21 +48,21 @@ var manager = {
 
     popupNotEnabled: function () {
         tbSync.dump("Oops", "Trying to open account manager, but init sequence not yet finished");
-        let msg = tbSync.tools.getLocalizedMessage("OopsMessage") + "\n\n";
+        let msg = tbSync.getString("OopsMessage") + "\n\n";
         let v = Services.appinfo.platformVersion; 
         if (Services.vc.compare(v, "60.*") <= 0 && Services.vc.compare(v, "52.0") >= 0) {
             if (!tbSync.prefs.getBoolPref("log.tofile")) {
-                if (tbSync.window.confirm(msg + tbSync.tools.getLocalizedMessage("UnableToTraceError"))) {
+                if (tbSync.window.confirm(msg + tbSync.getString("UnableToTraceError"))) {
                     tbSync.prefs.setBoolPref("log.tofile", true);
-                    tbSync.window.alert(tbSync.tools.getLocalizedMessage("RestartThunderbirdAndTryAgain"));
+                    tbSync.window.alert(tbSync.getString("RestartThunderbirdAndTryAgain"));
                 }
             } else {
-                if (tbSync.window.confirm(msg + tbSync.tools.getLocalizedMessage("HelpFixStartupError"))) {
+                if (tbSync.window.confirm(msg + tbSync.getString("HelpFixStartupError"))) {
                     this.createBugReport("john.bieling@gmx.de", msg, "");
                 }
             }
         } else {
-            tbSync.window.alert(msg + tbSync.tools.getLocalizedMessage("VersionOfThunderbirdNotSupported"));
+            tbSync.window.alert(msg + tbSync.getString("VersionOfThunderbirdNotSupported"));
         }
     },
     
@@ -79,9 +79,9 @@ var manager = {
     },
 
     openTranslatedLink: function (url) {
-        let googleCode = tbSync.tools.getLocalizedMessage("google.translate.code");
+        let googleCode = tbSync.getString("google.translate.code");
         if (googleCode != "en" && googleCode != "google.translate.code") {
-            this.openLink("https://translate.google.com/translate?hl=en&sl=en&tl="+tbSync.tools.getLocalizedMessage("google.translate.code")+"&u="+url);
+            this.openLink("https://translate.google.com/translate?hl=en&sl=en&tl="+tbSync.getString("google.translate.code")+"&u="+url);
         } else {
             this.openLink(url);
         }
@@ -97,12 +97,12 @@ var manager = {
     openBugReportWizard: function () {
         if (Services.vc.compare(Services.appinfo.platformVersion, "60.*") <= 0 && Services.vc.compare(Services.appinfo.platformVersion, "52.0") >= 0) {
             if (!tbSync.debugMode) {
-                this.prefWindowObj.alert(tbSync.tools.getLocalizedMessage("NoDebugLog"));
+                this.prefWindowObj.alert(tbSync.getString("NoDebugLog"));
             } else {
                 this.prefWindowObj.openDialog("chrome://tbsync/content/manager/support-wizard/support-wizard.xul", "support-wizard", "dialog,centerscreen,chrome,resizable=no");
             }
         } else {
-            this.prefWindowObj.alert(tbSync.tools.getLocalizedMessage("VersionOfThunderbirdNotSupported"));
+            this.prefWindowObj.alert(tbSync.getString("VersionOfThunderbirdNotSupported"));
         }
     },
     

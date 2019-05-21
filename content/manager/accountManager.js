@@ -67,7 +67,7 @@ var tbSyncAccountManager = {
         for (let i=0; i < providers.length; i++) {
             let item = document.createElementNS(XUL_NS, "menuitem");
             item.setAttribute("value", providers[i]);
-            item.setAttribute("label", tbSync.tools.getLocalizedMessage("supportwizard.provider::" + tbSync.providers[providers[i]].api.getNiceProviderName()));
+            item.setAttribute("label", tbSync.getString("supportwizard.provider::" + tbSync.providers[providers[i]].api.getNiceProviderName()));
             menu.appendChild(item); 
         }
     
