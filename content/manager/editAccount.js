@@ -250,12 +250,24 @@ var tbSyncAccountSettings = {
             let folderList = document.getElementById("tbsync.accountsettings.folderlist");
             for (let i=0; i < folderList.getRowCount(); i++) {
                 let item = folderList.getItemAtIndex(i);
-                let folder = tbSync.db.getFolder(tbSyncAccountSettings.account, item.value);           
-                if (folder) {
-
-                    let rowData = tbSync.providers[tbSyncAccountSettings.provider].folderList.getRowData(folder, syncdata);
-                    tbSync.providers[tbSyncAccountSettings.provider].folderList.updateRow(document, item, rowData);
-                    
+                let folderData = new tbSync.AccountData(tbSyncAccountSettings.account, item.value);           
+                if (folderData) {
+                    tbSync.providers[tbSyncAccountSettings.provider].folderList.updateRow(document, item, folderData, folderData.getFolderSetting("selected"));
+                    //update selbox
+                    let selbox = item.querySelector("[tbSyncSelectbox]");
+                    if (selbox) {
+                        if (folderData.getFolderSetting("selected") == "1") {
+                            selbox.setAttribute("checked", true);
+                        } else {
+                            selbox.removeAttribute("checked");
+                        }
+                        
+                        if (folderData.isSyncing()) {
+                            selbox.setAttribute("disabled", true);
+                        } else {
+                            selbox.removeAttribute("disabled");
+                        }
+                    }                    
                 }
             }
         }
@@ -267,7 +279,9 @@ var tbSyncAccountSettings = {
             return;
         
         //get updated list of folderIDs
-        let folderData = tbSync.providers[tbSyncAccountSettings.provider].folderList.getSortedData(tbSyncAccountSettings.account);
+        let accountData = new tbSync.AccountData(tbSyncAccountSettings.account);
+        let folderData = tbSync.providers[tbSyncAccountSettings.provider].api.getSortedFolders(accountData);
+        
         let foldersFound = [];
         for (let i=0; i < folderData.length; i++) {
             foldersFound.push(folderData[i].folderID);
@@ -307,23 +321,31 @@ var tbSyncAccountSettings = {
 
                 //create checkBox for select state
                 let itemSelected = document.createElement("checkbox");
-                itemSelected.setAttribute("id", "selbox_" + rowId);
+                itemSelected.setAttribute("tbSyncSelectbox", "true");
                 itemSelected.setAttribute("oncommand", "tbSyncAccountSettings.toggleFolder(this);");
-
+                
                 //add row
                 nextItem.appendChild(tbSync.providers[tbSyncAccountSettings.provider].folderList.getRow(document, folderData[i], itemSelected));
             }
 
             //add/move row and update its content
             let addedItem = folderList.appendChild(nextItem);
-            tbSync.providers[tbSyncAccountSettings.provider].folderList.updateRow(document, addedItem, folderData[i]);
+            tbSync.providers[tbSyncAccountSettings.provider].folderList.updateRow(document, addedItem, folderData[i], folderData[i].getFolderSetting("selected"));
             
-            //update selbox
-            let selbox = document.getElementById("selbox_" + rowId);
-            if (folderData[i].selected) {
-                selbox.setAttribute("checked", true);
-            } else {
-                selbox.removeAttribute("checked");
+            //update selbox 
+            let selbox = addedItem.querySelector("[tbSyncSelectbox]");
+            if (selbox) {
+                if (folderData[i].getFolderSetting("selected") == "1") {
+                    selbox.setAttribute("checked", true);
+                } else {
+                    selbox.removeAttribute("checked");
+                }
+                
+                if (folderData[i].isSyncing()) {
+                    selbox.setAttribute("disabled", true);
+                } else {
+                    selbox.removeAttribute("disabled");
+                }
             }
 
             //ensureElementIsVisible also forces internal update of rowCount, which sometimes is not updated automatically upon appendChild
@@ -407,9 +429,9 @@ var tbSyncAccountSettings = {
         if (aFolderIsSelected) {
             let fID =  folderList.selectedItem.value;
             menupopup.setAttribute("folderID", fID);
-            let folder = tbSync.db.getFolder(tbSyncAccountSettings.account, fID, true);
+            let accountData = new tbSync.AccountData(tbSyncAccountSettings.account, fID);
             
-            tbSync.providers[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, folder);
+            tbSync.providers[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, accountData);
         } else {
             menupopup.setAttribute("folderID", "");
             tbSync.providers[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, null);

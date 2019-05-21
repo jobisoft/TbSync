@@ -87,10 +87,9 @@ var core = {
     },
    
     getNextPendingFolder: function (syncdata) {
-        //using getSortedData, to sync in the same order as shown in the list
-        let sortedFolders = tbSync.providers[syncdata.getAccountSetting("provider")].folderList.getSortedData(syncdata.account);
+        let sortedFolders = tbSync.providers[syncdata.getAccountSetting("provider")].api.getSortedFolders(syncdata);
         for (let i=0; i < sortedFolders.length; i++) {
-            if (sortedFolders[i].statusCode != "pending") continue;
+            if (sortedFolders[i].getFolderSetting("status") != "pending") continue;
             syncdata.folderID = sortedFolders[i].folderID;
             return true;
         }
