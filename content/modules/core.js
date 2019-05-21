@@ -16,7 +16,7 @@ var OwnerData = class {
     }
 }
 
-var AccountData = class { //rename to AccountDataObject
+var AccountData = class {
     constructor(accountID, folderID = "") {
         //internal (private, not to be touched by provider)
         this.account = accountID;
@@ -93,6 +93,10 @@ var AccountData = class { //rename to AccountDataObject
     }
 
 
+    getDefaultFolderEntries() {
+        return tbSync.providers.getDefaultFolderEntries(this.account);
+    }
+    
     getFolderSetting(field) {
         if (this.hasFolderData()) {
             return tbSync.db.getFolderSetting(this.account, this.folderID, field);

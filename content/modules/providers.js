@@ -141,6 +141,5 @@ var providers = {
         defaults.folderID = "";
 
         return defaults;
-    }
-    
+    },
 }
