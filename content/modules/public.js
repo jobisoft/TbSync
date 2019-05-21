@@ -92,7 +92,7 @@ var PasswordAuthData = class {
         return passwordAuth.getLoginInfo(origin, "TbSync", this.getUsername());
     }
     
-    setUsername(newUsername) { //updating just the username should also trigger an update of the LoginInfo, we need a removeLoginInfo function
+    setUsername(newUsername) { 
         this.accountData.setAccountSetting(this.userField, newUsername);        
     }
     
@@ -219,16 +219,10 @@ var SyncData = class extends AccountData {
         //internal (private, not to be touched by provider)
         this._syncstate = "";
 
-        // used by getSyncStatus (getter / setter )  ? 
-        //resetProcess(done, todo)
-        //incrementProcess(value)
-        //setProcess(value)
-     /*object 
-     process.reset(max)
-     process.inc(value)*/
+
      
-        this.todo = 0;   //check
-        this.done = 0;  //check
+        this.todo = 0;  
+        this.done = 0;  
     }
 
     //all functions provider should use should be in here
