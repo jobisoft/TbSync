@@ -150,6 +150,15 @@ var AccountData = class {
         return (this.folderID !== "");
     }
     
+    getAllFolders() {
+        let allFolders = [];
+        let folderIDs = Object.keys(tbSync.db.getFolders(this.account));
+        for (let i=0; i < folderIDs.length; i++) {          
+            allFolders.push(new tbSync.AccountData(this.account, folderIDs[i]));
+        }
+        return allFolders;
+    }
+    
     // get data objects
     get ownerData() {
         return new OwnerData(
