@@ -236,6 +236,50 @@ var AccountData = class {
         }
     }
 
+    getFolderStatus() {
+        let status = "";
+        
+        if (this.getFolderSetting("selected") == "1") {
+            //default
+            status = tbSync.getString("status." + this.getFolderSetting("status"), this.getAccountSetting("provider")).split("||")[0];
+
+            switch (this.getFolderSetting("status").split(".")[0]) { //the status may have a sub-decleration
+                case "success":
+                case "modified":
+                    switch (tbSync.providers[this.getAccountSetting("provider")].api.getThunderbirdFolderType(this.getFolderSetting("type"))) {
+                        case "tb-todo": 
+                        case "tb-event": 
+                            status = tbSync.lightning.isAvailable() ? status + ": "+ tbSync.lightning.getCalendarName(this.getFolderSetting("target")) : tbSync.getString("status.nolightning", this.getAccountSetting("provider"));
+                            break;
+                        case "tb-contact": 
+                            status =status + ": "+ tbSync.addressbook.getAddressBookName(this.getFolderSetting("target"));
+                            break;
+                    }
+                    break;
+                    
+                case "pending":
+                    //add extra info if this folder is beeing synced, there is no extra state for this, 
+                    //compare folderID with the actual SyncData
+                    let syncdata = this.getSyncData();
+                    if (syncdata.folderID == this.folderID) {
+                        status = tbSync.getString("status.syncing", syncdata.getAccountSetting("provider"));
+                        if (["send","eval","prepare"].includes(syncdata._syncstate.split(".")[0]) && (syncdata.progress.todo + syncdata.progress.done) > 0) {
+                            //add progress information
+                            status = status + " (" + syncdata.progress.done + (syncdata.progress.todo > 0 ? "/" + syncdata.progress.todo : "") + ")"; 
+                        }
+                    }
+                    break;            
+            }
+        } else {
+            //remain empty if not selected
+        }        
+
+        return status;
+    }
+
+    getSyncData() {
+        return tbSync.core.getSyncDataObject(this.account);
+    }
 }
 
 var ProgessData = class {
@@ -306,46 +350,6 @@ var SyncData = class extends AccountData {
     
     getSyncState() {
         return this._syncstate;
-    }
-        
-    getFolderStatus(folder) {
-        let status = "";
-        
-        if (folder.selected == "1") {
-            //default
-            status = tbSync.getString("status." + folder.status, this.getAccountSetting("provider")).split("||")[0];
-
-            switch (folder.status.split(".")[0]) { //the status may have a sub-decleration
-                case "success":
-                case "modified":
-                    switch (tbSync.providers[this.getAccountSetting("provider")].api.getThunderbirdFolderType(folder.type)) {
-                        case "tb-todo": 
-                        case "tb-event": 
-                            status = tbSync.lightning.isAvailable() ? status + ": "+ tbSync.lightning.getCalendarName(folder.target) : tbSync.getString("status.nolightning", this.getAccountSetting("provider"));
-                            break;
-                        case "tb-contact": 
-                            status =status + ": "+ tbSync.addressbook.getAddressBookName(folder.target);
-                            break;
-                    }
-                    break;
-                    
-                case "pending":
-                    if (folder.folderID == this.folderID) {
-                        //syncing (there is no extra state for this)
-                        status = tbSync.getString("status.syncing", this.getAccountSetting("provider"));
-                        if (["send","eval","prepare"].includes(this._syncstate.split(".")[0]) && (this.progress.todo + this.progress.done) > 0) {
-                            //add progress information
-                            status = status + " (" + this.progress.done + (this.progress.todo > 0 ? "/" + this.progress.todo : "") + ")"; 
-                        }
-                    }
-
-                    break;            
-            }
-        } else {
-            //remain empty if not selected
-        }        
-
-        return status;
     }
 }
 
