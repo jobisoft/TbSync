@@ -26,7 +26,7 @@ var PasswordAuthData = class {
         return authentication.getLoginInfo(origin, "TbSync", this.getUsername());
     }
     
-    setUsername(newUsername) {
+    setUsername(newUsername) { //updating just the username should also trigger an update of the LoginInfo, we need a removeLoginInfo function
         this.accountData.setAccountSetting(this.userField, newUsername);        
     }
     
@@ -37,7 +37,7 @@ var PasswordAuthData = class {
     }
 }
 
-var authentication = {
+var passwordAuth = {
 
     load: async function () {
     },
