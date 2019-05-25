@@ -135,7 +135,7 @@ var AccountData = class {
     constructor(accountID, folderID = "") {
         //internal (private, not to be touched by provider)
         this.account = accountID;
-        this.folderID = folderID;
+        this._folderID = folderID;
 
         if (tbSync.db.accounts.data.hasOwnProperty(accountID) == false ) {
             throw new Error("An account with ID <" + accountID + "> does not exist. Failed to create AccountData.");
@@ -148,6 +148,19 @@ var AccountData = class {
 
     hasFolderData() {
         return (this.folderID !== "");
+    }
+    
+    //no setter!
+    get folderID() {
+        return this._folderID;
+    }
+    
+    set folderID(v) {
+        try {
+            throw new Error("Cannot set folderID");
+        } catch (e) {
+            Components.utils.reportError(e);
+        }
     }
     
     getAllFolders() {

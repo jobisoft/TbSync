@@ -90,16 +90,16 @@ var core = {
         let sortedFolders = tbSync.providers[syncdata.getAccountSetting("provider")].api.getSortedFolders(syncdata);
         for (let i=0; i < sortedFolders.length; i++) {
             if (sortedFolders[i].getFolderSetting("status") != "pending") continue;
-            syncdata.folderID = sortedFolders[i].folderID;
+            syncdata._folderID = sortedFolders[i].folderID;
             return true;
         }
-        syncdata.folderID = "";
+        syncdata._folderID = "";
         return false;
     },
     
     syncSingleAccount: async function (job, syncdata) {
         //clear folderID of syncdata, just to make sure
-        syncdata.folderID = "";
+        syncdata._folderID = "";
         
         //check for default sync job
         if (job == "sync") {
@@ -292,7 +292,7 @@ var core = {
             syncdata.setFolderSetting("status", status);
             syncdata.setFolderSetting("lastsynctime", Date.now());
             //clear folderID to fall back to account-only-mode (folder is done!)
-            syncdata.folderID = "";
+            syncdata._folderID = "";
         } 
 
        syncdata.setSyncState("done");        
