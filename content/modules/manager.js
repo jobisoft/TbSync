@@ -127,5 +127,262 @@ var manager = {
 
         params.composeFields.addAttachment(attachment);        
         MailServices.compose.OpenComposeWindowWithParams (null, params);    
-    },    
+    },
+    
+    /**
+     * Functions used by the folderlist in the main account settings tab
+     */
+    DefaultFolderList : class {
+        constructor(provider) {
+            this.provider = provider
+        }
+        
+        /**
+         * Is called before the context menu of the folderlist is shown, allows to
+         * show/hide custom menu options based on selected folder
+         *
+         * @param document       [in] document object of the account settings window - element.ownerDocument - menuentry?
+         * @param accountData         [in] AccountData of the selected folder
+         */
+        onContextMenuShowing(document, accountData) {
+            return tbSync.providers[this.provider].standardFolderList.onContextMenuShowing(document, accountData);
+        }
+
+
+        /**
+         * Returns an array of attribute objects, which define the number of columns 
+         * and the look of the header
+         */
+        getHeader() {
+            return [
+                {style: "font-weight:bold;", label: "", width: "93"},
+                {style: "font-weight:bold;", label: tbSync.getString("manager.resource"), width:"150"},
+                {style: "font-weight:bold;", label: tbSync.getString("manager.status"), flex :"1"},
+            ]
+        }
+
+
+        /**
+         * Is called to add a row to the folderlist. After this call, updateRow is called as well.
+         *
+         * @param document        [in] document object of the account settings window
+         * @param accountData         [in] AccountData of the folder in the row
+         * @param itemSelCheckbox [in] a checkbox object which can be used to allow the user to select/deselect this resource
+         */        
+        getRow(document, accountData) { //TODO  
+            //create checkBox for select state
+            let itemSelCheckbox = document.createElement("checkbox");
+            itemSelCheckbox.setAttribute("updatefield", "selectbox");
+            itemSelCheckbox.setAttribute("style", "margin: 0px 0px 0px 3px;");
+            itemSelCheckbox.addEventListener("command", this.toggleFolder);
+
+            //icon
+            let itemType = document.createElement("image");
+            itemType.setAttribute("src", tbSync.providers[this.provider].standardFolderList.getTypeImage(accountData));
+            itemType.setAttribute("style", "margin: 0px 9px 0px 3px;");
+
+            //ACL
+            let roAttributes = tbSync.providers[this.provider].standardFolderList.getAttributesRoAcl(accountData);
+            let rwAttributes = tbSync.providers[this.provider].standardFolderList.getAttributesRwAcl(accountData);
+            let itemACL = document.createElement("button");
+            itemACL.setAttribute("image", "chrome://tbsync/skin/acl_" + (accountData.getFolderSetting("downloadonly") == "1" ? "ro" : "rw") + ".png");
+            itemACL.setAttribute("class", "plain");
+            itemACL.setAttribute("style", "width: 35px; min-width: 35px; margin: 0; height:26px");
+            itemACL.setAttribute("updatefield", "acl");
+            if (roAttributes && rwAttributes) {
+                itemACL.setAttribute("type", "menu");
+                let menupopup = document.createElement("menupopup");
+                {
+                    let menuitem = document.createElement("menuitem");
+                    menuitem.setAttribute("value", "0");
+                    menuitem.setAttribute("class", "menuitem-iconic");
+                    menuitem.setAttribute("image", "chrome://tbsync/skin/acl_rw2.png");
+                    menuitem.addEventListener("command", this.updateReadOnly);
+                    for (const [attr, value] of Object.entries(rwAttributes)) {
+                        menuitem.setAttribute(attr, value);
+                    }                    
+                    menupopup.appendChild(menuitem);
+                }
+                
+                {
+                    let menuitem = document.createElement("menuitem");
+                    menuitem.setAttribute("value", "1");
+                    menuitem.setAttribute("class", "menuitem-iconic");
+                    menuitem.setAttribute("image", "chrome://tbsync/skin/acl_ro2.png");
+                    menuitem.addEventListener("command", this.updateReadOnly);
+                    for (const [attr, value] of Object.entries(roAttributes)) {
+                        menuitem.setAttribute(attr, value);
+                    }                    
+                    menupopup.appendChild(menuitem);
+                }
+                itemACL.appendChild(menupopup);
+            }
+            
+            //folder name
+            let itemLabel = document.createElement("description");
+            itemLabel.setAttribute("updatefield", "name");
+
+            //status
+            let itemStatus = document.createElement("description");
+            itemStatus.setAttribute("updatefield", "status");
+            
+            //group1
+            let itemHGroup1 = document.createElement("hbox");
+            itemHGroup1.setAttribute("align", "center");
+            itemHGroup1.appendChild(itemSelCheckbox);
+            itemHGroup1.appendChild(itemType);
+            if (itemACL) itemHGroup1.appendChild(itemACL);
+
+            let itemVGroup1 = document.createElement("vbox");
+            itemVGroup1.setAttribute("width", "93");
+            itemVGroup1.appendChild(itemHGroup1);
+
+            //group2
+            let itemHGroup2 = document.createElement("hbox");
+            itemHGroup2.setAttribute("align", "center");
+            itemHGroup2.setAttribute("width", "146");
+            itemHGroup2.appendChild(itemLabel);
+
+            let itemVGroup2 = document.createElement("vbox");
+            itemVGroup2.setAttribute("style", "padding: 3px");
+            itemVGroup2.appendChild(itemHGroup2);
+
+            //group3
+            let itemHGroup3 = document.createElement("hbox");
+            itemHGroup3.setAttribute("align", "center");
+            itemHGroup3.setAttribute("width", "200");
+            itemHGroup3.appendChild(itemStatus);
+
+            let itemVGroup3 = document.createElement("vbox");
+            itemVGroup3.setAttribute("style", "padding: 3px");
+            itemVGroup3.appendChild(itemHGroup3);
+
+            //final row
+            let row = document.createElement("hbox");
+            row.setAttribute("style", "min-height: 24px;");
+            row.appendChild(itemVGroup1);
+            row.appendChild(itemVGroup2);            
+            row.appendChild(itemVGroup3);            
+            return row;               
+        }
+
+
+        toggleFolder(event) {
+            let element = event.target;
+            let folderList = element.ownerDocument.getElementById("tbsync.accountsettings.folderlist");
+            if (folderList.selectedItem !== null && !folderList.disabled) {
+                // the AccountData obj of the selected folder is attached to its row entry
+                let folder = folderList.selectedItem.folderData;
+
+                if (!folder.isEnabled())
+                    return;
+            
+                if (folder.getFolderSetting("selected") == "1") {
+                    if (folder.getFolderSetting("target") == "" || element.ownerDocument.defaultView.confirm(tbSync.getString("prompt.Unsubscribe"))) {
+                        //deselect folder
+                        folder.setFolderSetting("selected", "0");
+                        //remove folder, which will trigger the listener in tbsync which will clean up everything
+                        tbSync.core.removeTarget(folder); 
+                    } else {
+                        if (element) {
+                            //undo users action
+                            element.setAttribute("checked", true);
+                        }
+                    }
+                } else {
+                    //select and update status
+                    folder.setFolderSetting("selected", "1");
+                    folder.setFolderSetting("status", "aborted");
+                    folder.setAccountSetting("status", "notsyncronized");
+                }
+                Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folder.account);
+            }
+        }
+        
+        updateReadOnly(event) {
+            let element = event.target;
+            let folderList = element.ownerDocument.getElementById("tbsync.accountsettings.folderlist");
+            if (folderList.selectedItem !== null && !folderList.disabled) {
+                //the AccountData obj of the selected folder is attached to its row entry
+                let  folder = folderList.selectedItem.folderData;
+
+                //update value
+                let value = element.value;
+                folder.setFolderSetting("downloadonly", value);
+
+                //update icon
+                let button = element.parentNode.parentNode;
+                if (value == "0") {
+                    button.setAttribute('image','chrome://tbsync/skin/acl_rw.png');
+                } else {
+                    button.setAttribute('image','chrome://tbsync/skin/acl_ro.png');
+                }
+                    
+                //update ro flag if calendar
+                let type = folder.getFolderSetting("targetType");
+                switch (type) {
+                    case "addressbook":
+                        break;
+                    case "calendar":
+                        {
+                            let target = folder.getFolderSetting("target");
+                            if (target != "") {
+                                let calManager = cal.getCalendarManager();
+                                let targetCal = calManager.getCalendarById(target); 
+                                targetCal.setProperty("readOnly", value == '1');
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+
+        /**
+         * Is called to update a row of the folderlist (the first cell is a select checkbox inserted by TbSync)
+         *
+         * @param document       [in] document object of the account settings window
+         * @param listItem       [in] the listitem of the row, which needs to be updated
+         * @param accountData        [in] AccountData for that row
+         */        
+        updateRow(document, listItem, accountData) {
+            let name = accountData.getFolderSetting("name");
+            let status = accountData.getFolderStatus();
+            let selected = accountData.getFolderSetting("selected");
+            
+            // get updatefields
+            let fields = {}
+            for (let f of listItem.querySelectorAll("[updatefield]")) {
+                fields[f.getAttribute("updatefield")] = f;
+            }
+            
+            // update fields
+            fields.name.setAttribute("disabled", !selected);
+            fields.name.setAttribute("style", selected ? "" : "font-style:italic");
+            if (fields.name.textContent != name) fields.name.textContent = name;
+            
+            fields.status.setAttribute("style", selected ? "" : "font-style:italic");
+            if (fields.status.textContent != status) fields.status.textContent = status;
+            
+            if (fields.hasOwnProperty("acl")) {
+                fields.acl.setAttribute("image", "chrome://tbsync/skin/acl_" + (accountData.getFolderSetting("downloadonly") == "1" ? "ro" : "rw") + ".png");
+                fields.acl.setAttribute("disabled", accountData.isSyncing());
+            }
+            
+            // update selectbox
+            let selbox = fields.selectbox;
+            if (selbox) {
+                if (accountData.getFolderSetting("selected") == "1") {
+                    selbox.setAttribute("checked", true);
+                } else {
+                    selbox.removeAttribute("checked");
+                }
+                
+                if (accountData.isSyncing()) {
+                    selbox.setAttribute("disabled", true);
+                } else {
+                    selbox.removeAttribute("disabled");
+                }
+            }
+        }
+    }    
 }

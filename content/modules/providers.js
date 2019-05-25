@@ -52,6 +52,9 @@ var providers = {
                 Services.scriptloader.loadSubScript(js, this[provider], "UTF-8");
                 this.loadedProviders[provider].bundle = Services.strings.createBundle(this[provider].api.getStringBundleUrl());
 
+                // check if provider has its own implementation of folderList
+                if (!this[provider].hasOwnProperty("folderList")) this[provider].folderList = new tbSync.manager.DefaultFolderList(provider);
+                
                 //load provider
                 await this[provider].api.load(tbSync.lightning.isAvailable());
 
@@ -100,7 +103,8 @@ var providers = {
         //add system properties
         defaults.account = accountID;
         defaults.folderID = "";
-
+        defaults.targetType = "unset";
+        
         return defaults;
     },
 }

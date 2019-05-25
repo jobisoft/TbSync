@@ -318,6 +318,7 @@ var lightning = {
         
         //store id of calendar as target in DB
         accountData.setFolderSetting("target", newCalendar.id); 
+        accountData.setFolderSetting("targetType", "calendar"); 
         //accountData.setFolderSetting("targetName", newCalendar.name); 
        accountData.setFolderSetting("targetColor",  newCalendar.getProperty("color"));
         return true;        

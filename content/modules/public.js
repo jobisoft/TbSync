@@ -268,12 +268,11 @@ var AccountData = class {
             switch (this.getFolderSetting("status").split(".")[0]) { //the status may have a sub-decleration
                 case "success":
                 case "modified":
-                    switch (tbSync.providers[this.getAccountSetting("provider")].api.getThunderbirdFolderType(this.getFolderSetting("type"))) {
-                        case "tb-todo": 
-                        case "tb-event": 
+                    switch (this.getFolderSetting("targetType")) {
+                        case "calendar": 
                             status = tbSync.lightning.isAvailable() ? status + ": "+ tbSync.lightning.getCalendarName(this.getFolderSetting("target")) : tbSync.getString("status.nolightning", this.getAccountSetting("provider"));
                             break;
-                        case "tb-contact": 
+                        case "addressbook": 
                             status =status + ": "+ tbSync.addressbook.getAddressBookName(this.getFolderSetting("target"));
                             break;
                     }

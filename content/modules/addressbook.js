@@ -413,6 +413,8 @@ var addressbook = {
             tbSync.providers[provider].api.onResetTarget(accountData);
             
             accountData.setFolderSetting("target", directory.URI);
+            accountData.setFolderSetting("targetType", "addressbook");
+            
             //accountData.setFolderSetting("targetName", newname);
             //notify about new created address book
             Services.obs.notifyObservers(null, 'tbsync.observer.addressbook.created', null)
