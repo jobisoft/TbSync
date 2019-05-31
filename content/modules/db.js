@@ -268,31 +268,16 @@ var db = {
 
     // FOLDER FUNCTIONS
 
-    addFolder: function(account, data) {
-        let provider = this.getAccountSetting(account, "provider");
-
-        //create folder with default settings
-        let newFolderSettings = tbSync.providers.getDefaultFolderEntries(account);
+    addFolder: function(account) {
+        let folderID = tbSync.generateUUID();
+        let provider = this.getAccountSetting(account, "provider");        
         
-        //add custom settings
-        for (let d in data) {
-            if (data.hasOwnProperty(d)) {
-                newFolderSettings[d] = data[d];
-            }
-        }
-
-        //merge cached/persistent values (if there exists a folder with the given folderID)
-        let folder = this.getFolder(account, newFolderSettings.folderID);
-        if (folder !== null) {
-            let persistentSettings = tbSync.providers[provider].api.getPersistentFolderSettings();
-            for (let s=0; s < persistentSettings.length; s++) {
-                if (folder[persistentSettings[s]]) newFolderSettings[persistentSettings[s]] = folder[persistentSettings[s]];
-            }
-        }
-
         if (!this.folders.hasOwnProperty(account)) this.folders[account] = {};                        
-        this.folders[account][newFolderSettings.folderID] = newFolderSettings;
+        
+        //create folder with default settings
+        this.folders[account][folderID] = tbSync.providers.getDefaultFolderEntries(account);
         this.saveFolders();
+        return folderID;
     },
 
     deleteFolder: function(account, folderID) {
@@ -337,8 +322,12 @@ var db = {
     getFolderSetting: function(account, folderID, field) {
         //does the field exist?
         let folder = this.getFolder(account, folderID);
-        if (folder === null) throw "Unknown folder <"+folderID+">!";
-
+        if (folder === null) try {
+            throw "Unknown folder <"+folderID+">!";
+        } catch (e) {
+            Components.utils.reportError(e);
+        }
+        
         if (this.isValidFolderSetting(account, field)) {
             if (folder.hasOwnProperty(field)) {
                 return folder[field];
@@ -430,7 +419,7 @@ var db = {
                     for (let f = 0; f < folderFields.length && foldermatch; f++) {
                         foldermatch = folderValues[f].split(",").includes(this.getFolderSetting(aID, fID, folderFields[f]));
                     }
-                    if (foldermatch) data.push(this.folders[aID][fID]);
+                    if (foldermatch) data.push({accountID: aID, folderID: fID, data: this.folders[aID][fID]});
                 }
             }
         }

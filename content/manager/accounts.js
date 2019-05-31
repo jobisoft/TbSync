@@ -58,7 +58,7 @@ var tbSyncAccounts = {
                             case "addressbook": 
                                 {
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                    let addressbook = tbSync.addressbook.getAddressBookObject(targetId);
+                                    let addressbook = tbSync.addressbook.getDirectoryFromDirectoryUID(targetId);
                                     let oldresults = addressbook.getCardsFromProperty("PrimaryEmail", "debugcontact@inter.net", true);
                                     while (oldresults.hasMoreElements()) {
                                         let card = oldresults.getNext();
@@ -104,7 +104,7 @@ var tbSyncAccounts = {
                             case "addressbook": 
                                 {                            
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                    let addressbook = tbSync.addressbook.getAddressBookObject(targetId);
+                                    let addressbook = tbSync.addressbook.getDirectoryFromDirectoryUID(targetId);
                                     let oldresults = addressbook.getCardsFromProperty("PrimaryEmail", "debugcontact@inter.net", true);
                                     let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
                                     while (oldresults.hasMoreElements()) {
@@ -145,7 +145,7 @@ var tbSyncAccounts = {
                             case "addressbook": 
                                 { 
                                     let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                    let addressbook = tbSync.addressbook.getAddressBookObject(targetId);
+                                    let addressbook = tbSync.addressbook.getDirectoryFromDirectoryUID(targetId);
                                     //the two sets differ by number of contacts
                                     let max = (set == 1) ? 2 : 10;
                                     for (let m=0; m < max; m++) {

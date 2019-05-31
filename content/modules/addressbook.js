@@ -8,282 +8,108 @@
  
  "use strict";
  
-var addressbook = {
+var AbDirectoryData = class {
+    constructor(UID) {
+        this._directory = addressbook.getDirectoryFromDirectoryUID(UID);
+     }
 
-    load : function () {
-        //Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-created", false);
-        //Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-updated", false);
-        //Services.obs.addObserver(this.addressbookObserver, "addrbook-list-member-added", false);
-        //Services.obs.addObserver(this.addressbookObserver, "addrbook-list-updated", false);
-        //Services.obs.addObserver(this.addressbookObserver, "tbsync.observer.addrbook.listCreated", false);
-        //Services.obs.addObserver(this.addressbookObserver, "tbsync.observer.addrbook.cardCreated", false);
-        this.addressbookListener.add();
+    get UID() {
+        return this._directory.UID;
+    }
 
-        //missing
-        // addrbook-contact-deleted
-        // addrbook-list-created (do we need empty lists?)
-    },
-
-    unload : function () {
-            //Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-created");
-            //Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-updated");
-            //Services.obs.removeObserver(this.addressbookObserver, "addrbook-list-member-added");
-            //Services.obs.removeObserver(this.addressbookObserver, "addrbook-list-updated");
-            //Services.obs.removeObserver(this.addressbookObserver, "tbsync.observer.addrbook.listCreated");
-            //Services.obs.removeObserver(this.addressbookObserver, "tbsync.observer.addrbook.cardCreated");
-        
-            //remove listener
-            this.addressbookListener.remove();
-    },
-
-    /*addressbookObserver: {
-        observe: function (aSubject, aTopic, aData) {
-            Services.console.logStringMessage("[addressbookObserver] "  + aTopic);
-            Services.console.logStringMessage("[aSubject] "  + aSubject);
-            Services.console.logStringMessage("[aData] "  + aData);
-
-            //aData is UID of parent directory
-            let folders = tbSync.db.findFoldersWithSetting(["target"], [aData]);
-                if (folders.length == 1) {
-                    let provider = tbSync.db.getAccountSetting(folders[0].account, "provider");
-                    Services.console.logStringMessage("[addressbookObserver] mailingitem created "  + 
-                        "card UID: " + aItem.getProperty("UID", "") + "\n"  + 
-                        "mailListURI: " + aItem.mailListURI + "\n" + 
-                        provider);
-                }
-                
-            //aSubject is item
-            //aData is parent URI or UUID
-            
-            Services.console.logStringMessage("[addressbookObserver1] " + aSubject + " : " aSubject.getProperty("UID", "") + " : " + aSubject.uuid + " : " + aTopic + " : " + aData);
-        }
-    },*/
+    addCard(card) {
+        //if (card.constructor.name != "AbCardData") throw new Error("Wrong datatype");
+        tbSync.db.addItemToChangeLog(this._directory.UID, card.UID, "added_by_server");
+        this._directory.addCard(card._card);
+    }
     
-    addressbookListener: {
-
-        //if a contact in one of the synced books is modified, update status of target and account
-        onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
-            // change on book itself, or on card?
-            if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                let folders =  tbSync.db.findFoldersWithSetting(["target"], [aItem.URI]); //changelog is not used here, we should always catch these changes
-                if (folders.length == 1) {
-                    //store current/new name of target
-                    tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetName", tbSync.addressbook.getAddressBookName(folders[0].target));                         
-                    //update settings window, if open
-                     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folders[0].account);
-                }
-            }
-
-            if (aItem instanceof Components.interfaces.nsIAbCard) {
-                let aParentDirURI = tbSync.addressbook.getUriFromDirectoryId(aItem.directoryId);
-                if (aParentDirURI) { //could be undefined
-                    let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDirURI,"1"]);
-                    if (folders.length == 1) {
-
-                        let cardId = tbSync.addressbook.getPropertyOfCard(aItem, "TBSYNCID");
-                        
-                        if (aItem.isMailList) {
-                            if (cardId) {
-                                let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
-                                if (itemStatus == "locked_by_mailinglist_operations") {
-                                    //Mailinglist operations from the server side produce tons of notifications on the added/removed cards and
-                                    //we cannot precatch all of them, so a special lock mode (locked_by_mailinglist_operations) is used to
-                                    //disable notifications during these operations.
-                                    //The last step of such a Mailinglist operation is to actually write the modifications into the mailListCard,
-                                    //which will trigger THIS notification, which we use to unlock all cards again.
-                                    tbSync.db.removeAllItemsFromChangeLogWithStatus(aParentDirURI, "locked_by_mailinglist_operations");
-                                    
-                                    //We do not care at all about notifications for ML, because we get notifications for its members. The only
-                                    //purpose of locked_by_mailinglist_operations is to supress the local modification status when the server is
-                                    //updating mailinglists
-                                    
-                                    //We have to manually check on each sync, if the ML data actually changed.
-                                }
-                            }
-
-                        } else {
-                            //THIS CODE ONLY ACTS ON TBSYNC CARDS
-                            if (cardId) {
-                                //Problem: A card modified by server should not trigger a changelog entry, so they are pretagged with modified_by_server
-                                let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDirURI, cardId);
-                                if (itemStatus == "modified_by_server") {
-                                    tbSync.db.removeItemFromChangeLog(aParentDirURI, cardId);
-                                } else if (itemStatus != "locked_by_mailinglist_operations" && itemStatus != "added_by_user" && itemStatus != "added_by_server") { 
-                                    //added_by_user -> it is a local unprocessed add do not re-add it to changelog
-                                    //added_by_server -> it was just added by the server but our onItemAdd has not yet seen it, do not overwrite it - race condition - this local change is probably not caused by the user - ignore it?
-                                    tbSync.core.setTargetModified(folders[0]);
-                                    tbSync.db.addItemToChangeLog(aParentDirURI, cardId, "modified_by_user");
-                                }
-                            }
-                            //END
-
-                        }
-                    }
-                }
-            }
-        },
-
-        onItemRemoved: function addressbookListener_onItemRemoved (aParentDir, aItem) {
-            if (aParentDir instanceof Components.interfaces.nsIAbDirectory) {
-                aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
-            }
-
-            /* * *
-             * If a card is removed from the addressbook we are syncing, keep track of the
-             * deletions and log them to a file in the profile folder
-             */
-            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory) {
-                let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDir.URI,"1"]);
-                if (folders.length == 1) {
-                    
-                    //THIS CODE ONLY ACTS ON TBSYNC CARDS
-                    let cardId = tbSync.addressbook.getPropertyOfCard(aItem, "TBSYNCID");
-                    if (cardId) {
-                        //Problem: A card deleted by server should not trigger a changelog entry, so they are pretagged with deleted_by_server
-                        let itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
-                        if (itemStatus == "deleted_by_server" || itemStatus == "added_by_user") {
-                            //if it is a delete pushed from the server, simply acknowledge (do nothing) 
-                            //a local add, which has not yet been processed (synced) is deleted -> remove all traces
-                            tbSync.db.removeItemFromChangeLog(aParentDir.URI, cardId);
-                        } else {
-                            tbSync.db.addItemToChangeLog(aParentDir.URI, cardId, "deleted_by_user");
-                            tbSync.core.setTargetModified(folders[0]);
-                        }
-                    }
-                    //END
-                    
-                }
-            }
-
-            /* * *
-             * If the entire book we are currently syncing is deleted, remove it from sync and
-             * clean up change log
-             */
-            if (aItem instanceof Components.interfaces.nsIAbDirectory) {
-                //It should not be possible to link a book to two different accounts, so we just take the first target found
-                let folders =  tbSync.db.findFoldersWithSetting("target", aItem.URI);
-                if (folders.length == 1) {
-                    //delete any pending changelog of the deleted book
-                    tbSync.db.clearChangeLog(aItem.URI);			
-
-                    //unselect book if deleted by user (book is cached if delete during disable) and update settings window, if open
-                    if (folders[0].selected == "1" && folders[0].cached != "1") {
-                        tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "selected", "0");
-                        //update settings window, if open
-                         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folders[0].account);
-                    }
-                    
-                    tbSync.db.resetFolderSetting(folders[0].account, folders[0].folderID, "target");
-                }
-            }
-        },
-
-        onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {          
-            if (aParentDir instanceof Components.interfaces.nsIAbDirectory) {
-                aParentDir.QueryInterface(Components.interfaces.nsIAbDirectory);
-            }
-
-            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && aItem.isMailList) {
-                //tbSync.addressbook.addressbookObserver.observe(aItem, "tbsync-addrbook-list-created", aParentDir.URI);
-            }
-            
-            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
-                //tbSync.addressbook.addressbookObserver.observe(aItem, "tbsync-addrbook-card-created", aParentDir.URI);
-            }            
-
-            if (aItem instanceof Components.interfaces.nsIAbCard && aParentDir instanceof Components.interfaces.nsIAbDirectory && !aItem.isMailList) {
-                //we cannot set the ID of new lists before they are created, so we cannot detect this case
-                
-                let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aParentDir.URI,"1"]);
-                if (folders.length == 1) {
-
-                    //check if this is a temp search result card and ignore add
-                    let searchResultProvider = aItem.getProperty("X-Server-Searchresult", "");
-                    if (searchResultProvider) return;
-
-                    let itemStatus = null;
-                    let cardId = tbSync.addressbook.getPropertyOfCard (aItem, "TBSYNCID");
-                    if (cardId) {
-                        itemStatus = tbSync.db.getItemStatusFromChangeLog(aParentDir.URI, cardId);
-                        if (itemStatus == "added_by_server") {
-                            tbSync.db.removeItemFromChangeLog(aParentDir.URI, cardId);
-                            return;
-                        }
-                    }
-                                
-                    //if this point is reached, either new card (no TBSYNCID), or moved card (old TBSYNCID) -> reset TBSYNCID 
-                    //whatever happens, if this item has an entry in the changelog, it is not a new item added by the user
-                    // ^ THIS IS NOT TRUE!
-                    //          If a card is moved from one ab to another, it gets a "modified" notification 
-                    //          before it gets the "added" notification -> it has modified_by_user flag if this is reached!
-                    //          We must allow itemStatus !== null here as well
-                    let provider = tbSync.db.getAccountSetting(folders[0].account, "provider");
-                    tbSync.core.setTargetModified(folders[0]);
-                    //remove any changelog entries, if the card already had an ID and an entry
-                    if (cardId) {
-                        tbSync.db.removeItemFromChangeLog(aParentDir.URI, cardId);
-                    }
-                    let newCardID = tbSync.providers[provider].api.getNewCardID(aItem, folders[0]);
-                    tbSync.db.addItemToChangeLog(aParentDir.URI, newCardID, "added_by_user");
-                    
-                    //mailinglist aware property setter
-                    //this.setPropertyOfCard (aItem, "TBSYNCID", newCardID);
-                    //aParentDir.modifyCard(aItem);
-                }
-                
-            }
-        },
-
-        add: function addressbookListener_add () {
-            let flags = Components.interfaces.nsIAbListener;
-            MailServices.ab.addAddressBookListener(this, flags.all);
-        },
-
-        remove: function addressbookListener_remove () {
-            MailServices.ab.removeAddressBookListener(this);
+    modifyCard(card) {
+        if (/*syncdata.revert ||*/tbSync.db.getItemStatusFromChangeLog(this._directory.UID, card.UID) != "modified_by_user") {
+            tbSync.db.addItemToChangeLog(this._directory.UID, card.UID, "modified_by_server");
         }
-    },
-
-    //mailinglist aware method to get card based on a property (mailinglist properties need to be stored in prefs of parent book)
-    getCardFromProperty: function (addressBook, property, value) {
+        this._directory.modifyCard(card._card); 
+    }        
+    
+    deleteCard(card) {
+        let delArray = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+        delArray.appendElement(card._card, true);
+        this._directory.deleteCards(delArray);
+    }
+    
+    getCardFromProperty(property, value) {
         //try to use the standard contact card method first
-        let card = addressBook.getCardFromProperty(property, value, true);
+        let card = this._directory.getCardFromProperty(property, value, true);
         if (card) {
-            return card;
+            return new AbCardData(card);
         }
         
         //search for list cards
         let searchList = "(IsMailList,=,TRUE)";
-        let result = MailServices.ab.getDirectory(addressBook.URI +  "?(or" + searchList+")").childCards;
+        let result = MailServices.ab.getDirectory(this._directory.URI +  "?(or" + searchList+")").childCards;
         while (result.hasMoreElements()) {
-            let card = result.getNext().QueryInterface(Components.interfaces.nsIAbCard);
+            let card = new AbCardData(result.getNext().QueryInterface(Components.interfaces.nsIAbCard));
             //does this list card have the req prop?
-            if (this.getPropertyOfCard(card, property) == value) {
-                    return card;
+            if (card.getProperty(card, property) == value) {
+                    return new AbCardData(card);
             }
         }
         return null;
-    },
+    }
+}
+
+ var AbCardData = class {
+    constructor(aCard = null) {
+        if (aCard)
+            this._card = aCard;
+        else
+            this._card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
+    }
     
-    //mailinglist aware method to get properties of cards (mailinglist properties cannot be stored in mailinglists themselves)
-    getPropertyOfCard: function (card, property, fallback = "") {
-        if (card.isMailList) {
-            let value = tbSync.db.getItemStatusFromChangeLog(this.getUriFromDirectoryId(card.directoryId), card.mailListURI + "#" + property);
+    get UID() {
+        return this._card.UID;
+    }
+    
+    //mailinglist aware method to get properties of cards
+    //mailinglist properties cannot be stored in mailinglists themselves, so we store them in changelog
+    getProperty(property, fallback = "") {
+        if (this._card.isMailList) {
+            let value = tbSync.db.getItemStatusFromChangeLog(this._card.directoryId, this._card.UID + "#" + property);
             return value ? value : fallback;    
         } else {
-            return card.getProperty(property, fallback);
+            return this._card.getProperty(property, fallback);
         }
-    },
+    }
 
-    //mailinglist aware method to set properties of cards (mailinglist properties need to be stored in prefs of parent book)
-    setPropertyOfCard: function (card, property, value) {
-        if (card.isMailList) {
-            tbSync.db.addItemToChangeLog(this.getUriFromDirectoryId(card.directoryId), card.mailListURI + "#" + property, value);
+    //mailinglist aware method to set properties of cards
+    //mailinglist properties cannot be stored in mailinglists themselves, so we store them in changelog
+    setProperty(property, value) {
+        if (this._card.isMailList) {
+            tbSync.db.addItemToChangeLog(this._card.directoryId, this._card.UID + "#" + property, value);
         } else {
-            card.setProperty(property, value);
+            this._card.setProperty(property, value);
         }
-    },
+    }
     
+    deleteProperty(property) {
+        if (this._card.isMailList) {
+            tbSync.db.removeItemFromChangeLog(this._card.directoryId, this._card.UID + "#" + propert);
+        } else {
+            this._card.deleteProperty(property);
+        }
+    }
+}
+
+var AbListData = class {
+    constructor(aList) {
+        this._list = aList;
+    }
+    
+    get UID() {
+        return this._list.getProperty("UID","");
+    }
+    
+/*
+   
     createMailingListCard: function (addressBook, name, id) {
         //prepare new mailinglist directory
         let mailList = Components.classes["@mozilla.org/addressbook/directoryproperty;1"].createInstance(Components.interfaces.nsIAbDirectory);
@@ -312,49 +138,34 @@ var addressbook = {
         }
         return -1;
     },
+*/    
+}
 
-    removeBook: function (uri) { 
-        // get all address books
-        try {
-            if (MailServices.ab.getDirectory(uri) instanceof Components.interfaces.nsIAbDirectory) {
-                MailServices.ab.deleteAddressBook(uri);
-            }
-        } catch (e) {}
+
+var addressbook = {
+
+    delayedCreation: [],
+    
+    load : function () {
+        Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-created", false);
+        Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-updated", false);
+        Services.obs.addObserver(this.addressbookObserver, "addrbook-list-member-added", false);
+        Services.obs.addObserver(this.addressbookObserver, "addrbook-list-updated", false);
+        this.addressbookListener.add();
     },
 
-    changeNameOfBook: function (uri, newname) { 
-        let allAddressBooks = MailServices.ab.directories;
-        while (allAddressBooks.hasMoreElements()) {
-            let addressBook = allAddressBooks.getNext();
-            if (addressBook instanceof Components.interfaces.nsIAbDirectory && addressBook.URI == uri) {
-                let orig = addressBook.dirName;
-                addressBook.dirName = newname.replace("%ORIG%", orig);
-            }
-        }
+    unload : function () {
+            Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-created");
+            Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-updated");
+            Services.obs.removeObserver(this.addressbookObserver, "addrbook-list-member-added");
+            Services.obs.removeObserver(this.addressbookObserver, "addrbook-list-updated");
+            this.addressbookListener.remove();
     },
 
-    getAddressBookObject: function (uri) {
-        try {
-            let addressBook = MailServices.ab.getDirectory(uri);
-            if (addressBook instanceof Components.interfaces.nsIAbDirectory) {
-                return addressBook;
-            }
-        } catch (e) {}
-        return null;
-    },
-
-    getAddressBookName: function (uri) {
-        let allAddressBooks = MailServices.ab.directories;
-        while (allAddressBooks.hasMoreElements()) {
-            let addressBook = allAddressBooks.getNext();
-            if (addressBook instanceof Components.interfaces.nsIAbDirectory && addressBook.URI == uri) {
-                return addressBook.dirName;
-            }
-        }
-        return null;
-    },
-
+    
+    //deprecate!!!
     getUriFromDirectoryId : function(directoryId) {
+        //alternative: use UID only, loop over all directory to get the prefid, use MailServices.ab.getDirectoryFromId(dirId); to get the directoyr - do not use URLs anymore
         let prefId = directoryId.split("&")[0];
         if (prefId) {
             let prefs = Services.prefs.getBranch(prefId + ".");
@@ -365,14 +176,379 @@ var addressbook = {
         }
         return null;
     },
-        
+
+    getFolderFromDirectoryUID: function(bookUID) {
+        let folders = tbSync.db.findFoldersWithSetting(["target"], [bookUID]);
+        if (folders.length == 1) {
+            return new tbSync.AccountData(folders[0].accountID, folders[0].folderID);
+        }
+        return null;
+    },
+
+    removeBook: function (UID) { 
+        let directory = this.getDirectoryFromDirectoryUID(UID);
+        try {
+            if (directory) {
+                MailServices.ab.deleteAddressBook(directory.URI);
+            }
+        } catch (e) {}
+    },
+    
+    changeNameOfBook: function (UID, newname) { 
+        let directory = this.getDirectoryFromDirectoryUID(UID);
+        if (directory) {
+            let orig = directory.dirName;
+            directory.dirName = newname.replace("%ORIG%", orig);
+        }
+    },
+    
+    getDirectoryFromDirectoryUID: function(UID) {
+        let directories = MailServices.ab.directories;
+        while (directories.hasMoreElements()) {
+            let directory = directories.getNext();
+            if (directory instanceof Components.interfaces.nsIAbDirectory) {
+                if (directory.UID == UID) return directory;
+            }
+        }       
+        return null;
+    },
+    
+    // returns the card and the directory representation of this ML and also its parent
+    getListInfoFromUID: function(UID) {
+        let directories = MailServices.ab.directories;
+        while (directories.hasMoreElements()) {
+            let directory = directories.getNext();
+            if (directory instanceof Components.interfaces.nsIAbDirectory && !directory.isRemote) {
+                let searchList = "(IsMailList,=,TRUE)(UID,=,"+UID+")";
+                let result = MailServices.ab.getDirectory(directory.URI +  "?(and" + searchList+")").childCards;
+                if (result.hasMoreElements()) {
+                    let listCard = result.getNext().QueryInterface(Components.interfaces.nsIAbCard);
+                    let listDirectory = MailServices.ab.getDirectory(listCard.mailListURI);
+                    return {parentDirectory: directory, listCard: listCard, listDirectory: listDirectory};
+                }
+            }
+        }       
+        throw new Error("List with UID <" + UID + "> does not exists");
+    },
+    
+    addressbookObserver: {
+        observe: function (aSubject, aTopic, aData) {
+            Services.console.logStringMessage("[" + aTopic + "]");
+            switch (aTopic) {
+                // we do not need addrbook-created
+                case "addrbook-updated":
+                case "addrbook-removed":
+                {
+                    //aSubject: nsIAbDirectory (we can get URI and UID directly from the object, but the directory no longer exists)
+                    aSubject.QueryInterface(Components.interfaces.nsIAbDirectory);
+                    let bookUID = aSubject.UID;
+                    
+                    let folderData = tbSync.addressbook.getFolderFromDirectoryUID(bookUID);
+                    if (folderData && tbSync.providers.loadedProviders.hasOwnProperty(folderData.getAccountSetting("provider"))) {
+                        
+                        switch(aTopic) {
+                            case "addrbook-updated": 
+                            {
+                                //update name of target (if changed)
+                                folderData.setFolderSetting("targetName", aSubject.dirName);                         
+                                //update settings window, if open
+                                 Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folderData.account);
+                            }
+                            break;
+
+                            case "addrbook-removed": 
+                            {
+                                //delete any pending changelog of the deleted book
+                                tbSync.db.clearChangeLog(bookUID);			
+
+                                //unselect book if deleted by user (book is cached if delete during disable) and update settings window, if open
+                                if (folderData.getFolderSetting("selected") == "1" && folderData.getFolderSetting("cached") != "1") {
+                                    folderData.setFolderSetting("selected", "0");
+                                    //update settings window, if open
+                                    Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate",folderData.account);
+                                }
+                                
+                                folderData.resetFolderSetting("target");
+                            }
+                            break;
+                        }
+
+                        tbSync.providers[folderData.getAccountSetting("provider")].addressbook.directoryObserver(aTopic, folderData);                        
+                    }
+                }
+                break;             
+
+
+
+
+                case "addrbook-contact-created":
+                case "addrbook-contact-updated":
+                case "addrbook-contact-removed":
+                {
+                    Services.console.logStringMessage("[" + aTopic + "] " +  aSubject.UID);
+
+                    //aSubject: nsIAbCard
+                    aSubject.QueryInterface(Components.interfaces.nsIAbCard);
+                    //aData: 128-bit unique identifier for the parent directory
+                    let folderData = tbSync.addressbook.getFolderFromDirectoryUID(aData);
+                    
+                    if (folderData && tbSync.providers.loadedProviders.hasOwnProperty(folderData.getAccountSetting("provider"))) {
+                        
+                        // during create it could happen, that this card comes without a UID Property - bug 1554782
+                        if (aTopic == "addrbook-contact-created" && aSubject.getProperty("UID","") == "") {
+                            // a call to .UID will generate a UID but will also send an update notification for the the card
+                            addressbook.delayedCreation.push(aSubject.uuid); //uuid = directoryId+localId
+                            aSubject.UID;
+                            return;
+
+                        } else {
+                            let topic = aTopic;
+                            let abCardData = new tbSync.AbCardData(aSubject);
+                           
+                            //check for delayedCreation
+                            if (aTopic == "addrbook-contact-updated" && addressbook.delayedCreation.includes(aSubject.uuid)) {
+                                topic = "addrbook-contact-created";
+                                addressbook.delayedCreation = addressbook.delayedCreation.filter(item => item != aSubject.uuid);
+                            }
+                            
+                            let cardUID = aSubject.UID;
+                            let bookUID = aData;
+                            let itemStatus = tbSync.db.getItemStatusFromChangeLog(bookUID, cardUID);
+                            if (itemStatus && itemStatus.endsWith("_by_server")) {
+                                //we caused this, ignore
+                                tbSync.db.removeItemFromChangeLog(bookUID, cardUID);
+                                return;
+                            }
+                                
+                            Services.console.logStringMessage(" - [" + topic + "] " +  itemStatus);
+
+                            // update changelog based on old status
+                            if (folderData.getFolderSetting("useChangeLog") == "1") {
+                                switch (topic) {
+                                    case "addrbook-contact-created":
+                                    {
+                                        switch (itemStatus) {
+                                            case "added_by_user": 
+                                                // double notification, which is probably impossible, ignore
+                                                return;
+
+                                            case "modified_by_user": 
+                                                // late create notification
+                                                tbSync.db.addItemToChangeLog(bookUID, cardUID, "added_by_user");
+                                                break;
+
+                                            case "deleted_by_user":
+                                                // unprocessed delete for this card, undo the delete (moved out and back in)
+                                                tbSync.db.addItemToChangeLog(bookUID, cardUID, "modified_by_user");
+                                                break;
+                                            
+                                            default:
+                                                // new card
+                                                tbSync.db.addItemToChangeLog(bookUID, cardUID, "added_by_user");
+                                        }
+                                    }
+                                    break;
+
+                                    case "addrbook-contact-updated":
+                                    {
+                                        switch (itemStatus) {
+                                            case "added_by_user": 
+                                                // unprocessed add for this card, keep status
+                                                break;
+
+                                            case "modified_by_user": 
+                                                // double notification, keep status
+                                                break;
+
+                                            case "deleted_by_user":
+                                                // race? unprocessed delete for this card, moved out and back in and modified
+                                            default: 
+                                                tbSync.db.addItemToChangeLog(bookUID, cardUID, "modified_by_user");
+                                                break;
+                                        }
+                                    }
+                                    break;
+                                    
+                                    case "addrbook-contact-removed":
+                                    {
+                                        switch (itemStatus) {
+                                            case "added_by_user": 
+                                                // unprocessed add for this card, revert
+                                                tbSync.db.removeItemFromChangeLog(bookUID, cardUID);
+                                                return;
+
+                                            case "modified_by_user": 
+                                                // unprocessed mod for this card
+                                            case "deleted_by_user":
+                                                // double notification
+                                            default: 
+                                                tbSync.db.addItemToChangeLog(bookUID, cardUID, "deleted_by_user");
+                                                break;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+
+                            tbSync.core.setTargetModified(folderData);
+                            tbSync.providers[folderData.getAccountSetting("provider")].addressbook.cardObserver(topic, folderData, abCardData);
+                        }
+                    }
+                }
+                break;
+
+                
+
+
+                case "addrbook-list-created": 
+                case "addrbook-list-removed": 
+                {
+                    //aSubject: nsIAbCard (ListCard)
+                    aSubject.QueryInterface(Components.interfaces.nsIAbCard);
+                    let listUID = aSubject.UID;
+                    //aData: 128-bit unique identifier for the parent directory
+                    let folderData = tbSync.addressbook.getFolderFromDirectoryUID(aData);
+                    
+                    if (folderData && tbSync.providers.loadedProviders.hasOwnProperty(folderData.getAccountSetting("provider"))) {
+                        let abListData = new tbSync.AbListData(aSubject);
+                        
+                        // check changelog for pile up or other stuff - also do folderData.getFolderSetting("useChangeLog")
+                        //tbSync.providers[folderData.getAccountSetting("provider")].addressbook.listObserver(aTopic, folderData, abListData);
+                    }
+                }
+                break;
+
+                case "addrbook-list-updated": 
+                {
+                    //aSubject: nsIAbDirectory
+                    aSubject.QueryInterface(Components.interfaces.nsIAbDirectory);
+                    let listUID = aSubject.UID;
+                    
+                    // to get its parent, we need to do a global UID search, even though we have the directory already 
+                    // there is no save way to get the parent of a directory
+                    let listInfo = tbSync.addressbook.getListInfoFromUID(listUID);
+                    let folderData = tbSync.addressbook.getFolderFromDirectoryUID(listInfo.parentDirectory.UID);
+                    if (folderData && tbSync.providers.loadedProviders.hasOwnProperty(folderData.getAccountSetting("provider"))) {
+                        let abListData = new tbSync.AbListData(listInfo.listCard);
+                        
+                        // check changelog for pile up or other stuff - also do folderData.getFolderSetting("useChangeLog")
+                        //tbSync.providers[folderData.getAccountSetting("provider")].addressbook.listObserver(aTopic, folderData, abListData);
+                    }
+                }
+                break;
+                
+                // unknow, if called for programatically added members as well, probably not
+                case "addrbook-list-member-added": //exclude contact without Email - notification is wrongly send
+                case "addrbook-list-member-removed":
+                {
+                    //aSubject: nsIAbCard of Member
+                    aSubject.QueryInterface(Components.interfaces.nsIAbCard);
+                    //aData: 128-bit unique identifier for the list
+                    let listInfo = tbSync.addressbook.getListInfoFromUID(aData);
+
+                    let folderData = tbSync.addressbook.getFolderFromDirectoryUID(listInfo.parentDirectory.UID);
+                    if (folderData && tbSync.providers.loadedProviders.hasOwnProperty(folderData.getAccountSetting("provider"))) {
+                        let abListData = new tbSync.AbListData(listInfo.listCard);
+                        
+                        // check changelog for pile up or other stuff - also do folderData.getFolderSetting("useChangeLog")
+                        //tbSync.providers[folderData.getAccountSetting("provider")].addressbook.listObserver(aTopic, folderData, abListData);
+                    }
+                }
+                break;
+
+            }
+        }
+    },
+    
+
+    addressbookListener: {
+
+        onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
+            Services.console.logStringMessage("   [onItemPropertyChanged] " + aItem);
+
+            //redirect to addrbook-updated observers
+            if (aItem instanceof Components.interfaces.nsIAbDirectory
+                    && !aItem.isMailList) {
+                tbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-updated", null);
+            }
+        },
+
+        onItemRemoved: function addressbookListener_onItemRemoved (aParentDir, aItem) {
+            Services.console.logStringMessage("   [onItemRemoved] " + aItem + " / " + aParentDir);
+
+            // redirect to addrbook-list-member-removed observers 
+            // unsafe and buggy - see bug 1555294 - can be removed after that landed
+            if (aItem instanceof Components.interfaces.nsIAbCard
+                    && aParentDir instanceof Components.interfaces.nsIAbDirectory 
+                    && !aItem.isMailList
+                    && aParentDir.isMailList) {
+                tbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-list-member-removed", aParentDir.UID)
+            }
+
+            //redirect to addrbook-contact-removed observers
+            if (aItem instanceof Components.interfaces.nsIAbCard 
+                    && aParentDir instanceof Components.interfaces.nsIAbDirectory 
+                    && !aItem.isMailList
+                    && !aParentDir.isMailList) {
+                tbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-contact-removed", aParentDir.UID)
+            }
+
+            //redirect to addrbook-list-removed observers
+            if (aItem instanceof Components.interfaces.nsIAbCard 
+                    && aParentDir instanceof Components.interfaces.nsIAbDirectory 
+                    && aItem.isMailList
+                    && !aParentDir.isMailList) {
+                tbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-list-removed", aParentDir.UID)
+            }
+
+            //redirect to addrbook-removed observers
+            if (aItem instanceof Components.interfaces.nsIAbDirectory
+                    && !aItem.isMailList) {
+                tbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-removed", null)
+            }
+        },
+
+        onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {          
+            Services.console.logStringMessage("   [onItemAdded] " + aItem + " / " + aParentDir);
+
+            //redirect to addrbook-list-created observers
+            if (aItem instanceof Components.interfaces.nsIAbCard 
+                    && aParentDir instanceof Components.interfaces.nsIAbDirectory 
+                    && aItem.isMailList
+                    && !aParentDir.isMailList) {
+                tbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-list-created", aParentDir.UID)
+            } 
+            
+            //redirect to addrbook-contact-created observers
+            if (aItem instanceof Components.interfaces.nsIAbCard 
+                    && aParentDir instanceof Components.interfaces.nsIAbDirectory 
+                    && aItem.getProperty("UID","") == "" //detect the only case where the original addrbook-contact-created observer fails to notify
+                    && !aItem.isMailList
+                    && !aParentDir.isMailList) {
+                tbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-contact-created", aParentDir.UID)
+            } 
+        },
+
+        add: function addressbookListener_add () {
+            let flags = Components.interfaces.nsIAbListener;
+            MailServices.ab.addAddressBookListener(this, flags.all);
+        },
+
+        remove: function addressbookListener_remove () {
+            MailServices.ab.removeAddressBookListener(this);
+        }
+    },
+
+
+
+
+
     checkAddressbook: function (accountData) {
         let target = accountData.getFolderSetting("target");
-        let targetName = this.getAddressBookName(target);
-        let targetObject = this.getAddressBookObject(target);
+        let targetObject = this.getDirectoryFromDirectoryUID(target);
         let provider = accountData.getAccountSetting("provider");
         
-        if (targetName !== null && targetObject !== null && targetObject instanceof Components.interfaces.nsIAbDirectory) {
+        if (targetObject !== null && targetObject instanceof Components.interfaces.nsIAbDirectory) {
             //check for double targets - just to make sure
             let folders = tbSync.db.findFoldersWithSetting("target", target);
             if (folders.length == 1) {
@@ -384,11 +560,11 @@ var addressbook = {
         
         // Get cached or new unique name for new address book
         let cachedName = accountData.getFolderSetting("targetName");                         
-        let testname = cachedName == "" ? accountData.getAccountSetting("accountname") + " (" + accountData.getFolderSetting("name")+ ")" : cachedName;
+        let basename = cachedName == "" ? accountData.getAccountSetting("accountname") + " (" + accountData.getFolderSetting("name")+ ")" : cachedName;
 
         let count = 1;
         let unique = false;
-        let newname = testname;
+        let newname = basename;
         do {
             unique = true;
             let booksIter = MailServices.ab.directories;
@@ -400,7 +576,7 @@ var addressbook = {
                 }
             }
             if (!unique) {
-                newname = testname + " #" + count;
+                newname = basename + " #" + count;
                 count = count + 1;
             }
         } while (!unique);
@@ -412,10 +588,10 @@ var addressbook = {
             
             tbSync.providers[provider].api.onResetTarget(accountData);
             
-            accountData.setFolderSetting("target", directory.URI);
+            accountData.setFolderSetting("target", directory.UID);
             accountData.setFolderSetting("targetType", "addressbook");
             
-            //accountData.setFolderSetting("targetName", newname);
+            accountData.setFolderSetting("targetName", basename);
             //notify about new created address book
             Services.obs.notifyObservers(null, 'tbsync.observer.addressbook.created', null)
             return true;

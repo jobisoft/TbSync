@@ -158,7 +158,7 @@ var core = {
                 // set each folder with PENDING status to ABORTED
                 let folders = tbSync.db.findFoldersWithSetting("status", "pending", accounts.IDs[i]);
                 for (let f=0; f < folders.length; f++) {
-                    tbSync.db.setFolderSetting(accounts.IDs[i], folders[f].folderID, "status", "aborted");
+                    tbSync.db.setFolderSetting(folders[f].accountID, folders[f].folderID, "status", "aborted");
                 }
                 
                 //end current sync and switch to idle
@@ -167,12 +167,13 @@ var core = {
         }
     },
 
-    setTargetModified: function (folder) {
-        if (!this.isSyncing(folder.account) && this.isEnabled(folder.account)) {
-            tbSync.db.setAccountSetting(folder.account, "status", "notsyncronized");
-            tbSync.db.setFolderSetting(folder.account, folder.folderID, "status", "modified");
+    // this could be added to AccountData, but I do not want that in public
+    setTargetModified: function (accountData) {
+        if (!accountData.isSyncing() && accountData.isEnabled() && accountData.hasFolderData()) {
+            accountData.setAccountSetting("status", "notsyncronized");
+            accountData.setFolderSetting("status", "modified");
             //notify settings gui to update status
-             Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folder.account);
+             Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", accountData.account);
         }
     },
 
@@ -188,38 +189,6 @@ var core = {
             default:
                 tbSync.dump("tbSync.core.removeTarget","Unknown type <" + accountData.getFolderSetting("targetType") + ">");
         }
-    },
-    
-    //rename target, clear changelog (and remove from DB)
-    takeTargetOffline: function(provider, folder, suffix, deleteFolder = true) {
-        //decouple folder and target
-        let target = folder.target;
-        tbSync.db.resetFolderSetting(folder.account, folder.folderID, "target");
-
-        if (target != "") {
-            //if there are local changes, append an  (*) to the name of the target
-            let c = 0;
-            let a = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
-            for (let i=0; i<a.length; i++) c++;
-            if (c>0) suffix += " (*)";
-
-            //this is the only place, where we manually have to call clearChangelog, because the target is not deleted
-            //(on delete, changelog is cleared automatically)
-            tbSync.db.clearChangeLog(target);
-            if (suffix) {
-                switch (folders.targetType) {
-                    case "calendar":
-                        tbSync.lightning.changeNameOfCalendarAndDisable(target, "Local backup of: %ORIG% " + suffix);
-                        break;
-                    case "addressbook":
-                        tbSync.addressbook.changeNameOfBook(target, "Local backup of: %ORIG% " + suffix);
-                        break;
-                    default:
-                        tbSync.dump("tbSync.core.takeTargetOffline","Unknown type <"+folder.targetType+">");
-                }
-            }
-        }
-        if (deleteFolder) tbSync.db.deleteFolder(folder.account, folder.folderID);            
     },
     
     enableAccount: function(accountID) {
@@ -298,7 +267,7 @@ var core = {
         // set each folder with PENDING status to ABORTED
         let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncdata.account);
         for (let i=0; i < folders.length; i++) {
-            tbSync.db.setFolderSetting(syncdata.account, folders[i].folderID, "status", "aborted");
+            tbSync.db.setFolderSetting(folders[i].accountID, folders[i].folderID, "status", "aborted");
         }
         
         //if this is a success, prepend success to the status message, 
@@ -319,7 +288,7 @@ var core = {
             //account itself is ok, search for folders with error
             folders = tbSync.db.findFoldersWithSetting("selected", "1", syncdata.account);
             for (let i in folders) {
-                let folderstatus = folders[i].status.split(".")[0];
+                let folderstatus = folders[i].data.status.split(".")[0];
                 if (folderstatus != "" && folderstatus != tbSync.StatusData.SUCCESS && folderstatus != "aborted") {
                     status = "foldererror";
                     break;

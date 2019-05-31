@@ -158,7 +158,7 @@ var lightning = {
                     case "color":
                     case "name":
                         //update settings window, if open
-                        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folders[0].account);
+                        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folders[0].accountID);
                     break;
                 }
             }
@@ -239,11 +239,11 @@ var lightning = {
         
         //check if  there is a known/cached name, and use that as starting point to generate unique name for new calendar 
         let cachedName = accountData.getFolderSetting("targetName");                         
-        let testname = cachedName == "" ? accountData.getAccountSetting("accountname") + " (" + accountData.getFolderSetting("name") + ")" : cachedName;
+        let basename = cachedName == "" ? accountData.getAccountSetting("accountname") + " (" + accountData.getFolderSetting("name") + ")" : cachedName;
 
         let count = 1;
         let unique = false;
-        let newname = testname;
+        let newname = basename;
         do {
             unique = true;
             for (let calendar of calManager.getCalendars({})) {
@@ -253,7 +253,7 @@ var lightning = {
                 }
             }
             if (!unique) {
-                newname = testname + " #" + count;
+                newname = basename + " #" + count;
                 count = count + 1;
             }
         } while (!unique);
@@ -319,8 +319,8 @@ var lightning = {
         //store id of calendar as target in DB
         accountData.setFolderSetting("target", newCalendar.id); 
         accountData.setFolderSetting("targetType", "calendar"); 
-        //accountData.setFolderSetting("targetName", newCalendar.name); 
-       accountData.setFolderSetting("targetColor",  newCalendar.getProperty("color"));
+        accountData.setFolderSetting("targetName", basename);
+        accountData.setFolderSetting("targetColor",  newCalendar.getProperty("color"));
         return true;        
     }
     

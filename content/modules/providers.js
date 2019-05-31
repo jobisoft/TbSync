@@ -8,6 +8,47 @@
  
  "use strict";
  
+ var ProviderData = class {
+    constructor(provider) {
+        if (!tbSync.providers.hasOwnProperty(provider)) {
+            throw new Error("Provider <" + provider + "> has not been loaded. Failed to create ProviderData.");
+        }
+        this.provider = provider;
+    }
+    
+    getVersion() {
+        return tbSync.providers.loadedProviders[this.provider].version;
+    }
+    
+    getStringBundle() {
+        return tbSync.providers.loadedProviders[this.provider].bundle;
+    }
+    
+    getAllAccounts() {
+        let accounts = tbSync.db.getAccounts();
+        let allAccounts = [];
+        for (let i=0; i<accounts.IDs.length; i++) {
+            let accountID = accounts.IDs[i];
+            if (accounts.data[accountID].provider == this.provider) {
+                allAccounts.push(new tbSync.AccountData(accountID));
+            }
+        }
+        return allAccounts;
+    }
+    
+    getDefaultAccountEntries() {
+        return  tbSync.providers.getDefaultAccountEntries(this.provider)
+    }
+    
+    addAccount(accountName, accountOptions) {
+        let newAccountID = tbSync.db.addAccount(accountName, accountOptions);
+        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountsList", newAccountID);
+        return new tbSync.AccountData(newAccountID);        
+    }
+}
+
+// ****************************************************************************
+
 var providers = {
 
     //list of default providers (available in add menu, even if not installed)
@@ -102,8 +143,9 @@ var providers = {
         
         //add system properties
         defaults.account = accountID;
-        defaults.folderID = "";
         defaults.targetType = "unset";
+        defaults.cached = "0";
+        defaults.selected = "0";
         
         return defaults;
     },

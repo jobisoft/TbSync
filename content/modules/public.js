@@ -21,6 +21,7 @@ var dump = function (what, aMessage) {
 }
     
 // get localized string from core or provider (if possible)
+// TODO: move as many locales from provider to tbsync
 var getString = function (msg, provider) {
     let success = false;
     let localized = msg;
@@ -55,6 +56,11 @@ var getString = function (msg, provider) {
     return localized;
 }
 
+var generateUUID = function () {
+    const uuidGenerator  = Cc["@mozilla.org/uuid-generator;1"].getService(Ci.nsIUUIDGenerator);
+    return uuidGenerator.generateUUID().toString().replace(/[{}]/g, '');
+}
+    
 // promisified implementation AddonManager.getAddonByID() (only needed in TB60)
 var getAddonByID = async function (id) {
     return new Promise(function(resolve, reject) {
@@ -90,46 +96,6 @@ var OwnerData = class {
     }
 }
 
-var PasswordAuthData = class {
-    constructor(accountData) {
-        this.accountData = accountData;
-        this.provider = accountData.getAccountSetting("provider");
-        this.userField = tbSync.providers[this.provider].auth.getUserField4PasswordManager(accountData);
-        this.hostField = tbSync.providers[this.provider].auth.getHostField4PasswordManager(accountData);
-    }
-    
-    getUsername() {
-        return this.accountData.getAccountSetting(this.userField);
-    }
-    
-    getPassword() {
-        let host = this.accountData.getAccountSetting(this.hostField)
-        let origin = passwordAuth.getOrigin4PasswordManager(this.provider, host);
-        return passwordAuth.getLoginInfo(origin, "TbSync", this.getUsername());
-    }
-    
-    setUsername(newUsername) {
-        // as updating the username is a bit more work, only do it, if it changed
-        if (newUsername != this.getUsername()) {        
-            let host = this.accountData.getAccountSetting(this.hostField)
-            let origin = passwordAuth.getOrigin4PasswordManager(this.provider, host);
-
-            //temp store the old password, as we have to remove the current entry from the password manager
-            let oldPassword = this.getPassword();
-            // try to remove the current/old entry
-            passwordAuth.removeLoginInfo(origin, "TbSync", this.getUsername())
-            //update username
-            this.accountData.setAccountSetting(this.userField, newUsername);
-            passwordAuth.setLoginInfo(origin, "TbSync", newUsername, oldPassword);
-        }
-    }
-    
-    setPassword(newPassword) {
-        let host = this.accountData.getAccountSetting(this.hostField)
-        let origin = passwordAuth.getOrigin4PasswordManager(this.provider, host);
-        passwordAuth.setLoginInfo(origin, "TbSync", this.getUsername(), newPassword);
-    }
-}
 
 var AccountData = class {
     constructor(accountID, folderID = "") {
@@ -137,7 +103,7 @@ var AccountData = class {
         this.account = accountID;
         this._folderID = folderID;
 
-        if (tbSync.db.accounts.data.hasOwnProperty(accountID) == false ) {
+        if (!tbSync.db.accounts.data.hasOwnProperty(accountID)) {
             throw new Error("An account with ID <" + accountID + "> does not exist. Failed to create AccountData.");
         }
 
@@ -161,6 +127,23 @@ var AccountData = class {
         } catch (e) {
             Components.utils.reportError(e);
         }
+    }
+    
+    
+    getFolder(setting, value) {
+        let folders = tbSync.db.findFoldersWithSetting([setting, "cached"], [value, "0"], "account", this.account);
+        if (folders.length > 0) return new tbSync.AccountData(folders[0].accountID, folders[0].folderID);
+        return null;
+    }
+
+    getFolderFromCache(setting, value) {
+        let folders = tbSync.db.findFoldersWithSetting([setting, "cached"], [value, "1"], "account", this.account);
+        if (folders.length > 0) return new tbSync.AccountData(folders[0].accountID, folders[0].folderID);
+        return null;
+    }
+    
+    createNewFolder() {
+        return new tbSync.AccountData(this.account, tbSync.db.addFolder(this.account));
     }
     
     getAllFolders() {
@@ -258,6 +241,38 @@ var AccountData = class {
         }
     }
 
+    //rename target, clear changelog (and remove from DB)
+    takeTargetOffline(suffix, deleteFolder = true) {
+        //decouple folder and target
+        let target = this.getFolderSetting("target");
+        this.resetFolderSetting("target");
+
+        if (target != "") {
+            //if there are local changes, append an  (*) to the name of the target
+            let c = 0;
+            let a = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
+            for (let i=0; i<a.length; i++) c++;
+            if (c>0) suffix += " (*)";
+
+            //this is the only place, where we manually have to call clearChangelog, because the target is not deleted
+            //(on delete, changelog is cleared automatically)
+            tbSync.db.clearChangeLog(target);
+            if (suffix) {
+                switch (this.getFolderSetting("targetType")) {
+                    case "calendar":
+                        tbSync.lightning.changeNameOfCalendarAndDisable(target, "Local backup of: %ORIG% " + suffix);
+                        break;
+                    case "addressbook":
+                        tbSync.addressbook.changeNameOfBook(target, "Local backup of: %ORIG% " + suffix);
+                        break;
+                    default:
+                        throw new Error ("takeTargetOffline: Unknown type <"+this.getFolderSetting("targetType")+">");
+                }
+            }
+        }
+        if (deleteFolder) tbSync.db.deleteFolder(this.account, this.folderID);            
+    }
+    
     getFolderStatus() {
         let status = "";
         
@@ -273,7 +288,7 @@ var AccountData = class {
                             status = tbSync.lightning.isAvailable() ? status + ": "+ tbSync.lightning.getCalendarName(this.getFolderSetting("target")) : tbSync.getString("status.nolightning", this.getAccountSetting("provider"));
                             break;
                         case "addressbook": 
-                            status =status + ": "+ tbSync.addressbook.getAddressBookName(this.getFolderSetting("target"));
+                            status =status + ": "+ tbSync.addressbook.getDirectoryFromDirectoryUID(this.getFolderSetting("target")).dirName;
                             break;
                     }
                     break;
@@ -301,7 +316,27 @@ var AccountData = class {
     getSyncData() {
         return tbSync.core.getSyncDataObject(this.account);
     }
+    
+    getTarget() {
+        if (this.hasFolderData()) {
+            switch (this.getFolderSetting("targetType")) {
+                case "calendar": 
+                    if (tbSync.lightning.isAvailable()) {
+                        return cal.getCalendarManager().getCalendarById(this.getFolderSetting("target"));
+                    }
+                    break;
+                    
+                case "addressbook": 
+                    return new tbSync.AbDirectoryData(this.getFolderSetting("target"));
+            }
+        }
+        
+        return null;
+    }
 }
+
+
+
 
 var ProgessData = class {
     constructor() {
@@ -374,41 +409,4 @@ var SyncData = class extends AccountData {
     }
 }
 
-var ProviderData = class {
-    constructor(provider) {
-        if (!tbSync.providers.hasOwnProperty(provider)) {
-            throw new Error("Provider <" + provider + "> has not been loaded. Failed to create ProviderData.");
-        }
-        this.provider = provider;
-    }
-    
-    getVersion() {
-        return tbSync.providers.loadedProviders[this.provider].version;
-    }
-    
-    getStringBundle() {
-        return tbSync.providers.loadedProviders[this.provider].bundle;
-    }
-    
-    getAllAccounts() {
-        let accounts = tbSync.db.getAccounts();
-        let allAccounts = [];
-        for (let i=0; i<accounts.IDs.length; i++) {
-            let accountID = accounts.IDs[i];
-            if (accounts.data[accountID].provider == this.provider) {
-                allAccounts.push(new tbSync.AccountData(accountID));
-            }
-        }
-        return allAccounts;
-    }
-    
-    getDefaultAccountEntries() {
-        return  tbSync.providers.getDefaultAccountEntries(this.provider)
-    }
-    
-    addAccount(accountName, accountOptions) {
-        let newAccountID = tbSync.db.addAccount(accountName, accountOptions);
-        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountsList", newAccountID);
-        return new tbSync.AccountData(newAccountID);        
-    }
-}
+
