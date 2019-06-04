@@ -175,15 +175,15 @@ var addressbook = {
             if (this.changeLogKey && /*syncdata.revert ||*/  abCard.changelogStatus != "modified_by_user") {
                 abCard.changelogStatus = "modified_by_server";
             }
-            this._directory.modifyCard(card._card); 
+            this._directory.modifyCard(abCard._card); 
         }        
         
-        deleteCard(card) {
+        deleteCard(abCard) {
             if (this.changeLogKey) {
                abCard.changelogStatus = "deleted_by_server";
             }
             let delArray = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-            delArray.appendElement(card._card, true);
+            delArray.appendElement(abCard._card, true);
             this._directory.deleteCards(delArray);
         }
         
@@ -227,21 +227,17 @@ var addressbook = {
             }
             return [];
         }
-
-        _regroup(obj) {
-            let newObj = {};
-            newObj.id = obj.id;
-            newObj.status = obj.status;
-            let card = this.getCardFromProperty(this.changeLogKey, obj.id);
-            newObj.card = card ? card : null
-            return newObj;
-        }
         
         getItemsFromChangeLog(maxitems = 0) {             
+            let changes = [];
             if (this.changeLogKey) {
-                return tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "_by_user").map(this._regroup);
+                let dbChanges = tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "_by_user");
+                for (let change of dbChanges) {
+                    change.card = this.getCardFromProperty(this.changeLogKey, change.id);
+                    changes.push(change);
+                }
             }
-            return [];
+            return changes;
         }
 
         removeItemFromChangeLog(id) {             
@@ -263,8 +259,12 @@ var addressbook = {
             return this._targetType;
         }
         
+        checkTarget() {
+            return tbSync.addressbook.checkAddressbook(this._folderData);
+        }
+
         getTarget() {
-            let directory = tbSync.addressbook.getAddressbook(this._folderData);
+            let directory = tbSync.addressbook.checkAddressbook(this._folderData);
             
             if (!directory) {
                 // create a new addressbook and store its UID in folderData
@@ -280,7 +280,7 @@ var addressbook = {
         }
         
         removeTarget() {
-            let directory = tbSync.addressbook.getAddressbook(this._folderData);
+            let directory = tbSync.addressbook.checkAddressbook(this._folderData);
             try {
                 if (directory) {
                     MailServices.ab.deleteAddressBook(directory.URI);
@@ -290,7 +290,7 @@ var addressbook = {
         }
         
         decoupleTarget(suffix, cacheFolder = false) {
-            let directory = tbSync.addressbook.getAddressbook(this._folderData);
+            let directory = tbSync.addressbook.checkAddressbook(this._folderData);
 
             if (directory) {
                 // decouple directory from the connected folder
@@ -350,7 +350,7 @@ var addressbook = {
     
     getDirectoryFromDirectoryUID: function(UID) {
         let directories = MailServices.ab.directories;
-        while (directories.hasMoreElements()) {
+        while (UID && directories.hasMoreElements()) {
             let directory = directories.getNext();
             if (directory instanceof Components.interfaces.nsIAbDirectory) {
                 if (directory.UID == UID) return directory;
@@ -691,17 +691,19 @@ var addressbook = {
 
 
 
-    getAddressbook: function (folderData) {
-        let target = folderData.getFolderSetting("target");
-        let directory = this.getDirectoryFromDirectoryUID(target);
-        
-        if (directory !== null && directory instanceof Components.interfaces.nsIAbDirectory) {
-            //check for double targets - just to make sure
-            let folders = tbSync.db.findFoldersWithSetting(["target", "cached"], [target, "0"], "account", folderData.accountID);
-            if (folders.length == 1) {
-                return directory;
-            } else {
-                throw "Target with multiple source folders found! Forcing hard fail ("+target+")."; 
+    checkAddressbook: function (folderData) {
+        if (folderData.getFolderSetting("cached") != "1") {
+            let target = folderData.getFolderSetting("target");
+            let directory = this.getDirectoryFromDirectoryUID(target);
+            
+            if (directory !== null && directory instanceof Components.interfaces.nsIAbDirectory) {
+                //check for double targets - just to make sure
+                let folders = tbSync.db.findFoldersWithSetting(["target", "cached"], [target, "0"], "account", folderData.accountID);
+                if (folders.length == 1) {
+                    return directory;
+                } else {
+                    throw "Target with multiple source folders found! Forcing hard fail ("+target+")."; 
+                }
             }
         }
         

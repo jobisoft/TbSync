@@ -100,25 +100,25 @@ var FolderData = class {
     get targetData() {
         // targetData can not be set during construction, because targetType has not been set 
         // create it on the fly - re-create it, if targetType changed
-        if (this._target && this._target.targetType == this.getFolderSetting("targetType")) {
-            return this._target;
-        } else {
+        if (!this._target || this._target.targetType != this.getFolderSetting("targetType")) {
             switch (this.getFolderSetting("targetType")) {
                 case "":
                     throw new Error("Property <targetType> not set for this folder.");
                 
                 case "calendar":
-                    return new tbSync.lightning.TargetData(this);
+                    this._target = new tbSync.lightning.TargetData(this);
                     break;
 
                 case "addressbook":
-                    return new tbSync.addressbook.TargetData(this);
+                    this._target = new tbSync.addressbook.TargetData(this);
                     break;
 
                 default:
-                    return new tbSync.providers[this.accountData.getAccountSetting("provider")].targets[this.getFolderSetting("targetType")].TargetData(this);
+                    this._target = new tbSync.providers[this.accountData.getAccountSetting("provider")].targets[this.getFolderSetting("targetType")].TargetData(this);
             }
         }
+        
+        return this._target;
     }
 }
 
@@ -458,12 +458,12 @@ var core = {
     },
     
     // this could be added to AccountData, but I do not want that in public
-    setTargetModified: function (accountData) {
-        if (!accountData.isSyncing() && accountData.isEnabled() && accountData.hasFolderData()) {
-            accountData.setAccountSetting("status", "notsyncronized");
-            accountData.setFolderSetting("status", "modified");
+    setTargetModified: function (folderData) {
+        if (!folderData.accountData.isSyncing() && folderData.accountData.isEnabled()) {
+            folderData.accountData.setAccountSetting("status", "notsyncronized");
+            folderData.setFolderSetting("status", "modified");
             //notify settings gui to update status
-             Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", accountData.accountID);
+             Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folderData.accountID);
         }
     },
     

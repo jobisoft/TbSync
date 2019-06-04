@@ -324,7 +324,8 @@ var manager = {
                         break;
                     case "calendar":
                         {
-                            let target = folder.targetData.getTarget();
+                            // get it, if it exists, does not create it
+                            let target = folder.targetData.checkTarget();
                             if (target) {
                                 target.setProperty("readOnly", value == '1');
                             }

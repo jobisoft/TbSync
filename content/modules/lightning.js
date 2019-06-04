@@ -66,8 +66,12 @@ var lightning = {
             return this._targetType;
         }
         
+        checkTarget() {
+            return tbSync.lightning.checkCalendar(this._folderData);
+        }
+
         getTarget() {
-            let calendar = tbSync.lightning.getCalender(this._folderData);
+            let calendar = tbSync.lightning.checkCalendar(this._folderData);
             
             if (!calendar) {
                 calendar = tbSync.lightning.createCalender(this._folderData);
@@ -79,16 +83,16 @@ var lightning = {
         }
         
         removeTarget() {
-            let calendar = tbSync.lightning.getCalender(this._folderData);
+            let calendar = tbSync.lightning.checkCalendar(this._folderData);
             try {
-                if (calendar !== null) {
-                    cal.getCalendarManager().removeCalendar(targetCal);
+                if (calendar) {
+                    cal.getCalendarManager().removeCalendar(calendar);
                 }
             } catch (e) {}
         }
         
         decoupleTarget(suffix, cacheFolder = false) {
-            let calendar = tbSync.lightning.getCalender(this._folderData);
+            let calendar = tbSync.lightning.checkCalendar(this._folderData);
 
             if (calendar) {
                 // decouple directory from the connected folder
@@ -245,7 +249,7 @@ var lightning = {
                 tbSync.db.clearChangeLog(aCalendar.id);
 
                 //unselect calendar if deleted by user (calendar is cached if delete during disable) and update settings window, if open
-                if (folders[0].selected == "1" && folders[0].cached != "1") {
+                if (folders[0].data.selected == "1" && folders[0].data.cached != "1") {
                     tbSync.db.setFolderSetting(folders[0].accountID, folders[0].folderID, "selected", "0");
                     //update settings window, if open
                     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folders[0].accountID);
@@ -257,21 +261,22 @@ var lightning = {
     },
 
     
-    getCalender: function (folderData) {       
-        let target = folderData.getFolderSetting("target");
-        let calManager = cal.getCalendarManager();
-        let targetCal = calManager.getCalendarById(target);
-        
-        if (targetCal !== null)  {
-            //check for double targets - just to make sure
-            let folders = tbSync.db.findFoldersWithSetting(["target", "cached"], [target, "0"], "account", folderData.accountID);
-            if (folders.length == 1) {
-                return targetCal;
-            } else {
-                throw "Target with multiple source folders found! Forcing hard fail (" + target +" )."; 
+    checkCalendar: function (folderData) {       
+        if (folderData.getFolderSetting("cached") != "1") {
+            let target = folderData.getFolderSetting("target");
+            let calManager = cal.getCalendarManager();
+            let targetCal = calManager.getCalendarById(target);
+            
+            if (targetCal !== null)  {
+                //check for double targets - just to make sure
+                let folders = tbSync.db.findFoldersWithSetting(["target", "cached"], [target, "0"], "account", folderData.accountID);
+                if (folders.length == 1) {
+                    return targetCal;
+                } else {
+                    throw "Target with multiple source folders found! Forcing hard fail (" + target +" )."; 
+                }
             }
         }
-        
         return null;
     },
     
