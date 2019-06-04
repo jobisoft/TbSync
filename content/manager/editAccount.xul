@@ -25,7 +25,7 @@
             class="menuitem-iconic"
             image="chrome://tbsync/skin/warning16.png"
             label="&manager.ShowErrorLog;"
-            oncommand="tbSync.errorlog.open(tbSyncAccountSettings.account, this.parentNode.getAttribute('folderID'));"/>
+            oncommand="tbSync.errorlog.open(tbSyncAccountSettings.accountID, this.parentNode.getAttribute('folderID'));"/>
         </menupopup>
     </popupset>
     
@@ -71,14 +71,14 @@
                                 <hbox flex="1" align="center" pack="end">
                                     <description style="text-align:right" flex="1" control="tbsync.accountsettings.pref.autosync" tooltiptext="&manager.tabs.status.never;">&manager.tabs.status.autotime;</description>
                                     <textbox style="width:50px;margin-bottom:0; margin-top:0" id="tbsync.accountsettings.pref.autosync" tooltiptext="&manager.tabs.status.never;" />
-                                    <button id="tbsync.accountsettings.syncbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.sync;" oncommand="tbSync.core.syncAccount('sync', tbSyncAccountSettings.account)" />
+                                    <button id="tbsync.accountsettings.syncbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.sync;" oncommand="tbSync.core.syncAccount('sync', tbSyncAccountSettings.accountID)" />
                                 </hbox>
                             </vbox>
                         </vbox>
                     </vbox>
 
                     <hbox id="tbsync.accountsettings.connectbtn.container" flex="0" style="margin:1ex 0 0 0;" pack="end">
-                        <button id="tbsync.accountsettings.connectbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.tryagain;" oncommand="tbSync.core.syncAccount('sync', tbSyncAccountSettings.account)" />
+                        <button id="tbsync.accountsettings.connectbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.tryagain;" oncommand="tbSync.core.syncAccount('sync', tbSyncAccountSettings.accountID)" />
                     </hbox>
         
                 </vbox>

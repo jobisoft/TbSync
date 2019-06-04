@@ -12,8 +12,8 @@ var PasswordAuthData = class {
     constructor(accountData) {
         this.accountData = accountData;
         this.provider = accountData.getAccountSetting("provider");
-        this.userField = tbSync.providers[this.provider].auth.getUserField4PasswordManager(accountData);
-        this.hostField = tbSync.providers[this.provider].auth.getHostField4PasswordManager(accountData);
+        this.userField = tbSync.providers[this.provider].passwordAuth.getUserField4PasswordManager(accountData);
+        this.hostField = tbSync.providers[this.provider].passwordAuth.getHostField4PasswordManager(accountData);
     }
     
     getUsername() {

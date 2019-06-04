@@ -42,6 +42,11 @@ var network = {
         let idx = mainWindow._containers.indexOf(username);
         return (idx == -1) ? mainWindow._containers.push(username) - 1 + min : (idx + min);
     },
+    
+    resetContainerForUser: function(username) {
+        let id = this.getContainerIdForUser(username);
+        Services.obs.notifyObservers(null, "clear-origin-attributes-data", JSON.stringify({ userContextId: id }));
+    },
 
     createTCPErrorFromFailedXHR: function (xhr) {
         return this.createTCPErrorFromFailedRequest(xhr.channel.QueryInterface(Components.interfaces.nsIRequest));

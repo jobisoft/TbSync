@@ -7,7 +7,7 @@
  */
  
  "use strict";
- 
+    
 var lightning = {
 
     lightningInitDone : false,
@@ -54,6 +54,73 @@ var lightning = {
             }
         }
     },
+
+    TargetData : class {
+        constructor(folderData) {            
+            this._targetType = folderData.getFolderSetting("targetType");
+            this._folderData = folderData;
+            this._targetObj = null;           
+        }
+        
+        get targetType() { // return the targetType, this was initialized with
+            return this._targetType;
+        }
+        
+        getTarget() {
+            let calendar = tbSync.lightning.getCalender(this._folderData);
+            
+            if (!calendar) {
+                calendar = tbSync.lightning.createCalender(this._folderData);
+                if (!calendar)
+                    throw new Error("CouldNotGetOrCreateTarget");
+            }
+
+            return calendar;
+        }
+        
+        removeTarget() {
+            let calendar = tbSync.lightning.getCalender(this._folderData);
+            try {
+                if (calendar !== null) {
+                    cal.getCalendarManager().removeCalendar(targetCal);
+                }
+            } catch (e) {}
+        }
+        
+        decoupleTarget(suffix, cacheFolder = false) {
+            let calendar = tbSync.lightning.getCalender(this._folderData);
+
+            if (calendar) {
+                // decouple directory from the connected folder
+                let target = this._folderData.getFolderSetting("target");
+                this._folderData.resetFolderSetting("target");
+
+                //if there are local changes, append an  (*) to the name of the target
+                let c = 0;
+                let a = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
+                for (let i=0; i<a.length; i++) c++;
+                if (c>0) suffix += " (*)";
+
+                //this is the only place, where we manually have to call clearChangelog, because the target is not deleted
+                //(on delete, changelog is cleared automatically)
+                tbSync.db.clearChangeLog(target);
+                if (suffix) {
+                    let orig = calendar.name;
+                    calendar.name = "Local backup of: " + orig + " " + suffix;
+                }
+                calendar.setProperty("disabled", true);
+            }
+            
+            //should we remove the folder by setting its state to cached?
+           if (cacheFolder) {
+               this._folderData.setFolderSetting("cached", "1");
+           }
+        }     
+    },
+        
+    
+    
+    
     
     isAvailable: function () {
         //if it is known - and still valid - just return true
@@ -69,7 +136,7 @@ var lightning = {
             let itemStatus = tbSync.db.getItemStatusFromChangeLog(aItem.calendar.id, aItem.id)
 
             //if an event in one of the synced calendars is added, update status of target and account
-            let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aItem.calendar.id, "1"]);
+            let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aItem.calendar.id, "1"]); //useChangeLog is gone
             if (folders.length == 1) {
                 if (itemStatus == "added_by_server") {
                     tbSync.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);
@@ -137,13 +204,13 @@ var lightning = {
                 switch (aName) {
                     case "color":
                         //update stored color to recover after disable
-                        tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetColor", aValue); 
+                        tbSync.db.setFolderSetting(folders[0].accountID, folders[0].folderID, "targetColor", aValue); 
                         break;
                     case "name":
                         //update stored name to recover after disable
-                        tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "targetName", aValue);                         
+                        tbSync.db.setFolderSetting(folders[0].accountID, folders[0].folderID, "targetName", aValue);                         
                         //update settings window, if open
-                        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folders[0].account);
+                        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folders[0].accountID);
                         break;
                 }
             }
@@ -179,67 +246,45 @@ var lightning = {
 
                 //unselect calendar if deleted by user (calendar is cached if delete during disable) and update settings window, if open
                 if (folders[0].selected == "1" && folders[0].cached != "1") {
-                    tbSync.db.setFolderSetting(folders[0].account, folders[0].folderID, "selected", "0");
+                    tbSync.db.setFolderSetting(folders[0].accountID, folders[0].folderID, "selected", "0");
                     //update settings window, if open
-                    Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folders[0].account);
+                    Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folders[0].accountID);
                 }
                 
-                tbSync.db.resetFolderSetting(folders[0].account, folders[0].folderID, "target");
+                tbSync.db.resetFolderSetting(folders[0].accountID, folders[0].folderID, "target");
             }
         },
     },
 
-    getCalendarName: function (id) {
-        if (tbSync.lightning.isAvailable()) {
-            let targetCal = cal.getCalendarManager().getCalendarById(id);
-            if (targetCal !== null) return targetCal.name;
-            else return "";
-        } else {
-            return "";
-        }
-    },
     
-    removeCalendar: function(id) {
-        try {
-            let targetCal = cal.getCalendarManager().getCalendarById(id);
-            if (targetCal !== null) {
-                cal.getCalendarManager().removeCalendar(targetCal);
-            }
-        } catch (e) {}
-    },
-
-    changeNameOfCalendarAndDisable: function(id, newname) {
-        try {
-            let targetCal = cal.getCalendarManager().getCalendarById(id);
-            if (targetCal !== null) {
-                let orig = targetCal.name;
-                targetCal.name =  newname.replace("%ORIG%", orig);
-                targetCal.setProperty("disabled", true);
-            }
-        } catch (e) {}
-    },
-
-    
-    //this function actually creates a calendar if missing
-    checkCalender: function (accountData) {       
-        let target = accountData.getFolderSetting("target");
+    getCalender: function (folderData) {       
+        let target = folderData.getFolderSetting("target");
         let calManager = cal.getCalendarManager();
         let targetCal = calManager.getCalendarById(target);
         
         if (targetCal !== null)  {
             //check for double targets - just to make sure
-            let folders = tbSync.db.findFoldersWithSetting("target", target);
+            let folders = tbSync.db.findFoldersWithSetting(["target", "cached"], [target, "0"], "account", folderData.accountID);
             if (folders.length == 1) {
-                return true;
+                return targetCal;
             } else {
                 throw "Target with multiple source folders found! Forcing hard fail (" + target +" )."; 
             }
         }
+        
+        return null;
+    },
+    
+        //this function actually creates a calendar if missing
+    createCalender: function (folderData) {       
+        let calManager = cal.getCalendarManager();
+        let target = folderData.getFolderSetting("target");
+        let provider = folderData.accountData.getAccountSetting("provider");
 
         
         //check if  there is a known/cached name, and use that as starting point to generate unique name for new calendar 
-        let cachedName = accountData.getFolderSetting("targetName");                         
-        let basename = cachedName == "" ? accountData.getAccountSetting("accountname") + " (" + accountData.getFolderSetting("name") + ")" : cachedName;
+        let cachedName = folderData.getFolderSetting("targetName");                         
+        let basename = cachedName == "" ? folderData.accountData.getAccountSetting("accountname") + " (" + folderData.getFolderSetting("name") + ")" : cachedName;
 
         let count = 1;
         let unique = false;
@@ -260,7 +305,7 @@ var lightning = {
 
 
         //check if there is a cached or preloaded color - if not, chose one
-        if (!accountData.getFolderSetting("targetColor")) {
+        if (!folderData.getFolderSetting("targetColor")) {
             //define color set
             let allColors = [
                 "#3366CC",
@@ -308,20 +353,17 @@ var lightning = {
             
             //filter by minCount
             let freeColors = statColors.filter(item => (minCount == null || item.count == minCount));
-            accountData.setFolderSetting("targetColor", freeColors[0].color);        
+            folderData.setFolderSetting("targetColor", freeColors[0].color);        
         }
         
         //create and register new calendar
-        let provider = accountData.getAccountSetting("provider");
-        let newCalendar = tbSync.providers[provider].api.createCalendar(newname, accountData);
-        tbSync.providers[provider].api.onResetTarget(accountData);
+        let newCalendar = tbSync.providers[provider].calendar.createCalendar(newname, folderData);
+        tbSync.providers[provider].api.onResetTarget(folderData);
         
         //store id of calendar as target in DB
-        accountData.setFolderSetting("target", newCalendar.id); 
-        accountData.setFolderSetting("targetType", "calendar"); 
-        accountData.setFolderSetting("targetName", basename);
-        accountData.setFolderSetting("targetColor",  newCalendar.getProperty("color"));
-        return true;        
+        folderData.setFolderSetting("target", newCalendar.id); 
+        folderData.setFolderSetting("targetName", basename);
+        folderData.setFolderSetting("targetColor",  newCalendar.getProperty("color"));
+        return newCalendar;        
     }
-    
 }

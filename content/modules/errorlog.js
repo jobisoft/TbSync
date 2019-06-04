@@ -7,7 +7,16 @@
  */
  
  "use strict";
- 
+
+var ErrorOwnerData = class {
+    constructor(provider, accountname, accountID, foldername = "") {
+        this.provider = provider;
+        this.accountname = accountname;
+        this.accountID = accountID;
+        this.foldername = foldername;
+    }
+}
+    
 var errorlog = {
 
     errors: null,
@@ -19,9 +28,9 @@ var errorlog = {
     unload: async function () {
     },
 
-    get: function (account = null) {
-        if (account) {
-            return this.errors.filter(e => e.account == account);
+    get: function (accountID = null) {
+        if (accountID) {
+            return this.errors.filter(e => e.accountID == accountID);
         } else {
             return this.errors;
         }
@@ -31,7 +40,7 @@ var errorlog = {
         this.errors = [];
     },
     
-    add: function (type, ownerData, message, details = null) {
+    add: function (type, errorOwnerData, message, details = null) {
         let entry = {
             timestamp: Date.now(),
             message: message, 
@@ -44,10 +53,11 @@ var errorlog = {
             foldername: "",
         };
     
-        if (ownerData) {
-            if (ownerData.provider) entry.provider = ownerData.provider;
-            if (ownerData.accountname) entry.accountname = ownerData.accountname;
-            if (ownerData.foldername) entry.foldername = ownerData.foldername;
+        if (errorOwnerData) {
+            if (errorOwnerData.accountID) entry.accountID = errorOwnerData.accountID;
+            if (errorOwnerData.provider) entry.provider = errorOwnerData.provider;
+            if (errorOwnerData.accountname) entry.accountname = errorOwnerData.accountname;
+            if (errorOwnerData.foldername) entry.foldername = errorOwnerData.foldername;
         }
 
         let localized = "";

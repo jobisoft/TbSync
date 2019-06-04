@@ -101,7 +101,25 @@ var providers = {
 
                 await tbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xul?provider=" + provider, this[provider].api.getEditAccountOverlayUrl());        
                 tbSync.dump("Loaded provider", provider + "::" + this[provider].api.getNiceProviderName() + " ("+this.loadedProviders[provider].version+")");
-                tbSync.core.resetSync(provider);
+                
+                // reset all accounts of this provider
+                let providerData = new tbSync.ProviderData(provider);
+                let accounts = providerData.getAllAccounts();
+                for (let accountData of accounts) {
+                    // reset sync objects
+                    tbSync.core.prepareSyncDataObj(accountData.accountID, true);
+                    
+                    // set all accounts which are syncing to notsyncronized 
+                    if (accountData.getAccountSetting("status") == "syncing") accountData.setAccountSetting("status", "notsyncronized");
+
+                    // set each folder with PENDING status to ABORTED
+                    let folders = tbSync.db.findFoldersWithSetting("status", "pending", accountData.accountID);
+
+                    for (let f=0; f < folders.length; f++) {
+                        tbSync.db.setFolderSetting(folders[f].accountID, folders[f].folderID, "status", "aborted");
+                    }
+                }
+                
                 Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", provider);
 
             } catch (e) {
@@ -143,7 +161,7 @@ var providers = {
         
         //add system properties
         defaults.account = accountID;
-        defaults.targetType = "unset";
+        defaults.targetType = "";
         defaults.cached = "0";
         defaults.selected = "0";
         

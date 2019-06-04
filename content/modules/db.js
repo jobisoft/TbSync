@@ -287,12 +287,6 @@ var db = {
         this.saveFolders();
     },
 
-    //get all folders of a given account
-    getFolders: function (account) {
-        if (!this.folders.hasOwnProperty(account)) this.folders[account] = {};
-        return this.folders[account];
-    },
-
     //get a specific folder
     getFolder: function(account, folderID) {
         //does the folder exist?
@@ -322,10 +316,8 @@ var db = {
     getFolderSetting: function(account, folderID, field) {
         //does the field exist?
         let folder = this.getFolder(account, folderID);
-        if (folder === null) try {
+        if (folder === null) {
             throw "Unknown folder <"+folderID+">!";
-        } catch (e) {
-            Components.utils.reportError(e);
         }
         
         if (this.isValidFolderSetting(account, field)) {

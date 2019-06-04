@@ -65,8 +65,8 @@ var tbSyncAbServerSearch = {
                         let target = window.GetSelectedDirectory();
                         if (searchbox && target) {
                             let folders = tbSync.db.findFoldersWithSetting("target", target);
-                            if (folders.length == 1 && tbSync.providers[tbSync.db.getAccountSetting(folders[0].account, "provider")].api.abServerSearch) {
-                                searchbox.setAttribute("placeholder", tbSync.getString("addressbook.searchgal::" + tbSync.db.getAccountSetting(folders[0].account, "accountname")));
+                            if (folders.length == 1 && tbSync.providers[tbSync.db.getAccountSetting(folders[0].accountID, "provider")].api.abServerSearch) {
+                                searchbox.setAttribute("placeholder", tbSync.getString("addressbook.searchgal::" + tbSync.db.getAccountSetting(folders[0].accountID, "accountname")));
                             } else {
                                 searchbox.setAttribute("placeholder", tbSync.getString((target == "moz-abdirectory://?") ? "addressbook.searchall" : "addressbook.searchthis"));
                             }
@@ -115,7 +115,7 @@ var tbSyncAbServerSearch = {
             let query = searchbox.value;        
             let addressbook = tbSync.addressbook.getAddressBookObject(target);
 
-            let account = folders[0].account;
+            let account = folders[0].accountID;
             let provider = tbSync.db.getAccountSetting(account, "provider");
             let accountname = tbSync.db.getAccountSetting(account, "accountname");
             if (tbSync.providers[provider].api.abServerSearch) {
