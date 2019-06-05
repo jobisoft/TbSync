@@ -29,27 +29,41 @@ var addressbook = {
     },
 
     AbCard : class {
-        constructor(abDirectory, card = null) {
+        constructor(abDirectory, item) {
+            if (!abDirectory)
+                throw new Error("AbCard::constructor is missing the second parameter!");
+
+            if (!item)
+                throw new Error("AbCard::constructor is missing the second parameter!");
+
             this._abDirectory = abDirectory;
-            if (card)
-                this._card = card;
-            else
-                this._card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
+            this._card = null;
+            this._tempListDirectory = null;
+            this._isMailList = false;
+            
+            if (item instanceof Components.interfaces.nsIAbDirectory) {
+                this._tempListDirectory = item;
+                this._isMailList = true;
+            } else {
+                this._card = item;
+                this._isMailList = item.isMailList;
+            }
         }
         
         get UID() {
+            if (this._tempListDirectory) return this._tempListDirectory.UID;
             return this._card.UID;
         }
         
         get isMailList() {
-            return this._card.isMailList
+            return this._isMailList;
         }
         
         //mailinglist aware method to get properties of cards
         //mailinglist properties cannot be stored in mailinglists themselves, so we store them in changelog
         getProperty(property, fallback = "") {
-            if (this._card.isMailList) {
-                let value = tbSync.db.getItemStatusFromChangeLog(this._card.directoryId, this._card.UID + "#" + property);
+            if (this._isMailList) {
+                let value = tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, this.UID + "#" + property);
                 return value ? value : fallback;    
             } else {
                 return this._card.getProperty(property, fallback);
@@ -59,16 +73,16 @@ var addressbook = {
         //mailinglist aware method to set properties of cards
         //mailinglist properties cannot be stored in mailinglists themselves, so we store them in changelog
         setProperty(property, value) {
-            if (this._card.isMailList) {
-                tbSync.db.addItemToChangeLog(this._card.directoryId, this._card.UID + "#" + property, value);
+            if (this._isMailList) {
+                tbSync.db.addItemToChangeLog(this._abDirectory.UID, this.UID + "#" + property, value);
             } else {
                 this._card.setProperty(property, value);
             }
         }
         
         deleteProperty(property) {
-            if (this._card.isMailList) {
-                tbSync.db.removeItemFromChangeLog(this._card.directoryId, this._card.UID + "#" + property);
+            if (this._isMailList) {
+                tbSync.db.removeItemFromChangeLog(this._abDirectory.UID, this.UID + "#" + property);
             } else {
                 this._card.deleteProperty(property);
             }
@@ -134,11 +148,15 @@ var addressbook = {
         }
         
         get changelogStatus() {
-            return tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, this.getProperty(this._abDirectory.changeLogKey,""));
+            let changeLogKeyValue = this.getProperty(this._abDirectory.changeLogKey);
+            return tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, changeLogKeyValue);
         }
 
         set changelogStatus(status) {
-            tbSync.db.addItemToChangeLog(this._abDirectory.UID, this.getProperty(this._abDirectory.changeLogKey,""), status);            
+            let changeLogKeyValue = this.getProperty(this._abDirectory.changeLogKey);
+            if (changeLogKeyValue) {
+                tbSync.db.addItemToChangeLog(this._abDirectory.UID, changeLogKeyValue, status);
+            }                
         }
     },
 
@@ -161,47 +179,113 @@ var addressbook = {
         }
 
         createNewCard() {
-            return new tbSync.addressbook.AbCard(this);
+            let card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);                    
+            return new tbSync.addressbook.AbCard(this, card);
         }
-        
-        addCard(abCard) {
+
+        createNewList() {
+            let listDirectory = Components.classes["@mozilla.org/addressbook/directoryproperty;1"].createInstance(Components.interfaces.nsIAbDirectory);
+            listDirectory.isMailList = true;
+            return new tbSync.addressbook.AbCard(this, listDirectory);
+        }
+            
+/*
+            Services.console.logStringMessage("[LIST BEFORE] " + mailList.UID);
+
+                    
+            let mailListDirectory = abDirectory._directory.addMailList(mailList);
+        Services.console.logStringMessage("[LIST AFTER] " + mailListDirectory.UID);
+
+            //prepare new mailinglist directory
+            let mailList = Components.classes["@mozilla.org/addressbook/directoryproperty;1"].createInstance(Components.interfaces.nsIAbDirectory);
+            mailList.isMailList = true;
+            mailList.dirName = name;
+            let mailListDirectory = addressBook.addMailList(mailList);
+
+            //We do not get the list card after creating the list directory and would not be able to find the card without ID,
+            //so we add the TBSYNCID property manually
+            tbSync.db.addItemToChangeLog(addressBook.URI, mailListDirectory.URI + "#" + "TBSYNCID", id);
+
+            //Furthermore, we cannot create a list with a given ID, so we can also not precatch this creation, because it would not find the entry in the changelog
+            
+            //find the list card (there is no way to get the card from the directory directly)
+            return this.getCardFromProperty(addressBook, "TBSYNCID", id);
+        }
+        */
+    
+        add(abItem) {
             if (this.changeLogKey) {
-               abCard.changelogStatus = "added_by_server";
+               abItem.changelogStatus = "added_by_server";
             }
-            this._directory.addCard(abCard._card);
+            if (abItem.isMailList && abItem._tempListDirectory) {
+                // update directory props first
+                abItem._tempListDirectory.dirName = abItem.getProperty("ListName");
+                abItem._tempListDirectory.listNickName = abItem.getProperty("ListNickName");
+                abItem._tempListDirectory.description = abItem.getProperty("ListDescription");
+                this._directory.addMailList(abItem._tempListDirectory);
+                
+                // the list has been added and we can now get the corresponding card via its UID
+                let found = this.getCardFromProperty("X-DAV-HREF", abItem.getProperty("X-DAV-HREF"));
+                abItem._tempListDirectory = null;
+                abItem._card = found._card;
+
+            } else if (!abItem.isMailList) {
+                this._directory.addCard(abItem._card);
+
+            } else {
+                throw new Error("Cannot re-add a list to a directory.");
+            }
         }
         
-        modifyCard(abCard) {
-            if (this.changeLogKey && /*syncdata.revert ||*/  abCard.changelogStatus != "modified_by_user") {
-                abCard.changelogStatus = "modified_by_server";
+        modify(abItem) {
+            if (this.changeLogKey && abItem.changelogStatus != "modified_by_user") {
+                abItem.changelogStatus = "modified_by_server";
             }
-            this._directory.modifyCard(abCard._card); 
+            if (abItem.isMailList) {                
+                // get mailListDirectory
+                let mailListDirectory = MailServices.ab.getDirectory(abItem._card.mailListURI);
+                
+                //update directory props
+                mailListDirectory.dirName = abItem.getProperty("ListName");
+                mailListDirectory.listNickName = abItem.getProperty("ListNickName");
+                mailListDirectory.description = abItem.getProperty("ListDescription");
+
+                // members:
+                //mailListDirectory.addressLists.appendElement(newCard, false);
+
+                // store
+                mailListDirectory.editMailListToDatabase(abItem._card);
+            } else {
+                this._directory.modifyCard(abItem._card); 
+            }
         }        
         
-        deleteCard(abCard) {
+        remove(abItem) {
             if (this.changeLogKey) {
-               abCard.changelogStatus = "deleted_by_server";
+               abItem.changelogStatus = "deleted_by_server";
             }
             let delArray = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-            delArray.appendElement(abCard._card, true);
+            delArray.appendElement(abItem._card, true);
             this._directory.deleteCards(delArray);
         }
         
         getCardFromProperty(property, value) {
-            //try to use the standard contact card method first
+            // try to use the standard contact card method first
             let card = this._directory.getCardFromProperty(property, value, true);
             if (card) {
                 return new tbSync.addressbook.AbCard(this, card);
             }
             
-            //search for list cards
-            let searchList = "(IsMailList,=,TRUE)"; //we could search for the prop directly in searchlist?
-            let result = MailServices.ab.getDirectory(this._directory.URI +  "?(and" + searchList+")").childCards;
+            // search for list cards
+            // we cannot search for the prop directly, because for mailinglists
+            // they are not part of the card (expect UID) but stored in a custom storage
+            let searchList = "(IsMailList,=,TRUE)"; 
+            let result = MailServices.ab.getDirectory(this._directory.URI +  "?(or" + searchList+")").childCards;
             while (result.hasMoreElements()) {
-                let card = result.getNext().QueryInterface(Components.interfaces.nsIAbCard);
+                let card = new tbSync.addressbook.AbCard(this, result.getNext().QueryInterface(Components.interfaces.nsIAbCard));
                 //does this list card have the req prop?
-                if (card.getProperty(card, property) == value) {
-                        return new tbSync.addressbook.AbCard(this, card);
+                if (card.getProperty(property) == value) {
+                    return card;
                 }
             }
             return null;
@@ -550,11 +634,32 @@ var addressbook = {
                     aSubject.QueryInterface(Components.interfaces.nsIAbCard);
                     let listUID = aSubject.UID;
                     //aData: 128-bit unique identifier for the parent directory
-                    let folderData = tbSync.addressbook.getFolderFromDirectoryUID(aData);
+                    let bookUID = aData;
+                    let folderData = tbSync.addressbook.getFolderFromDirectoryUID(bookUID);
                     
                     if (folderData 
                             && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountSetting("provider"))
                             && folderData.getFolderSetting("targetType") == "addressbook") {
+
+                        switch (aTopic) {
+                            case "addrbook-list-created": 
+                            {                                                        
+                                Services.console.logStringMessage("[LSIT]" + aSubject.UID);
+                                Services.console.logStringMessage("    " + aSubject.getProperty("NickName", ""));
+                                Services.console.logStringMessage("    " + aSubject.getProperty("Notes", ""));
+
+                    //                tbSync.db.addItemToChangeLog(bookUID, changeLogKeyValue, "modified_by_server");
+                           //     } else {
+                              //      tbSync.db.addItemToChangeLog(bookUID, changeLogKeyValue, "added_by_user");
+                                //}
+                            }
+                            break;
+
+                            case "addrbook-list-removed": 
+                            {                                                        
+                            }                            
+                            break;
+                        }
 
                         let abListData = new tbSync.AbListData(aSubject);
                         
