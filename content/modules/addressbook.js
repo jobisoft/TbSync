@@ -377,7 +377,7 @@ var addressbook = {
         
         removeTarget() {
             let directory = tbSync.addressbook.checkAddressbook(this._folderData);
-            //abItem.changelogStatus = "deleted_by_server";
+            tbSync.db.addItemToChangeLog(directory.UID, "self", "deleted_by_server");
 
             try {
                 if (directory) {
@@ -561,7 +561,15 @@ var addressbook = {
                     if (folderData 
                         && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountSetting("provider"))
                         && folderData.getFolderSetting("targetType") == "addressbook") {
-                        
+
+                        let itemStatus = tbSync.db.getItemStatusFromChangeLog(bookUID, "self");
+                        let serverAction = false;
+                        if (itemStatus && itemStatus.endsWith("_by_server")) {
+                            //we caused this, ignore
+                            tbSync.db.removeItemFromChangeLog(bookUID, "self");
+                            serverAction = true;
+                        }
+                            
                         switch(aTopic) {
                             case "addrbook-updated": 
                             {
@@ -588,8 +596,9 @@ var addressbook = {
                             }
                             break;
                         }
-
-                        tbSync.providers[folderData.accountData.getAccountSetting("provider")].addressbook.directoryObserver(aTopic, folderData);                        
+                        if (!serverAction) {
+                            tbSync.providers[folderData.accountData.getAccountSetting("provider")].addressbook.directoryObserver(aTopic, folderData);                        
+                        }
                     }
                 }
                 break;             
