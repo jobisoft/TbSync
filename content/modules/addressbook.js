@@ -81,8 +81,8 @@ var addressbook = {
             return this._isMailList;
         }
         
-        //mailinglist aware method to get properties of cards
-        //mailinglist properties cannot be stored in mailinglists themselves, so we store them in changelog
+        // mailinglist aware method to get properties of cards
+        // mailinglist properties cannot be stored in mailinglists themselves, so we store them in changelog
         getProperty(property, fallback = "") {
             if (property == "UID")
                 return this.UID;
@@ -95,8 +95,8 @@ var addressbook = {
             }
         }
 
-        //mailinglist aware method to set properties of cards
-        //mailinglist properties cannot be stored in mailinglists themselves, so we store them in changelog
+        // mailinglist aware method to set properties of cards
+        // mailinglist properties cannot be stored in mailinglists themselves, so we store them in changelog
         setProperty(property, value) {
             // UID cannot be changed (currently)
             if (property == "UID")
@@ -117,11 +117,44 @@ var addressbook = {
             }
         }
         
+        // get the property given from all members and return it as an array (that property better be uniqe)
+        getMembersPropertyList(property) {
+            let members = [];
+            if (this._card && this._card.isMailList) {
+                // get mailListDirectory
+                let mailListDirectory = MailServices.ab.getDirectory(this._card.mailListURI);                
+                for (let i = 0; i < mailListDirectory.addressLists.length; i++) {
+                    let member = mailListDirectory.addressLists.queryElementAt(i, Components.interfaces.nsIAbCard);
+                    let id = member.getProperty(property, "");
+                    if (id) members.push(id);
+                }
+            }
+            return members;
+        }
+        
+        // update mail list with a the given member list, each entry being the value of the given property for each member
+        setMembersByPropertyList(property, members) {
+            if (this._card && this._card.isMailList) {            
+                // get mailListDirectory
+                let mailListDirectory = MailServices.ab.getDirectory(this._card.mailListURI);
+                let list = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
+                for (let member of members) {
+                    let card = this._abDirectory._directory.getCardFromProperty(property, member, true);
+                    if (card) list.appendElement(card, false);
+                }
+                mailListDirectory.addressLists = list;
+                if (this.changelogStatus != "modified_by_user") {
+                    this.changelogStatus = "modified_by_server";
+                }
+                mailListDirectory.editMailListToDatabase(this._card);                
+            }
+        }
+        
         addPhoto(photo, bookUID, data) {	
             let dest = [];
             let card = this._card;
             
-            //the TbSync storage must be set as last
+            // TbSync storage must be set as last
             let book64 = btoa(bookUID);
             let photo64 = btoa(photo);	    
             let photoName64 = book64 + "_" + photo64;
@@ -269,9 +302,6 @@ var addressbook = {
                 mailListDirectory.listNickName = abItem.getProperty("ListNickName");
                 mailListDirectory.description = abItem.getProperty("ListDescription");
 
-                // members:
-                //mailListDirectory.addressLists.appendElement(newCard, false);
-
                 // store
                 mailListDirectory.editMailListToDatabase(abItem._card);
             } else {
@@ -376,9 +406,10 @@ var addressbook = {
         }
         
         removeTarget() {
-            let directory = tbSync.addressbook.checkAddressbook(this._folderData);
-            tbSync.db.addItemToChangeLog(directory.UID, "self", "deleted_by_server");
-
+            let target = this._folderData.getFolderSetting("target");
+            this._folderData.resetFolderSetting("target");
+            
+            let directory = tbSync.addressbook.getDirectoryFromDirectoryUID(target);
             try {
                 if (directory) {
                     MailServices.ab.deleteAddressBook(directory.URI);
@@ -426,19 +457,17 @@ var addressbook = {
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     
     checkAddressbook: function (folderData) {
-        if (folderData.getFolderSetting("cached") != "1") {
-            let target = folderData.getFolderSetting("target");
-            let directory = this.getDirectoryFromDirectoryUID(target);
-            
-            if (directory !== null && directory instanceof Components.interfaces.nsIAbDirectory) {
-                //check for double targets - just to make sure
-                let folders = tbSync.db.findFoldersWithSetting(["target", "cached"], [target, "0"], "account", folderData.accountID);
-                if (folders.length == 1) {
-                    return directory;
-                } else {
-                    throw "Target with multiple source folders found! Forcing hard fail ("+target+")."; 
-                }
-            }
+        let target = folderData.getFolderSetting("target");
+        let directory = this.getDirectoryFromDirectoryUID(target);
+        
+        if (directory !== null && directory instanceof Components.interfaces.nsIAbDirectory) {
+            //check for double targets - just to make sure
+            let folders = tbSync.db.findFoldersWithSetting(["target"], [target], "account", folderData.accountID);
+            if (folders.length == 0)
+                return null;                
+            if (folders.length == 1)
+                return directory;
+            throw "Target with multiple source folders found! Forcing hard fail ("+target+")."; 
         }
         
         return null;
@@ -503,7 +532,7 @@ var addressbook = {
     },
 
     getFolderFromDirectoryUID: function(bookUID) {
-        let folders = tbSync.db.findFoldersWithSetting(["target", "cached"], [bookUID, "0"]);
+        let folders = tbSync.db.findFoldersWithSetting(["target"], [bookUID]);
         if (folders.length == 1) {
             let accountData = new tbSync.AccountData(folders[0].accountID);
             return new tbSync.FolderData(accountData, folders[0].folderID);
@@ -561,14 +590,6 @@ var addressbook = {
                     if (folderData 
                         && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountSetting("provider"))
                         && folderData.getFolderSetting("targetType") == "addressbook") {
-
-                        let itemStatus = tbSync.db.getItemStatusFromChangeLog(bookUID, "self");
-                        let serverAction = false;
-                        if (itemStatus && itemStatus.endsWith("_by_server")) {
-                            //we caused this, ignore
-                            tbSync.db.removeItemFromChangeLog(bookUID, "self");
-                            serverAction = true;
-                        }
                             
                         switch(aTopic) {
                             case "addrbook-updated": 
@@ -596,9 +617,8 @@ var addressbook = {
                             }
                             break;
                         }
-                        if (!serverAction) {
-                            tbSync.providers[folderData.accountData.getAccountSetting("provider")].addressbook.directoryObserver(aTopic, folderData);                        
-                        }
+                        
+                        tbSync.providers[folderData.accountData.getAccountSetting("provider")].addressbook.directoryObserver(aTopic, folderData);                        
                     }
                 }
                 break;             

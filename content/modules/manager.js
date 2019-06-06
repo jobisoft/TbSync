@@ -277,11 +277,14 @@ var manager = {
                     return;
             
                 if (folder.getFolderSetting("selected") == "1") {
-                    if (folder.getFolderSetting("target") == "" || element.ownerDocument.defaultView.confirm(tbSync.getString("prompt.Unsubscribe"))) {
-                        //deselect folder
+                    let target = folder.getFolderSetting("target");
+                    if (!target || element.ownerDocument.defaultView.confirm(tbSync.getString("prompt.Unsubscribe"))) {
+                        if (target) {
+                            folder.targetData.removeTarget(); 
+                            tbSync.db.clearChangeLog(target);
+                        }
                         folder.setFolderSetting("selected", "0");
-                        //remove folder, which will trigger the listener in tbsync which will clean up everything
-                        folder.targetData.removeTarget(); 
+                        
                     } else {
                         if (element) {
                             //undo users action

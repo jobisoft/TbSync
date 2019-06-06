@@ -481,13 +481,13 @@ var core = {
         
         let folders = accountData.getAllFolders();
         for (let folder of folders) {
-            //cache folder - this must be done before removing the folder to be able to differ between "deleted by user" and "deleted by disable"
-            folder.setFolderSetting("cached", "1");
-
-            if (folder.getFolderSetting("target") != "") {
-                //remove associated target and clear its changelog
-                folder.targetData.removeTarget();
+            let target = folder.getFolderSetting("target");
+            if (target) {
+                folder.targetData.removeTarget(); 
+                tbSync.db.clearChangeLog(target);
             }
+            folder.setFolderSetting("selected", "0");
+            folder.setFolderSetting("cached", "1");
         }
     },
 
