@@ -7,27 +7,12 @@
  */
  
  "use strict";
-/*
-
-    //helper function to find a mailinglist member by some property 
-    //I could not get nsIArray.indexOf() working, so I have to loop with queryElementAt()
-    findIndexOfMailingListMemberWithProperty: function(dir, prop, value, startIndex = 0) {
-        for (let i=startIndex; i < dir.addressLists.length; i++) {
-            let member = dir.addressLists.queryElementAt(i, Components.interfaces.nsIAbCard);
-            if (member.getProperty(prop, "") == value) {
-                return i;
-            }
-        }
-        return -1;
-    },
-
-*/
-
 
 var addressbook = {
     
     load : function () {
-        Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-created", false);
+        // Geoffs addrbook-contact-created observer does not fire on moves, so we do not use it
+        // Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-created", false);
         Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-updated", false);
         Services.obs.addObserver(this.addressbookObserver, "addrbook-list-member-added", false);
         Services.obs.addObserver(this.addressbookObserver, "addrbook-list-updated", false);
@@ -35,11 +20,12 @@ var addressbook = {
     },
 
     unload : function () {
-            Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-created");
-            Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-updated");
-            Services.obs.removeObserver(this.addressbookObserver, "addrbook-list-member-added");
-            Services.obs.removeObserver(this.addressbookObserver, "addrbook-list-updated");
-            this.addressbookListener.remove();
+        // Geoffs addrbook-contact-created observer does not fire on moves, so we do not use it
+        // Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-created");
+        Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-updated");
+        Services.obs.removeObserver(this.addressbookObserver, "addrbook-list-member-added");
+        Services.obs.removeObserver(this.addressbookObserver, "addrbook-list-updated");
+        this.addressbookListener.remove();
     },
 
 
@@ -214,28 +200,25 @@ var addressbook = {
         }
         
         get changelogStatus() {
-            let key = this._abDirectory.changeLogKey;
-            let value = key ? this.getProperty(key) : "";
-            let status = value ? tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, value) : "";
+            let key = this._abDirectory.primaryKeyField;
             
-            // use UID as fallback
-            return status ? status : tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, "UID:" + this.UID);
+            //use UID as fallback
+            let value = key ? this.getProperty(key) : this.UID;            
+            return tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, value)
         }
 
         set changelogStatus(status) {            
-            let key = this._abDirectory.changeLogKey;
-            let value = key ? this.getProperty(key) : "";
-            
-            // if no key or no keyValue, use UID as fallback
-            if (!value)  value = "UID:" + this.UID;
-            
+            let key = this._abDirectory.primaryKeyField;
+
+            //use UID as fallback
+            let value = key ? this.getProperty(key) : this.UID;                        
             if (value) {
                 if (!status) {
                     tbSync.db.removeItemFromChangeLog(this._abDirectory.UID, value);
                     return;
                 }            
 
-                if (this._abDirectory.logUserChanges || value.endsWith("_by_server")) {
+                if (this._abDirectory.logUserChanges || status.endsWith("_by_server")) {
                     tbSync.db.addItemToChangeLog(this._abDirectory.UID, value, status);
                 }
             }
@@ -245,6 +228,7 @@ var addressbook = {
     AbDirectory : class {
         constructor(directory, folderData) {
             this._directory = directory;
+            this._folderData = folderData;
             this._provider = folderData.accountData.getAccountSetting("provider");
          }
 
@@ -252,8 +236,8 @@ var addressbook = {
             return tbSync.providers[this._provider].addressbook.logUserChanges;
         }
         
-        get changeLogKey() {
-            return tbSync.providers[this._provider].addressbook.changeLogKey;
+        get primaryKeyField() {
+            return tbSync.providers[this._provider].addressbook.primaryKeyField;
         }
         
         get UID() {
@@ -276,7 +260,12 @@ var addressbook = {
         }
 
         add(abItem) {
-           abItem.changelogStatus = "added_by_server";
+            if (this.primaryKeyField && !abItem.getProperty(this.primaryKeyField)) {
+                abItem.setProperty(this.primaryKeyField, tbSync.providers[this._provider].addressbook.generatePrimaryKey(this._folderData));
+                Services.console.logStringMessage("[AbDirectory::add] Generated primary key!");
+            }
+            
+            abItem.changelogStatus = "added_by_server";
             if (abItem.isMailList && abItem._tempListDirectory) {
                 // update directory props first
                 abItem._tempListDirectory.dirName = abItem.getProperty("ListName");
@@ -298,7 +287,7 @@ var addressbook = {
         }
         
         modify(abItem) {
-            if (abItem.changelogStatus != "modified_by_user") {
+            if (!abItem.changelogStatus || !abItem.changelogStatus.endsWith("_by_user")) {
                 abItem.changelogStatus = "modified_by_server";
             }
             if (abItem.isMailList) {                
@@ -362,8 +351,7 @@ var addressbook = {
             let changes = [];
             let dbChanges = tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "_by_user");
             for (let change of dbChanges) {
-                //the change.id could start with "UID:" which indicates the item was added to the changelog with its UID, because the changelogKey did not exists            
-                change.card = change.id.startsWith("UID:") ? this.getItemFromProperty("UID", change.id.substr(4)) : this.getItemFromProperty(this.changeLogKey, change.id);
+                change.card = this.getItemFromProperty(this.primaryKeyField, change.id);
                 changes.push(change);
             }
             return changes;
@@ -648,100 +636,120 @@ var addressbook = {
                         let directory = tbSync.addressbook.getDirectoryFromDirectoryUID(bookUID);
                         let abDirectory = new tbSync.addressbook.AbDirectory(directory, folderData);
                         let abItem = new tbSync.addressbook.AbItem(abDirectory, aSubject);
+                        
+                        //check for delayedCreation, multiple causes, only once, stored in bitpattern
+                        //bit 1-3 = "just now"
+                        //bit 4-7 = "done"
+                        let delayedCreation = tbSync.db.getItemStatusFromChangeLog(bookUID, aSubject.uuid + "#delayedCreation");
+                        if (aTopic == "addrbook-contact-updated" && (delayedCreation & 0xF)) {
+                            delayedCreation |= (delayedCreation << 4);
+                            tbSync.db.addItemToChangeLog(bookUID, aSubject.uuid + "#delayedCreation", delayedCreation);
+                            tbSync.addressbook.addressbookObserver.observe(aSubject, "addrbook-contact-created", aData);
+                            return;
+                        }
 
                         // during create it could happen, that this card comes without a UID Property - bug 1554782
-                        // we must use the raw aSubject, as abItem will redirect this call to .UID
-                        if (aTopic == "addrbook-contact-created" && aSubject.getProperty("UID","") == "") {
+                        // we must use the raw aSubject, as abItem will redirect a call to the UID property to .UID
+                        // only once
+                        if (aTopic == "addrbook-contact-created" && aSubject.getProperty("UID","") == "" && (((delayedCreation >> 4) & 0x1) == 0)) {
                             // a call to .UID will generate a UID but will also send an update notification for the the card
-                            tbSync.db.addItemToChangeLog(bookUID, aSubject.uuid + "#delayedCreation", "true"); //uuid = directoryId+localId
+                            tbSync.db.addItemToChangeLog(bookUID, aSubject.uuid + "#delayedCreation", delayedCreation | 0x1); //uuid = directoryId+localId
                             aSubject.UID;
                             return;
-
-                        } else {
-                            let topic = aTopic;
-                           
-                            //check for delayedCreation
-                            if (aTopic == "addrbook-contact-updated" && tbSync.db.getItemStatusFromChangeLog(bookUID, aSubject.uuid + "#delayedCreation") == "true") {;
-                                topic = "addrbook-contact-created";
-                                tbSync.db.removeItemFromChangeLog(bookUID, aSubject.uuid + "#delayedCreation");
-                            }
-                        
-                            let itemStatus = abItem.changelogStatus;
-                            if (itemStatus && itemStatus.endsWith("_by_server")) {
-                                //we caused this, ignore
-                                abItem.changelogStatus = "";
-                                return;
-                            }
-//Handle Missing ChangelogKey
-                            // update changelog based on old status
-                            switch (topic) {
-                                case "addrbook-contact-created":
-                                {
-                                    switch (itemStatus) {
-                                        case "added_by_user": 
-                                            // double notification, which is probably impossible, ignore
-                                            return;
-
-                                        case "modified_by_user": 
-                                            // late create notification
-                                            abItem.changelogStatus = "added_by_user";
-                                            break;
-
-                                        case "deleted_by_user":
-                                            // unprocessed delete for this card, undo the delete (moved out and back in)
-                                            abItem.changelogStatus = "modified_by_user";
-                                            break;
-                                        
-                                        default:
-                                            // new card
-                                            abItem.changelogStatus = "added_by_user";
-                                    }
-                                }
-                                break;
-
-                                case "addrbook-contact-updated":
-                                {
-                                    switch (itemStatus) {
-                                        case "added_by_user": 
-                                            // unprocessed add for this card, keep status
-                                            break;
-
-                                        case "modified_by_user": 
-                                            // double notification, keep status
-                                            break;
-
-                                        case "deleted_by_user":
-                                            // race? unprocessed delete for this card, moved out and back in and modified
-                                        default: 
-                                            abItem.changelogStatus = "modified_by_user";
-                                            break;
-                                    }
-                                }
-                                break;
-                                
-                                case "addrbook-contact-removed":
-                                {
-                                    switch (itemStatus) {
-                                        case "added_by_user": 
-                                            // unprocessed add for this card, revert
-                                            abItem.changelogStatus = "";
-                                            return;
-
-                                        case "modified_by_user": 
-                                            // unprocessed mod for this card
-                                        case "deleted_by_user":
-                                            // double notification
-                                        default: 
-                                            abItem.changelogStatus = "deleted_by_user";
-                                            break;
-                                    }
-                                }
-                                break;
-                            }
-
-                            tbSync.core.setTargetModified(folderData);
-                            tbSync.providers[folderData.accountData.getAccountSetting("provider")].addressbook.cardObserver(topic, folderData, abItem);
                         }
+
+                        // if this card was created by us, it will be in the log
+                        let itemStatus = abItem.changelogStatus;
+                        if (itemStatus && itemStatus.endsWith("_by_server")) {
+                            //we caused this, ignore
+                            abItem.changelogStatus = "";
+                            // clear delayedCreation information, we are done
+                            tbSync.db.removeItemFromChangeLog(bookUID, aSubject.uuid + "#delayedCreation");
+                            return;
+                        }
+
+                        // new cards must get a NEW(!) primaryKey first
+                        // only once                        
+                        if (aTopic == "addrbook-contact-created" && abDirectory.primaryKeyField && (((delayedCreation >> 4) & 0x2) == 0)) {
+                            tbSync.db.addItemToChangeLog(bookUID, aSubject.uuid + "#delayedCreation", delayedCreation | 0x2); //uuid = directoryId+localId
+                            abItem.setProperty(abDirectory.primaryKeyField, tbSync.providers[folderData.accountData.getAccountSetting("provider")].addressbook.generatePrimaryKey(folderData));
+                            //override standard behaviour, this card was added by the user
+                            abItem.changelogStatus = "added_by_user";
+                            abDirectory.modify(abItem);
+                            return;
+                        }
+
+                        // clear delayedCreation information, we are done
+                        tbSync.db.removeItemFromChangeLog(bookUID, aSubject.uuid + "#delayedCreation");
+
+                        // update changelog based on old status
+                        switch (aTopic) {
+                            case "addrbook-contact-created":
+                            {
+                                switch (itemStatus) {
+                                    case "added_by_user": 
+                                        // late create notification
+                                        break;
+
+                                    case "modified_by_user": 
+                                        // late create notification
+                                        abItem.changelogStatus = "added_by_user";
+                                        break;
+
+                                    case "deleted_by_user":
+                                        // unprocessed delete for this card, undo the delete (moved out and back in)
+                                        abItem.changelogStatus = "modified_by_user";
+                                        break;
+                                    
+                                    default:
+                                        // new card
+                                        abItem.changelogStatus = "added_by_user";
+                                }
+                            }
+                            break;
+
+                            case "addrbook-contact-updated":
+                            {
+                                switch (itemStatus) {
+                                    case "added_by_user": 
+                                        // unprocessed add for this card, keep status
+                                        break;
+
+                                    case "modified_by_user": 
+                                        // double notification, keep status
+                                        break;
+
+                                    case "deleted_by_user":
+                                        // race? unprocessed delete for this card, moved out and back in and modified
+                                    default: 
+                                        abItem.changelogStatus = "modified_by_user";
+                                        break;
+                                }
+                            }
+                            break;
+                            
+                            case "addrbook-contact-removed":
+                            {
+                                switch (itemStatus) {
+                                    case "added_by_user": 
+                                        // unprocessed add for this card, revert
+                                        abItem.changelogStatus = "";
+                                        return;
+
+                                    case "modified_by_user": 
+                                        // unprocessed mod for this card
+                                    case "deleted_by_user":
+                                        // double notification
+                                    default: 
+                                        abItem.changelogStatus = "deleted_by_user";
+                                        break;
+                                }
+                            }
+                            break;
+                        }
+
+                        tbSync.core.setTargetModified(folderData);
+                        tbSync.providers[folderData.accountData.getAccountSetting("provider")].addressbook.cardObserver(aTopic, folderData, abItem);
                     }
                 }
                 break;
@@ -778,28 +786,28 @@ var addressbook = {
                                 abItem.setProperty("ListName", aSubject.displayName);
                                 abItem.setProperty("ListNickName", aSubject.getProperty("NickName", ""));
                                 abItem.setProperty("ListDescription", aSubject.getProperty("Notes", ""));
-
-
+                                
+                                if (abDirectory.primaryKeyField) {
+                                    // Since we do not need to update a list, to make custom properties persistent, we do not need to use delayedCreation as with contacts.
+                                    abItem.setProperty(abDirectory.primaryKeyField, tbSync.providers[folderData.accountData.getAccountSetting("provider")].addressbook.generatePrimaryKey(folderData));
+                                }
+                                
                                 switch (itemStatus) {
                                     case "added_by_user": 
-                            Services.console.logStringMessage("[ListStatus] 1");
-                                        // double notification, which is probably impossible, ignore
-                                        return;
+                                        // double notification, which is probably impossible, keep status
+                                        break;
 
                                     case "modified_by_user": 
-                            Services.console.logStringMessage("[ListStatus] 2");
                                         // late create notification
                                         abItem.changelogStatus = "added_by_user";
                                         break;
 
                                     case "deleted_by_user":
-                            Services.console.logStringMessage("[ListStatus] 3");
                                         // unprocessed delete for this card, undo the delete (moved out and back in)
                                         abItem.changelogStatus = "modified_by_user";
                                         break;
                                     
                                     default:
-                            Services.console.logStringMessage("[ListStatus] 4");
                                         // new list
                                         abItem.changelogStatus = "added_by_user";
                                         break;
@@ -911,6 +919,11 @@ var addressbook = {
 
                         tbSync.core.setTargetModified(folderData);
                         tbSync.providers[folderData.accountData.getAccountSetting("provider")].addressbook.listObserver(aTopic, folderData, abItem, abMember);
+
+                        // removed, added members cause the list to be changed
+                        let mailListDirectory = MailServices.ab.getDirectory(listInfo.listCard.mailListURI);
+                        tbSync.addressbook.addressbookObserver.observe(mailListDirectory, "addrbook-list-updated", null);
+                        return;
                     }
                 }
                 break;
@@ -977,7 +990,7 @@ var addressbook = {
             //redirect to addrbook-contact-created observers
             if (aItem instanceof Components.interfaces.nsIAbCard 
                     && aParentDir instanceof Components.interfaces.nsIAbDirectory 
-                    && aItem.getProperty("UID","") == "" //detect the only case where the original addrbook-contact-created observer fails to notify
+                    //&& aItem.getProperty("UID","") == "" //detect the only case where the original addrbook-contact-created observer fails to notify
                     && !aItem.isMailList
                     && !aParentDir.isMailList) {
                 tbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-contact-created", aParentDir.UID)
