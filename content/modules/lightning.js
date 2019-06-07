@@ -117,7 +117,7 @@ var lightning = {
             
             //should we remove the folder by setting its state to cached?
            if (cacheFolder) {
-               this._folderData.setFolderSetting("cached", "1");
+               this._folderData.setFolderSetting("cached", true);
            }
         }     
     },
@@ -140,7 +140,7 @@ var lightning = {
             let itemStatus = tbSync.db.getItemStatusFromChangeLog(aItem.calendar.id, aItem.id)
 
             //if an event in one of the synced calendars is added, update status of target and account
-            let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aItem.calendar.id, "1"]); //useChangeLog is gone
+            let folders = tbSync.db.findFoldersWithSetting({"target": aItem.calendar.id, "useChangeLog": true}); //useChangeLog is gone
             if (folders.length == 1) {
                 if (itemStatus == "added_by_server") {
                     tbSync.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);
@@ -157,7 +157,7 @@ var lightning = {
                 if (aNewItem.calendar.id == aOldItem.calendar.id) {
 
                     //check, if it is an event in one of the synced calendars
-                    let newFolders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aNewItem.calendar.id, "1"]);
+                    let newFolders = tbSync.db.findFoldersWithSetting({"target": aNewItem.calendar.id, "useChangeLog": true}); //useChangeLog is gone
                     if (newFolders.length == 1) {
                         //check if t was modified by the server
                         let itemStatus = tbSync.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
@@ -181,7 +181,7 @@ var lightning = {
         onDeleteItem : function (aDeletedItem) {
             if (aDeletedItem && aDeletedItem.calendar) {
                 //if an event in one of the synced calendars is deleted, update status of target and account
-                let folders = tbSync.db.findFoldersWithSetting(["target","useChangeLog"], [aDeletedItem.calendar.id,"1"]);
+                let folders = tbSync.db.findFoldersWithSetting({"target": aDeletedItem.calendar.id, "useChangeLog": true}); //useChangeLog is gone
                 if (folders.length == 1) {
                     let itemStatus = tbSync.db.getItemStatusFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id)
                     if (itemStatus == "deleted_by_server" || itemStatus == "added_by_user") {
@@ -203,7 +203,7 @@ var lightning = {
         //Changed properties of the calendar itself (name, color etc.) - IF A PROVIDER NEEDS TO DO CUSTOM STUFF HERE, HE NEEDS TO ADD ITS OWN LISTENER
         onPropertyChanged : function (aCalendar, aName, aValue, aOldValue) {
             tbSync.dump("calendarObserver::onPropertyChanged","<" + aName + "> changed from <"+aOldValue+"> to <"+aValue+">");
-            let folders = tbSync.db.findFoldersWithSetting(["target"], [aCalendar.id]);
+            let folders = tbSync.db.findFoldersWithSetting({"target": aCalendar.id});
             if (folders.length == 1) {
                 switch (aName) {
                     case "color":
@@ -223,7 +223,7 @@ var lightning = {
         //Deleted properties of the calendar itself (name, color etc.) - IF A PROVIDER NEEDS TO DO CUSTOM STUFF HERE, HE NEEDS TO ADD ITS OWN LISTENER
         onPropertyDeleting : function (aCalendar, aName) {
             tbSync.dump("calendarObserver::onPropertyDeleting","<" + aName + "> was deleted");
-            let folders = tbSync.db.findFoldersWithSetting(["target"], [aCalendar.id]);
+            let folders = tbSync.db.findFoldersWithSetting({"target": aCalendar.id});
             if (folders.length == 1) {
                 switch (aName) {
                     case "color":
@@ -243,14 +243,14 @@ var lightning = {
             tbSync.dump("calendarManagerObserver::onCalendarDeleting","<" + aCalendar.name + "> was deleted.");
 
             //It should not be possible to link a calendar to two different accounts, so we just take the first target found
-            let folders =  tbSync.db.findFoldersWithSetting("target", aCalendar.id);
+            let folders =  tbSync.db.findFoldersWithSetting({"target": aCalendar.id});
             if (folders.length == 1) {
                 //delete any pending changelog of the deleted calendar
                 tbSync.db.clearChangeLog(aCalendar.id);
 
                 //unselect calendar if deleted by user (calendar is cached if delete during disable) and update settings window, if open
-                if (folders[0].data.selected == "1" && folders[0].data.cached != "1") {
-                    tbSync.db.setFolderSetting(folders[0].accountID, folders[0].folderID, "selected", "0");
+                if (folders[0].data.selected && !folders[0].data.cached) {
+                    tbSync.db.setFolderSetting(folders[0].accountID, folders[0].folderID, "selected", false);
                     //update settings window, if open
                     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folders[0].accountID);
                 }
@@ -262,14 +262,14 @@ var lightning = {
 
     
     checkCalendar: function (folderData) {       
-        if (folderData.getFolderSetting("cached") != "1") {
+        if (!folderData.getFolderSetting("cached")) {
             let target = folderData.getFolderSetting("target");
             let calManager = cal.getCalendarManager();
             let targetCal = calManager.getCalendarById(target);
             
             if (targetCal !== null)  {
                 //check for double targets - just to make sure
-                let folders = tbSync.db.findFoldersWithSetting(["target", "cached"], [target, "0"], "account", folderData.accountID);
+                let folders = tbSync.db.findFoldersWithSetting({"target": target, "cached": false}, {"accountID": folderData.accountID});
                 if (folders.length == 1) {
                     return targetCal;
                 } else {

@@ -59,7 +59,7 @@ var passwordAuth = {
     unload: async function () {
     },
 
-    getOrigin4PasswordManager: function (provider, host) {
+    getOrigin4PasswordManager: function (provider, host) { //use https???
         let uri = Services.io.newURI((!host.startsWith("http://") && !host.startsWith("https://")) ? "http://" + host : host);
         return provider + "://" + uri.host;
     },

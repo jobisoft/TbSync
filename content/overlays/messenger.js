@@ -23,15 +23,15 @@ var tbSyncMessenger = {
     
     updateSyncstateObserver: {
         observe: function (aSubject, aTopic, aData) {
-            let account = aData;            
-            if (account) {
-                let syncdata = tbSync.core.getSyncDataObject(account);
+            let accountID = aData;            
+            if (accountID) {
+                let syncdata = tbSync.core.getSyncDataObject(accountID);
                 let syncstate = syncdata.getSyncState();
                 if (syncstate == "accountdone") {
-                    let status = tbSync.db.getAccountSetting(account, "status");
+                    let status = tbSync.db.getAccountSetting(accountID, "status");
                     switch (status) {
                         case "401":
-                            syncdata.authPrompt();
+                            syncdata.accountData.authPrompt();
                             break;
                     }
                 }

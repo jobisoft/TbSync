@@ -129,7 +129,7 @@ var tbSyncAccountSettings = {
                 let event = "blur";
                 if (pref.tagName == "checkbox") {
                     //BOOL
-                    if (tbSync.db.getAccountSetting(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i])  == "1") pref.setAttribute("checked", true);
+                    if (tbSync.db.getAccountSetting(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i])) pref.setAttribute("checked", true);
                     else pref.setAttribute("checked", false);
                     event = "command";
                 } else {
@@ -321,8 +321,8 @@ var tbSyncAccountSettings = {
         let value = "";
         
         if (field.tagName == "checkbox") {
-            if (field.checked) value = "1";
-            else value = "0";
+            if (field.checked) value = true;
+            else value = false;
         } else {
             value = field.value;
         }

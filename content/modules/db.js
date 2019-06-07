@@ -175,8 +175,8 @@ var db = {
 
     addAccount: function (accountname, newAccountEntry) {
         this.accounts.sequence++;
-        let id = this.accounts.sequence;
-        newAccountEntry.account = id.toString();
+        let id = this.accounts.sequence.toString();
+        newAccountEntry.accountID = id;
         newAccountEntry.accountname = accountname;
         
         this.accounts.data[id] = newAccountEntry;
@@ -184,13 +184,13 @@ var db = {
         return id;
     },
 
-    removeAccount: function (account) {
-        //check if account is known
-        if (this.accounts.data.hasOwnProperty(account) == false ) {
-            throw "Unknown account!" + "\nThrown by db.removeAccount("+account+ ")";
+    removeAccount: function (accountID) {
+        //check if accountID is known
+        if (this.accounts.data.hasOwnProperty(accountID) == false ) {
+            throw "Unknown accountID!" + "\nThrown by db.removeAccount("+accountID+ ")";
         } else {
-            delete (this.accounts.data[account]);
-            delete (this.folders[account]);
+            delete (this.accounts.data[accountID]);
+            delete (this.folders[accountID]);
             this.saveAccounts();
             this.saveFolders();
         }
@@ -198,18 +198,18 @@ var db = {
 
     getAccounts: function () {
         let accounts = {};
-        accounts.IDs = Object.keys(this.accounts.data).filter(account => tbSync.providers.loadedProviders.hasOwnProperty(this.accounts.data[account].provider)).sort((a, b) => a - b);
+        accounts.IDs = Object.keys(this.accounts.data).filter(accountID => tbSync.providers.loadedProviders.hasOwnProperty(this.accounts.data[accountID].provider)).sort((a, b) => a - b);
         accounts.allIDs =  Object.keys(this.accounts.data).sort((a, b) => a - b)
         accounts.data = this.accounts.data;
         return accounts;
     },
 
-    getAccount: function (account) {
-        //check if account is known
-        if (this.accounts.data.hasOwnProperty(account) == false ) {
-            throw "Unknown account!" + "\nThrown by db.getAccount("+account+ ")";
+    getAccount: function (accountID) {
+        //check if accountID is known
+        if (this.accounts.data.hasOwnProperty(accountID) == false ) {
+            throw "Unknown accountID!" + "\nThrown by db.getAccount("+accountID+ ")";
         } else {
-            return this.accounts.data[account];
+            return this.accounts.data[accountID];
         }
     }, 
 
@@ -231,9 +231,9 @@ var db = {
         }            
     },
 
-    getAccountSetting: function (account, name) {
-        // if the requested account does not exist, getAccount() will fail
-        let data = this.getAccount(account);
+    getAccountSetting: function (accountID, name) {
+        // if the requested accountID does not exist, getAccount() will fail
+        let data = this.getAccount(accountID);
         
         //check if field is allowed and get value or default value if setting is not set
         if (this.isValidAccountSetting(data.provider, name)) {
@@ -242,25 +242,25 @@ var db = {
         }
     }, 
 
-    setAccountSetting: function (account , name, value) {
-        // if the requested account does not exist, getAccount() will fail
-        let data = this.getAccount(account);
+    setAccountSetting: function (accountID , name, value) {
+        // if the requested accountID does not exist, getAccount() will fail
+        let data = this.getAccount(accountID);
 
         //check if field is allowed, and set given value 
         if (this.isValidAccountSetting(data.provider, name)) {
-            this.accounts.data[account][name] = value.toString();
+            this.accounts.data[accountID][name] = value;
         }
         this.saveAccounts();
     },
 
-    resetAccountSetting: function (account , name) {
-        // if the requested account does not exist, getAccount() will fail
-        let data = this.getAccount(account);
+    resetAccountSetting: function (accountID , name) {
+        // if the requested accountID does not exist, getAccount() will fail
+        let data = this.getAccount(accountID);
         let defaults = tbSync.providers.getDefaultAccountEntries(data.provider);        
 
         //check if field is allowed, and set given value 
         if (this.isValidAccountSetting(data.provider, name)) {
-            this.accounts.data[account][name] = defaults[name];
+            this.accounts.data[accountID][name] = defaults[name];
         }
         this.saveAccounts();
     },
@@ -270,122 +270,116 @@ var db = {
 
     // FOLDER FUNCTIONS
 
-    addFolder: function(account) {
+    addFolder: function(accountID) {
         let folderID = tbSync.generateUUID();
-        let provider = this.getAccountSetting(account, "provider");        
+        let provider = this.getAccountSetting(accountID, "provider");        
         
-        if (!this.folders.hasOwnProperty(account)) this.folders[account] = {};                        
+        if (!this.folders.hasOwnProperty(accountID)) this.folders[accountID] = {};                        
         
         //create folder with default settings
-        this.folders[account][folderID] = tbSync.providers.getDefaultFolderEntries(account);
+        this.folders[accountID][folderID] = tbSync.providers.getDefaultFolderEntries(accountID);
         this.saveFolders();
         return folderID;
     },
 
-    deleteFolder: function(account, folderID) {
-        delete (this.folders[account][folderID]);
+    deleteFolder: function(accountID, folderID) {
+        delete (this.folders[accountID][folderID]);
         //if there are no more folders, delete entire account entry
-        if (Object.keys(this.folders[account]).length === 0) delete (this.folders[account]);
+        if (Object.keys(this.folders[accountID]).length === 0) delete (this.folders[accountID]);
         this.saveFolders();
     },
 
     //get a specific folder
-    getFolder: function(account, folderID) {
+    getFolder: function(accountID, folderID) {
         //does the folder exist?
-        if (this.folders.hasOwnProperty(account) && this.folders[account].hasOwnProperty(folderID)) return this.folders[account][folderID];
+        if (this.folders.hasOwnProperty(accountID) && this.folders[accountID].hasOwnProperty(folderID)) return this.folders[accountID][folderID];
         else return null;
     },
 
-    isValidFolderSetting: function (account, field) {
+    isValidFolderSetting: function (accountID, field) {
         if (["cached"].includes(field)) //internal properties, do not need to be defined by user/provider
             return true;
         
         //check if provider is installed
-        let provider = this.getAccountSetting(account, "provider");
+        let provider = this.getAccountSetting(accountID, "provider");
         if (!tbSync.providers.loadedProviders.hasOwnProperty(provider)) {
-            tbSync.dump("Error @ isValidFolderSetting", "Unknown provider <"+provider+"> for account <"+account+">!");
+            tbSync.dump("Error @ isValidFolderSetting", "Unknown provider <"+provider+"> for accountID <"+accountID+">!");
             return false;
         }
 
-        if (tbSync.providers.getDefaultFolderEntries(account).hasOwnProperty(field)) {
+        if (tbSync.providers.getDefaultFolderEntries(accountID).hasOwnProperty(field)) {
             return true;
         } else {
-            tbSync.dump("Error @ isValidFolderSetting", "Unknown folder setting <"+field+"> for account <"+account+">!");
+            tbSync.dump("Error @ isValidFolderSetting", "Unknown folder setting <"+field+"> for accountID <"+accountID+">!");
             return false;
         }
     },
 
-    getFolderSetting: function(account, folderID, field) {
+    getFolderSetting: function(accountID, folderID, field) {
         //does the field exist?
-        let folder = this.getFolder(account, folderID);
+        let folder = this.getFolder(accountID, folderID);
         if (folder === null) {
             throw "Unknown folder <"+folderID+">!";
         }
         
-        if (this.isValidFolderSetting(account, field)) {
+        if (this.isValidFolderSetting(accountID, field)) {
             if (folder.hasOwnProperty(field)) {
                 return folder[field];
             } else {
-                let provider = this.getAccountSetting(account, "provider");
-                let defaultFolder = tbSync.providers.getDefaultFolderEntries(account);
+                let provider = this.getAccountSetting(accountID, "provider");
+                let defaultFolder = tbSync.providers.getDefaultFolderEntries(accountID);
                 //handle internal fields, that do not have a default value (see isValidFolderSetting)
                 return (defaultFolder[field] ? defaultFolder[field] : "");
             }
         }
     },
 
-    setFolderSetting: function (account, folderID, field, value) {
-        //this function can update ALL folders for a given account (if folderID == "") or just a specific folder
-        if (this.isValidFolderSetting(account, field)) {
+    setFolderSetting: function (accountID, folderID, field, value) {
+        //this function can update ALL folders for a given accountID (if folderID == "") or just a specific folder
+        if (this.isValidFolderSetting(accountID, field)) {
             if (folderID == "") {
-                for (let fID in this.folders[account]) {
-                    this.folders[account][fID][field] = value.toString();
+                for (let fID in this.folders[accountID]) {
+                    this.folders[accountID][fID][field] = value;
                 }
             } else {
-                this.folders[account][folderID][field] = value.toString();
+                this.folders[accountID][folderID][field] = value;
             }
             this.saveFolders();
         }
     },
     
-    resetFolderSetting: function (account, folderID, field) {
-        let provider = this.getAccountSetting(account, "provider");
-        let defaults = tbSync.providers.getDefaultFolderEntries(account);        
-        //this function can update ALL folders for a given account (if folderID == "") or just a specific folder
-        if (this.isValidFolderSetting(account, field)) {
+    resetFolderSetting: function (accountID, folderID, field) {
+        let provider = this.getAccountSetting(accountID, "provider");
+        let defaults = tbSync.providers.getDefaultFolderEntries(accountID);        
+        //this function can update ALL folders for a given accountID (if folderID == "") or just a specific folder
+        if (this.isValidFolderSetting(accountID, field)) {
             if (folderID == "") {
-                for (let fID in this.folders[account]) {
+                for (let fID in this.folders[accountID]) {
                     //handle internal fields, that do not have a default value (see isValidFolderSetting)
-                    this.folders[account][fID][field] = defaults[field] ? defaults[field] : "";
+                    this.folders[accountID][fID][field] = defaults[field] ? defaults[field] : "";
                 }
             } else {
                 //handle internal fields, that do not have a default value (see isValidFolderSetting)
-                this.folders[account][folderID][field] = defaults[field] ? defaults[field] : "";
+                this.folders[accountID][folderID][field] = defaults[field] ? defaults[field] : "";
             }
             this.saveFolders();
         }
     },
 
-    findFoldersWithSetting: function (_folderFields, _folderValues, _accountFields = [], _accountValues = []) {
-        //Find values based on one (string) or more (array) field conditions in folder and account data.
-        //folderValues element may contain "," to seperate multiple field values for matching (OR)
+    findFoldersWithSetting: function (folderQuery = {}, accountQuery = {}) {
+        // folderQuery is an object with one or more key:value pairs (logical AND) ::
+        // {key1: value1, key2: value2} 
+        // the value itself may be an array (logical OR)
         let data = [];
-        let folderFields = [];
-        let folderValues = [];
-        let accountFields = [];
-        let accountValues = [];
+        let folderQueryEntries = Object.entries(folderQuery);
+        let folderFields = folderQueryEntries.map(pair => pair[0]);
+        let folderValues = folderQueryEntries.map(pair => Array.isArray(pair[1]) ? pair[1] : [pair[1]]);
         
-        //turn string parameters into arrays
-        if (Array.isArray(_folderFields)) folderFields = _folderFields; else folderFields.push(_folderFields);
-        if (Array.isArray(_folderValues)) folderValues = _folderValues; else folderValues.push(_folderValues);
-        if (Array.isArray(_accountFields)) accountFields = _accountFields; else accountFields.push(_accountFields);
-        if (Array.isArray(_accountValues)) accountValues = _accountValues; else accountValues.push(_accountValues);
+        let accountQueryEntries = Object.entries(accountQuery);
+        let accountFields = accountQueryEntries.map(pair => pair[0]);
+        let accountValues = accountQueryEntries.map(pair => Array.isArray(pair[1]) ? pair[1] : [pair[1]]);
 
-        //fallback to old interface (name, value, account = "")
-        if (accountFields.length == 1 && accountValues.length == 0) {
-            accountValues.push(accountFields[0]);
-            accountFields[0] = "account";
-        }
+        Services.console.logStringMessage("[findFoldersWithSetting] ");
         
         for (let aID in this.folders) {
             //is this a leftover folder of an account, which no longer there?
@@ -403,7 +397,8 @@ var db = {
             //does this account match account search options?
             let accountmatch = true;
             for (let a = 0; a < accountFields.length && accountmatch; a++) {
-                accountmatch = (this.getAccountSetting(aID, accountFields[a]) == accountValues[a]);
+                accountmatch = accountValues[a].some(item => item === this.getAccountSetting(aID, accountFields[a]));
+                Services.console.logStringMessage("   " + accountFields[a] + ":" + this.getAccountSetting(aID, accountFields[a]) + " in " + JSON.stringify(accountValues[a]) + " ? " + accountmatch);
             }
             
             if (accountmatch) {
@@ -411,7 +406,8 @@ var db = {
                     //does this folder match folder search options?                
                     let foldermatch = true;
                     for (let f = 0; f < folderFields.length && foldermatch; f++) {
-                        foldermatch = folderValues[f].split(",").includes(this.getFolderSetting(aID, fID, folderFields[f]));
+                        foldermatch = folderValues[f].some(item => item === this.getFolderSetting(aID, fID, folderFields[f]));
+                        Services.console.logStringMessage("   " + folderFields[f] + ":" + this.getFolderSetting(aID, fID, folderFields[f]) + " in " + JSON.stringify(folderValues[f]) + " ? " + foldermatch);
                     }
                     if (foldermatch) data.push({accountID: aID, folderID: fID, data: this.folders[aID][fID]});
                 }

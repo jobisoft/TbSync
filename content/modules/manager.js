@@ -184,7 +184,7 @@ var manager = {
             let roAttributes = tbSync.providers[this.provider].standardFolderList.getAttributesRoAcl(folderData);
             let rwAttributes = tbSync.providers[this.provider].standardFolderList.getAttributesRwAcl(folderData);
             let itemACL = document.createElement("button");
-            itemACL.setAttribute("image", "chrome://tbsync/skin/acl_" + (folderData.getFolderSetting("downloadonly") == "1" ? "ro" : "rw") + ".png");
+            itemACL.setAttribute("image", "chrome://tbsync/skin/acl_" + (folderData.getFolderSetting("downloadonly") ? "ro" : "rw") + ".png");
             itemACL.setAttribute("class", "plain");
             itemACL.setAttribute("style", "width: 35px; min-width: 35px; margin: 0; height:26px");
             itemACL.setAttribute("updatefield", "acl");
@@ -276,14 +276,14 @@ var manager = {
                 if (!folder.accountData.isEnabled())
                     return;
             
-                if (folder.getFolderSetting("selected") == "1") {
+                if (folder.getFolderSetting("selected")) {
                     let target = folder.getFolderSetting("target");
                     if (!target || element.ownerDocument.defaultView.confirm(tbSync.getString("prompt.Unsubscribe"))) {
                         if (target) {
                             folder.targetData.removeTarget(); 
                             tbSync.db.clearChangeLog(target);
                         }
-                        folder.setFolderSetting("selected", "0");
+                        folder.setFolderSetting("selected", false);
                         
                     } else {
                         if (element) {
@@ -293,7 +293,7 @@ var manager = {
                     }
                 } else {
                     //select and update status
-                    folder.setFolderSetting("selected", "1");
+                    folder.setFolderSetting("selected", true);
                     folder.setFolderSetting("status", "aborted");
                     folder.accountData.setAccountSetting("status", "notsyncronized");
                 }
@@ -365,14 +365,14 @@ var manager = {
             if (fields.status.textContent != status) fields.status.textContent = status;
             
             if (fields.hasOwnProperty("acl")) {
-                fields.acl.setAttribute("image", "chrome://tbsync/skin/acl_" + (folderData.getFolderSetting("downloadonly") == "1" ? "ro" : "rw") + ".png");
+                fields.acl.setAttribute("image", "chrome://tbsync/skin/acl_" + (folderData.getFolderSetting("downloadonly") ? "ro" : "rw") + ".png");
                 fields.acl.setAttribute("disabled", folderData.accountData.isSyncing());
             }
             
             // update selectbox
             let selbox = fields.selectbox;
             if (selbox) {
-                if (folderData.getFolderSetting("selected") == "1") {
+                if (folderData.getFolderSetting("selected")) {
                     selbox.setAttribute("checked", true);
                 } else {
                     selbox.removeAttribute("checked");

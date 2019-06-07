@@ -442,7 +442,7 @@ var addressbook = {
             
             //should we remove the folder by setting its state to cached?
            if (cacheFolder) {
-               this._folderData.setFolderSetting("cached", "1");
+               this._folderData.setFolderSetting("cached", true);
            }
         }     
     },
@@ -461,7 +461,7 @@ var addressbook = {
         
         if (directory !== null && directory instanceof Components.interfaces.nsIAbDirectory) {
             //check for double targets - just to make sure
-            let folders = tbSync.db.findFoldersWithSetting(["target"], [target], "account", folderData.accountID);
+            let folders = tbSync.db.findFoldersWithSetting({"target": target}, {"accountID": folderData.accountID});
             if (folders.length == 0)
                 return null;                
             if (folders.length == 1)
@@ -531,7 +531,7 @@ var addressbook = {
     },
 
     getFolderFromDirectoryUID: function(bookUID) {
-        let folders = tbSync.db.findFoldersWithSetting(["target"], [bookUID]);
+        let folders = tbSync.db.findFoldersWithSetting({"target": bookUID});
         if (folders.length == 1) {
             let accountData = new tbSync.AccountData(folders[0].accountID);
             return new tbSync.FolderData(accountData, folders[0].folderID);
@@ -606,8 +606,8 @@ var addressbook = {
                                 tbSync.db.clearChangeLog(bookUID);			
 
                                 //unselect book if deleted by user and update settings window, if open
-                                if (folderData.getFolderSetting("selected") == "1") {
-                                    folderData.setFolderSetting("selected", "0");
+                                if (folderData.getFolderSetting("selected")) {
+                                    folderData.setFolderSetting("selected", false);
                                     //update settings window, if open
                                     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folderData.accountID);
                                 }

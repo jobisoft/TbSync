@@ -113,7 +113,7 @@ var providers = {
                     if (accountData.getAccountSetting("status") == "syncing") accountData.setAccountSetting("status", "notsyncronized");
 
                     // set each folder with PENDING status to ABORTED
-                    let folders = tbSync.db.findFoldersWithSetting("status", "pending", accountData.accountID);
+                    let folders = tbSync.db.findFoldersWithSetting({"status": "pending"}, {"accountID": accountData.accountID});
 
                     for (let f=0; f < folders.length; f++) {
                         tbSync.db.setFolderSetting(folders[f].accountID, folders[f].folderID, "status", "aborted");
@@ -146,10 +146,10 @@ var providers = {
         
         //add system properties
         defaults.provider = provider;
-        defaults.account = "";
-        defaults.lastsynctime = "0";
+        defaults.accountID = "";
+        defaults.lastsynctime = 0;
         defaults.status = "disabled"; //global status: disabled, OK, syncing, notsyncronized, nolightning, ...
-        defaults.autosync = "0";
+        defaults.autosync = 0;
         defaults.accountname = "";
 
         return defaults;
@@ -160,10 +160,10 @@ var providers = {
         let defaults = tbSync.providers[provider].api.getDefaultFolderEntries();
         
         //add system properties
-        defaults.account = accountID;
+        defaults.accountID = accountID;
         defaults.targetType = "";
-        defaults.cached = "0";
-        defaults.selected = "0";
+        defaults.cached = false;
+        defaults.selected = false;
         
         return defaults;
     },

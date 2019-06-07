@@ -64,7 +64,7 @@ var FolderData = class {
     getFolderStatus() {
         let status = "";
         
-        if (this.getFolderSetting("selected") == "1") {
+        if (this.getFolderSetting("selected")) {
             //default
             status = tbSync.getString("status." + this.getFolderSetting("status"), this.accountData.getAccountSetting("provider")).split("||")[0];
 
@@ -137,7 +137,7 @@ var AccountData = class {
     
     getAllFolders() {
         let allFolders = [];
-        let folders = tbSync.db.findFoldersWithSetting(["cached"], ["0"], "account", this.accountID);
+        let folders = tbSync.db.findFoldersWithSetting({"cached": false}, {"accountID": this.accountID});
         for (let i=0; i < folders.length; i++) {          
             allFolders.push(new tbSync.FolderData(this, folders[i].folderID));
         }
@@ -146,7 +146,7 @@ var AccountData = class {
 
     getAllFoldersIncludingCache() {
         let allFolders = [];
-        let folders = tbSync.db.findFoldersWithSetting([], [], "account", this.accountID);
+        let folders = tbSync.db.findFoldersWithSetting({}, {"accountID": this.accountID});
         for (let i=0; i < folders.length; i++) {          
             allFolders.push(new tbSync.FolderData(this, folders[i].folderID));
         }
@@ -154,13 +154,15 @@ var AccountData = class {
     }
     
     getFolder(setting, value) {
-        let folders = tbSync.db.findFoldersWithSetting([setting, "cached"], [value, "0"], "account", this.accountID);
+        // ES6 supports variable keys by putting it into brackets
+        let folders = tbSync.db.findFoldersWithSetting({[setting]: value, "cached": false}, {"accountID": this.accountID});
         if (folders.length > 0) return new tbSync.FolderData(this, folders[0].folderID);
         return null;
     }
 
     getFolderFromCache(setting, value) {
-        let folders = tbSync.db.findFoldersWithSetting([setting, "cached"], [value, "1"], "account", this.accountID);
+        // ES6 supports variable keys by putting it into brackets
+        let folders = tbSync.db.findFoldersWithSetting({[setting]: value, "cached": true}, {"accountID": this.accountID});
         if (folders.length > 0) return new tbSync.FolderData(this, folders[0].folderID);
         return null;
     }
@@ -267,7 +269,7 @@ var SyncData = class {
 
     //all functions provider should use should be in here
     //providers should not modify properties directly
-    //try to eliminate account and folderID usage
+    //try to eliminate accountID and folderID usage
     //icons must use db check and not just directory property, to see "dead" folders
     //hide cache management
     //when getSyncDataObj is used never change the folder id as a sync may be going on!
@@ -344,7 +346,7 @@ var core = {
 
     isConnected: function (accountID) {
         let status = tbSync.db.getAccountSetting(accountID, "status");
-        let validFolders = tbSync.db.findFoldersWithSetting(["cached"], ["0"], "account", accountID);
+        let validFolders = tbSync.db.findFoldersWithSetting({"cached": false}, {"accountID": accountID});
         return (status != "disabled" && validFolders.length > 0);
     },
     
@@ -426,7 +428,7 @@ var core = {
 
             //set all selected folders to "pending", so they are marked for syncing
             //this also removes all leftover cached folders and sets all other folders to a well defined cached = "0"
-            //which will set this account as connected (if at least one folder with cached == "0" is present)
+            //which will set this account as connected (if at least one non-cached folder is present)
             this.prepareFoldersForSync(syncData);
 
             // update folder list in GUI
@@ -486,28 +488,28 @@ var core = {
                 folder.targetData.removeTarget(); 
                 tbSync.db.clearChangeLog(target);
             }
-            folder.setFolderSetting("selected", "0");
-            folder.setFolderSetting("cached", "1");
+            folder.setFolderSetting("selected", false);
+            folder.setFolderSetting("cached", true);
         }
     },
 
     //set all selected folders to "pending", so they are marked for syncing 
     //this also removes all leftover cached folders and sets all other folders to a well defined cached = "0"
-    //which will set this account as connected (if at least one folder with cached == "0" is present)
+    //which will set this account as connected (if at least one non-cached folder is present)
     prepareFoldersForSync: function(syncData) {
         let folders = syncData.accountData.getAllFoldersIncludingCache();
         for (let folder of folders) {
             //delete all leftover cached folders
-            if (folder.getFolderSetting("cached") == "1") {
+            if (folder.getFolderSetting("cached")) {
                 tbSync.db.deleteFolder(folder.accountID, folder.folderID);
                 continue;
             } else {
                 //set well defined cache state
-                folder.setFolderSetting("cached", "0");
+                folder.setFolderSetting("cached", false);
             }
 
             //set selected folders to pending, so they get synced
-            if (folder.getFolderSetting("selected") == "1") {
+            if (folder.getFolderSetting("selected")) {
                folder.setFolderSetting("status", "pending");
             }
         }
@@ -541,7 +543,7 @@ var core = {
 
     finishAccountSync: function(syncData, statusData) {
         // set each folder with PENDING status to ABORTED
-        let folders = tbSync.db.findFoldersWithSetting("status", "pending", syncData.accountData.accountID);
+        let folders = tbSync.db.findFoldersWithSetting({"status": "pending"}, {"accountID": syncData.accountData.accountID});
         for (let i=0; i < folders.length; i++) {
             tbSync.db.setFolderSetting(folders[i].accountID, folders[i].folderID, "status", "aborted");
         }
@@ -562,7 +564,7 @@ var core = {
             tbSync.errorlog.add("warning", syncData.errorOwnerData, statusData.message, statusData.details);
         } else {
             //account itself is ok, search for folders with error
-            folders = tbSync.db.findFoldersWithSetting(["selected","cached"], ["1","0"], syncData.accountData.accountID);
+            folders = tbSync.db.findFoldersWithSetting({"selected": true, "cached": false}, {"accountID": syncData.accountData.accountID});
             for (let i in folders) {
                 let folderstatus = folders[i].data.status.split(".")[0];
                 if (folderstatus != "" && folderstatus != tbSync.StatusData.SUCCESS && folderstatus != "aborted") {

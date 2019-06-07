@@ -64,7 +64,7 @@ var tbSyncAbServerSearch = {
                         let searchbox =  window.document.getElementById("peopleSearchInput");
                         let target = window.GetSelectedDirectory();
                         if (searchbox && target) {
-                            let folders = tbSync.db.findFoldersWithSetting("target", target);
+                            let folders = tbSync.db.findFoldersWithSetting({"target": target});
                             if (folders.length == 1 && tbSync.providers[tbSync.db.getAccountSetting(folders[0].accountID, "provider")].api.abServerSearch) {
                                 searchbox.setAttribute("placeholder", tbSync.getString("addressbook.searchgal::" + tbSync.db.getAccountSetting(folders[0].accountID, "accountname")));
                             } else {
@@ -109,15 +109,15 @@ var tbSyncAbServerSearch = {
         let target = window.GetSelectedDirectory();
         if (target == "moz-abdirectory://?") return; //global search not yet(?) supported
         
-        let folders = tbSync.db.findFoldersWithSetting("target", target);
+        let folders = tbSync.db.findFoldersWithSetting({"target": target});
         if (folders.length == 1) {
             let searchbox = window.document.getElementById("peopleSearchInput");
             let query = searchbox.value;        
             let addressbook = tbSync.addressbook.getAddressBookObject(target);
 
-            let account = folders[0].accountID;
-            let provider = tbSync.db.getAccountSetting(account, "provider");
-            let accountname = tbSync.db.getAccountSetting(account, "accountname");
+            let accountID = folders[0].accountID;
+            let provider = tbSync.db.getAccountSetting(accountID, "provider");
+            let accountname = tbSync.db.getAccountSetting(accountID, "accountname");
             if (tbSync.providers[provider].api.abServerSearch) {
 
                 if (query.length<3) {
@@ -135,7 +135,7 @@ var tbSyncAbServerSearch = {
                             await tbSync.tools.sleep(1000);
                             let currentQuery = this._serverSearchNextQuery;
                             this._serverSearchNextQuery = "";
-                            let results = await tbSync.providers[provider].api.abServerSearch (account, currentQuery, "search");
+                            let results = await tbSync.providers[provider].api.abServerSearch (accountID, currentQuery, "search");
 
                             //delete all old results
                             tbSyncAbServerSearch.clearServerSearchResults(window);

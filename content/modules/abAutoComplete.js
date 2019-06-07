@@ -125,16 +125,16 @@ abAutoComplete.Search.prototype = {
           
         if (aSearchString.length > 3) {
             for (let i=0; i<accounts.IDs.length; i++) {
-                let account = accounts.IDs[i];
-                let provider = accounts.data[account].provider;
-                let status = accounts.data[account].status;
+                let accountID = accounts.IDs[i];
+                let provider = accounts.data[accountID].provider;
+                let status = accounts.data[accountID].status;
                 
                 if (status == "disabled") continue;
                 
                 //start all requests parallel (do not wait till done here, no await, push the promise)
                 if (tbSync.providers[provider].api.abServerSearch) {
                     try {
-                        requests.push(tbSync.providers[provider].api.abServerSearch (account, aSearchString, "autocomplete"));
+                        requests.push(tbSync.providers[provider].api.abServerSearch (accountID, aSearchString, "autocomplete"));
                     } catch (e) {}
                 }
             }
@@ -146,7 +146,7 @@ abAutoComplete.Search.prototype = {
                     for (let count=0; count < results.length; count++) {
                         if (results[count].autocomplete) {
                             values.push(results[count].autocomplete.value);
-                            comments.push(results[count].autocomplete.account);
+                            comments.push(results[count].autocomplete.accountID);
                         }
                     }
                 } catch (e) {};
@@ -181,7 +181,7 @@ abAutoComplete.Result.prototype = {
       },
 
     /**
-     * Get the comment of the result at the given index (holds the account this search result belongs to)
+     * Get the comment of the result at the given index (holds the accountID this search result belongs to)
      */
       getCommentAt(aIndex) {
         return tbSync.db.getAccountSetting(this.comments[aIndex], "accountname");
