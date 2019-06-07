@@ -47,7 +47,7 @@ var addressbook = {
 
     
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-    // * AbItem and AbDirectory Objects
+    // * AbItem and AbDirectory Classes
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     
     AbItem : class {
@@ -415,7 +415,6 @@ var addressbook = {
                     MailServices.ab.deleteAddressBook(directory.URI);
                 }
             } catch (e) {}
-            // this will be catched by listeners, wo reset everything else
         }
         
         decoupleTarget(suffix, cacheFolder = false) {
