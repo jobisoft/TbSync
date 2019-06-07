@@ -72,6 +72,10 @@ var addressbook = {
             }
         }
         
+        get abDirectory() {
+            return this._abDirectory;
+        }
+        
         get UID() {
             if (this._tempListDirectory) return this._tempListDirectory.UID;
             return this._card.UID;
@@ -210,17 +214,21 @@ var addressbook = {
         }
         
         get changelogStatus() {
-            // use UID as fallback key
             let key = this._abDirectory.changeLogKey;
-            let value = key ? this.getProperty(key) : this.UID;
-            return tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, value);
+            let value = key ? this.getProperty(key) : "";
+            let status = value ? tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, value) : "";
+            
+            // use UID as fallback
+            return status ? status : tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, "UID:" + this.UID);
         }
 
         set changelogStatus(status) {            
-            //use UID as fallback key
             let key = this._abDirectory.changeLogKey;
-            let value = key ? this.getProperty(key) : this.UID;
-
+            let value = key ? this.getProperty(key) : "";
+            
+            // if no key or no keyValue, use UID as fallback
+            if (!value)  value = "UID:" + this.UID;
+            
             if (value) {
                 if (!status) {
                     tbSync.db.removeItemFromChangeLog(this._abDirectory.UID, value);
@@ -354,7 +362,8 @@ var addressbook = {
             let changes = [];
             let dbChanges = tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "_by_user");
             for (let change of dbChanges) {
-                change.card = this.getItemFromProperty(this.changeLogKey, change.id);
+                //the change.id could start with "UID:" which indicates the item was added to the changelog with its UID, because the changelogKey did not exists            
+                change.card = change.id.startsWith("UID:") ? this.getItemFromProperty("UID", change.id.substr(4)) : this.getItemFromProperty(this.changeLogKey, change.id);
                 changes.push(change);
             }
             return changes;
@@ -663,7 +672,7 @@ var addressbook = {
                                 abItem.changelogStatus = "";
                                 return;
                             }
-
+//Handle Missing ChangelogKey
                             // update changelog based on old status
                             switch (topic) {
                                 case "addrbook-contact-created":
@@ -765,22 +774,32 @@ var addressbook = {
                         switch (aTopic) {
                             case "addrbook-list-created":
                             {
+                                // To simplify mail list management, we shadow its core properties, need to update them now
+                                abItem.setProperty("ListName", aSubject.displayName);
+                                abItem.setProperty("ListNickName", aSubject.getProperty("NickName", ""));
+                                abItem.setProperty("ListDescription", aSubject.getProperty("Notes", ""));
+
+
                                 switch (itemStatus) {
                                     case "added_by_user": 
+                            Services.console.logStringMessage("[ListStatus] 1");
                                         // double notification, which is probably impossible, ignore
                                         return;
 
                                     case "modified_by_user": 
+                            Services.console.logStringMessage("[ListStatus] 2");
                                         // late create notification
                                         abItem.changelogStatus = "added_by_user";
                                         break;
 
                                     case "deleted_by_user":
+                            Services.console.logStringMessage("[ListStatus] 3");
                                         // unprocessed delete for this card, undo the delete (moved out and back in)
                                         abItem.changelogStatus = "modified_by_user";
                                         break;
                                     
                                     default:
+                            Services.console.logStringMessage("[ListStatus] 4");
                                         // new list
                                         abItem.changelogStatus = "added_by_user";
                                         break;
@@ -841,6 +860,11 @@ var addressbook = {
                         switch (aTopic) {
                             case "addrbook-list-updated":
                             {
+                                // To simplify mail list management, we shadow its core properties, need to update them now
+                                abItem.setProperty("ListName", aSubject.dirName);
+                                abItem.setProperty("ListNickName", aSubject.listNickName);
+                                abItem.setProperty("ListDescription", aSubject.description);
+
                                 switch (itemStatus) {
                                     case "added_by_user": 
                                         // unprocessed add for this card, keep status
@@ -859,11 +883,6 @@ var addressbook = {
                             }
                             break;
                         }
-                        
-                        // To simplify mail list management, we shadow its core properties, need to update them now
-                        abItem.setProperty("ListName", aSubject.dirName);
-                        abItem.setProperty("ListNickName", aSubject.listNickName);
-                        abItem.setProperty("ListDescription", aSubject.description);
                         
                         tbSync.core.setTargetModified(folderData);
                         tbSync.providers[folderData.accountData.getAccountSetting("provider")].addressbook.listObserver(aTopic, folderData, abItem, null);

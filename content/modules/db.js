@@ -379,7 +379,7 @@ var db = {
         let accountFields = accountQueryEntries.map(pair => pair[0]);
         let accountValues = accountQueryEntries.map(pair => Array.isArray(pair[1]) ? pair[1] : [pair[1]]);
 
-        Services.console.logStringMessage("[findFoldersWithSetting] ");
+        //Services.console.logStringMessage("[findFoldersWithSetting] ");
         
         for (let aID in this.folders) {
             //is this a leftover folder of an account, which no longer there?
@@ -398,7 +398,7 @@ var db = {
             let accountmatch = true;
             for (let a = 0; a < accountFields.length && accountmatch; a++) {
                 accountmatch = accountValues[a].some(item => item === this.getAccountSetting(aID, accountFields[a]));
-                Services.console.logStringMessage("   " + accountFields[a] + ":" + this.getAccountSetting(aID, accountFields[a]) + " in " + JSON.stringify(accountValues[a]) + " ? " + accountmatch);
+                //Services.console.logStringMessage("   " + accountFields[a] + ":" + this.getAccountSetting(aID, accountFields[a]) + " in " + JSON.stringify(accountValues[a]) + " ? " + accountmatch);
             }
             
             if (accountmatch) {
@@ -407,7 +407,7 @@ var db = {
                     let foldermatch = true;
                     for (let f = 0; f < folderFields.length && foldermatch; f++) {
                         foldermatch = folderValues[f].some(item => item === this.getFolderSetting(aID, fID, folderFields[f]));
-                        Services.console.logStringMessage("   " + folderFields[f] + ":" + this.getFolderSetting(aID, fID, folderFields[f]) + " in " + JSON.stringify(folderValues[f]) + " ? " + foldermatch);
+                        //Services.console.logStringMessage("   " + folderFields[f] + ":" + this.getFolderSetting(aID, fID, folderFields[f]) + " in " + JSON.stringify(folderValues[f]) + " ? " + foldermatch);
                     }
                     if (foldermatch) data.push({accountID: aID, folderID: fID, data: this.folders[aID][fID]});
                 }

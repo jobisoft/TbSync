@@ -10,41 +10,40 @@
 
 var PasswordAuthData = class {
     constructor(accountData) {
-        this.accountData = accountData;
-        this.provider = accountData.getAccountSetting("provider");
-        this.userField = tbSync.providers[this.provider].passwordAuth.getUserField4PasswordManager(accountData);
-        this.hostField = tbSync.providers[this.provider].passwordAuth.getHostField4PasswordManager(accountData);
+        this._accountData = accountData;
+        this._provider = accountData.getAccountSetting("provider");
+    }
+    
+    getHost() {
+        return tbSync.providers[this._provider].passwordAuth.getHost(this._accountData);
     }
     
     getUsername() {
-        return this.accountData.getAccountSetting(this.userField);
+        return tbSync.providers[this._provider].passwordAuth.getUsername(this._accountData);
     }
     
     getPassword() {
-        let host = this.accountData.getAccountSetting(this.hostField)
-        let origin = passwordAuth.getOrigin4PasswordManager(this.provider, host);
+        let origin = passwordAuth.getOrigin4PasswordManager(this._provider, this.getHost());
         return passwordAuth.getLoginInfo(origin, "TbSync", this.getUsername());
     }
     
     setUsername(newUsername) {
         // as updating the username is a bit more work, only do it, if it changed
         if (newUsername != this.getUsername()) {        
-            let host = this.accountData.getAccountSetting(this.hostField)
-            let origin = passwordAuth.getOrigin4PasswordManager(this.provider, host);
+            let origin = passwordAuth.getOrigin4PasswordManager(this._provider, this.getHost());
 
             //temp store the old password, as we have to remove the current entry from the password manager
             let oldPassword = this.getPassword();
             // try to remove the current/old entry
             passwordAuth.removeLoginInfo(origin, "TbSync", this.getUsername())
             //update username
-            this.accountData.setAccountSetting(this.userField, newUsername);
+            tbSync.providers[this._provider].passwordAuth.setUsername(this._accountData, newUsername);
             passwordAuth.setLoginInfo(origin, "TbSync", newUsername, oldPassword);
         }
     }
     
     setPassword(newPassword) {
-        let host = this.accountData.getAccountSetting(this.hostField)
-        let origin = passwordAuth.getOrigin4PasswordManager(this.provider, host);
+        let origin = passwordAuth.getOrigin4PasswordManager(this._provider, this.getHost());
         passwordAuth.setLoginInfo(origin, "TbSync", this.getUsername(), newPassword);
     }
 }
@@ -59,7 +58,8 @@ var passwordAuth = {
     unload: async function () {
     },
 
-    getOrigin4PasswordManager: function (provider, host) { //use https???
+    getOrigin4PasswordManager: function (provider, host) {
+        // use nsIUri to get the plain host part, newURI needs a full URI, add scheme if missing
         let uri = Services.io.newURI((!host.startsWith("http://") && !host.startsWith("https://")) ? "http://" + host : host);
         return provider + "://" + uri.host;
     },
