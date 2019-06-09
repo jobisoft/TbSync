@@ -150,8 +150,10 @@ var db = {
     // Remove all cards of a parentId from ChangeLog
     clearChangeLog: function (parentId) {
         if (parentId) {
+            // we allow extra parameters added to a parentId, but still want to delete all items of that parent
+            // so we check for startsWith instead of equal
             for (let i=this.changelog.length-1; i>-1; i-- ) {
-                if (this.changelog[i].parentId == parentId) this.changelog.splice(i,1);
+                if (this.changelog[i].parentId.startsWith(parentId)) this.changelog.splice(i,1);
             }
             this.saveChangelog();
         }

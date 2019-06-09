@@ -78,7 +78,7 @@ var addressbook = {
                 return this.UID;
             
             if (this._isMailList) {
-                let value = tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, this.UID + "#" + property);
+                let value = tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID + "#" + this.UID, property);
                 return value ? value : fallback;    
             } else {
                 return this._card.getProperty(property, fallback);
@@ -93,7 +93,7 @@ var addressbook = {
                 return;
 
             if (this._isMailList) {
-                tbSync.db.addItemToChangeLog(this._abDirectory.UID, this.UID + "#" + property, value);
+                tbSync.db.addItemToChangeLog(this._abDirectory.UID + "#" + this.UID, property, value);
             } else {
                 this._card.setProperty(property, value);
             }
@@ -101,7 +101,7 @@ var addressbook = {
         
         deleteProperty(property) {
             if (this._isMailList) {
-                tbSync.db.removeItemFromChangeLog(this._abDirectory.UID, this.UID + "#" + property);
+                tbSync.db.removeItemFromChangeLog(this._abDirectory.UID + "#" + this.UID, property);
             } else {
                 this._card.deleteProperty(property);
             }
@@ -216,7 +216,7 @@ var addressbook = {
                 if (!status) {
                     tbSync.db.removeItemFromChangeLog(this._abDirectory.UID, value);
                     return;
-                }            
+                }
 
                 if (this._abDirectory.logUserChanges || status.endsWith("_by_server")) {
                     tbSync.db.addItemToChangeLog(this._abDirectory.UID, value, status);
@@ -286,10 +286,13 @@ var addressbook = {
             }
         }
         
-        modify(abItem) {
-            if (!abItem.changelogStatus || !abItem.changelogStatus.endsWith("_by_user")) {
+        modify(abItem, pretagChangelogWithByServerEntry = true) {
+            // only add entry if the current entry does not start with _by_user
+            let status = abItem.changelogStatus ? abItem.changelogStatus : "";
+            if (pretagChangelogWithByServerEntry && !status.endsWith("_by_user")) {
                 abItem.changelogStatus = "modified_by_server";
             }
+            
             if (abItem.isMailList) {                
                 // get mailListDirectory
                 let mailListDirectory = MailServices.ab.getDirectory(abItem._card.mailListURI);
@@ -359,6 +362,10 @@ var addressbook = {
 
         removeItemFromChangeLog(id) {             
             tbSync.db.removeItemFromChangeLog(this._directory.UID, id);
+        }
+        
+        clearChangelog() {
+            tbSync.db.clearChangeLog(this._directory.UID);
         }
         
     },
@@ -636,6 +643,7 @@ var addressbook = {
                         let directory = tbSync.addressbook.getDirectoryFromDirectoryUID(bookUID);
                         let abDirectory = new tbSync.addressbook.AbDirectory(directory, folderData);
                         let abItem = new tbSync.addressbook.AbItem(abDirectory, aSubject);
+                        let itemStatus = abItem.changelogStatus;
                         
                         //check for delayedCreation, multiple causes, only once, stored in bitpattern
                         //bit 1-3 = "just now"
@@ -659,7 +667,6 @@ var addressbook = {
                         }
 
                         // if this card was created by us, it will be in the log
-                        let itemStatus = abItem.changelogStatus;
                         if (itemStatus && itemStatus.endsWith("_by_server")) {
                             //we caused this, ignore
                             abItem.changelogStatus = "";
@@ -673,9 +680,7 @@ var addressbook = {
                         if (aTopic == "addrbook-contact-created" && abDirectory.primaryKeyField && (((delayedCreation >> 4) & 0x2) == 0)) {
                             tbSync.db.addItemToChangeLog(bookUID, aSubject.uuid + "#delayedCreation", delayedCreation | 0x2); //uuid = directoryId+localId
                             abItem.setProperty(abDirectory.primaryKeyField, tbSync.providers[folderData.accountData.getAccountSetting("provider")].addressbook.generatePrimaryKey(folderData));
-                            //override standard behaviour, this card was added by the user
-                            abItem.changelogStatus = "added_by_user";
-                            abDirectory.modify(abItem);
+                            abDirectory.modify(abItem, /*pretagChangelogWithByServerEntry */ false);
                             return;
                         }
 
@@ -817,6 +822,8 @@ var addressbook = {
 
                             case "addrbook-list-removed":
                             {
+                                //remove properties of this ML stored in changelog
+                                tbSync.db.clearChangeLog(abDirectory.UID + "#" + abItem.UID);
                                 switch (itemStatus) {
                                     case "added_by_user": 
                                         // unprocessed add for this card, revert
