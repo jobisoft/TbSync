@@ -259,13 +259,16 @@ var addressbook = {
             return new tbSync.addressbook.AbItem(this, listDirectory);
         }
 
-        add(abItem) {
+        add(abItem, pretagChangelogWithByServerEntry = true) {
             if (this.primaryKeyField && !abItem.getProperty(this.primaryKeyField)) {
                 abItem.setProperty(this.primaryKeyField, tbSync.providers[this._provider].addressbook.generatePrimaryKey(this._folderData));
                 Services.console.logStringMessage("[AbDirectory::add] Generated primary key!");
             }
             
-            abItem.changelogStatus = "added_by_server";
+            if (pretagChangelogWithByServerEntry) {
+                abItem.changelogStatus = "added_by_server";
+            }
+            
             if (abItem.isMailList && abItem._tempListDirectory) {
                 // update directory props first
                 abItem._tempListDirectory.dirName = abItem.getProperty("ListName");
@@ -309,8 +312,10 @@ var addressbook = {
             }
         }        
         
-        remove(abItem) {
-            abItem.changelogStatus = "deleted_by_server";
+        remove(abItem, pretagChangelogWithByServerEntry = true) {
+            if (pretagChangelogWithByServerEntry) {
+                abItem.changelogStatus = "deleted_by_server";
+            }
             let delArray = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
             delArray.appendElement(abItem._card, true);
             this._directory.deleteCards(delArray);
