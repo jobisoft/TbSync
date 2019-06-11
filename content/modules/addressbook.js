@@ -321,6 +321,20 @@ var addressbook = {
             this._directory.deleteCards(delArray);
         }
         
+        getAllItems () {
+            let rv = [];
+            let cards = this._directory.childCards;
+            while (true) {
+                let more = false;
+                try { more = cards.hasMoreElements() } catch (e) { Components.utils.reportError(e); }
+                if (!more) break;
+
+                let card = new addressbook.AbItem( this._directory, cards.getNext().QueryInterface(Components.interfaces.nsIAbCard));
+                rv.push(card);
+            }
+            return rv;
+        }
+            
         getItemFromProperty(property, value) {
             // try to use the standard card method first
             let card = this._directory.getCardFromProperty(property, value, true);
