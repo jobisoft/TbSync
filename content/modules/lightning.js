@@ -79,7 +79,7 @@ var lightning = {
                     throw new Error("CouldNotGetOrCreateTarget");
             }
 
-            return calendar;
+            return calendar; //TODO: changelog + async Wrapper
         }
         
         removeTarget() {
@@ -127,135 +127,195 @@ var lightning = {
     
     
     isAvailable: function () {
-        //if it is known - and still valid - just return true
+        //if it is known - and still valid - return true
         return (this.lightningInitDone && typeof cal !== 'undefined');
+    },
+    
+    getFolderFromCalendarUID: function(calUID) {
+        let folders = tbSync.db.findFoldersWithSetting({"target": calUID});
+        if (folders.length == 1) {
+            let accountData = new tbSync.AccountData(folders[0].accountID);
+            return new tbSync.FolderData(accountData, folders[0].folderID);
+        }
+        return null;
     },
     
     calendarObserver : { 
         onStartBatch : function () {},
         onEndBatch : function () {},
-        onLoad : function (aCalendar) { tbSync.dump("calendarObserver::onLoad","<" + aCalendar.name + "> was loaded."); },
+        onLoad : function (aCalendar) {},
+        onError : function (aCalendar, aErrNo, aMessage) {},
 
-        onAddItem : function (aItem) { 
-            let itemStatus = tbSync.db.getItemStatusFromChangeLog(aItem.calendar.id, aItem.id)
+        onAddItem : function (aAddedItem) { 
+            if (!(aAddedItem && aAddedItem.calendar))
+                return;
 
-            //if an event in one of the synced calendars is added, update status of target and account
-            let folders = tbSync.db.findFoldersWithSetting({"target": aItem.calendar.id, "useChangeLog": true}); //useChangeLog is gone
-            if (folders.length == 1) {
-                if (itemStatus == "added_by_server") {
-                    tbSync.db.removeItemFromChangeLog(aItem.calendar.id, aItem.id);
-                } else if (itemStatus === null) {
-                    tbSync.core.setTargetModified(folders[0]);
-                    tbSync.db.addItemToChangeLog(aItem.calendar.id, aItem.id, "added_by_user");
+            let folderData = tbSync.lightning.getFolderFromCalendarUID(aAddedItem.calendar.id);                    
+            if (folderData 
+                && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountSetting("provider"))
+                && folderData.getFolderSetting("targetType") == "calendar") {
+
+                let itemStatus = tbSync.db.getItemStatusFromChangeLog(aAddedItem.calendar.id, aAddedItem.id)
+                if (itemStatus && itemStatus.endsWith("_by_server")) {
+                    //we caused this, ignore
+                    tbSync.db.removeItemFromChangeLog(aAddedItem.calendar.id, aAddedItem.id);
+                    return;
                 }
+
+                //if (itemStatus === null) {
+                //    tbSync.db.addItemToChangeLog(aAddedItem.calendar.id, aAddedItem.id, "added_by_user");
+                //}
+                
+                //tbSync.core.setTargetModified(folderData);
+                tbSync.providers[folderData.accountData.getAccountSetting("provider")].calendar.itemObserver("onAddItem", folderData, aAddedItem);                                        
             }
         },
 
         onModifyItem : function (aNewItem, aOldItem) {
             //check, if it is a pure modification within the same calendar
-            if (aNewItem && aNewItem.calendar && aOldItem && aOldItem.calendar) {
-                if (aNewItem.calendar.id == aOldItem.calendar.id) {
+            if (!(aNewItem && aNewItem.calendar && aOldItem && aOldItem.calendar && aNewItem.calendar.id == aOldItem.calendar.id))
+                return;
 
-                    //check, if it is an event in one of the synced calendars
-                    let newFolders = tbSync.db.findFoldersWithSetting({"target": aNewItem.calendar.id, "useChangeLog": true}); //useChangeLog is gone
-                    if (newFolders.length == 1) {
-                        //check if t was modified by the server
-                        let itemStatus = tbSync.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
+            let folderData = tbSync.lightning.getFolderFromCalendarUID(aNewItem.calendar.id);                    
+            if (folderData 
+                && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountSetting("provider"))
+                && folderData.getFolderSetting("targetType") == "calendar") {
 
-                        if (itemStatus == "modified_by_server") {
-                            tbSync.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);
-                        } else  if (itemStatus != "added_by_user" && itemStatus != "added_by_server") {
-                            //added_by_user -> it is a local unprocessed add do not re-add it to changelog
-                            //added_by_server -> it was just added by the server but our onItemAdd has not yet seen it, do not overwrite it - race condition - this local change is probably not caused by the user - ignore it?
-                            tbSync.core.setTargetModified(newFolders[0]);
-                            tbSync.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "modified_by_user");
-                        }
-                    }
-                    
+                let itemStatus = tbSync.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
+                if (itemStatus && itemStatus.endsWith("_by_server")) {
+                    //we caused this, ignore
+                    tbSync.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);
+                    return;
                 }
-            } else {
-                tbSync.dump("Error cal.onModifyItem", aNewItem.id + " has no calendar property");                
+
+                //if (itemStatus != "added_by_user" && itemStatus != "added_by_server") {
+                //    //added_by_user -> it is a local unprocessed add do not re-add it to changelog
+                //    //added_by_server -> it was just added by the server but our onItemAdd has not yet seen it, do not overwrite it - race condition - this local change is probably not caused by the user - ignore it?
+                //    tbSync.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "modified_by_user");
+                //}
+
+                //tbSync.core.setTargetModified(folderData);
+                tbSync.providers[folderData.accountData.getAccountSetting("provider")].calendar.itemObserver("onModifyItem", folderData, aNewItem, aOldItem);                                        
             }
         },
 
         onDeleteItem : function (aDeletedItem) {
-            if (aDeletedItem && aDeletedItem.calendar) {
-                //if an event in one of the synced calendars is deleted, update status of target and account
-                let folders = tbSync.db.findFoldersWithSetting({"target": aDeletedItem.calendar.id, "useChangeLog": true}); //useChangeLog is gone
-                if (folders.length == 1) {
-                    let itemStatus = tbSync.db.getItemStatusFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id)
-                    if (itemStatus == "deleted_by_server" || itemStatus == "added_by_user") {
-                        //if it is a delete pushed from the server, simply acknowledge (do nothing) 
-                        //a local add, which has not yet been processed (synced) is deleted -> remove all traces
-                        tbSync.db.removeItemFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id);
-                    } else {
-                        tbSync.core.setTargetModified(folders[0]);
-                        tbSync.db.addItemToChangeLog(aDeletedItem.calendar.id, aDeletedItem.id, "deleted_by_user");
-                    }
+            if (!(aDeletedItem && aDeletedItem.calendar))
+                return;
+
+            let folderData = tbSync.lightning.getFolderFromCalendarUID(aDeletedItem.calendar.id);                    
+            if (folderData 
+                && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountSetting("provider"))
+                && folderData.getFolderSetting("targetType") == "calendar") {
+
+                let itemStatus = tbSync.db.getItemStatusFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id)
+                if (itemStatus && itemStatus.endsWith("_by_server")) {
+                    //we caused this, ignore
+                    tbSync.db.removeItemFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id);
+                    return;
                 }
-            } else {
-                tbSync.dump("Error cal.onDeleteItem", aDeletedItem.id + " has no calendar property");                
+
+                //if (itemStatus == "deleted_by_server" || itemStatus == "added_by_user") {
+                //    //if it is a delete pushed from the server, simply acknowledge (do nothing) 
+                //    //a local add, which has not yet been processed (synced) is deleted -> remove all traces
+                //    tbSync.db.removeItemFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id);
+                //} else {
+                //    tbSync.core.setTargetModified(folders[0]);
+                //    tbSync.db.addItemToChangeLog(aDeletedItem.calendar.id, aDeletedItem.id, "deleted_by_user");
+                //}
+
+                //tbSync.core.setTargetModified(folderData);
+                tbSync.providers[folderData.accountData.getAccountSetting("provider")].calendar.itemObserver("onDeleteItem", folderData, aDeletedItem);
             }
         },
-            
-        onError : function (aCalendar, aErrNo, aMessage) { tbSync.dump("calendarObserver::onError","<" + aCalendar.name + "> had error #"+aErrNo+"("+aMessage+")."); },
 
-        //Changed properties of the calendar itself (name, color etc.) - IF A PROVIDER NEEDS TO DO CUSTOM STUFF HERE, HE NEEDS TO ADD ITS OWN LISTENER
+        //Changed properties of the calendar itself (name, color etc.)
         onPropertyChanged : function (aCalendar, aName, aValue, aOldValue) {
-            tbSync.dump("calendarObserver::onPropertyChanged","<" + aName + "> changed from <"+aOldValue+"> to <"+aValue+">");
-            let folders = tbSync.db.findFoldersWithSetting({"target": aCalendar.id});
-            if (folders.length == 1) {
+            let folderData = tbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
+            if (folderData 
+                && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountSetting("provider"))
+                && folderData.getFolderSetting("targetType") == "calendar") {
+
                 switch (aName) {
                     case "color":
                         //update stored color to recover after disable
-                        tbSync.db.setFolderSetting(folders[0].accountID, folders[0].folderID, "targetColor", aValue); 
+                        folderData.setFolderSetting("targetColor", aValue); 
                         break;
                     case "name":
                         //update stored name to recover after disable
-                        tbSync.db.setFolderSetting(folders[0].accountID, folders[0].folderID, "targetName", aValue);                         
+                        folderData.setFolderSetting("targetName", aValue);                         
                         //update settings window, if open
-                        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folders[0].accountID);
+                        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folderData.accountID);                    
                         break;
                 }
+                
+                tbSync.providers[folderData.accountData.getAccountSetting("provider")].calendar.calendarObserver("onCalendarPropertyChanged", folderData, aCalendar, aName, aValue, aOldValue);                
             }
         },
 
-        //Deleted properties of the calendar itself (name, color etc.) - IF A PROVIDER NEEDS TO DO CUSTOM STUFF HERE, HE NEEDS TO ADD ITS OWN LISTENER
+        //Deleted properties of the calendar itself (name, color etc.)
         onPropertyDeleting : function (aCalendar, aName) {
-            tbSync.dump("calendarObserver::onPropertyDeleting","<" + aName + "> was deleted");
-            let folders = tbSync.db.findFoldersWithSetting({"target": aCalendar.id});
-            if (folders.length == 1) {
+            let folderData = tbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
+            if (folderData 
+                && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountSetting("provider"))
+                && folderData.getFolderSetting("targetType") == "calendar") {
+
                 switch (aName) {
                     case "color":
                     case "name":
                         //update settings window, if open
-                        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folders[0].accountID);
+                        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folderData.accountID);                    
                     break;
                 }
+
+                tbSync.providers[folderData.accountData.getAccountSetting("provider")].calendar.calendarObserver("onCalendarPropertyDeleted", folderData, aCalendar, aName);                
             }
         }
     },
 
     calendarManagerObserver : {
-        onCalendarRegistered : function (aCalendar) { tbSync.dump("calendarManagerObserver::onCalendarRegistered","<" + aCalendar.name + "> was registered."); },
-        onCalendarUnregistering : function (aCalendar) { tbSync.dump("calendarManagerObserver::onCalendarUnregistering","<" + aCalendar.name + "> was unregisterd."); },
+        onCalendarRegistered : function (aCalendar) {
+            let folders = tbSync.db.findFoldersWithSetting({"targetType": "calendar"});
+            for (let folder of folders) {
+                let provider = tbSync.db.getAccountSetting(folder.accountID, "provider");
+                let calendarUrlField = tbSync.providers[provider].calendar.calendarUrlField;
+                if (tbSync.db.getFolderSetting(folder.accountID, folder.folderID, calendarUrlField) == aCalendar.uri.spec) {
+                    let accountData = new tbSync.AccountData(folder.accountID);
+                    let folderData = new tbSync.FolderData(accountData, folder.folderID);
+                    tbSync.providers[provider].calendar.calendarObserver("onCalendarReregistered", folderData, aCalendar);                
+                }
+            }                
+        },
+        
+        onCalendarUnregistering : function (aCalendar) {
+            let folderData = tbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
+            if (folderData 
+                && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountSetting("provider"))
+                && folderData.getFolderSetting("targetType") == "calendar") {
+
+                tbSync.providers[folderData.accountData.getAccountSetting("provider")].calendar.calendarObserver("onCalendarUnregistered", folderData, aCalendar);                
+            }                
+        },
+            
         onCalendarDeleting : function (aCalendar) {
-            tbSync.dump("calendarManagerObserver::onCalendarDeleting","<" + aCalendar.name + "> was deleted.");
+            let folderData = tbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
+            if (folderData 
+                && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountSetting("provider"))
+                && folderData.getFolderSetting("targetType") == "calendar") {
 
-            //It should not be possible to link a calendar to two different accounts, so we just take the first target found
-            let folders =  tbSync.db.findFoldersWithSetting({"target": aCalendar.id});
-            if (folders.length == 1) {
-                //delete any pending changelog of the deleted calendar
-                tbSync.db.clearChangeLog(aCalendar.id);
+                //delete any pending changelog of the deleted book
+                tbSync.db.clearChangeLog(aCalendar.id);			
 
-                //unselect calendar if deleted by user (calendar is cached if delete during disable) and update settings window, if open
-                if (folders[0].data.selected && !folders[0].data.cached) {
-                    tbSync.db.setFolderSetting(folders[0].accountID, folders[0].folderID, "selected", false);
+                //unselect book if deleted by user and update settings window, if open
+                if (folderData.getFolderSetting("selected")) {
+                    folderData.setFolderSetting("selected", false);
                     //update settings window, if open
-                    Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folders[0].accountID);
+                    Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folderData.accountID);
                 }
                 
-                tbSync.db.resetFolderSetting(folders[0].accountID, folders[0].folderID, "target");
+                folderData.resetFolderSetting("target");
+                tbSync.providers[folderData.accountData.getAccountSetting("provider")].calendar.calendarObserver("onCalendarDeleted", folderData, aCalendar);                
+
             }
         },
     },
@@ -280,7 +340,7 @@ var lightning = {
         return null;
     },
     
-        //this function actually creates a calendar if missing
+    //this function actually creates a calendar if missing
     createCalender: function (folderData) {       
         let calManager = cal.getCalendarManager();
         let target = folderData.getFolderSetting("target");
