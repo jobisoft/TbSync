@@ -249,7 +249,7 @@ var manager = {
             //group3
             let itemHGroup3 = document.createElement("hbox");
             itemHGroup3.setAttribute("align", "center");
-            itemHGroup3.setAttribute("width", "200");
+            itemHGroup3.setAttribute("width", "227");
             itemHGroup3.appendChild(itemStatus);
 
             let itemVGroup3 = document.createElement("vbox");
@@ -362,7 +362,10 @@ var manager = {
             if (fields.name.textContent != name) fields.name.textContent = name;
             
             fields.status.setAttribute("style", selected ? "" : "font-style:italic");
-            if (fields.status.textContent != status) fields.status.textContent = status;
+            if (fields.status.textContent != status) {
+                fields.status.textContent = status;
+                fields.status.flex = "1";
+            }
             
             if (fields.hasOwnProperty("acl")) {
                 fields.acl.setAttribute("image", "chrome://tbsync/skin/acl_" + (folderData.getFolderProperty("downloadonly") ? "ro" : "rw") + ".png");
