@@ -184,7 +184,7 @@ abAutoComplete.Result.prototype = {
      * Get the comment of the result at the given index (holds the accountID this search result belongs to)
      */
       getCommentAt(aIndex) {
-        return tbSync.db.getAccountSetting(this.comments[aIndex], "accountname");
+        return tbSync.db.getAccountProperty(this.comments[aIndex], "accountname");
       },
 
     /**
@@ -199,7 +199,7 @@ abAutoComplete.Result.prototype = {
      */
       getImageAt(aIndex) {
         let accountData = new tbSync.AccountData(this.comments[aIndex]);
-        return tbSync.providers[accountData.getAccountSetting("provider")].api.getProviderIcon(16, accountData);
+        return tbSync.providers[accountData.getAccountProperty("provider")].api.getProviderIcon(16, accountData);
       },
 
     /**

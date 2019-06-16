@@ -63,7 +63,7 @@ var messenger = {
                         if (tbSync.core.isSyncing(accounts.allIDs[i])) idle = false;
                 
                         //check for errors
-                        switch (tbSync.db.getAccountSetting(accounts.allIDs[i], "status")) {
+                        switch (tbSync.db.getAccountProperty(accounts.allIDs[i], "status")) {
                             case "success":
                             case "disabled":
                             case "notsyncronized":

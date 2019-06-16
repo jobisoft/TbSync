@@ -184,7 +184,7 @@ var manager = {
             let roAttributes = tbSync.providers[this.provider].standardFolderList.getAttributesRoAcl(folderData);
             let rwAttributes = tbSync.providers[this.provider].standardFolderList.getAttributesRwAcl(folderData);
             let itemACL = document.createElement("button");
-            itemACL.setAttribute("image", "chrome://tbsync/skin/acl_" + (folderData.getFolderSetting("downloadonly") ? "ro" : "rw") + ".png");
+            itemACL.setAttribute("image", "chrome://tbsync/skin/acl_" + (folderData.getFolderProperty("downloadonly") ? "ro" : "rw") + ".png");
             itemACL.setAttribute("class", "plain");
             itemACL.setAttribute("style", "width: 35px; min-width: 35px; margin: 0; height:26px");
             itemACL.setAttribute("updatefield", "acl");
@@ -276,14 +276,14 @@ var manager = {
                 if (!folder.accountData.isEnabled())
                     return;
             
-                if (folder.getFolderSetting("selected")) {
-                    let target = folder.getFolderSetting("target");
+                if (folder.getFolderProperty("selected")) {
+                    let target = folder.getFolderProperty("target");
                     if (!target || element.ownerDocument.defaultView.confirm(tbSync.getString("prompt.Unsubscribe"))) {
                         if (target) {
                             folder.targetData.removeTarget(); 
                             tbSync.db.clearChangeLog(target);
                         }
-                        folder.setFolderSetting("selected", false);
+                        folder.setFolderProperty("selected", false);
                         
                     } else {
                         if (element) {
@@ -293,9 +293,9 @@ var manager = {
                     }
                 } else {
                     //select and update status
-                    folder.setFolderSetting("selected", true);
-                    folder.setFolderSetting("status", "aborted");
-                    folder.accountData.setAccountSetting("status", "notsyncronized");
+                    folder.setFolderProperty("selected", true);
+                    folder.setFolderProperty("status", "aborted");
+                    folder.accountData.setAccountProperty("status", "notsyncronized");
                 }
                 Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folder.accountID);
             }
@@ -310,7 +310,7 @@ var manager = {
 
                 //update value
                 let value = element.value;
-                folder.setFolderSetting("downloadonly", value);
+                folder.setFolderProperty("downloadonly", value);
 
                 //update icon
                 let button = element.parentNode.parentNode;
@@ -321,7 +321,7 @@ var manager = {
                 }
                     
                 //update ro flag if calendar (the default folderlist only support addressbook and calendar target)
-                let type = folder.getFolderSetting("targetType");
+                let type = folder.getFolderProperty("targetType");
                 switch (type) {
                     case "addressbook":
                         break;
@@ -346,9 +346,9 @@ var manager = {
          * @param folderData        [in] FolderData for that row
          */        
         updateRow(document, listItem, folderData) {
-            let name = folderData.getFolderSetting("name");
+            let name = folderData.getFolderProperty("name");
             let status = folderData.getFolderStatus();
-            let selected = folderData.getFolderSetting("selected");
+            let selected = folderData.getFolderProperty("selected");
             
             // get updatefields
             let fields = {}
@@ -365,14 +365,14 @@ var manager = {
             if (fields.status.textContent != status) fields.status.textContent = status;
             
             if (fields.hasOwnProperty("acl")) {
-                fields.acl.setAttribute("image", "chrome://tbsync/skin/acl_" + (folderData.getFolderSetting("downloadonly") ? "ro" : "rw") + ".png");
+                fields.acl.setAttribute("image", "chrome://tbsync/skin/acl_" + (folderData.getFolderProperty("downloadonly") ? "ro" : "rw") + ".png");
                 fields.acl.setAttribute("disabled", folderData.accountData.isSyncing());
             }
             
             // update selectbox
             let selbox = fields.selectbox;
             if (selbox) {
-                if (folderData.getFolderSetting("selected")) {
+                if (folderData.getFolderProperty("selected")) {
                     selbox.setAttribute("checked", true);
                 } else {
                     selbox.removeAttribute("checked");

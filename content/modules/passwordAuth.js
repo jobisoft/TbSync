@@ -11,7 +11,7 @@
 var PasswordAuthData = class {
     constructor(accountData) {
         this._accountData = accountData;
-        this._provider = accountData.getAccountSetting("provider");
+        this._provider = accountData.getAccountProperty("provider");
     }
     
     getHost() {

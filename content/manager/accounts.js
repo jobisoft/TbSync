@@ -41,7 +41,7 @@ var tbSyncAccounts = {
     },       
     
     hasInstalledProvider: function (accountID) {
-        let provider = tbSync.db.getAccountSetting(accountID, "provider");
+        let provider = tbSync.db.getAccountProperty(accountID, "provider");
         return tbSync.providers.loadedProviders.hasOwnProperty(provider);
     },
 
@@ -219,7 +219,7 @@ var tbSyncAccounts = {
         if (!tbSyncAccounts.hasInstalledProvider(accountID)) {
             src = "error16.png";
         } else {
-            switch (tbSync.db.getAccountSetting(accountID, "status").split(".")[0]) {
+            switch (tbSync.db.getAccountProperty(accountID, "status").split(".")[0]) {
                 case "success":
                     src = "tick16.png";
                     break;
@@ -277,7 +277,7 @@ var tbSyncAccounts = {
         let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
         if (listItem) {
             let obj = listItem.childNodes[0].firstChild
-            obj.src = tbSyncAccounts.hasInstalledProvider(id) ? tbSync.providers[accountData.getAccountSetting("provider")].api.getProviderIcon(16, accountData) : "chrome://tbsync/skin/provider16.png";
+            obj.src = tbSyncAccounts.hasInstalledProvider(id) ? tbSync.providers[accountData.getAccountProperty("provider")].api.getProviderIcon(16, accountData) : "chrome://tbsync/skin/provider16.png";
         }
     },
 
@@ -325,7 +325,7 @@ var tbSyncAccounts = {
         this.updateAccountsList();
         
         let selectedAccount = this.getSelectedAccount();
-        if (selectedAccount !== null && tbSync.db.getAccountSetting(selectedAccount, "provider") == provider) {
+        if (selectedAccount !== null && tbSync.db.getAccountProperty(selectedAccount, "provider") == provider) {
             tbSyncAccounts.loadSelectedAccount();
         }
     },
@@ -462,7 +462,7 @@ var tbSyncAccounts = {
         let selectedAccount = this.getSelectedAccount();
         
         if (selectedAccount !== null) { //account id could be 0, so need to check for null explicitly
-            let provider = tbSync.db.getAccountSetting(selectedAccount, "provider");            
+            let provider = tbSync.db.getAccountProperty(selectedAccount, "provider");            
             if (tbSyncAccounts.hasInstalledProvider(selectedAccount)) {
                 document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/editAccount.xul?provider="+provider+"&id=" + selectedAccount);
             } else {

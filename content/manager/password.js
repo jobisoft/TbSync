@@ -20,7 +20,7 @@ var tbSyncPassword = {
         this.passfield = document.getElementById("tbsync.password");
         this.userfield = document.getElementById("tbsync.user");
 
-        this.namefield.value = this.accountData.getAccountSetting("accountname");
+        this.namefield.value = this.accountData.getAccountProperty("accountname");
         this.userfield.value =  this.auth.getUsername();
 
         //allow to change username only if not connected

@@ -44,16 +44,16 @@ var FolderData = class {
         return tbSync.providers.getDefaultFolderEntries(this.accountID);
     }
     
-    getFolderSetting(field) {
-        return tbSync.db.getFolderSetting(this.accountID, this.folderID, field);
+    getFolderProperty(field) {
+        return tbSync.db.getFolderProperty(this.accountID, this.folderID, field);
     }
     
-    setFolderSetting(field, value) {
-        tbSync.db.setFolderSetting(this.accountID, this.folderID, field, value);
+    setFolderProperty(field, value) {
+        tbSync.db.setFolderProperty(this.accountID, this.folderID, field, value);
     }
 
-    resetFolderSetting(field) {
-        tbSync.db.resetFolderSetting(this.accountID, this.folderID, field);
+    resetFolderProperty(field) {
+        tbSync.db.resetFolderProperty(this.accountID, this.folderID, field);
     }
 
     isSyncing() {
@@ -64,21 +64,21 @@ var FolderData = class {
     getFolderStatus() {
         let status = "";
         
-        if (this.getFolderSetting("selected")) {
+        if (this.getFolderProperty("selected")) {
             //default
-            status = tbSync.getString("status." + this.getFolderSetting("status"), this.accountData.getAccountSetting("provider")).split("||")[0];
+            status = tbSync.getString("status." + this.getFolderProperty("status"), this.accountData.getAccountProperty("provider")).split("||")[0];
 
-            switch (this.getFolderSetting("status").split(".")[0]) { //the status may have a sub-decleration
+            switch (this.getFolderProperty("status").split(".")[0]) { //the status may have a sub-decleration
                 case "success":
                 case "modified":
-                    status = status + ": " + this.getFolderSetting("targetName");
+                    status = status + ": " + this.getFolderProperty("targetName");
                     break;
                     
                 case "pending":
                     //add extra info if this folder is beeing synced
                     if (this.isSyncing()) {
                         let syncdata = this.accountData.syncData;
-                        status = tbSync.getString("status.syncing", this.accountData.getAccountSetting("provider"));
+                        status = tbSync.getString("status.syncing", this.accountData.getAccountProperty("provider"));
                         if (["send","eval","prepare"].includes(syncdata._syncstate.split(".")[0]) && (syncdata.progressData.todo + syncdata.progressData.done) > 0) {
                             //add progress information
                             status = status + " (" + syncdata.progressData.done + (syncdata.progressData.todo > 0 ? "/" + syncdata.progressData.todo : "") + ")"; 
@@ -100,8 +100,8 @@ var FolderData = class {
     get targetData() {
         // targetData can not be set during construction, because targetType has not been set 
         // create it on the fly - re-create it, if targetType changed
-        if (!this._target || this._target.targetType != this.getFolderSetting("targetType")) {
-            switch (this.getFolderSetting("targetType")) {
+        if (!this._target || this._target.targetType != this.getFolderProperty("targetType")) {
+            switch (this.getFolderProperty("targetType")) {
                 case "":
                     throw new Error("Property <targetType> not set for this folder.");
                 
@@ -114,7 +114,7 @@ var FolderData = class {
                     break;
 
                 default:
-                    this._target = new tbSync.providers[this.accountData.getAccountSetting("provider")].targets[this.getFolderSetting("targetType")].TargetData(this);
+                    this._target = new tbSync.providers[this.accountData.getAccountProperty("provider")].targets[this.getFolderProperty("targetType")].TargetData(this);
             }
         }
         
@@ -137,7 +137,7 @@ var AccountData = class {
     
     getAllFolders() {
         let allFolders = [];
-        let folders = tbSync.db.findFoldersWithSetting({"cached": false}, {"accountID": this.accountID});
+        let folders = tbSync.db.findFolders({"cached": false}, {"accountID": this.accountID});
         for (let i=0; i < folders.length; i++) {          
             allFolders.push(new tbSync.FolderData(this, folders[i].folderID));
         }
@@ -146,7 +146,7 @@ var AccountData = class {
 
     getAllFoldersIncludingCache() {
         let allFolders = [];
-        let folders = tbSync.db.findFoldersWithSetting({}, {"accountID": this.accountID});
+        let folders = tbSync.db.findFolders({}, {"accountID": this.accountID});
         for (let i=0; i < folders.length; i++) {          
             allFolders.push(new tbSync.FolderData(this, folders[i].folderID));
         }
@@ -155,14 +155,14 @@ var AccountData = class {
     
     getFolder(setting, value) {
         // ES6 supports variable keys by putting it into brackets
-        let folders = tbSync.db.findFoldersWithSetting({[setting]: value, "cached": false}, {"accountID": this.accountID});
+        let folders = tbSync.db.findFolders({[setting]: value, "cached": false}, {"accountID": this.accountID});
         if (folders.length > 0) return new tbSync.FolderData(this, folders[0].folderID);
         return null;
     }
 
     getFolderFromCache(setting, value) {
         // ES6 supports variable keys by putting it into brackets
-        let folders = tbSync.db.findFoldersWithSetting({[setting]: value, "cached": true}, {"accountID": this.accountID});
+        let folders = tbSync.db.findFolders({[setting]: value, "cached": true}, {"accountID": this.accountID});
         if (folders.length > 0) return new tbSync.FolderData(this, folders[0].folderID);
         return null;
     }
@@ -176,7 +176,7 @@ var AccountData = class {
     // get data objects
     get providerData() {
         return new ProviderData(
-            this.getAccountSetting("provider"),
+            this.getAccountProperty("provider"),
         );
     }    
 
@@ -193,7 +193,7 @@ var AccountData = class {
         // only popup one auth prompt per account
         if (!tbSync.manager.authWindowObjs.hasOwnProperty[this.accountID] || tbSync.manager.authWindowObjs[this.accountID] === null) {
             let defaultUrl = "chrome://tbsync/content/manager/password.xul";
-            let userUrl = tbSync.providers[this.getAccountSetting("provider")].api.getAuthPromptXulUrl();
+            let userUrl = tbSync.providers[this.getAccountProperty("provider")].api.getAuthPromptXulUrl();
             tbSync.manager.authWindowObjs[this.accountID] = w.openDialog(userUrl ? userUrl : defaultUrl, "authPrompt", "centerscreen,chrome,resizable=no", this);
         }        
     }
@@ -216,16 +216,16 @@ var AccountData = class {
     }
     
 
-    getAccountSetting(field) {
-        return tbSync.db.getAccountSetting(this.accountID, field);
+    getAccountProperty(field) {
+        return tbSync.db.getAccountProperty(this.accountID, field);
     }
 
-    setAccountSetting(field, value) {
-        tbSync.db.setAccountSetting(this.accountID, field, value);
+    setAccountProperty(field, value) {
+        tbSync.db.setAccountProperty(this.accountID, field, value);
     }
     
-    resetAccountSetting(field) {
-        tbSync.db.resetAccountSetting(this.accountID, field);
+    resetAccountProperty(field) {
+        tbSync.db.resetAccountProperty(this.accountID, field);
     }
 }
 
@@ -283,10 +283,10 @@ var SyncData = class {
 
     get errorOwnerData() {
         return new ErrorOwnerData(
-            this.accountData.getAccountSetting("provider"),
-            this.accountData.getAccountSetting("accountname"),
+            this.accountData.getAccountProperty("provider"),
+            this.accountData.getAccountProperty("accountname"),
             this.accountData.accountID,
-            this.currentFolderData ? this.currentFolderData.getFolderSetting("name") : "",
+            this.currentFolderData ? this.currentFolderData.getFolderProperty("name") : "",
         );
     }
     
@@ -304,8 +304,8 @@ var SyncData = class {
 
     setSyncState(syncstate) {
         //set new syncstate
-        let msg = "State: " + syncstate + ", Account: " + this.accountData.getAccountSetting("accountname");
-        if (this.currentFolderData) msg += ", Folder: " + this.currentFolderData.getFolderSetting("name");
+        let msg = "State: " + syncstate + ", Account: " + this.accountData.getAccountProperty("accountname");
+        if (this.currentFolderData) msg += ", Folder: " + this.currentFolderData.getFolderProperty("name");
 
         if (syncstate.split(".")[0] == "send") {
             //add timestamp to be able to display timeout countdown
@@ -335,18 +335,18 @@ var core = {
     },
 
     isSyncing: function (accountID) {
-        let status = tbSync.db.getAccountSetting(accountID, "status"); //global status of the account
+        let status = tbSync.db.getAccountProperty(accountID, "status"); //global status of the account
         return (status == "syncing");
     },
     
     isEnabled: function (accountID) {
-        let status = tbSync.db.getAccountSetting(accountID, "status");
+        let status = tbSync.db.getAccountProperty(accountID, "status");
         return  (status != "disabled");
     },
 
     isConnected: function (accountID) {
-        let status = tbSync.db.getAccountSetting(accountID, "status");
-        let validFolders = tbSync.db.findFoldersWithSetting({"cached": false}, {"accountID": accountID});
+        let status = tbSync.db.getAccountProperty(accountID, "status");
+        let validFolders = tbSync.db.findFolders({"cached": false}, {"accountID": accountID});
         return (status != "disabled" && validFolders.length > 0);
     },
     
@@ -384,7 +384,7 @@ var core = {
             //create syncData object for each account (to be able to have parallel XHR)
             this.prepareSyncDataObj(accountsToDo[i], true);
             
-            tbSync.db.setAccountSetting(accountsToDo[i], "status", "syncing");
+            tbSync.db.setAccountProperty(accountsToDo[i], "status", "syncing");
             //i have no idea whey they are here
             //this.getSyncDataObject(accountsToDo[i]).syncstate = "syncing";            
             //this.getSyncDataObject(accountsToDo[i]).folderID = folderID;            
@@ -398,9 +398,9 @@ var core = {
     },
    
     getNextPendingFolder: function (syncData) {
-        let sortedFolders = tbSync.providers[syncData.accountData.getAccountSetting("provider")].api.getSortedFolders(syncData.accountData);
+        let sortedFolders = tbSync.providers[syncData.accountData.getAccountProperty("provider")].api.getSortedFolders(syncData.accountData);
         for (let i=0; i < sortedFolders.length; i++) {
-            if (sortedFolders[i].getFolderSetting("status") != "pending") continue;
+            if (sortedFolders[i].getFolderProperty("status") != "pending") continue;
             syncData._setCurrentFolderData(sortedFolders[i]);
             return true;
         }
@@ -415,7 +415,7 @@ var core = {
         //check for default sync job
         if (job == "sync") {
             
-            let listStatusData = await tbSync.providers[syncData.accountData.getAccountSetting("provider")].api.syncFolderList(syncData);
+            let listStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].api.syncFolderList(syncData);
             
             //if we have an error during folderList sync, there is no need to go on
             if (listStatusData.type != tbSync.StatusData.SUCCESS) {
@@ -443,7 +443,7 @@ var core = {
                     if (!this.getNextPendingFolder(syncData)) {
                         break;
                     }
-                    let folderStatusData = await tbSync.providers[syncData.accountData.getAccountSetting("provider")].api.syncFolder(syncData);
+                    let folderStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].api.syncFolder(syncData);
                     this.finishFolderSync(syncData, folderStatusData);
 
                     //if one of the folders indicated an ERROR, abort sync
@@ -462,8 +462,8 @@ var core = {
     // this could be added to AccountData, but I do not want that in public
     setTargetModified: function (folderData) {
         if (!folderData.accountData.isSyncing() && folderData.accountData.isEnabled()) {
-            folderData.accountData.setAccountSetting("status", "notsyncronized");
-            folderData.setFolderSetting("status", "modified");
+            folderData.accountData.setAccountProperty("status", "notsyncronized");
+            folderData.setFolderProperty("status", "modified");
             //notify settings gui to update status
              Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folderData.accountID);
         }
@@ -471,25 +471,25 @@ var core = {
     
     enableAccount: function(accountID) {
         let accountData = new AccountData(accountID);
-        tbSync.providers[accountData.getAccountSetting("provider")].api.onEnableAccount(accountData);
-        accountData.setAccountSetting("status", "notsyncronized");
-        accountData.resetAccountSetting("lastsynctime");        
+        tbSync.providers[accountData.getAccountProperty("provider")].api.onEnableAccount(accountData);
+        accountData.setAccountProperty("status", "notsyncronized");
+        accountData.resetAccountProperty("lastsynctime");        
     },
 
     disableAccount: function(accountID) {
         let accountData = new AccountData(accountID);
-        tbSync.providers[accountData.getAccountSetting("provider")].api.onDisableAccount(accountData);
-        accountData.setAccountSetting("status", "disabled");
+        tbSync.providers[accountData.getAccountProperty("provider")].api.onDisableAccount(accountData);
+        accountData.setAccountProperty("status", "disabled");
         
         let folders = accountData.getAllFolders();
         for (let folder of folders) {
-            let target = folder.getFolderSetting("target");
+            let target = folder.getFolderProperty("target");
             if (target) {
                 folder.targetData.removeTarget(); 
                 tbSync.db.clearChangeLog(target);
             }
-            folder.setFolderSetting("selected", false);
-            folder.setFolderSetting("cached", true);
+            folder.setFolderProperty("selected", false);
+            folder.setFolderProperty("cached", true);
         }
     },
 
@@ -500,17 +500,17 @@ var core = {
         let folders = syncData.accountData.getAllFoldersIncludingCache();
         for (let folder of folders) {
             //delete all leftover cached folders
-            if (folder.getFolderSetting("cached")) {
+            if (folder.getFolderProperty("cached")) {
                 tbSync.db.deleteFolder(folder.accountID, folder.folderID);
                 continue;
             } else {
                 //set well defined cache state
-                folder.setFolderSetting("cached", false);
+                folder.setFolderProperty("cached", false);
             }
 
             //set selected folders to pending, so they get synced
-            if (folder.getFolderSetting("selected")) {
-               folder.setFolderSetting("status", "pending");
+            if (folder.getFolderProperty("selected")) {
+               folder.setFolderProperty("status", "pending");
             }
         }
     },
@@ -532,8 +532,8 @@ var core = {
         }
         
         if (syncData.currentFolderData) {
-            syncData.currentFolderData.setFolderSetting("status", status);
-            syncData.currentFolderData.setFolderSetting("lastsynctime", Date.now());
+            syncData.currentFolderData.setFolderProperty("status", status);
+            syncData.currentFolderData.setFolderProperty("lastsynctime", Date.now());
             //clear folderID to fall back to account-only-mode (folder is done!)
             syncData._clearCurrentFolderData();
         } 
@@ -543,9 +543,9 @@ var core = {
 
     finishAccountSync: function(syncData, statusData) {
         // set each folder with PENDING status to ABORTED
-        let folders = tbSync.db.findFoldersWithSetting({"status": "pending"}, {"accountID": syncData.accountData.accountID});
+        let folders = tbSync.db.findFolders({"status": "pending"}, {"accountID": syncData.accountData.accountID});
         for (let i=0; i < folders.length; i++) {
-            tbSync.db.setFolderSetting(folders[i].accountID, folders[i].folderID, "status", "aborted");
+            tbSync.db.setFolderProperty(folders[i].accountID, folders[i].folderID, "status", "aborted");
         }
         
         //if this is a success, prepend success to the status message, 
@@ -564,7 +564,7 @@ var core = {
             tbSync.errorlog.add("warning", syncData.errorOwnerData, statusData.message, statusData.details);
         } else {
             //account itself is ok, search for folders with error
-            folders = tbSync.db.findFoldersWithSetting({"selected": true, "cached": false}, {"accountID": syncData.accountData.accountID});
+            folders = tbSync.db.findFolders({"selected": true, "cached": false}, {"accountID": syncData.accountData.accountID});
             for (let i in folders) {
                 let folderstatus = folders[i].data.status.split(".")[0];
                 if (folderstatus != "" && folderstatus != tbSync.StatusData.SUCCESS && folderstatus != "aborted") {
@@ -575,8 +575,8 @@ var core = {
         }    
         
         //done
-        syncData.accountData.setAccountSetting("lastsynctime", Date.now());
-        syncData.accountData.setAccountSetting("status", status);
+        syncData.accountData.setAccountProperty("lastsynctime", Date.now());
+        syncData.accountData.setAccountProperty("status", status);
         syncData.setSyncState("accountdone"); 
     }    
     

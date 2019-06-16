@@ -28,7 +28,7 @@ var tbSyncMessenger = {
                 let syncdata = tbSync.core.getSyncDataObject(accountID);
                 let syncstate = syncdata.getSyncState();
                 if (syncstate == "accountdone") {
-                    let status = tbSync.db.getAccountSetting(accountID, "status");
+                    let status = tbSync.db.getAccountProperty(accountID, "status");
                     switch (status) {
                         case "401":
                             syncdata.accountData.authPrompt();

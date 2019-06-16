@@ -68,7 +68,7 @@ var tbSyncAccountSettings = {
         tbSyncAccountSettings.accountID = window.location.toString().split("id=")[1];
 
         //get information for that acount
-        tbSyncAccountSettings.provider = tbSync.db.getAccountSetting(tbSyncAccountSettings.accountID, "provider");
+        tbSyncAccountSettings.provider = tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, "provider");
         tbSyncAccountSettings.settings = Object.keys(tbSync.providers.getDefaultAccountEntries(tbSyncAccountSettings.provider)).sort();
 
         //add header to folderlist
@@ -129,12 +129,12 @@ var tbSyncAccountSettings = {
                 let event = "blur";
                 if (pref.tagName == "checkbox") {
                     //BOOL
-                    if (tbSync.db.getAccountSetting(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i])) pref.setAttribute("checked", true);
+                    if (tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i])) pref.setAttribute("checked", true);
                     else pref.setAttribute("checked", false);
                     event = "command";
                 } else {
                     //Not BOOL
-                    pref.setAttribute("value", tbSync.db.getAccountSetting(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]));
+                    pref.setAttribute("value", tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]));
                     if (pref.tagName == "menulist") {
                         event = "command";
                     }
@@ -147,7 +147,7 @@ var tbSyncAccountSettings = {
     },
 
     updateGui: function () {
-        let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.accountID, "status");
+        let status = tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, "status");
 
         let isConnected = tbSync.core.isConnected(tbSyncAccountSettings.accountID);
         let isEnabled = tbSync.core.isEnabled(tbSyncAccountSettings.accountID);      
@@ -217,7 +217,7 @@ var tbSyncAccountSettings = {
         tbSyncAccountSettings.updateTimer.cancel();
 
         // if this account is beeing synced, display syncstate, otherwise print status
-        let status = tbSync.db.getAccountSetting(tbSyncAccountSettings.accountID, "status");
+        let status = tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, "status");
         let isSyncing = tbSync.core.isSyncing(tbSyncAccountSettings.accountID);
         let isConnected = tbSync.core.isConnected(tbSyncAccountSettings.accountID);
         let isEnabled = tbSync.core.isEnabled(tbSyncAccountSettings.accountID);
@@ -326,7 +326,7 @@ var tbSyncAccountSettings = {
         } else {
             value = field.value;
         }
-        tbSync.db.setAccountSetting(tbSyncAccountSettings.accountID, setting, value);
+        tbSync.db.setAccountProperty(tbSyncAccountSettings.accountID, setting, value);
         
         if (setting == "accountname") {
             Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountName", tbSyncAccountSettings.accountID + ":" + field.value);
