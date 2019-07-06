@@ -14,14 +14,14 @@ var lightning = {
     
     load: async function () {
         //check for lightning
-        let lightning = await tbSync.getAddonByID("{e2fda1a4-762b-4020-b5ad-a41df1933103}");
+        let lightning = await AddonManager.getAddonByID("{e2fda1a4-762b-4020-b5ad-a41df1933103}");
         if (lightning !== null) {
             tbSync.dump("Check4Lightning","Start");
 
             //try to import
             if ("calICalendar" in Components.interfaces && typeof cal == 'undefined') {
-                Components.utils.import("resource://calendar/modules/calUtils.jsm");
-                Components.utils.import("resource://calendar/modules/ical.js");    
+                var { cal } = ChromeUtils.import("resource://calendar/modules/calUtils.jsm");
+                var { ICAL, unwrapSetter, unwrapSingle, wrapGetter } = ChromeUtils.import("resource://calendar/modules/ical.js");
             }
 
             if (typeof cal !== 'undefined') {

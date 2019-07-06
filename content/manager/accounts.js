@@ -8,11 +8,13 @@
  
  "use strict";
 
-Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+
+var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+
 if ("calICalendar" in Components.interfaces && typeof cal == 'undefined') {
-    Components.utils.import("resource://calendar/modules/calUtils.jsm");
-    Components.utils.import("resource://calendar/modules/ical.js");    
+    var { cal } = ChromeUtils.import("resource://calendar/modules/calUtils.jsm");
+    var { ICAL, unwrapSetter, unwrapSingle, wrapGetter } = ChromeUtils.import("resource://calendar/modules/ical.js");
 }
 
 var tbSyncAccounts = {
@@ -78,7 +80,6 @@ var tbSyncAccounts = {
         document.getElementById(selector + "SyncAccount").hidden = (selectedAccount === null) || !isConnected || !isInstalled;
         document.getElementById(selector + "RetryConnectAccount").hidden = (selectedAccount === null) || isConnected || !isEnabled || !isInstalled;
 
-        //Not yet implemented
         if (document.getElementById(selector + "ShowErrorLog")) {
             document.getElementById(selector + "ShowErrorLog").hidden = false;
             document.getElementById(selector + "ShowErrorLog").disabled = false;
@@ -437,11 +438,11 @@ var tbSyncAccounts = {
         //Update label, icon and hidden according to isDefault and isInstalled
         if (isInstalled) {
             entry.setAttribute("label",  tbSync.providers[provider].api.getNiceProviderName());
-            entry.setAttribute("src", tbSync.providers[provider].api.getProviderIcon(16));
+            entry.setAttribute("image", tbSync.providers[provider].api.getProviderIcon(16));
             entry.setAttribute("hidden", false);
         } else if (isDefault) {
             entry.setAttribute("label", tbSync.providers.defaultProviders[provider].name);
-            entry.setAttribute("src", "chrome://tbsync/skin/provider16.png");                    
+            entry.setAttribute("image", "chrome://tbsync/skin/provider16.png");                    
             entry.setAttribute("hidden", false);
         } else {
             entry.setAttribute("hidden", true);

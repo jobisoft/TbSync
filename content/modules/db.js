@@ -16,17 +16,17 @@ var db = {
 
     files: {
         accounts: {
-            name: "accounts.json", 
+            name: "accounts68.json", 
             default: JSON.stringify({ sequence: 0, data : {} })
             //data[account] = {row}
             },
         folders: {
-            name: "folders.json", 
+            name: "folders68.json", 
             default: JSON.stringify({})
             //assoziative array of assoziative array : folders[<int>accountID][<string>folderID] = {row} 
             },
         changelog: {
-            name: "changelog.json", 
+            name: "changelog68.json", 
             default: JSON.stringify([]),
             },
     },
