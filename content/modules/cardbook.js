@@ -11,7 +11,7 @@ var cardbook = {
 
     load: async function () {
         //check for cardbook
-        this.cardbook = await tbSync.getAddonByID("cardbook@vigneau.philippe") ;
+        this.cardbook = await AddonManager.getAddonByID("cardbook@vigneau.philippe") ;
     },
 
     unload: async function () {

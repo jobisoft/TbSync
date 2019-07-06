@@ -60,13 +60,3 @@ var generateUUID = function () {
     const uuidGenerator  = Cc["@mozilla.org/uuid-generator;1"].getService(Ci.nsIUUIDGenerator);
     return uuidGenerator.generateUUID().toString().replace(/[{}]/g, '');
 }
-    
-// promisified implementation AddonManager.getAddonByID() (only needed in TB60)
-var getAddonByID = async function (id) {
-    return new Promise(function(resolve, reject) {
-        function callback (addon) {
-            resolve(addon);
-        }
-        AddonManager.getAddonByID(id, callback);
-    })
-}

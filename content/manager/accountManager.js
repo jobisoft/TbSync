@@ -8,8 +8,8 @@
  
  "use strict";
 
-Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncAccountManager = {
     
@@ -73,6 +73,7 @@ var tbSyncAccountManager = {
     
         let menulist = document.getElementById("tbsync.supportwizard.faultycomponent.menulist");
         menulist.addEventListener("select", tbSyncAccountManager.checkSupportWizard);
+        document.addEventListener("wizardfinish", tbSyncAccountManager.prepareBugReport);
     },
     
     checkSupportWizard: function() {
@@ -84,20 +85,20 @@ var tbSyncAccountManager = {
         document.documentElement.getButton("finish").disabled = (provider == "" || subject == "" || description== "");        
     },
 
-    prepareBugReport: function() {
+    prepareBugReport: function(event) {
         let provider = document.getElementById("tbsync.supportwizard.faultycomponent").parentNode.value;
         let subject = document.getElementById("tbsync.supportwizard.summary").value;
         let description = document.getElementById("tbsync.supportwizard.description").value;
 
         if (provider == "" || subject == "" || description== "") {
-            return false;
+            event.preventDefault();
+            return;
         }
 
         //special if core is selected, which is not a provider
         let email = (tbSync.providers.loadedProviders.hasOwnProperty(provider)) ? tbSync.providers[provider].api.getMaintainerEmail() : "john.bieling@gmx.de";
         let version = (tbSync.providers.loadedProviders.hasOwnProperty(provider)) ? " " + tbSync.providers.loadedProviders[provider].version : "";
         tbSync.manager.createBugReport(email, "[" + provider.toUpperCase() + version + "] " + subject, description);
-        return true;
     },
     
     

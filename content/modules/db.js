@@ -8,7 +8,7 @@
  
  "use strict";
 
-Components.utils.import("resource://gre/modules/DeferredTask.jsm");
+var { DeferredTask } = ChromeUtils.import("resource://gre/modules/DeferredTask.jsm");
 
 var db = {
 

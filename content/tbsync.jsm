@@ -10,18 +10,13 @@
 
 var EXPORTED_SYMBOLS = ["tbSync"];
 
-//global objects (not exported, not available outside this module)
-const Cc = Components.classes;
-const Ci = Components.interfaces;
-
-Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("resource://gre/modules/FileUtils.jsm");
-Components.utils.import("resource://gre/modules/osfile.jsm");
-Components.utils.import("resource://gre/modules/AddonManager.jsm");
-Components.utils.import("resource://gre/modules/NetUtil.jsm");
-Components.utils.import("resource:///modules/mailServices.js");
-Components.utils.import("chrome://tbsync/content/OverlayManager.jsm");
-Components.utils.importGlobalProperties(["XMLHttpRequest"]);
+var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+var { FileUtils } = ChromeUtils.import("resource://gre/modules/FileUtils.jsm");
+var { OS }  =ChromeUtils.import("resource://gre/modules/osfile.jsm");
+var { AddonManager } = ChromeUtils.import("resource://gre/modules/AddonManager.jsm");
+var { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
+var { MailServices } = ChromeUtils.import("resource:///modules/MailServices.jsm");
+var { OverlayManager } = ChromeUtils.import("chrome://tbsync/content/OverlayManager.jsm");
 
 var tbSync = {
 
@@ -52,7 +47,7 @@ var tbSync = {
         this.io.initFile("debug.log");
 
         this.window = window;
-        this.addon = await this.getAddonByID("tbsync@jobisoft.de");
+        this.addon = await AddonManager.getAddonByID("tbsync@jobisoft.de");
         this.dump("TbSync init","Start (" + this.addon.version.toString() + ")");
 
         //print information about Thunderbird version and OS

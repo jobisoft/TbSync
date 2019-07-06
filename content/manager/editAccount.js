@@ -8,9 +8,9 @@
  
  "use strict";
 
-Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("resource://gre/modules/osfile.jsm");
-Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+var { OS }  =ChromeUtils.import("resource://gre/modules/osfile.jsm");
+var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncAccountSettings = {
 

@@ -8,7 +8,6 @@
       id="SupportWizard" 
       title="&supportwizard.title;"
       onload="tbSyncAccountManager.initSupportWizard();"
-      onwizardfinish="return tbSyncAccountManager.prepareBugReport();"
       xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <wizardpage onFirstPage="true" label="&supportwizard.pagetitle;">

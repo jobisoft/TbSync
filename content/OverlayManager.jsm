@@ -10,8 +10,8 @@
 
 var EXPORTED_SYMBOLS = ["OverlayManager"];
 
-Components.utils.import("resource://gre/modules/NetUtil.jsm");
-Components.utils.import("resource://gre/modules/Services.jsm");
+var { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
+var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 
 function OverlayManager(options = {}) {
     this.registeredOverlays = {};
@@ -26,21 +26,16 @@ function OverlayManager(options = {}) {
 
 
 
-/* 
- could be replaced in TB61:
-  - https://dxr.mozilla.org/comm-central/rev/18881dd127e3b0c0d3f97390c9094e309d4dd9c1/mail/test/resources/jsbridge/jsbridge/extension/bootstrap.js#17
-  - https://dxr.mozilla.org/comm-central/rev/18881dd127e3b0c0d3f97390c9094e309d4dd9c1/common/src/extensionSupport.jsm#151
-*/
+	/* 
+	 could be replaced in TB61:
+	  - https://dxr.mozilla.org/comm-central/rev/18881dd127e3b0c0d3f97390c9094e309d4dd9c1/mail/test/resources/jsbridge/jsbridge/extension/bootstrap.js#17
+	  - https://dxr.mozilla.org/comm-central/rev/18881dd127e3b0c0d3f97390c9094e309d4dd9c1/common/src/extensionSupport.jsm#151
+	*/
     this.windowListener = {
-        that : this,
-        onOpenWindow: function(xulWindow) {
+        that: this,
+		onOpenWindow: function(xulWindow) {
             let window = xulWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor).getInterface(Components.interfaces.nsIDOMWindow);
-            
-            function onWindowLoad() {
-                //window.removeEventListener("load", onWindowLoad);
-                this.injectAllOverlays(window);
-            }
-            window.addEventListener("load", onWindowLoad.bind(this.that));
+            this.that.injectAllOverlays(window);
         },
         onCloseWindow: function(xulWindow) { },
         onWindowTitleChange: function(xulWindow, newTitle) { }
@@ -105,7 +100,7 @@ function OverlayManager(options = {}) {
             return null;
         }
 
-        let oParser = (Services.vc.compare(Services.appinfo.platformVersion, "61.*") >= 0) ? new DOMParser() : Components.classes["@mozilla.org/xmlextras/domparser;1"].createInstance(Components.interfaces.nsIDOMParser);
+        let oParser = new DOMParser();
         try {
             xul = oParser.parseFromString(str, "application/xml");
         } catch (e) {
@@ -134,7 +129,14 @@ function OverlayManager(options = {}) {
 
 
 
-    this.injectAllOverlays = function (window, _href = null) {
+    this.injectAllOverlays = async function (window, _href = null) {
+		if (window.document.readyState != "complete") {
+		  // Make sure the window load has completed.
+		  await new Promise(resolve => {
+			window.addEventListener("load", resolve, { once: true });
+		  });
+		}
+
         let href = (_href === null) ? window.location.href : _href;   
         for (let i=0; this.registeredOverlays[href] && i < this.registeredOverlays[href].length; i++) {
             this.injectOverlay(window, this.registeredOverlays[href][i]);
@@ -149,7 +151,6 @@ function OverlayManager(options = {}) {
             this.removeOverlay(window, this.registeredOverlays[window.location.href][i]);
         }        
     };
-
 
 
 
@@ -448,7 +449,7 @@ function OverlayManager(options = {}) {
     this.readChromeFile = function (aURL) {
         return new Promise((resolve, reject) => {
             let uri = Services.io.newURI(aURL);
-            let channel = Services.io.newChannelFromURI2(uri,
+            let channel = Services.io.newChannelFromURI(uri,
                                  null,
                                  Services.scriptSecurityManager.getSystemPrincipal(),
                                  null,

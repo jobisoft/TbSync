@@ -81,7 +81,7 @@ var providers = {
         //only load, if not yet loaded and if the provider name does not shadow a fuction inside provider.js
         if (!this.loadedProviders.hasOwnProperty(provider) && !this.hasOwnProperty(provider) && js.startsWith("chrome://")) {
             try {
-                let addon = await tbSync.getAddonByID(addonId);
+                let addon = await AddonManager.getAddonByID(addonId);
 
                 this[provider] = {};
                 this.loadedProviders[provider] = {};
