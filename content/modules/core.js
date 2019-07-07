@@ -193,7 +193,7 @@ var AccountData = class {
         // only popup one auth prompt per account
         if (!tbSync.manager.authWindowObjs.hasOwnProperty[this.accountID] || tbSync.manager.authWindowObjs[this.accountID] === null) {
             let defaultUrl = "chrome://tbsync/content/manager/password.xul";
-            let userUrl = tbSync.providers[this.getAccountProperty("provider")].api.getAuthPromptXulUrl();
+            let userUrl = tbSync.providers[this.getAccountProperty("provider")].api.getAuthPromptWindowUrl();
             tbSync.manager.authWindowObjs[this.accountID] = w.openDialog(userUrl ? userUrl : defaultUrl, "authPrompt", "centerscreen,chrome,resizable=no", this);
         }        
     }

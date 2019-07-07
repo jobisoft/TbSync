@@ -491,7 +491,7 @@ var tbSyncAccounts = {
         
         document.getElementById("tbSyncAccounts.accounts").disabled=true;
         document.getElementById("tbSyncAccounts.btnAccountActions").disabled=true;
-        window.openDialog(tbSync.providers[provider].api.getCreateAccountXulUrl(), "newaccount", "centerscreen,modal,resizable=no", providerData);
+        window.openDialog(tbSync.providers[provider].api.getCreateAccountWindowUrl(), "newaccount", "centerscreen,modal,resizable=no", providerData);
         document.getElementById("tbSyncAccounts.accounts").disabled=false;
         document.getElementById("tbSyncAccounts.btnAccountActions").disabled=false;
     },
