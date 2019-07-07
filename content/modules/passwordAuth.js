@@ -67,7 +67,7 @@ var passwordAuth = {
     removeLoginInfo: function(origin, realm, user) {
         let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
 
-        let logins = Services.logins.findLogins({}, origin, null, realm);
+        let logins = Services.logins.findLogins(origin, null, realm);
         for (let i = 0; i < logins.length; i++) {
             if (logins[i].username == user) {
                 let currentLoginInfo = new nsLoginInfo(origin, null, realm, user, logins[i].password, "", "");
@@ -94,7 +94,7 @@ var passwordAuth = {
     },
     
     getLoginInfo: function(origin, realm, user) {
-        let logins = Services.logins.findLogins({}, origin, null, realm);
+        let logins = Services.logins.findLogins(origin, null, realm);
         for (let i = 0; i < logins.length; i++) {
             if (logins[i].username == user) {
                 return logins[i].password;
