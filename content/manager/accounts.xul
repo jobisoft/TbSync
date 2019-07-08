@@ -51,11 +51,11 @@
                 context="tbsync.accountmanger.ContextMenu"                
                 onkeypress="if (event.keyCode == 46) {tbSyncAccounts.deleteAccount();}"
                 onselect="tbSyncAccounts.loadSelectedAccount();">
-                <listhead style="border-bottom: 1px solid lightgrey;">
-                    <listheader style="font-weight:bold;" label="" width="24" flex="0" />
-                    <listheader style="font-weight:bold;" label="&manager.accounts;" flex="12" />
-                    <listheader style="font-weight:bold;text-align:right;" label="&manager.status;" flex="5" />
-                </listhead>
+                <listheader style="border-bottom: 1px solid lightgrey;">
+                    <treecol style="font-weight:bold;" label="" width="26" flex="0" />
+                    <treecol style="font-weight:bold;" label="&manager.accounts;" flex="1" />
+                    <treecol style="font-weight:bold;text-align:right;" label="&manager.status;" flex="0" />
+                </listheader>
             </richlistbox>
             <hbox style="margin:1ex 0 0 0">
              <vbox style="margin:0" flex="1">

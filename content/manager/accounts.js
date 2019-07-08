@@ -271,7 +271,7 @@ var tbSyncAccounts = {
         let accountData = new tbSync.AccountData(id);
         let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
         if (listItem) {
-            let obj = listItem.childNodes[0].firstChild
+            let obj = listItem.childNodes[0];
             obj.src = tbSyncAccounts.hasInstalledProvider(id) ? tbSync.providers[accountData.getAccountProperty("provider")].api.getProviderIcon(16, accountData) : "chrome://tbsync/skin/provider16.png";
         }
     },
@@ -279,7 +279,7 @@ var tbSyncAccounts = {
     updateAccountStatus: function (id) {
         let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
         if (listItem) {
-            let obj = listItem.childNodes[2].firstChild
+            let obj = listItem.childNodes[2];
             this.setStatusImage(id, obj);
         }
     },
@@ -295,9 +295,8 @@ var tbSyncAccounts = {
 
     updateAccountName: function (id, name) {
         let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
-        if (listItem.childNodes[1].getAttribute("label") != name) {
-            listItem.childNodes[1].setAttribute("label", name);
-            listItem.setAttribute("label", name);
+        if (listItem.childNodes[1].getAttribute("value") != name) {
+            listItem.childNodes[1].setAttribute("value", name);
         }
     },
     
@@ -358,35 +357,30 @@ var tbSyncAccounts = {
                     let newListItem = document.createElement("richlistitem");
                     newListItem.setAttribute("id", "tbSyncAccounts.accounts." + accounts.allIDs[i]);
                     newListItem.setAttribute("value", accounts.allIDs[i]);
+                    newListItem.setAttribute("align", "center");
                     newListItem.setAttribute("label", accounts.data[accounts.allIDs[i]].accountname);
+                    newListItem.setAttribute("style", "padding: 5px 0px;");
                     newListItem.setAttribute("ondblclick", "tbSyncAccounts.toggleEnableState();");
                     
                     //add icon (use "install provider" icon, if provider not installed)
-                    let itemTypeCell = document.createElement("listcell");
-                    itemTypeCell.setAttribute("class", "img");
-                    itemTypeCell.setAttribute("width", "24");
-                    itemTypeCell.setAttribute("height", "24");
-                        let itemType = document.createElement("image");
-                        itemType.setAttribute("style", "margin: 4px;");
-                    itemTypeCell.appendChild(itemType);
-                    newListItem.appendChild(itemTypeCell);
+                    let itemType = document.createElement("image");
+                    itemType.setAttribute("width", "16");
+                    itemType.setAttribute("height", "16");
+                    itemType.setAttribute("style", "margin: 0px 0px 0px 5px;");
+                    newListItem.appendChild(itemType);
 
                     //add account name
-                    let itemLabelCell = document.createElement("listcell");
-                    itemLabelCell.setAttribute("class", "label");
-                    itemLabelCell.setAttribute("flex", "1");
-                    newListItem.appendChild(itemLabelCell);
+                    let itemLabel = document.createElement("label");
+                    itemLabel.setAttribute("flex", "1");
+                    newListItem.appendChild(itemLabel);
 
                     //add account status
-                    let itemStatusCell = document.createElement("listcell");
-                    itemStatusCell.setAttribute("class", "img");
-                    itemStatusCell.setAttribute("width", "30");
-                    itemStatusCell.setAttribute("height", "30");
                     let itemStatus = document.createElement("image");
-                    itemStatus.setAttribute("style", "margin:2px;");
-                    itemStatusCell.appendChild(itemStatus);
-
-                    newListItem.appendChild(itemStatusCell);
+                    itemStatus.setAttribute("width", "16");
+                    itemStatus.setAttribute("height", "16");
+                    itemStatus.setAttribute("style", "margin: 0px 5px;");
+                    newListItem.appendChild(itemStatus);
+                    
                     accountsList.appendChild(newListItem);
                 } 
                 
