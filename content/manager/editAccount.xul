@@ -64,8 +64,8 @@
                               style="margin: 0 1px 1px 1ex;padding:0;"
                               context="tbsync.accountsettings.FolderListContextMenu"
                               seltype="single">
-                                <listhead flex="1" id="tbsync.accountsettings.folderlist.header" style="border-bottom: 1px solid lightgrey;">
-                                </listhead>
+                                <listheader id="tbsync.accountsettings.folderlist.header" style="border-bottom: 1px solid lightgrey;">
+                                </listheader>
                             </richlistbox>
                             <vbox flex="0" style="margin:1ex 0 0 0;">
                                 <hbox flex="1" align="center" pack="end">

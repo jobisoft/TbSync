@@ -75,7 +75,7 @@ var tbSyncAccountSettings = {
         let header = tbSync.providers[tbSyncAccountSettings.provider].folderList.getHeader();
         let folderlistHeader = window.document.getElementById('tbsync.accountsettings.folderlist.header');
         for (let h=0; h < header.length; h++) {
-            let listheader = window.document.createElement("listheader");
+            let listheader = window.document.createElement("treecol");
             for (let a in header[h]) {
                 if (header[h].hasOwnProperty(a)) {
                     listheader.setAttribute(a, header[h][a]);
