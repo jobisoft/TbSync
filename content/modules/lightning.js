@@ -12,6 +12,9 @@ var lightning = {
 
     lightningInitDone : false,
     
+    cal: null,
+    ICAL: null,
+    
     load: async function () {
         //check for lightning
         let lightning = await AddonManager.getAddonByID("{e2fda1a4-762b-4020-b5ad-a41df1933103}");
@@ -19,15 +22,17 @@ var lightning = {
             tbSync.dump("Check4Lightning","Start");
 
             //try to import
-            if ("calICalendar" in Components.interfaces && typeof cal == 'undefined') {
+            if ("calICalendar" in Components.interfaces) {
                 var { cal } = ChromeUtils.import("resource://calendar/modules/calUtils.jsm");
-                var { ICAL, unwrapSetter, unwrapSingle, wrapGetter } = ChromeUtils.import("resource://calendar/modules/ical.js");
-            }
+                var { ICAL } = ChromeUtils.import("resource://calendar/modules/ical.js");
+				tbSync.lightning.cal = cal;
+				tbSync.lightning.ICAL = ICAL;
+			}
 
-            if (typeof cal !== 'undefined') {
+            if (typeof tbSync.lightning.cal !== 'undefined') {
                 //adding a global observer
-                cal.getCalendarManager().addCalendarObserver(this.calendarObserver);
-                cal.getCalendarManager().addObserver(this.calendarManagerObserver);
+                tbSync.lightning.cal.getCalendarManager().addCalendarObserver(this.calendarObserver);
+                tbSync.lightning.cal.getCalendarManager().addObserver(this.calendarManagerObserver);
 
                 //indicate, that we have initialized 
                 this.lightningInitDone = true;
@@ -42,8 +47,8 @@ var lightning = {
     unload: async function () {
         if (this.isAvailable()) {
             //removing global observer
-            cal.getCalendarManager().removeCalendarObserver(this.calendarObserver);
-            cal.getCalendarManager().removeObserver(this.calendarManagerObserver);
+            tbSync.lightning.cal.getCalendarManager().removeCalendarObserver(this.calendarObserver);
+            tbSync.lightning.cal.getCalendarManager().removeObserver(this.calendarManagerObserver);
 
             //remove listeners on global sync buttons
             if (tbSync.window.document.getElementById("calendar-synchronize-button")) {
@@ -86,7 +91,7 @@ var lightning = {
             let calendar = tbSync.lightning.checkCalendar(this._folderData);
             try {
                 if (calendar) {
-                    cal.getCalendarManager().removeCalendar(calendar);
+                    tbSync.lightning.cal.getCalendarManager().removeCalendar(calendar);
                 }
             } catch (e) {}
         }
@@ -128,7 +133,7 @@ var lightning = {
     
     isAvailable: function () {
         //if it is known - and still valid - return true
-        return (this.lightningInitDone && typeof cal !== 'undefined');
+        return (this.lightningInitDone && typeof tbSync.lightning.cal !== 'undefined');
     },
     
     getFolderFromCalendarUID: function(calUID) {
@@ -324,7 +329,7 @@ var lightning = {
     checkCalendar: function (folderData) {       
         if (!folderData.getFolderProperty("cached")) {
             let target = folderData.getFolderProperty("target");
-            let calManager = cal.getCalendarManager();
+            let calManager = tbSync.lightning.cal.getCalendarManager();
             let targetCal = calManager.getCalendarById(target);
             
             if (targetCal !== null)  {
@@ -342,7 +347,7 @@ var lightning = {
     
     //this function actually creates a calendar if missing
     createCalender: function (folderData) {       
-        let calManager = cal.getCalendarManager();
+        let calManager = tbSync.lightning.cal.getCalendarManager();
         let target = folderData.getFolderProperty("target");
         let provider = folderData.accountData.getAccountProperty("provider");
 

@@ -279,7 +279,7 @@ var tbSyncAccountSettings = {
         let foldersElements = {};
         for (let i=folderList.getRowCount()-1; i>=0; i--) {
             if (!foldersFound.includes(folderList.getItemAtIndex(i).getAttribute("value"))) {
-                folderList.removeItemAt(i);
+                folderList.getItemAtIndex(i).remove();
             } else {
                 foldersElements[folderList.getItemAtIndex(i).folderData.folderID] = folderList.getItemAtIndex(i);
             }

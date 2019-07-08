@@ -8,14 +8,8 @@
  
  "use strict";
 
-
 var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
-
-if ("calICalendar" in Components.interfaces && typeof cal == 'undefined') {
-    var { cal } = ChromeUtils.import("resource://calendar/modules/calUtils.jsm");
-    var { ICAL, unwrapSetter, unwrapSingle, wrapGetter } = ChromeUtils.import("resource://calendar/modules/ical.js");
-}
 
 var tbSyncAccounts = {
 
@@ -349,9 +343,10 @@ var tbSyncAccounts = {
             //get current accounts in list and remove entries of accounts no longer there
             let listedAccounts = [];
             for (let i=accountsList.getRowCount()-1; i>=0; i--) {
-                listedAccounts.push(accountsList.getItemAtIndex (i).value);
-                if (accounts.allIDs.indexOf(accountsList.getItemAtIndex(i).value) == -1) {
-                    accountsList.removeItemAt(i);
+                let item = accountsList.getItemAtIndex(i);
+                listedAccounts.push(item.value);
+                if (accounts.allIDs.indexOf(item.value) == -1) {
+                    item.remove();
                 }
             }
 
@@ -413,7 +408,7 @@ var tbSyncAccounts = {
         } else {
             //No defined accounts, empty accounts list and load dummy
             for (let i=accountsList.getRowCount()-1; i>=0; i--) {
-                accountsList.removeItemAt(i);
+                accountsList.getItemAtIndex(i).remove();
             }
             document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/noaccounts.xul");
         }

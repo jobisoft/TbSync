@@ -38,7 +38,7 @@ var tbSyncErrorLog = {
         errorlog.hidden = true;
 
         for (let i=errorlog.getRowCount()-1; i>=0; i--) {
-            errorlog.removeItemAt(i);
+            errorlog.getItemAtIndex(i).remove();
         }
         
         errorlog.hidden = false;

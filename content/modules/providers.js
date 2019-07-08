@@ -97,7 +97,7 @@ var providers = {
                 if (!this[provider].hasOwnProperty("folderList")) this[provider].folderList = new tbSync.manager.DefaultFolderList(provider);
                 
                 //load provider
-                await this[provider].api.load(tbSync.lightning.isAvailable());
+                await this[provider].api.load();
 
                 await tbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xul?provider=" + provider, this[provider].api.getEditAccountOverlayUrl());        
                 tbSync.dump("Loaded provider", provider + "::" + this[provider].api.getNiceProviderName() + " ("+this.loadedProviders[provider].version+")");
@@ -133,7 +133,7 @@ var providers = {
     unloadProvider: async function (provider) {        
         if (this.loadedProviders.hasOwnProperty(provider)) {
             tbSync.dump("Unloading provider", provider);
-            await this[provider].api.unload(tbSync.lightning.isAvailable());
+            await this[provider].api.unload();
             delete this.loadedProviders[provider];
             delete this[provider];            
             Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", provider);
