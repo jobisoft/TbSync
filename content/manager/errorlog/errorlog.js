@@ -12,145 +12,145 @@ var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncErrorLog = {
-    
-    onload: function () {
-        Services.obs.addObserver(tbSyncErrorLog.updateErrorLog, "tbsync.observer.errorlog.update", false);
+  
+  onload: function () {
+    Services.obs.addObserver(tbSyncErrorLog.updateErrorLog, "tbsync.observer.errorlog.update", false);
 
+    let errorlog = document.getElementById('tbsync.errorlog');
+    errorlog.hidden = true;
+    
+    //init list
+    let errors = tbSync.errorlog.get();
+    for (let i=0; i < errors.length; i++) {
+      let item = tbSyncErrorLog.addLogEntry(errors[i]);
+      errorlog.appendChild(item);
+    }
+
+    errorlog.hidden = false;
+    errorlog.ensureIndexIsVisible(errorlog.getRowCount()-1);
+    document.documentElement.getButton("extra1").onclick = tbSyncErrorLog.onclear;
+  },
+
+  onclear: function () {
+    tbSync.errorlog.clear();
+
+    let errorlog = document.getElementById('tbsync.errorlog');
+    errorlog.hidden = true;
+
+    for (let i=errorlog.getRowCount()-1; i>=0; i--) {
+      errorlog.getItemAtIndex(i).remove();
+    }
+    
+    errorlog.hidden = false;
+  },
+  
+  onunload: function () {
+    Services.obs.removeObserver(tbSyncErrorLog.updateErrorLog, "tbsync.observer.errorlog.update");
+  },
+
+  updateErrorLog: {
+    observe: function (aSubject, aTopic, aData) {
+      let errors = tbSync.errorlog.get();
+      if (errors.length > 0) {
         let errorlog = document.getElementById('tbsync.errorlog');
         errorlog.hidden = true;
         
-        //init list
-        let errors = tbSync.errorlog.get();
-        for (let i=0; i < errors.length; i++) {
-            let item = tbSyncErrorLog.addLogEntry(errors[i]);
-            errorlog.appendChild(item);
-        }
+        let item = tbSyncErrorLog.addLogEntry(errors[errors.length-1]);
+        errorlog.appendChild(item);
 
         errorlog.hidden = false;
         errorlog.ensureIndexIsVisible(errorlog.getRowCount()-1);
-        document.documentElement.getButton("extra1").onclick = tbSyncErrorLog.onclear;
-    },
+      }
+    }
+  },
 
-    onclear: function () {
-        tbSync.errorlog.clear();
-
-        let errorlog = document.getElementById('tbsync.errorlog');
-        errorlog.hidden = true;
-
-        for (let i=errorlog.getRowCount()-1; i>=0; i--) {
-            errorlog.getItemAtIndex(i).remove();
-        }
-        
-        errorlog.hidden = false;
-    },
+  
+  addLogEntry: function (entry) {
     
-    onunload: function () {
-        Services.obs.removeObserver(tbSyncErrorLog.updateErrorLog, "tbsync.observer.errorlog.update");
-    },
+    //left column
+    let leftColumn = document.createElement("vbox");
+    leftColumn.setAttribute("width", "24");
 
-    updateErrorLog: {
-        observe: function (aSubject, aTopic, aData) {
-            let errors = tbSync.errorlog.get();
-            if (errors.length > 0) {
-                let errorlog = document.getElementById('tbsync.errorlog');
-                errorlog.hidden = true;
-                
-                let item = tbSyncErrorLog.addLogEntry(errors[errors.length-1]);
-                errorlog.appendChild(item);
-
-                errorlog.hidden = false;
-                errorlog.ensureIndexIsVisible(errorlog.getRowCount()-1);
-            }
-        }
-    },
-
+    let image = document.createElement("image");
+    image.setAttribute("src", "chrome://tbsync/skin/" + entry.type + "16.png");
+    image.setAttribute("style", "margin:4px 4px 4px 4px;");
+    leftColumn.appendChild(image);
     
-    addLogEntry: function (entry) {
-        
-        //left column
-        let leftColumn = document.createElement("vbox");
-        leftColumn.setAttribute("width", "24");
+    //right column        
+    let rightColumn = document.createElement("vbox");
+    rightColumn.setAttribute("flex","1");
 
-        let image = document.createElement("image");
-        image.setAttribute("src", "chrome://tbsync/skin/" + entry.type + "16.png");
-        image.setAttribute("style", "margin:4px 4px 4px 4px;");
-        leftColumn.appendChild(image);
-        
-        //right column        
-        let rightColumn = document.createElement("vbox");
-        rightColumn.setAttribute("flex","1");
+    let d = new Date(entry.timestamp);
+    let timestamp = document.createElement("description");
+    timestamp.setAttribute("flex", "1");
+    timestamp.setAttribute("class", "header");
+    timestamp.textContent = d.toLocaleTimeString();
+    rightColumn.appendChild(timestamp);
 
-        let d = new Date(entry.timestamp);
-        let timestamp = document.createElement("description");
-        timestamp.setAttribute("flex", "1");
-        timestamp.setAttribute("class", "header");
-        timestamp.textContent = d.toLocaleTimeString();
-        rightColumn.appendChild(timestamp);
+      let hBox = document.createElement("hbox");
+      hBox.flex = "1";
+      let vBoxLeft = document.createElement("vbox");
+      vBoxLeft.flex = "1";
+      let vBoxRight = document.createElement("vbox");
+      
+      let msg = document.createElement("description");
+      msg.setAttribute("flex", "1");
+      msg.setAttribute("class", "header");
+      msg.textContent = entry.message;
+      vBoxLeft.appendChild(msg);
 
-            let hBox = document.createElement("hbox");
-            hBox.flex = "1";
-            let vBoxLeft = document.createElement("vbox");
-            vBoxLeft.flex = "1";
-            let vBoxRight = document.createElement("vbox");
-            
-            let msg = document.createElement("description");
-            msg.setAttribute("flex", "1");
-            msg.setAttribute("class", "header");
-            msg.textContent = entry.message;
-            vBoxLeft.appendChild(msg);
+      if (entry.link) {
+        let link = document.createElement("button");
+        link.setAttribute("label",  tbSync.getString("manager.help"));
+        link.setAttribute("oncommand",  "tbSync.manager.openLink('" + entry.link + "')");
+        vBoxRight.appendChild(link);
+      }
 
-            if (entry.link) {
-                let link = document.createElement("button");
-                link.setAttribute("label",  tbSync.getString("manager.help"));
-                link.setAttribute("oncommand",  "tbSync.manager.openLink('" + entry.link + "')");
-                vBoxRight.appendChild(link);
-            }
+      hBox.appendChild(vBoxLeft);
+      hBox.appendChild(vBoxRight);
+      rightColumn.appendChild(hBox);
+    
+    if (entry.accountname) {
+      let account = document.createElement("label");
+      account.setAttribute("value",  "Account: " + entry.accountname);
+      rightColumn.appendChild(account);
+    }
 
-            hBox.appendChild(vBoxLeft);
-            hBox.appendChild(vBoxRight);
-            rightColumn.appendChild(hBox);
-        
-        if (entry.accountname) {
-            let account = document.createElement("label");
-            account.setAttribute("value",  "Account: " + entry.accountname);
-            rightColumn.appendChild(account);
-        }
+    if (entry.foldername) {
+      let folder = document.createElement("label");
+      folder.setAttribute("value",  "Resource: " + entry.foldername);
+      rightColumn.appendChild(folder);
+    }
 
-        if (entry.foldername) {
-            let folder = document.createElement("label");
-            folder.setAttribute("value",  "Resource: " + entry.foldername);
-            rightColumn.appendChild(folder);
-        }
-
-        if (entry.details) {
-            let lines = entry.details.split("\n");
-            let line = document.createElement("textbox");
-            line.setAttribute("readonly", "true");                
-            line.setAttribute("multiline", "true");                
-            line.setAttribute("wrap", "off");                           
-            line.setAttribute("rows", lines.length);                
-            line.setAttribute("style", "font-family: monospace; font-size: 10px;");                
-            line.setAttribute("class", "plain");                
-            line.setAttribute("value", entry.details.trim());
-            
-            let container = document.createElement("vbox");
-            container.setAttribute("style", "margin-left:1ex;margin-top:1ex;");                
-            container.appendChild(line);
-            
-            rightColumn.appendChild(container);
-        }
-        
-        //columns
-        let columns = document.createElement("hbox");
-        columns.setAttribute("flex", "1");
-        columns.appendChild(leftColumn);
-        columns.appendChild(rightColumn);
-        
-        //richlistitem
-        let richlistitem = document.createElement("richlistitem");
-        richlistitem.setAttribute("style", "padding:4px; border-bottom: 1px solid lightgrey;");
-        richlistitem.appendChild(columns);
-        
-        return richlistitem;
-    },    
+    if (entry.details) {
+      let lines = entry.details.split("\n");
+      let line = document.createElement("textbox");
+      line.setAttribute("readonly", "true");                
+      line.setAttribute("multiline", "true");                
+      line.setAttribute("wrap", "off");                           
+      line.setAttribute("rows", lines.length);                
+      line.setAttribute("style", "font-family: monospace; font-size: 10px;");                
+      line.setAttribute("class", "plain");                
+      line.setAttribute("value", entry.details.trim());
+      
+      let container = document.createElement("vbox");
+      container.setAttribute("style", "margin-left:1ex;margin-top:1ex;");                
+      container.appendChild(line);
+      
+      rightColumn.appendChild(container);
+    }
+    
+    //columns
+    let columns = document.createElement("hbox");
+    columns.setAttribute("flex", "1");
+    columns.appendChild(leftColumn);
+    columns.appendChild(rightColumn);
+    
+    //richlistitem
+    let richlistitem = document.createElement("richlistitem");
+    richlistitem.setAttribute("style", "padding:4px; border-bottom: 1px solid lightgrey;");
+    richlistitem.appendChild(columns);
+    
+    return richlistitem;
+  },    
 };

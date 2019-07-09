@@ -12,22 +12,22 @@ var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncAttendeeEventDialog = {
 
-    onInject: function (window) {
-        // Add autoComplete for TbSync
-        if (window.document.getElementById("attendeeCol3#1")) {
-            let autocompletesearch = window.document.getElementById("attendeeCol3#1").getAttribute("autocompletesearch");
-            if (autocompletesearch.indexOf("tbSyncAutoCompleteSearch") == -1) {
-                window.document.getElementById("attendeeCol3#1").setAttribute("autocompletesearch", autocompletesearch + " tbSyncAutoCompleteSearch");
-            }
-        }    
-    },
+  onInject: function (window) {
+    // Add autoComplete for TbSync
+    if (window.document.getElementById("attendeeCol3#1")) {
+      let autocompletesearch = window.document.getElementById("attendeeCol3#1").getAttribute("autocompletesearch");
+      if (autocompletesearch.indexOf("tbSyncAutoCompleteSearch") == -1) {
+        window.document.getElementById("attendeeCol3#1").setAttribute("autocompletesearch", autocompletesearch + " tbSyncAutoCompleteSearch");
+      }
+    }    
+  },
 
-    onRemove: function (window) {
-        // Remove autoComplete for TbSync
-        if (window.document.getElementById("attendeeCol3#1")) {
-            let autocompletesearch = window.document.getElementById("attendeeCol3#1").getAttribute("autocompletesearch").replace("tbSyncAutoCompleteSearch", "");
-            window.document.getElementById("attendeeCol3#1").setAttribute("autocompletesearch", autocompletesearch.trim());
-        }
+  onRemove: function (window) {
+    // Remove autoComplete for TbSync
+    if (window.document.getElementById("attendeeCol3#1")) {
+      let autocompletesearch = window.document.getElementById("attendeeCol3#1").getAttribute("autocompletesearch").replace("tbSyncAutoCompleteSearch", "");
+      window.document.getElementById("attendeeCol3#1").setAttribute("autocompletesearch", autocompletesearch.trim());
     }
+  }
 
 }

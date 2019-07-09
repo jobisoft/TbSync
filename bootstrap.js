@@ -16,97 +16,97 @@ function uninstall(data, reason) {
 }
 
 function startup(data, reason) {
-    // possible reasons: APP_STARTUP, ADDON_ENABLE, ADDON_INSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE.
+  // possible reasons: APP_STARTUP, ADDON_ENABLE, ADDON_INSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE.
 
-    // set default prefs
-    let defaults = Services.prefs.getDefaultBranch("extensions.tbsync.");
-    defaults.setIntPref("timeout", 90000);
-    defaults.setBoolPref("debug.testoptions", false);
+  // set default prefs
+  let defaults = Services.prefs.getDefaultBranch("extensions.tbsync.");
+  defaults.setIntPref("timeout", 90000);
+  defaults.setBoolPref("debug.testoptions", false);
 
-    defaults.setBoolPref("log.toconsole", false);
-    defaults.setBoolPref("log.tofile", false);
-    defaults.setIntPref("log.userdatalevel", 0); //0 - metadata only (except errors)   1 - including userdata,  2 - redacted xml , 3 - raw xml + wbxml
+  defaults.setBoolPref("log.toconsole", false);
+  defaults.setBoolPref("log.tofile", false);
+  defaults.setIntPref("log.userdatalevel", 0); //0 - metadata only (except errors)   1 - including userdata,  2 - redacted xml , 3 - raw xml + wbxml
 
-    // Check if the main window has finished loading
-    let windows = Services.wm.getEnumerator("mail:3pane");
-    while (windows.hasMoreElements()) {
-        let domWindow = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
-        WindowListener.loadIntoWindow(domWindow);
-    }
+  // Check if the main window has finished loading
+  let windows = Services.wm.getEnumerator("mail:3pane");
+  while (windows.hasMoreElements()) {
+    let domWindow = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
+    WindowListener.loadIntoWindow(domWindow);
+  }
 
-    // Wait for any new windows to open.
-    Services.wm.addListener(WindowListener);
+  // Wait for any new windows to open.
+  Services.wm.addListener(WindowListener);
   
-    //DO NOT ADD ANYTHING HERE!
+  //DO NOT ADD ANYTHING HERE!
 }
 
 function shutdown(data, reason) {
-    //possible reasons: APP_SHUTDOWN, ADDON_DISABLE, ADDON_UNINSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE    
+  //possible reasons: APP_SHUTDOWN, ADDON_DISABLE, ADDON_UNINSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE    
 
-    // When the application is shutting down we normally don't have to clean
-    // up any UI changes made.
-    if (reason == APP_SHUTDOWN) {
-        return;
-    }
+  // When the application is shutting down we normally don't have to clean
+  // up any UI changes made.
+  if (reason == APP_SHUTDOWN) {
+    return;
+  }
 
-    var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+  var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
-    let windows = Services.wm.getEnumerator("mail:3pane");
-    while (windows.hasMoreElements()) {
-        let domWindow = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
-        WindowListener.unloadFromWindow(domWindow);
-    }
+  let windows = Services.wm.getEnumerator("mail:3pane");
+  while (windows.hasMoreElements()) {
+    let domWindow = windows.getNext().QueryInterface(Ci.nsIDOMWindow);
+    WindowListener.unloadFromWindow(domWindow);
+  }
 
-    // Stop listening for any new windows to open.
-    Services.wm.removeListener(WindowListener);
+  // Stop listening for any new windows to open.
+  Services.wm.removeListener(WindowListener);
 
-    tbSync.enabled = false;
+  tbSync.enabled = false;
 
-    //unload tbSync module
-    tbSync.dump("TbSync shutdown","Unloading TbSync modules.");
-    tbSync.unload().then(function() {
-        Cu.unload("chrome://tbsync/content/tbsync.jsm");
-        Cu.unload("chrome://tbsync/content/OverlayManager.jsm");
-        // HACK WARNING:
-        //  - the Addon Manager does not properly clear all addon related caches on update;
-        //  - in order to fully update images and locales, their caches need clearing here
-        Services.obs.notifyObservers(null, "chrome-flush-caches", null);            
-    });
+  //unload tbSync module
+  tbSync.dump("TbSync shutdown","Unloading TbSync modules.");
+  tbSync.unload().then(function() {
+    Cu.unload("chrome://tbsync/content/tbsync.jsm");
+    Cu.unload("chrome://tbsync/content/OverlayManager.jsm");
+    // HACK WARNING:
+    //  - the Addon Manager does not properly clear all addon related caches on update;
+    //  - in order to fully update images and locales, their caches need clearing here
+    Services.obs.notifyObservers(null, "chrome-flush-caches", null);            
+  });
 }
 
 
 var WindowListener = {
 
-    async loadIntoWindow(window) {
-        if (window.document.readyState != "complete") {
-            // Make sure the window load has completed.
-            await new Promise(resolve => {
-                window.addEventListener("load", resolve, { once: true });
-            });
-        }
+  async loadIntoWindow(window) {
+    if (window.document.readyState != "complete") {
+      // Make sure the window load has completed.
+      await new Promise(resolve => {
+        window.addEventListener("load", resolve, { once: true });
+      });
+    }
 
-        // the main window has loaded, continue with init
-        var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
-        if (!tbSync.enabled) tbSync.load(window);
-    },
+    // the main window has loaded, continue with init
+    var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+    if (!tbSync.enabled) tbSync.load(window);
+  },
 
 
-    unloadFromWindow(window) {
-    },
+  unloadFromWindow(window) {
+  },
 
-    // nsIWindowMediatorListener functions
-    onOpenWindow(xulWindow) {
-        // A new window has opened.
-        let domWindow = xulWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
-        // Check if the opened window is the one we want to modify.
-        if (domWindow.document.documentElement.getAttribute("windowtype") === "mail:3pane") {
-          this.loadIntoWindow(domWindow);
-        }
-    },
+  // nsIWindowMediatorListener functions
+  onOpenWindow(xulWindow) {
+    // A new window has opened.
+    let domWindow = xulWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
+    // Check if the opened window is the one we want to modify.
+    if (domWindow.document.documentElement.getAttribute("windowtype") === "mail:3pane") {
+      this.loadIntoWindow(domWindow);
+    }
+  },
 
-    onCloseWindow(xulWindow) {
-    },
+  onCloseWindow(xulWindow) {
+  },
 
-    onWindowTitleChange(xulWindow, newTitle) {
-    },
+  onWindowTitleChange(xulWindow, newTitle) {
+  },
 };

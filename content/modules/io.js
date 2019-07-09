@@ -10,32 +10,32 @@
  
 var io = {
 
-    storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
+  storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
 
-    load: async function () {
-    },
+  load: async function () {
+  },
 
-    unload: async function () {
-    },
+  unload: async function () {
+  },
 
-    getAbsolutePath: function(filename) {
-        return OS.Path.join(this.storageDirectory, filename);
-    },
-    
-    initFile: function (filename) {
-        let file = FileUtils.getFile("ProfD", ["TbSync",filename]);
-        //create a stream to write to that file
-        let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
-        foStream.init(file, 0x02 | 0x08 | 0x20, parseInt("0666", 8), 0); // write, create, truncate
-        foStream.close();
-    },
+  getAbsolutePath: function(filename) {
+    return OS.Path.join(this.storageDirectory, filename);
+  },
+  
+  initFile: function (filename) {
+    let file = FileUtils.getFile("ProfD", ["TbSync",filename]);
+    //create a stream to write to that file
+    let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
+    foStream.init(file, 0x02 | 0x08 | 0x20, parseInt("0666", 8), 0); // write, create, truncate
+    foStream.close();
+  },
 
-    appendToFile: function (filename, data) {
-        let file = FileUtils.getFile("ProfD", ["TbSync",filename]);
-        //create a strem to write to that file
-        let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
-        foStream.init(file, 0x02 | 0x08 | 0x10, parseInt("0666", 8), 0); // write, create, append
-        foStream.write(data, data.length);
-        foStream.close();
-    },    
+  appendToFile: function (filename, data) {
+    let file = FileUtils.getFile("ProfD", ["TbSync",filename]);
+    //create a strem to write to that file
+    let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
+    foStream.init(file, 0x02 | 0x08 | 0x10, parseInt("0666", 8), 0); // write, create, append
+    foStream.write(data, data.length);
+    foStream.close();
+  },    
 }
