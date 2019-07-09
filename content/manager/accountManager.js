@@ -71,8 +71,8 @@ var tbSyncAccountManager = {
       menu.appendChild(item); 
     }
   
-    let menulist = document.getElementById("tbsync.supportwizard.faultycomponent.menulist");
-    menulist.addEventListener("select", tbSyncAccountManager.checkSupportWizard);
+    document.getElementById("tbsync.supportwizard.faultycomponent.menulist").addEventListener("select", tbSyncAccountManager.checkSupportWizard);
+    document.getElementById("tbsync.supportwizard.description").addEventListener("input", tbSyncAccountManager.checkSupportWizard);
     document.addEventListener("wizardfinish", tbSyncAccountManager.prepareBugReport);
   },
   
