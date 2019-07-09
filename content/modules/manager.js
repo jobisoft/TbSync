@@ -185,7 +185,7 @@ var manager = {
         let menupopup = document.createElement("menupopup");
         {
           let menuitem = document.createElement("menuitem");
-          menuitem.setAttribute("value", "0");
+          menuitem.downloadonly = false;
           menuitem.setAttribute("class", "menuitem-iconic");
           menuitem.setAttribute("image", "chrome://tbsync/skin/acl_rw2.png");
           menuitem.addEventListener("command", this.updateReadOnly);
@@ -197,7 +197,7 @@ var manager = {
         
         {
           let menuitem = document.createElement("menuitem");
-          menuitem.setAttribute("value", "1");
+          menuitem.downloadonly = true;
           menuitem.setAttribute("class", "menuitem-iconic");
           menuitem.setAttribute("image", "chrome://tbsync/skin/acl_ro2.png");
           menuitem.addEventListener("command", this.updateReadOnly);
@@ -301,7 +301,7 @@ var manager = {
         let  folder = folderList.selectedItem.folderData;
 
         //update value
-        let value = element.value;
+        let value = element.downloadonly;
         folder.setFolderProperty("downloadonly", value);
 
         //update icon
