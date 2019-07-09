@@ -64,7 +64,7 @@ var tbSync = {
     this.modules.push({name: "manager", state: 0});
     this.modules.push({name: "providers", state: 0});
     this.modules.push({name: "core", state: 0});
-    this.modules.push({name: "passwordAuth", state: 0});
+    this.modules.push({name: "passwordManager", state: 0});
     this.modules.push({name: "network", state: 0});
     this.modules.push({name: "tools", state: 0});
     

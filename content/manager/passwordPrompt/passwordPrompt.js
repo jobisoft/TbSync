@@ -14,35 +14,34 @@ var tbSyncPassword = {
   
   onload: function () {
     this.accountData = window.arguments[0];
-    this.auth = new tbSync.PasswordAuthData(this.accountData);
+    this.auth = tbSync.providers[this.accountData.getAccountProperty("provider")].passwordAuth;
 
     this.namefield =  document.getElementById("tbsync.account");
     this.passfield = document.getElementById("tbsync.password");
     this.userfield = document.getElementById("tbsync.user");
 
     this.namefield.value = this.accountData.getAccountProperty("accountname");
-    this.userfield.value =  this.auth.getUsername();
+    this.userfield.value =  this.auth.getUsername(this.accountData);
 
     //allow to change username only if not connected
     if (this.accountData.isConnected()) {
       this.userfield.disabled=true;
     }
     
+    document.addEventListener("dialogaccept",  tbSyncPassword.doOK.bind(this));
     document.getElementById("tbsync.password").focus();
   },
 
-  doOK: function () {        
+  doOK: function (event) {        
+    console.log(this.userfield.value);
     //update username if changeable (must be set before password)
     if (!this.userfield.disabled) {
-      this.auth.setUsername(this.userfield.value);            
+      this.auth.setUsername(this.accountData, this.userfield.value);            
     }
     
     //update password
-    this.auth.setPassword(this.passfield.value);
+    this.auth.setPassword(this.accountData, this.passfield.value);
     this.accountData.sync();
   },
-
-  doCANCEL: function () {
-  }
   
 };

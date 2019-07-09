@@ -11,7 +11,6 @@
 var manager = {
 
   prefWindowObj: null,
-  authWindowObjs: {}, //hold references to authWindows for every account
   
   load: async function () {
   },
@@ -19,13 +18,6 @@ var manager = {
   unload: async function () {
     //close window (if open)
     if (this.prefWindowObj !== null) this.prefWindowObj.close();
-
-    //close all open password prompts
-    for (var w in this.authWindowObjs) {
-      if (this.authWindowObjs.hasOwnProperty(w) && this.authWindowObjs[w] !== null) {
-        this.authWindowObjs[w].close();
-      }
-    }
   },
 
 
