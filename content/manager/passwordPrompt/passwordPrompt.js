@@ -8,6 +8,7 @@
  
  "use strict";
 
+var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncPassword = {
@@ -33,14 +34,9 @@ var tbSyncPassword = {
   },
 
   doOK: function (event) {        
-    console.log(this.userfield.value);
-    //update username if changeable (must be set before password)
-    if (!this.userfield.disabled) {
-      this.auth.setUsername(this.accountData, this.userfield.value);            
-    }
-    
-    //update password
-    this.auth.setPassword(this.accountData, this.passfield.value);
+    this.auth.setLogin(this.accountData, this.userfield.value, this.passfield.value);
+    Services.obs.notifyObservers(null, "tbsync.observer.manager.reloadAccountSettingsGui", this.accountData.accountID);
+
     this.accountData.sync();
   },
   

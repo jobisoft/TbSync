@@ -10,27 +10,19 @@
 
 var passwordManager = {
 
-  authWindowObjs: {}, //hold references to authWindows for every account
-
   load: async function () {
   },
 
   unload: async function () {
-    //close all open password prompts
-    for (var w in this.authWindowObjs) {
-      if (this.authWindowObjs.hasOwnProperty(w) && this.authWindowObjs[w] !== null) {
-        this.authWindowObjs[w].close();
-      }
-    }
   },
 
-  removeLoginInfo: function(origin, realm, user) {
+  removeLoginInfos: function(origin, realm, users) {
     let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
 
     let logins = Services.logins.findLogins(origin, null, realm);
     for (let i = 0; i < logins.length; i++) {
-      if (logins[i].username == user) {
-        let currentLoginInfo = new nsLoginInfo(origin, null, realm, user, logins[i].password, "", "");
+      if (users.includes(logins[i].username)) {
+        let currentLoginInfo = new nsLoginInfo(origin, null, realm, logins[i].username, logins[i].password, "", "");
         try {
           Services.logins.removeLogin(currentLoginInfo);
         } catch (e) {
@@ -40,12 +32,12 @@ var passwordManager = {
     }
   },
 
-  setLoginInfo: function(origin, realm, user, password) {
+  setLoginInfo: function(origin, realm, oldUser, newUser, newPassword) {
     let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
     
-    this.removeLoginInfo(origin, realm, user);
+    this.removeLoginInfos(origin, realm, [oldUser, newUser]);
     
-    let newLoginInfo = new nsLoginInfo(origin, null, realm, user, password, "", "");
+    let newLoginInfo = new nsLoginInfo(origin, null, realm, newUser, newPassword, "", "");
     try {
       Services.logins.addLogin(newLoginInfo);
     } catch (e) {
@@ -66,10 +58,12 @@ var passwordManager = {
   
   // Usage of this method requires the provider to implement the passwordAuth Object
   passwordPrompt: function(accountData) {
+    let provider = accountData.getAccountProperty("provider");
+    let accountID = accountData.accountID;
     // only popup one auth prompt per account
-    if (!this.authWindowObjs.hasOwnProperty[this.accountID] || this.authWindowObjs[this.accountID] === null) {
+    if (!tbSync.providers.loadedProviders[provider].authWindows.hasOwnProperty[accountID] || tbSync.providers.loadedProviders[provider].authWindows[accountID] === null) {
       let url = "chrome://tbsync/content/manager/passwordPrompt/passwordPrompt.xul";
-      this.authWindowObjs[this.accountID] = tbSync.window.openDialog(url, "authPrompt", "centerscreen,chrome,resizable=no", accountData);
+      tbSync.providers.loadedProviders[provider].authWindows[accountID]  = tbSync.window.openDialog(url, "authPrompt", "centerscreen,chrome,resizable=no", accountData);
     }        
   },
 

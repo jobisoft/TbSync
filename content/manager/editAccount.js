@@ -31,6 +31,16 @@ var tbSyncAccountSettings = {
     }
   },
 
+  reloadGuiObserver: {
+    observe: function (aSubject, aTopic, aData) {
+      //only run if is request for this account and main frame is visible
+      let accountID = aData;            
+      if (accountID == tbSyncAccountSettings.accountID && !document.getElementById('tbsync.accountsettings.frame').hidden) {
+        tbSyncAccountSettings.loadSettings(true);
+      }
+    }
+  },
+
   updateGuiObserver: {
     observe: function (aSubject, aTopic, aData) {
       //only run if is request for this account and main frame is visible
@@ -63,6 +73,7 @@ var tbSyncAccountSettings = {
     //load observers
     Services.obs.addObserver(tbSyncAccountSettings.updateFolderListObserver, "tbsync.observer.manager.updateFolderList", false);
     Services.obs.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.observer.manager.updateAccountSettingsGui", false);
+    Services.obs.addObserver(tbSyncAccountSettings.reloadGuiObserver, "tbsync.observer.manager.reloadAccountSettingsGui", false);
     Services.obs.addObserver(tbSyncAccountSettings.updateSyncstateObserver, "tbsync.observer.manager.updateSyncstate", false);
     //get the selected account from the loaded URI
     tbSyncAccountSettings.accountID = window.location.toString().split("id=")[1];
@@ -104,6 +115,7 @@ var tbSyncAccountSettings = {
     if (!document.getElementById('tbsync.accountsettings.frame').hidden) {
       Services.obs.removeObserver(tbSyncAccountSettings.updateFolderListObserver, "tbsync.observer.manager.updateFolderList");
       Services.obs.removeObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.observer.manager.updateAccountSettingsGui");
+      Services.obs.removeObserver(tbSyncAccountSettings.reloadGuiObserver, "tbsync.observer.manager.reloadAccountSettingsGui");
       Services.obs.removeObserver(tbSyncAccountSettings.updateSyncstateObserver, "tbsync.observer.manager.updateSyncstate");
     }
   },
@@ -119,7 +131,7 @@ var tbSyncAccountSettings = {
    * Run through all defined TbSync settings and if there is a corresponding
    * field in the settings dialog, fill it with the stored value.
    */
-  loadSettings: function () {
+  loadSettings: function (reload = false) {
     for (let i=0; i < tbSyncAccountSettings.settings.length; i++) {
       let pref = document.getElementById("tbsync.accountsettings.pref." + tbSyncAccountSettings.settings[i]);
       let label = document.getElementById("tbsync.accountsettings.label." + tbSyncAccountSettings.settings[i]);
@@ -134,12 +146,15 @@ var tbSyncAccountSettings = {
           event = "command";
         } else {
           //Not BOOL
-          pref.setAttribute("value", tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]));
+          if (reload) pref.value = tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]);
+          else pref.setAttribute("value", tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]));
+          
           if (pref.tagName == "menulist") {
             event = "command";
           }
         }
-        pref.addEventListener(event, function() {tbSyncAccountSettings.instantSaveSetting(this)});
+        
+        if (!reload) pref.addEventListener(event, function() {tbSyncAccountSettings.instantSaveSetting(this)});
       }
     }
     
