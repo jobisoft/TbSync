@@ -57,14 +57,20 @@ var passwordManager = {
 
   
   // Usage of this method requires the provider to implement the passwordAuth Object
-  passwordPrompt: function(accountData) {
+  passwordPrompt: async function(accountData) {
+    let url = "chrome://tbsync/content/manager/passwordPrompt/passwordPrompt.xul";
     let provider = accountData.getAccountProperty("provider");
     let accountID = accountData.accountID;
-    // only popup one auth prompt per account
-    if (!tbSync.providers.loadedProviders[provider].authWindows.hasOwnProperty[accountID] || tbSync.providers.loadedProviders[provider].authWindows[accountID] === null) {
-      let url = "chrome://tbsync/content/manager/passwordPrompt/passwordPrompt.xul";
-      tbSync.providers.loadedProviders[provider].authWindows[accountID]  = tbSync.window.openDialog(url, "authPrompt", "centerscreen,chrome,resizable=no", accountData);
-    }        
+
+    // Close auth window, if already open (resolving the connected async process).
+    if (tbSync.providers.loadedProviders[provider].authWindows.hasOwnProperty(accountID)) {
+      tbSync.providers.loadedProviders[provider].authWindows[accountID].close();
+    }
+    
+    accountData.syncData.setSyncState("PasswordPrompt");
+    return await new Promise(function(resolve, reject) {
+      tbSync.providers.loadedProviders[provider].authWindows[accountID] = tbSync.window.openDialog(url, "authPrompt", "centerscreen,chrome,resizable=no", accountData, resolve);
+    });
   },
 
 }

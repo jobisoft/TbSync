@@ -137,7 +137,9 @@ var providers = {
       
       // Close all open auth windows of this provider.
       for (let id in this.loadedProviders[provider].authWindows) {
-        if (this.loadedProviders[provider].authWindows.hasOwnProperty(id) && this.loadedProviders[provider].authWindows[id] != null) this.loadedProviders[provider].authWindows[id].close();
+        if (this.loadedProviders[provider].authWindows.hasOwnProperty(id)) {
+          this.loadedProviders[provider].authWindows[id].close();
+        }
       }
       
       await this[provider].api.unload();
