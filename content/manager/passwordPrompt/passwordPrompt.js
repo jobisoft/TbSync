@@ -16,6 +16,7 @@ var tbSyncPassword = {
   onload: function () {
     this.accountData = window.arguments[0];
     this.resolve = window.arguments[1];
+    this.accepted = false;
 
     this.auth = tbSync.providers[this.accountData.getAccountProperty("provider")].passwordAuth;
 
@@ -32,18 +33,21 @@ var tbSyncPassword = {
     }
     
     document.addEventListener("dialogaccept",  tbSyncPassword.doOK.bind(this));
-    window.addEventListener("unload",  tbSyncPassword.doCANCEL.bind(this));
+    window.addEventListener("unload", tbSyncPassword.doCANCEL.bind(this));
     document.getElementById("tbsync.password").focus();
   },
 
   doOK: function (event) {        
+    this.accepted = true
     this.auth.setLogin(this.accountData, this.userfield.value, this.passfield.value);
     Services.obs.notifyObservers(null, "tbsync.observer.manager.reloadAccountSettingsGui", this.accountData.accountID);
-    this.resolve(true);
+    this.resolve({username: this.userfield.value, password: this.passfield.value});
   },
   
   doCANCEL: function (event) {        
-    this.resolve(false);
+    if (!this.accepted) {
+      this.resolve(false);
+    }
   },
   
 };
