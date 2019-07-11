@@ -61,12 +61,12 @@ var tbSync = {
     this.modules.push({name: "cardbook", state: 0});
     this.modules.push({name: "messenger", state: 0});
     this.modules.push({name: "errorlog", state: 0});
-    this.modules.push({name: "manager", state: 0});
-    this.modules.push({name: "providers", state: 0});
     this.modules.push({name: "core", state: 0});
     this.modules.push({name: "passwordManager", state: 0});
     this.modules.push({name: "network", state: 0});
     this.modules.push({name: "tools", state: 0});
+    this.modules.push({name: "manager", state: 0});
+    this.modules.push({name: "providers", state: 0});
     
     //load modules
     for (let module of this.modules) {
@@ -114,7 +114,8 @@ var tbSync = {
     //cancel sync timer
     this.syncTimer.cancel();
     
-    //unload modules
+    //unload modules in reverse order
+    this.modules.reverse();
     for (let module of this.modules) {
       if (module.state == 2) {
         try {

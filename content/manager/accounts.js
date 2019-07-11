@@ -477,12 +477,7 @@ var tbSyncAccounts = {
   
   addAccount: function (provider) {
     let providerData = new tbSync.ProviderData(provider);
-    
-    document.getElementById("tbSyncAccounts.accounts").disabled=true;
-    document.getElementById("tbSyncAccounts.btnAccountActions").disabled=true;
-    window.openDialog(tbSync.providers[provider].api.getCreateAccountWindowUrl(), "newaccount", "centerscreen,modal,resizable=no", providerData);
-    document.getElementById("tbSyncAccounts.accounts").disabled=false;
-    document.getElementById("tbSyncAccounts.btnAccountActions").disabled=false;
+    tbSync.providers.loadedProviders[provider].createAccountWindow = window.openDialog(tbSync.providers[provider].api.getCreateAccountWindowUrl(), "TbSyncNewAccountWindow", "centerscreen,resizable=no", providerData);
   },
 
   installProvider: function (provider) {
