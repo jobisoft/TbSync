@@ -69,7 +69,7 @@ var passwordManager = {
       let url = "chrome://tbsync/content/passwordPrompt/passwordPrompt.xul";
   
       return await new Promise(function(resolve, reject) {
-       reference[data.windowID] = tbSync.window.openDialog(url, "authPrompt", "centerscreen,chrome,resizable=no", data, resolve);
+       reference[data.windowID] = tbSync.window.openDialog(url, "TbSyncPasswordPrompt:" + data.accountName, "centerscreen,chrome,resizable=no", data, resolve);
       });
     }
     

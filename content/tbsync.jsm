@@ -144,15 +144,14 @@ var tbSync = {
 
     event: {
       notify: function (timer) {
-        if (this.enabled) {
+        if (tbSync.enabled) {
           //get all accounts and check, which one needs sync
-          let accounts = this.db.getAccounts();
+          let accounts = tbSync.db.getAccounts();
           for (let i=0; i<accounts.IDs.length; i++) {
             let syncInterval = accounts.data[accounts.IDs[i]].autosync * 60 * 1000;
             let lastsynctime = accounts.data[accounts.IDs[i]].lastsynctime;
-            
-            if (this.core.isEnabled(accounts.IDs[i]) && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval)) {
-            this.core.syncAccount("sync", accounts.IDs[i]);
+            if (tbSync.core.isEnabled(accounts.IDs[i]) && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval)) {
+              tbSync.core.syncAccount("sync", accounts.IDs[i]);
             }
           }
         }
