@@ -16,6 +16,6 @@
     <script type="application/javascript" src="chrome://tbsync/content/manager/errorlog/errorlog.js"/>
 
     <vbox flex="1">
-        <richlistbox id="tbsync.errorlog" flex="1" seltype="single" />
+        <richlistbox id="tbsync.errorlog" flex="1" seltype="single" disabled="true"/>
     </vbox>
 </dialog>

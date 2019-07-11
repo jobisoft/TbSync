@@ -124,14 +124,13 @@ var tbSyncErrorLog = {
 
     if (entry.details) {
       let lines = entry.details.split("\n");
-      let line = document.createElement("textbox");
+      let line = document.createElementNS("http://www.w3.org/1999/xhtml", "textarea");
       line.setAttribute("readonly", "true");                
-      line.setAttribute("multiline", "true");                
       line.setAttribute("wrap", "off");                           
       line.setAttribute("rows", lines.length);                
       line.setAttribute("style", "font-family: monospace; font-size: 10px;");                
       line.setAttribute("class", "plain");                
-      line.setAttribute("value", entry.details.trim());
+      line.value = entry.details.trim();
       
       let container = document.createElement("vbox");
       container.setAttribute("style", "margin-left:1ex;margin-top:1ex;");                
