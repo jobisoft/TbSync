@@ -20,12 +20,16 @@ var ErrorOwnerData = class {
 var errorlog = {
 
   errors: null,
+  errorLogWindow: null,
   
   load: async function () {
     this.clear();
   },
 
   unload: async function () {
+    if (this.errorLogWindow) {
+      this.errorLogWindow.close();
+    }
   },
 
   get: function (accountID = null) {
@@ -89,6 +93,6 @@ var errorlog = {
   },
   
   open: function (accountID = null, folderID = null) {
-    tbSync.manager.prefWindowObj.open("chrome://tbsync/content/manager/errorlog/errorlog.xul", "TbSyncErrorLog", "centerscreen,chrome,resizable");
+    this.errorLogWindow = tbSync.manager.prefWindowObj.open("chrome://tbsync/content/manager/errorlog/errorlog.xul", "TbSyncErrorLog", "centerscreen,chrome,resizable");
   },    
 }
