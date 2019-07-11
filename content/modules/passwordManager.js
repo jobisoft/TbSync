@@ -32,7 +32,7 @@ var passwordManager = {
     }
   },
 
-  setLoginInfo: function(origin, realm, oldUser, newUser, newPassword) {
+  updateLoginInfo: function(origin, realm, oldUser, newUser, newPassword) {
     let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
     
     this.removeLoginInfos(origin, realm, [oldUser, newUser]);
@@ -56,28 +56,23 @@ var passwordManager = {
   },
 
   
-  // Usage of this method requires the provider to implement the passwordAuth Object
-  // Returns false, if credentials could not be retrieved or accountData not valid.
-  // Returns credential obj (username / password) in case of success.
-  // Also updated the account data and the UI.
-  passwordPrompt: async function(accountData) {
-    if (accountData && accountData instanceof tbSync.AccountData) {
-      let url = "chrome://tbsync/content/manager/passwordPrompt/passwordPrompt.xul";
-      let provider = accountData.getAccountProperty("provider");
-      let accountID = accountData.accountID;
-
-      // Close auth window, if already open (resolving the connected async process).
-      if (tbSync.providers.loadedProviders[provider].authWindows.hasOwnProperty(accountID)) {
-        tbSync.providers.loadedProviders[provider].authWindows[accountID].close();
-      }
-    
-      accountData.syncData.setSyncState("PasswordPrompt");
+  /** data obj
+    windowID
+    accountName
+    userName
+    userNameLocked
+  
+  reference is an object in which an entry with windowID will be placed to hold a reference to the prompt window (so it can be closed externaly)
+  */
+  asyncPasswordPrompt: async function(data, reference) {
+    if (data.windowID) {
+      let url = "chrome://tbsync/content/passwordPrompt/passwordPrompt.xul";
+  
       return await new Promise(function(resolve, reject) {
-        tbSync.providers.loadedProviders[provider].authWindows[accountID] = tbSync.window.openDialog(url, "authPrompt", "centerscreen,chrome,resizable=no", accountData, resolve);
+       reference[data.windowID] = tbSync.window.openDialog(url, "authPrompt", "centerscreen,chrome,resizable=no", data, resolve);
       });
     }
     
     return false;
-  },
-
+  },  
 }

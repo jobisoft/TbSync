@@ -88,7 +88,6 @@ var providers = {
         this.loadedProviders[provider].addon = addon;
         this.loadedProviders[provider].addonId = addonId;
         this.loadedProviders[provider].version = addon.version.toString();
-        this.loadedProviders[provider].authWindows = {};
 
         //load provider subscripts into tbSync
         Services.scriptloader.loadSubScript(js, this[provider], "UTF-8");
@@ -134,14 +133,7 @@ var providers = {
   unloadProvider: async function (provider) {        
     if (this.loadedProviders.hasOwnProperty(provider)) {
       tbSync.dump("Unloading provider", provider);
-      
-      // Close all open auth windows of this provider.
-      for (let id in this.loadedProviders[provider].authWindows) {
-        if (this.loadedProviders[provider].authWindows.hasOwnProperty(id)) {
-          this.loadedProviders[provider].authWindows[id].close();
-        }
-      }
-      
+            
       await this[provider].api.unload();
       delete this.loadedProviders[provider];
       delete this[provider];            
