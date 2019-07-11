@@ -31,12 +31,12 @@ var tbSyncAccountSettings = {
     }
   },
 
-  reloadGuiObserver: {
+  reloadAccountSettingObserver: {
     observe: function (aSubject, aTopic, aData) {
       //only run if is request for this account and main frame is visible
-      let accountID = aData;            
-      if (accountID == tbSyncAccountSettings.accountID && !document.getElementById('tbsync.accountsettings.frame').hidden) {
-        tbSyncAccountSettings.loadSettings(true);
+      let data = JSON.parse(aData);
+      if (data.accountID == tbSyncAccountSettings.accountID && !document.getElementById('tbsync.accountsettings.frame').hidden) {
+        tbSyncAccountSettings.reloadSetting(data.setting);
       }
     }
   },
@@ -73,7 +73,7 @@ var tbSyncAccountSettings = {
     //load observers
     Services.obs.addObserver(tbSyncAccountSettings.updateFolderListObserver, "tbsync.observer.manager.updateFolderList", false);
     Services.obs.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.observer.manager.updateAccountSettingsGui", false);
-    Services.obs.addObserver(tbSyncAccountSettings.reloadGuiObserver, "tbsync.observer.manager.reloadAccountSettingsGui", false);
+    Services.obs.addObserver(tbSyncAccountSettings.reloadAccountSettingObserver, "tbsync.observer.manager.reloadAccountSetting", false);
     Services.obs.addObserver(tbSyncAccountSettings.updateSyncstateObserver, "tbsync.observer.manager.updateSyncstate", false);
     //get the selected account from the loaded URI
     tbSyncAccountSettings.accountID = window.location.toString().split("id=")[1];
@@ -115,7 +115,7 @@ var tbSyncAccountSettings = {
     if (!document.getElementById('tbsync.accountsettings.frame').hidden) {
       Services.obs.removeObserver(tbSyncAccountSettings.updateFolderListObserver, "tbsync.observer.manager.updateFolderList");
       Services.obs.removeObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.observer.manager.updateAccountSettingsGui");
-      Services.obs.removeObserver(tbSyncAccountSettings.reloadGuiObserver, "tbsync.observer.manager.reloadAccountSettingsGui");
+      Services.obs.removeObserver(tbSyncAccountSettings.reloadAccountSettingObserver, "tbsync.observer.manager.reloadAccountSetting");
       Services.obs.removeObserver(tbSyncAccountSettings.updateSyncstateObserver, "tbsync.observer.manager.updateSyncstate");
     }
   },
@@ -127,11 +127,30 @@ var tbSyncAccountSettings = {
     return visible;
   },
   
+
+  reloadSetting: function (setting) {
+    let pref = document.getElementById("tbsync.accountsettings.pref." + setting);
+    let label = document.getElementById("tbsync.accountsettings.label." + setting);
+
+    if (pref) {
+      //is this a checkbox?
+      if (pref.tagName == "checkbox") {
+        //BOOL
+        if (tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, setting)) pref.setAttribute("checked", true);
+        else pref.setAttribute("checked", false);
+      } else {
+        //Not BOOL
+        pref.value = tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, setting);
+      }
+    }    
+  },
+
+
   /**
    * Run through all defined TbSync settings and if there is a corresponding
    * field in the settings dialog, fill it with the stored value.
    */
-  loadSettings: function (reload = false) {
+  loadSettings: function () {
     for (let i=0; i < tbSyncAccountSettings.settings.length; i++) {
       let pref = document.getElementById("tbsync.accountsettings.pref." + tbSyncAccountSettings.settings[i]);
       let label = document.getElementById("tbsync.accountsettings.label." + tbSyncAccountSettings.settings[i]);
@@ -146,15 +165,14 @@ var tbSyncAccountSettings = {
           event = "command";
         } else {
           //Not BOOL
-          if (reload) pref.value = tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]);
-          else pref.setAttribute("value", tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]));
+          pref.setAttribute("value", tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]));
           
           if (pref.tagName == "menulist") {
             event = "command";
           }
         }
         
-        if (!reload) pref.addEventListener(event, function() {tbSyncAccountSettings.instantSaveSetting(this)});
+        pref.addEventListener(event, function() {tbSyncAccountSettings.instantSaveSetting(this)});
       }
     }
     

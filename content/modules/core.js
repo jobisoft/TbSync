@@ -209,10 +209,12 @@ var AccountData = class {
 
   setAccountProperty(field, value) {
     tbSync.db.setAccountProperty(this.accountID, field, value);
+    Services.obs.notifyObservers(null, "tbsync.observer.manager.reloadAccountSetting", JSON.stringify({accountID: this.accountID, setting: field}));
   }
   
   resetAccountProperty(field) {
     tbSync.db.resetAccountProperty(this.accountID, field);
+    Services.obs.notifyObservers(null, "tbsync.observer.manager.reloadAccountSetting", JSON.stringify({accountID: this.accountID, setting: field}));
   }
 }
 
