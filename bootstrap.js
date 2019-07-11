@@ -41,13 +41,7 @@ function startup(data, reason) {
 }
 
 function shutdown(data, reason) {
-  //possible reasons: APP_SHUTDOWN, ADDON_DISABLE, ADDON_UNINSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE    
-
-  // When the application is shutting down we normally don't have to clean
-  // up any UI changes made.
-  if (reason == APP_SHUTDOWN) {
-    return;
-  }
+  //possible reasons: APP_SHUTDOWN, ADDON_DISABLE, ADDON_UNINSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE
 
   var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
