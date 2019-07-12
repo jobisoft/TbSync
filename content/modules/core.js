@@ -404,7 +404,12 @@ var core = {
     //check for default sync job
     if (job == "sync") {
       
-      let listStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].api.syncFolderList(syncData);
+      let listStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolderList(syncData);
+      if (!(listStatusData instanceof tbSync.StatusData)) {
+        let statusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": base.syncFolderList() must return a StatusData object");
+        this.finishAccountSync(syncData, statusData);
+        return;
+      }
       
       //if we have an error during folderList sync, there is no need to go on
       if (listStatusData.type != tbSync.StatusData.SUCCESS) {
@@ -432,7 +437,11 @@ var core = {
           if (!this.getNextPendingFolder(syncData)) {
             break;
           }
-          let folderStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].api.syncFolder(syncData);
+          let folderStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolder(syncData);
+          if (!(folderStatusData instanceof tbSync.StatusData)) {
+            folderStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": base.syncFolder() must return a StatusData object");
+          }
+
           this.finishFolderSync(syncData, folderStatusData);
 
           //if one of the folders indicated an ERROR, abort sync
