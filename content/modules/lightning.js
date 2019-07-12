@@ -428,7 +428,7 @@ var lightning = {
     
     //create and register new calendar
     let newCalendar = tbSync.providers[provider].calendar.createCalendar(newname, folderData);
-    tbSync.providers[provider].api.onResetTarget(folderData);
+    tbSync.providers[provider].base.onResetTarget(folderData);
     
     //store id of calendar as target in DB
     folderData.setFolderProperty("target", newCalendar.id); 

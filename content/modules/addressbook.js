@@ -527,7 +527,7 @@ var addressbook = {
     if (directory && directory instanceof Components.interfaces.nsIAbDirectory) {
       directory.setStringValue("tbSyncProvider", provider);
       
-      tbSync.providers[provider].api.onResetTarget(folderData);
+      tbSync.providers[provider].base.onResetTarget(folderData);
       
       folderData.setFolderProperty("target", directory.UID);            
       folderData.setFolderProperty("targetName", basename);

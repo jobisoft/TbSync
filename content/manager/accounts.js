@@ -272,7 +272,7 @@ var tbSyncAccounts = {
     let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
     if (listItem) {
       let obj = listItem.childNodes[0];
-      obj.src = tbSyncAccounts.hasInstalledProvider(id) ? tbSync.providers[accountData.getAccountProperty("provider")].api.getProviderIcon(16, accountData) : "chrome://tbsync/skin/provider16.png";
+      obj.src = tbSyncAccounts.hasInstalledProvider(id) ? tbSync.providers[accountData.getAccountProperty("provider")].base.getProviderIcon(16, accountData) : "chrome://tbsync/skin/provider16.png";
     }
   },
 
@@ -426,8 +426,8 @@ var tbSyncAccounts = {
     
     //Update label, icon and hidden according to isDefault and isInstalled
     if (isInstalled) {
-      entry.setAttribute("label",  tbSync.providers[provider].api.getNiceProviderName());
-      entry.setAttribute("image", tbSync.providers[provider].api.getProviderIcon(16));
+      entry.setAttribute("label",  tbSync.providers[provider].base.getNiceProviderName());
+      entry.setAttribute("image", tbSync.providers[provider].base.getProviderIcon(16));
       entry.setAttribute("hidden", false);
     } else if (isDefault) {
       entry.setAttribute("label", tbSync.providers.defaultProviders[provider].name);
@@ -477,7 +477,7 @@ var tbSyncAccounts = {
   
   addAccount: function (provider) {
     let providerData = new tbSync.ProviderData(provider);
-    tbSync.providers.loadedProviders[provider].createAccountWindow = window.openDialog(tbSync.providers[provider].api.getCreateAccountWindowUrl(), "TbSyncNewAccountWindow", "centerscreen,resizable=no", providerData);
+    tbSync.providers.loadedProviders[provider].createAccountWindow = window.openDialog(tbSync.providers[provider].base.getCreateAccountWindowUrl(), "TbSyncNewAccountWindow", "centerscreen,resizable=no", providerData);
   },
 
   installProvider: function (provider) {

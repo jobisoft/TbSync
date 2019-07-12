@@ -387,7 +387,7 @@ var core = {
   },
    
   getNextPendingFolder: function (syncData) {
-    let sortedFolders = tbSync.providers[syncData.accountData.getAccountProperty("provider")].api.getSortedFolders(syncData.accountData);
+    let sortedFolders = tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.getSortedFolders(syncData.accountData);
     for (let i=0; i < sortedFolders.length; i++) {
       if (sortedFolders[i].getFolderProperty("status") != "pending") continue;
       syncData._setCurrentFolderData(sortedFolders[i]);
@@ -460,14 +460,14 @@ var core = {
   
   enableAccount: function(accountID) {
     let accountData = new AccountData(accountID);
-    tbSync.providers[accountData.getAccountProperty("provider")].api.onEnableAccount(accountData);
+    tbSync.providers[accountData.getAccountProperty("provider")].base.onEnableAccount(accountData);
     accountData.setAccountProperty("status", "notsyncronized");
     accountData.resetAccountProperty("lastsynctime");        
   },
 
   disableAccount: function(accountID) {
     let accountData = new AccountData(accountID);
-    tbSync.providers[accountData.getAccountProperty("provider")].api.onDisableAccount(accountData);
+    tbSync.providers[accountData.getAccountProperty("provider")].base.onDisableAccount(accountData);
     accountData.setAccountProperty("status", "disabled");
     
     let folders = accountData.getAllFolders();

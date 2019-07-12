@@ -132,9 +132,9 @@ abAutoComplete.Search.prototype = {
         if (status == "disabled") continue;
         
         //start all requests parallel (do not wait till done here, no await, push the promise)
-        if (tbSync.providers[provider].api.abServerSearch) {
+        if (tbSync.providers[provider].base.abServerSearch) {
           try {
-            requests.push(tbSync.providers[provider].api.abServerSearch (accountID, aSearchString, "autocomplete"));
+            requests.push(tbSync.providers[provider].base.abServerSearch (accountID, aSearchString, "autocomplete"));
           } catch (e) {}
         }
       }
@@ -199,7 +199,7 @@ abAutoComplete.Result.prototype = {
    */
     getImageAt(aIndex) {
     let accountData = new tbSync.AccountData(this.comments[aIndex]);
-    return tbSync.providers[accountData.getAccountProperty("provider")].api.getProviderIcon(16, accountData);
+    return tbSync.providers[accountData.getAccountProperty("provider")].base.getProviderIcon(16, accountData);
     },
 
   /**

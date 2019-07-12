@@ -65,7 +65,7 @@ var tbSyncAbServerSearch = {
             let target = window.GetSelectedDirectory();
             if (searchbox && target) {
               let folders = tbSync.db.findFolders({"target": target});
-              if (folders.length == 1 && tbSync.providers[tbSync.db.getAccountProperty(folders[0].accountID, "provider")].api.abServerSearch) {
+              if (folders.length == 1 && tbSync.providers[tbSync.db.getAccountProperty(folders[0].accountID, "provider")].base.abServerSearch) {
                 searchbox.setAttribute("placeholder", tbSync.getString("addressbook.searchgal::" + tbSync.db.getAccountProperty(folders[0].accountID, "accountname")));
               } else {
                 searchbox.setAttribute("placeholder", tbSync.getString((target == "moz-abdirectory://?") ? "addressbook.searchall" : "addressbook.searchthis"));
@@ -118,7 +118,7 @@ var tbSyncAbServerSearch = {
       let accountID = folders[0].accountID;
       let provider = tbSync.db.getAccountProperty(accountID, "provider");
       let accountname = tbSync.db.getAccountProperty(accountID, "accountname");
-      if (tbSync.providers[provider].api.abServerSearch) {
+      if (tbSync.providers[provider].base.abServerSearch) {
 
         if (query.length<3) {
           //delete all old results
@@ -135,7 +135,7 @@ var tbSyncAbServerSearch = {
               await tbSync.tools.sleep(1000);
               let currentQuery = this._serverSearchNextQuery;
               this._serverSearchNextQuery = "";
-              let results = await tbSync.providers[provider].api.abServerSearch (accountID, currentQuery, "search");
+              let results = await tbSync.providers[provider].base.abServerSearch (accountID, currentQuery, "search");
 
               //delete all old results
               tbSyncAbServerSearch.clearServerSearchResults(window);

@@ -92,16 +92,16 @@ var providers = {
 
         //load provider subscripts into tbSync
         Services.scriptloader.loadSubScript(js, this[provider], "UTF-8");
-        this.loadedProviders[provider].bundle = Services.strings.createBundle(this[provider].api.getStringBundleUrl());
+        this.loadedProviders[provider].bundle = Services.strings.createBundle(this[provider].base.getStringBundleUrl());
 
         // check if provider has its own implementation of folderList
         if (!this[provider].hasOwnProperty("folderList")) this[provider].folderList = new tbSync.manager.DefaultFolderList(provider);
         
         //load provider
-        await this[provider].api.load();
+        await this[provider].base.load();
 
-        await tbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xul?provider=" + provider, this[provider].api.getEditAccountOverlayUrl());        
-        tbSync.dump("Loaded provider", provider + "::" + this[provider].api.getNiceProviderName() + " ("+this.loadedProviders[provider].version+")");
+        await tbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xul?provider=" + provider, this[provider].base.getEditAccountOverlayUrl());        
+        tbSync.dump("Loaded provider", provider + "::" + this[provider].base.getNiceProviderName() + " ("+this.loadedProviders[provider].version+")");
         
         // reset all accounts of this provider
         let providerData = new tbSync.ProviderData(provider);
@@ -139,7 +139,7 @@ var providers = {
          this.loadedProviders[provider].createAccountWindow.close();
        }
 
-      await this[provider].api.unload();
+      await this[provider].base.unload();
       delete this.loadedProviders[provider];
       delete this[provider];            
       Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", provider);
@@ -148,7 +148,7 @@ var providers = {
   },
   
   getDefaultAccountEntries: function (provider) {
-    let defaults = tbSync.providers[provider].api.getDefaultAccountEntries();
+    let defaults = tbSync.providers[provider].base.getDefaultAccountEntries();
     
     //add system properties
     defaults.provider = provider;
@@ -163,7 +163,7 @@ var providers = {
   
   getDefaultFolderEntries: function (accountID) {
     let provider = tbSync.db.getAccountProperty(accountID, "provider");
-    let defaults = tbSync.providers[provider].api.getDefaultFolderEntries();
+    let defaults = tbSync.providers[provider].base.getDefaultFolderEntries();
     
     //add system properties
     defaults.accountID = accountID;

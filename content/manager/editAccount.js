@@ -298,7 +298,7 @@ var tbSyncAccountSettings = {
     
     //get updated list of folderIDs
     let accountData = new tbSync.AccountData(tbSyncAccountSettings.accountID);
-    let folderData = tbSync.providers[tbSyncAccountSettings.provider].api.getSortedFolders(accountData);
+    let folderData = tbSync.providers[tbSyncAccountSettings.provider].base.getSortedFolders(accountData);
     
     let foldersFound = [];
     for (let i=0; i < folderData.length; i++) {

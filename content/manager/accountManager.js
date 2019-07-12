@@ -67,7 +67,7 @@ var tbSyncAccountManager = {
     for (let i=0; i < providers.length; i++) {
       let item = document.createElementNS(XUL_NS, "menuitem");
       item.setAttribute("value", providers[i]);
-      item.setAttribute("label", tbSync.getString("supportwizard.provider::" + tbSync.providers[providers[i]].api.getNiceProviderName()));
+      item.setAttribute("label", tbSync.getString("supportwizard.provider::" + tbSync.providers[providers[i]].base.getNiceProviderName()));
       menu.appendChild(item); 
     }
   
@@ -96,7 +96,7 @@ var tbSyncAccountManager = {
     }
 
     //special if core is selected, which is not a provider
-    let email = (tbSync.providers.loadedProviders.hasOwnProperty(provider)) ? tbSync.providers[provider].api.getMaintainerEmail() : "john.bieling@gmx.de";
+    let email = (tbSync.providers.loadedProviders.hasOwnProperty(provider)) ? tbSync.providers[provider].base.getMaintainerEmail() : "john.bieling@gmx.de";
     let version = (tbSync.providers.loadedProviders.hasOwnProperty(provider)) ? " " + tbSync.providers.loadedProviders[provider].version : "";
     tbSync.manager.createBugReport(email, "[" + provider.toUpperCase() + version + "] " + subject, description);
   },
@@ -113,10 +113,10 @@ var tbSyncAccountManager = {
       let provider = providers[i];
       let template = listOfContributors.firstElementChild.cloneNode(true);
       template.setAttribute("provider", provider);
-      template.children[0].setAttribute("src", tbSync.providers[provider].api.getProviderIcon(48));
-      template.children[1].children[0].textContent = tbSync.providers[provider].api.getNiceProviderName();
+      template.children[0].setAttribute("src", tbSync.providers[provider].base.getProviderIcon(48));
+      template.children[1].children[0].textContent = tbSync.providers[provider].base.getNiceProviderName();
       listOfContributors.appendChild(template);
-      Object.assign(sponsors, tbSync.providers[provider].api.getSponsors());
+      Object.assign(sponsors, tbSync.providers[provider].base.getSponsors());
     }
     listOfContributors.removeChild(listOfContributors.firstElementChild);
 
