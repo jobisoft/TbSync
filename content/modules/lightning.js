@@ -72,10 +72,18 @@ var lightning = {
     }
     
     checkTarget() {
+      if (!tbSync.lightning.isAvailable()) {
+          throw new Error("nolightning");
+      }
+
       return tbSync.lightning.checkCalendar(this._folderData);
     }
 
     getTarget() {
+      if (!tbSync.lightning.isAvailable()) {
+          throw new Error("nolightning");
+      }
+
       let calendar = tbSync.lightning.checkCalendar(this._folderData);
       
       if (!calendar) {
@@ -88,6 +96,10 @@ var lightning = {
     }
     
     removeTarget() {
+      if (!tbSync.lightning.isAvailable()) {
+          throw new Error("nolightning");
+      }
+
       let calendar = tbSync.lightning.checkCalendar(this._folderData);
       try {
         if (calendar) {
@@ -97,6 +109,10 @@ var lightning = {
     }
     
     decoupleTarget(suffix, cacheFolder = false) {
+      if (!tbSync.lightning.isAvailable()) {
+          throw new Error("nolightning");
+      }
+
       let calendar = tbSync.lightning.checkCalendar(this._folderData);
 
       if (calendar) {
