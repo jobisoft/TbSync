@@ -81,7 +81,7 @@ var lightning = {
       if (!calendar) {
         calendar = tbSync.lightning.createCalender(this._folderData);
         if (!calendar)
-          throw new Error("CouldNotGetOrCreateTarget");
+          throw new Error("notargets");
       }
 
       return calendar; //TODO: changelog + async Wrapper

@@ -419,7 +419,7 @@ var addressbook = {
         // create a new addressbook and store its UID in folderData
         directory = tbSync.addressbook.createAddressbook(this._folderData);
         if (!directory)
-          throw new Error("CouldNotGetOrCreateTarget");
+          throw new Error("notargets");
       }
       
       if (!this._targetObj || this._targetObj.UID != directory.UID)
