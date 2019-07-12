@@ -21,7 +21,6 @@ var dump = function (what, aMessage) {
 }
   
 // get localized string from core or provider (if possible)
-// TODO: move as many locales from provider to tbsync
 var getString = function (msg, provider) {
   let success = false;
   let localized = msg;
