@@ -8,7 +8,7 @@
  
  "use strict";
 
-var ErrorOwnerData = class {
+var ErrorInfo = class {
   constructor(provider, accountname, accountID, foldername = "") {
     this.provider = provider;
     this.accountname = accountname;
@@ -44,7 +44,7 @@ var errorlog = {
     this.errors = [];
   },
   
-  add: function (type, errorOwnerData, message, details = null) {
+  add: function (type, errorInfo, message, details = null) {
     let entry = {
       timestamp: Date.now(),
       message: message, 
@@ -57,11 +57,11 @@ var errorlog = {
       foldername: "",
     };
   
-    if (errorOwnerData) {
-      if (errorOwnerData.accountID) entry.accountID = errorOwnerData.accountID;
-      if (errorOwnerData.provider) entry.provider = errorOwnerData.provider;
-      if (errorOwnerData.accountname) entry.accountname = errorOwnerData.accountname;
-      if (errorOwnerData.foldername) entry.foldername = errorOwnerData.foldername;
+    if (errorInfo) {
+      if (errorInfo.accountID) entry.accountID = errorInfo.accountID;
+      if (errorInfo.provider) entry.provider = errorInfo.provider;
+      if (errorInfo.accountname) entry.accountname = errorInfo.accountname;
+      if (errorInfo.foldername) entry.foldername = errorInfo.foldername;
     }
 
     let localized = "";

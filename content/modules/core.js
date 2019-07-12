@@ -258,9 +258,6 @@ var SyncData = class {
 
   //all functions provider should use should be in here
   //providers should not modify properties directly
-  //try to eliminate accountID and folderID usage
-  //icons must use db check and not just directory property, to see "dead" folders
-  //hide cache management
   //when getSyncDataObj is used never change the folder id as a sync may be going on!
 
   _setCurrentFolderData(folderData) {
@@ -270,8 +267,8 @@ var SyncData = class {
     this._currentFolderData = null;
   }
 
-  get errorOwnerData() {
-    return new ErrorOwnerData(
+  get errorInfo() {
+    return new ErrorInfo(
       this.accountData.getAccountProperty("provider"),
       this.accountData.getAccountProperty("accountname"),
       this.accountData.accountID,
@@ -516,7 +513,7 @@ var core = {
   finishFolderSync: function(syncData, statusData) {        
     if (statusData.type != tbSync.StatusData.SUCCESS) {
       //report error
-      tbSync.errorlog.add(statusData.type, syncData.errorOwnerData, statusData.message, statusData.details);
+      tbSync.errorlog.add(statusData.type, syncData.errorInfo, statusData.message, statusData.details);
     }
     
     //if this is a success, prepend success to the status message, 
@@ -559,7 +556,7 @@ var core = {
     
     if (statusData.type != tbSync.StatusData.SUCCESS) {
       //report error
-      tbSync.errorlog.add("warning", syncData.errorOwnerData, statusData.message, statusData.details);
+      tbSync.errorlog.add("warning", syncData.errorInfo, statusData.message, statusData.details);
     } else {
       //account itself is ok, search for folders with error
       folders = tbSync.db.findFolders({"selected": true, "cached": false}, {"accountID": syncData.accountData.accountID});
