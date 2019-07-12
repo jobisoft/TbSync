@@ -170,6 +170,12 @@ var providers = {
     defaults.targetType = "";
     defaults.cached = false;
     defaults.selected = false;
+    defaults.lastsynctime = 0;
+    defaults.status = "";
+    defaults.name = "";
+    defaults.target = "";
+    defaults.targetName = "";
+    defaults.downloadonly = false;
     
     return defaults;
   },
