@@ -33,3 +33,27 @@ UnableToTraceError=It is not possible to trace this error, because debug log is 
 RestartThunderbirdAndTryAgain=TbSync debug log has been enabled, please restart Thunderbird and again try to open TbSync.
 HelpFixStartupError=To help fix this error, you could send a debug log to the TbSync developer. Prepare that email now?
 NoDebugLog=Could not find any useful debug messages. Please activate debug mode, restart Thunderbird and repeat all the steps needed to trigger the erroneous behavior.
+
+status.apiError=API implementation error
+status.disabled=Account is not enabled, synchronization is disabled.
+
+status.syncing=Synchronizing
+status.skipped=Not yet supported, skipped
+status.aborted=Not synchronized
+status.pending=Waiting to be synchronized
+status.modified=Local modifications
+
+syncstate.syncing=Initialize synchronization
+syncstate.preparing=Preparing next item for synchronization
+syncstate.done=Preparing next item for synchronization
+syncstate.accountdone=Finished account
+
+status.success=OK
+status.notargets=Aborting synchronization, because sync targets could not be created.
+status.nolightning=Lightning add-on not installed, calendars are not supported.
+status.notsyncronized=Account needs to be synchronized, at least one item is out of sync.
+status.foldererror=At least one resource encountered a synchronization error.
+status.no-folders-found-on-server=Could not find any calendars or address books on the server.
+status.security=Could not establish a secure connection. Are you using a self-signed or otherwise untrusted certificate without importing it into Thunderbird? (##replace.1##)
+helplink.security=https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F
+status.network=Could not connect to server (##replace.1##).

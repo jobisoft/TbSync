@@ -33,3 +33,27 @@ UnableToTraceError=Es ist im Augenblick nicht möglich, diesen Fehler zu untersu
 RestartThunderbirdAndTryAgain=Der TbSync Debug-Modus wurde aktiviert, bitte starten Sie Thunderbird neu und versuchen Sie dann noch einmal TbSync zu öffnen.
 HelpFixStartupError=Um diesen Fehler zu beheben, können Sie einen Fehlerbericht an den Entwickler von TbSync schicken. Soll der Fehlerbericht jetzt angefertigt werden?
 NoDebugLog=Es liegen keine aussagekräftigen Debug-Meldungen vor. Bitte aktivieren Sie den Debug-Modus, starten Thunderbird neu und wiederholen dann alle Schritte um das fehlerhafte Verhalten zu reproduzieren.
+
+status.apiError=API Implementierungsfehler
+status.disabled=Konto ist deaktiviert, Synchronisation ist ausgeschaltet.
+
+status.syncing=Synchronisierung
+status.skipped=Nicht unterstützt
+status.aborted=Nicht synchronisiert
+status.pending=Warten auf Synchronisation
+status.modified=Lokale Änderungen
+
+syncstate.syncing=Initiiere Synchronisation
+syncstate.preparing=Bereite das nächste Element für die Synchronisation vor
+syncstate.done=Bereite das nächste Element für die Synchronisation vor
+syncstate.accountdone=Kontosynchronisation abgeschlossen
+
+status.success=OK
+status.notargets=Synchronisation abgebrochen da die Elemente zum Synchronisieren nicht erstellt werden konnten.
+status.nolightning=Lightning Add-On nicht installiert, Kalender nicht nutzbar.
+status.notsyncronized=Konto muss synchronisiert werden.
+status.foldererror=Bei mindestens einer Resource trat ein Synchronisationsfehler auf.
+status.no-folders-found-on-server=Auf dem Server wurde weder Kalender noch AdressbÃ¼cher gefunden.
+status.security=Fehler beim Aufbau einer sicherern Verbindung. Benutzen Sie eventuell ein selbst signiertes Zertifikat oder ein andersartiges nicht vertrauenswÃ¼rdiges Zertifikat welches nicht in Thunderbird importiert ist? (##replace.1##)
+helplink.security=https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F
+status.network=Verbindung zum Server fehlgeschlagen (##replace.1##).

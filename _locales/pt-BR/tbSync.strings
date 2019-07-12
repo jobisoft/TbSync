@@ -33,3 +33,27 @@ UnableToTraceError=Não é possível rastrear este erro, porque o log de depura�
 RestartThunderbirdAndTryAgain=O log de depuração do TbSync foi ativado, reinicie o Thunderbird e tente abrir novamente o TbSync.
 HelpFixStartupError=Para ajudar a corrigir esse erro, você poderia enviar um log de depuração para o desenvolvedor do TbSync. Enviar esse email agora?
 NoDebugLog=Não foi possível encontrar nenhuma mensagem de depuração útil. Por favor, ative o modo de depuração, reinicie o Thunderbird e repita todas as etapas necessárias para acionar o comportamento errado.
+
+status.apiError=Erro de implementação da API
+status.disabled=A conta não está ativada, a sincronização está desativada.
+
+status.syncing=Sincronizando
+status.skipped=Ainda não suportado, ignorado
+status.aborted=Não sincronizado
+status.pending=Aguardando para ser sincronizado
+status.modified=Modificações locais
+
+syncstate.syncing=Inicializar sincronização
+syncstate.preparing=Preparando o próximo item para sincronização
+syncstate.done=Preparando o próximo item para sincronização
+syncstate.accountdone=Conta finalizada
+
+status.success=OK
+status.notargets=Anulando a sincronização, porque os destinos de sincronização não puderam ser criados.
+status.nolightning=O complemento Lightning não está instalado, os calendários não serão suportados.
+status.notsyncronized=Conta precisa ser sincronizada, pelo menos, um item não está sincronizado.
+status.foldererror=Pelo menos um recurso encontrou um erro de sincronização.
+status.no-folders-found-on-server=Não foi possível encontrar calendários ou catálogos de endereços no servidor.
+status.security=Não foi possível estabelecer uma conexão segura. Você está usando um certificado autoassinado ou não confiável sem importá-lo para o Thunderbird? (##replace.1##)
+helplink.security=https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F
+status.network=Não foi possível conectar-se ao servidor (##replace.1##).

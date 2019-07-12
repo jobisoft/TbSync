@@ -33,3 +33,27 @@ UnableToTraceError=Невозможно проследить эту ошибку
 RestartThunderbirdAndTryAgain=Журнал отладки TbSync включен, перезапустите Thunderbird и снова попытайтесь открыть TbSync.
 HelpFixStartupError=Чтобы исправить эту ошибку, вы можете отправить журнал отладки разработчику TbSync. Подготовьте это письмо сейчас?
 NoDebugLog=Не удалось найти пригодные отладочные сообщения. Включите режим отладки, перезапустите Thunderbird и повторите все шаги, необходимые для запуска ошибочного поведения.
+
+status.apiError=Ошибка реализации API
+status.disabled=Аккаунт не включен, синхронизация отключена.
+
+status.syncing=Синхронизация
+status.skipped=Пока не поддерживается, пропущено
+status.aborted=Не синхронизировано
+status.pending=Ожидание пока синхронизируется
+status.modified=Локальные изменения
+
+syncstate.syncing=Инициализация синхронизации
+syncstate.preparing=Подготовка следующего элемента для синхронизации
+syncstate.done=Подготовка следующего элемента для синхронизации
+syncstate.accountdone=Завершенный аккаунт
+
+status.success=Готово
+status.notargets=Отмена синхронизации, поскольку цели синхронизации не могут быть созданы.
+status.nolightning=Lightning Add-On не установлен, календари не поддерживаются.
+status.notsyncronized=Аккаунт должен быть синхронизирован, по крайней мере один элемент не синхронизирован.
+status.foldererror=По крайней мере один ресурс обнаружил ошибку синхронизации.
+status.no-folders-found-on-server=Не удалось найти календари или адресные книги на сервере.
+status.security=Не удалось установить безопасное соединение. Вы используете самоподписанный или ненадежный сертификат без импорта его в Thunderbird? (##replace.1##)
+helplink.security=https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F
+status.network=Не удалось подключиться к серверу (##replace.1##).
