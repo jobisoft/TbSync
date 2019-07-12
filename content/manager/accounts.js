@@ -478,6 +478,7 @@ var tbSyncAccounts = {
   addAccount: function (provider) {
     let providerData = new tbSync.ProviderData(provider);
     tbSync.providers.loadedProviders[provider].createAccountWindow = window.openDialog(tbSync.providers[provider].base.getCreateAccountWindowUrl(), "TbSyncNewAccountWindow", "centerscreen,resizable=no", providerData);
+    tbSync.providers.loadedProviders[provider].createAccountWindow.addEventListener("unload", function () { tbSync.manager.prefWindowObj.focus(); });
   },
 
   installProvider: function (provider) {
