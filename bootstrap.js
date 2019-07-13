@@ -20,7 +20,6 @@ function startup(data, reason) {
 
   // set default prefs
   let defaults = Services.prefs.getDefaultBranch("extensions.tbsync.");
-  defaults.setIntPref("timeout", 90000);
   defaults.setBoolPref("debug.testoptions", false);
 
   defaults.setBoolPref("log.toconsole", false);

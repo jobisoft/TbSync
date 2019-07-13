@@ -263,16 +263,16 @@ var tbSyncAccountSettings = {
       let syncstate = parts[0];
       let synctime = (parts.length>1 ? parts[1] : Date.now());
 
-      let diff = Date.now() - synctime;
       let msg = tbSync.getString("syncstate." + syncstate, tbSyncAccountSettings.provider);
-      if (diff > 2000) msg = msg + " (" + Math.round((tbSync.prefs.getIntPref("timeout") - diff)/1000) + "s)";
-
-      document.getElementById("syncstate").textContent = msg;
     
       if (syncstate.split(".")[0] == "send") {
-        //re-schedule update, if this is a waiting syncstate
+        // append timeout countdown
+        let diff = Date.now() - synctime;
+        if (diff > 2000) msg = msg + " (" + Math.round((tbSync.providers[tbSyncAccountSettings.provider].base.getConnectionTimout() - diff)/1000) + "s)";
+        // re-schedule update, if this is a waiting syncstate
         tbSyncAccountSettings.updateTimer.init(tbSyncAccountSettings.updateSyncstate, 1000, 0);
       }            
+      document.getElementById("syncstate").textContent = msg;
     } else {
       let localized = tbSync.getString("status." + (isEnabled ? status : "disabled"), tbSyncAccountSettings.provider);
       document.getElementById("syncstate").textContent = localized;
