@@ -268,7 +268,7 @@ var tbSyncAccountSettings = {
       if (syncstate.split(".")[0] == "send") {
         // append timeout countdown
         let diff = Date.now() - synctime;
-        if (diff > 2000) msg = msg + " (" + Math.round((tbSync.providers[tbSyncAccountSettings.provider].base.getConnectionTimout() - diff)/1000) + "s)";
+        if (diff > 2000) msg = msg + " (" + Math.round((tbSync.providers[tbSyncAccountSettings.provider].base.getConnectionTimeout() - diff)/1000) + "s)";
         // re-schedule update, if this is a waiting syncstate
         tbSyncAccountSettings.updateTimer.init(tbSyncAccountSettings.updateSyncstate, 1000, 0);
       }            
