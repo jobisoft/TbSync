@@ -65,7 +65,7 @@ function OverlayManager(options = {}) {
     return this.registeredOverlays.hasOwnProperty(window.location.href);
   };
 
-  this.registerOverlay = async function (dst, overlay) {
+  this.registerOverlay = async function (dst, overlay, attributesOverrides = []) {
     if (overlay.startsWith("chrome://")) {
       let xul = await this.readChromeFile(overlay);
       let rootNode = this.getDataFromXULString(null, xul);
@@ -81,7 +81,12 @@ function OverlayManager(options = {}) {
       
       if (!this.registeredOverlays[dst]) this.registeredOverlays[dst] = [];
       if (!this.registeredOverlays[dst].includes(overlay)) this.registeredOverlays[dst].push(overlay);
-      this.overlays[overlay] = rootNode;
+      
+	  // Override attributes
+	  for (let attribute of attributesOverrides) {
+		rootNode.documentElement.setAttribute(attribute.name, attribute.value);
+	  }
+	  this.overlays[overlay] = rootNode;
     } else {
       throw "Only chrome:// URIs can be registered as overlays."
     }
