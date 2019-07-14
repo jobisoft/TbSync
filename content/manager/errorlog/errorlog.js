@@ -110,9 +110,10 @@ var tbSyncErrorLog = {
       hBox.appendChild(vBoxRight);
       rightColumn.appendChild(hBox);
     
-    if (entry.accountname) {
+    if (entry.accountname || entry.provider) {
       let account = document.createElement("label");
-      account.setAttribute("value",  "Account: " + entry.accountname);
+      if (entry.accountname) account.setAttribute("value",  "Account: " + entry.accountname + (entry.provider ? " (" + entry.provider.toUpperCase() + ")" : ""));
+      else account.setAttribute("value",  "Provider: " + entry.provider.toUpperCase());
       rightColumn.appendChild(account);
     }
 
