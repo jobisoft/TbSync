@@ -165,10 +165,11 @@ var tbSyncAccountSettings = {
           event = "command";
         } else {
           //Not BOOL
-          pref.setAttribute("value", tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]));
-          
           if (pref.tagName == "menulist") {
+            pref.value = tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]);
             event = "command";
+          } else {
+            pref.setAttribute("value", tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]));
           }
         }
         
