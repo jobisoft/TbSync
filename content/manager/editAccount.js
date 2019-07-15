@@ -25,8 +25,8 @@ var tbSyncAccountSettings = {
       let accountID = aData;            
       if (accountID == tbSyncAccountSettings.accountID && !document.getElementById('tbsync.accountsettings.frame').hidden) {
         //make sure, folderlist is visible, otherwise our updates will be discarded (may cause errors)
-        tbSyncAccountSettings.updateGui();
         tbSyncAccountSettings.updateFolderList();
+        tbSyncAccountSettings.updateGui();
       }
     }
   },
@@ -203,7 +203,7 @@ var tbSyncAccountSettings = {
     //currently we use a fixed button which is hidden during sync
     //document.getElementById('tbsync.accountsettings.connectbtn').label = tbSync.getString("manager." + (isSyncing ? "connecting" : "tryagain"));
     
-    { //show elements if connected
+    { //show elements if connected (this also hides/unhides the folderlist)
       let items = document.getElementsByClassName("showIfConnected");
       for (let i=0; i < items.length; i++) {
         items[i].hidden = !isConnected;    
@@ -291,11 +291,7 @@ var tbSyncAccountSettings = {
     }
   },
 
-  updateFolderList: function () {        
-    //do not upate, if not visible (may cause errors)
-    if (!tbSyncAccountSettings.folderListVisible()) 
-      return;
-    
+  updateFolderList: function () {
     //get updated list of folderIDs
     let accountData = new tbSync.AccountData(tbSyncAccountSettings.accountID);
     let folderData = tbSync.providers[tbSyncAccountSettings.provider].base.getSortedFolders(accountData);
