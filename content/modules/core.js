@@ -574,6 +574,8 @@ var core = {
     syncData.accountData.setAccountProperty("lastsynctime", Date.now());
     syncData.accountData.setAccountProperty("status", status);
     syncData.setSyncState("accountdone"); 
+    Services.obs.notifyObservers(null, "tbsync.observer.manager.updateFolderList", syncData.accountData.accountID);
+    this.resetSyncDataObj(syncData.accountData.accountID);
   }    
   
 }
