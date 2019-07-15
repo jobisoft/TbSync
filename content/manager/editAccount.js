@@ -279,14 +279,18 @@ var tbSyncAccountSettings = {
       document.getElementById("syncstate").textContent = localized;
     }
         
-    //update syncstates of folders in folderlist, if visible
+    
     if (tbSyncAccountSettings.folderListVisible()) {
+      //update syncstates of folders in folderlist, if visible - remove obsolete entries while we are here
+      let folderData = tbSync.providers[tbSyncAccountSettings.provider].base.getSortedFolders(tbSyncAccountSettings.accountData);
       let folderList = document.getElementById("tbsync.accountsettings.folderlist");
-      for (let i=0; i < folderList.getRowCount(); i++) {
+
+      for (let i=folderList.getRowCount()-1; i>=0; i--) {
         let item = folderList.getItemAtIndex(i);
-        let folderData = item.folderData;           
-        if (folderData) {
-          tbSync.providers[tbSyncAccountSettings.provider].folderList.updateRow(document, item, folderData);
+        if (folderData.filter(f => f.folderID == item.folderData.folderID).length == 0) {
+          item.remove();
+        } else {
+          tbSync.providers[tbSyncAccountSettings.provider].folderList.updateRow(document, item, item.folderData);
         }
       }
     }
