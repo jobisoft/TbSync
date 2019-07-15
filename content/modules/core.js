@@ -387,6 +387,8 @@ var core = {
     tbSync.db.setAccountProperty(accountID, "status", "syncing");
     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", accountID);
     
+    let overallStatusData = new tbSync.StatusData();
+
     if (syncDescription.syncList) {
       let listStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolderList(syncData, syncDescription.syncJob);
       if (!(listStatusData instanceof tbSync.StatusData)) {
@@ -404,15 +406,16 @@ var core = {
       // update folder list in GUI
       Services.obs.notifyObservers(null, "tbsync.observer.manager.updateFolderList", syncData.accountData.accountID);
 
-      //set all selected folders to "pending", so they are marked for syncing
-      //this also removes all leftover cached folders and sets all other folders to a well defined cached = "0"
+      //removes all leftover cached folders and sets all other folders to a well defined cached = "0"
       //which will set this account as connected (if at least one non-cached folder is present)
-      this.prepareFoldersForSync(syncData);
+      this.removeCachedFolders(syncData);
+    }
+    
+    if (syncDescription.syncFolders != "none") {
+      this.prepareFoldersForSync(syncData, syncDescription);
 
       // update folder list in GUI
       Services.obs.notifyObservers(null, "tbsync.observer.manager.updateFolderList", syncData.accountData.accountID);
-
-      let overallStatusData = new tbSync.StatusData();
 
       // if any folder was found, sync
       if (syncData.accountData.isConnected()) {
@@ -436,9 +439,9 @@ var core = {
       } else {
         overallStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "no-folders-found-on-server");
       }
-      this.finishAccountSync(syncData, overallStatusData);
-
     }
+
+    this.finishAccountSync(syncData, overallStatusData);
   },
   
   // this could be added to AccountData, but I do not want that in public
@@ -475,10 +478,9 @@ var core = {
     }
   },
 
-  //set all selected folders to "pending", so they are marked for syncing 
-  //this also removes all leftover cached folders and sets all other folders to a well defined cached = "0"
+  //removes all leftover cached folders and sets all other folders to a well defined cached = "0"
   //which will set this account as connected (if at least one non-cached folder is present)
-  prepareFoldersForSync: function(syncData) {
+  removeCachedFolders: function(syncData) {
     let folders = syncData.accountData.getAllFoldersIncludingCache();
     for (let folder of folders) {
       //delete all leftover cached folders
@@ -489,7 +491,13 @@ var core = {
         //set well defined cache state
         folder.setFolderProperty("cached", false);
       }
-
+    }
+  },
+  
+  //set all selected folders to "pending", so they are marked for syncing 
+  prepareFoldersForSync: function(syncData) {
+    let folders = syncData.accountData.getAllFoldersIncludingCache();
+    for (let folder of folders) {
       //set selected folders to pending, so they get synced
       if (folder.getFolderProperty("selected")) {
          folder.setFolderProperty("status", "pending");
