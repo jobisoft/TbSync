@@ -120,6 +120,11 @@ var FolderData = class {
     
     return this._target;
   }
+  
+  remove() {
+    this.targetData.removeTarget();
+    this.setFolderProperty("cached", true);
+  }
 }
 
 var AccountData = class {
@@ -170,8 +175,6 @@ var AccountData = class {
   createNewFolder() {
     return new tbSync.FolderData(this, tbSync.db.addFolder(this.accountID));
   }
-  
-
   
   // get data objects
   get providerData() {
