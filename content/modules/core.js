@@ -406,12 +406,12 @@ var core = {
         return;
       }
       
+      // Removes all leftover cached folders and sets all other folders to a well defined cached = "0"
+      // which will set this account as connected (if at least one non-cached folder is present).
+      this.removeCachedFolders(syncData);
+
       // update folder list in GUI
       Services.obs.notifyObservers(null, "tbsync.observer.manager.updateFolderList", syncData.accountData.accountID);
-
-      //removes all leftover cached folders and sets all other folders to a well defined cached = "0"
-      //which will set this account as connected (if at least one non-cached folder is present)
-      this.removeCachedFolders(syncData);
     }
     
     if (syncDescription.syncFolders != "none") {
