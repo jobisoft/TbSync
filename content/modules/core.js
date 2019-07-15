@@ -186,8 +186,8 @@ var AccountData = class {
 
 
   // shortcuts
-  sync(job = "sync") {
-    tbSync.core.syncAccount(job, this.accountID)
+  sync(syncDescription = {}) {
+    tbSync.core.syncAccount(this.accountID, syncDescription);
   }
 
   isSyncing() {
@@ -347,42 +347,6 @@ var core = {
     return this.syncDataObj[accountID];        
   },
   
-  syncAccount: function (job, accountID = "", folderID = "") {
-    //get info of all accounts
-    let accounts = tbSync.db.getAccounts();
-
-    //if no account given, loop over all accounts, otherwise only use the provided one
-    let accountsToDo = [];        
-    if (accountID == "") {
-      //add all enabled accounts to the queue
-      for (let i=0; i < accounts.IDs.length; i++) {
-        accountsToDo.push(accounts.IDs[i]);
-      }
-    } else {
-      accountsToDo.push(accountID);
-    }
-    
-    //update gui
-    for (let i = 0; i < accountsToDo.length; i++) {
-      //do not init sync if there is a sync running or account is not enabled
-      if (!this.isEnabled(accountsToDo[i]) || this.isSyncing(accountsToDo[i])) continue;
-
-      //create syncData object for each account (to be able to have parallel XHR)
-      this.prepareSyncDataObj(accountsToDo[i], true);
-      
-      tbSync.db.setAccountProperty(accountsToDo[i], "status", "syncing");
-      //i have no idea whey they are here
-      //this.getSyncDataObject(accountsToDo[i]).syncstate = "syncing";            
-      //this.getSyncDataObject(accountsToDo[i]).folderID = folderID;            
-      //send GUI into lock mode (status == syncing)
-      Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", accountsToDo[i]);
-      
-      // core async sync function, but we do not wait until it has finished,
-      // but return right away and initiate all remaining accounts parallel
-      this.syncSingleAccount(job, this.getSyncDataObject(accountsToDo[i]));
-    }
-  },
-   
   getNextPendingFolder: function (syncData) {
     let sortedFolders = tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.getSortedFolders(syncData.accountData);
     for (let i=0; i < sortedFolders.length; i++) {
@@ -394,14 +358,37 @@ var core = {
     return false;
   },
   
-  syncSingleAccount: async function (job, syncData) {
-    //clear folderID of syncData, just to make sure
-    syncData._clearCurrentFolderData();
+
+  syncAllAccounts: function () {
+    //get info of all accounts
+    let accounts = tbSync.db.getAccounts();
+
+    for (let i=0; i < accounts.IDs.length; i++) {
+      // core async sync function, but we do not wait until it has finished,
+      // but return right away and initiate sync of all accounts parallel
+      this.syncAccount(accounts.IDs[i]);
+    }
+  },
+
+  syncAccount: async function (accountID, aSyncDescription = {}) {
+    let syncDescription = aSyncDescription;
+    if (!syncDescription.hasOwnProperty("syncList")) syncDescription.syncList = true;
+    if (!syncDescription.hasOwnProperty("syncFolders")) syncDescription.syncFolders = "selected"; //none, selected or Array with folderData obj
+    if (!syncDescription.hasOwnProperty("syncJob")) syncDescription.syncJob = "sync";
+
+    //do not init sync if there is a sync running or account is not enabled
+    if (!this.isEnabled(accountID) || this.isSyncing(accountID)) return;
+
+    //create syncData object for each account (to be able to have parallel XHR)
+    this.resetSyncDataObj(accountID);
+    let syncData = this.getSyncDataObject(accountID);
     
-    //check for default sync job
-    if (job == "sync") {
-      
-      let listStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolderList(syncData);
+    //send GUI into lock mode (status == syncing)
+    tbSync.db.setAccountProperty(accountID, "status", "syncing");
+    Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", accountID);
+    
+    if (syncDescription.syncList) {
+      let listStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolderList(syncData, syncDescription.syncJob);
       if (!(listStatusData instanceof tbSync.StatusData)) {
         let statusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": base.syncFolderList() must return a StatusData object");
         this.finishAccountSync(syncData, statusData);
@@ -434,7 +421,7 @@ var core = {
           if (!this.getNextPendingFolder(syncData)) {
             break;
           }
-          let folderStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolder(syncData);
+          let folderStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolder(syncData, syncDescription.syncJob);
           if (!(folderStatusData instanceof tbSync.StatusData)) {
             folderStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": base.syncFolder() must return a StatusData object");
           }

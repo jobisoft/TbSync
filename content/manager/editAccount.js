@@ -96,7 +96,6 @@ var tbSyncAccountSettings = {
     }        
     
     //load overlays from the provider (if any)
-    tbSync.core.prepareSyncDataObj(tbSyncAccountSettings.accountID);
     tbSync.messenger.overlayManager.injectAllOverlays(window, "chrome://tbsync/content/manager/editAccount.xul?provider=" + tbSyncAccountSettings.provider);
     tbSyncAccountSettings.loadSettings();
     
