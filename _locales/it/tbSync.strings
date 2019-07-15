@@ -47,6 +47,7 @@ syncstate.syncing=Inizializzazione sincronizzazione in corso
 syncstate.preparing=Preparazione prossimo elemento per la sincronizzazione in corso
 syncstate.done=Preparazione prossimo elemento per la sincronizzazione in corso
 syncstate.accountdone=Sincronizzazione account completata
+syncstate.passwordprompt=Richiesta di inserire le credenziali
 
 status.success=OK
 status.notargets=Interruzione sincronizzazione in corso: non è possibile creare le destinazioni sincronizzazione.

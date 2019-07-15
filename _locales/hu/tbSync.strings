@@ -47,6 +47,7 @@ syncstate.syncing=Összehangolás előkészítése
 syncstate.preparing=Az összehangolás következő elem előkészítése
 syncstate.done=Az összehangolás következő elem előkészítése
 syncstate.accountdone=Fiók befejezve
+syncstate.passwordprompt=Hitelesítő adatok megadásának kérése
 
 status.success=Rendben
 status.notargets=A összehangolás abbahagyása, mert a összehangolási célokat nem lehetett létrehozni.

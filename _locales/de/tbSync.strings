@@ -47,6 +47,7 @@ syncstate.syncing=Initiiere Synchronisation
 syncstate.preparing=Bereite das nächste Element für die Synchronisation vor
 syncstate.done=Bereite das nächste Element für die Synchronisation vor
 syncstate.accountdone=Kontosynchronisation abgeschlossen
+syncstate.passwordprompt=Aufforderung zur Eingabe der Anmeldeinformationen
 
 status.success=OK
 status.notargets=Synchronisation abgebrochen da die Elemente zum Synchronisieren nicht erstellt werden konnten.

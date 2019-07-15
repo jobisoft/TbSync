@@ -47,6 +47,7 @@ syncstate.syncing=Initialize synchronization
 syncstate.preparing=Preparing next item for synchronization
 syncstate.done=Preparing next item for synchronization
 syncstate.accountdone=Finished account
+syncstate.passwordprompt=Prompting for credentials
 
 status.success=OK
 status.notargets=Aborting synchronization, because sync targets could not be created.

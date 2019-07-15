@@ -47,6 +47,7 @@ syncstate.syncing=Inicializar sincronização
 syncstate.preparing=Preparando o próximo item para sincronização
 syncstate.done=Preparando o próximo item para sincronização
 syncstate.accountdone=Conta finalizada
+syncstate.passwordprompt=Solicitação para inserir credenciais
 
 status.success=OK
 status.notargets=Anulando a sincronização, porque os destinos de sincronização não puderam ser criados.

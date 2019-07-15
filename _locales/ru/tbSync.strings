@@ -47,6 +47,7 @@ syncstate.syncing=Инициализация синхронизации
 syncstate.preparing=Подготовка следующего элемента для синхронизации
 syncstate.done=Подготовка следующего элемента для синхронизации
 syncstate.accountdone=Завершенный аккаунт
+syncstate.passwordprompt=Запрос на ввод учетных данных
 
 status.success=Готово
 status.notargets=Отмена синхронизации, поскольку цели синхронизации не могут быть созданы.
