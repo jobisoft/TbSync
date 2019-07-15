@@ -260,7 +260,7 @@ var tbSyncAccountSettings = {
     if (isSyncing) {
       let accounts = tbSync.db.getAccounts().data;
       
-      let parts = syncdata.getSyncState().split("||");
+      let parts = syncdata.getSyncState(/* including timestamp: */ true).split("||");
       let syncstate = parts[0];
       let synctime = (parts.length>1 ? parts[1] : Date.now());
 

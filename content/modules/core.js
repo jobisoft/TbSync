@@ -307,8 +307,8 @@ var SyncData = class {
     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", this.accountData.accountID);
   }
   
-  getSyncState() {
-    return this._syncstate;
+  getSyncState(includingTimeStamp = false) {
+    return includingTimeStamp ? this._syncstate : this._syncstate.split("||")[0];
   }
 }
 
