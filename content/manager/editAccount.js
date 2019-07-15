@@ -328,7 +328,7 @@ var tbSyncAccountSettings = {
         //get reference to current element
         nextItem = foldersElements[folderData[i].folderID];
       } else {
-        //add new entry, attach AccountData of this folder as folderData
+        //add new entry, attach FolderData of this folder as folderData
         nextItem = document.createElement("richlistitem");
         nextItem.folderData = folderData[i];
         
@@ -390,9 +390,9 @@ var tbSyncAccountSettings = {
     let menupopup = document.getElementById("tbsync.accountsettings.FolderListContextMenu");
     
     if (aFolderIsSelected) {
-      tbSync.providers[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, folderList.selectedItem.folderData);
+      tbSync.providers[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(window, folderList.selectedItem.folderData);
     } else {
-      tbSync.providers[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(document, null);
+      tbSync.providers[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(window, null);
     }
   },
 

@@ -128,8 +128,8 @@ var manager = {
      * @param document       [in] document object of the account settings window - element.ownerDocument - menuentry?
      * @param folderData         [in] FolderData of the selected folder
      */
-    onContextMenuShowing(document, folderData) {
-      return tbSync.providers[this.provider].standardFolderList.onContextMenuShowing(document, folderData);
+    onContextMenuShowing(window, folderData) {
+      return tbSync.providers[this.provider].standardFolderList.onContextMenuShowing(window, folderData);
     }
 
 
