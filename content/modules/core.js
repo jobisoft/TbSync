@@ -494,12 +494,15 @@ var core = {
     }
   },
   
-  //set all selected folders to "pending", so they are marked for syncing 
-  prepareFoldersForSync: function(syncData) {
-    let folders = syncData.accountData.getAllFoldersIncludingCache();
+  //set allrequested folders to "pending", so they are marked for syncing 
+  prepareFoldersForSync: function(syncData, syncDescription) {
+    let folders = syncData.accountData.getAllFolders();
     for (let folder of folders) {
-      //set selected folders to pending, so they get synced
-      if (folder.getFolderProperty("selected")) {
+      let requested = (Array.isArray(syncDescription.syncFolders) && syncDescription.syncFolders.filter(f => f.folderID == folder.folderID).length > 0);
+      let selected = (!Array.isArray(syncDescription.syncFolders) && syncDescription.syncFolders == "selected" && folder.getFolderProperty("selected"));
+
+      //set folders to pending, so they get synced
+      if (requested || selected) {
          folder.setFolderProperty("status", "pending");
       }
     }
