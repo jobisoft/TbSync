@@ -294,11 +294,6 @@ var tbSyncAccountSettings = {
 
   updateFolderList: function () {
     //get updated list of folderIDs
-    
-    let foldersFound = [];
-    for (let i=0; i < folderData.length; i++) {
-      foldersFound.push(folderData[i].folderID);
-    }
     let folderData = tbSync.providers[tbSyncAccountSettings.provider].base.getSortedFolders(tbSyncAccountSettings.accountData);
     
     //remove entries from folderlist, which no longer exists and build reference array with  current elements
@@ -307,7 +302,7 @@ var tbSyncAccountSettings = {
 
     let foldersElements = {};
     for (let i=folderList.getRowCount()-1; i>=0; i--) {
-      if (!foldersFound.includes(folderList.getItemAtIndex(i).getAttribute("value"))) {
+      if (folderData.filter(f => f.folderID == folderList.getItemAtIndex(i).folderData.folderID).length == 0) {
         folderList.getItemAtIndex(i).remove();
       } else {
         foldersElements[folderList.getItemAtIndex(i).folderData.folderID] = folderList.getItemAtIndex(i);
