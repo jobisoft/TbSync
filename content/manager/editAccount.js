@@ -77,6 +77,7 @@ var tbSyncAccountSettings = {
     Services.obs.addObserver(tbSyncAccountSettings.updateSyncstateObserver, "tbsync.observer.manager.updateSyncstate", false);
     //get the selected account from the loaded URI
     tbSyncAccountSettings.accountID = window.location.toString().split("id=")[1];
+    tbSyncAccountSettings.accountData = new tbSync.AccountData(tbSyncAccountSettings.accountID);
 
     //get information for that acount
     tbSyncAccountSettings.provider = tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, "provider");
@@ -293,13 +294,12 @@ var tbSyncAccountSettings = {
 
   updateFolderList: function () {
     //get updated list of folderIDs
-    let accountData = new tbSync.AccountData(tbSyncAccountSettings.accountID);
-    let folderData = tbSync.providers[tbSyncAccountSettings.provider].base.getSortedFolders(accountData);
     
     let foldersFound = [];
     for (let i=0; i < folderData.length; i++) {
       foldersFound.push(folderData[i].folderID);
     }
+    let folderData = tbSync.providers[tbSyncAccountSettings.provider].base.getSortedFolders(tbSyncAccountSettings.accountData);
     
     //remove entries from folderlist, which no longer exists and build reference array with  current elements
     let folderList = document.getElementById("tbsync.accountsettings.folderlist");
