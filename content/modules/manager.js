@@ -330,7 +330,7 @@ var manager = {
      * @param folderData        [in] FolderData for that row
      */        
     updateRow(document, listItem, folderData) {
-      let name = folderData.getFolderProperty("name");
+      let name = tbSync.providers[this.provider].standardFolderList.getFolderDisplayName(folderData);
       let status = folderData.getFolderStatus();
       let selected = folderData.getFolderProperty("selected");
       
