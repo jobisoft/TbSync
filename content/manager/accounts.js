@@ -97,7 +97,7 @@ var tbSyncAccounts = {
     let accountsList = document.getElementById("tbSyncAccounts.accounts");
     if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)  && !tbSync.core.isSyncing(accountsList.selectedItem.value)) {            
       if (tbSyncAccounts.hasInstalledProvider(accountsList.selectedItem.value)) {
-        tbSync.core.syncAccount('sync', accountsList.selectedItem.value);
+        tbSync.core.syncAccount(accountsList.selectedItem.value);
       }
     }
   },
@@ -184,7 +184,7 @@ var tbSyncAccounts = {
         //we are disabled and want to enabled
         tbSync.core.enableAccount(accountID);
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", accountID);
-        tbSync.core.syncAccount("sync", accountID);
+        tbSync.core.syncAccount(accountID);
       }
     }
   },

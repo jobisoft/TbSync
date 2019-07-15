@@ -108,7 +108,7 @@ var providers = {
         let accounts = providerData.getAllAccounts();
         for (let accountData of accounts) {
           // reset sync objects
-          tbSync.core.prepareSyncDataObj(accountData.accountID, true);
+          tbSync.core.resetSyncDataObj(accountData.accountID);
           
           // set all accounts which are syncing to notsyncronized 
           if (accountData.getAccountProperty("status") == "syncing") accountData.setAccountProperty("status", "notsyncronized");

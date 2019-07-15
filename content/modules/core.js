@@ -336,14 +336,14 @@ var core = {
     return (status != "disabled" && validFolders.length > 0);
   },
   
-  prepareSyncDataObj: function (accountID, forceResetOfSyncData = false) {
-    if (!this.syncDataObj.hasOwnProperty(accountID) || forceResetOfSyncData) {
-      this.syncDataObj[accountID] = new SyncData(accountID);          
-    }
+  resetSyncDataObj: function (accountID) {
+    this.syncDataObj[accountID] = new SyncData(accountID);          
   },
   
   getSyncDataObject: function (accountID) {
-    this.prepareSyncDataObj(accountID);
+    if (!this.syncDataObj.hasOwnProperty(accountID)) {
+      this.resetSyncDataObj(accountID);
+    }
     return this.syncDataObj[accountID];        
   },
   

@@ -75,7 +75,7 @@
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/sync16.png"
                                     label="&manager.SyncAll;"
-                                    oncommand="tbSync.core.syncAccount('sync');"/>
+                                    oncommand="tbSync.core.syncAllAccounts();"/>
                             <menuitem id="accountActionsShowErrorLog"
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/warning16.png"

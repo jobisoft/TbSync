@@ -92,7 +92,7 @@ var messenger = {
   initSyncObserver: {
     observe: function (aSubject, aTopic, aData) {
       if (tbSync.enabled) {
-        tbSync.core.syncAccount('sync');
+        tbSync.core.syncAllAccounts();
       } else {
         //tbSync.manager.popupNotEnabled();
       }

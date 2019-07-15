@@ -151,7 +151,7 @@ var tbSync = {
             let syncInterval = accounts.data[accounts.IDs[i]].autosync * 60 * 1000;
             let lastsynctime = accounts.data[accounts.IDs[i]].lastsynctime;
             if (tbSync.core.isEnabled(accounts.IDs[i]) && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval)) {
-              tbSync.core.syncAccount("sync", accounts.IDs[i]);
+              tbSync.core.syncAccount(accounts.IDs[i]);
             }
           }
         }
