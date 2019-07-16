@@ -329,7 +329,7 @@ var addressbook = {
       //use UID as fallback
       let key = this.primaryKeyField ? this.primaryKeyField : "UID";
 
-      return this.getItemFromProperty(key, searchId) {
+      return this.getItemFromProperty(key, searchId);
     }
     
     getAllItems () {
