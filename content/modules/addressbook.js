@@ -200,18 +200,18 @@ var addressbook = {
     }
     
     get changelogStatus() {
-      let key = this._abDirectory.primaryKeyField;
-      
       //use UID as fallback
+      let key = this._abDirectory.primaryKeyField;
       let value = key ? this.getProperty(key) : this.UID;            
+      
       return tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, value)
     }
 
     set changelogStatus(status) {            
-      let key = this._abDirectory.primaryKeyField;
-
       //use UID as fallback
-      let value = key ? this.getProperty(key) : this.UID;                        
+      let key = this._abDirectory.primaryKeyField;
+      let value = key ? this.getProperty(key) : this.UID;            
+                  
       if (value) {
         if (!status) {
           tbSync.db.removeItemFromChangeLog(this._abDirectory.UID, value);
@@ -263,10 +263,10 @@ var addressbook = {
       return new tbSync.addressbook.AbItem(this, listDirectory);
     }
 
-    add(abItem, pretagChangelogWithByServerEntry = true) {
+    addItem(abItem, pretagChangelogWithByServerEntry = true) {
       if (this.primaryKeyField && !abItem.getProperty(this.primaryKeyField)) {
         abItem.setProperty(this.primaryKeyField, tbSync.providers[this._provider].addressbook.generatePrimaryKey(this._folderData));
-        Services.console.logStringMessage("[AbDirectory::add] Generated primary key!");
+        Services.console.logStringMessage("[AbDirectory::addItem] Generated primary key!");
       }
       
       if (pretagChangelogWithByServerEntry) {
@@ -293,7 +293,7 @@ var addressbook = {
       }
     }
     
-    modify(abItem, pretagChangelogWithByServerEntry = true) {
+    modifyItem(abItem, pretagChangelogWithByServerEntry = true) {
       // only add entry if the current entry does not start with _by_user
       let status = abItem.changelogStatus ? abItem.changelogStatus : "";
       if (pretagChangelogWithByServerEntry && !status.endsWith("_by_user")) {
@@ -316,13 +316,20 @@ var addressbook = {
       }
     }        
     
-    remove(abItem, pretagChangelogWithByServerEntry = true) {
+    deleteItem(abItem, pretagChangelogWithByServerEntry = true) {
       if (pretagChangelogWithByServerEntry) {
         abItem.changelogStatus = "deleted_by_server";
       }
       let delArray = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
       delArray.appendElement(abItem._card, true);
       this._directory.deleteCards(delArray);
+    }
+
+    getItem(searchId) {
+      //use UID as fallback
+      let key = this.primaryKeyField ? this.primaryKeyField : "UID";
+
+      return this.getItemFromProperty(key, searchId) {
     }
     
     getAllItems () {
@@ -374,10 +381,13 @@ var addressbook = {
     }
     
     getItemsFromChangeLog(maxitems = 0) {             
+      //use UID as fallback
+      let key = this.primaryKeyField ? this.primaryKeyField : "UID";
+
       let changes = [];
       let dbChanges = tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "_by_user");
       for (let change of dbChanges) {
-        change.card = this.getItemFromProperty(this.primaryKeyField, change.id);
+        change.card = this.getItemFromProperty(key, change.id);
         changes.push(change);
       }
       return changes;
