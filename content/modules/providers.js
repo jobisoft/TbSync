@@ -36,6 +36,19 @@
     return allAccounts;
   }
   
+  getFolders(aFolderSearchCriteria = {}) {
+    let allFolders = [];
+    let folderSearchCriteria = {};
+    Object.assign(folderSearchCriteria, aFolderSearchCriteria);
+    folderSearchCriteria.cached = false;
+    
+    let folders = tbSync.db.findFolders(folderSearchCriteria, {"provider": this.provider});
+    for (let i=0; i < folders.length; i++) {          
+      allFolders.push(new tbSync.FolderData(new tbSync.AccountData(folders[i].accountID), folders[i].folderID));
+    }
+    return allFolders;
+  }
+  
   getDefaultAccountEntries() {
     return  tbSync.providers.getDefaultAccountEntries(this.provider)
   }
