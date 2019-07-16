@@ -232,6 +232,10 @@ var addressbook = {
       this._provider = folderData.accountData.getAccountProperty("provider");
      }
 
+    get directory() {
+      return this._directory;
+    }
+    
     get logUserChanges() {
       return tbSync.providers[this._provider].addressbook.logUserChanges;
     }

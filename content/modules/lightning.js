@@ -60,6 +60,30 @@ var lightning = {
     }
   },
 
+  TbCalender : class {
+    constructor(calendar, folderData) {
+      this._calendar = calendar;
+      this._folderData = folderData;
+      this._provider = folderData.accountData.getAccountProperty("provider");
+     }
+
+    get calendar() {
+      return this._calendar;
+    }
+    
+    get logUserChanges() {
+      return tbSync.providers[this._provider].calendar.logUserChanges;
+    }
+    
+    get primaryKeyField() {
+      return tbSync.providers[this._provider].calendar.primaryKeyField;
+    }
+    
+    get id() {
+      return this._calendar.id;
+    }
+  },
+  
   TargetData : class {
     constructor(folderData) {            
       this._targetType = folderData.getFolderProperty("targetType");
@@ -92,7 +116,10 @@ var lightning = {
           throw new Error("notargets");
       }
 
-      return calendar; //TODO: changelog + async Wrapper
+      if (!this._targetObj || this._targetObj.id != calendar.id)
+        this._targetObj = new tbSync.lightning.TbCalender(calendar, this._folderData);
+
+      return this._targetObj; //TODO: changelog + async Wrapper
     }
     
     removeTarget() {
@@ -295,27 +322,17 @@ var lightning = {
   },
 
   calendarManagerObserver : {
-    onCalendarRegistered : function (aCalendar) {
-      let folders = tbSync.db.findFolders({"targetType": "calendar"});
-      for (let folder of folders) {
-        let provider = tbSync.db.getAccountProperty(folder.accountID, "provider");
-        let calendarUrlField = tbSync.providers[provider].calendar.calendarUrlField;
-        if (tbSync.db.getFolderProperty(folder.accountID, folder.folderID, calendarUrlField) == aCalendar.uri.spec) {
-          let accountData = new tbSync.AccountData(folder.accountID);
-          let folderData = new tbSync.FolderData(accountData, folder.folderID);
-          tbSync.providers[provider].calendar.calendarObserver("onCalendarReregistered", folderData, aCalendar);                
-        }
-      }                
+    onCalendarRegistered : function (aCalendar) {              
     },
     
     onCalendarUnregistering : function (aCalendar) {
-      let folderData = tbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
+      /*let folderData = tbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
       if (folderData 
         && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
 
         tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.calendarObserver("onCalendarUnregistered", folderData, aCalendar);                
-      }                
+      }*/
     },
       
     onCalendarDeleting : function (aCalendar) {
