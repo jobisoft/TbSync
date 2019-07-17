@@ -194,9 +194,10 @@ var addressbook = {
       }
     }
     
-    addPhoto(photo, bookUID, data) {	
+    addPhoto(photo, data) {	
       let dest = [];
       let card = this._card;
+      let bookUID = this.abDirectory.UID;
       
       // TbSync storage must be set as last
       let book64 = btoa(bookUID);
