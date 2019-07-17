@@ -62,22 +62,22 @@ var lightning = {
 
 
 TbItem : class {
-    constructor(TbCalender, item) {
+    constructor(TbCalendar, item) {
       if (!TbCalendar)
         throw new Error("TbItem::constructor is missing its first parameter!");
 
       if (!item)
         throw new Error("TbItem::constructor is missing its second parameter!");
 
-      this._tbCalender = TbCalendar;
+      this._tbCalendar = TbCalendar;
       this._item = item;
       
       this._isTodo = (item instanceof Ci.calITodo);
       this._isEvent = (item instanceof Ci.calIEvent);
     }
     
-    get tbCalender() {
-      return this._tbCalender;
+    get tbCalendar() {
+      return this._tbCalendar;
     }
 
     get isTodo() {
@@ -111,7 +111,7 @@ TbItem : class {
     }
 
     clone() {
-      return new tbSync.lightning.TbItem(this._tbCalender, this._item.clone());
+      return new tbSync.lightning.TbItem(this._tbCalendar, this._item.clone());
     }
 
     toString() {
@@ -131,7 +131,7 @@ TbItem : class {
     }
         
     get changelogStatus() {
-      return tbSync.db.getItemStatusFromChangeLog(this._tbCalender.UID, this.primaryKey);
+      return tbSync.db.getItemStatusFromChangeLog(this._tbCalendar.UID, this.primaryKey);
     }
 
     set changelogStatus(status) {
@@ -139,19 +139,19 @@ TbItem : class {
       
       if (value) {
         if (!status) {
-          tbSync.db.removeItemFromChangeLog(this._tbCalender.UID, value);
+          tbSync.db.removeItemFromChangeLog(this._tbCalendar.UID, value);
           return;
         }
 
-        if (this._tbCalender.logUserChanges || status.endsWith("_by_server")) {
-          tbSync.db.addItemToChangeLog(this._tbCalender.UID, value, status);
+        if (this._tbCalendar.logUserChanges || status.endsWith("_by_server")) {
+          tbSync.db.addItemToChangeLog(this._tbCalendar.UID, value, status);
         }
       }
     }
   },
 
 
-  TbCalender : class {
+  TbCalendar : class {
     constructor(calendar, folderData) {
       this._calendar = calendar;
       this._promisifyCalendar = tbSync.lightning.cal.async.promisifyCalendar(this._calendar.wrappedJSObject);
@@ -297,13 +297,13 @@ TbItem : class {
       let calendar = tbSync.lightning.checkCalendar(this._folderData);
       
       if (!calendar) {
-        calendar = tbSync.lightning.createCalender(this._folderData);
+        calendar = tbSync.lightning.createCalendar(this._folderData);
         if (!calendar)
           throw new Error("notargets");
       }
 
       if (!this._targetObj || this._targetObj.id != calendar.id)
-        this._targetObj = new tbSync.lightning.TbCalender(calendar, this._folderData);
+        this._targetObj = new tbSync.lightning.TbCalendar(calendar, this._folderData);
 
       return this._targetObj;
     }
@@ -565,7 +565,7 @@ TbItem : class {
   },
   
   //this function actually creates a calendar if missing
-  createCalender: function (folderData) {       
+  createCalendar: function (folderData) {       
     let calManager = tbSync.lightning.cal.getCalendarManager();
     let target = folderData.getFolderProperty("target");
     let provider = folderData.accountData.getAccountProperty("provider");

@@ -469,7 +469,7 @@ var addressbook = {
     removeTarget() {
       let target = this._folderData.getFolderProperty("target");
       this._folderData.resetFolderProperty("target");
-      
+      // changelog will be cleared by listener
       let directory = tbSync.addressbook.getDirectoryFromDirectoryUID(target);
       try {
         if (directory) {

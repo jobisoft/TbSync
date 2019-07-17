@@ -19,7 +19,10 @@ var StatusData = class {
   static get ERROR() {return "error"};
   static get WARNING() {return "warning"};
   static get INFO() {return "info"};
-}
+  // A folder can return RERUN to initiate an entire rerun of the
+  // sync, including folderlist sync.
+  static get RERUN() {return "rerun"}; 
+  }
 
 var FolderData = class {
   constructor(accountData, folderID) {
@@ -391,59 +394,80 @@ var core = {
     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", accountID);
     
     let overallStatusData = new tbSync.StatusData();
-
-    if (syncDescription.syncList) {
-      let listStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolderList(syncData, syncDescription.syncJob);
-      if (!(listStatusData instanceof tbSync.StatusData)) {
-        let statusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": base.syncFolderList() must return a StatusData object");
-        this.finishAccountSync(syncData, statusData);
-        return;
-      }
-      
-      //if we have an error during folderList sync, there is no need to go on
-      if (listStatusData.type != tbSync.StatusData.SUCCESS) {
-        this.finishAccountSync(syncData, listStatusData);
-        return;
-      }
-      
-      // Removes all leftover cached folders and sets all other folders to a well defined cached = "0"
-      // which will set this account as connected (if at least one non-cached folder is present).
-      this.removeCachedFolders(syncData);
-
-      // update folder list in GUI
-      Services.obs.notifyObservers(null, "tbsync.observer.manager.updateFolderList", syncData.accountData.accountID);
-    }
+    let rerun;
+    let accountReRuns = 0;
     
-    if (syncDescription.syncFolders != "none") {
-      this.prepareFoldersForSync(syncData, syncDescription);
+    do {
+      rerun = false;
 
-      // update folder list in GUI
-      Services.obs.notifyObservers(null, "tbsync.observer.manager.updateFolderList", syncData.accountData.accountID);
+      accountReRuns++;
+      if (accountReRuns > 2) {
+        overallStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "resync-loop");
+        break;
+      }      
+      
+      if (syncDescription.syncList) {
+        let listStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolderList(syncData, syncDescription.syncJob);
+        if (!(listStatusData instanceof tbSync.StatusData)) {
+          overallStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": base.syncFolderList() must return a StatusData object");
+          break;
+        }
+        
+        //if we have an error during folderList sync, there is no need to go on
+        if (listStatusData.type != tbSync.StatusData.SUCCESS) {
+          overallStatusData = listStatusData;
+          rerun = (listStatusData.type == tbSync.StatusData.RERUN)
+          continue; //jumps to the while condition check
+        }
+        
+        // Removes all leftover cached folders and sets all other folders to a well defined cached = "0"
+        // which will set this account as connected (if at least one non-cached folder is present).
+        this.removeCachedFolders(syncData);
 
-      // if any folder was found, sync
-      if (syncData.accountData.isConnected()) {
-        do {
-          // getNextPendingFolder will set or clear currentFolderData of syncData
-          if (!this.getNextPendingFolder(syncData)) {
-            break;
-          }
-          let folderStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolder(syncData, syncDescription.syncJob);
-          if (!(folderStatusData instanceof tbSync.StatusData)) {
-            folderStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": base.syncFolder() must return a StatusData object");
-          }
-
-          this.finishFolderSync(syncData, folderStatusData);
-
-          //if one of the folders indicated an ERROR, abort sync
-          if (folderStatusData.type == tbSync.StatusData.ERROR) {
-            break;
-          }
-        } while (true);
-      } else {
-        overallStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "no-folders-found-on-server");
+        // update folder list in GUI
+        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateFolderList", syncData.accountData.accountID);
       }
-    }
+      
+      if (syncDescription.syncFolders != "none") {
+        this.prepareFoldersForSync(syncData, syncDescription);
 
+        // update folder list in GUI
+        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateFolderList", syncData.accountData.accountID);
+
+        // if any folder was found, sync
+        if (syncData.accountData.isConnected()) {
+          do {
+            // getNextPendingFolder will set or clear currentFolderData of syncData
+            if (!this.getNextPendingFolder(syncData)) {
+              break;
+            }
+            let folderStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolder(syncData, syncDescription.syncJob);
+            if (!(folderStatusData instanceof tbSync.StatusData)) {
+              folderStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": base.syncFolder() must return a StatusData object");
+            }
+
+            this.finishFolderSync(syncData, folderStatusData);
+
+            //if one of the folders indicated an ERROR, abort sync
+            if (folderStatusData.type == tbSync.StatusData.ERROR) {
+              break;
+            }
+            
+            //if one of the folders has send a RERUN, abort sync and rerun
+            if (folderStatusData.type == tbSync.StatusData.RERUN) {
+              syncDescription.syncList = true;
+              rerun = true;
+              break;
+            }
+            
+          } while (true);
+        } else {
+          overallStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "no-folders-found-on-server");
+        }
+      }
+    
+    } while (rerun);
+    
     this.finishAccountSync(syncData, overallStatusData);
   },
   
