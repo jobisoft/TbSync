@@ -62,13 +62,42 @@ var addressbook = {
       return this._abDirectory;
     }
     
+    get isMailList() {
+      return this._isMailList;
+    }
+
+
+
+
+
+    get nativeItem() {
+      return this._card;
+    }
+
     get UID() {
       if (this._tempListDirectory) return this._tempListDirectory.UID;
       return this._card.UID;
     }
     
-    get isMailList() {
-      return this._isMailList;
+    get primaryKey() {
+      //use UID as fallback
+      let key = this._abDirectory.primaryKeyField;
+      return key ? this.getProperty(key) : this.UID;  
+    }
+
+    set primaryKey(value) {
+      //use UID as fallback
+      let key = this._abDirectory.primaryKeyField;
+      if (key) this.setProperty(key, value)
+      else throw ("tbSync.addressbook.AbItem.set primaryKey: UID is used as primaryKeyField but changing the UID of an item is currently not supported. Please use a custom primaryKeyField.");
+    }
+
+    clone() { //no real clone ... this is just here to match the calendar target
+      return new tbSync.addressbook.AbItem(this._abDirectory, this._item);
+    }
+    
+    toString() {
+      return this._card.displayName + " (" + this._card.firstName + ", " + this._card.lastName + ") <"+this._card.primaryEmail+">";
     }
     
     // mailinglist aware method to get properties of cards
@@ -89,9 +118,11 @@ var addressbook = {
     // mailinglist properties cannot be stored in mailinglists themselves, so we store them in changelog
     setProperty(property, value) {
       // UID cannot be changed (currently)
-      if (property == "UID")
+      if (property == "UID") {
+        throw ("tbSync.addressbook.AbItem.setProperty: UID cannot be changed currently.");
         return;
-
+      }
+      
       if (this._isMailList) {
         tbSync.db.addItemToChangeLog(this._abDirectory.UID + "#" + this.UID, property, value);
       } else {
@@ -106,7 +137,30 @@ var addressbook = {
         this._card.deleteProperty(property);
       }
     }
-    
+   
+    get changelogStatus() {         
+      return tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, this.primaryKey)
+    }
+
+    set changelogStatus(status) {            
+      let value = this.primaryKey;         
+                  
+      if (value) {
+        if (!status) {
+          tbSync.db.removeItemFromChangeLog(this._abDirectory.UID, value);
+          return;
+        }
+
+        if (this._abDirectory.logUserChanges || status.endsWith("_by_server")) {
+          tbSync.db.addItemToChangeLog(this._abDirectory.UID, value, status);
+        }
+      }
+    }    
+
+
+
+
+
     // get the property given from all members and return it as an array (that property better be uniqe)
     getMembersPropertyList(property) {
       let members = [];
@@ -197,31 +251,6 @@ var addressbook = {
         } catch (e) {}
       }
       return data;
-    }
-    
-    get changelogStatus() {
-      //use UID as fallback
-      let key = this._abDirectory.primaryKeyField;
-      let value = key ? this.getProperty(key) : this.UID;            
-      
-      return tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, value)
-    }
-
-    set changelogStatus(status) {            
-      //use UID as fallback
-      let key = this._abDirectory.primaryKeyField;
-      let value = key ? this.getProperty(key) : this.UID;            
-                  
-      if (value) {
-        if (!status) {
-          tbSync.db.removeItemFromChangeLog(this._abDirectory.UID, value);
-          return;
-        }
-
-        if (this._abDirectory.logUserChanges || status.endsWith("_by_server")) {
-          tbSync.db.addItemToChangeLog(this._abDirectory.UID, value, status);
-        }
-      }
     }
   },
 
@@ -328,24 +357,9 @@ var addressbook = {
     getItem(searchId) {
       //use UID as fallback
       let key = this.primaryKeyField ? this.primaryKeyField : "UID";
-
       return this.getItemFromProperty(key, searchId);
     }
-    
-    getAllItems () {
-      let rv = [];
-      let cards = this._directory.childCards;
-      while (true) {
-        let more = false;
-        try { more = cards.hasMoreElements() } catch (e) { Components.utils.reportError(e); }
-        if (!more) break;
 
-        let card = new addressbook.AbItem( this._directory, cards.getNext().QueryInterface(Components.interfaces.nsIAbCard));
-        rv.push(card);
-      }
-      return rv;
-    }
-      
     getItemFromProperty(property, value) {
       // try to use the standard card method first
       let card = this._directory.getCardFromProperty(property, value, true);
@@ -367,6 +381,24 @@ var addressbook = {
       }
       return null;
     }
+    
+    getAllItems () {
+      let rv = [];
+      let cards = this._directory.childCards;
+      while (true) {
+        let more = false;
+        try { more = cards.hasMoreElements() } catch (e) { Components.utils.reportError(e); }
+        if (!more) break;
+
+        let card = new addressbook.AbItem( this._directory, cards.getNext().QueryInterface(Components.interfaces.nsIAbCard));
+        rv.push(card);
+      }
+      return rv;
+    }
+
+
+
+
 
     getAddedItemsFromChangeLog(maxitems = 0) {             
       return tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "added_by_user").map(item => item.id);
@@ -380,21 +412,12 @@ var addressbook = {
       return tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "deleted_by_user").map(item => item.id);
     }
     
-    getItemsFromChangeLog(maxitems = 0) {             
-      //use UID as fallback
-      let key = this.primaryKeyField ? this.primaryKeyField : "UID";
-
-      let changes = [];
-      let dbChanges = tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "_by_user");
-      for (let change of dbChanges) {
-        change.card = this.getItemFromProperty(key, change.id);
-        changes.push(change);
-      }
-      return changes;
+    getItemsFromChangeLog(maxitems = 0) { // Document what this returns         
+      return tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "_by_user");
     }
 
-    removeItemFromChangeLog(id) {             
-      tbSync.db.removeItemFromChangeLog(this._directory.UID, id);
+    removeItemFromChangeLog(id, moveToEndInsteadOfDelete = false) {             
+      tbSync.db.removeItemFromChangeLog(this._directory.UID, id, moveToEndInsteadOfDelete);
     }
     
     clearChangelog() {
