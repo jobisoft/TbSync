@@ -60,9 +60,101 @@ var lightning = {
     }
   },
 
+
+TbItem : class {
+    constructor(TbCalender, item) {
+      if (!TbCalendar)
+        throw new Error("TbItem::constructor is missing its first parameter!");
+
+      if (!item)
+        throw new Error("TbItem::constructor is missing its second parameter!");
+
+      this._tbCalender = TbCalendar;
+      this._item = item;
+      
+      this._isTodo = (item instanceof Ci.calITodo);
+      this._isEvent = (item instanceof Ci.calIEvent);
+    }
+    
+    get tbCalender() {
+      return this._tbCalender;
+    }
+
+    get isTodo() {
+      return this._isTodo;
+    }
+    
+    get isEvent() {
+      return this._isEvent;
+    }
+
+
+
+
+    
+    get nativeItem() {
+      return this._item;
+    }
+
+    get UID() {
+      return this._item.id;
+    }
+    
+    get primaryKey() {
+      // no custom key possible with lightning, must use the UID
+      return this._item.id;
+    }
+
+    set primaryKey(value) {
+      // no custom key possible with lightning, must use the UID
+      this._item.id = value;   
+    }
+
+    clone() {
+      return new tbSync.lightning.TbItem(this._tbCalender, this._item.clone());
+    }
+
+    toString() {
+      return this._item.icalString;
+    }
+
+    getProperty(property, fallback = "") {
+      return this._item.hasProperty(property) ? this._item.getProperty(property) : fallback;
+    }
+
+    setProperty(property, value) {
+      this._item.setProperty(property, value);
+    }
+    
+    deleteProperty(property) {
+      this._item.deleteProperty(property);
+    }
+        
+    get changelogStatus() {
+      return tbSync.db.getItemStatusFromChangeLog(this._tbCalender.UID, this.primaryKey);
+    }
+
+    set changelogStatus(status) {
+      let value = this.primaryKey;
+      
+      if (value) {
+        if (!status) {
+          tbSync.db.removeItemFromChangeLog(this._tbCalender.UID, value);
+          return;
+        }
+
+        if (this._tbCalender.logUserChanges || status.endsWith("_by_server")) {
+          tbSync.db.addItemToChangeLog(this._tbCalender.UID, value, status);
+        }
+      }
+    }
+  },
+
+
   TbCalender : class {
     constructor(calendar, folderData) {
       this._calendar = calendar;
+      this._promisifyCalendar = tbSync.lightning.cal.async.promisifyCalendar(this._calendar.wrappedJSObject);
       this._folderData = folderData;
       this._provider = folderData.accountData.getAccountProperty("provider");
      }
@@ -71,18 +163,112 @@ var lightning = {
       return this._calendar;
     }
     
+    get promisifyCalendar() {
+      return this._promisifyCalendar;
+    }
+
     get logUserChanges() {
       return tbSync.providers[this._provider].calendar.logUserChanges;
     }
     
     get primaryKeyField() {
-      return tbSync.providers[this._provider].calendar.primaryKeyField;
+      // Not supported by lightning. We let the implementation sit here, it may get changed in the future.
+      // In order to support this, lightning needs to implement a proper getItemfromProperty() method.
+      return null;
     }
     
-    get id() {
+    get UID() {
       return this._calendar.id;
     }
+
+    createNewEvent() {
+      let event = tbSync.lightning.cal.createEvent();
+      return new tbSync.lightning.TbItem(this, event);
+    }
+    
+    createNewTodo() {
+      let todo = tbSync.lightning.cal.createTodo();
+      return new tbSync.lightning.TbItem(this, todo);
+    }
+
+    
+    
+    
+    async addItem(tbItem, pretagChangelogWithByServerEntry = true) {
+      if (this.primaryKeyField && !tbItem.getProperty(this.primaryKeyField)) {
+        tbItem.setProperty(this.primaryKeyField, tbSync.providers[this._provider].calendar.generatePrimaryKey(this._folderData));
+        Services.console.logStringMessage("[TbCalendar::addItem] Generated primary key!");
+      }
+      
+      if (pretagChangelogWithByServerEntry) {
+        tbItem.changelogStatus = "added_by_server";
+      }
+      return await this._promisifyCalendar.adoptItem(tbItem._item);
+    }
+    
+    async modifyItem(tbNewItem, tbOldItem, pretagChangelogWithByServerEntry = true) {
+      // only add entry if the current entry does not start with _by_user
+      let status = tbNewItem.changelogStatus ? tbNewItem.changelogStatus : "";
+      if (pretagChangelogWithByServerEntry && !status.endsWith("_by_user")) {
+        tbNewItem.changelogStatus = "modified_by_server";
+      }
+      
+      return await this._promisifyCalendar.modifyItem(tbNewItem._item, tbOldItem._item); 
+    }        
+    
+    async deleteItem(tbItem, pretagChangelogWithByServerEntry = true) {
+      if (pretagChangelogWithByServerEntry) {
+        tbItem.changelogStatus = "deleted_by_server";
+      }
+      return await this._promisifyCalendar.deleteItem(tbItem._item); 
+    }
+    
+    // searchId is interpreted as the primaryKeyField, which is the UID for this target
+    async getItem (searchId) {
+      let item = await this._promisifyCalendar.getItem(searchId); 
+      if (item.length == 1) return new tbSync.lightning.TbItem(this, item[0]);
+      if (item.length > 1) throw "Oops: getItem returned <"+item.length+"> elements!";
+      return null;
+    }
+
+    async getItemFromProperty(property, value) {
+      if (property == "UID") return await this.getItem(value);
+      else throw ("tbSync.lightning.getItemFromProperty: Currently onle the UID property can be used to search for items.");
+    }
+
+    async getAllItems () {
+      return await this._promisifyCalendar.getAllItems(); 
+    }
+      
+  
+  
+  
+  
+    getAddedItemsFromChangeLog(maxitems = 0) {             
+      return tbSync.db.getItemsFromChangeLog(this._calendar.UID, maxitems, "added_by_user").map(item => item.id);
+    }
+
+    getModifiedItemsFromChangeLog(maxitems = 0) {             
+      return tbSync.db.getItemsFromChangeLog(this._calendar.UID, maxitems, "modified_by_user").map(item => item.id);
+    }
+    
+    getDeletedItemsFromChangeLog(maxitems = 0) {             
+      return tbSync.db.getItemsFromChangeLog(this._calendar.UID, maxitems, "deleted_by_user").map(item => item.id);
+    }
+    
+    getItemsFromChangeLog(maxitems = 0) {             
+      return tbSync.db.getItemsFromChangeLog(this._calendar.UID, maxitems, "_by_user");
+    }
+
+    removeItemFromChangeLog(id, moveToEndInsteadOfDelete = false) {             
+      tbSync.db.removeItemFromChangeLog(this._calendar.UID, id, moveToEndInsteadOfDelete);
+    }
+    
+    clearChangelog() {
+      tbSync.db.clearChangeLog(this._calendar.UID);
+    }
   },
+  
   
   TargetData : class {
     constructor(folderData) {            
@@ -119,7 +305,7 @@ var lightning = {
       if (!this._targetObj || this._targetObj.id != calendar.id)
         this._targetObj = new tbSync.lightning.TbCalender(calendar, this._folderData);
 
-      return this._targetObj; //TODO: changelog + async Wrapper
+      return this._targetObj;
     }
     
     removeTarget() {
