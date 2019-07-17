@@ -539,7 +539,7 @@ var addressbook = {
     
     // Get cached or new unique name for new address book
     let cachedName = folderData.getFolderProperty("targetName");                         
-    let basename = cachedName == "" ? folderData.accountData.getAccountProperty("accountname") + " (" + folderData.getFolderProperty("name")+ ")" : cachedName;
+    let basename = cachedName == "" ? folderData.accountData.getAccountProperty("accountname") + " (" + folderData.getFolderProperty("foldername")+ ")" : cachedName;
 
     let count = 1;
     let unique = false;

@@ -275,7 +275,7 @@ var SyncData = class {
       this.accountData.getAccountProperty("provider"),
       this.accountData.getAccountProperty("accountname"),
       this.accountData.accountID,
-      this.currentFolderData ? this.currentFolderData.getFolderProperty("name") : "",
+      this.currentFolderData ? this.currentFolderData.getFolderProperty("foldername") : "",
     );
   }
   
@@ -294,7 +294,7 @@ var SyncData = class {
   setSyncState(syncstate) {
     //set new syncstate
     let msg = "State: " + syncstate + ", Account: " + this.accountData.getAccountProperty("accountname");
-    if (this.currentFolderData) msg += ", Folder: " + this.currentFolderData.getFolderProperty("name");
+    if (this.currentFolderData) msg += ", Folder: " + this.currentFolderData.getFolderProperty("foldername");
 
     if (syncstate.split(".")[0] == "send") {
       //add timestamp to be able to display timeout countdown

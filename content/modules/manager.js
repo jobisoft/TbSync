@@ -203,7 +203,7 @@ var manager = {
       
       //folder name
       let itemLabel = document.createElement("description");
-      itemLabel.setAttribute("updatefield", "name");
+      itemLabel.setAttribute("updatefield", "foldername");
 
       //status
       let itemStatus = document.createElement("description");
@@ -330,7 +330,7 @@ var manager = {
      * @param folderData        [in] FolderData for that row
      */        
     updateRow(document, listItem, folderData) {
-      let name = tbSync.providers[this.provider].standardFolderList.getFolderDisplayName(folderData);
+      let foldername = tbSync.providers[this.provider].standardFolderList.getFolderDisplayName(folderData);
       let status = folderData.getFolderStatus();
       let selected = folderData.getFolderProperty("selected");
       
@@ -341,9 +341,9 @@ var manager = {
       }
       
       // update fields
-      fields.name.setAttribute("disabled", !selected);
-      fields.name.setAttribute("style", selected ? "" : "font-style:italic");
-      if (fields.name.textContent != name) fields.name.textContent = name;
+      fields.foldername.setAttribute("disabled", !selected);
+      fields.foldername.setAttribute("style", selected ? "" : "font-style:italic");
+      if (fields.foldername.textContent != foldername) fields.foldername.textContent = foldername;
       
       fields.status.setAttribute("style", selected ? "" : "font-style:italic");
       if (fields.status.textContent != status) {
