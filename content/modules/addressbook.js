@@ -93,7 +93,7 @@ var addressbook = {
     }
 
     clone() { //no real clone ... this is just here to match the calendar target
-      return new tbSync.addressbook.AbItem(this._abDirectory, this._item);
+      return new tbSync.addressbook.AbItem(this._abDirectory, this._card);
     }
     
     toString() {
