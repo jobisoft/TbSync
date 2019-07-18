@@ -245,27 +245,27 @@ TbItem : class {
   
   
     getAddedItemsFromChangeLog(maxitems = 0) {             
-      return tbSync.db.getItemsFromChangeLog(this._calendar.UID, maxitems, "added_by_user").map(item => item.id);
+      return tbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "added_by_user").map(item => item.id);
     }
 
     getModifiedItemsFromChangeLog(maxitems = 0) {             
-      return tbSync.db.getItemsFromChangeLog(this._calendar.UID, maxitems, "modified_by_user").map(item => item.id);
+      return tbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "modified_by_user").map(item => item.id);
     }
     
     getDeletedItemsFromChangeLog(maxitems = 0) {             
-      return tbSync.db.getItemsFromChangeLog(this._calendar.UID, maxitems, "deleted_by_user").map(item => item.id);
+      return tbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "deleted_by_user").map(item => item.id);
     }
     
     getItemsFromChangeLog(maxitems = 0) {             
-      return tbSync.db.getItemsFromChangeLog(this._calendar.UID, maxitems, "_by_user");
+      return tbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "_by_user");
     }
 
     removeItemFromChangeLog(id, moveToEndInsteadOfDelete = false) {             
-      tbSync.db.removeItemFromChangeLog(this._calendar.UID, id, moveToEndInsteadOfDelete);
+      tbSync.db.removeItemFromChangeLog(this.calendar.id, id, moveToEndInsteadOfDelete);
     }
     
     clearChangelog() {
-      tbSync.db.clearChangeLog(this._calendar.UID);
+      tbSync.db.clearChangeLog(this.calendar.id);
     }
   },
   
@@ -389,19 +389,25 @@ TbItem : class {
         && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
 
-        let itemStatus = tbSync.db.getItemStatusFromChangeLog(aAddedItem.calendar.id, aAddedItem.id)
+        let tbCalendar = new tbSync.lightning.TbCalendar(aAddedItem.calendar, folderData);
+        let tbItem = new tbSync.lightning.TbItem(tbCalendar, aAddedItem);          
+        let itemStatus = tbItem.changelogStatus;
+
         if (itemStatus && itemStatus.endsWith("_by_server")) {
           //we caused this, ignore
-          tbSync.db.removeItemFromChangeLog(aAddedItem.calendar.id, aAddedItem.id);
+          tbItem.changelogStatus = "";
           return;
         }
 
-        //if (itemStatus === null) {
-        //    tbSync.db.addItemToChangeLog(aAddedItem.calendar.id, aAddedItem.id, "added_by_user");
-        //}
+        if (itemStatus == "deleted_by_user")  {
+          // deleted ?  user moved item out and back in -> modified
+          tbItem.changelogStatus = "modified_by_user";
+        } else {
+          tbItem.changelogStatus = "added_by_user";
+        }
         
-        //tbSync.core.setTargetModified(folderData);
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.itemObserver("onAddItem", folderData, aAddedItem);                                        
+        tbSync.core.setTargetModified(folderData);
+        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.itemObserver("onAddItem", folderData, tbItem, null);                                        
       }
     },
 
@@ -415,21 +421,24 @@ TbItem : class {
         && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
 
-        let itemStatus = tbSync.db.getItemStatusFromChangeLog(aNewItem.calendar.id, aNewItem.id)
+        let tbCalendar = new tbSync.lightning.TbCalendar(aNewItem.calendar, folderData);
+        let tbNewItem = new tbSync.lightning.TbItem(tbCalendar, aNewItem);          
+        let tbOldItem = new tbSync.lightning.TbItem(tbCalendar, aOldItem);          
+        let itemStatus = tbNewItem.changelogStatus;
+          
         if (itemStatus && itemStatus.endsWith("_by_server")) {
           //we caused this, ignore
-          tbSync.db.removeItemFromChangeLog(aNewItem.calendar.id, aNewItem.id);
+          tbNewItem.changelogStatus = "";
           return;
         }
 
-        //if (itemStatus != "added_by_user" && itemStatus != "added_by_server") {
-        //    //added_by_user -> it is a local unprocessed add do not re-add it to changelog
-        //    //added_by_server -> it was just added by the server but our onItemAdd has not yet seen it, do not overwrite it - race condition - this local change is probably not caused by the user - ignore it?
-        //    tbSync.db.addItemToChangeLog(aNewItem.calendar.id, aNewItem.id, "modified_by_user");
-        //}
+        if (itemStatus != "added_by_user") {
+          //added_by_user -> it is a local unprocessed add do not re-add it to changelog
+          tbNewItem.changelogStatus = "modified_by_user";
+        }
 
-        //tbSync.core.setTargetModified(folderData);
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.itemObserver("onModifyItem", folderData, aNewItem, aOldItem);                                        
+        tbSync.core.setTargetModified(folderData);
+        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.itemObserver("onModifyItem", folderData, tbNewItem, tbOldItem);                                        
       }
     },
 
@@ -442,24 +451,25 @@ TbItem : class {
         && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
 
-        let itemStatus = tbSync.db.getItemStatusFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id)
+        let tbCalendar = new tbSync.lightning.TbCalendar(aDeletedItem.calendar, folderData);
+        let tbItem = new tbSync.lightning.TbItem(tbCalendar, aDeletedItem);
+        let itemStatus = tbItem.changelogStatus;
+
         if (itemStatus && itemStatus.endsWith("_by_server")) {
-          //we caused this, ignore
-          tbSync.db.removeItemFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id);
+          // we caused this, ignore
+          tbItem.changelogStatus = "";
           return;
         }
 
-        //if (itemStatus == "deleted_by_server" || itemStatus == "added_by_user") {
-        //    //if it is a delete pushed from the server, simply acknowledge (do nothing) 
-        //    //a local add, which has not yet been processed (synced) is deleted -> remove all traces
-        //    tbSync.db.removeItemFromChangeLog(aDeletedItem.calendar.id, aDeletedItem.id);
-        //} else {
-        //    tbSync.core.setTargetModified(folders[0]);
-        //    tbSync.db.addItemToChangeLog(aDeletedItem.calendar.id, aDeletedItem.id, "deleted_by_user");
-        //}
+        if (itemStatus == "added_by_user") {
+          //a local add, which has not yet been processed (synced) is deleted -> remove all traces
+          tbItem.changelogStatus = "";
+        } else {
+          tbItem.changelogStatus = "deleted_by_user";
+        }
 
-        //tbSync.core.setTargetModified(folderData);
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.itemObserver("onDeleteItem", folderData, aDeletedItem);
+        tbSync.core.setTargetModified(folderData);
+        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.itemObserver("onDeleteItem", folderData, tbItem, null);
       }
     },
 
@@ -470,20 +480,22 @@ TbItem : class {
         && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
 
+        let tbCalendar = new tbSync.lightning.TbCalendar(aCalendar, folderData);
+          
         switch (aName) {
           case "color":
-            //update stored color to recover after disable
+            // update stored color to recover after disable
             folderData.setFolderProperty("targetColor", aValue); 
             break;
           case "name":
-            //update stored name to recover after disable
+            // update stored name to recover after disable
             folderData.setFolderProperty("targetName", aValue);                         
-            //update settings window, if open
+            // update settings window, if open
             Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", folderData.accountID);                    
             break;
         }
         
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.calendarObserver("onCalendarPropertyChanged", folderData, aCalendar, aName, aValue, aOldValue);                
+        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.calendarObserver("onCalendarPropertyChanged", folderData, tbCalendar, aName, aValue, aOldValue);                
       }
     },
 
@@ -494,6 +506,8 @@ TbItem : class {
         && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
 
+        let tbCalendar = new tbSync.lightning.TbCalendar(aCalendar, folderData);
+          
         switch (aName) {
           case "color":
           case "name":
@@ -502,7 +516,7 @@ TbItem : class {
           break;
         }
 
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.calendarObserver("onCalendarPropertyDeleted", folderData, aCalendar, aName);                
+        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.calendarObserver("onCalendarPropertyDeleted", folderData, tbCalendar, aName);                
       }
     }
   },
@@ -530,6 +544,8 @@ TbItem : class {
         //delete any pending changelog of the deleted book
         tbSync.db.clearChangeLog(aCalendar.id);			
 
+        let tbCalendar = new tbSync.lightning.TbCalendar(aCalendar, folderData);
+          
         //unselect book if deleted by user and update settings window, if open
         if (folderData.getFolderProperty("selected")) {
           folderData.setFolderProperty("selected", false);
@@ -538,7 +554,7 @@ TbItem : class {
         }
         
         folderData.resetFolderProperty("target");
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.calendarObserver("onCalendarDeleted", folderData, aCalendar);                
+        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.calendarObserver("onCalendarDeleted", folderData, tbCalendar);                
 
       }
     },
