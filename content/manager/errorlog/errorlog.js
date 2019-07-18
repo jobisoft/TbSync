@@ -72,7 +72,8 @@ var tbSyncErrorLog = {
     leftColumn.setAttribute("width", "24");
 
     let image = document.createElement("image");
-    image.setAttribute("src", "chrome://tbsync/skin/" + entry.type + "16.png");
+    let src = entry.type.endsWith("_rerun") ? "sync" : entry.type;
+    image.setAttribute("src", "chrome://tbsync/skin/" + src + "16.png");
     image.setAttribute("style", "margin:4px 4px 4px 4px;");
     leftColumn.appendChild(image);
     

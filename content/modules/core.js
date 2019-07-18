@@ -19,9 +19,8 @@ var StatusData = class {
   static get ERROR() {return "error"};
   static get WARNING() {return "warning"};
   static get INFO() {return "info"};
-  // A folder can return RERUN to initiate an entire rerun of the
-  // sync, including folderlist sync.
-  static get RERUN() {return "rerun"}; 
+  static get ACCOUNT_RERUN() {return "account_rerun"}; 
+  static get FOLDER_RERUN() {return "folder_rerun"}; 
   }
 
 var FolderData = class {
@@ -59,6 +58,14 @@ var FolderData = class {
     tbSync.db.resetFolderProperty(this.accountID, this.folderID, field);
   }
 
+  sync(aSyncDescription = {}) {
+    let syncDescription = {};
+    Object.assign(syncDescription, aSyncDescription);
+
+    syncDescription.syncFolders = [this];
+    this.accountData.sync(syncDescription);
+  }
+  
   isSyncing() {
     let syncdata = this.accountData.syncData;
     return (syncdata.currentFolderData && syncdata.currentFolderData.folderID == this.folderID);
@@ -377,9 +384,13 @@ var core = {
   },
 
   syncAccount: async function (accountID, aSyncDescription = {}) {
-    let syncDescription = aSyncDescription;
+    let syncDescription = {};
+    Object.assign(syncDescription, aSyncDescription);
+    
+    if (!syncDescription.hasOwnProperty("maxAccountReruns")) syncDescription.maxAccountReruns = 2;
+    if (!syncDescription.hasOwnProperty("maxFolderReruns")) syncDescription.maxFolderReruns = 2;
     if (!syncDescription.hasOwnProperty("syncList")) syncDescription.syncList = true;
-    if (!syncDescription.hasOwnProperty("syncFolders")) syncDescription.syncFolders = "selected"; //none, selected or Array with folderData obj
+    if (!syncDescription.hasOwnProperty("syncFolders")) syncDescription.syncFolders = null; // null ( = default = sync selected folders) or (empty) Array with folderData obj to be synced
     if (!syncDescription.hasOwnProperty("syncJob")) syncDescription.syncJob = "sync";
 
     //do not init sync if there is a sync running or account is not enabled
@@ -394,20 +405,20 @@ var core = {
     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", accountID);
     
     let overallStatusData = new tbSync.StatusData();
-    let rerun;
-    let accountReRuns = 0;
+    let accountRerun;
+    let accountRuns = 0;
     
     do {
-      rerun = false;
+      accountRerun = false;
 
-      accountReRuns++;
-      if (accountReRuns > 2) {
+      if (accountRuns > syncDescription.maxAccountReruns) {
         overallStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "resync-loop");
         break;
       }      
+      accountRuns++;
       
       if (syncDescription.syncList) {
-        let listStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolderList(syncData, syncDescription.syncJob);
+        let listStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolderList(syncData, syncDescription.syncJob, accountRuns);
         if (!(listStatusData instanceof tbSync.StatusData)) {
           overallStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": base.syncFolderList() must return a StatusData object");
           break;
@@ -416,7 +427,8 @@ var core = {
         //if we have an error during folderList sync, there is no need to go on
         if (listStatusData.type != tbSync.StatusData.SUCCESS) {
           overallStatusData = listStatusData;
-          rerun = (listStatusData.type == tbSync.StatusData.RERUN)
+          accountRerun = (listStatusData.type == tbSync.StatusData.ACCOUNT_RERUN)
+          tbSync.errorlog.add(listStatusData.type, syncData.errorInfo, listStatusData.message, listStatusData.details);
           continue; //jumps to the while condition check
         }
         
@@ -428,7 +440,9 @@ var core = {
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateFolderList", syncData.accountData.accountID);
       }
       
-      if (syncDescription.syncFolders != "none") {
+      // syncDescription.syncFolders is either null ( = default = sync selected folders) or an Array.
+      // Skip folder sync if Array is empty.
+      if (!Array.isArray(syncDescription.syncFolders) || syncDescription.syncFolders.length > 0) {
         this.prepareFoldersForSync(syncData, syncDescription);
 
         // update folder list in GUI
@@ -436,16 +450,31 @@ var core = {
 
         // if any folder was found, sync
         if (syncData.accountData.isConnected()) {
+          let folderRuns = 0;
           do {
+            if (folderRuns > syncDescription.maxFolderReruns) {
+              overallStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "resync-loop");
+              break;
+            }
+            folderRuns++;
+            
             // getNextPendingFolder will set or clear currentFolderData of syncData
             if (!this.getNextPendingFolder(syncData)) {
               break;
             }
-            let folderStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolder(syncData, syncDescription.syncJob);
+            
+            let folderStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolder(syncData, syncDescription.syncJob, folderRuns);
             if (!(folderStatusData instanceof tbSync.StatusData)) {
               folderStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": base.syncFolder() must return a StatusData object");
             }
 
+            // if one of the folders indicated a FOLDER_RERUN, do not finish this
+            // folder but do it again
+            if (folderStatusData.type == tbSync.StatusData.FOLDER_RERUN) {
+              tbSync.errorlog.add(folderStatusData.type, syncData.errorInfo, folderStatusData.message, folderStatusData.details);
+              continue;
+            }
+            
             this.finishFolderSync(syncData, folderStatusData);
 
             //if one of the folders indicated an ERROR, abort sync
@@ -453,10 +482,10 @@ var core = {
               break;
             }
             
-            //if one of the folders has send a RERUN, abort sync and rerun
-            if (folderStatusData.type == tbSync.StatusData.RERUN) {
+            //if the folder has send an ACCOUNT_RERUN, abort sync and rerun the entire account
+            if (folderStatusData.type == tbSync.StatusData.ACCOUNT_RERUN) {
               syncDescription.syncList = true;
-              rerun = true;
+              accountRerun = true;
               break;
             }
             
@@ -466,7 +495,7 @@ var core = {
         }
       }
     
-    } while (rerun);
+    } while (accountRerun);
     
     this.finishAccountSync(syncData, overallStatusData);
   },
@@ -526,7 +555,7 @@ var core = {
     let folders = syncData.accountData.getAllFolders();
     for (let folder of folders) {
       let requested = (Array.isArray(syncDescription.syncFolders) && syncDescription.syncFolders.filter(f => f.folderID == folder.folderID).length > 0);
-      let selected = (!Array.isArray(syncDescription.syncFolders) && syncDescription.syncFolders == "selected" && folder.getFolderProperty("selected"));
+      let selected = (!Array.isArray(syncDescription.syncFolders) && folder.getFolderProperty("selected"));
 
       //set folders to pending, so they get synced
       if (requested || selected) {
