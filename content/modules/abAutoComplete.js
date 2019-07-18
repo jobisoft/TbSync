@@ -8,8 +8,6 @@
  
  "use strict";
 
-var { XPCOMUtils } = ChromeUtils.import("resource://gre/modules/XPCOMUtils.jsm");
-
 //derived from https://dxr.mozilla.org/comm-central/source/mozilla/accessible/tests/mochitest/autocomplete.js
 var abAutoComplete = {
 
@@ -86,6 +84,16 @@ var abAutoComplete = {
     this.searchResult = Components.interfaces.nsIAutoCompleteResult.NOMATCH;
   },
 
+  
+  
+  
+  Request: async function(accountData, aSearchString) {
+    let result = {}
+    result.accountData = accountData;
+    result.entries = await tbSync.providers[accountData.getAccountProperty("provider")].base.abAutoComplete(accountData, aSearchString);
+    
+    return result;
+  },   
 }
 
 
@@ -103,7 +111,7 @@ abAutoComplete.Search.prototype = {
     stopSearch() {},
 
     // nsISupports implementation
-    QueryInterface: XPCOMUtils.generateQI(["nsIFactory", "nsIAutoCompleteSearch"]), //ChromeUtils
+    QueryInterface: ChromeUtils.generateQI(["nsIFactory", "nsIAutoCompleteSearch"]),
 
     // nsIFactory implementation
     createInstance(outer, iid) {
@@ -126,15 +134,16 @@ abAutoComplete.Search.prototype = {
     if (aSearchString.length > 3) {
       for (let i=0; i<accounts.IDs.length; i++) {
         let accountID = accounts.IDs[i];
-        let provider = accounts.data[accountID].provider;
-        let status = accounts.data[accountID].status;
+       
+        let accountData = new tbSync.AccountData(accountID);
+        let provider = accountData.getAccountProperty("provider");
+        let status = accountData.getAccountProperty("status");
         
         if (status == "disabled") continue;
-        
-        //start all requests parallel (do not wait till done here, no await, push the promise)
-        if (tbSync.providers[provider].base.abServerSearch) {
+        //start all requests parallel (do not wait till done here, push the promise)
+        if (tbSync.providers[provider].base.abAutoComplete) {
           try {
-            requests.push(tbSync.providers[provider].base.abServerSearch (accountID, aSearchString, "autocomplete"));
+            requests.push(tbSync.abAutoComplete.Request(accountData, aSearchString));
           } catch (e) {}
         }
       }
@@ -142,12 +151,10 @@ abAutoComplete.Search.prototype = {
       //wait for all requests to finish (only have to wait for the slowest, all others are done)
       for (let r=0; r < requests.length; r++) {
         try {
-          let results = await requests[r];
-          for (let count=0; count < results.length; count++) {
-            if (results[count].autocomplete) {
-              values.push(results[count].autocomplete.value);
-              comments.push(results[count].autocomplete.accountID);
-            }
+          let result = await requests[r];
+          for (let count=0; count < result.entries.length; count++) {
+            values.push(result.entries[count]);
+            comments.push(result.accountData.accountID);
           }
         } catch (e) {};
       }
@@ -213,7 +220,7 @@ abAutoComplete.Result.prototype = {
     removeValueAt(aRowIndex, aRemoveFromDb) {},
 
     // nsISupports implementation
-    QueryInterface: XPCOMUtils.generateQI(["nsIAutoCompleteResult"]), //ChromeUtils
+    QueryInterface: ChromeUtils.generateQI(["nsIAutoCompleteResult"]),
 
     // Data
     values: null,
