@@ -737,7 +737,7 @@ var addressbook = {
             if (aTopic == "addrbook-contact-created" && abDirectory.primaryKeyField && (((delayedCreation >> 4) & 0x2) == 0)) {
               tbSync.db.addItemToChangeLog(bookUID, aSubject.uuid + "#delayedCreation", delayedCreation | 0x2); //uuid = directoryId+localId
               abItem.setProperty(abDirectory.primaryKeyField, tbSync.providers[folderData.accountData.getAccountProperty("provider")].addressbook.generatePrimaryKey(folderData));
-              abDirectory.modify(abItem, /*pretagChangelogWithByServerEntry */ false);
+              abDirectory.modifyItem(abItem, /*pretagChangelogWithByServerEntry */ false);
               return;
             }
 
