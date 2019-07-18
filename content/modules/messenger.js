@@ -43,43 +43,46 @@ var messenger = {
       if (tbSync) {
         let status = tbSync.window.document.getElementById("tbsync.status");
         if (status) {
-
           let label = "TbSync: ";
-
-          //check if any account is syncing, if not switch to idle
-          let accounts = tbSync.db.getAccounts();
-          let idle = true;
-          let err = false;
-      
-          for (let i=0; i<accounts.allIDs.length && idle; i++) {
-            if (!accounts.IDs.includes(accounts.allIDs[i])) {
-              err = true;
-              continue;
-            }
-      
-            //set idle to false, if at least one account is syncing
-            if (tbSync.core.isSyncing(accounts.allIDs[i])) idle = false;
-        
-            //check for errors
-            switch (tbSync.db.getAccountProperty(accounts.allIDs[i], "status")) {
-              case "success":
-              case "disabled":
-              case "notsyncronized":
-              case "nolightning":
-              case "syncing":
-                break;
-              default:
-                err = true;
-            }
-          }
-
-          if (idle) {
-            if (err) label += tbSync.getString("info.error");   
-            else label += tbSync.getString("info.idle");   
-          } else {
-            label += tbSync.getString("info.sync");
-          }
           
+          if (tbSync.enabled) {
+
+            //check if any account is syncing, if not switch to idle
+            let accounts = tbSync.db.getAccounts();
+            let idle = true;
+            let err = false;
+        
+            for (let i=0; i<accounts.allIDs.length && idle; i++) {
+              if (!accounts.IDs.includes(accounts.allIDs[i])) {
+                err = true;
+                continue;
+              }
+        
+              //set idle to false, if at least one account is syncing
+              if (tbSync.core.isSyncing(accounts.allIDs[i])) idle = false;
+          
+              //check for errors
+              switch (tbSync.db.getAccountProperty(accounts.allIDs[i], "status")) {
+                case "success":
+                case "disabled":
+                case "notsyncronized":
+                case "nolightning":
+                case "syncing":
+                  break;
+                default:
+                  err = true;
+              }
+            }
+
+            if (idle) {
+              if (err) label += tbSync.getString("info.error");   
+              else label += tbSync.getString("info.idle");   
+            } else {
+              label += tbSync.getString("info.sync");
+            }
+          } else {
+            label += "Loading";
+          }
           status.label = label;
         }
       }

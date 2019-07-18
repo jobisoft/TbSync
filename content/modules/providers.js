@@ -135,6 +135,7 @@ var providers = {
         }
         
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", provider);
+        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
 
       } catch (e) {
         tbSync.dump("FAILED to load provider", provider);
