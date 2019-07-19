@@ -553,11 +553,22 @@ var lightning = {
       }*/
     },
       
-    onCalendarDeleting : function (aCalendar) {
+    onCalendarDeleting : async function (aCalendar) {
       let folderData = tbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
       if (folderData 
         && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
+
+        // If the user switches "offline support", the calendar is deleted and recreated. Thus,
+        // we wait a bit and check, if the calendar is back again and ignore the delete event.
+        await tbSync.tools.sleep(1500);
+
+        let calManager = tbSync.lightning.cal.getCalendarManager();          
+        for (let calendar of calManager.getCalendars({})) {
+            if (calendar.uri.spec == aCalendar.uri.spec) {
+                return;
+            }
+        }
 
         //delete any pending changelog of the deleted book
         tbSync.db.clearChangeLog(aCalendar.id);			
