@@ -377,7 +377,7 @@ var addressbook = {
     addItem(abItem, pretagChangelogWithByServerEntry = true) {
       if (this.primaryKeyField && !abItem.getProperty(this.primaryKeyField)) {
         abItem.setProperty(this.primaryKeyField, tbSync.providers[this._provider].addressbook.generatePrimaryKey(this._folderData));
-        Services.console.logStringMessage("[AbDirectory::addItem] Generated primary key!");
+        //Services.console.logStringMessage("[AbDirectory::addItem] Generated primary key!");
       }
       
       if (pretagChangelogWithByServerEntry) {
@@ -565,6 +565,10 @@ var addressbook = {
     if (directory && directory instanceof Components.interfaces.nsIAbDirectory) {
       directory.setStringValue("tbSyncProvider", provider);
       
+      // Prevent gContactSync to inject its stuff into New/EditCard dialogs
+      // https://github.com/jdgeenen/gcontactsync/pull/127
+      directory.setStringValue("gContactSyncSkipped", "true");
+      
       tbSync.providers[provider].base.onResetTarget(folderData);
       
       folderData.setFolderProperty("target", directory.UID);            
@@ -574,20 +578,6 @@ var addressbook = {
       return directory;
     }
     
-    return null;
-  },
-
-  //deprecate!!!
-  getUriFromDirectoryId : function(directoryId) {
-    //alternative: use UID only, loop over all directory to get the prefid, use MailServices.ab.getDirectoryFromId(dirId); to get the directoyr - do not use URLs anymore
-    let prefId = directoryId.split("&")[0];
-    if (prefId) {
-      let prefs = Services.prefs.getBranch(prefId + ".");
-      switch (prefs.getIntPref("dirType")) {
-        case 2:
-          return "moz-abmdbdirectory://" + prefs.getStringPref("filename");
-      }
-    }
     return null;
   },
 

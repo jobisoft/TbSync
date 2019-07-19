@@ -298,7 +298,7 @@ var lightning = {
     async addItem(tbItem, pretagChangelogWithByServerEntry = true) {
       if (this.primaryKeyField && !tbItem.getProperty(this.primaryKeyField)) {
         tbItem.setProperty(this.primaryKeyField, tbSync.providers[this._provider].calendar.generatePrimaryKey(this._folderData));
-        Services.console.logStringMessage("[TbCalendar::addItem] Generated primary key!");
+        //Services.console.logStringMessage("[TbCalendar::addItem] Generated primary key!");
       }
       
       if (pretagChangelogWithByServerEntry) {
