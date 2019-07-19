@@ -17,7 +17,7 @@ var tools = {
   },
 
   // async sleep function using Promise to postpone actions to keep UI responsive
-  sleep : function (_delay, useRequestIdleCallback = true) {
+  sleep : function (_delay, useRequestIdleCallback = false) {
     let useIdleCallback = false;
     let delay = _delay;
     if (tbSync.window.requestIdleCallback && useRequestIdleCallback) {
