@@ -61,7 +61,108 @@ var lightning = {
   },
 
 
-TbItem : class {
+
+
+  
+  // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  // * TargetData implementation 
+  // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  
+   TargetData : class {
+    constructor(folderData) {            
+      this._targetType = folderData.getFolderProperty("targetType");
+      this._folderData = folderData;
+      this._targetObj = null;           
+    }
+    
+    // Return the targetType, this was initialized with.
+    get targetType() {
+      return this._targetType;
+    }
+    
+    // Check, if the target exists and return true/false.
+    hasTarget() {
+      if (!tbSync.lightning.isAvailable()) {
+          throw new Error("nolightning");
+      }
+
+      return tbSync.lightning.getCalendar(this._folderData) ? true : false;
+    }
+
+    // Returns the target obj, which TbSync should return as the target. It can
+    // be whatever you want and is returned by FolderData.targetData.getTarget().
+    // If the target does not exist, it should be created. Throw a simple Error, if that
+    // failed.
+    getTarget() {
+      if (!tbSync.lightning.isAvailable()) {
+          throw new Error("nolightning");
+      }
+
+      let calendar = tbSync.lightning.getCalendar(this._folderData);
+      
+      if (!calendar) {
+        calendar = tbSync.lightning.createCalendar(this._folderData);
+        if (!calendar)
+          throw new Error("notargets");
+      }
+
+      if (!this._targetObj || this._targetObj.id != calendar.id)
+        this._targetObj = new tbSync.lightning.TbCalendar(calendar, this._folderData);
+
+      return this._targetObj;
+    }
+    
+    // Remove the target and everything that belongs to it. TbSync will reset the target
+    // property after this call has been executed.
+    removeTarget() {
+      if (!tbSync.lightning.isAvailable()) {
+          throw new Error("nolightning");
+      }
+
+      let calendar = tbSync.lightning.getCalendar(this._folderData);
+      try {
+        if (calendar) {
+          tbSync.lightning.cal.getCalendarManager().removeCalendar(calendar);
+        }
+      } catch (e) {}
+    }
+
+    /**
+     * This is called, when a folder is removed, but its target should be kept
+     * as a stale/unconnected item.
+     *
+     * @param suffix         [in] Suffix, which should be appended to the name
+     *                            of the target.
+     * @param pendingChanges [in] Array of ChangelogData objects, of unsynced
+     *                            local changes
+     * 
+     */
+     appendStaleSuffix(suffix, pendingChanges) {
+      if (!tbSync.lightning.isAvailable()) {
+          throw new Error("nolightning");
+      }
+
+      let calendar = tbSync.lightning.getCalendar(this._folderData);
+      if (calendar && suffix) {
+        //if there are pending/unsynced changes, append an  (*) to the name of the target
+        if (pendingChanges.length > 0) suffix += " (*)";
+        
+        let orig = calendar.name;
+        calendar.name = "Local backup of: " + orig + " " + suffix;
+        calendar.setProperty("disabled", true);
+      }
+    }     
+  },
+
+
+
+
+  
+  // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  // * TbItem and TbCalendar Classes
+  // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  
+  TbItem : class {
     constructor(TbCalendar, item) {
       if (!TbCalendar)
         throw new Error("TbItem::constructor is missing its first parameter!");
@@ -269,96 +370,13 @@ TbItem : class {
     }
   },
   
+
+
+
   
-  TargetData : class {
-    constructor(folderData) {            
-      this._targetType = folderData.getFolderProperty("targetType");
-      this._folderData = folderData;
-      this._targetObj = null;           
-    }
-    
-    get targetType() { // return the targetType, this was initialized with
-      return this._targetType;
-    }
-    
-    checkTarget() {
-      if (!tbSync.lightning.isAvailable()) {
-          throw new Error("nolightning");
-      }
-
-      return tbSync.lightning.checkCalendar(this._folderData);
-    }
-
-    getTarget() {
-      if (!tbSync.lightning.isAvailable()) {
-          throw new Error("nolightning");
-      }
-
-      let calendar = tbSync.lightning.checkCalendar(this._folderData);
-      
-      if (!calendar) {
-        calendar = tbSync.lightning.createCalendar(this._folderData);
-        if (!calendar)
-          throw new Error("notargets");
-      }
-
-      if (!this._targetObj || this._targetObj.id != calendar.id)
-        this._targetObj = new tbSync.lightning.TbCalendar(calendar, this._folderData);
-
-      return this._targetObj;
-    }
-    
-    removeTarget() {
-      if (!tbSync.lightning.isAvailable()) {
-          throw new Error("nolightning");
-      }
-
-      let calendar = tbSync.lightning.checkCalendar(this._folderData);
-      try {
-        if (calendar) {
-          tbSync.lightning.cal.getCalendarManager().removeCalendar(calendar);
-        }
-      } catch (e) {}
-    }
-    
-    decoupleTarget(suffix, cacheFolder = false) {
-      if (!tbSync.lightning.isAvailable()) {
-          throw new Error("nolightning");
-      }
-
-      let calendar = tbSync.lightning.checkCalendar(this._folderData);
-
-      if (calendar) {
-        // decouple directory from the connected folder
-        let target = this._folderData.getFolderProperty("target");
-        this._folderData.resetFolderProperty("target");
-
-        //if there are local changes, append an  (*) to the name of the target
-        let c = 0;
-        let a = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
-        for (let i=0; i<a.length; i++) c++;
-        if (c>0) suffix += " (*)";
-
-        //this is the only place, where we manually have to call clearChangelog, because the target is not deleted
-        //(on delete, changelog is cleared automatically)
-        tbSync.db.clearChangeLog(target);
-        if (suffix) {
-          let orig = calendar.name;
-          calendar.name = "Local backup of: " + orig + " " + suffix;
-        }
-        calendar.setProperty("disabled", true);
-      }
-      
-      //should we remove the folder by setting its state to cached?
-       if (cacheFolder) {
-         this._folderData.setFolderProperty("cached", true);
-       }
-    }     
-  },
-    
-  
-  
-  
+  // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  // * Internal Functions
+  // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   
   isAvailable: function () {
     //if it is known - and still valid - return true
@@ -561,7 +579,7 @@ TbItem : class {
   },
 
   
-  checkCalendar: function (folderData) {       
+  getCalendar: function (folderData) {       
     if (!folderData.getFolderProperty("cached")) {
       let target = folderData.getFolderProperty("target");
       let calManager = tbSync.lightning.cal.getCalendarManager();

@@ -33,6 +33,87 @@ var addressbook = {
 
   
   // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  // * TargetData implementation 
+  // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  
+  TargetData : class {
+    constructor(folderData) {            
+      this._targetType = folderData.getFolderProperty("targetType");
+      this._folderData = folderData;
+      this._targetObj = null;
+    }
+    
+    // Return the targetType, this was initialized with.
+    get targetType() { 
+      return this._targetType;
+    }
+    
+    // Check, if the target exists and return true/false.
+    hasTarget() { 
+      return tbSync.addressbook.checkAddressbook(this._folderData) ? true : false;
+    }
+
+    // Returns the target obj, which TbSync should return as the target. It can
+    // be whatever you want and is returned by FolderData.targetData.getTarget().
+    // If the target does not exist, it should be created. Throw a simple Error, if that
+    // failed.
+    getTarget() { 
+      let directory = tbSync.addressbook.checkAddressbook(this._folderData);
+      
+      if (!directory) {
+        // create a new addressbook and store its UID in folderData
+        directory = tbSync.addressbook.createAddressbook(this._folderData);
+        if (!directory)
+          throw new Error("notargets");
+      }
+      
+      if (!this._targetObj || this._targetObj.UID != directory.UID)
+        this._targetObj = new tbSync.addressbook.AbDirectory(directory, this._folderData);
+
+      return this._targetObj;
+    }
+    
+    // Remove the target and everything that belongs to it. TbSync will reset the target
+    // property after this call has been executed.
+    removeTarget() {
+      let target = this._folderData.getFolderProperty("target");
+      this._folderData.resetFolderProperty("target");
+      // changelog will be cleared by listener
+      let directory = tbSync.addressbook.getDirectoryFromDirectoryUID(target);
+      try {
+        if (directory) {
+          MailServices.ab.deleteAddressBook(directory.URI);
+        }
+      } catch (e) {}
+    }
+    
+    /**
+     * This is called, when a folder is removed, but its target should be kept
+     * as a stale/unconnected item.
+     *
+     * @param suffix         [in] Suffix, which should be appended to the name
+     *                            of the target.
+     * @param pendingChanges [in] Array of ChangelogData objects, of unsynced
+     *                            local changes
+     * 
+     */
+     appendStaleSuffix(suffix, pendingChanges) {
+      let directory = tbSync.addressbook.checkAddressbook(this._folderData);
+      if (directory && suffix) {
+        //if there are pending/unsynced changes, append an  (*) to the name of the target
+        if (pendingChanges.length > 0) suffix += " (*)";
+
+        let orig = directory.dirName;
+        directory.dirName = "Local backup of: " + orig + " " + suffix;
+      }
+    }     
+  },
+
+
+
+
+  
+  // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   // * AbItem and AbDirectory Classes
   // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   
@@ -361,7 +442,7 @@ var addressbook = {
       return this.getItemFromProperty(key, searchId);
     }
 
-    getItemFromProperty(property, value) {
+    getItemFromProperty(property, value) { //TODO: getItemsFromProperty
       // try to use the standard card method first
       let card = this._directory.getCardFromProperty(property, value, true);
       if (card) {
@@ -391,7 +472,7 @@ var addressbook = {
         try { more = cards.hasMoreElements() } catch (e) { Components.utils.reportError(e); }
         if (!more) break;
 
-        let card = new addressbook.AbItem( this._directory, cards.getNext().QueryInterface(Components.interfaces.nsIAbCard));
+        let card = new tbSync.addressbook.AbItem( this._directory, cards.getNext().QueryInterface(Components.interfaces.nsIAbCard));
         rv.push(card);
       }
       return rv;
@@ -425,87 +506,6 @@ var addressbook = {
       tbSync.db.clearChangeLog(this._directory.UID);
     }
     
-  },
-
-
-
-
-  
-  // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-  // * TargetData implementation 
-  // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-  
-  TargetData : class {
-    constructor(folderData) {            
-      this._targetType = folderData.getFolderProperty("targetType");
-      this._folderData = folderData;
-      this._targetObj = null;
-    }
-    
-    get targetType() { // return the targetType, this was initialized with
-      return this._targetType;
-    }
-    
-    checkTarget() {
-      return tbSync.addressbook.checkAddressbook(this._folderData);
-    }
-
-    getTarget() {
-      let directory = tbSync.addressbook.checkAddressbook(this._folderData);
-      
-      if (!directory) {
-        // create a new addressbook and store its UID in folderData
-        directory = tbSync.addressbook.createAddressbook(this._folderData);
-        if (!directory)
-          throw new Error("notargets");
-      }
-      
-      if (!this._targetObj || this._targetObj.UID != directory.UID)
-        this._targetObj = new tbSync.addressbook.AbDirectory(directory, this._folderData);
-
-      return this._targetObj;
-    }
-    
-    removeTarget() {
-      let target = this._folderData.getFolderProperty("target");
-      this._folderData.resetFolderProperty("target");
-      // changelog will be cleared by listener
-      let directory = tbSync.addressbook.getDirectoryFromDirectoryUID(target);
-      try {
-        if (directory) {
-          MailServices.ab.deleteAddressBook(directory.URI);
-        }
-      } catch (e) {}
-    }
-    
-    decoupleTarget(suffix, cacheFolder = false) {
-      let directory = tbSync.addressbook.checkAddressbook(this._folderData);
-
-      if (directory) {
-        // decouple directory from the connected folder
-        let target = this._folderData.getFolderProperty("target");
-        this._folderData.resetFolderProperty("target");
-
-        //if there are local changes, append an  (*) to the name of the target
-        let c = 0;
-        let a = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
-        for (let i=0; i<a.length; i++) c++;
-        if (c>0) suffix += " (*)";
-
-        //this is the only place, where we manually have to call clearChangelog, because the target is not deleted
-        //(on delete, changelog is cleared automatically)
-        tbSync.db.clearChangeLog(target);
-        if (suffix) {
-          let orig = directory.dirName;
-          directory.dirName = "Local backup of: " + orig + " " + suffix;
-        }
-      }
-      
-      //should we remove the folder by setting its state to cached?
-       if (cacheFolder) {
-         this._folderData.setFolderProperty("cached", true);
-       }
-    }     
   },
 
 
