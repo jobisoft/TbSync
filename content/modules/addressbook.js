@@ -442,7 +442,7 @@ var addressbook = {
       return this.getItemFromProperty(key, searchId);
     }
 
-    getItemFromProperty(property, value) { //TODO: getItemsFromProperty
+    getItemFromProperty(property, value) {
       // try to use the standard card method first
       let card = this._directory.getCardFromProperty(property, value, true);
       if (card) {
