@@ -695,51 +695,71 @@ var addressbook = {
             let abDirectory = new tbSync.addressbook.AbDirectory(directory, folderData);
             let abItem = new tbSync.addressbook.AbItem(abDirectory, aSubject);
             let itemStatus = abItem.changelogStatus;
-            
-            //check for delayedCreation, multiple causes, only once, stored in bitpattern
-            //bit 1-3 = "just now"
-            //bit 4-7 = "done"
-            let delayedCreation = tbSync.db.getItemStatusFromChangeLog(bookUID, aSubject.uuid + "#delayedCreation");
-            if (aTopic == "addrbook-contact-updated" && (delayedCreation & 0xF)) {
-              delayedCreation |= (delayedCreation << 4);
-              tbSync.db.addItemToChangeLog(bookUID, aSubject.uuid + "#delayedCreation", delayedCreation);
-              tbSync.addressbook.addressbookObserver.observe(aSubject, "addrbook-contact-created", aData);
-              return;
-            }
 
+            // during create the following can happen
+            // card has no UID
+            // card has no primary key
+            // another process could try to mod
+            //  -> we need to identify this card with an always available ID and block any other MODS until we free it again
+            // -> store creation type
+            if (aTopic == "addrbook-contact-created") {
+              tbSync.db.addItemToChangeLog(bookUID, aSubject.uuid + "#DelayedCreation", itemStatus == "added_by_server" ? itemStatus : "added_by_user"); //uuid = directoryId+localId
+            } 
+            // during follow up MODs we can identify this card via
+            let delayedCreation = tbSync.db.getItemStatusFromChangeLog(bookUID, aSubject.uuid + "#DelayedCreation");
+              
             // during create it could happen, that this card comes without a UID Property - bug 1554782
-            // we must use the raw aSubject, as abItem will redirect a call to the UID property to .UID
-            // only once
-            if (aTopic == "addrbook-contact-created" && aSubject.getProperty("UID","") == "" && (((delayedCreation >> 4) & 0x1) == 0)) {
-              // a call to .UID will generate a UID but will also send an update notification for the the card
-              tbSync.db.addItemToChangeLog(bookUID, aSubject.uuid + "#delayedCreation", delayedCreation | 0x1); //uuid = directoryId+localId
+            // a call to .UID will generate a UID but will also send an update notification for the the card
+            // we use addrbook-contact-created to make sure to only do this once (next time we are here, it is a mod, not an add)
+            if (aTopic == "addrbook-contact-created" && aSubject.getProperty("UID","") == "") {
               aSubject.UID;
               return;
             }
 
-            // if this card was created by us, it will be in the log
-            if (itemStatus && itemStatus.endsWith("_by_server")) {
-              //we caused this, ignore
-              abItem.changelogStatus = "";
-              // clear delayedCreation information, we are done
-              tbSync.db.removeItemFromChangeLog(bookUID, aSubject.uuid + "#delayedCreation");
-              return;
-            }
-
             // new cards must get a NEW(!) primaryKey first
-            // only once                        
-            if (aTopic == "addrbook-contact-created" && abDirectory.primaryKeyField && (((delayedCreation >> 4) & 0x2) == 0)) {
-              tbSync.db.addItemToChangeLog(bookUID, aSubject.uuid + "#delayedCreation", delayedCreation | 0x2); //uuid = directoryId+localId
+            if (delayedCreation && abDirectory.primaryKeyField && !abItem.getProperty(abDirectory.primaryKeyField)) {
+              console.log("Missing primary Key, generated!");
               abItem.setProperty(abDirectory.primaryKeyField, tbSync.providers[folderData.accountData.getAccountProperty("provider")].addressbook.generatePrimaryKey(folderData));
+              // special case: do not add "modified_by_server"
               abDirectory.modifyItem(abItem, /*pretagChangelogWithByServerEntry */ false);
               return;
             }
+            
+            
+            // if we reach this point and we have a delayed creation:
+            // - if it was "by_user", we can remove the delayedCreation marker and can 
+            //   continue to process this event as an addrbook-contact-created
+            //
+            // - if it was "by_server", we want to ignore any MOD for a freeze time, because
+            //   gContactSync modifies our(!) contacts (GoogleID) after we added them, so they get
+            //   turned into "modified_by_user" and will be send back to the server.
+            let bTopic = aTopic;
+            switch (delayedCreation) {
+              case "added_by_user":
+                bTopic = "addrbook-contact-created";
+              case "added_by_server":
+                //if delayedCreation is "added_by_server", then itemStatus is "added_by_server" as well, 
+                // we can remove it here
+                tbSync.db.removeItemFromChangeLog(bookUID, aSubject.uuid + "#DelayedCreation");
+              default:
+                break;
+            }
 
-            // clear delayedCreation information, we are done
-            tbSync.db.removeItemFromChangeLog(bookUID, aSubject.uuid + "#delayedCreation");
-
+            // if this card was created by us, it will be in the log
+            if (itemStatus && itemStatus.endsWith("_by_server")) {
+              let age = Date.now() - abItem.changelogData.timestamp;
+              if (age < 1500) {
+                // during freeze, local modifications are not possible
+                return;
+              } else {
+                // remove blocking entry from changelog after freeze time is over (1.5s),
+                // and continue evaluating this event
+                abItem.changelogStatus = "";
+              }
+            }            
+            
             // update changelog based on old status
-            switch (aTopic) {
+            switch (bTopic) {
               case "addrbook-contact-created":
               {
                 switch (itemStatus) {
@@ -805,7 +825,7 @@ var addressbook = {
             }
 
             tbSync.core.setTargetModified(folderData);
-            tbSync.providers[folderData.accountData.getAccountProperty("provider")].addressbook.cardObserver(aTopic, folderData, abItem);
+            tbSync.providers[folderData.accountData.getAccountProperty("provider")].addressbook.cardObserver(bTopic, folderData, abItem);
           }
         }
         break;
