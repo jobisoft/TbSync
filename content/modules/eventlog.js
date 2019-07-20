@@ -8,7 +8,7 @@
  
  "use strict";
 
-var ErrorInfo = class {
+var EventLogInfo = class {
   constructor(provider, accountname, accountID, foldername = "") {
     this.provider = provider;
     this.accountname = accountname;
@@ -17,34 +17,34 @@ var ErrorInfo = class {
   }
 }
   
-var errorlog = {
+var eventlog = {
 
-  errors: null,
-  errorLogWindow: null,
+  events: null,
+  eventLogWindow: null,
   
   load: async function () {
     this.clear();
   },
 
   unload: async function () {
-    if (this.errorLogWindow) {
-      this.errorLogWindow.close();
+    if (this.eventLogWindow) {
+      this.eventLogWindow.close();
     }
   },
 
   get: function (accountID = null) {
     if (accountID) {
-      return this.errors.filter(e => e.accountID == accountID);
+      return this.events.filter(e => e.accountID == accountID);
     } else {
-      return this.errors;
+      return this.events;
     }
   },
   
   clear: function () {
-    this.errors = [];
+    this.events = [];
   },
   
-  add: function (type, errorInfo, message, details = null) {
+  add: function (type, eventInfo, message, details = null) {
     let entry = {
       timestamp: Date.now(),
       message: message, 
@@ -57,11 +57,11 @@ var errorlog = {
       foldername: "",
     };
   
-    if (errorInfo) {
-      if (errorInfo.accountID) entry.accountID = errorInfo.accountID;
-      if (errorInfo.provider) entry.provider = errorInfo.provider;
-      if (errorInfo.accountname) entry.accountname = errorInfo.accountname;
-      if (errorInfo.foldername) entry.foldername = errorInfo.foldername;
+    if (eventInfo) {
+      if (eventInfo.accountID) entry.accountID = eventInfo.accountID;
+      if (eventInfo.provider) entry.provider = eventInfo.provider;
+      if (eventInfo.accountname) entry.accountname = eventInfo.accountname;
+      if (eventInfo.foldername) entry.foldername = eventInfo.foldername;
     }
 
     let localized = "";
@@ -75,7 +75,7 @@ var errorlog = {
       link = tbSync.getString("helplink." + message);
     }
   
-    //can we provide a localized version of the error msg?
+    //can we provide a localized version of the event msg?
     if (localized != "status."+message) {
       entry.message = localized;
     }
@@ -86,13 +86,13 @@ var errorlog = {
     }
 
     //dump the non-localized message into debug log
-    tbSync.dump("ErrorLog", message + (entry.details !== null ? "\n" + entry.details : ""));
-    this.errors.push(entry);
-    if (this.errors.length > 100) this.errors.shift();
-    Services.obs.notifyObservers(null, "tbsync.observer.errorlog.update", null);
+    tbSync.dump("EventLog", message + (entry.details !== null ? "\n" + entry.details : ""));
+    this.events.push(entry);
+    if (this.events.length > 100) this.events.shift();
+    Services.obs.notifyObservers(null, "tbsync.observer.eventlog.update", null);
   },
   
   open: function (accountID = null, folderID = null) {
-    this.errorLogWindow = tbSync.manager.prefWindowObj.open("chrome://tbsync/content/manager/errorlog/errorlog.xul", "TbSyncErrorLog", "centerscreen,chrome,resizable");
+    this.eventLogWindow = tbSync.manager.prefWindowObj.open("chrome://tbsync/content/manager/eventlog/eventlog.xul", "TbSyncEventLog", "centerscreen,chrome,resizable");
   },    
 }

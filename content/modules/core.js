@@ -114,7 +114,7 @@ var core = {
         if (listStatusData.type != tbSync.StatusData.SUCCESS) {
           overallStatusData = listStatusData;
           accountRerun = (listStatusData.type == tbSync.StatusData.ACCOUNT_RERUN)
-          tbSync.errorlog.add(listStatusData.type, syncData.errorInfo, listStatusData.message, listStatusData.details);
+          tbSync.eventlog.add(listStatusData.type, syncData.eventLogInfo, listStatusData.message, listStatusData.details);
           continue; //jumps to the while condition check
         }
         
@@ -156,7 +156,7 @@ var core = {
             // if one of the folders indicated a FOLDER_RERUN, do not finish this
             // folder but do it again
             if (folderStatusData.type == tbSync.StatusData.FOLDER_RERUN) {
-              tbSync.errorlog.add(folderStatusData.type, syncData.errorInfo, folderStatusData.message, folderStatusData.details);
+              tbSync.eventlog.add(folderStatusData.type, syncData.eventLogInfo, folderStatusData.message, folderStatusData.details);
               folderRuns++;
               continue;
             } else {
@@ -255,7 +255,7 @@ var core = {
   finishFolderSync: function(syncData, statusData) {        
     if (statusData.type != tbSync.StatusData.SUCCESS) {
       //report error
-      tbSync.errorlog.add(statusData.type, syncData.errorInfo, statusData.message, statusData.details);
+      tbSync.eventlog.add(statusData.type, syncData.eventLogInfo, statusData.message, statusData.details);
     }
     
     //if this is a success, prepend success to the status message, 
@@ -298,7 +298,7 @@ var core = {
     
     if (statusData.type != tbSync.StatusData.SUCCESS) {
       //report error
-      tbSync.errorlog.add("warning", syncData.errorInfo, statusData.message, statusData.details);
+      tbSync.eventlog.add("warning", syncData.eventLogInfo, statusData.message, statusData.details);
     } else {
       //account itself is ok, search for folders with error
       folders = tbSync.db.findFolders({"selected": true, "cached": false}, {"accountID": syncData.accountData.accountID});

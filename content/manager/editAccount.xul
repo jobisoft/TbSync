@@ -24,8 +24,8 @@
             <menuitem 
             class="menuitem-iconic"
             image="chrome://tbsync/skin/warning16.png"
-            label="&manager.ShowErrorLog;"
-            oncommand="tbSync.errorlog.open(tbSyncAccountSettings.accountID, this.parentNode.getAttribute('folderID'));"/>
+            label="&manager.ShowEventLog;"
+            oncommand="tbSync.eventlog.open(tbSyncAccountSettings.accountID, this.parentNode.getAttribute('folderID'));"/>
         </menupopup>
     </popupset>
     
@@ -49,7 +49,7 @@
                             </vbox>
                             <vbox flex="0">
                                 <label class="header" style="margin-left:0; margin-bottom:1ex; margin-top:1ex; visibility: hidden" value="nix" />
-                                <button id="tbsync.accountsettings.errorlogbtn" label="&manager.ShowErrorLog;" oncommand="tbSync.errorlog.open()" />
+                                <button id="tbsync.accountsettings.eventlogbtn" label="&manager.ShowEventLog;" oncommand="tbSync.eventlog.open()" />
                             </vbox>
                         </hbox>
                     </vbox>

@@ -12,7 +12,7 @@
 <!ENTITY manager.EnableAccount "Konto aktivieren &amp; mit dem Server verbinden">
 <!ENTITY manager.DisableAccount "Konto deaktivieren">
 <!ENTITY manager.DeleteAccount "Konto löschen">
-<!ENTITY manager.ShowErrorLog "Fehlerprotokoll anzeigen">
+<!ENTITY manager.ShowEventLog "Ereignisprotokoll anzeigen">
 <!ENTITY manager.RetryConnectAccount "Erneut versuchen mit dem  Server zu verbinden">
 
 <!ENTITY manager.noaccounts "Es sind aktuell noch keine Konten konfiguriert.">
@@ -35,7 +35,7 @@
 <!ENTITY manager.status "Status">
 
 <!ENTITY manager.tabs.status "Synchronisationsstatus">
-<!ENTITY manager.tabs.status.general "General">
+<!ENTITY manager.tabs.status.general "Allgemein">
 <!ENTITY manager.tabs.status.enableThisAccount "Konto aktivieren und synchronisieren">
 <!ENTITY manager.tabs.status.sync "Jetzt synchronisieren">
 <!ENTITY manager.tabs.status.tryagain "Erneut versuchen mit dem Server zu verbinden">
@@ -72,6 +72,6 @@
 <!ENTITY supportwizard.label.description "Ausführliche Fehlerbeschreibung:">
 <!ENTITY supportwizard.footer "Aus den hier angegebenen Informationen wird im nächsten Schritt eine E-Mail erzeugt, die Sie nachträglich noch bearbeiten können (z.B. Bildschirmfotos o.Ä. hinzufügen). Erst durch das Absenden der E-Mail, wird der Fehlerbericht verschickt.">
 
-<!ENTITY errorlog.title "Fehlerprotokoll">
-<!ENTITY errorlog.close "Schließen">
-<!ENTITY errorlog.clear "Leeren">
+<!ENTITY eventlog.title "Ereignisprotokoll">
+<!ENTITY eventlog.close "Schließen">
+<!ENTITY eventlog.clear "Leeren">

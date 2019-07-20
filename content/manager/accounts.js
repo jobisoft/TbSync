@@ -74,9 +74,9 @@ var tbSyncAccounts = {
     document.getElementById(selector + "SyncAccount").hidden = (selectedAccount === null) || !isConnected || !isInstalled;
     document.getElementById(selector + "RetryConnectAccount").hidden = (selectedAccount === null) || isConnected || !isEnabled || !isInstalled;
 
-    if (document.getElementById(selector + "ShowErrorLog")) {
-      document.getElementById(selector + "ShowErrorLog").hidden = false;
-      document.getElementById(selector + "ShowErrorLog").disabled = false;
+    if (document.getElementById(selector + "ShowEventLog")) {
+      document.getElementById(selector + "ShowEventLog").hidden = false;
+      document.getElementById(selector + "ShowEventLog").disabled = false;
     }
     
     if (selectedAccount !== null) {

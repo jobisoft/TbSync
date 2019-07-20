@@ -11,55 +11,55 @@
 var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
-var tbSyncErrorLog = {
+var tbSyncEventLog = {
   
   onload: function () {
-    Services.obs.addObserver(tbSyncErrorLog.updateErrorLog, "tbsync.observer.errorlog.update", false);
+    Services.obs.addObserver(tbSyncEventLog.updateEventLog, "tbsync.observer.eventlog.update", false);
 
-    let errorlog = document.getElementById('tbsync.errorlog');
-    errorlog.hidden = true;
+    let eventlog = document.getElementById('tbsync.eventlog');
+    eventlog.hidden = true;
     
     //init list
-    let errors = tbSync.errorlog.get();
-    for (let i=0; i < errors.length; i++) {
-      let item = tbSyncErrorLog.addLogEntry(errors[i]);
-      errorlog.appendChild(item);
+    let events = tbSync.eventlog.get();
+    for (let i=0; i < events.length; i++) {
+      let item = tbSyncEventLog.addLogEntry(events[i]);
+      eventlog.appendChild(item);
     }
 
-    errorlog.hidden = false;
-    errorlog.ensureIndexIsVisible(errorlog.getRowCount()-1);
-    document.documentElement.getButton("extra1").onclick = tbSyncErrorLog.onclear;
+    eventlog.hidden = false;
+    eventlog.ensureIndexIsVisible(eventlog.getRowCount()-1);
+    document.documentElement.getButton("extra1").onclick = tbSyncEventLog.onclear;
   },
 
   onclear: function () {
-    tbSync.errorlog.clear();
+    tbSync.eventlog.clear();
 
-    let errorlog = document.getElementById('tbsync.errorlog');
-    errorlog.hidden = true;
+    let eventlog = document.getElementById('tbsync.eventlog');
+    eventlog.hidden = true;
 
-    for (let i=errorlog.getRowCount()-1; i>=0; i--) {
-      errorlog.getItemAtIndex(i).remove();
+    for (let i=eventlog.getRowCount()-1; i>=0; i--) {
+      eventlog.getItemAtIndex(i).remove();
     }
     
-    errorlog.hidden = false;
+    eventlog.hidden = false;
   },
   
   onunload: function () {
-    Services.obs.removeObserver(tbSyncErrorLog.updateErrorLog, "tbsync.observer.errorlog.update");
+    Services.obs.removeObserver(tbSyncEventLog.updateEventLog, "tbsync.observer.eventlog.update");
   },
 
-  updateErrorLog: {
+  updateEventLog: {
     observe: function (aSubject, aTopic, aData) {
-      let errors = tbSync.errorlog.get();
-      if (errors.length > 0) {
-        let errorlog = document.getElementById('tbsync.errorlog');
-        errorlog.hidden = true;
+      let events = tbSync.eventlog.get();
+      if (events.length > 0) {
+        let eventlog = document.getElementById('tbsync.eventlog');
+        eventlog.hidden = true;
         
-        let item = tbSyncErrorLog.addLogEntry(errors[errors.length-1]);
-        errorlog.appendChild(item);
+        let item = tbSyncEventLog.addLogEntry(events[events.length-1]);
+        eventlog.appendChild(item);
 
-        errorlog.hidden = false;
-        errorlog.ensureIndexIsVisible(errorlog.getRowCount()-1);
+        eventlog.hidden = false;
+        eventlog.ensureIndexIsVisible(eventlog.getRowCount()-1);
       }
     }
   },

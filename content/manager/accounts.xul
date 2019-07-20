@@ -76,11 +76,11 @@
                                     image="chrome://tbsync/skin/sync16.png"
                                     label="&manager.SyncAll;"
                                     oncommand="tbSync.core.syncAllAccounts();"/>
-                            <menuitem id="accountActionsShowErrorLog"
+                            <menuitem id="accountActionsShowEventLog"
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/warning16.png"
-                                    label="&manager.ShowErrorLog;"
-                                    oncommand="tbSync.errorlog.open()"/>
+                                    label="&manager.ShowEventLog;"
+                                    oncommand="tbSync.eventlog.open()"/>
                             <menuseparator id="accountActionsSeparator"/>
                             <menuitem id="accountActionsDeleteAccount"
                                     class="menuitem-iconic"

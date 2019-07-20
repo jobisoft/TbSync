@@ -12,7 +12,7 @@
 <!ENTITY manager.EnableAccount "Engedélyezze a fiókot és próbáljon csatlakozni a kiszolgálóhoz">
 <!ENTITY manager.DisableAccount "Fiók letiltása">
 <!ENTITY manager.DeleteAccount "Fiók törlése">
-<!ENTITY manager.ShowErrorLog "A hibaüzenet megjelenítése">
+<!ENTITY manager.ShowEventLog "Eseménynapló megjelenítése">
 <!ENTITY manager.RetryConnectAccount "Próbálkozzon újra a kiszolgálóhoz való csatlakozással">
 
 <!ENTITY manager.noaccounts "Még nincsenek fiókok meghatározott.">
@@ -35,7 +35,7 @@
 <!ENTITY manager.status "Állapot">
 
 <!ENTITY manager.tabs.status "Összehangolási állapot">
-<!ENTITY manager.tabs.status.general "Általános">
+<!ENTITY manager.tabs.status.general "Tábornok">
 <!ENTITY manager.tabs.status.enableThisAccount "Fiók engedélyezze és összehangolása">
 <!ENTITY manager.tabs.status.sync "Összehangolás">
 <!ENTITY manager.tabs.status.tryagain "Próbálkozzon újra a kiszolgálóhoz való csatlakozással">
@@ -72,6 +72,6 @@
 <!ENTITY supportwizard.label.description "Részletes hiba leírása:">
 <!ENTITY supportwizard.footer "Ebből az információból e-mail készül. További tájékoztatás adhatók hozzá, pl. képernyőképek. A hibajelentés elküldéséhez az e-mailt el kell küldeni.">
 
-<!ENTITY errorlog.title "Hibaüzenet">
-<!ENTITY errorlog.close "közel">
-<!ENTITY errorlog.clear "üres">
+<!ENTITY eventlog.title "Eseménynapló">
+<!ENTITY eventlog.close "közel">
+<!ENTITY eventlog.clear "üres">

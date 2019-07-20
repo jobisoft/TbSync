@@ -351,8 +351,8 @@ var SyncData = class {
     this._currentFolderData = null;
   }
 
-  get errorInfo() {
-    return new ErrorInfo(
+  get eventLogInfo() {
+    return new EventLogInfo(
       this.accountData.getAccountProperty("provider"),
       this.accountData.getAccountProperty("accountname"),
       this.accountData.accountID,

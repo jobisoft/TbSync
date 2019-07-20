@@ -227,7 +227,7 @@ var tbSyncAccountSettings = {
     tbSyncAccountSettings.updateSyncstate();
   
     //change color of syncstate according to status
-    let showErrorLogButton = false;
+    let showEventLogButton = false;
     switch (status) {
       case "success":
       case "disabled":
@@ -242,9 +242,9 @@ var tbSyncAccountSettings = {
       
       default:
         document.getElementById("syncstate").setAttribute("style","color: red");
-        showErrorLogButton = tbSync.errorlog.get(tbSyncAccountSettings.accountID).length > 0;
+        showEventLogButton = tbSync.eventlog.get(tbSyncAccountSettings.accountID).length > 0;
     }
-    document.getElementById('tbsync.accountsettings.errorlogbtn').hidden = !showErrorLogButton;
+    document.getElementById('tbsync.accountsettings.eventlogbtn').hidden = !showEventLogButton;
   },
 
   updateSyncstate: function () {

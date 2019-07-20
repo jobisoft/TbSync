@@ -59,7 +59,7 @@ var tbSync = {
     this.modules.push({name: "addressbook", state: 0});
     this.modules.push({name: "lightning", state: 0});
     this.modules.push({name: "cardbook", state: 0});
-    this.modules.push({name: "errorlog", state: 0});
+    this.modules.push({name: "eventlog", state: 0});
     this.modules.push({name: "core", state: 0});
     this.modules.push({name: "passwordManager", state: 0});
     this.modules.push({name: "network", state: 0});
