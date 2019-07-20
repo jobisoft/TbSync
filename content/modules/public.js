@@ -318,7 +318,7 @@ var FolderData = class {
       let target = this.getFolderProperty("target");
       let changes = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
       tbSync.db.clearChangeLog(target);      
-      this.targetData.decoupleTarget(keepStaleTargetSuffix, changes);
+      this.targetData.appendStaleSuffix(keepStaleTargetSuffix, changes);
     } else {
       this.targetData.removeTarget();
     }
