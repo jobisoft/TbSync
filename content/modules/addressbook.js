@@ -219,8 +219,12 @@ var addressbook = {
       }
     }
    
+    get changelogData() {         
+      return tbSync.db.getItemDataFromChangeLog(this._abDirectory.UID, this.primaryKey);
+    }
+
     get changelogStatus() {         
-      return tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, this.primaryKey)
+      return tbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID, this.primaryKey);
     }
 
     set changelogStatus(status) {            
@@ -483,15 +487,15 @@ var addressbook = {
 
 
     getAddedItemsFromChangeLog(maxitems = 0) {             
-      return tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "added_by_user").map(item => item.id);
+      return tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "added_by_user").map(item => item.itemId);
     }
 
     getModifiedItemsFromChangeLog(maxitems = 0) {             
-      return tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "modified_by_user").map(item => item.id);
+      return tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "modified_by_user").map(item => item.itemId);
     }
     
     getDeletedItemsFromChangeLog(maxitems = 0) {             
-      return tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "deleted_by_user").map(item => item.id);
+      return tbSync.db.getItemsFromChangeLog(this._directory.UID, maxitems, "deleted_by_user").map(item => item.itemId);
     }
     
     getItemsFromChangeLog(maxitems = 0) { // Document what this returns         

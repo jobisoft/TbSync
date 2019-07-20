@@ -115,12 +115,21 @@ var db = {
     return null;
   },
 
+  getItemDataFromChangeLog: function (parentId, itemId) {   
+    for (let i=0; i<this.changelog.length; i++) {
+      if (this.changelog[i].parentId == parentId && this.changelog[i].itemId == itemId) return this.changelog[i];
+    }
+    return null;
+  },
+  
   addItemToChangeLog: function (parentId, itemId, status) {
     this.removeItemFromChangeLog(parentId, itemId);
 
+    //ChangelogData object
     let row = {
       "parentId" : parentId,
       "itemId" : itemId,
+      "timestamp": Date.now(),
       "status" : status};
     
     this.changelog.push(row);
@@ -164,7 +173,7 @@ var db = {
     let log = [];
     let counts = 0;
     for (let i=0; i<this.changelog.length && (log.length < maxnumbertosend || maxnumbertosend == 0); i++) {
-      if (this.changelog[i].parentId == parentId && (status === null || this.changelog[i].status.indexOf(status) != -1)) log.push({ "id":this.changelog[i].itemId, "status":this.changelog[i].status });
+      if (this.changelog[i].parentId == parentId && (status === null || this.changelog[i].status.indexOf(status) != -1)) log.push(this.changelog[i]);
     }
     return log;
   },

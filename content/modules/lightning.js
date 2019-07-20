@@ -231,6 +231,10 @@ var lightning = {
       this._item.deleteProperty(property);
     }
         
+    get changelogData() {         
+      return tbSync.db.getItemDataFromChangeLog(this._tbCalendar.UID, this.primaryKey);
+    }
+
     get changelogStatus() {
       return tbSync.db.getItemStatusFromChangeLog(this._tbCalendar.UID, this.primaryKey);
     }
@@ -346,15 +350,15 @@ var lightning = {
   
   
     getAddedItemsFromChangeLog(maxitems = 0) {             
-      return tbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "added_by_user").map(item => item.id);
+      return tbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "added_by_user").map(item => item.itemId);
     }
 
     getModifiedItemsFromChangeLog(maxitems = 0) {             
-      return tbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "modified_by_user").map(item => item.id);
+      return tbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "modified_by_user").map(item => item.itemId);
     }
     
     getDeletedItemsFromChangeLog(maxitems = 0) {             
-      return tbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "deleted_by_user").map(item => item.id);
+      return tbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "deleted_by_user").map(item => item.itemId);
     }
     
     getItemsFromChangeLog(maxitems = 0) {             
