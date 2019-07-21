@@ -57,3 +57,4 @@ status.no-folders-found-on-server=Не удалось найти какие-ли
 status.security=Не удалось установить безопасное соединение. Вы используете самоподписанный или ненадежный сертификат без импорта его в Thunderbird? (##replace.1##)
 helplink.security=https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F
 status.network=Не удалось подключиться к серверу (##replace.1##).
+status.JavaScriptError=Ошибка JavaScript! Пожалуйста, проверьте журнал событий для более подробной информации.

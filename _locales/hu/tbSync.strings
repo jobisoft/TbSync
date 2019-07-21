@@ -57,3 +57,4 @@ status.no-folders-found-on-server=A kiszolgálón nem található erőforrás.
 status.security=Biztonsági kapcsolat létrehozása nem sikerült. Ön aláírta vagy egyébként nem megbízható tanúsítványt importálta a Thunderbirdbe? (##replace.1##)
 helplink.security=https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F
 status.network=Nem tudott csatlakozni a kiszolgálóhoz (##replace.1##).
+status.JavaScriptError=Javascript hiba! További részletekért nézze meg az eseménynaplót.

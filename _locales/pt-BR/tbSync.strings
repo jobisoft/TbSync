@@ -57,3 +57,4 @@ status.no-folders-found-on-server=Não foi possível encontrar nenhum recurso no
 status.security=Não foi possível estabelecer uma conexão segura. Você está usando um certificado autoassinado ou não confiável sem importá-lo para o Thunderbird? (##replace.1##)
 helplink.security=https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F
 status.network=Não foi possível conectar-se ao servidor (##replace.1##).
+status.JavaScriptError=Erro de Javascript! Por favor, verifique o log de eventos para mais detalhes.

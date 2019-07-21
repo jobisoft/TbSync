@@ -104,7 +104,13 @@ var core = {
       accountRuns++;
       
       if (syncDescription.syncList) {
-        let listStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolderList(syncData, syncDescription.syncJob, accountRuns);
+        let listStatusData;
+        try {
+          listStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolderList(syncData, syncDescription.syncJob, accountRuns);
+        } catch (e) {
+          listStatusData = new tbSync.StatusData(tbSync.StatusData.WARNING, "JavaScriptError", e.message + "\n\n" + e.stack);
+        }
+          
         if (!(listStatusData instanceof tbSync.StatusData)) {
           overallStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": base.syncFolderList() must return a StatusData object");
           break;
@@ -148,7 +154,13 @@ var core = {
               break;
             }
             
-            let folderStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolder(syncData, syncDescription.syncJob, folderRuns);
+            let folderStatusData;
+            try {
+              folderStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].base.syncFolder(syncData, syncDescription.syncJob, folderRuns);
+            } catch (e) {
+              folderStatusData = new tbSync.StatusData(tbSync.StatusData.WARNING, "JavaScriptError", e.message + "\n\n" + e.stack);
+            }
+            
             if (!(folderStatusData instanceof tbSync.StatusData)) {
               folderStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": base.syncFolder() must return a StatusData object");
             }
