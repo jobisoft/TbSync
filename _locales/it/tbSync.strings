@@ -27,7 +27,6 @@ addressbook.searchgal=Cerca in questa rubrica e nella directory globale (##repla
 installProvider.header=Il provider "##replace.1##" per TbSync non è ancora installato.
 supportwizard.provider=Provider: ##replace.1##
 
-VersionOfThunderbirdNotSupported=TbSync attualmente supporta solo Thunderbird 60. L'utilizzo di Thunderbird Beta darà luogo a errori che attualmente non possono essere corretti.
 OopsMessage=Oops! TbSync non è stato in grado di avviarsi!
 UnableToTraceError=Non è possibile localizzare quest'errore perché i log di debug non sono attualmente abilitati. Abilitare ora il log di debug per contribuire a correggere quest'errore?
 RestartThunderbirdAndTryAgain=Il log di debug di TbSync è stato abilitato, riavviare Thunderbird e riprovare ad aprire TbSync.

@@ -27,7 +27,6 @@ addressbook.searchgal=Dieses Adressbuch und das globale Serververzeichnis durchs
 installProvider.header=Provider "##replace.1##" für TbSync ist noch nicht installiert. 
 supportwizard.provider=Provider: ##replace.1## 
 
-VersionOfThunderbirdNotSupported=TbSync unterstützt derzeit nur Thunderbird 60. Bei der Nutzung von Thunderbird Beta sind Fehler zu erwarten, können derzeit aber nicht behoben werden.
 OopsMessage=Oops! TbSync konnte nicht starten!
 UnableToTraceError=Es ist im Augenblick nicht möglich, diesen Fehler zu untersuchen, da der TbSync Debug-Modus nicht aktiviert ist. Soll der Debug-Modus aktiviert werden, damit dieser Fehler untersucht und behoben werden kann?
 RestartThunderbirdAndTryAgain=Der TbSync Debug-Modus wurde aktiviert, bitte starten Sie Thunderbird neu und versuchen Sie dann noch einmal TbSync zu öffnen.

@@ -27,7 +27,6 @@ addressbook.searchgal=Keresése ezt a névjegyzékben és a globális könyvtár
 installProvider.header=A(z) „##replace.1##” szolgáltató a Thunderbird-összehangoláshoz még nincs telepítve.
 supportwizard.provider=Szolgáltató: ##replace.1##
 
-VersionOfThunderbirdNotSupported=A Thunderbird-összehangolás jelenleg csak a Thunderbird 60 verziót támogatja. A Thunderbird béta-verzió használata hibákat okoz, amelyek pillanatnyilag nem rögzíthetők.
 OopsMessage=Hoppá, valami hiba történt a Thunderbird-összehangolás indításakor.
 UnableToTraceError=Nem lehet nyomon követni ezt a hibát, mert a hibakeresési napló jelenleg nincs engedélyezve. Szeretné engedélyezni a hibakeresési naplót, hogy segítsen javítani a hibát?
 RestartThunderbirdAndTryAgain=A Thunderbird-összehangolás hibakeresési napló engedélyezve van, kérjük, indítsa újra a Thunderbird programot, és próbálkozzon újra a Thunderbird-összehangolás megnyitásával.

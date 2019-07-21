@@ -27,7 +27,6 @@ addressbook.searchgal=Pesquisar este catálogo de endereços e o diretório glob
 installProvider.header=O provedor "##replace.1##" para o TbSync ainda não está instalado.
 supportwizard.provider=Provedor: ##replace.1## 
 
-VersionOfThunderbirdNotSupported=Atualmente, o TbSync está apenas suportando o Thunderbird 60. Usar o Thunderbird Beta poderá acontecer erros, que não podem ser corrigidos no momento.
 OopsMessage=Erro! O TbSync não pode iniciar!
 UnableToTraceError=Não é possível rastrear este erro, porque o log de depuração não está habilitado no momento. Deseja ativar o log de depuração agora para ajudar a corrigir esse erro?
 RestartThunderbirdAndTryAgain=O log de depuração do TbSync foi ativado, reinicie o Thunderbird e tente abrir novamente o TbSync.
