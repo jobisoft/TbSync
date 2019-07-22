@@ -894,8 +894,6 @@ var addressbook = {
 
               case "addrbook-list-removed":
               {
-                //remove properties of this ML stored in changelog
-                tbSync.db.clearChangeLog(abDirectory.UID + "#" + abItem.UID);
                 switch (itemStatus) {
                   case "added_by_user": 
                     // unprocessed add for this card, revert
@@ -910,6 +908,8 @@ var addressbook = {
                     abItem.changelogStatus = "deleted_by_user";
                     break;
                 }
+                //remove properties of this ML stored in changelog
+                tbSync.db.clearChangeLog(abDirectory.UID + "#" + abItem.UID);                
               }
               break;
             }
