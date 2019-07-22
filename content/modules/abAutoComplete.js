@@ -74,10 +74,11 @@ var abAutoComplete = {
   /**
    * nsIAutoCompleteResult implementation.
    */
-  Result : function (aValues, aComments) {
+  Result : function (aValues, aComments, aIDs) {
     this.values = aValues;
     this.comments = aComments;
-
+    this.IDs = aIDs;
+   
     if (this.values.length > 0)
     this.searchResult = Components.interfaces.nsIAutoCompleteResult.RESULT_SUCCESS;
     else
@@ -88,11 +89,8 @@ var abAutoComplete = {
   
   
   Request: async function(accountData, aSearchString) {
-    let result = {}
-    result.accountData = accountData;
-    result.entries = await tbSync.providers[accountData.getAccountProperty("provider")].base.abAutoComplete(accountData, aSearchString);
-    
-    return result;
+    let entries = await tbSync.providers[accountData.getAccountProperty("provider")].base.abAutoComplete(accountData, aSearchString);
+    return entries.map(entry => ({ ...entry, id: accountData.accountID }));
   },   
 }
 
@@ -101,128 +99,129 @@ var abAutoComplete = {
 
 
 abAutoComplete.Search.prototype = {
-    constructor: abAutoComplete.Search,
+  constructor: abAutoComplete.Search,
 
-    // nsIAutoCompleteSearch implementation
-    startSearch : function (aSearchString, aSearchParam, aPreviousResult, aListener) {
+  // nsIAutoCompleteSearch implementation
+  startSearch : function (aSearchString, aSearchParam, aPreviousResult, aListener) {
     this.getAutoCompleteResultFor(aSearchString).then(result => aListener.onSearchResult(this, result));
-    },
+  },
 
-    stopSearch() {},
+  stopSearch() {},
 
-    // nsISupports implementation
-    QueryInterface: ChromeUtils.generateQI(["nsIFactory", "nsIAutoCompleteSearch"]),
+  // nsISupports implementation
+  QueryInterface: ChromeUtils.generateQI(["nsIFactory", "nsIAutoCompleteSearch"]),
 
-    // nsIFactory implementation
-    createInstance(outer, iid) {
+  // nsIFactory implementation
+  createInstance(outer, iid) {
     return this.QueryInterface(iid);
-    },
+  },
 
-    // Search name. Used by AutoCompleteController.
-    name: null,
+  // Search name. Used by AutoCompleteController.
+  name: null,
 
-    /**
-     * Return AutoCompleteResult for the given search string.
-     */
-    getAutoCompleteResultFor : async function (aSearchString) {
+  /**
+   * Return AutoCompleteResult for the given search string.
+   */
+  getAutoCompleteResultFor : async function (aSearchString) {
     //check each account and init server request
     let accounts = tbSync.db.getAccounts();
     let requests = [];
     let values = [];
     let comments = [];
+    let IDs = [];
+     
+    for (let i=0; i<accounts.IDs.length; i++) {
+      let accountID = accounts.IDs[i];
+     
+      let accountData = new tbSync.AccountData(accountID);
+      let provider = accountData.getAccountProperty("provider");
+      let status = accountData.getAccountProperty("status");
       
-    if (aSearchString.length > 3) {
-      for (let i=0; i<accounts.IDs.length; i++) {
-        let accountID = accounts.IDs[i];
-       
-        let accountData = new tbSync.AccountData(accountID);
-        let provider = accountData.getAccountProperty("provider");
-        let status = accountData.getAccountProperty("status");
-        
-        if (status == "disabled") continue;
-        //start all requests parallel (do not wait till done here, push the promise)
-        if (tbSync.providers[provider].base.abAutoComplete) {
-          try {
-            requests.push(tbSync.abAutoComplete.Request(accountData, aSearchString));
-          } catch (e) {}
-        }
-      }
-      
-      //wait for all requests to finish (only have to wait for the slowest, all others are done)
-      for (let r=0; r < requests.length; r++) {
+      if (status == "disabled") continue;
+      //start all requests parallel (do not wait till done here, push the promise)
+      if (tbSync.providers[provider].base.abAutoComplete) {
         try {
-          let result = await requests[r];
-          for (let count=0; count < result.entries.length; count++) {
-            values.push(result.entries[count]);
-            comments.push(result.accountData.accountID);
-          }
-        } catch (e) {};
+          requests.push(tbSync.abAutoComplete.Request(accountData, aSearchString));
+        } catch (e) {}
       }
     }
     
-    return new abAutoComplete.Result(values, comments);
+    //wait for all requests to finish (only have to wait for the slowest, all others are done)
+    for (let r=0; r < requests.length; r++) {
+      try {
+        let result = await requests[r];
+        for (let count=0; count < result.length; count++) {
+          values.push(result[count].value);
+          comments.push(result[count].comment);
+          IDs.push(result[count].id);
+        }
+      } catch (e) {};
     }
+    
+    return new abAutoComplete.Result(values, comments, IDs);
+  }
 }
 
 abAutoComplete.Result.prototype = {
-    constructor: abAutoComplete.Result,
+  constructor: abAutoComplete.Result,
 
-    searchString: "",
-    searchResult: null,
+  searchString: "",
+  searchResult: null,
 
-    defaultIndex: 0,
+  defaultIndex: 0,
 
-    get matchCount() {
+  get matchCount() {
     return this.values.length;
-    },
+  },
 
-    getValueAt(aIndex) {
+  getValueAt(aIndex) {
     return this.values[aIndex];
-    },
+  },
 
   /**
    * This returns the string that is displayed in the dropdown
    */
-    getLabelAt(aIndex) {
+  getLabelAt(aIndex) {
     return "  " + this.getValueAt(aIndex);
-    },
+  },
 
   /**
-   * Get the comment of the result at the given index (holds the accountID this search result belongs to)
+   * Get the comment of the result at the given index
    */
-    getCommentAt(aIndex) {
-    return tbSync.db.getAccountProperty(this.comments[aIndex], "accountname");
-    },
+  getCommentAt(aIndex) {
+    return " " + this.comments[aIndex];
+  },
 
   /**
    * Get the style hint for the result at the given index
    */
-    getStyleAt(aIndex) {
-    return null;
-    },
+  getStyleAt(aIndex) {
+    return "EASGAL";
+  },
 
   /**
    * Get the image of the result at the given index
    */
-    getImageAt(aIndex) {
-    let accountData = new tbSync.AccountData(this.comments[aIndex]);
+  getImageAt(aIndex) {
+    let accountData = new tbSync.AccountData(this.IDs[aIndex]);
     return tbSync.providers[accountData.getAccountProperty("provider")].base.getProviderIcon(16, accountData);
-    },
+  },
 
   /**
    * Get the final value that should be completed when the user confirms
    * the match at the given index.
    */
-    getFinalCompleteValueAt(aIndex) {
+  getFinalCompleteValueAt(aIndex) {
     return this.getValueAt(aIndex);
-    },
+  },
 
-    removeValueAt(aRowIndex, aRemoveFromDb) {},
+  removeValueAt(aRowIndex, aRemoveFromDb) {},
 
-    // nsISupports implementation
-    QueryInterface: ChromeUtils.generateQI(["nsIAutoCompleteResult"]),
+  // nsISupports implementation
+  QueryInterface: ChromeUtils.generateQI(["nsIAutoCompleteResult"]),
 
-    // Data
-    values: null,
-    comments: null
+  // Data
+  values: null,
+  comments: null,
+  IDs: null
 }

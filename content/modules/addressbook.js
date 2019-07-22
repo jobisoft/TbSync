@@ -568,6 +568,7 @@ var addressbook = {
     let directory = tbSync.providers[folderData.accountData.getAccountProperty("provider")].addressbook.createAddressBook(newname, folderData);
     if (directory && directory instanceof Components.interfaces.nsIAbDirectory) {
       directory.setStringValue("tbSyncProvider", provider);
+      directory.setStringValue("tbSyncAccountID", folderData.accountData.accountID);
       
       // Prevent gContactSync to inject its stuff into New/EditCard dialogs
       // https://github.com/jdgeenen/gcontactsync/pull/127
