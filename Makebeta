@@ -20,7 +20,7 @@ sed -i "s/%VERSION%/$version/g" "beta-release-channel-update.rdf"
 sed -i "s|%LINK%|$1/$3|g" "beta-release-channel-update.rdf"
 
  echo "Releasing version $version via beta release channel (will include updateURL)"
- sed -i "s|\"name\": \"__MSG_extensionName__\",|\"name\": \"TBSYNC [Beta Release Channel]\",\n  \"update_url\": \"$1/$4\"|g" "manifest.json"
+ sed -i "s|\"name\": \"TbSync\",|\"name\": \"TbSync [Beta Release Channel]\",\n  \"update_url\": \"$1/$4\",|g" "manifest.json"
 
 cp beta-release-channel-update.rdf $2/$4
 
