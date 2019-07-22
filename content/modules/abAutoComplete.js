@@ -74,10 +74,11 @@ var abAutoComplete = {
   /**
    * nsIAutoCompleteResult implementation.
    */
-  Result : function (aValues, aComments, aIDs) {
+  Result : function (aValues, aComments, aStyles, aIcons) {
     this.values = aValues;
     this.comments = aComments;
-    this.IDs = aIDs;
+    this.styles = aStyles;
+    this.icons = aIcons;
    
     if (this.values.length > 0)
     this.searchResult = Components.interfaces.nsIAutoCompleteResult.RESULT_SUCCESS;
@@ -128,7 +129,8 @@ abAutoComplete.Search.prototype = {
     let requests = [];
     let values = [];
     let comments = [];
-    let IDs = [];
+    let styles = [];
+    let icons = [];
      
     for (let i=0; i<accounts.IDs.length; i++) {
       let accountID = accounts.IDs[i];
@@ -153,12 +155,13 @@ abAutoComplete.Search.prototype = {
         for (let count=0; count < result.length; count++) {
           values.push(result[count].value);
           comments.push(result[count].comment);
-          IDs.push(result[count].id);
+          styles.push(result[count].style);
+          icons.push(result[count].icon);
         }
       } catch (e) {};
     }
     
-    return new abAutoComplete.Result(values, comments, IDs);
+    return new abAutoComplete.Result(values, comments, styles, icons);
   }
 }
 
@@ -196,15 +199,14 @@ abAutoComplete.Result.prototype = {
    * Get the style hint for the result at the given index
    */
   getStyleAt(aIndex) {
-    return "EASGAL";
+    return this.styles[aIndex] || null;
   },
 
   /**
    * Get the image of the result at the given index
    */
   getImageAt(aIndex) {
-    let accountData = new tbSync.AccountData(this.IDs[aIndex]);
-    return tbSync.providers[accountData.getAccountProperty("provider")].base.getProviderIcon(16, accountData);
+    return this.icons[aIndex] || null;
   },
 
   /**
@@ -223,5 +225,6 @@ abAutoComplete.Result.prototype = {
   // Data
   values: null,
   comments: null,
-  IDs: null
+  styles: null,
+  icons: null,
 }
