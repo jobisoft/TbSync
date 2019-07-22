@@ -428,7 +428,7 @@ var lightning = {
           tbItem.changelogStatus = "added_by_user";
         }
         
-        tbSync.core.setTargetModified(folderData);
+        if (tbCalendar.logUserChanges) tbSync.core.setTargetModified(folderData);
         tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.itemObserver("onAddItem", folderData, tbItem, null);                                        
       }
     },
@@ -459,7 +459,7 @@ var lightning = {
           tbNewItem.changelogStatus = "modified_by_user";
         }
 
-        tbSync.core.setTargetModified(folderData);
+        if (tbCalendar.logUserChanges) tbSync.core.setTargetModified(folderData);
         tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.itemObserver("onModifyItem", folderData, tbNewItem, tbOldItem);                                        
       }
     },
@@ -490,7 +490,7 @@ var lightning = {
           tbItem.changelogStatus = "deleted_by_user";
         }
 
-        tbSync.core.setTargetModified(folderData);
+        if (tbCalendar.logUserChanges) tbSync.core.setTargetModified(folderData);
         tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.itemObserver("onDeleteItem", folderData, tbItem, null);
       }
     },
