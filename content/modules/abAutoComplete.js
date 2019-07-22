@@ -199,14 +199,14 @@ abAutoComplete.Result.prototype = {
    * Get the style hint for the result at the given index
    */
   getStyleAt(aIndex) {
-    return this.styles[aIndex] || null;
+    return this.styles[aIndex] ? this.styles[aIndex] : null;
   },
 
   /**
    * Get the image of the result at the given index
    */
   getImageAt(aIndex) {
-    return this.icons[aIndex] || null;
+    return this.icons[aIndex] ?  this.icons[aIndex] : null;
   },
 
   /**
