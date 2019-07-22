@@ -8,21 +8,21 @@
 # $1 link to base web server       : https://tbsync.jobisoft.de/beta
 # $2 local path of base web server : /var/www/jobisoft.de/tbsync/beta
 # $3 name of XPI                   : TbSync.xpi
-# $4 name of update.rdf            : update-dav.rdf
 
 git clean -df
 git checkout -- .
 git pull
 
 version=$(cat manifest.json | jq -r .version)
+updatefile=update-tbsync.json
 
-sed -i "s/%VERSION%/$version/g" "beta-release-channel-update.rdf"
-sed -i "s|%LINK%|$1/$3|g" "beta-release-channel-update.rdf"
+sed -i "s/%VERSION%/$version/g" "beta-release-channel-update.json"
+sed -i "s|%LINK%|$1/$3|g" "beta-release-channel-update.json"
 
  echo "Releasing version $version via beta release channel (will include updateURL)"
- sed -i "s|\"name\": \"TbSync\",|\"name\": \"TbSync [Beta Release Channel]\",\n  \"update_url\": \"$1/$4\",|g" "manifest.json"
+ sed -i "s|\"name\": \"TbSync\",|\"name\": \"TbSync [Beta Release Channel]\",\n  \"update_url\": \"$1/$updatefile\",|g" "manifest.json"
 
-cp beta-release-channel-update.rdf $2/$4
+cp beta-release-channel-update.json $2/$updatefile
 
 rm $3
 zip -r $3 content _locales skin chrome.manifest manifest.json bootstrap.js LICENSE CONTRIBUTORS.md
