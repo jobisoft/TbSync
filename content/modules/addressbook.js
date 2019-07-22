@@ -105,6 +105,9 @@ var addressbook = {
 
         let orig = directory.dirName;
         directory.dirName = "Local backup of: " + orig + " " + suffix;
+        directory.setStringValue("tbSyncIcon", "tbSyncStale");
+        directory.setStringValue("tbSyncProvider", "");
+        directory.setStringValue("tbSyncAccountID", "");
       }
     }     
   },

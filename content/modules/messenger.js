@@ -19,6 +19,10 @@ var messenger = {
     await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/addressbookiconsoverlay.xul");
     await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/overlays/abNewCardWindowOverlay.xul");
 
+    // The abCSS.xul overlay is just adding a CSS file.
+    await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/overlays/abCSS.xul");
+    await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/abCSS.xul");
+    
     //inject overlays
     this.overlayManager.startObserving();
 
