@@ -825,7 +825,7 @@ var addressbook = {
               break;
             }
 
-            tbSync.core.setTargetModified(folderData);
+            if (abDirectory.logUserChanges) tbSync.core.setTargetModified(folderData);
             tbSync.providers[folderData.accountData.getAccountProperty("provider")].addressbook.cardObserver(bTopic, folderData, abItem);
           }
         }
@@ -914,7 +914,7 @@ var addressbook = {
               break;
             }
 
-            tbSync.core.setTargetModified(folderData);
+            if (abDirectory.logUserChanges) tbSync.core.setTargetModified(folderData);
             tbSync.providers[folderData.accountData.getAccountProperty("provider")].addressbook.listObserver(aTopic, folderData, abItem, null);
           }
         }
@@ -971,7 +971,7 @@ var addressbook = {
               break;
             }
             
-            tbSync.core.setTargetModified(folderData);
+            if (abDirectory.logUserChanges) tbSync.core.setTargetModified(folderData);
             tbSync.providers[folderData.accountData.getAccountProperty("provider")].addressbook.listObserver(aTopic, folderData, abItem, null);
           }
         }
@@ -996,7 +996,7 @@ var addressbook = {
             let abItem = new tbSync.addressbook.AbItem(abDirectory, listInfo.listCard);
             let abMember = new tbSync.addressbook.AbItem(abDirectory, aSubject);
 
-            tbSync.core.setTargetModified(folderData);
+            if (abDirectory.logUserChanges) tbSync.core.setTargetModified(folderData);
             tbSync.providers[folderData.accountData.getAccountProperty("provider")].addressbook.listObserver(aTopic, folderData, abItem, abMember);
 
             // removed, added members cause the list to be changed
