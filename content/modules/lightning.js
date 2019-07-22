@@ -415,11 +415,18 @@ var lightning = {
         let tbItem = new tbSync.lightning.TbItem(tbCalendar, aAddedItem);          
         let itemStatus = tbItem.changelogStatus;
 
+        // if this card was created by us, it will be in the log
         if (itemStatus && itemStatus.endsWith("_by_server")) {
-          //we caused this, ignore
-          tbItem.changelogStatus = "";
-          return;
-        }
+          let age = Date.now() - tbItem.changelogData.timestamp;
+          if (age < 1500) {
+            // during freeze, local modifications are not possible
+            return;
+          } else {
+            // remove blocking entry from changelog after freeze time is over (1.5s),
+            // and continue evaluating this event
+            abItem.changelogStatus = "";
+          }
+        } 
 
         if (itemStatus == "deleted_by_user")  {
           // deleted ?  user moved item out and back in -> modified
@@ -448,11 +455,18 @@ var lightning = {
         let tbOldItem = new tbSync.lightning.TbItem(tbCalendar, aOldItem);          
         let itemStatus = tbNewItem.changelogStatus;
           
+        // if this card was created by us, it will be in the log
         if (itemStatus && itemStatus.endsWith("_by_server")) {
-          //we caused this, ignore
-          tbNewItem.changelogStatus = "";
-          return;
-        }
+          let age = Date.now() - tbNewItem.changelogData.timestamp;
+          if (age < 1500) {
+            // during freeze, local modifications are not possible
+            return;
+          } else {
+            // remove blocking entry from changelog after freeze time is over (1.5s),
+            // and continue evaluating this event
+            tbNewItem.changelogStatus = "";
+          }
+        } 
 
         if (itemStatus != "added_by_user") {
           //added_by_user -> it is a local unprocessed add do not re-add it to changelog
@@ -477,11 +491,18 @@ var lightning = {
         let tbItem = new tbSync.lightning.TbItem(tbCalendar, aDeletedItem);
         let itemStatus = tbItem.changelogStatus;
 
+        // if this card was created by us, it will be in the log
         if (itemStatus && itemStatus.endsWith("_by_server")) {
-          // we caused this, ignore
-          tbItem.changelogStatus = "";
-          return;
-        }
+          let age = Date.now() - tbItem.changelogData.timestamp;
+          if (age < 1500) {
+            // during freeze, local modifications are not possible
+            return;
+          } else {
+            // remove blocking entry from changelog after freeze time is over (1.5s),
+            // and continue evaluating this event
+            tbItem.changelogStatus = "";
+          }
+        } 
 
         if (itemStatus == "added_by_user") {
           //a local add, which has not yet been processed (synced) is deleted -> remove all traces
