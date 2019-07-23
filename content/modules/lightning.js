@@ -273,7 +273,7 @@ var lightning = {
     }
 
     get logUserChanges() {
-      return tbSync.providers[this._provider].calendar.logUserChanges;
+      return tbSync.providers[this._provider].standardTargets.calendar.logUserChanges;
     }
     
     get primaryKeyField() {
@@ -301,7 +301,7 @@ var lightning = {
     
     async addItem(tbItem, pretagChangelogWithByServerEntry = true) {
       if (this.primaryKeyField && !tbItem.getProperty(this.primaryKeyField)) {
-        tbItem.setProperty(this.primaryKeyField, tbSync.providers[this._provider].calendar.generatePrimaryKey(this._folderData));
+        tbItem.setProperty(this.primaryKeyField, tbSync.providers[this._provider].standardTargets.calendar.generatePrimaryKey(this._folderData));
         //Services.console.logStringMessage("[TbCalendar::addItem] Generated primary key!");
       }
       
@@ -436,7 +436,7 @@ var lightning = {
         }
         
         if (tbCalendar.logUserChanges) tbSync.core.setTargetModified(folderData);
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.itemObserver("onAddItem", folderData, tbItem, null);                                        
+        tbSync.providers[folderData.accountData.getAccountProperty("provider")].standardTargets.calendar.itemObserver("onAddItem", folderData, tbItem, null);                                        
       }
     },
 
@@ -474,7 +474,7 @@ var lightning = {
         }
 
         if (tbCalendar.logUserChanges) tbSync.core.setTargetModified(folderData);
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.itemObserver("onModifyItem", folderData, tbNewItem, tbOldItem);                                        
+        tbSync.providers[folderData.accountData.getAccountProperty("provider")].standardTargets.calendar.itemObserver("onModifyItem", folderData, tbNewItem, tbOldItem);                                        
       }
     },
 
@@ -512,7 +512,7 @@ var lightning = {
         }
 
         if (tbCalendar.logUserChanges) tbSync.core.setTargetModified(folderData);
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.itemObserver("onDeleteItem", folderData, tbItem, null);
+        tbSync.providers[folderData.accountData.getAccountProperty("provider")].standardTargets.calendar.itemObserver("onDeleteItem", folderData, tbItem, null);
       }
     },
 
@@ -538,7 +538,7 @@ var lightning = {
             break;
         }
         
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.calendarObserver("onCalendarPropertyChanged", folderData, tbCalendar, aName, aValue, aOldValue);                
+        tbSync.providers[folderData.accountData.getAccountProperty("provider")].standardTargets.calendar.calendarObserver("onCalendarPropertyChanged", folderData, tbCalendar, aName, aValue, aOldValue);                
       }
     },
 
@@ -559,7 +559,7 @@ var lightning = {
           break;
         }
 
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.calendarObserver("onCalendarPropertyDeleted", folderData, tbCalendar, aName);                
+        tbSync.providers[folderData.accountData.getAccountProperty("provider")].standardTargets.calendar.calendarObserver("onCalendarPropertyDeleted", folderData, tbCalendar, aName);                
       }
     }
   },
@@ -574,7 +574,7 @@ var lightning = {
         && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
 
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.calendarObserver("onCalendarUnregistered", folderData, aCalendar);                
+        tbSync.providers[folderData.accountData.getAccountProperty("provider")].standardTargets.calendar.calendarObserver("onCalendarUnregistered", folderData, aCalendar);                
       }*/
     },
       
@@ -608,7 +608,7 @@ var lightning = {
         }
         
         folderData.resetFolderProperty("target");
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].calendar.calendarObserver("onCalendarDeleted", folderData, tbCalendar);                
+        tbSync.providers[folderData.accountData.getAccountProperty("provider")].standardTargets.calendar.calendarObserver("onCalendarDeleted", folderData, tbCalendar);                
 
       }
     },
@@ -716,7 +716,7 @@ var lightning = {
     }
     
     //create and register new calendar
-    let newCalendar = tbSync.providers[provider].calendar.createCalendar(newname, folderData);
+    let newCalendar = tbSync.providers[provider].standardTargets.calendar.createCalendar(newname, folderData);
     tbSync.providers[provider].base.onResetTarget(folderData);
     
     //store id of calendar as target in DB
