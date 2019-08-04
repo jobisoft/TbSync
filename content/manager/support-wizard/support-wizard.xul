@@ -3,32 +3,32 @@
 <!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
 
 <wizard 
-      width="500"
-      height="600"
-      id="SupportWizard" 
-      title="&supportwizard.title;"
-      onload="tbSyncAccountManager.initSupportWizard();"
-      onwizardfinish="return tbSyncAccountManager.prepareBugReport();"
-      xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-
+  width="500"
+  height="600"
+  id="SupportWizard" 
+  title="&supportwizard.title;"
+  onload="tbSyncAccountManager.initSupportWizard();"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+   
   <wizardpage onFirstPage="true" label="&supportwizard.pagetitle;">
     <label value="&supportwizard.label.faultycomponent;"/>
     <menulist id="tbsync.supportwizard.faultycomponent.menulist">
-        <menupopup id="tbsync.supportwizard.faultycomponent">
-            <menuitem hidden="true" selected="true" label="&supportwizard.label.selectcomponent;" value="" />
-            <menuitem label="&manager.title;" value="core" />
-        </menupopup>
+      <menupopup id="tbsync.supportwizard.faultycomponent">
+        <menuitem hidden="true" selected="true" label="&supportwizard.label.selectcomponent;" value="" />
+        <menuitem label="&manager.title;" value="core" />
+      </menupopup>
     </menulist>    
 
     <label style="margin-top:1em" value="&supportwizard.label.summary;"/>
-    <textbox id="tbsync.supportwizard.summary" oninput="tbSyncAccountManager.checkSupportWizard()" />
-   
-    <label style="margin-top:1em" value="&supportwizard.label.description;"/>
-    <textbox flex="1" id="tbsync.supportwizard.description" multiline="true" oninput="tbSyncAccountManager.checkSupportWizard()" />
+   <textbox id="tbsync.supportwizard.summary" oninput="tbSyncAccountManager.checkSupportWizard()" />
+  
+   <label style="margin-top:1em" value="&supportwizard.label.description;"/>
+   <html:textarea rows="15" style="margin-left: 1ex;" id="tbsync.supportwizard.description" />
 
-    <description style="margin-top:1em">
-      &supportwizard.footer;
-    </description>  
+   <description style="margin-top:1em">
+    &supportwizard.footer;
+   </description>  
   </wizardpage>
 
   <script type="text/javascript" src="chrome://tbsync/content/manager/accountManager.js" /> 

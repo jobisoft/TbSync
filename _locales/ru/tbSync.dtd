@@ -1,0 +1,77 @@
+<!ENTITY popup.opensettings "Открыть менеджер аккаунта TbSync">
+<!ENTITY menu.settingslabel "Настройки синхронизации (TbSync)">
+
+<!ENTITY toolbar.label "Синхронизировать все аккаунты TbSync">
+<!ENTITY toolbar.tooltiptext "Синхронизировать последние изменения">
+
+<!ENTITY manager.AccountActions "Действия для аккаунта">
+<!ENTITY manager.AddAccount "Добавить новый аккаунт">
+<!ENTITY manager.SyncAll "Синхронизировать все разрешенные аккаунты">
+
+<!ENTITY manager.SynchronizeAccount "Синхронизировать аккаунт">
+<!ENTITY manager.EnableAccount "Разрешить аккаунт &amp; подключить к серверу">
+<!ENTITY manager.DisableAccount "Запретить аккаунт">
+<!ENTITY manager.DeleteAccount "Удалить аккаунт">
+<!ENTITY manager.ShowEventLog "Показать журнал событий">
+<!ENTITY manager.RetryConnectAccount "Повторить подключение к серверу">
+
+<!ENTITY manager.noaccounts "Определенных аккаунтов пока нет.">
+
+<!ENTITY manager.title "Менеджер аккаунта TbSync">
+<!ENTITY manager.shorttitle "Менеджер аккаунта">
+<!ENTITY manager.provider4tbsync "Провайдер для TbSync">
+<!ENTITY manager.accountsettings "Настройки аккаунта">
+<!ENTITY manager.help "Справка">
+<!ENTITY manager.community "Сообщество">
+<!ENTITY manager.provider "Установить провайдера">
+
+<!ENTITY password.title "Запрос учетных данных TbSync">
+<!ENTITY password.description "Обновите учетные данные для следующей учетной записи TbSync:">
+<!ENTITY password.account "учетная запись:">
+<!ENTITY password.user "пользователь:">
+<!ENTITY password.password "пароль:">
+
+<!ENTITY manager.accounts "Аккаунты">
+<!ENTITY manager.status "Статус">
+
+<!ENTITY manager.tabs.status "Статус синхронизации">
+<!ENTITY manager.tabs.status.general "Главный">
+<!ENTITY manager.tabs.status.enableThisAccount "Разрешить и синхронизировать этот аккаунт">
+<!ENTITY manager.tabs.status.sync "Синхронизировать сейчас">
+<!ENTITY manager.tabs.status.tryagain "Повторить подсоединение к серверу">
+<!ENTITY manager.tabs.status.autotime "Периодическая синхронизация (в минутах)">
+<!ENTITY manager.tabs.status.never "Установка 0 отключает периодическую синхронизацию. Push-синхронизации еще не реализована.">
+<!ENTITY manager.tabs.status.resources "Доступные ресурсы">
+<!ENTITY manager.tabs.status.resources.intro "Выберите, какой из найденных ресурсов следует синхронизировать с Thunderbird.">
+<!ENTITY manager.lockedsettings.description "Чтобы предотвратить ошибки синхронизации, некоторые параметры нельзя редактировать, пока учетная запись включена.">
+
+<!ENTITY manager.catman.text "TbSync также синхронизирует категории контактов, которые являются мощной заменой несинхронизируемых списков контактов. Чтобы иметь возможность использовать их в адресной книге Thunderbird, вы можете установить надстройку Менеджера Категорий. Он позволяет управлять перекрывающимися контактными группами на основе категорий и предоставляет много других функций, связанных с категорией. Его можно найти в официальном репозитории Mozilla Add-On:">
+
+<!ENTITY manager.installprovider.link "Нажмите на следующую ссылку, чтобы открыть информационную страницу отсутствующего провайдера синхронизации. Там вы найдете дополнительную информацию о провайдере, и у вас будет возможность установить его:">
+<!ENTITY manager.installprovider.warning "Этот провайдер синхронизации не размещен в официальном репозитории Thunderbird AddOn и, таким образом, не был рассмотрен сотрудниками Thunderbird. Провайдер синхронизации может сделать деструктивные действия в вашей системе. Используйте его на свой страх и риск.">
+<!ENTITY manager.missingprovider "Провайдер синхронизации (## provider ##), с которым связана эта учетная запись, не установлен.">
+
+<!ENTITY manager.supporter.contributors "Помощники &amp; Переводчики">
+<!ENTITY manager.supporter.sponsors "Спонсоры тестовых аккаунтов">
+<!ENTITY manager.supporter.details "Подробности">
+
+<!ENTITY manager.help.needhelp "Нужна справка?">
+<!ENTITY manager.help.wiki "Откройте wiki-страницы проекта TbSync, они предоставят дополнительную информацию, руководства и подробные описания конфигурации.">
+
+<!ENTITY manager.help.foundabug "Нашли ошибку?">
+<!ENTITY manager.help.fixit "Вы можете помочь исправить это дополнение, отправив сообщение об ошибке. Для этого требуется активация режима отладки.">
+<!ENTITY manager.help.enabledebuglog "Режим отладки: протоколирование всех программных сообщений и всех данных, которые получает и отправляет TbSync. Thunderbird может работать значительно медленнее.">
+<!ENTITY manager.help.createbugreportinfo "Чтобы TbSync собирал только отладочные сообщения, относящиеся к вашему отчету об ошибке, перезапустите Thunderbird, а затем повторите шаги, которые воспроизводят поведение ошибки. Затем вы можете создать свой отчет об ошибках здесь.">
+<!ENTITY manager.help.createbugreport "Создать отчет об ошибке">
+
+<!ENTITY supportwizard.title "Создать отчет об ошибке">
+<!ENTITY supportwizard.pagetitle "Сбор всей информации для эффективной обработки отчета об ошибке.">
+<!ENTITY supportwizard.label.faultycomponent "Компонент TbSync, где вы заметили ошибку:">
+<!ENTITY supportwizard.label.selectcomponent "Выбрать компонент ...">
+<!ENTITY supportwizard.label.summary "Краткое описание ошибки:">
+<!ENTITY supportwizard.label.description "Подробное описание ошибки:">
+<!ENTITY supportwizard.footer "Из приведенной здесь информации на следующем шаге будет создано электронное письмо, которое вы можете впоследствии редактировать (например, добавлять скриншоты или аналогичное). Только при отправке этого электронного письма будет отправлен и сам отчет об ошибке.">
+
+<!ENTITY eventlog.title "журнал событий">
+<!ENTITY eventlog.close "Убрать окно">
+<!ENTITY eventlog.clear "Стереть">

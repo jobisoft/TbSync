@@ -8,33 +8,33 @@
  
  "use strict";
 
-Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncManageProvider = {
+  
+  prepInstall: function () {
+    let url = window.location.toString();
+    let provider = url.split("provider=")[1];
+    window.document.getElementById("header").textContent = tbSync.getString("installProvider.header::" + tbSync.providers.defaultProviders[provider].name);
+
+    window.document.getElementById("link").textContent = tbSync.providers.defaultProviders[provider].homepageUrl;
+    window.document.getElementById("link").setAttribute("link", tbSync.providers.defaultProviders[provider].homepageUrl);
+
+    window.document.getElementById("warning").hidden = tbSync.providers.defaultProviders[provider].homepageUrl.startsWith("https://addons.thunderbird.net"); 
+  },
+
+  prepMissing: function () {
+    let url = window.location.toString();
+    let provider = url.split("provider=")[1];
+
+    let e = window.document.getElementById("missing");
+    let v = e.textContent;
+    e.textContent = v.replace("##provider##", provider.toUpperCase());
     
-    prepInstall: function () {
-        let url = window.location.toString();
-        let provider = url.split("provider=")[1];
-        window.document.getElementById("header").textContent = tbSync.getLocalizedMessage("installProvider.header::" + tbSync.defaultProviders[provider].name);
-
-        window.document.getElementById("link").textContent = tbSync.defaultProviders[provider].homepageUrl;
-        window.document.getElementById("link").setAttribute("link", tbSync.defaultProviders[provider].homepageUrl);
-
-        window.document.getElementById("warning").hidden = tbSync.defaultProviders[provider].homepageUrl.startsWith("https://addons.thunderbird.net"); 
-    },
-
-    prepMissing: function () {
-        let url = window.location.toString();
-        let provider = url.split("provider=")[1];
-
-        let e = window.document.getElementById("missing");
-        let v = e.textContent;
-        e.textContent = v.replace("##provider##", provider.toUpperCase());
-        
-        if (tbSync.defaultProviders.hasOwnProperty(provider)) {
-            window.document.getElementById("link").textContent = tbSync.defaultProviders[provider].homepageUrl;
-            window.document.getElementById("link").setAttribute("link", tbSync.defaultProviders[provider].homepageUrl);
-        }
-        
-    },    
+    if (tbSync.providers.defaultProviders.hasOwnProperty(provider)) {
+      window.document.getElementById("link").textContent = tbSync.providers.defaultProviders[provider].homepageUrl;
+      window.document.getElementById("link").setAttribute("link", tbSync.providers.defaultProviders[provider].homepageUrl);
+    }
+    
+  },    
 };

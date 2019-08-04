@@ -8,37 +8,14 @@
  
  "use strict";
 
-Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("chrome://tbsync/content/tbsync.jsm");
+var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncMessenger = {
 
-    onInject: function (window) {
-        Services.obs.addObserver(tbSyncMessenger.updateSyncstateObserver, "tbsync.updateSyncstate", false);
-    },
+  onInject: function (window) {
+  },
 
-    onRemove: function (window) {
-        Services.obs.removeObserver(tbSyncMessenger.updateSyncstateObserver, "tbsync.updateSyncstate");
-    },
-    
-    updateSyncstateObserver: {
-        observe: function (aSubject, aTopic, aData) {
-            let account = aData;            
-            if (account) {
-                let syncstate = tbSync.getSyncData(account, "syncstate");
-                if (syncstate == "accountdone") {
-                    let status = tbSync.db.getAccountSetting(account, "status");
-                    switch (status) {
-                        case "401":
-                            //only popup one password prompt window
-                            if (!tbSync.passWindowObj.hasOwnProperty[account] || tbSync.passWindowObj[account] === null) {
-                                tbSync.passWindowObj[account] = tbSync.window.openDialog("chrome://tbsync/content/manager/password.xul", "passwordprompt", "centerscreen,chrome,resizable=no", tbSync.db.getAccount(account), function() {tbSync.syncAccount("sync", account);});
-                            }
-                            break;
-                    }
-                }
-            }
-        }
-    }
+  onRemove: function (window) {
+  },
 
 };

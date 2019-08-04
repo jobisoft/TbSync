@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
+
+<dialog
+    width="600"
+    height="400"
+    title="&eventlog.title;"
+    buttons="cancel, extra1"
+    buttonlabelcancel="&eventlog.close;"
+    buttonlabelextra1="&eventlog.clear;"
+    onload="tbSyncEventLog.onload();"
+    onunload="tbSyncEventLog.onunload();"
+    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
+
+    <script type="application/javascript" src="chrome://tbsync/content/manager/eventlog/eventlog.js"/>
+
+    <vbox flex="1">
+        <richlistbox id="tbsync.eventlog" flex="1" seltype="single" disabled="true"/>
+    </vbox>
+</dialog>

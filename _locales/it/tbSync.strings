@@ -1,0 +1,60 @@
+info.idle=Inattivo
+info.error=Errore
+info.sync=Sincronizzazione in corso
+
+google.translate.code=it
+
+prompt.DeleteAccount=Eliminare l'account ##accountName##?
+prompt.Disable=Disabilitare quest'account? Tutte le modifiche locali non ancora sincronizzate andranno perse!
+prompt.Unsubscribe=Annullare la sottoscrizione a questo elemento? Tutte le modifiche locali non ancora sincronizzate andranno perse!
+prompt.Erase=Rimuovere quest'account di un provider sconosciuto dall'elenco degli account?
+
+accountacctions.delete=Elimina l'account "##accountname##"
+accountacctions.sync=Sincronizza l'account "##accountname##"
+accountacctions.enable=Abilita l'account "##accountname##" e tenta la connessione al server
+accountacctions.disable=Disabilita l'account "##accountname##"
+
+manager.tryagain=Riprova a collegarti al server
+manager.connecting=Connessione al server in corso
+manager.resource=Cartella
+manager.status=Stato
+manager.help=Aiuto
+
+addressbook.searchall=Cerca in tutte le rubriche
+addressbook.searchthis=Cerca in questa rubrica
+addressbook.searchgal=Cerca in questa rubrica e nella directory globale (##replace.1##)
+
+installProvider.header=Il provider "##replace.1##" per TbSync non è ancora installato.
+supportwizard.provider=Provider: ##replace.1##
+
+OopsMessage=Oops! TbSync non è stato in grado di avviarsi!
+UnableToTraceError=Non è possibile localizzare quest'errore perché i log di debug non sono attualmente abilitati. Abilitare ora il log di debug per contribuire a correggere quest'errore?
+RestartThunderbirdAndTryAgain=Il log di debug di TbSync è stato abilitato, riavviare Thunderbird e riprovare ad aprire TbSync.
+HelpFixStartupError=Per contribuire a correggere quest'errore potresti inviare un log di debug allo sviluppatore di TbSync. Preparare tale messaggio di posta elettronica ora?
+NoDebugLog=Non è stato possibile trovare alcun messaggio di debug utile. Attiva la modalità di debug, riavvia Thunderbird e ripeti tutti i passaggi richiesti per scatenare il comportamento errato.
+
+status.apiError=Errore di implementazione dell'API
+status.disabled=L'account non è abilitato, la sincronizzazione è disabilitata.
+
+status.syncing=Sincronizzazione in corso
+status.skipped=Non ancora supportato, omesso
+status.aborted=Non sincronizzato
+status.pending=In attesa di sincronizzazione
+status.modified=Modifiche locali presenti
+
+syncstate.syncing=Inizializzazione sincronizzazione in corso
+syncstate.preparing=Preparazione prossimo elemento per la sincronizzazione in corso
+syncstate.done=Preparazione prossimo elemento per la sincronizzazione in corso
+syncstate.accountdone=Sincronizzazione account completata
+syncstate.passwordprompt=Richiesta di inserire le credenziali
+
+status.success=OK
+status.notargets=Interruzione sincronizzazione in corso: non è possibile creare le destinazioni sincronizzazione.
+status.nolightning=Componente aggiuntivo Lightning non installato, i calendari non sono supportati.
+status.notsyncronized=L'account deve essere sincronizzato, almeno un elemento non è sincronizzato.
+status.foldererror=Almeno una risorsa ha riscontrato un errore di sincronizzazione. Si prega di controllare il registro eventi per maggiori dettagli.
+status.no-folders-found-on-server=Impossibile trovare risorse sul server.
+status.security=Impossibile stabilire una connessione sicura. Si sta utilizzando un certificato autofirmato o non affidabile senza averlo importato in Thunderbird? (##replace.1##)
+helplink.security=https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F
+status.network=Impossibile collegarsi al server (##replace.1##).
+status.JavaScriptError=Errore Javascript! Si prega di controllare il registro eventi per maggiori dettagli.

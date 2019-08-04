@@ -8,833 +8,485 @@
  
  "use strict";
 
-Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("chrome://tbsync/content/tbsync.jsm");
-if ("calICalendar" in Components.interfaces && typeof cal == 'undefined') {
-    Components.utils.import("resource://calendar/modules/calUtils.jsm");
-    Components.utils.import("resource://calendar/modules/ical.js");    
-}
+var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncAccounts = {
 
-    selectedAccount: null,
+  selectedAccount: null,
 
-    onload: function () {
-        //scan accounts, update list and select first entry (because no id is passed to updateAccountList)
-        //the onSelect event of the List will load the selected account
-        //also update/init add menu
-        this.updateAccountsList(-1, true); 
-        
-        Services.obs.addObserver(tbSyncAccounts.updateAccountsListObserver, "tbsync.updateAccountsList", false);
-        Services.obs.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.updateSyncstate", false);
-        Services.obs.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.updateAccountName", false);
-        Services.obs.addObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.toggleEnableState", false);
-    },
-
-    onunload: function () {
-        Services.obs.removeObserver(tbSyncAccounts.updateAccountsListObserver, "tbsync.updateAccountsList");
-        Services.obs.removeObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.updateSyncstate");
-        Services.obs.removeObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.updateAccountName");
-        Services.obs.removeObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.toggleEnableState");
-    },
-
-    debugToggleAll: function () {
-        let accounts = tbSync.db.getAccounts();
-        for (let i=0; i < accounts.IDs.length; i++) {
-            tbSyncAccounts.toggleAccountEnableState(accounts.IDs[i]);
-        }
-    },
+  onload: function () {
+    //scan accounts, update list and select first entry (because no id is passed to updateAccountList)
+    //the onSelect event of the List will load the selected account
+    //also update/init add menu
+    this.updateAvailableProvider(); 
     
-    debugMod: async function () { 
-        let accounts = tbSync.db.getAccounts();
-        for (let i=0; i < accounts.IDs.length; i++) {
-            if (tbSync.isEnabled(accounts.IDs[i])) {
-                let folders = tbSync.db.getFolders(accounts.IDs[i]);
-                for (let f in folders) {
-                    if (folders[f].selected == "1") {
-                        let tbType = tbSync[accounts.data[accounts.IDs[i]].provider].getThunderbirdFolderType(folders[f].type);
-                        switch (tbType) {
-                            case "tb-contact": 
-                                {
-                                    let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                    let addressbook = tbSync.getAddressBookObject(targetId);
-                                    let oldresults = addressbook.getCardsFromProperty("PrimaryEmail", "debugcontact@inter.net", true);
-                                    while (oldresults.hasMoreElements()) {
-                                        let card = oldresults.getNext();
-                                        if (card instanceof Components.interfaces.nsIAbCard && !card.isMailList) {
-                                            card.setProperty("DisplayName", "Debug Contact " + Date.now());
-                                            card.setProperty("LastName", "Contact " + Date.now());
-                                            addressbook.modifyCard(card);
-                                        }
-                                    }
-                                }
-                                break;
-                            case "tb-event":
-                            case "tb-todo":
-                                {
-                                    let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                    let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
-                                    
-                                    //promisify calender, so it can be used async
-                                    let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
-                                    let results = await targetObj.getAllItems();
-                                        
-                                    for (let r=0; r < results.length; r++) {
-                                        let newItem = results[r].clone();
-                                        newItem.title = tbType + " " + Date.now();
-                                        await targetObj.modifyItem(newItem, results[r]);                                        
-                                    }
-                                }
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-    },
+    Services.obs.addObserver(tbSyncAccounts.updateProviderListObserver, "tbsync.observer.manager.updateProviderList", false);
+    Services.obs.addObserver(tbSyncAccounts.updateAccountsListObserver, "tbsync.observer.manager.updateAccountsList", false);
+    Services.obs.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.observer.manager.updateSyncstate", false);
+    Services.obs.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.observer.manager.updateAccountName", false);
+    Services.obs.addObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.observer.manager.toggleEnableState", false);
+  },
 
-    debugDel: async function () { 
-        let accounts = tbSync.db.getAccounts();
-        for (let i=0; i < accounts.IDs.length; i++) {
-            if (tbSync.isEnabled(accounts.IDs[i])) {
-                let folders = tbSync.db.getFolders(accounts.IDs[i]);
-                for (let f in folders) {
-                    if (folders[f].selected == "1") {
-                        switch (tbSync[accounts.data[accounts.IDs[i]].provider].getThunderbirdFolderType(folders[f].type)) {
-                            case "tb-contact": 
-                                {                            
-                                    let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                    let addressbook = tbSync.getAddressBookObject(targetId);
-                                    let oldresults = addressbook.getCardsFromProperty("PrimaryEmail", "debugcontact@inter.net", true);
-                                    let cardsToDelete = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-                                    while (oldresults.hasMoreElements()) {
-                                        cardsToDelete.appendElement(oldresults.getNext(), false);
-                                    }
-                                    addressbook.deleteCards(cardsToDelete);
-                                }
-                                break;
+  onunload: function () {
+    Services.obs.removeObserver(tbSyncAccounts.updateProviderListObserver, "tbsync.observer.manager.updateProviderList");
+    Services.obs.removeObserver(tbSyncAccounts.updateAccountsListObserver, "tbsync.observer.manager.updateAccountsList");
+    Services.obs.removeObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.observer.manager.updateSyncstate");
+    Services.obs.removeObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.observer.manager.updateAccountName");
+    Services.obs.removeObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.observer.manager.toggleEnableState");
+  },       
+  
+  hasInstalledProvider: function (accountID) {
+    let provider = tbSync.db.getAccountProperty(accountID, "provider");
+    return tbSync.providers.loadedProviders.hasOwnProperty(provider);
+  },
 
-                            case "tb-event":
-                            case "tb-todo":
-                                {
-                                    let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                    let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
-                                    
-                                    //promisify calender, so it can be used async
-                                    let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
-                                    let results = await targetObj.getAllItems();
-                                    for (let r=0; r < results.length; r++) {
-                                        await targetObj.deleteItem(results[r]);
-                                    }
-                                }
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-    },
+  updateDropdown: function (selector) {
+    let accountsList = document.getElementById("tbSyncAccounts.accounts");
+    let selectedAccount = null;
+    let selectedAccountName = "";
+    let isActionsDropdown = (selector == "accountActions");
 
-    debugAdd: function (set) { 
-        let accounts = tbSync.db.getAccounts();
-        for (let i=0; i < accounts.IDs.length; i++) {
-            if (tbSync.isEnabled(accounts.IDs[i])) {
-                let folders = tbSync.db.getFolders(accounts.IDs[i]);
-                for (let f in folders) {
-                    if (folders[f].selected == "1") {
-                        switch (tbSync[accounts.data[accounts.IDs[i]].provider].getThunderbirdFolderType(folders[f].type)) {
-                            case "tb-contact": 
-                                { 
-                                    let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                    let addressbook = tbSync.getAddressBookObject(targetId);
-                                    //the two sets differ by number of contacts
-                                    let max = (set == 1) ? 2 : 10;
-                                    for (let m=0; m < max; m++) {
-                                        let newItem = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);
-                                        let properties = {
-                                            DisplayName: 'Debug Contact ' + Date.now(),
-                                            FirstName: 'Debug',
-                                            LastName: 'Contact ' + Date.now(),
-                                            PrimaryEmail: 'debugcontact@inter.net',
-                                            SecondEmail: 'debugcontact2@inter.net',
-                                            Email3Address: 'debugcontact3@inter.net',
-                                            WebPage1: 'WebPage',
-                                            SpouseName: 'Spouse',
-                                            CellularNumber: '0123',
-                                            PagerNumber: '4567',
-                                            HomeCity: 'HomeAddressCity',
-                                            HomeCountry: 'HomeAddressCountry',
-                                            HomeZipCode: '12345',
-                                            HomeState: 'HomeAddressState',
-                                            HomePhone: '6789',
-                                            Company: 'CompanyName',
-                                            Department: 'Department',
-                                            JobTitle: 'JobTitle',
-                                            WorkCity: 'BusinessAddressCity',
-                                            WorkCountry: 'BusinessAddressCountry',
-                                            WorkZipCode: '12345',
-                                            WorkState: 'BusinessAddressState',
-                                            WorkPhone: '6789',
-                                            Custom1: 'OfficeLocation',
-                                            FaxNumber: '3535',
-                                            AssistantName: 'AssistantName',
-                                            AssistantPhoneNumber: '4353453',
-                                            BusinessFaxNumber: '574563',
-                                            Business2PhoneNumber: '43564657',
-                                            Home2PhoneNumber: '767564',
-                                            CarPhoneNumber: '3543646',
-                                            MiddleName: 'MiddleName',
-                                            RadioPhoneNumber: '343546',
-                                            OtherAddressCity: 'OtherAddressCity',
-                                            OtherAddressCountry: 'OtherAddressCountry',
-                                            OtherAddressPostalCode: '12345',
-                                            OtherAddressState: 'OtherAddressState',
-                                            NickName: 'NickName',
-                                            Custom2: 'CustomerId',
-                                            Custom3: 'GovernmentId',
-                                            Custom4: 'AccountName',
-                                            IMAddress: 'IMAddress',
-                                            IMAddress2: 'IMAddress2',
-                                            IMAddress3: 'IMAddress3',
-                                            ManagerName: 'ManagerName',
-                                            CompanyMainPhone: 'CompanyMainPhone',
-                                            MMS: 'MMS',
-                                            HomeAddress: "Address",
-                                            HomeAddress2: "Address2",
-                                            WorkAddress: "Address",
-                                            WorkAddress2: "Address2",
-                                            OtherAddress: "Address",
-                                            OtherAddress2: "Address2",
-                                            Notes: "Notes",
-                                            Categories: tbSync.eas.sync.Contacts.categoriesToString(["Cat1","Cat2"]),
-                                            Cildren: tbSync.eas.sync.Contacts.categoriesToString(["Child1","Child2"]),
-                                            BirthDay: "15",
-                                            BirthMonth: "05",
-                                            BirthYear: "1980",
-                                            AnniversaryDay: "27",
-                                            AnniversaryMonth: "6",
-                                            AnniversaryYear: "2009"                                    
-                                        };
-                                        for (let p in properties) {
-                                            newItem.setProperty(p, properties[p]);
-                                        }
-                                        addressbook.addCard(newItem);
-                                    }
-                                }
-                                break;
-
-                            case "tb-event":
-                                {
-                                    let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                    let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
-                                    
-                                    //promisify calender, so it can be used async
-                                    let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
-                                    let item = cal.createEvent();
-                                    if (set == 1) item.icalString = [
-                                                                "BEGIN:VCALENDAR",
-                                                                "PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN",
-                                                                "VERSION:2.0",
-                                                                "BEGIN:VEVENT",
-                                                                "CREATED:20180609T203704Z",
-                                                                "LAST-MODIFIED:20180609T203759Z",
-                                                                "DTSTAMP:20180609T203759Z",
-                                                                "SUMMARY:Debug Event",
-                                                                "ORGANIZER;RSVP=FALSE;CN=support;PARTSTAT=ACCEPTED;ROLE=CHAIR:mailto:user@inter.net",
-                                                                "DTSTART;VALUE=DATE:20180114",
-                                                                "DTEND;VALUE=DATE:20180115",
-                                                                "DESCRIPTION:Test",
-                                                                "X-EAS-BUSYSTATUS:0",
-                                                                "TRANSP:TRANSPARENT",
-                                                                "X-EAS-SENSITIVITY:1",
-                                                                "X-EAS-RESPONSETYPE:1",
-                                                                "X-EAS-MEETINGSTATUS:0",
-                                                                "END:VEVENT",
-                                                                "END:VCALENDAR"].join("\n");
-                                    if (set == 2) item.icalString = ["BEGIN:VCALENDAR",
-                                                                "PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN",
-                                                                "VERSION:2.0",
-                                                                "BEGIN:VTIMEZONE",
-                                                                "TZID:Europe/Berlin",
-                                                                "BEGIN:DAYLIGHT",
-                                                                "TZOFFSETFROM:+0100",
-                                                                "TZOFFSETTO:+0200",
-                                                                "TZNAME:CEST",
-                                                                "DTSTART:19700329T020000",
-                                                                "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3",
-                                                                "END:DAYLIGHT",
-                                                                "BEGIN:STANDARD",
-                                                                "TZOFFSETFROM:+0200",
-                                                                "TZOFFSETTO:+0100",
-                                                                "TZNAME:CET",
-                                                                "DTSTART:19701025T030000",
-                                                                "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10",
-                                                                "END:STANDARD",
-                                                                "END:VTIMEZONE",
-                                                                "BEGIN:VEVENT",
-                                                                "CREATED:20180610T083243Z",
-                                                                "LAST-MODIFIED:20180610T083353Z",
-                                                                "DTSTAMP:20180610T083353Z",
-                                                                "SUMMARY:Debug Event (Reccurring)",
-                                                                "ORGANIZER;RSVP=FALSE;CN=support;PARTSTAT=ACCEPTED;ROLE=CHAIR:mailto:user@inter.net",
-                                                                "RRULE:FREQ=WEEKLY;UNTIL=20181030T220000Z;BYDAY=FR",
-                                                                "DTSTART;TZID=Europe/Berlin:20180518T230000",
-                                                                "DTEND;TZID=Europe/Berlin:20180519T000000",
-                                                                "DESCRIPTION:Test",
-                                                                "X-EAS-BUSYSTATUS:2",
-                                                                "TRANSP:OPAQUE",
-                                                                "X-EAS-SENSITIVITY:1",
-                                                                "X-EAS-RESPONSETYPE:1",
-                                                                "X-EAS-MEETINGSTATUS:0",
-                                                                "END:VEVENT",
-                                                                "END:VCALENDAR"].join("\n");
-
-                                    targetObj.adoptItem(item)
-                                }
-                                break;
-
-                            case "tb-todo":
-                                {
-                                    let targetId = tbSync.db.getFolderSetting(accounts.IDs[i], folders[f].folderID, "target");
-                                    let calendarObj = cal.getCalendarManager().getCalendarById(targetId);
-                                    
-                                    //promisify calender, so it can be used async
-                                    let targetObj = cal.async.promisifyCalendar(calendarObj.wrappedJSObject);
-                                    let item = cal.createTodo();
-                                    if (set == 1) item.icalString = [
-                                                                "BEGIN:VCALENDAR",
-                                                                "PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN",
-                                                                "VERSION:2.0",
-                                                                "BEGIN:VTIMEZONE",
-                                                                "TZID:Europe/Berlin",
-                                                                "BEGIN:DAYLIGHT",
-                                                                "TZOFFSETFROM:+0100",
-                                                                "TZOFFSETTO:+0200",
-                                                                "TZNAME:CEST",
-                                                                "DTSTART:19700329T020000",
-                                                                "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3",
-                                                                "END:DAYLIGHT",
-                                                                "BEGIN:STANDARD",
-                                                                "TZOFFSETFROM:+0200",
-                                                                "TZOFFSETTO:+0100",
-                                                                "TZNAME:CET",
-                                                                "DTSTART:19701025T030000",
-                                                                "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10",
-                                                                "END:STANDARD",
-                                                                "END:VTIMEZONE",
-                                                                "BEGIN:VTODO",
-                                                                "CREATED:20180609T225952Z",
-                                                                "LAST-MODIFIED:20180609T230558Z",
-                                                                "DTSTAMP:20180609T230558Z",
-                                                                "SUMMARY:Testaufgabe",
-                                                                "PRIORITY:5",
-                                                                "DTSTART;TZID=Europe/Berlin:20180204T010000",
-                                                                "DUE;TZID=Europe/Berlin:20180204T010000",
-                                                                "DESCRIPTION:Ja mei\n",
-                                                                "X-EAS-SENSITIVITY:0",
-                                                                "CLASS:PUBLIC",
-                                                                "X-EAS-IMPORTANCE:1",
-                                                                "END:VTODO",
-                                                                "END:VCALENDAR"].join("\n");
-
-                                    if (set == 2) item.icalString = [
-                                                                "BEGIN:VCALENDAR",
-                                                                "PRODID:-//Mozilla.org/NONSGML Mozilla Calendar V1.1//EN",
-                                                                "VERSION:2.0",
-                                                                "BEGIN:VTIMEZONE",
-                                                                "TZID:Europe/Berlin",
-                                                                "BEGIN:DAYLIGHT",
-                                                                "TZOFFSETFROM:+0100",
-                                                                "TZOFFSETTO:+0200",
-                                                                "TZNAME:CEST",
-                                                                "DTSTART:19700329T020000",
-                                                                "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3",
-                                                                "END:DAYLIGHT",
-                                                                "BEGIN:STANDARD",
-                                                                "TZOFFSETFROM:+0200",
-                                                                "TZOFFSETTO:+0100",
-                                                                "TZNAME:CET",
-                                                                "DTSTART:19701025T030000",
-                                                                "RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10",
-                                                                "END:STANDARD",
-                                                                "END:VTIMEZONE",
-                                                                "BEGIN:VTODO",
-                                                                "CREATED:20180610T083240Z",
-                                                                "LAST-MODIFIED:20180610T084151Z",
-                                                                "DTSTAMP:20180610T084151Z",
-                                                                "SUMMARY:Debug Todo (Reccurring)",
-                                                                "PRIORITY:5",
-                                                                "RRULE:FREQ=DAILY;BYDAY=MO,TU,WE,TH,FR",
-                                                                "DTSTART;TZID=Europe/Berlin:20180204T010000",
-                                                                "DUE;TZID=Europe/Berlin:20180204T010000",
-                                                                "DESCRIPTION:Test",
-                                                                "X-EAS-SENSITIVITY:0",
-                                                                "CLASS:PUBLIC",
-                                                                "X-EAS-IMPORTANCE:1",
-                                                                "SEQUENCE:1",
-                                                                "END:VTODO",
-                                                                "END:VCALENDAR"].join("\n");
-
-                                    targetObj.adoptItem(item)
-                                }
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-    },
-        
+    let isSyncing = false;
+    let isConnected = false;
+    let isEnabled = false;
+    let isInstalled = false;
     
-    hasInstalledProvider: function (accountID) {
-        let provider = tbSync.db.getAccountSetting(accountID, "provider");
-        return tbSync.loadedProviders.hasOwnProperty(provider);
-    },
-
-    updateDropdown: function (selector) {
-        let accountsList = document.getElementById("tbSyncAccounts.accounts");
-        let selectedAccount = null;
-        let selectedAccountName = "";
-        let isActionsDropdown = (selector == "accountActions");
-
-        let isSyncing = false;
-        let isConnected = false;
-        let isEnabled = false;
-        let isInstalled = false;
-        
-        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
-            //some item is selected
-            let selectedItem = accountsList.selectedItem;
-            selectedAccount = selectedItem.value;
-            selectedAccountName = selectedItem.getAttribute("label");
-            isSyncing = tbSync.isSyncing(selectedAccount);
-            isConnected = tbSync.isConnected(selectedAccount);
-            isEnabled = tbSync.isEnabled(selectedAccount);
-            isInstalled = tbSyncAccounts.hasInstalledProvider(selectedAccount);
-        }
-        
-        //hide if no accounts are avail (which is identical to no account selected)
-        if (isActionsDropdown) document.getElementById(selector + "SyncAllAccounts").hidden = (selectedAccount === null);
-        
-        //hide if no account is selected
-        if (isActionsDropdown) document.getElementById(selector + "Separator").hidden = (selectedAccount === null);
-        document.getElementById(selector + "DeleteAccount").hidden = (selectedAccount === null);
-        document.getElementById(selector + "DisableAccount").hidden = (selectedAccount === null) || !isEnabled || !isInstalled;
-        document.getElementById(selector + "EnableAccount").hidden = (selectedAccount === null) || isEnabled || !isInstalled;
-        document.getElementById(selector + "SyncAccount").hidden = (selectedAccount === null) || !isConnected || !isInstalled;
-        document.getElementById(selector + "RetryConnectAccount").hidden = (selectedAccount === null) || isConnected || !isEnabled || !isInstalled;
-
-        //Not yet implemented
-        if (document.getElementById(selector + "ShowErrorLog")) {
-            document.getElementById(selector + "ShowErrorLog").hidden = false;
-            document.getElementById(selector + "ShowErrorLog").disabled = false;
-        }
-        
-        if (selectedAccount !== null) {
-            //disable if currently syncing (and displayed)
-            document.getElementById(selector + "DeleteAccount").disabled = isSyncing;
-            document.getElementById(selector + "DisableAccount").disabled = isSyncing;
-            document.getElementById(selector + "EnableAccount").disabled = isSyncing;
-            document.getElementById(selector + "SyncAccount").disabled = isSyncing;
-            //adjust labels - only in global actions dropdown
-            if (isActionsDropdown) document.getElementById(selector + "DeleteAccount").label = tbSync.getLocalizedMessage("accountacctions.delete").replace("##accountname##", selectedAccountName);
-            if (isActionsDropdown) document.getElementById(selector + "SyncAccount").label = tbSync.getLocalizedMessage("accountacctions.sync").replace("##accountname##", selectedAccountName);
-            if (isActionsDropdown) document.getElementById(selector + "EnableAccount").label = tbSync.getLocalizedMessage("accountacctions.enable").replace("##accountname##", selectedAccountName);
-            if (isActionsDropdown) document.getElementById(selector + "DisableAccount").label = tbSync.getLocalizedMessage("accountacctions.disable").replace("##accountname##", selectedAccountName);
-        }
+    if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
+      //some item is selected
+      let selectedItem = accountsList.selectedItem;
+      selectedAccount = selectedItem.value;
+      selectedAccountName = selectedItem.getAttribute("label");
+      isSyncing = tbSync.core.isSyncing(selectedAccount);
+      isConnected = tbSync.core.isConnected(selectedAccount);
+      isEnabled = tbSync.core.isEnabled(selectedAccount);
+      isInstalled = tbSyncAccounts.hasInstalledProvider(selectedAccount);
+    }
     
-        //Debug Options
-        if (isActionsDropdown) {
-            document.getElementById("accountActionsDebugToggleAll").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
-            document.getElementById("accountActionsDebugAdd1").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
-            document.getElementById("accountActionsDebugAdd2").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
-            document.getElementById("accountActionsDebugMod").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
-            document.getElementById("accountActionsDebugDel").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
-            document.getElementById("accountActionsSeparatorDebug").hidden = !tbSync.prefSettings.getBoolPref("debug.testoptions");
-        }
-    },
+    //hide if no accounts are avail (which is identical to no account selected)
+    if (isActionsDropdown) document.getElementById(selector + "SyncAllAccounts").hidden = (selectedAccount === null);
     
-    synchronizeAccount: function () {
-        let accountsList = document.getElementById("tbSyncAccounts.accounts");
-        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)  && !tbSync.isSyncing(accountsList.selectedItem.value)) {            
-            if (tbSyncAccounts.hasInstalledProvider(accountsList.selectedItem.value)) {
-                tbSync.syncAccount('sync', accountsList.selectedItem.value);
-            }
-        }
-    },
+    //hide if no account is selected
+    if (isActionsDropdown) document.getElementById(selector + "Separator").hidden = (selectedAccount === null);
+    document.getElementById(selector + "DeleteAccount").hidden = (selectedAccount === null);
+    document.getElementById(selector + "DisableAccount").hidden = (selectedAccount === null) || !isEnabled || !isInstalled;
+    document.getElementById(selector + "EnableAccount").hidden = (selectedAccount === null) || isEnabled || !isInstalled;
+    document.getElementById(selector + "SyncAccount").hidden = (selectedAccount === null) || !isConnected || !isInstalled;
+    document.getElementById(selector + "RetryConnectAccount").hidden = (selectedAccount === null) || isConnected || !isEnabled || !isInstalled;
 
-    deleteAccount: function () {
-        let accountsList = document.getElementById("tbSyncAccounts.accounts");
-        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)  && !tbSync.isSyncing(accountsList.selectedItem.value)) {
-            let nextAccount =  -1;
-            if (accountsList.selectedIndex > 0) {
-                //first try to select the item after this one, otherwise take the one before
-                if (accountsList.selectedIndex + 1 < accountsList.getRowCount()) nextAccount = accountsList.getItemAtIndex(accountsList.selectedIndex + 1).value;
-                else nextAccount = accountsList.getItemAtIndex(accountsList.selectedIndex - 1).value;
-            }
-            
-            if (!tbSyncAccounts.hasInstalledProvider(accountsList.selectedItem.value)) {
-                if (confirm(tbSync.getLocalizedMessage("prompt.EraseAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
-                    //delete account and all folders from db
-                    tbSync.db.removeAccount(accountsList.selectedItem.value);
-                    //update list
-                    this.updateAccountsList(nextAccount);
-                } 
-            } else if (confirm(tbSync.getLocalizedMessage("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
-                //cache all folders and remove associated targets 
-                tbSync.disableAccount(accountsList.selectedItem.value);
-                //delete account and all folders from db
-                tbSync.db.removeAccount(accountsList.selectedItem.value);
-                //update list
-                this.updateAccountsList(nextAccount);
-            }
-        }
-    },
-
-
-
-    /* * *
-    * Observer to catch update list request (upon provider load/unload)
-    */
-    updateAccountsListObserver: {
-        observe: function (aSubject, aTopic, aData) {
-            //-2 = try to keep current selection while adding/removing provider aData
-            tbSyncAccounts.updateAccountsList(-2, aData); 
-        }
-    },
-
-    toggleEnableState: function () {
-        let accountsList = document.getElementById("tbSyncAccounts.accounts");
-        
-        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value) && !tbSync.isSyncing(accountsList.selectedItem.value)) {            
-            let isConnected = tbSync.isConnected(accountsList.selectedItem.value);
-            if (!isConnected || window.confirm(tbSync.getLocalizedMessage("prompt.Disable"))) {           
-                tbSyncAccounts.toggleAccountEnableState(accountsList.selectedItem.value);
-            }
-        }
-    },
-
-    /* * *
-    * Observer to catch enable state toggle
-    */
-    toggleEnableStateObserver: {
-        observe: function (aSubject, aTopic, aData) {
-            tbSyncAccounts.toggleAccountEnableState(aData);
-        }
-    },
+    if (document.getElementById(selector + "ShowEventLog")) {
+      document.getElementById(selector + "ShowEventLog").hidden = false;
+      document.getElementById(selector + "ShowEventLog").disabled = false;
+    }
     
-    //is not prompting, this is doing the actual toggle
-    toggleAccountEnableState: function (account) {
-        if (tbSyncAccounts.hasInstalledProvider(account)) {
-            let isEnabled = tbSync.isEnabled(account);
-            
-            if (isEnabled) {
-                //we are enabled and want to disable (do not ask, if not connected)
-                tbSync.disableAccount(account);
-                Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
-                tbSyncAccounts.updateAccountStatus(account);
-            } else {
-                //we are disabled and want to enabled
-                tbSync.enableAccount(account);
-                Services.obs.notifyObservers(null, "tbsync.updateAccountSettingsGui", account);
-                tbSync.syncAccount("sync", account);
-            }
-        }
-    },
+    if (selectedAccount !== null) {
+      //disable if currently syncing (and displayed)
+      document.getElementById(selector + "DeleteAccount").disabled = isSyncing;
+      document.getElementById(selector + "DisableAccount").disabled = isSyncing;
+      document.getElementById(selector + "EnableAccount").disabled = isSyncing;
+      document.getElementById(selector + "SyncAccount").disabled = isSyncing;
+      //adjust labels - only in global actions dropdown
+      if (isActionsDropdown) document.getElementById(selector + "DeleteAccount").label = tbSync.getString("accountacctions.delete").replace("##accountname##", selectedAccountName);
+      if (isActionsDropdown) document.getElementById(selector + "SyncAccount").label = tbSync.getString("accountacctions.sync").replace("##accountname##", selectedAccountName);
+      if (isActionsDropdown) document.getElementById(selector + "EnableAccount").label = tbSync.getString("accountacctions.enable").replace("##accountname##", selectedAccountName);
+      if (isActionsDropdown) document.getElementById(selector + "DisableAccount").label = tbSync.getString("accountacctions.disable").replace("##accountname##", selectedAccountName);
+    }
+  },
+  
+  synchronizeAccount: function () {
+    let accountsList = document.getElementById("tbSyncAccounts.accounts");
+    if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)  && !tbSync.core.isSyncing(accountsList.selectedItem.value)) {            
+      if (tbSyncAccounts.hasInstalledProvider(accountsList.selectedItem.value)) {
+        tbSync.core.syncAccount(accountsList.selectedItem.value);
+      }
+    }
+  },
 
-    /* * *
-    * Observer to catch synstate changes and to update account icons
-    */
-    updateAccountSyncStateObserver: {
-        observe: function (aSubject, aTopic, aData) {
-            if (aData) {
-                //since we want rotating arrows on each syncstate change, we need to run this on each syncstate
-                tbSyncAccounts.updateAccountStatus(aData);
-            }
-        }
-    },
+  deleteAccount: function () {
+    let accountsList = document.getElementById("tbSyncAccounts.accounts");
+    if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)  && !tbSync.core.isSyncing(accountsList.selectedItem.value)) {
+      let nextAccount =  -1;
+      if (accountsList.selectedIndex > 0) {
+        //first try to select the item after this one, otherwise take the one before
+        if (accountsList.selectedIndex + 1 < accountsList.getRowCount()) nextAccount = accountsList.getItemAtIndex(accountsList.selectedIndex + 1).value;
+        else nextAccount = accountsList.getItemAtIndex(accountsList.selectedIndex - 1).value;
+      }
+      
+      if (!tbSyncAccounts.hasInstalledProvider(accountsList.selectedItem.value)) {
+        if (confirm(tbSync.getString("prompt.EraseAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
+          //delete account and all folders from db
+          tbSync.db.removeAccount(accountsList.selectedItem.value);
+          //update list
+          this.updateAccountsList(nextAccount);
+        } 
+      } else if (confirm(tbSync.getString("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
+        //cache all folders and remove associated targets 
+        tbSync.core.disableAccount(accountsList.selectedItem.value);
+        //delete account and all folders from db
+        tbSync.db.removeAccount(accountsList.selectedItem.value);
+        //update list
+        this.updateAccountsList(nextAccount);
+      }
+    }
+  },
 
-    setStatusImage: function (account, obj) {
-        let statusImage = this.getStatusImage(account, obj.src);
-        if (statusImage != obj.src) {
-            obj.src = statusImage;
-        }
-    },
+
+
+  /* * *
+  * Observer to catch update list request (upon provider load/unload)
+  */
+  updateAccountsListObserver: {
+    observe: function (aSubject, aTopic, aData) {
+      //aData is the accountID to be selected
+      //if missing, it will try to not change selection
+      tbSyncAccounts.updateAccountsList(aData); 
+    }
+  },
+  
+  updateProviderListObserver: {
+    observe: function (aSubject, aTopic, aData) {
+      //aData is a provider
+      tbSyncAccounts.updateAvailableProvider(aData); 
+    }
+  },    
+
+  toggleEnableState: function () {
+    let accountsList = document.getElementById("tbSyncAccounts.accounts");
     
-    getStatusImage: function (account, current = "") {
-        let src = "";   
+    if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value) && !tbSync.core.isSyncing(accountsList.selectedItem.value)) {            
+      let isConnected = tbSync.core.isConnected(accountsList.selectedItem.value);
+      if (!isConnected || window.confirm(tbSync.getString("prompt.Disable"))) {           
+        tbSyncAccounts.toggleAccountEnableState(accountsList.selectedItem.value);
+      }
+    }
+  },
 
-        if (!tbSyncAccounts.hasInstalledProvider(account)) {
-            src = "error16.png";
-        } else {
-            switch (tbSync.db.getAccountSetting(account, "status").split(".")[0]) {
-                case "OK":
-                    src = "tick16.png";
-                    break;
-                
-                case "disabled":
-                    src = "disabled16.png";
-                    break;
-                
-                case "info":
-                case "nolightning":
-                case "notsyncronized":
-                case "modified":
-                    src = "info16.png";
-                    break;
+  /* * *
+  * Observer to catch enable state toggle
+  */
+  toggleEnableStateObserver: {
+    observe: function (aSubject, aTopic, aData) {
+      tbSyncAccounts.toggleAccountEnableState(aData);
+    }
+  },
+  
+  //is not prompting, this is doing the actual toggle
+  toggleAccountEnableState: function (accountID) {
+    if (tbSyncAccounts.hasInstalledProvider(accountID)) {
+      let isEnabled = tbSync.core.isEnabled(accountID);
+      
+      if (isEnabled) {
+        //we are enabled and want to disable (do not ask, if not connected)
+        tbSync.core.disableAccount(accountID);
+        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", accountID);
+        tbSyncAccounts.updateAccountStatus(accountID);
+      } else {
+        //we are disabled and want to enabled
+        tbSync.core.enableAccount(accountID);
+        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", accountID);
+        tbSync.core.syncAccount(accountID);
+      }
+    }
+  },
 
-                case "warning":
-                    src = "warning16.png";
-                    break;
+  /* * *
+  * Observer to catch synstate changes and to update account icons
+  */
+  updateAccountSyncStateObserver: {
+    observe: function (aSubject, aTopic, aData) {
+      if (aData) {
+        //since we want rotating arrows on each syncstate change, we need to run this on each syncstate
+        tbSyncAccounts.updateAccountStatus(aData);
+      }
+    }
+  },
 
-                case "syncing":
-                    switch (current.replace("chrome://tbsync/skin/","")) {
-                        case "sync16_1.png": 
-                            src = "sync16_2.png"; 
-                            break;
-                        case "sync16_2.png": 
-                            src = "sync16_3.png"; 
-                            break;
-                        case "sync16_3.png": 
-                            src = "sync16_4.png"; 
-                            break;
-                        case "sync16_4.png": 
-                            src = "sync16_1.png"; 
-                            break;
-                        default: 
-                            src = "sync16_1.png";
-                            tbSync.setSyncData(account, "accountManagerLastUpdated", 0)
-                            break;
-                    }                
-                    if ((Date.now() - tbSync.getSyncData(account, "accountManagerLastUpdated")) < 300) {
-                        return current;
-                    }
-                    tbSync.setSyncData(account, "accountManagerLastUpdated", Date.now());
-                    break;
+  setStatusImage: function (accountID, obj) {
+    let statusImage = this.getStatusImage(accountID, obj.src);
+    if (statusImage != obj.src) {
+      obj.src = statusImage;
+    }
+  },
+  
+  getStatusImage: function (accountID, current = "") {
+    let src = "";   
 
-                default:
-                    src = "error16.png";
-            }
-        }
+    if (!tbSyncAccounts.hasInstalledProvider(accountID)) {
+      src = "error16.png";
+    } else {
+      switch (tbSync.db.getAccountProperty(accountID, "status").split(".")[0]) {
+        case "success":
+          src = "tick16.png";
+          break;
         
-        return "chrome://tbsync/skin/" + src;
-    },
+        case "disabled":
+          src = "disabled16.png";
+          break;
+        
+        case "info":
+        case "nolightning":
+        case "notsyncronized":
+        case "modified":
+          src = "info16.png";
+          break;
 
-    updateAccountLogo: function (id) {
-        let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
-        if (listItem) {
-            let obj = listItem.childNodes[0].firstChild
-            obj.src = tbSyncAccounts.hasInstalledProvider(id) ? tbSync[tbSync.db.getAccountSetting(id,"provider")].getProviderIcon(16, id) : "chrome://tbsync/skin/provider16.png";
-        }
-    },
+        case "warning":
+          src = "warning16.png";
+          break;
 
-    updateAccountStatus: function (id) {
-        let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
-        if (listItem) {
-            let obj = listItem.childNodes[2].firstChild
-            this.setStatusImage(id, obj);
-        }
-    },
+        case "syncing":
+          switch (current.replace("chrome://tbsync/skin/","")) {
+            case "sync16_1.png": 
+              src = "sync16_2.png"; 
+              break;
+            case "sync16_2.png": 
+              src = "sync16_3.png"; 
+              break;
+            case "sync16_3.png": 
+              src = "sync16_4.png"; 
+              break;
+            case "sync16_4.png": 
+              src = "sync16_1.png"; 
+              break;
+            default: 
+              src = "sync16_1.png";
+              tbSync.core.getSyncDataObject(accountID).accountManagerLastUpdated = 0;
+              break;
+          }                
+          if ((Date.now() - tbSync.core.getSyncDataObject(accountID).accountManagerLastUpdated) < 300) {
+            return current;
+          }
+          tbSync.core.getSyncDataObject(accountID).accountManagerLastUpdated = Date.now();
+          break;
 
-    updateAccountNameObserver: {
-        observe: function (aSubject, aTopic, aData) {
-            let pos = aData.indexOf(":");
-            let id = aData.substring(0, pos);
-            let name = aData.substring(pos+1);
-            tbSyncAccounts.updateAccountName (id, name);
-        }
-    },
-
-    updateAccountName: function (id, name) {
-        let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
-        if (listItem.childNodes[1].getAttribute("label") != name) {
-            listItem.childNodes[1].setAttribute("label", name);
-            listItem.setAttribute("label", name);
-        }
-    },
+        default:
+          src = "error16.png";
+      }
+    }
     
-    updateAccountsList: function (accountToSelect = -1, updAddMenu = false) {
-        let accountsList = document.getElementById("tbSyncAccounts.accounts");
-        let accounts = tbSync.db.getAccounts();
+    return "chrome://tbsync/skin/" + src;
+  },
 
-        //try to keep the currently selected account, if accountToSelect == -2
-        if (accountToSelect == -2) {
-            let s = accountsList.getItemAtIndex(accountsList.selectedIndex);
-            accountToSelect = s ? s.value : -1;
-        }
-        
-        if (accounts.allIDs.length > null) {
+  updateAccountLogo: function (id) {
+    let accountData = new tbSync.AccountData(id);
+    let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
+    if (listItem) {
+      let obj = listItem.childNodes[0];
+      obj.src = tbSyncAccounts.hasInstalledProvider(id) ? tbSync.providers[accountData.getAccountProperty("provider")].base.getProviderIcon(16, accountData) : "chrome://tbsync/skin/provider16.png";
+    }
+  },
 
-            //get current accounts in list and remove entries of accounts no longer there
-            let listedAccounts = [];
-            for (let i=accountsList.getRowCount()-1; i>=0; i--) {
-                listedAccounts.push(accountsList.getItemAtIndex (i).value);
-                if (accounts.allIDs.indexOf(accountsList.getItemAtIndex(i).value) == -1) {
-                    accountsList.removeItemAt(i);
-                }
-            }
+  updateAccountStatus: function (id) {
+    let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
+    if (listItem) {
+      let obj = listItem.childNodes[2];
+      this.setStatusImage(id, obj);
+    }
+  },
 
-            //accounts array is without order, extract keys (ids) and loop over keys
-            for (let i = 0; i < accounts.allIDs.length; i++) {
+  updateAccountNameObserver: {
+    observe: function (aSubject, aTopic, aData) {
+      let pos = aData.indexOf(":");
+      let id = aData.substring(0, pos);
+      let name = aData.substring(pos+1);
+      tbSyncAccounts.updateAccountName (id, name);
+    }
+  },
 
-                if (listedAccounts.indexOf(accounts.allIDs[i]) == -1) {
-                    //add all missing accounts (always to the end of the list)
-                    let newListItem = document.createElement("richlistitem");
-                    newListItem.setAttribute("id", "tbSyncAccounts.accounts." + accounts.allIDs[i]);
-                    newListItem.setAttribute("value", accounts.allIDs[i]);
-                    newListItem.setAttribute("label", accounts.data[accounts.allIDs[i]].accountname);
-                    newListItem.setAttribute("ondblclick", "tbSyncAccounts.toggleEnableState();");
-                    
-                    //add icon (use "install provider" icon, if provider not installed)
-                    let itemTypeCell = document.createElement("listcell");
-                    itemTypeCell.setAttribute("class", "img");
-                    itemTypeCell.setAttribute("width", "24");
-                    itemTypeCell.setAttribute("height", "24");
-                        let itemType = document.createElement("image");
-                        itemType.setAttribute("style", "margin: 4px;");
-                    itemTypeCell.appendChild(itemType);
-                    newListItem.appendChild(itemTypeCell);
-
-                    //add account name
-                    let itemLabelCell = document.createElement("listcell");
-                    itemLabelCell.setAttribute("class", "label");
-                    itemLabelCell.setAttribute("flex", "1");
-                    newListItem.appendChild(itemLabelCell);
-
-                    //add account status
-                    let itemStatusCell = document.createElement("listcell");
-                    itemStatusCell.setAttribute("class", "img");
-                    itemStatusCell.setAttribute("width", "30");
-                    itemStatusCell.setAttribute("height", "30");
-                    let itemStatus = document.createElement("image");
-                    itemStatus.setAttribute("style", "margin:2px;");
-                    itemStatusCell.appendChild(itemStatus);
-
-                    newListItem.appendChild(itemStatusCell);
-                    accountsList.appendChild(newListItem);
-                } 
-                
-                //update/set actual values
-                this.updateAccountName(accounts.allIDs[i], accounts.data[accounts.allIDs[i]].accountname);
-                this.updateAccountStatus(accounts.allIDs[i]);
-                this.updateAccountLogo(accounts.allIDs[i]);
-            }
-            
-            //find selected item
-            for (let i=0; i<accountsList.getRowCount(); i++) {
-                if (accountToSelect == accountsList.getItemAtIndex(i).value || accountToSelect == -1) {
-                    accountsList.selectedIndex = i;
-                    accountsList.ensureIndexIsVisible(i);
-                    break;
-                }
-            }
-
-        } else {
-            //No defined accounts, empty accounts list and load dummy
-            for (let i=accountsList.getRowCount()-1; i>=0; i--) {
-                accountsList.removeItemAt(i);
-            }
-            document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/noaccounts.xul");
-        }
-        
-        
-        //updAddMenu can be 
-        // - true (build from scratch)
-        // - false (do nothing)
-        // - a string (add/remove given provider)
-        if (updAddMenu === true) {
-            //add default providers
-            for (let provider in tbSync.defaultProviders) {
-                tbSyncAccounts.updateAddMenuEntry(provider);
-            }
-            //update/add all remaining installed providers
-            for (let provider in tbSync.loadedProviders) {
-                tbSyncAccounts.updateAddMenuEntry(provider);
-            }
-        } else if (updAddMenu !== false) {
-            //update single provider entry
-            tbSyncAccounts.updateAddMenuEntry(updAddMenu);
-            if (accountToSelect != -1 && tbSync.db.getAccountSetting(accountToSelect, "provider") == updAddMenu) {
-                tbSyncAccounts.loadSelectedAccount();
-            }
-        }
-    },
-
-    updateAddMenuEntry: function (provider) {
-        let isDefault = tbSync.defaultProviders.hasOwnProperty(provider);
-        let isInstalled = tbSync.loadedProviders.hasOwnProperty(provider);
-        
-        let entry = document.getElementById("addMenuEntry_" + provider);
-        if (entry === null) {
-            //add basic menu entry
-            let newItem = window.document.createElement("menuitem");
-            newItem.setAttribute("id", "addMenuEntry_" + provider);
-            newItem.setAttribute("value",  provider);
-            newItem.setAttribute("class", "menuitem-iconic");
-            newItem.addEventListener("click", function () {tbSyncAccounts.addAccountAction(provider)}, false);
-            newItem.setAttribute("hidden", true);
-            entry = window.document.getElementById("accountActionsAddAccount").appendChild(newItem);
-        }
-        
-        //Update label, icon and hidden according to isDefault and isInstalled
-        if (isInstalled) {
-            entry.setAttribute("label",  tbSync[provider].getNiceProviderName());
-            entry.setAttribute("src", tbSync[provider].getProviderIcon(16));
-            entry.setAttribute("hidden", false);
-        } else if (isDefault) {
-            entry.setAttribute("label", tbSync.defaultProviders[provider].name);
-            entry.setAttribute("src", "chrome://tbsync/skin/provider16.png");                    
-            entry.setAttribute("hidden", false);
-        } else {
-            entry.setAttribute("hidden", true);
-        }
-    },
-
-    //load the pref page for the currently selected account (triggered by onSelect)
-    loadSelectedAccount: function () {
-        let accountsList = document.getElementById("tbSyncAccounts.accounts");
-        if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
-            //get id of selected account from value of selectedItem
-            this.selectedAccount = accountsList.selectedItem.value;
-            let provider = tbSync.db.getAccountSetting(this.selectedAccount, "provider");
-            
-            if (tbSyncAccounts.hasInstalledProvider(this.selectedAccount)) {
-                document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/editAccount.xul?provider="+provider+"&id=" + this.selectedAccount);
-            } else {
-                document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/missingProvider.xul?provider="+provider);
-            }
-        }
-    },
+  updateAccountName: function (id, name) {
+    let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
+    if (listItem.childNodes[1].getAttribute("value") != name) {
+      listItem.childNodes[1].setAttribute("value", name);
+    }
+  },
+  
+  updateAvailableProvider: function (provider = null) {        
+    //either add/remove a specific provider, or rebuild the list from scratch
+    if (provider) {
+      //update single provider entry
+      tbSyncAccounts.updateAddMenuEntry(provider);
+    } else {
+      //add default providers
+      for (let provider in tbSync.providers.defaultProviders) {
+        tbSyncAccounts.updateAddMenuEntry(provider);
+      }
+      //update/add all remaining installed providers
+      for (let provider in tbSync.providers.loadedProviders) {
+        tbSyncAccounts.updateAddMenuEntry(provider);
+      }
+    }
     
-
-
-
-    addAccountAction: function (provider) {
-        let isDefault = tbSync.defaultProviders.hasOwnProperty(provider);
-        let isInstalled = tbSync.loadedProviders.hasOwnProperty(provider);
-        
-        if (isInstalled) {
-            tbSyncAccounts.addAccount(provider);
-        } else if (isDefault) {
-            tbSyncAccounts.installProvider(provider);
-        }
-    },
+    this.updateAccountsList();
     
-    addAccount: function (provider) {
-        document.getElementById("tbSyncAccounts.accounts").disabled=true;
-        document.getElementById("tbSyncAccounts.btnAccountActions").disabled=true;
-        window.openDialog(tbSync[provider].getCreateAccountXulUrl(), "newaccount", "centerscreen,modal,resizable=no");
-        document.getElementById("tbSyncAccounts.accounts").disabled=false;
-        document.getElementById("tbSyncAccounts.btnAccountActions").disabled=false;
-    },
+    let selectedAccount = this.getSelectedAccount();
+    if (selectedAccount !== null && tbSync.db.getAccountProperty(selectedAccount, "provider") == provider) {
+      tbSyncAccounts.loadSelectedAccount();
+    }
+  },
+  
+  updateAccountsList: function (accountToSelect = null) {
+    let accountsList = document.getElementById("tbSyncAccounts.accounts");
+    let accounts = tbSync.db.getAccounts();
 
-    installProvider: function (provider) {
-        for (let i=0; i<tbSync.AccountManagerTabs.length; i++) {            
-             tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.t" + i).setAttribute("active","false");
+    // try to keep the currently selected account, if accountToSelect is not given
+    if (accountToSelect === null) {
+      let s = accountsList.getItemAtIndex(accountsList.selectedIndex);
+      if (s) {
+        // there is an entry selected, do not change it
+        accountToSelect = s.value;
+      }
+    }
+    
+    if (accounts.allIDs.length > null) {
+
+      //get current accounts in list and remove entries of accounts no longer there
+      let listedAccounts = [];
+      for (let i=accountsList.getRowCount()-1; i>=0; i--) {
+        let item = accountsList.getItemAtIndex(i);
+        listedAccounts.push(item.value);
+        if (accounts.allIDs.indexOf(item.value) == -1) {
+          item.remove();
         }
-        tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").hidden=false;
-        tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").setAttribute("active","true");
-        tbSync.prefWindowObj.document.getElementById("tbSyncAccountManager.contentWindow").setAttribute("src", "chrome://tbsync/content/manager/installProvider.xul?provider="+provider);        
-    },
-            
+      }
+
+      //accounts array is without order, extract keys (ids) and loop over keys
+      for (let i = 0; i < accounts.allIDs.length; i++) {
+
+        if (listedAccounts.indexOf(accounts.allIDs[i]) == -1) {
+          //add all missing accounts (always to the end of the list)
+          let newListItem = document.createElement("richlistitem");
+          newListItem.setAttribute("id", "tbSyncAccounts.accounts." + accounts.allIDs[i]);
+          newListItem.setAttribute("value", accounts.allIDs[i]);
+          newListItem.setAttribute("align", "center");
+          newListItem.setAttribute("label", accounts.data[accounts.allIDs[i]].accountname);
+          newListItem.setAttribute("style", "padding: 5px 0px;");
+          newListItem.setAttribute("ondblclick", "tbSyncAccounts.toggleEnableState();");
+          
+          //add icon (use "install provider" icon, if provider not installed)
+          let itemType = document.createElement("image");
+          itemType.setAttribute("width", "16");
+          itemType.setAttribute("height", "16");
+          itemType.setAttribute("style", "margin: 0px 0px 0px 5px;");
+          newListItem.appendChild(itemType);
+
+          //add account name
+          let itemLabel = document.createElement("label");
+          itemLabel.setAttribute("flex", "1");
+          newListItem.appendChild(itemLabel);
+
+          //add account status
+          let itemStatus = document.createElement("image");
+          itemStatus.setAttribute("width", "16");
+          itemStatus.setAttribute("height", "16");
+          itemStatus.setAttribute("style", "margin: 0px 5px;");
+          newListItem.appendChild(itemStatus);
+          
+          accountsList.appendChild(newListItem);
+        } 
+        
+        //update/set actual values
+        this.updateAccountName(accounts.allIDs[i], accounts.data[accounts.allIDs[i]].accountname);
+        this.updateAccountStatus(accounts.allIDs[i]);
+        this.updateAccountLogo(accounts.allIDs[i]);
+      }
+      
+      //find selected item
+      for (let i=0; i<accountsList.getRowCount(); i++) {
+        if (accountToSelect === null || accountToSelect == accountsList.getItemAtIndex(i).value) {
+          accountsList.selectedIndex = i;
+          accountsList.ensureIndexIsVisible(i);
+          break;
+        }
+      }
+
+    } else {
+      //No defined accounts, empty accounts list and load dummy
+      for (let i=accountsList.getRowCount()-1; i>=0; i--) {
+        accountsList.getItemAtIndex(i).remove();
+      }
+      document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/noaccounts.xul");
+    }
+  },
+
+  updateAddMenuEntry: function (provider) {
+    let isDefault = tbSync.providers.defaultProviders.hasOwnProperty(provider);
+    let isInstalled = tbSync.providers.loadedProviders.hasOwnProperty(provider);
+    
+    let entry = document.getElementById("addMenuEntry_" + provider);
+    if (entry === null) {
+      //add basic menu entry
+      let newItem = window.document.createElement("menuitem");
+      newItem.setAttribute("id", "addMenuEntry_" + provider);
+      newItem.setAttribute("value",  provider);
+      newItem.setAttribute("class", "menuitem-iconic");
+      newItem.addEventListener("click", function () {tbSyncAccounts.addAccountAction(provider)}, false);
+      newItem.setAttribute("hidden", true);
+      entry = window.document.getElementById("accountActionsAddAccount").appendChild(newItem);
+    }
+    
+    //Update label, icon and hidden according to isDefault and isInstalled
+    if (isInstalled) {
+      entry.setAttribute("label",  tbSync.providers[provider].base.getNiceProviderName());
+      entry.setAttribute("image", tbSync.providers[provider].base.getProviderIcon(16));
+      entry.setAttribute("hidden", false);
+    } else if (isDefault) {
+      entry.setAttribute("label", tbSync.providers.defaultProviders[provider].name);
+      entry.setAttribute("image", "chrome://tbsync/skin/provider16.png");                    
+      entry.setAttribute("hidden", false);
+    } else {
+      entry.setAttribute("hidden", true);
+    }
+  },
+
+  getSelectedAccount: function () {
+    let accountsList = document.getElementById("tbSyncAccounts.accounts");
+    if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
+      //get id of selected account from value of selectedItem
+      return accountsList.selectedItem.value;
+    }
+    return null;
+  },
+  
+  //load the pref page for the currently selected account (triggered by onSelect)
+  loadSelectedAccount: function () {
+    let selectedAccount = this.getSelectedAccount();
+    
+    if (selectedAccount !== null) { //account id could be 0, so need to check for null explicitly
+      let provider = tbSync.db.getAccountProperty(selectedAccount, "provider");            
+      if (tbSyncAccounts.hasInstalledProvider(selectedAccount)) {
+        document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/editAccount.xul?provider="+provider+"&id=" + selectedAccount);
+      } else {
+        document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/missingProvider.xul?provider="+provider);
+      }
+    }
+  },
+  
+
+
+
+  addAccountAction: function (provider) {
+    let isDefault = tbSync.providers.defaultProviders.hasOwnProperty(provider);
+    let isInstalled = tbSync.providers.loadedProviders.hasOwnProperty(provider);
+    
+    if (isInstalled) {
+      tbSyncAccounts.addAccount(provider);
+    } else if (isDefault) {
+      tbSyncAccounts.installProvider(provider);
+    }
+  },
+  
+  addAccount: function (provider) {
+    tbSync.providers.loadedProviders[provider].createAccountWindow = window.openDialog(tbSync.providers[provider].base.getCreateAccountWindowUrl(), "TbSyncNewAccountWindow", "centerscreen,resizable=no");
+    tbSync.providers.loadedProviders[provider].createAccountWindow.addEventListener("unload", function () { tbSync.manager.prefWindowObj.focus(); });
+  },
+
+  installProvider: function (provider) {
+    for (let i=0; i<tbSync.AccountManagerTabs.length; i++) {            
+       tbSync.manager.prefWindowObj.document.getElementById("tbSyncAccountManager.t" + i).setAttribute("active","false");
+    }
+    tbSync.manager.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").hidden=false;
+    tbSync.manager.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").setAttribute("active","true");
+    tbSync.manager.prefWindowObj.document.getElementById("tbSyncAccountManager.contentWindow").setAttribute("src", "chrome://tbsync/content/manager/installProvider.xul?provider="+provider);        
+  },
+      
 };

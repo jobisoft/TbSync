@@ -1,0 +1,8 @@
+treechildren::-moz-tree-image(DirCol, tbSyncStale) {
+  margin-inline-end: 2px;
+  list-style-image: url("chrome://tbsync/skin/error16.png");
+}
+
+.abMenuItem[AddrBook="true"][TbSyncIcon="tbSyncStale"] {
+  list-style-image: url("chrome://tbsync/skin/error16.png");
+}

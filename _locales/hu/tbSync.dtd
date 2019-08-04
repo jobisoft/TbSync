@@ -1,0 +1,77 @@
+<!ENTITY popup.opensettings "Thunderbird-összehangolás fiókkezelő megnyitasa">
+<!ENTITY menu.settingslabel "Összehangolási beállítások">
+
+<!ENTITY toolbar.label "Az összes Thunderbird-összehangolás fiók összehangolása">
+<!ENTITY toolbar.tooltiptext "A legújabb változtatások összehangolása">
+
+<!ENTITY manager.AccountActions "Fiókműveletek">
+<!ENTITY manager.AddAccount "Új fiók hozzáadása">
+<!ENTITY manager.SyncAll "Az összes engedélyezett fiók összehangolása">
+
+<!ENTITY manager.SynchronizeAccount "Fiók összehangolása">
+<!ENTITY manager.EnableAccount "Engedélyezze a fiókot és próbáljon csatlakozni a kiszolgálóhoz">
+<!ENTITY manager.DisableAccount "Fiók letiltása">
+<!ENTITY manager.DeleteAccount "Fiók törlése">
+<!ENTITY manager.ShowEventLog "Eseménynapló megjelenítése">
+<!ENTITY manager.RetryConnectAccount "Próbálkozzon újra a kiszolgálóhoz való csatlakozással">
+
+<!ENTITY manager.noaccounts "Még nincsenek fiókok meghatározott.">
+
+<!ENTITY manager.title "Thunderbird-összehangolás fiókkezelő">
+<!ENTITY manager.shorttitle "Fiókkezelő">
+<!ENTITY manager.provider4tbsync "Thunderbird-összehangolás szolgáltató">
+<!ENTITY manager.accountsettings "Fiók beállítások">
+<!ENTITY manager.help "Súgó">
+<!ENTITY manager.community "Közösség">
+<!ENTITY manager.provider "Szolgáltató telepítése">
+
+<!ENTITY password.title "TbSync hitelesítési kérés">
+<!ENTITY password.description "Kérjük, frissítse a következő TbSync-fiók hitelesítő adatait:">
+<!ENTITY password.account "Számla:">
+<!ENTITY password.user "Használó:">
+<!ENTITY password.password "Jelszó:">
+
+<!ENTITY manager.accounts "Fiókok">
+<!ENTITY manager.status "Állapot">
+
+<!ENTITY manager.tabs.status "Összehangolási állapot">
+<!ENTITY manager.tabs.status.general "Tábornok">
+<!ENTITY manager.tabs.status.enableThisAccount "Fiók engedélyezze és összehangolása">
+<!ENTITY manager.tabs.status.sync "Összehangolás">
+<!ENTITY manager.tabs.status.tryagain "Próbálkozzon újra a kiszolgálóhoz való csatlakozással">
+<!ENTITY manager.tabs.status.autotime "Időszakos összehangolás (perc)">
+<!ENTITY manager.tabs.status.never "A 0 beállítás letiltja az időszakos összehangolást. A nyomösszehangolást még meg nem valósult.">
+<!ENTITY manager.tabs.status.resources "Elérhető erőforrások">
+<!ENTITY manager.tabs.status.resources.intro "Válassza ki, hogy a talált erőforrások közül melyiket összehangolni kell a Thunderbird programmal.">
+<!ENTITY manager.lockedsettings.description "A összehangolási hibák elkerülése érdekében egyes beállítások nem szerkeszthetők a fiók engedélyezése közben.">
+
+<!ENTITY manager.catman.text "A Thunderbird-összehangolásja az érintkezési kategóriákat is, amelyek hatékonyan helyettesítik a nem összehangolható kapcsolattartókat. A Thunderbird névjegyzékben való használatához telepítheti a Kategóriakezelő kiegészítőt. Lehetővé teszi az átfedő kategóriákon alapuló kapcsolattartó csoportok kezelését és egy sor más kategóriához kapcsolódó funkciót. Ez megtalálható a hivatalos Thunderbird-kiegészítő adattárban:">
+
+<!ENTITY manager.installprovider.link "Kattintson a következő linkre a hiányzó összhangzós szolgáltató info oldalának megnyitásához. Ott talál további információkat a szolgáltatóról, és lehetősége van a telepítésre:">
+<!ENTITY manager.installprovider.warning "Ez az összehangoló szolgáltató nem a hivatalos Thunderbird-kiegészítő adattárban található, így a Thunderbird személyzete nem vizsgálta felül. A szolgáltató rossz dolgokat tehet a rendszerében. Használja saját felelősségére.">
+<!ENTITY manager.missingprovider "A összehangolás szolgáltató (##provider##), amelyhez a fiók társítva van, nincs telepítve.">
+
+<!ENTITY manager.supporter.contributors "Közreműködők és fordítók">
+<!ENTITY manager.supporter.sponsors "Tesztszámla támogatók">
+<!ENTITY manager.supporter.details "Részletek">
+
+<!ENTITY manager.help.needhelp "Segítségre van szüksége?">
+<!ENTITY manager.help.wiki "További tudnivalók, útmutatók és részletes beállítások, olvassa el a Thunderbird-összehangolás projekt wiki oldalát.">
+
+<!ENTITY manager.help.foundabug "Talált egy hibát?">
+<!ENTITY manager.help.fixit "Hibajelentés küldése a javításhoz. Hibakeresési mód bekapcsolása engedélyeket igényel.">
+<!ENTITY manager.help.enabledebuglog "Hibakeresési mód: Minden program üzenet és minden olyan adat regisztrálása, amelyet a Thunderbird-összehangolás küldés és fogadás. A Thunderbird jelentősen lassabban működhet.">
+<!ENTITY manager.help.createbugreportinfo "Indítsa újra a Thunderbird alkalmazást, majd ismételje meg a pontos lépéseket a hiba reprodukálásához. Ez csak a hibajelentéssel kapcsolatos hibajelentéseket gyűjti össze. Hibabejelentés létrehozása itt.">
+<!ENTITY manager.help.createbugreport "Hibabejelentés létrehozása">
+
+<!ENTITY supportwizard.title "Hibabejelentés létrehozása">
+<!ENTITY supportwizard.pagetitle "Információgyűjtés a hibajelentés feldolgozásához.">
+<!ENTITY supportwizard.label.faultycomponent "Thunderbird-összehangolás összetevő, ahol hiba történt:">
+<!ENTITY supportwizard.label.selectcomponent "Összetevő kiválasztása…">
+<!ENTITY supportwizard.label.summary "A hiba rövid összefoglalása:">
+<!ENTITY supportwizard.label.description "Részletes hiba leírása:">
+<!ENTITY supportwizard.footer "Ebből az információból e-mail készül. További tájékoztatás adhatók hozzá, pl. képernyőképek. A hibajelentés elküldéséhez az e-mailt el kell küldeni.">
+
+<!ENTITY eventlog.title "Eseménynapló">
+<!ENTITY eventlog.close "közel">
+<!ENTITY eventlog.clear "üres">

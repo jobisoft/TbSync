@@ -51,11 +51,11 @@
                 context="tbsync.accountmanger.ContextMenu"                
                 onkeypress="if (event.keyCode == 46) {tbSyncAccounts.deleteAccount();}"
                 onselect="tbSyncAccounts.loadSelectedAccount();">
-                <listhead style="border-bottom: 1px solid lightgrey;">
-                    <listheader style="font-weight:bold;" label="" width="24" flex="0" />
-                    <listheader style="font-weight:bold;" label="&manager.accounts;" flex="12" />
-                    <listheader style="font-weight:bold;text-align:right;" label="&manager.status;" flex="5" />
-                </listhead>
+                <listheader style="border-bottom: 1px solid lightgrey;">
+                    <treecol style="font-weight:bold;" label="" width="26" flex="0" />
+                    <treecol style="font-weight:bold;" label="&manager.accounts;" flex="1" />
+                    <treecol style="font-weight:bold;text-align:right;" label="&manager.status;" flex="0" />
+                </listheader>
             </richlistbox>
             <hbox style="margin:1ex 0 0 0">
              <vbox style="margin:0" flex="1">
@@ -75,39 +75,13 @@
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/sync16.png"
                                     label="&manager.SyncAll;"
-                                    oncommand="tbSync.syncAccount('sync');"/>
-                            <menuitem id="accountActionsShowErrorLog"
+                                    oncommand="tbSync.core.syncAllAccounts();"/>
+                            <menuitem id="accountActionsShowEventLog"
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/warning16.png"
-                                    label="&manager.ShowErrorLog;"
-                                    oncommand="tbSync.openErrorLog()"/>
+                                    label="&manager.ShowEventLog;"
+                                    oncommand="tbSync.eventlog.open()"/>
                             <menuseparator id="accountActionsSeparator"/>
-                            <menuitem id="accountActionsDebugToggleAll"
-                                    class="menuitem-iconic"
-                                    label="Debug Toggle All"
-                                    hidden="true"
-                                    oncommand="tbSyncAccounts.debugToggleAll();"/>
-                            <menuitem id="accountActionsDebugAdd1"
-                                    class="menuitem-iconic"
-                                    label="Debug Add Set 1"
-                                    hidden="true"
-                                    oncommand="tbSyncAccounts.debugAdd(1);"/>
-                            <menuitem id="accountActionsDebugAdd2"
-                                    class="menuitem-iconic"
-                                    label="Debug Add Set 2"
-                                    hidden="true"
-                                    oncommand="tbSyncAccounts.debugAdd(2);"/>
-                            <menuitem id="accountActionsDebugMod"
-                                    class="menuitem-iconic"
-                                    label="Debug Mod"
-                                    hidden="true"
-                                    oncommand="tbSyncAccounts.debugMod();"/>
-                            <menuitem id="accountActionsDebugDel"
-                                    class="menuitem-iconic"
-                                    label="Debug Del"
-                                    hidden="true"
-                                    oncommand="tbSyncAccounts.debugDel();"/>
-                            <menuseparator id="accountActionsSeparatorDebug" hidden="true"/>
                             <menuitem id="accountActionsDeleteAccount"
                                     class="menuitem-iconic"
                                     image="chrome://tbsync/skin/del16.png"

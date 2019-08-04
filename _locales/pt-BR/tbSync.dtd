@@ -1,0 +1,77 @@
+<!ENTITY popup.opensettings "Abra o gerenciador de contas do TbSync">
+<!ENTITY menu.settingslabel "Configurações de sincronização (TbSync)">
+
+<!ENTITY toolbar.label "Sincronizar todas as contas do TbSync">
+<!ENTITY toolbar.tooltiptext "Sincronizar as alterações mais recentes">
+
+<!ENTITY manager.AccountActions "Ações da conta">
+<!ENTITY manager.AddAccount "Adicionar nova conta">
+<!ENTITY manager.SyncAll "Sincronizar todas as contas ativadas">
+
+<!ENTITY manager.SynchronizeAccount "Sincronizar conta">
+<!ENTITY manager.EnableAccount "Ativar conta e tentar conectar ao servidor">
+<!ENTITY manager.DisableAccount "Desativar conta">
+<!ENTITY manager.DeleteAccount "Excluir conta">
+<!ENTITY manager.ShowEventLog "Mostrar log de eventos">
+<!ENTITY manager.RetryConnectAccount "Tentar conectar no servidor novamente">
+
+<!ENTITY manager.noaccounts "Não existem contas definidas.">
+
+<!ENTITY manager.title "Gerenciador de contas do TbSync">
+<!ENTITY manager.shorttitle "Gerenciar conta">
+<!ENTITY manager.provider4tbsync "Provedor para o TbSync">
+<!ENTITY manager.accountsettings "Configurações da conta">
+<!ENTITY manager.help "Ajuda">
+<!ENTITY manager.community "Comunidade">
+<!ENTITY manager.provider "Instalar provedor">
+
+<!ENTITY password.title "Solicitação de Credencial do TbSync">
+<!ENTITY password.description "Por favor, atualize as credenciais para a seguinte conta TbSync:">
+<!ENTITY password.account "Conta:">
+<!ENTITY password.user "Usuário:">
+<!ENTITY password.password "Senha:">
+
+<!ENTITY manager.accounts "Contas">
+<!ENTITY manager.status "Status">
+
+<!ENTITY manager.tabs.status "Status de sincronização">
+<!ENTITY manager.tabs.status.general "Geral">
+<!ENTITY manager.tabs.status.enableThisAccount "Ativar e sincronizar esta conta">
+<!ENTITY manager.tabs.status.sync "Sincronizar agora">
+<!ENTITY manager.tabs.status.tryagain "Tente conectar no servidor novamente">
+<!ENTITY manager.tabs.status.autotime "Sincronização periódica (em minutos)">
+<!ENTITY manager.tabs.status.never "Deixar a configuração como 0 desabilita a sincronização periódica. A sincronização push ainda não está implementada.">
+<!ENTITY manager.tabs.status.resources "Recursos disponíveis">
+<!ENTITY manager.tabs.status.resources.intro "Selecione qual dos recursos encontrados deve ser sincronizado com o Thunderbird.">
+<!ENTITY manager.lockedsettings.description "Para evitar erros de sincronização, algumas configurações não podem ser editadas enquanto a conta está ativada.">
+
+<!ENTITY manager.catman.text "O TbSync também sincroniza as categorias de contatos, que são um poderoso substituto para as listas de contatos não sincronizáveis. Para poder usá-los no catálogo de endereços do Thunderbird, você pode instalar o complemento do «Category Manager». Ele permite gerenciar grupos de contatos com base em categorias sobrepostas e fornece vários outros recursos relacionados a categorias. Pode ser encontrado no repositório oficial do Mozilla:">
+
+<!ENTITY manager.installprovider.link "Clique no link a seguir para abrir a página de informações do provedor de sincronização ausente. Lá você encontrará mais informações sobre o provedor e terá a opção de instalá-lo:">
+<!ENTITY manager.installprovider.warning "Este provedor de sincronização não é hospedado no repositório oficial do Thunderbird e, portanto, não foi revisado pela equipe do Thunderbird. O provedor pode prejudicar o seu sistema. Use por sua conta e risco.">
+<!ENTITY manager.missingprovider "Essa conta requer o provedor de sincronização ##provider##, que atualmente não está instalado.">
+
+<!ENTITY manager.supporter.contributors "Contribuidores e Tradutores">
+<!ENTITY manager.supporter.sponsors "Patrocinadores de contas de teste">
+<!ENTITY manager.supporter.details "Detalhes">
+
+<!ENTITY manager.help.needhelp "Precisa de ajuda?">
+<!ENTITY manager.help.wiki "Abra as páginas wiki do projeto TbSync, eles fornecem informações adicionais, guias e descrições detalhadas da configuração.">
+
+<!ENTITY manager.help.foundabug "Encontrou um bug?">
+<!ENTITY manager.help.fixit "Você pode ajudar a consertá-lo enviando um relatório de bug. Isso requer a ativação do modo de depuração.">
+<!ENTITY manager.help.enabledebuglog "Modo de depuração: Registro de todas as mensagens do programa e todos os dados que o TbSync recebe e envia. O Thunderbird pode funcionar significativamente mais devagar.">
+<!ENTITY manager.help.createbugreportinfo "Para que o TbSync colete apenas os dados de depuração relevantes para o seu relatório de erros, reinicie o Thunderbird e repita exatamente as etapas que reproduzem o comportamento de bugs. Então você pode criar seu relatório de bug aqui.">
+<!ENTITY manager.help.createbugreport "Criar relatório de bug">
+
+<!ENTITY supportwizard.title "Criar relatório de bug">
+<!ENTITY supportwizard.pagetitle "Coletar todas as informações para processar efetivamente o relatório de erros.">
+<!ENTITY supportwizard.label.faultycomponent "Componente do TbSync onde você observou o erro:">
+<!ENTITY supportwizard.label.selectcomponent "Selecione o componente...">
+<!ENTITY supportwizard.label.summary "Breve resumo do erro:">
+<!ENTITY supportwizard.label.description "Descrição detalhada do erro:">
+<!ENTITY supportwizard.footer "A partir das informações fornecidas aqui, um e-mail será gerado na próxima etapa, que você pode editar posteriormente (por exemplo, adicionando capturas de tela ou similar). Apenas enviando esse e-mail, o relatório de erro será enviado.">
+
+<!ENTITY eventlog.title "log de eventos">
+<!ENTITY eventlog.close "Fechar">
+<!ENTITY eventlog.clear "Limpar">
