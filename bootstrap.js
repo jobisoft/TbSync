@@ -44,6 +44,7 @@ function startup(data, reason) {
         let branch = Services.prefs.getDefaultBranch("extensions.tbsync.");
         branch.setIntPref("timeout", 90000);
         branch.setBoolPref("debug.testoptions", false);
+        branch.setBoolPref("showUpdateInfoTB68", true);
 
         branch.setBoolPref("log.toconsole", false);
         branch.setBoolPref("log.tofile", false);

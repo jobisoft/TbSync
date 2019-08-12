@@ -153,7 +153,29 @@ var tbSync = {
         tbSync.syncTimer.start();
 
         tbSync.dump("TbSync init","Done");
-    },
+    
+        let notificationBox = window.document.getElementById("tbSyncNotificationBox");//document.specialTabs.msgNotificationBar;
+        let buttons = [];
+        
+        function testNotificationCallback(reason) {
+          tbSync.prefSettings.setBoolPref("showUpdateInfoTB68", false);
+        };
+        
+        let button1 = {
+            isDefault: true,
+            accessKey: null,
+            label: tbSync.getLocalizedMessage("updateInfoTB68.button"),
+            callback: testNotificationCallback,
+            type: "", // If a popup, then must be: "menu-button" or "menu".
+            popup: null
+        };
+
+        buttons.push(button1);
+        
+        if (tbSync.prefSettings.getBoolPref("showUpdateInfoTB68")) {
+          notificationBox.appendNotification(tbSync.getLocalizedMessage("updateInfoTB68.text"), "tbSyncInfo" , "chrome://tbsync/skin/tbsync.png" ,  notificationBox.PRIORITY_WARNING_HIGH, buttons); 
+        }
+      },
 
     loadProvider:  async function (addonId, provider, js) {
         //only load, if not yet loaded

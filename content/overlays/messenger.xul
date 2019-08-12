@@ -26,5 +26,6 @@
 
     <!--menuitem id="tbsync.taskPopupEntry" label="&menu.settingslabel;" appendto="taskPopup" onclick="tbSync.openManagerWindow(event);" / -->
     <menuitem id="tbsync.accountmgrEntry" label="&menu.settingslabel;" insertbefore="menu_accountmgr" oncommand="tbSync.openManagerWindow(event);" />
-
+      <notificationbox flex="0" id="tbSyncNotificationBox" >
+      </notificationbox>
 </overlay>        
