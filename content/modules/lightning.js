@@ -591,6 +591,8 @@ var lightning = {
         let calManager = tbSync.lightning.cal.getCalendarManager();          
         for (let calendar of calManager.getCalendars({})) {
             if (calendar.uri.spec == aCalendar.uri.spec) {
+                // update the target
+                folderData.setFolderProperty("target", calendar.id)
                 return;
             }
         }
