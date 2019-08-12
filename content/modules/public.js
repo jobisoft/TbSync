@@ -314,13 +314,15 @@ var FolderData = class {
   // will be added to its name, to indicate, that it is no longer
   // managed by TbSync.
   remove(keepStaleTargetSuffix = "") {
-    if (keepStaleTargetSuffix) {
-      let target = this.getFolderProperty("target");
-      let changes = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
-      tbSync.db.clearChangeLog(target);      
-      this.targetData.appendStaleSuffix(keepStaleTargetSuffix, changes);
-    } else {
-      this.targetData.removeTarget();
+    let target = this.getFolderProperty("target");
+    if (target) {
+      if (keepStaleTargetSuffix) {
+        let changes = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
+        tbSync.db.clearChangeLog(target);      
+        this.targetData.appendStaleSuffix(keepStaleTargetSuffix, changes);
+      } else {
+        this.targetData.removeTarget();
+      }
     }
     this.resetFolderProperty("target");
     this.setFolderProperty("cached", true);
