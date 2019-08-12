@@ -546,8 +546,9 @@ var addressbook = {
     
     // Get cached or new unique name for new address book
     let cachedName = folderData.getFolderProperty("targetName");                         
-    let basename = cachedName == "" ? folderData.accountData.getAccountProperty("accountname") + " (" + folderData.getFolderProperty("foldername")+ ")" : cachedName;
+    let newname = cachedName == "" ? folderData.accountData.getAccountProperty("accountname") + " (" + folderData.getFolderProperty("foldername")+ ")" : cachedName;
 
+    /* this seems to cause more troube than it helps
     let count = 1;
     let unique = false;
     let newname = basename;
@@ -565,7 +566,7 @@ var addressbook = {
         newname = basename + " #" + count;
         count = count + 1;
       }
-    } while (!unique);
+    } while (!unique); */
     
     //Create the new book with the unique name
     let directory = tbSync.providers[folderData.accountData.getAccountProperty("provider")].standardTargets.addressbook.createAddressBook(newname, folderData);
@@ -580,7 +581,7 @@ var addressbook = {
       tbSync.providers[provider].base.onResetTarget(folderData);
       
       folderData.setFolderProperty("target", directory.UID);            
-      folderData.setFolderProperty("targetName", basename);
+      folderData.setFolderProperty("targetName", directory.dirName);
       //notify about new created address book
       Services.obs.notifyObservers(null, 'tbsync.observer.addressbook.created', null)
       return directory;

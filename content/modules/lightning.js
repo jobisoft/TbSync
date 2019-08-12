@@ -643,8 +643,9 @@ var lightning = {
     
     //check if  there is a known/cached name, and use that as starting point to generate unique name for new calendar 
     let cachedName = folderData.getFolderProperty("targetName");                         
-    let basename = cachedName == "" ? folderData.accountData.getAccountProperty("accountname") + " (" + folderData.getFolderProperty("foldername") + ")" : cachedName;
+    let newname = cachedName == "" ? folderData.accountData.getAccountProperty("accountname") + " (" + folderData.getFolderProperty("foldername") + ")" : cachedName;
 
+    /* this seems to cause more trouble than it helps
     let count = 1;
     let unique = false;
     let newname = basename;
@@ -660,7 +661,7 @@ var lightning = {
         newname = basename + " #" + count;
         count = count + 1;
       }
-    } while (!unique);
+    } while (!unique);*/
 
 
     //check if there is a cached or preloaded color - if not, chose one
@@ -721,7 +722,7 @@ var lightning = {
     
     //store id of calendar as target in DB
     folderData.setFolderProperty("target", newCalendar.id); 
-    folderData.setFolderProperty("targetName", basename);
+    folderData.setFolderProperty("targetName", newCalendar.name);
     folderData.setFolderProperty("targetColor",  newCalendar.getProperty("color"));
     return newCalendar;        
   }
