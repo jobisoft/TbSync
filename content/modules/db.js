@@ -52,6 +52,49 @@ var db = {
       }
     }
     
+    // try to migrate old accounts file from TB60
+    if (!this.files["accounts"].found) {
+      try {
+        let data = await OS.File.read(tbSync.io.getAbsolutePath("accounts.json"));
+        let accounts = JSON.parse(tbSync.decoder.decode(data));
+        for (let d of Object.values(accounts.data)) {
+          console.log("Migrating: " + JSON.stringify(d));
+          
+          let settings = {};
+          settings.status = "disabled";
+          settings.provider = d.provider;
+          settings.https = (d.https == "1");
+          
+          switch (d.provider) {
+            case "dav":
+              settings.calDavHost = d.host ? d.host : "";
+              settings.cardDavHost = d.host2 ? d.host2 : "";
+              settings.serviceprovider = d.serviceprovider;
+              settings.user = d.user;
+              settings.syncGroups = (d.syncGroups == "1");
+              settings.useCalendarCache = (d.useCache == "1");
+            break;
+            
+            case "eas":
+              settings.asversionselected = d.asversionselected;
+              settings.asversion = d.asversion;
+              settings.host = d.host;
+              settings.user = d.user;
+              settings.servertype = d.servertype;
+              settings.seperator = d.seperator;
+              settings.provision = (d.provision == "1");
+              settings.displayoverride = (d.displayoverride == "1");
+              if (d.hasOwnProperty("galautocomplete")) settings.galautocomplete = (d.galautocomplete == "1");
+            break;
+          }
+          
+          this.addAccount(d.accountname, settings);
+        }
+      } catch (e) {
+        Components.utils.reportError(e);
+      }
+    }
+    
     this.loaded = true;
   },
   
