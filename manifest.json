@@ -1,0 +1,25 @@
+{
+  "applications": {
+    "gecko": {
+  "update_url": "https://tbsync.jobisoft.de/beta/TB68/update-tbsync.json",
+      "id": "tbsync@jobisoft.de",
+      "strict_min_version": "68.0"
+    }
+  },
+  "manifest_version": 2,
+  "name": "TbSync [Beta Release Channel]",
+  "version": "1.7.8",
+  "author": "John Bieling",
+  "homepage_url": "https://github.com/jobisoft/TbSync",
+  "description": "Please update your addons via the gear menu, to get the versions compatible with TB68.",
+  "icons": {
+    "32": "skin/tbsync.png"
+  },
+  "legacy": {
+    "type": "bootstrap",
+    "options": {
+      "page": "chrome://tbsync/content/manager/addonoptions.xul",
+      "open_in_tab": false
+    }
+  }
+}
