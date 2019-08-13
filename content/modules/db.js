@@ -51,6 +51,17 @@ var db = {
         Components.utils.reportError(e);
       }
     }
+
+    function getNewDeviceId4Migration() {
+        //taken from https://jsfiddle.net/briguy37/2MVFd/
+        let d = new Date().getTime();
+        let uuid = 'xxxxxxxxxxxxxxxxyxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            let r = (d + Math.random()*16)%16 | 0;
+            d = Math.floor(d/16);
+            return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+        });
+        return "MZTB" + uuid;
+    }
     
     // try to migrate old accounts file from TB60
     if (!this.files["accounts"].found) {
@@ -76,6 +87,9 @@ var db = {
             break;
             
             case "eas":
+              settings.useragent = d.useragent;
+              settings.devicetype = d.devicetype;
+              settings.deviceId = getNewDeviceId4Migration();
               settings.asversionselected = d.asversionselected;
               settings.asversion = d.asversion;
               settings.host = d.host;
