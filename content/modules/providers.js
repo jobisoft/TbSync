@@ -83,6 +83,34 @@ var providers = {
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", provider);
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
 
+        // TB60 -> TB68 migration - remove icon and rename target if stale
+        let allAddressBooks = MailServices.ab.directories;
+        while (allAddressBooks.hasMoreElements()) {
+          let addressBook = allAddressBooks.getNext();
+          if (addressBook instanceof Components.interfaces.nsIAbDirectory) {
+            let storedProvider = addressBook.getStringValue("tbSyncProvider", "");
+            if (provider == storedProvider && providerData.getFolders({"target": addressBook.UID}).length == 0) {
+              addressBook.setStringValue("tbSyncIcon", "orphaned");
+              addressBook.setStringValue("tbSyncProvider", "orphaned");
+              let name = addressBook.dirName;
+              addressBook.dirName = "Disconnected from TbSync: " + name;              
+            }
+          }
+        }
+        
+		if (tbSync.lightning.isAvailable()) {
+          for (let calendar of tbSync.lightning.cal.getCalendarManager().getCalendars({})) {
+            let storedProvider = calendar.getProperty("tbSyncProvider");
+            if (provider == storedProvider && calendar.type == "storage" && providerData.getFolders({"target": calendar.id}).length == 0) {
+              calendar.setProperty("tbSyncIcon", "orphaned");
+              calendar.setProperty("tbSyncProvider", "orphaned");
+              let name = calendar.name;
+              calendar.name = "Disconnected from TbSync: " + name;
+              calendar.setProperty("disabled", true);
+            }
+          }
+        }
+        
       } catch (e) {
         tbSync.dump("FAILED to load provider", provider);
         Components.utils.reportError(e);
