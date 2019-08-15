@@ -19,6 +19,24 @@ If you like TbSync and want to support its development, please consider a donati
 
 [![](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FL89EHHQZ2CFL&source=url)
 
+
+## Where is this going?
+
+I started to work on TbSync, because we needed ActiveSync (EAS) support in Thunderbird. Soon after, I realized that the current situation for sync accounts is very confusing in terms of user experience: There was no central place to set up sync accounts. The same DAV account had to be setup in lightning and again in the sogo-connector or in CardBook. EWS accounts are setup differently again and for google we need 3 different add-ons for contacts, calendars and tasks.
+
+With TbSync I want to unify that: A central manager to setup sync accounts (DAV, EAS, EWS, Google, ...) and get contacts, tasks and calendars. I knew that I will not be able to re-create and maintain all the different providers for TbSync by myself. I thus created a TbSync Provider API, which allows other add-ons to hook into TbSync and re-use most of the glue code.
+
+I am in contact with Thunderbird staff and we are trying to get TbSync integrated directly into Thunderbird. No ETA yet.
+
+Future plans:
+* cooperate with [CardBook](https://github.com/jobisoft/TbSync/issues/105), so it does not matter, if the user wants to use the standard Thunderbird address book or the cardbook address book. 
+* add support for Google
+* add support for [EteSync](https://www.etesync.com/)
+* support the [EWS community](https://github.com/ExchangeCalendar/exchangecalendar), which is interested in turning their add-on into a provider for TbSync.
+
+All this requires funding. If you like TbSync and want to support its development, please consider a donation.
+
+
 ## Translations and localizations
 
 * [Localization content best practices](https://developer.mozilla.org/en-US/docs/Mozilla/Localization/Localization_content_best_practices)
@@ -28,19 +46,6 @@ If you like TbSync and want to support its development, please consider a donati
 
 If you encounter a misspelled translation key, do not correct it but report it to me. The translation keys are only used as variables in the code and are not visible. But changing a translation key requires all other translations and all references to that key in the code to be changed as well. Since translation keys are sometimes build up by string concatenation, it is not as easy as doing a global find and replace.
 
-## Where is this going?
-
-I started to work on TbSync, because we needed ActiveSync (EAS) support in Thunderbird. Soon after, I realized that the current situation for sync accounts is very confusing in terms of user experience: There was no central place to set up sync accounts. The same DAV account had to be setup in lightning and again in the sogo-connector or in CardBook. EWS accounts are setup differently again and for google we need 3 different add-ons for contacts, calendars and tasks.
-
-With TbSync I want to unify that: A central manager to setup sync accounts (DAV, EAS, EWS, Google, ...) and get contacts, tasks and calendars. I knew that I will not be able to re-create and maintain all the different providers for TbSync by myself. I thus created (and still work on) a TbSync API, which allows other add-ons to hook into TbSync and re-use most of the glue code. My DAV provider is a proof-of-concept of that API (and a replacement for the sogo-connector, which was not working with TB60 anymore).
-
-I am in contact with Thunderbird staff and we are trying to get TbSync integrated directly into Thunderbird. No ETA yet.
-
-The next step is to [cooperate with CardBook](https://github.com/jobisoft/TbSync/issues/105), so it does not matter, if the user wants to use the "old" Thunderbird address book or the new vCard address book. Every provider available for TbSync should be able to sync into CardBook as well. I hope we get this done before the end of this year.
-
-Later I want to support the [EWS community](https://github.com/ExchangeCalendar/exchangecalendar), which is interested in turning their add-on into a provider for TbSync.
-
-After that, I would like to create or help others to create a google provider for TbSync. We will see how that goes, nothing is planed yet.
 
 ## Icon sources and attributions
 
