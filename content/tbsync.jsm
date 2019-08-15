@@ -163,12 +163,25 @@ var tbSync = {
             let addressBook = allAddressBooks.getNext();
             if (addressBook instanceof Components.interfaces.nsIAbDirectory) {
 				//do we control this?
-                let folders = tbSync.db.findFoldersWithSetting(["target"], [addressBook.URI]);
-                if (folders.length == 1) {
-					addressBook.setStringValue("tbSyncProvider", tbSync.db.getAccountSetting(folders[0].account, "provider"));					
+                let folders = [];
+				for (let aID in tbSync.db.folders) {
+					for (let fID in tbSync.db.folders[aID]) {
+						if (tbSync.db.folders[aID][fID].target == addressBook.URI) folders.push(aID);
+					}
+				}
+				if (folders.length == 1) {
+					addressBook.setStringValue("tbSyncProvider", tbSync.db.getAccountSetting(folders[0], "provider"));					
 				} else {
-					addressBook.setStringValue("tbSyncIcon", "");
-					addressBook.setStringValue("tbSyncProvider", "");
+					switch (addressBook.getStringValue("tbSyncProvider", "")) {
+						case "":
+							addressBook.setStringValue("tbSyncIcon", "");
+							addressBook.setStringValue("tbSyncProvider", "");
+							break;
+						case "orphaned":
+						default:
+							addressBook.setStringValue("tbSyncIcon", "orphaned");
+							addressBook.setStringValue("tbSyncProvider", "orphaned");
+					}
 				}
             }
         }	
@@ -177,12 +190,15 @@ var tbSync = {
 			// run through all calendars
 			for (let calendar of cal.getCalendarManager().getCalendars({})) {
 				//do we control this?
-				let folders = tbSync.db.findFoldersWithSetting(["target"], [calendar.id]);
+                let folders = [];
+				for (let aID in tbSync.db.folders) {
+					for (let fID in tbSync.db.folders[aID]) {
+						if (tbSync.db.folders[aID][fID].target == calendar.id) folders.push(aID);
+					}
+				}
 				if (folders.length == 1) {
-					console.log("yes");
-					calendar.setProperty("tbSyncProvider", tbSync.db.getAccountSetting(folders[0].account, "provider"));
+					calendar.setProperty("tbSyncProvider", tbSync.db.getAccountSetting(folders[0], "provider"));
 				} else {
-					console.log("no");
 					calendar.setProperty("tbSyncProvider", "");
 				}
 			}
