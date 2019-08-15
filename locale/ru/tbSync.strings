@@ -34,5 +34,6 @@ RestartThunderbirdAndTryAgain=Журнал отладки TbSync включен,
 HelpFixStartupError=Чтобы исправить эту ошибку, вы можете отправить журнал отладки разработчику TbSync. Подготовьте это письмо сейчас?
 NoDebugLog=Не удалось найти пригодные отладочные сообщения. Включите режим отладки, перезапустите Thunderbird и повторите все шаги, необходимые для запуска ошибочного поведения.
 
-updateInfoTB68.button=Больше не показывать
-updateInfoTB68.text=Дополнение "TbSync" было почти полностью переписано для Thunderbird 68 (следующий основной выпуск). Чтобы избежать потери данных во время обновления, автор рекомендует синхронизировать все учетные записи TbSync ПЕРЕД обновлением до Thunderbird 68, а затем деактивировать их. После обновления до Thunderbird 68 учетные записи могут быть повторно активированы.
+updateInfoTB68.button.hide=Do not show this anymore
+updateInfoTB68.button.help=Open the help page
+updateInfoTB68.text=The add-on "TbSync" has been almost completely rewritten for Thunderbird 68 (the next major release). The author recommends to synchronize and to disable all your TbSync accounts before (!) upgrading to Thunderbird 68. After the upgrade has finished, your TbSync accounts can be enabled again.

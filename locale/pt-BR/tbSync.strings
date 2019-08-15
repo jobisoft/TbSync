@@ -34,5 +34,6 @@ RestartThunderbirdAndTryAgain=O log de depuração do TbSync foi ativado, reinic
 HelpFixStartupError=Para ajudar a corrigir esse erro, você poderia enviar um log de depuração para o desenvolvedor do TbSync. Enviar esse email agora?
 NoDebugLog=Não foi possível encontrar nenhuma mensagem de depuração útil. Por favor, ative o modo de depuração, reinicie o Thunderbird e repita todas as etapas necessárias para acionar o comportamento errado.
 
-updateInfoTB68.button=Não mostrar mais
-updateInfoTB68.text=O add-on "TbSync" foi quase completamente reescrito para o Thunderbird 68 (a próxima versão principal). Para evitar a perda de dados durante a atualização, o autor recomenda a sincronização de todas as contas do TbSync ANTES de atualizar para o Thunderbird 68 e depois DESATIVAR as mesmas. Após a atualização para o Thunderbird 68, as contas podem ser reativadas.
+updateInfoTB68.button.hide=Do not show this anymore
+updateInfoTB68.button.help=Open the help page
+updateInfoTB68.text=The add-on "TbSync" has been almost completely rewritten for Thunderbird 68 (the next major release). The author recommends to synchronize and to disable all your TbSync accounts before (!) upgrading to Thunderbird 68. After the upgrade has finished, your TbSync accounts can be enabled again.

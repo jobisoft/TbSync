@@ -34,5 +34,6 @@ RestartThunderbirdAndTryAgain=Der TbSync Debug-Modus wurde aktiviert, bitte star
 HelpFixStartupError=Um diesen Fehler zu beheben, können Sie einen Fehlerbericht an den Entwickler von TbSync schicken. Soll der Fehlerbericht jetzt angefertigt werden?
 NoDebugLog=Es liegen keine aussagekräftigen Debug-Meldungen vor. Bitte aktivieren Sie den Debug-Modus, starten Thunderbird neu und wiederholen dann alle Schritte um das fehlerhafte Verhalten zu reproduzieren.
 
-updateInfoTB68.button=Nicht mehr anzeigen
-updateInfoTB68.text=Das Add-On "TbSync" wurde für Thunderbird 68 (die nächste Hauptversion) fast vollständig überarbeitet. Um Datenverlust während des Updates zu vermeiden, empfiehlt der Autor, alle TbSync-Konten VOR dem Update auf Thunderbird 68 zu synchronisieren und anschließend zu DEAKTIVIEREN. Nach dem Update auf Thunderbird 68 können die Konten wieder aktiviert werden.
+updateInfoTB68.button.hide=Hinweis nicht mehr anzeigen
+updateInfoTB68.button.help=Hilfeseite öffnen
+updateInfoTB68.text=Das Add-On "TbSync" wurde für Thunderbird 68 (die nächste Hauptversion) fast vollständig überarbeitet. Der Autor empfiehlt, alle Ihre TbSync-Konten vor (!) dem Upgrade auf Thunderbird 68 zu synchronisieren und zu deaktivieren. Nach Abschluss des Upgrades können Ihre TbSync-Konten wieder aktiviert werden.

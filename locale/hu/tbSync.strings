@@ -34,5 +34,6 @@ RestartThunderbirdAndTryAgain=A Thunderbird-összehangolás hibakeresési napló
 HelpFixStartupError=A hiba javításához hibakeresési naplót küldhet a Thunderbird-összehangolás fejlesztőnek. Készüljön fel most arra az e-mailre?
 NoDebugLog=Nem találtak hasznos hibaelhárító üzeneteket. Engedélyezze a hibakeresési módot, indítsa újra a Thunderbird programot, és ismételje meg a hibás viselkedést elindító lépéseket.
 
-updateInfoTB68.button=Többet nem jelenít meg
-updateInfoTB68.text=A "TbSync" kiegészítő szinte teljesen át lett írva a Thunderbird 68-ra (a következő fő kiadás). Az adatvesztés elkerülése érdekében a frissítés során a szerző azt javasolja, hogy szinkronizálják az összes TbSync fiókot, mielőtt frissítenek a Thunderbird 68-ra, majd KERÜLIK őket. A Thunderbird 68-ra történő frissítés után a fiókok újraaktiválhatók.
+updateInfoTB68.button.hide=Do not show this anymore
+updateInfoTB68.button.help=Open the help page
+updateInfoTB68.text=The add-on "TbSync" has been almost completely rewritten for Thunderbird 68 (the next major release). The author recommends to synchronize and to disable all your TbSync accounts before (!) upgrading to Thunderbird 68. After the upgrade has finished, your TbSync accounts can be enabled again.

@@ -34,5 +34,6 @@ RestartThunderbirdAndTryAgain=TbSync debug log has been enabled, please restart 
 HelpFixStartupError=To help fix this error, you could send a debug log to the TbSync developer. Prepare that email now?
 NoDebugLog=Could not find any useful debug messages. Please activate debug mode, restart Thunderbird and repeat all the steps needed to trigger the erroneous behavior.
 
-updateInfoTB68.button=Do not show anymore
-updateInfoTB68.text=The add-on "TbSync" has been almost completely rewritten for Thunderbird 68 (the next major release). To avoid data loss during the upgrade, the author recommends synchronizing all TbSync accounts BEFORE upgrading to Thunderbird 68 and then DEACTIVATING them. After upgrading to Thunderbird 68, the accounts can be reactivated.
+updateInfoTB68.button.hide=Do not show this anymore
+updateInfoTB68.button.help=Open the help page
+updateInfoTB68.text=The add-on "TbSync" has been almost completely rewritten for Thunderbird 68 (the next major release). The author recommends to synchronize and to disable all your TbSync accounts before (!) upgrading to Thunderbird 68. After the upgrade has finished, your TbSync accounts can be enabled again.
