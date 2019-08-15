@@ -154,6 +154,42 @@ var tbSync = {
 
         tbSync.dump("TbSync init","Done");
     
+	
+	
+	
+		// run through all address books and find stale ones
+        let allAddressBooks = MailServices.ab.directories;
+        while (allAddressBooks.hasMoreElements()) {
+            let addressBook = allAddressBooks.getNext();
+            if (addressBook instanceof Components.interfaces.nsIAbDirectory) {
+				//do we control this?
+                let folders = tbSync.db.findFoldersWithSetting(["target"], [addressBook.URI]);
+                if (folders.length == 1) {
+					addressBook.setStringValue("tbSyncProvider", tbSync.db.getAccountSetting(folders[0].account, "provider"));					
+				} else {
+					addressBook.setStringValue("tbSyncIcon", "");
+					addressBook.setStringValue("tbSyncProvider", "");
+				}
+            }
+        }	
+	
+		if (tbSync.lightningInitDone) {
+			// run through all calendars
+			for (let calendar of cal.getCalendarManager().getCalendars({})) {
+				//do we control this?
+				let folders = tbSync.db.findFoldersWithSetting(["target"], [calendar.id]);
+				if (folders.length == 1) {
+					console.log("yes");
+					calendar.setProperty("tbSyncProvider", tbSync.db.getAccountSetting(folders[0].account, "provider"));
+				} else {
+					console.log("no");
+					calendar.setProperty("tbSyncProvider", "");
+				}
+			}
+		}
+		
+		
+		
         let notificationBox = window.document.getElementById("tbSyncNotificationBox");
         let buttons = [];
         
