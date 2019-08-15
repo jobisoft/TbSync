@@ -58,3 +58,5 @@ status.security=Impossibile stabilire una connessione sicura. Si sta utilizzando
 helplink.security=https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F
 status.network=Impossibile collegarsi al server (##replace.1##).
 status.JavaScriptError=Errore Javascript! Si prega di controllare il registro eventi per maggiori dettagli.
+
+target.orphaned=Connessione disconnessa

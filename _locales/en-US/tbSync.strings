@@ -58,3 +58,5 @@ status.security=Could not establish a secure connection. Are you using a self-si
 helplink.security=https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F
 status.network=Could not connect to server (##replace.1##).
 status.JavaScriptError=Javascript Error! Please check the event log for more details.
+
+target.orphaned=Disconnected

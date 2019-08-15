@@ -146,10 +146,12 @@ var lightning = {
       if (calendar && suffix) {
         //if there are pending/unsynced changes, append an  (*) to the name of the target
         if (pendingChanges.length > 0) suffix += " (*)";
-        
+
         let orig = calendar.name;
-        calendar.name = "Local backup of: " + orig + " " + suffix;
+        calendar.name = tbSync.getString("target.orphaned") + ": " + orig + (suffix ? " " + suffix : "");
         calendar.setProperty("disabled", true);
+        calendar.setProperty("tbSyncProvider", "orphaned");
+        calendar.setProperty("tbSyncAccountID", "");
       }
     }     
   },
@@ -720,8 +722,10 @@ var lightning = {
     
     //create and register new calendar
     let newCalendar = tbSync.providers[provider].standardTargets.calendar.createCalendar(newname, folderData);
+    newCalendar.setProperty("tbSyncProvider", provider);
+    newCalendar.setProperty("tbSyncAccountID", folderData.accountData.accountID);
     tbSync.providers[provider].base.onResetTarget(folderData);
-    
+
     //store id of calendar as target in DB
     folderData.setFolderProperty("target", newCalendar.id); 
     folderData.setFolderProperty("targetName", newCalendar.name);

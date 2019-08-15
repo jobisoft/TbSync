@@ -58,3 +58,5 @@ status.security=Не удалось установить безопасное с
 helplink.security=https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F
 status.network=Не удалось подключиться к серверу (##replace.1##).
 status.JavaScriptError=Ошибка JavaScript! Пожалуйста, проверьте журнал событий для более подробной информации.
+
+target.orphaned=Соединение разорвано

@@ -90,10 +90,11 @@ var providers = {
           if (addressBook instanceof Components.interfaces.nsIAbDirectory) {
             let storedProvider = addressBook.getStringValue("tbSyncProvider", "");
             if (provider == storedProvider && providerData.getFolders({"target": addressBook.UID}).length == 0) {
+              let name = addressBook.dirName;
+              addressBook.dirName = tbSync.getString("target.orphaned") + ": " + name;              
               addressBook.setStringValue("tbSyncIcon", "orphaned");
               addressBook.setStringValue("tbSyncProvider", "orphaned");
-              let name = addressBook.dirName;
-              addressBook.dirName = "Disconnected from TbSync: " + name;              
+              addressBook.setStringValue("tbSyncAccountID", "");
             }
           }
         }
@@ -102,11 +103,11 @@ var providers = {
           for (let calendar of tbSync.lightning.cal.getCalendarManager().getCalendars({})) {
             let storedProvider = calendar.getProperty("tbSyncProvider");
             if (provider == storedProvider && calendar.type == "storage" && providerData.getFolders({"target": calendar.id}).length == 0) {
-              calendar.setProperty("tbSyncIcon", "orphaned");
-              calendar.setProperty("tbSyncProvider", "orphaned");
               let name = calendar.name;
-              calendar.name = "Disconnected from TbSync: " + name;
+              calendar.name = tbSync.getString("target.orphaned") + ": " + name;
               calendar.setProperty("disabled", true);
+              calendar.setProperty("tbSyncProvider", "orphaned");
+              calendar.setProperty("tbSyncAccountID", "");        
             }
           }
         }

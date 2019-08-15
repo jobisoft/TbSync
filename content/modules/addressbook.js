@@ -104,7 +104,7 @@ var addressbook = {
         if (pendingChanges.length > 0) suffix += " (*)";
 
         let orig = directory.dirName;
-        directory.dirName = "Local backup of: " + orig + " " + suffix;
+        directory.dirName = tbSync.getString("target.orphaned") + ": " + orig + (suffix ? " " + suffix : "");
         directory.setStringValue("tbSyncIcon", "orphaned");
         directory.setStringValue("tbSyncProvider", "orphaned");
         directory.setStringValue("tbSyncAccountID", "");
