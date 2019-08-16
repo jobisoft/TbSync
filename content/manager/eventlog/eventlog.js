@@ -68,40 +68,40 @@ var tbSyncEventLog = {
   addLogEntry: function (entry) {
     
     //left column
-    let leftColumn = document.createElement("vbox");
+    let leftColumn = document.createXULElement("vbox");
     leftColumn.setAttribute("width", "24");
 
-    let image = document.createElement("image");
+    let image = document.createXULElement("image");
     let src = entry.type.endsWith("_rerun") ? "sync" : entry.type;
     image.setAttribute("src", "chrome://tbsync/skin/" + src + "16.png");
     image.setAttribute("style", "margin:4px 4px 4px 4px;");
     leftColumn.appendChild(image);
     
     //right column        
-    let rightColumn = document.createElement("vbox");
+    let rightColumn = document.createXULElement("vbox");
     rightColumn.setAttribute("flex","1");
 
     let d = new Date(entry.timestamp);
-    let timestamp = document.createElement("description");
+    let timestamp = document.createXULElement("description");
     timestamp.setAttribute("flex", "1");
     timestamp.setAttribute("class", "header");
     timestamp.textContent = d.toLocaleTimeString();
     rightColumn.appendChild(timestamp);
 
-      let hBox = document.createElement("hbox");
+      let hBox = document.createXULElement("hbox");
       hBox.flex = "1";
-      let vBoxLeft = document.createElement("vbox");
+      let vBoxLeft = document.createXULElement("vbox");
       vBoxLeft.flex = "1";
-      let vBoxRight = document.createElement("vbox");
+      let vBoxRight = document.createXULElement("vbox");
       
-      let msg = document.createElement("description");
+      let msg = document.createXULElement("description");
       msg.setAttribute("flex", "1");
       msg.setAttribute("class", "header");
       msg.textContent = entry.message;
       vBoxLeft.appendChild(msg);
 
       if (entry.link) {
-        let link = document.createElement("button");
+        let link = document.createXULElement("button");
         link.setAttribute("label",  tbSync.getString("manager.help"));
         link.setAttribute("oncommand",  "tbSync.manager.openLink('" + entry.link + "')");
         vBoxRight.appendChild(link);
@@ -112,14 +112,14 @@ var tbSyncEventLog = {
       rightColumn.appendChild(hBox);
     
     if (entry.accountname || entry.provider) {
-      let account = document.createElement("label");
+      let account = document.createXULElement("label");
       if (entry.accountname) account.setAttribute("value",  "Account: " + entry.accountname + (entry.provider ? " (" + entry.provider.toUpperCase() + ")" : ""));
       else account.setAttribute("value",  "Provider: " + entry.provider.toUpperCase());
       rightColumn.appendChild(account);
     }
 
     if (entry.foldername) {
-      let folder = document.createElement("label");
+      let folder = document.createXULElement("label");
       folder.setAttribute("value",  "Resource: " + entry.foldername);
       rightColumn.appendChild(folder);
     }
@@ -134,7 +134,7 @@ var tbSyncEventLog = {
       line.setAttribute("class", "plain");                
       line.value = entry.details.trim();
       
-      let container = document.createElement("vbox");
+      let container = document.createXULElement("vbox");
       container.setAttribute("style", "margin-left:1ex;margin-top:1ex;");                
       container.appendChild(line);
       
@@ -142,13 +142,13 @@ var tbSyncEventLog = {
     }
     
     //columns
-    let columns = document.createElement("hbox");
+    let columns = document.createXULElement("hbox");
     columns.setAttribute("flex", "1");
     columns.appendChild(leftColumn);
     columns.appendChild(rightColumn);
     
     //richlistitem
-    let richlistitem = document.createElement("richlistitem");
+    let richlistitem = document.createXULElement("richlistitem");
     richlistitem.setAttribute("style", "padding:4px; border-bottom: 1px solid lightgrey;");
     richlistitem.appendChild(columns);
     

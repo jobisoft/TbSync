@@ -154,29 +154,29 @@ var manager = {
      */        
     getRow(document, folderData) {
       //create checkBox for select state
-      let itemSelCheckbox = document.createElement("checkbox");
+      let itemSelCheckbox = document.createXULElement("checkbox");
       itemSelCheckbox.setAttribute("updatefield", "selectbox");
       itemSelCheckbox.setAttribute("style", "margin: 0px 0px 0px 3px;");
       itemSelCheckbox.addEventListener("command", this.toggleFolder);
 
       //icon
-      let itemType = document.createElement("image");
+      let itemType = document.createXULElement("image");
       itemType.setAttribute("src", tbSync.providers[this.provider].standardFolderList.getTypeImage(folderData));
       itemType.setAttribute("style", "margin: 0px 9px 0px 3px;");
 
       //ACL
       let roAttributes = tbSync.providers[this.provider].standardFolderList.getAttributesRoAcl(folderData);
       let rwAttributes = tbSync.providers[this.provider].standardFolderList.getAttributesRwAcl(folderData);
-      let itemACL = document.createElement("button");
+      let itemACL = document.createXULElement("button");
       itemACL.setAttribute("image", "chrome://tbsync/skin/acl_" + (folderData.getFolderProperty("downloadonly") ? "ro" : "rw") + ".png");
       itemACL.setAttribute("class", "plain");
       itemACL.setAttribute("style", "width: 35px; min-width: 35px; margin: 0; height:26px");
       itemACL.setAttribute("updatefield", "acl");
       if (roAttributes && rwAttributes) {
         itemACL.setAttribute("type", "menu");
-        let menupopup = document.createElement("menupopup");
+        let menupopup = document.createXULElement("menupopup");
         {
-          let menuitem = document.createElement("menuitem");
+          let menuitem = document.createXULElement("menuitem");
           menuitem.downloadonly = false;
           menuitem.setAttribute("class", "menuitem-iconic");
           menuitem.setAttribute("image", "chrome://tbsync/skin/acl_rw2.png");
@@ -188,7 +188,7 @@ var manager = {
         }
         
         {
-          let menuitem = document.createElement("menuitem");
+          let menuitem = document.createXULElement("menuitem");
           menuitem.downloadonly = true;
           menuitem.setAttribute("class", "menuitem-iconic");
           menuitem.setAttribute("image", "chrome://tbsync/skin/acl_ro2.png");
@@ -202,46 +202,46 @@ var manager = {
       }
       
       //folder name
-      let itemLabel = document.createElement("description");
+      let itemLabel = document.createXULElement("description");
       itemLabel.setAttribute("updatefield", "foldername");
 
       //status
-      let itemStatus = document.createElement("description");
+      let itemStatus = document.createXULElement("description");
       itemStatus.setAttribute("updatefield", "status");
       
       //group1
-      let itemHGroup1 = document.createElement("hbox");
+      let itemHGroup1 = document.createXULElement("hbox");
       itemHGroup1.setAttribute("align", "center");
       itemHGroup1.appendChild(itemSelCheckbox);
       itemHGroup1.appendChild(itemType);
       if (itemACL) itemHGroup1.appendChild(itemACL);
 
-      let itemVGroup1 = document.createElement("vbox");
+      let itemVGroup1 = document.createXULElement("vbox");
       itemVGroup1.setAttribute("width", "93");
       itemVGroup1.appendChild(itemHGroup1);
 
       //group2
-      let itemHGroup2 = document.createElement("hbox");
+      let itemHGroup2 = document.createXULElement("hbox");
       itemHGroup2.setAttribute("align", "center");
       itemHGroup2.setAttribute("width", "146");
       itemHGroup2.appendChild(itemLabel);
 
-      let itemVGroup2 = document.createElement("vbox");
+      let itemVGroup2 = document.createXULElement("vbox");
       itemVGroup2.setAttribute("style", "padding: 3px");
       itemVGroup2.appendChild(itemHGroup2);
 
       //group3
-      let itemHGroup3 = document.createElement("hbox");
+      let itemHGroup3 = document.createXULElement("hbox");
       itemHGroup3.setAttribute("align", "center");
       itemHGroup3.setAttribute("width", "227");
       itemHGroup3.appendChild(itemStatus);
 
-      let itemVGroup3 = document.createElement("vbox");
+      let itemVGroup3 = document.createXULElement("vbox");
       itemVGroup3.setAttribute("style", "padding: 3px");
       itemVGroup3.appendChild(itemHGroup3);
 
       //final row
-      let row = document.createElement("hbox");
+      let row = document.createXULElement("hbox");
       row.setAttribute("style", "min-height: 24px;");
       row.appendChild(itemVGroup1);
       row.appendChild(itemVGroup2);            

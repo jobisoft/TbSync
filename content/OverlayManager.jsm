@@ -82,11 +82,11 @@ function OverlayManager(options = {}) {
       if (!this.registeredOverlays[dst]) this.registeredOverlays[dst] = [];
       if (!this.registeredOverlays[dst].includes(overlay)) this.registeredOverlays[dst].push(overlay);
       
-	  // Override attributes
-	  for (let attribute of attributesOverrides) {
-		rootNode.documentElement.setAttribute(attribute.name, attribute.value);
-	  }
-	  this.overlays[overlay] = rootNode;
+      // Override attributes
+      for (let attribute of attributesOverrides) {
+        rootNode.documentElement.setAttribute(attribute.name, attribute.value);
+      }
+      this.overlays[overlay] = rootNode;
     } else {
       throw "Only chrome:// URIs can be registered as overlays."
     }
@@ -301,7 +301,7 @@ function OverlayManager(options = {}) {
     let typedef = forcedNodeName ? forcedNodeName.split(":") : node.nodeName.split(":");
     if (typedef.length == 2) typedef[0] = node.lookupNamespaceURI(typedef[0]);
     
-    let element = (typedef.length==2) ? window.document.createElementNS(typedef[0], typedef[1]) : window.document.createElement(typedef[0]);
+    let element = (typedef.length==2) ? window.document.createElementNS(typedef[0], typedef[1]) : window.document.createXULElement(typedef[0]);
     if  (node.attributes) {
       for  (let i=0; i <node.attributes.length; i++) {
         element.setAttribute(node.attributes[i].name, node.attributes[i].value);

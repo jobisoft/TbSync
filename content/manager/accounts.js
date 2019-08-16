@@ -354,7 +354,7 @@ var tbSyncAccounts = {
 
         if (listedAccounts.indexOf(accounts.allIDs[i]) == -1) {
           //add all missing accounts (always to the end of the list)
-          let newListItem = document.createElement("richlistitem");
+          let newListItem = document.createXULElement("richlistitem");
           newListItem.setAttribute("id", "tbSyncAccounts.accounts." + accounts.allIDs[i]);
           newListItem.setAttribute("value", accounts.allIDs[i]);
           newListItem.setAttribute("align", "center");
@@ -363,19 +363,19 @@ var tbSyncAccounts = {
           newListItem.setAttribute("ondblclick", "tbSyncAccounts.toggleEnableState();");
           
           //add icon (use "install provider" icon, if provider not installed)
-          let itemType = document.createElement("image");
+          let itemType = document.createXULElement("image");
           itemType.setAttribute("width", "16");
           itemType.setAttribute("height", "16");
           itemType.setAttribute("style", "margin: 0px 0px 0px 5px;");
           newListItem.appendChild(itemType);
 
           //add account name
-          let itemLabel = document.createElement("label");
+          let itemLabel = document.createXULElement("label");
           itemLabel.setAttribute("flex", "1");
           newListItem.appendChild(itemLabel);
 
           //add account status
-          let itemStatus = document.createElement("image");
+          let itemStatus = document.createXULElement("image");
           itemStatus.setAttribute("width", "16");
           itemStatus.setAttribute("height", "16");
           itemStatus.setAttribute("style", "margin: 0px 5px;");
@@ -415,7 +415,7 @@ var tbSyncAccounts = {
     let entry = document.getElementById("addMenuEntry_" + provider);
     if (entry === null) {
       //add basic menu entry
-      let newItem = window.document.createElement("menuitem");
+      let newItem = window.document.createXULElement("menuitem");
       newItem.setAttribute("id", "addMenuEntry_" + provider);
       newItem.setAttribute("value",  provider);
       newItem.setAttribute("class", "menuitem-iconic");

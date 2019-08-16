@@ -60,12 +60,11 @@ var tbSyncAccountManager = {
   initSupportWizard: function() {
     document.documentElement.getButton("finish").disabled = true;
 
-    const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
     let menu = document.getElementById("tbsync.supportwizard.faultycomponent");
 
     let providers = Object.keys(tbSync.providers.loadedProviders);
     for (let i=0; i < providers.length; i++) {
-      let item = document.createElementNS(XUL_NS, "menuitem");
+      let item = document.createXULElement("menuitem");
       item.setAttribute("value", providers[i]);
       item.setAttribute("label", tbSync.getString("supportwizard.provider::" + tbSync.providers[providers[i]].base.getNiceProviderName()));
       menu.appendChild(item); 

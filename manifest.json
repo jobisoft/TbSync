@@ -3,7 +3,7 @@
     "gecko": {
       "id": "tbsync@jobisoft.de",
       "strict_min_version": "68.0",
-      "strict_max_version": "68.*"
+      "strict_max_version": "69.*"
     }
   },
   "manifest_version": 2,
