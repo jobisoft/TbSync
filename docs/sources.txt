@@ -1,0 +1,3 @@
+https://pypi.org/project/sphinx-js/
+https://github.com/readthedocs/readthedocs.org/issues/1139
+https://hacks.mozilla.org/2017/07/introducing-sphinx-js-a-better-way-to-document-large-javascript-projects/
