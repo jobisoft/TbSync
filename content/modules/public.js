@@ -40,30 +40,57 @@ function linkDensity(node) {
 
 
 
+/**
+ * Return the ratio of the inline text length of the links in an element to
+ * the inline text length of the entire element.
+ *
+ * @param {Node} node - Types or not: either works.
+ * @throws {PartyError|Hearty} Multiple types work fine.
+ * @returns {Number} Types and descriptions are both supported.
+ */
 var ProgessData = class {
+  /**
+   * Return the ratio of the inline text length of the links in an element to
+   * the inline text length of the entire element.
+   */
   constructor() {
     this._todo = 0;
     this._done = 0;
    }
    
+  /**
+   * Return the ratio of the inline text length of the links in an element to
+   * the inline text length of the entire element.
+   */
    reset(done = 0, todo = 0) {
     this._todo = todo;
     this._done = done;
    }
    
+  /**
+   * Return the ratio of the inline text length of the links in an element to
+   * the inline text length of the entire element.
+   */
    inc(value = 1) {
      this._done += value;
    }
    
+  /**
+   * Return the ratio of the inline text length of the links in an element to
+   * the inline text length of the entire element.
+   */
    get todo() {
      return this._todo;
    }
    
+  /**
+   * Return the ratio of the inline text length of the links in an element to
+   * the inline text length of the entire element.
+   */
    get done() {
      return this._done;
    }
 }
-
 
 
 var ProviderData = class {
