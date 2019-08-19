@@ -1,5 +1,5 @@
 ## Creator
-* %%ProviderAuthor%%
+* __ProviderAuthor__
 
 ## Contributors
 * ...

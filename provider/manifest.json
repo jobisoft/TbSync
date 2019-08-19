@@ -1,7 +1,7 @@
 {
   "applications": {
     "gecko": {
-      "id": "%%ProviderID%%",
+      "id": "__ProviderID__",
       "strict_min_version": "68.0",
       "strict_max_version": "69.*"
     }
@@ -9,8 +9,8 @@
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
   "version": "1.0",
-  "author": "%%ProviderAuthor%%",
-  "homepage_url": "%%ProviderHomepageUrl%%",
+  "author": "__ProviderAuthor__",
+  "homepage_url": "__ProviderHomepageUrl__",
   "default_locale": "en-US",
   "description": "__MSG_extensionDescription__",
   "icons": {

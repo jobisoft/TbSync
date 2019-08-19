@@ -1,8 +1,8 @@
 {
   "extensionName": {
-    "message": "%%ProviderNiceName%%"
+    "message": "__ProviderNiceName__"
   },
   "extensionDescription": {
-    "message": "%%ProviderDescription%%"
+    "message": "__ProviderDescription__"
   }
 }

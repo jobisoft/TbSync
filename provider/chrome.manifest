@@ -1,5 +1,5 @@
-content %%ProviderChromeUrl%%  content/
+content __ProviderChromeUrl__  content/
 
-skin    %%ProviderChromeUrl%%  classic/1.0 skin/
+skin    __ProviderChromeUrl__  classic/1.0 skin/
 
-locale  %%ProviderChromeUrl%%  en-US  _locales/en-US/
+locale  __ProviderChromeUrl__  en-US  _locales/en-US/

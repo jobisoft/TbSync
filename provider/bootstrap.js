@@ -1,5 +1,5 @@
 /*
- * This file is part of %%ProviderShortName%%.
+ * This file is part of __ProviderShortName__.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,7 +24,7 @@ let onInitDoneObserver = {
         
         //load this provider add-on into TbSync
         if (valid) {
-            await tbSync.providers.loadProvider(thisID, "%%ProviderNameSpace%%", "chrome://%%ProviderChromeUrl%%/content/provider.js");
+            await tbSync.providers.loadProvider(thisID, "__ProviderNameSpace__", "chrome://__ProviderChromeUrl__/content/provider.js");
         }
     }
 }
@@ -63,7 +63,7 @@ function shutdown(data, reason) {
     //unload this provider add-on from TbSync
     try {
         var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
-        tbSync.providers.unloadProvider("%%ProviderNameSpace%%");
+        tbSync.providers.unloadProvider("__ProviderNameSpace__");
     } catch (e) {
         //if this fails, tbSync has been unloaded already and has unloaded this addon as well
     }

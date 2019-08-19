@@ -1,4 +1,4 @@
-menu.name = %%ProviderMenuName%%
+menu.name = __ProviderMenuName__
 
 syncstate.send.getfolders=Requesting folder list
 syncstate.eval.folders=Updating folder list
