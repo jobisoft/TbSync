@@ -1,5 +1,5 @@
 /*
- * This file is part of %%ProviderShortName%%.
+ * This file is part of __ProviderShortName__.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,8 +8,8 @@
 
 "use strict";
 
-// Every object in here will be loaded into the following namespace: tbSync.providers.%%ProviderNameSpace%%. 
-const %%ProviderNameSpace%% = tbSync.providers.%%ProviderNameSpace%%;
+// Every object in here will be loaded into the following namespace: tbSync.providers.__ProviderNameSpace__. 
+const __ProviderNameSpace__ = tbSync.providers.__ProviderNameSpace__;
 
 /**
  * Implementing the TbSync interfaces for external provider extensions.
@@ -20,7 +20,7 @@ var base = class {
      */
     static async load() {
         // Set default prefs
-        let branch = Services.prefs.getDefaultBranch("extensions.%%ProviderChromeUrl%%.");
+        let branch = Services.prefs.getDefaultBranch("extensions.__ProviderChromeUrl__.");
         branch.setIntPref("timeout", 50);
         branch.setCharPref("someCharPref", "Test");
         branch.setBoolPref("someBoolPref", true);    
@@ -40,7 +40,7 @@ var base = class {
      * Returns nice string for the name of provider for the add account menu.
      */
     static getNiceProviderName() {
-        return tbSync.getString("menu.name", "%%ProviderNameSpace%%");
+        return tbSync.getString("menu.name", "__ProviderNameSpace__");
     }
 
 
@@ -55,11 +55,11 @@ var base = class {
     static getProviderIcon(size, accountData = null) {
         switch (size) {
             case 16:
-                return "chrome://%%ProviderChromeUrl%%/skin/logo16.png";
+                return "chrome://__ProviderChromeUrl__/skin/logo16.png";
             case 32:
-                return "chrome://%%ProviderChromeUrl%%/skin/logo32.png";
+                return "chrome://__ProviderChromeUrl__/skin/logo32.png";
             default :
-                return "chrome://%%ProviderChromeUrl%%/skin/logo48.png";
+                return "chrome://__ProviderChromeUrl__/skin/logo48.png";
         }
     }
 
@@ -84,7 +84,7 @@ var base = class {
      * Returns the email address of the maintainer (used for bug reports).
      */
     static getMaintainerEmail() {
-        return "%%ProviderEmail%%";
+        return "__ProviderEmail__";
     }
 
 
@@ -94,7 +94,7 @@ var base = class {
      * accessed by tbSync.getString(<key>, <ProviderNameSpace>)
      */
     static getStringBundleUrl() {
-        return "chrome://%%ProviderChromeUrl%%/locale/provider.strings";
+        return "chrome://__ProviderChromeUrl__/locale/provider.strings";
     }
 
     
@@ -106,7 +106,7 @@ var base = class {
      * new account of this provider.
      */
     static getCreateAccountWindowUrl() {
-        return "chrome://%%ProviderChromeUrl%%/content/manager/createAccount.xul";
+        return "chrome://__ProviderChromeUrl__/content/manager/createAccount.xul";
     }
 
 
@@ -124,7 +124,7 @@ var base = class {
      * account.
      */
     static getEditAccountOverlayUrl() {
-        return "chrome://%%ProviderChromeUrl%%/content/manager/editAccountOverlay.xul";
+        return "chrome://__ProviderChromeUrl__/content/manager/editAccountOverlay.xul";
     }
 
 
@@ -242,7 +242,7 @@ var base = class {
      * return timeout in milliseconds
      */
     static getConnectionTimeout(accountData) {
-        return Services.prefs.getBranch("extensions.%%ProviderChromeUrl%%.").getIntPref("timeout");
+        return Services.prefs.getBranch("extensions.__ProviderChromeUrl__.").getIntPref("timeout");
     }
     
 
@@ -383,7 +383,7 @@ var standardTargets = {
             let directory = MailServices.ab.getDirectoryFromId(dirPrefId);
 
             if (directory && directory instanceof Components.interfaces.nsIAbDirectory && directory.dirPrefId == dirPrefId) {
-                directory.setStringValue("tbSyncIcon", "%%ProviderNameSpace%%");
+                directory.setStringValue("tbSyncIcon", "__ProviderNameSpace__");
                 
                 // Disable AutoComplete, so we can have full control over the auto completion of our own directories.
                 // Implemented in https://bugzilla.mozilla.org/show_bug.cgi?id=1546425
@@ -532,7 +532,7 @@ var standardFolderList = class {
         return null;
         /* 
         return {
-            label: tbSync.getString("acl.readonly", "%%ProviderNameSpace%%"),
+            label: tbSync.getString("acl.readonly", "__ProviderNameSpace__"),
         };
         */
     }
