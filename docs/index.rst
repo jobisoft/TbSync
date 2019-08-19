@@ -10,7 +10,7 @@ To get started, generate a basic provider add-on skeleton, which will get you a 
 
 ::
 
-    project
+    Project
     ├── LICENSE          
     ├── manifest.json
     ├── chrome.manifest
@@ -18,6 +18,7 @@ To get started, generate a basic provider add-on skeleton, which will get you a 
     ├── skin          
     │   ├── logo16.png
     │   └── logo32.png
+    │   └── logo48.png
     ├── _locales          
     │   └── en-US
     │       ├── provider.strings
@@ -26,8 +27,11 @@ To get started, generate a basic provider add-on skeleton, which will get you a 
     └── content
         ├── provider.js        
         ├── includes
-        ├── overlays
+        │   └── sync.js    
         └── manager
+            ├── provider.strings
+            ├── provider.dtd
+            └── messages.json
 
 This documentation will refer to this structure and will explain the different files and folders as needed.
 
@@ -43,5 +47,4 @@ Implementing the Provider Interface
 After your provider has been registered, TbSync will read the file ``provider.js``, where the provider interface has to be implemented.
 
 
-
-.. js:autofunction:: linkDensity
+.. js:autofunction:: base
