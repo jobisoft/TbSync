@@ -18,3 +18,7 @@ Each TbSync account can be disabled by unchecking the box shown in the following
 It could happen, that after the upgrade your synchronized address books and calendars still exists in Thunderbird and can be used as before, but are no longer connected to your servers. If you make local changes, they will never make it to your servers. So these changes will be lost.
 
 That is why I ask to disable all accounts during the upgrade from Thunderbird 60 to Thunderbird 68. After re-enabling your accounts in Thunderbird 68, they will start a clean sync which ensures a proper connection between Thunderbird and your servers.
+
+## System-specific tips
+
+On Arch Linux and derivatives, you can add a `pacman` hook [like this one](https://gist.github.com/MayeulC/400adbfba72effc29fca4d8666fc4571) to print a reminder and cancel the thunderbird upgrade when it becomes available.
