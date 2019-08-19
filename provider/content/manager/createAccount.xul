@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<!DOCTYPE window [
+  <!ENTITY % tbsyncDTD SYSTEM "chrome://tbsync/locale/tbSync.dtd">
+  %tbsyncDTD;
+  <!ENTITY % davDTD SYSTEM "chrome://dav4tbsync/locale/dav.dtd">
+  %davDTD;
+]>
+
+<wizard 
+      width="500"
+      height="600"
+      title="&add.title;"
+      id="tbsync.newaccount.wizard"
+      onload="tbSyncDavNewAccount.onLoad();"
+      onunload="tbSyncDavNewAccount.onUnload();"
+      onclose="return tbSyncDavNewAccount.onClose()"
+      xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <script type="application/javascript" src="chrome://dav4tbsync/content/manager/createAccount.js"/>
+
+  <wizardpage id="firstPage" onFirstPage="true" label="&add.serverprofile.title;">
+    <vbox flex="1">
+        <description style="width: 450px; margin-top:1em;">&add.serverprofile.description;</description>
+        <richlistbox id="tbsync.newaccount.serviceproviderlist" flex="1" seltype="single" style="margin-top:1ex" onselect="tbSyncDavNewAccount.clearValues();" ondblclick="tbSyncDavNewAccount.advance()"/>
+    </vbox>
+  </wizardpage>
+
+  <wizardpage id="secondPage" label="&add.data.title;">
+    <vbox flex="1">
+        <description style="width: 450px; margin-top:1em;">&add.data.description;</description>
+        <grid style="margin-top:1ex">
+            <columns>
+                <column flex="1" />
+                <column flex="2" />
+            </columns>
+            <rows>
+                <row>
+                    <vbox pack="center"><label value="&add.name;" /></vbox>
+                    <textbox id="tbsync.newaccount.name" oninput="tbSyncDavNewAccount.onUserTextInput();"/>
+                </row>
+                <row id="tbsync.newaccount.server.row">
+                    <vbox pack="center"><label value="&add.server;" /></vbox>
+                    <textbox id="tbsync.newaccount.server" oninput="tbSyncDavNewAccount.onUserTextInput();"/>
+                </row>
+                <row id="tbsync.newaccount.caldavserver.row">
+                    <vbox pack="center"><label value="&add.caldavserver;" /></vbox>
+                    <textbox id="tbsync.newaccount.caldavserver" oninput="tbSyncDavNewAccount.onUserTextInput();"/>
+                </row>
+                <row id="tbsync.newaccount.carddavserver.row">
+                    <vbox pack="center"><label value="&add.carddavserver;" /></vbox>
+                    <textbox id="tbsync.newaccount.carddavserver" oninput="tbSyncDavNewAccount.onUserTextInput();"/>
+                </row>
+                <row>
+                    <vbox pack="center"><label value="&add.user;" /></vbox>
+                    <textbox id="tbsync.newaccount.user" oninput="tbSyncDavNewAccount.onUserTextInput();"/>
+                </row>
+                <row>
+                    <vbox pack="center"><label value="&add.password;" /></vbox>
+                    <textbox id="tbsync.newaccount.password" type="password" oninput="tbSyncDavNewAccount.onUserTextInput();"/>
+                </row>
+            </rows>
+        </grid>
+        <label class="header" id="tbsync.newaccount.details.header" value="Notes" style="margin-top:2em" />
+        <description id="tbsync.newaccount.details1" style="width: 450px; margin-top:1ex;"></description>
+        <description id="tbsync.newaccount.details2" style="width: 450px; margin-top:1ex;"></description>
+        <description id="tbsync.newaccount.details3" style="width: 450px; margin-top:1ex;"></description>
+        <vbox flex="1">
+        </vbox>
+        <hbox id="tbsync.spinner">
+            <label value="&add.verify;" />
+            <image src="chrome://tbsync/skin/spinner.gif" style="margin-left:1em" width="16" height="16"/>
+        </hbox>
+        <vbox id="tbsync.error" style="width: 450px;">
+            <description id="tbsync.error.message" flex="1" style="font-weight: bold;"></description>
+            <vbox>
+              <button 
+              id="tbsync.error.link" 
+              label="&manager.ShowEventLog;"
+              oncommand="tbSync.eventlog.open();"/>
+            </vbox>
+        </vbox>    
+    </vbox>
+  </wizardpage>
+  
+</wizard>
