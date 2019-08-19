@@ -14,34 +14,34 @@ const %%ProviderNameSpace%% = tbSync.providers.%%ProviderNameSpace%%;
 /**
  * Implementing the TbSync interfaces for external provider extensions.
  */
-var base = {
+var base = class {
     /**
      * Called during load of external provider extension to init provider.
      */
-    load: async function () {
+    static async load() {
         // Set default prefs
         let branch = Services.prefs.getDefaultBranch("extensions.%%ProviderChromeUrl%%.");
         branch.setIntPref("timeout", 50);
         branch.setCharPref("someCharPref", "Test");
         branch.setBoolPref("someBoolPref", true);    
-    },
+    }
 
 
 
     /**
      * Called during unload of external provider extension to unload provider.
      */
-    unload: async function () {
-    },
+    static async unload() {
+    }
 
 
 
     /**
      * Returns nice string for the name of provider for the add account menu.
      */
-    getNiceProviderName: function () {
+    static getNiceProviderName() {
         return tbSync.getString("menu.name", "%%ProviderNameSpace%%");
-    },
+    }
 
 
 
@@ -52,7 +52,7 @@ var base = {
      * @param accountData  [in] optional AccountData
      *
      */
-    getProviderIcon: function (size, accountData = null) {
+    static getProviderIcon(size, accountData = null) {
         switch (size) {
             case 16:
                 return "chrome://%%ProviderChromeUrl%%/skin/logo16.png";
@@ -61,7 +61,7 @@ var base = {
             default :
                 return "chrome://%%ProviderChromeUrl%%/skin/logo48.png";
         }
-    },
+    }
 
 
 
@@ -72,20 +72,20 @@ var base = {
      * Thunderbird.
      *
      */
-    getSponsors: function () {
+    static getSponsors() {
         return {
             "Name" : {name: "Name", description: "Something", icon: "", link: "" },
         };
-    },
+    }
 
 
 
     /**
      * Returns the email address of the maintainer (used for bug reports).
      */
-    getMaintainerEmail: function () {
+    static getMaintainerEmail() {
         return "%%ProviderEmail%%";
-    },
+    }
 
 
 
@@ -93,9 +93,9 @@ var base = {
      * Returns the URL of the string bundle file of this provider, it can be
      * accessed by tbSync.getString(<key>, <ProviderNameSpace>)
      */
-    getStringBundleUrl: function () {
+    static getStringBundleUrl() {
         return "chrome://%%ProviderChromeUrl%%/locale/provider.strings";
-    },
+    }
 
     
 
@@ -105,9 +105,9 @@ var base = {
      * The URL will be opened via openDialog(), when the user wants to create a
      * new account of this provider.
      */
-    getCreateAccountWindowUrl: function () {
+    static getCreateAccountWindowUrl() {
         return "chrome://%%ProviderChromeUrl%%/content/manager/createAccount.xul";
-    },
+    }
 
 
 
@@ -123,9 +123,9 @@ var base = {
      * in the manager and provides the tbSync.AccountData of the corresponding
      * account.
      */
-    getEditAccountOverlayUrl: function () {
+    static getEditAccountOverlayUrl() {
         return "chrome://%%ProviderChromeUrl%%/content/manager/editAccountOverlay.xul";
-    },
+    }
 
 
 
@@ -136,14 +136,14 @@ var base = {
      * 
      * Please also check the standard fields added by TbSync.
      */
-    getDefaultAccountEntries: function () {
+    static getDefaultAccountEntries() {
         let row = {
             "username" : "",
             "host" : "",
             "https" : true,
             }; 
         return row;
-    },
+    }
 
 
 
@@ -153,12 +153,12 @@ var base = {
      * 
      * Please also check the standard fields added by TbSync.
      */
-    getDefaultFolderEntries: function () {
+    static getDefaultFolderEntries() {
         let folder = {
             "type" : "addrbook",
             };
         return folder;
-    },
+    }
 
 
 
@@ -168,8 +168,8 @@ var base = {
      *
      * @param accountData  [in] AccountData
      */
-    onEnableAccount: function (accountData) {
-    },
+    static onEnableAccount(accountData) {
+    }
 
 
 
@@ -179,8 +179,8 @@ var base = {
      *
      * @param accountData  [in] AccountData
      */
-    onDisableAccount: function (accountData) {
-    },
+    static onDisableAccount(accountData) {
+    }
 
 
 
@@ -190,8 +190,8 @@ var base = {
      *
      * @param accountData  [in] FolderData
      */
-    onResetTarget: function (folderData) {
-    },
+    static onResetTarget(folderData) {
+    }
 
 
 
@@ -213,9 +213,9 @@ var base = {
      *
      * Return arrary of AutoCompleteData entries.
      */
-    abAutoComplete: async function (accountData, currentQuery)  {
+    static async abAutoComplete(accountData, currentQuery)  {
         return [];
-    },
+    }
 
 
 
@@ -226,9 +226,9 @@ var base = {
      * @param accountData         [in] AccountData for the account for which the 
      *                                 sorted folder should be returned
      */
-    getSortedFolders: function (accountData) {
+    static getSortedFolders(accountData) {
         return accountData.getAllFolders();
-    },
+    }
 
 
 
@@ -241,9 +241,9 @@ var base = {
      *
      * return timeout in milliseconds
      */
-    getConnectionTimeout: function (accountData) {
+    static getConnectionTimeout(accountData) {
         return Services.prefs.getBranch("extensions.%%ProviderChromeUrl%%.").getIntPref("timeout");
-    },
+    }
     
 
 
@@ -263,9 +263,9 @@ var base = {
      *
      * return StatusData
      */
-    syncFolderList: async function (syncData, syncJob, syncRunNr) {        
+    static async syncFolderList(syncData, syncJob, syncRunNr) {        
         return new tbSync.StatusData();
-    },
+    }
     
 
 
@@ -286,9 +286,9 @@ var base = {
      *
      * return StatusData
      */
-    syncFolder: async function (syncData, syncJob, syncRunNr) {
+    static async syncFolder(syncData, syncJob, syncRunNr) {
         return new tbSync.StatusData();
-    },    
+    }
 }
 
 
@@ -477,7 +477,7 @@ var standardTargets = {
  *    let folderData = folderList.selectedItem.folderData;
  *
  */
-var standardFolderList = {
+var standardFolderList = class {
     /**
      * Is called before the context menu of the folderlist is shown, allows to
      * show/hide custom menu options based on selected folder. During an active
@@ -486,8 +486,8 @@ var standardFolderList = {
      * @param window        [in] window object of the account settings window
      * @param folderData    [in] FolderData of the selected folder
      */
-    onContextMenuShowing: function (window, folderData) {
-    },
+    static onContextMenuShowing(window, folderData) {
+    }
 
 
 
@@ -497,14 +497,14 @@ var standardFolderList = {
      *
      * @param folderData         [in] FolderData of the selected folder
      */
-    getTypeImage: function (folderData) {
+    static getTypeImage(folderData) {
         switch (folderData.getFolderProperty("type")) {
             case "addrbook":
                 return "chrome://tbsync/skin/contacts16.png";
             case "calendar":
                 return "chrome://tbsync/skin/calendar16.png";
         }
-    },
+    }
     
 
 
@@ -513,9 +513,9 @@ var standardFolderList = {
      *
      * @param folderData         [in] FolderData of the selected folder
      */ 
-    getFolderDisplayName: function (folderData) {
+    static getFolderDisplayName(folderData) {
         return folderData.getFolderProperty("foldername");
-    },
+    }
 
 
 
@@ -528,14 +528,14 @@ var standardFolderList = {
      * Return a list of attributes and their values. If both (RO+RW) do
      * not return any attributes, the ACL menu is not displayed at all.
      */ 
-    getAttributesRoAcl: function (folderData) {
+    static getAttributesRoAcl(folderData) {
         return null;
         /* 
         return {
             label: tbSync.getString("acl.readonly", "%%ProviderNameSpace%%"),
         };
         */
-    },
+    }
     
 
 
@@ -548,9 +548,9 @@ var standardFolderList = {
      * Return a list of attributes and their values. If both (RO+RW) do
      * not return any attributes, the ACL menu is not displayed at all.
      */ 
-    getAttributesRwAcl: function (folderData) {
+    static getAttributesRwAcl(folderData) {
         return null;
-    },
+    }
 }
 
 Services.scriptloader.loadSubScript("chrome://dav4tbsync/content/includes/sync.js", this, "UTF-8");

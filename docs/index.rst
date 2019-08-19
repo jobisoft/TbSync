@@ -47,6 +47,8 @@ Implementing the Provider Interface
 After your provider has been registered, TbSync will read the file ``provider.js``, where the provider interface has to be implemented.
 
 
-.. js:autoclass:: ProgessData
+.. js:autoclass:: base
    :members:
 
+.. js:autoclass:: standardFolderList
+   :members:
