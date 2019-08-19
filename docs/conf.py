@@ -8,7 +8,7 @@ from recommonmark.parser import CommonMarkParser
 
 extensions = ['sphinx_js']
 root_for_relative_js_paths = '../content'
-js_source_path = ['./passwordPrompt','./modules']
+js_source_path = ['../content/passwordPrompt','../content/modules']
 primary_domain = 'js'
 templates_path = ['templates', '_templates', '.templates']
 source_suffix = ['.rst', '.md']
