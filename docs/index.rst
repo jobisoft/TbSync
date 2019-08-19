@@ -48,9 +48,8 @@ After your provider has been registered, TbSync will read the file ``provider.js
 
 
 
-.. js:autoclass:: standardFolderList
-   :members:
-   
 .. js:autoclass:: base
    :members:
 
+.. js:autoclass:: standardFolderList
+   :members:
