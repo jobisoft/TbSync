@@ -12,9 +12,8 @@
 const %%ProviderNameSpace%% = tbSync.providers.%%ProviderNameSpace%%;
 
 /**
- * Implementation the TbSync interfaces for external provider extensions.
+ * Implementing the TbSync interfaces for external provider extensions.
  */
-
 var base = {
     /**
      * Called during load of external provider extension to init provider.
