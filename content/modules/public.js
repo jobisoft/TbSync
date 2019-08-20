@@ -302,7 +302,7 @@ var FolderData = class {
           break;
 
         default:
-          this._target = new tbSync.providers[this.accountData.getAccountProperty("provider")].targets[this.getFolderProperty("targetType")].TargetData(this);
+          this._target = new tbSync.providers[this.accountData.getAccountProperty("provider")][this.getFolderProperty("targetType")].TargetData(this);
       }
     }
     
