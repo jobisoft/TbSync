@@ -90,7 +90,7 @@ var abAutoComplete = {
   
   
   Request: async function(accountData, aSearchString) {
-    let entries = await tbSync.providers[accountData.getAccountProperty("provider")].base.abAutoComplete(accountData, aSearchString);
+    let entries = await tbSync.providers[accountData.getAccountProperty("provider")].Base.abAutoComplete(accountData, aSearchString);
     return entries.map(entry => ({ ...entry, id: accountData.accountID }));
   },   
 }
@@ -141,7 +141,7 @@ abAutoComplete.Search.prototype = {
       
       if (status == "disabled") continue;
       //start all requests parallel (do not wait till done here, push the promise)
-      if (tbSync.providers[provider].base.abAutoComplete) {
+      if (tbSync.providers[provider].Base.abAutoComplete) {
         try {
           requests.push(tbSync.abAutoComplete.Request(accountData, aSearchString));
         } catch (e) {}

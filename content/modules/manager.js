@@ -129,7 +129,7 @@ var manager = {
      * @param folderData         [in] FolderData of the selected folder
      */
     onContextMenuShowing(window, folderData) {
-      return tbSync.providers[this.provider].standardFolderList.onContextMenuShowing(window, folderData);
+      return tbSync.providers[this.provider].StandardFolderList.onContextMenuShowing(window, folderData);
     }
 
 
@@ -161,12 +161,12 @@ var manager = {
 
       //icon
       let itemType = document.createXULElement("image");
-      itemType.setAttribute("src", tbSync.providers[this.provider].standardFolderList.getTypeImage(folderData));
+      itemType.setAttribute("src", tbSync.providers[this.provider].StandardFolderList.getTypeImage(folderData));
       itemType.setAttribute("style", "margin: 0px 9px 0px 3px;");
 
       //ACL
-      let roAttributes = tbSync.providers[this.provider].standardFolderList.getAttributesRoAcl(folderData);
-      let rwAttributes = tbSync.providers[this.provider].standardFolderList.getAttributesRwAcl(folderData);
+      let roAttributes = tbSync.providers[this.provider].StandardFolderList.getAttributesRoAcl(folderData);
+      let rwAttributes = tbSync.providers[this.provider].StandardFolderList.getAttributesRwAcl(folderData);
       let itemACL = document.createXULElement("button");
       itemACL.setAttribute("image", "chrome://tbsync/skin/acl_" + (folderData.getFolderProperty("downloadonly") ? "ro" : "rw") + ".png");
       itemACL.setAttribute("class", "plain");
@@ -330,7 +330,7 @@ var manager = {
      * @param folderData        [in] FolderData for that row
      */        
     updateRow(document, listItem, folderData) {
-      let foldername = tbSync.providers[this.provider].standardFolderList.getFolderDisplayName(folderData);
+      let foldername = tbSync.providers[this.provider].StandardFolderList.getFolderDisplayName(folderData);
       let status = folderData.getFolderStatus();
       let selected = folderData.getFolderProperty("selected");
       

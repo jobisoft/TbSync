@@ -269,7 +269,7 @@ var tbSyncAccountSettings = {
       if (syncstate.split(".")[0] == "send") {
         // append timeout countdown
         let diff = Date.now() - synctime;
-        if (diff > 2000) msg = msg + " (" + Math.round((tbSync.providers[tbSyncAccountSettings.provider].base.getConnectionTimeout(tbSyncAccountSettings.accountData) - diff)/1000) + "s)";
+        if (diff > 2000) msg = msg + " (" + Math.round((tbSync.providers[tbSyncAccountSettings.provider].Base.getConnectionTimeout(tbSyncAccountSettings.accountData) - diff)/1000) + "s)";
         // re-schedule update, if this is a waiting syncstate
         tbSyncAccountSettings.updateTimer.init(tbSyncAccountSettings.updateSyncstate, 1000, 0);
       }            
@@ -282,7 +282,7 @@ var tbSyncAccountSettings = {
     
     if (tbSyncAccountSettings.folderListVisible()) {
       //update syncstates of folders in folderlist, if visible - remove obsolete entries while we are here
-      let folderData = tbSync.providers[tbSyncAccountSettings.provider].base.getSortedFolders(tbSyncAccountSettings.accountData);
+      let folderData = tbSync.providers[tbSyncAccountSettings.provider].Base.getSortedFolders(tbSyncAccountSettings.accountData);
       let folderList = document.getElementById("tbsync.accountsettings.folderlist");
 
       for (let i=folderList.getRowCount()-1; i>=0; i--) {
@@ -298,7 +298,7 @@ var tbSyncAccountSettings = {
 
   updateFolderList: function () {
     //get updated list of folderIDs
-    let folderData = tbSync.providers[tbSyncAccountSettings.provider].base.getSortedFolders(tbSyncAccountSettings.accountData);
+    let folderData = tbSync.providers[tbSyncAccountSettings.provider].Base.getSortedFolders(tbSyncAccountSettings.accountData);
     
     //remove entries from folderlist, which no longer exists and build reference array with  current elements
     let folderList = document.getElementById("tbsync.accountsettings.folderlist");

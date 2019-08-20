@@ -578,7 +578,7 @@ var addressbook = {
       // https://github.com/jdgeenen/gcontactsync/pull/127
       directory.setStringValue("gContactSyncSkipped", "true");
       
-      tbSync.providers[provider].base.onResetTarget(folderData);
+      tbSync.providers[provider].Base.onResetTarget(folderData);
       
       folderData.setFolderProperty("target", directory.UID);            
       folderData.setFolderProperty("targetName", directory.dirName);
