@@ -37,6 +37,15 @@ Future plans:
 All this requires funding. If you like TbSync and want to support its development, please consider a donation.
 
 
+## Adding support for other sync protocolls by creating a TbSync provider add-on
+
+All the information needed, to build a new provider add-on for TbSync and thus extending its sync capabilities, can be found here:
+
+```
+https://tbsync.readthedocs.org
+```
+
+
 ## Translations and localizations
 
 * [Localization content best practices](https://developer.mozilla.org/en-US/docs/Mozilla/Localization/Localization_content_best_practices)
