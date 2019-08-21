@@ -60,7 +60,7 @@ var providers = {
         await this[provider].Base.load();
 
         await tbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xul?provider=" + provider, this[provider].Base.getEditAccountOverlayUrl(), [{name: "oninject", value: "tbSyncEditAccountOverlay.onload(window, new tbSync.AccountData(tbSyncAccountSettings.accountID));"}]);        
-        tbSync.dump("Loaded provider", provider + "::" + this[provider].Base.getNiceProviderName() + " ("+this.loadedProviders[provider].version+")");
+        tbSync.dump("Loaded provider", provider + "::" + this[provider].Base.getProviderName() + " ("+this.loadedProviders[provider].version+")");
         
         // reset all accounts of this provider
         let providerData = new tbSync.ProviderData(provider);

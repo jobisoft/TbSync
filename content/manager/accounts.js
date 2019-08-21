@@ -426,7 +426,7 @@ var tbSyncAccounts = {
     
     //Update label, icon and hidden according to isDefault and isInstalled
     if (isInstalled) {
-      entry.setAttribute("label",  tbSync.providers[provider].Base.getNiceProviderName());
+      entry.setAttribute("label",  tbSync.providers[provider].Base.getProviderName());
       entry.setAttribute("image", tbSync.providers[provider].Base.getProviderIcon(16));
       entry.setAttribute("hidden", false);
     } else if (isDefault) {

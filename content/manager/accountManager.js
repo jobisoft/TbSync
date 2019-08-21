@@ -66,7 +66,7 @@ var tbSyncAccountManager = {
     for (let i=0; i < providers.length; i++) {
       let item = document.createXULElement("menuitem");
       item.setAttribute("value", providers[i]);
-      item.setAttribute("label", tbSync.getString("supportwizard.provider::" + tbSync.providers[providers[i]].Base.getNiceProviderName()));
+      item.setAttribute("label", tbSync.getString("supportwizard.provider::" + tbSync.providers[providers[i]].Base.getProviderName()));
       menu.appendChild(item); 
     }
   
@@ -113,7 +113,7 @@ var tbSyncAccountManager = {
       let template = listOfContributors.firstElementChild.cloneNode(true);
       template.setAttribute("provider", provider);
       template.children[0].setAttribute("src", tbSync.providers[provider].Base.getProviderIcon(48));
-      template.children[1].children[0].textContent = tbSync.providers[provider].Base.getNiceProviderName();
+      template.children[1].children[0].textContent = tbSync.providers[provider].Base.getProviderName();
       listOfContributors.appendChild(template);
       Object.assign(sponsors, tbSync.providers[provider].Base.getSponsors());
     }
