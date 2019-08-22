@@ -42,15 +42,19 @@ var providers = {
       try {
         let addon = await AddonManager.getAddonByID(addonId);
 
+        //load provider subscripts into tbSync
         this[provider] = {};
+        Services.scriptloader.loadSubScript(js, this[provider], "UTF-8");
+        if (tbSync.apiVersion != this[provider].Base.getApiVersion()) {
+          throw new Error("API version mismatch, TbSync@"+tbSync.apiVersion+" vs " + provider + "@" + this[provider].Base.getApiVersion());
+        }
+        
         this.loadedProviders[provider] = {};
         this.loadedProviders[provider].addon = addon;
         this.loadedProviders[provider].addonId = addonId;
         this.loadedProviders[provider].version = addon.version.toString();
         this.loadedProviders[provider].createAccountWindow = null;
 
-        //load provider subscripts into tbSync
-        Services.scriptloader.loadSubScript(js, this[provider], "UTF-8");
         this.loadedProviders[provider].bundle = Services.strings.createBundle(this[provider].Base.getStringBundleUrl());
 
         // check if provider has its own implementation of folderList
@@ -113,8 +117,11 @@ var providers = {
         }
         
       } catch (e) {
-        tbSync.dump("FAILED to load provider", provider);
-        Components.utils.reportError(e);
+        delete this.loadedProviders[provider];
+        delete this[provider];
+        let info = new EventLogInfo(provider);
+        tbSync.eventlog.add("error", info, "FAILED to load provider <"+provider+">", e.message);
+        Components.utils.reportError(e);        
       }
 
     }
