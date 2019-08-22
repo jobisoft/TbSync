@@ -29,6 +29,6 @@ sed -i "s|\"gecko\": {|\"gecko\": {\n  \"update_url\": \"$1/$updatefile\",|g" "m
 
 cp beta-release-channel-update.json $2/$updatefile
 
-#rm $3
-#zip -r $3 content _locales skin chrome.manifest manifest.json bootstrap.js LICENSE CONTRIBUTORS.md
-#cp $3 $2/$3
+rm $3
+zip -r $3 content _locales skin chrome.manifest manifest.json bootstrap.js LICENSE CONTRIBUTORS.md
+cp $3 $2/$3
