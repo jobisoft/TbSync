@@ -1,5 +1,6 @@
 TbSync API  Documentation
 =================================
 
-TODO
+.. js:autoclass:: EventLogInfo
+   :members:
 
