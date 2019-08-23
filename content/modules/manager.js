@@ -266,6 +266,7 @@ var manager = {
             if (target) {
               folder.targetData.removeTarget(); 
               tbSync.db.clearChangeLog(target);
+              folder.resetFolderProperty("target");              
             }
             folder.setFolderProperty("selected", false);
             
