@@ -8,7 +8,18 @@
  
  "use strict";
 
+/**
+ * EventLogInfo
+ *
+ */
 var EventLogInfo = class {
+  /**
+   * Constructor
+   *
+   * @param {FolderData} folderData    FolderData of the folder for which the
+   *                                   display name is requested.
+   *
+   */
   constructor(provider, accountname, accountID, foldername = "") {
     this.provider = provider;
     this.accountname = accountname;
