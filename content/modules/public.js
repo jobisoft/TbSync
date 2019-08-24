@@ -8,6 +8,10 @@
  
  "use strict";
 
+/**
+ * StatusData
+ *
+ */
  var StatusData = class {
   constructor(type = "success", message = "", details = "") {
     this.type = type; //success, info, warning, error
@@ -25,6 +29,10 @@
 
 
 
+/**
+ * ProgessData
+ *
+ */
 var ProgessData = class {
   constructor() {
     this._todo = 0;
@@ -51,6 +59,10 @@ var ProgessData = class {
 
 
 
+/**
+ * ProviderData
+ *
+ */
 var ProviderData = class {
   constructor(provider) {
     if (!tbSync.providers.hasOwnProperty(provider)) {
@@ -105,6 +117,10 @@ var ProviderData = class {
 
 
 
+/**
+ * AccountData
+ *
+ */
 var AccountData = class {
   constructor(accountID) {
     this._accountID = accountID;
@@ -201,6 +217,10 @@ var AccountData = class {
 
 
 
+/**
+ * FolderData
+ *
+ */
 var FolderData = class {
   constructor(accountData, folderID) {
     this._accountData = accountData;
@@ -332,6 +352,10 @@ var FolderData = class {
 
 
 // there is only one syncdata object per account which contains the current state of the sync
+/**
+ * SyncData
+ *
+ */
 var SyncData = class {
   constructor(accountID) {
     
