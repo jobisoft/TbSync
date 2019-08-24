@@ -20,7 +20,7 @@ source_suffix = ['.rst', '.md']
 source_parsers = {
             '.md': CommonMarkParser,
         }
-master_doc = 'index'
+master_doc = 'toc'
 project = u'TbSync Developer Documentation'
 copyright = str(datetime.now().year)
 version = 'latest'
