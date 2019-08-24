@@ -13,6 +13,13 @@
  *
  */
  var StatusData = class {
+  /**
+   * Constructor
+   *
+   * @param {FolderData} folderData    FolderData of the folder for which the
+   *                                   display name is requested.
+   *
+   */
   constructor(type = "success", message = "", details = "") {
     this.type = type; //success, info, warning, error
     this.message = message;
@@ -34,6 +41,13 @@
  *
  */
 var ProgessData = class {
+  /**
+   * Constructor
+   *
+   * @param {FolderData} folderData    FolderData of the folder for which the
+   *                                   display name is requested.
+   *
+   */
   constructor() {
     this._todo = 0;
     this._done = 0;
@@ -64,6 +78,13 @@ var ProgessData = class {
  *
  */
 var ProviderData = class {
+  /**
+   * Constructor
+   *
+   * @param {FolderData} folderData    FolderData of the folder for which the
+   *                                   display name is requested.
+   *
+   */
   constructor(provider) {
     if (!tbSync.providers.hasOwnProperty(provider)) {
       throw new Error("Provider <" + provider + "> has not been loaded. Failed to create ProviderData.");
@@ -122,6 +143,13 @@ var ProviderData = class {
  *
  */
 var AccountData = class {
+  /**
+   * Constructor
+   *
+   * @param {FolderData} folderData    FolderData of the folder for which the
+   *                                   display name is requested.
+   *
+   */
   constructor(accountID) {
     this._accountID = accountID;
 
@@ -222,6 +250,13 @@ var AccountData = class {
  *
  */
 var FolderData = class {
+  /**
+   * Constructor
+   *
+   * @param {FolderData} folderData    FolderData of the folder for which the
+   *                                   display name is requested.
+   *
+   */
   constructor(accountData, folderID) {
     this._accountData = accountData;
     this._folderID = folderID;
@@ -351,12 +386,19 @@ var FolderData = class {
 
 
 
-// there is only one syncdata object per account which contains the current state of the sync
 /**
  * SyncData
  *
+ * there is only one syncdata object per account which contains the current state of the sync
  */
 var SyncData = class {
+  /**
+   * Constructor
+   *
+   * @param {FolderData} folderData    FolderData of the folder for which the
+   *                                   display name is requested.
+   *
+   */
   constructor(accountID) {
     
     //internal (private, not to be touched by provider)

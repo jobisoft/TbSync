@@ -1,5 +1,5 @@
-ProgessData
+ProgressData
 -----------
 
-.. js:autoclass:: ProgessData
+.. js:autoclass:: ProgressData
    :members:
