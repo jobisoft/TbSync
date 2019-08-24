@@ -21,7 +21,7 @@ source_parsers = {
             '.md': CommonMarkParser,
         }
 master_doc = 'index'
-project = u'TbSync Documentation'
+project = u'TbSync Developer Documentation'
 copyright = str(datetime.now().year)
 version = 'latest'
 release = 'latest'
