@@ -21,7 +21,7 @@ source_parsers = {
             '.md': CommonMarkParser,
         }
 master_doc = 'index'
-project = u'TbSync'
+project = u'TbSync Documentation'
 copyright = str(datetime.now().year)
 version = 'latest'
 release = 'latest'
@@ -30,11 +30,22 @@ pygments_style = 'sphinx'
 htmlhelp_basename = 'tbsync'
 html_theme = 'sphinx_rtd_theme'
 file_insertion_enabled = False
-latex_documents = [
-  ('index', 'tbsync.tex', u'TbSync Documentation',
-   u'', 'manual'),
-]
 
+
+html_theme_options = {
+    #'logo_only': False,
+    'display_version': False,
+    #'prev_next_buttons_location': 'bottom',
+    #'style_external_links': False,
+    #'vcs_pageview_mode': '',
+    #'style_nav_header_background': 'white',
+    # Toc options
+    'collapse_navigation': False,
+    'sticky_navigation': True,
+    'navigation_depth': 4,
+    'includehidden': True,
+    'titles_only': False
+}
 
 
 
@@ -117,11 +128,6 @@ context = {
     'PRODUCTION_DOMAIN': "readthedocs.org",
     'versions': [
     ("latest", "/en/latest/"),
-    ],
-    'downloads': [ 
-    ("pdf", "//readthedocs.org/projects/tbsync/downloads/pdf/latest/"),
-    ("html", "//readthedocs.org/projects/tbsync/downloads/htmlzip/latest/"),
-    ("epub", "//readthedocs.org/projects/tbsync/downloads/epub/latest/"),
     ],
     'subprojects': [ 
     ],
