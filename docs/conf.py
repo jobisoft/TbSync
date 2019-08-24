@@ -8,8 +8,8 @@ from recommonmark.parser import CommonMarkParser
 
 extensions = ['sphinx_js', 'sphinx.ext.intersphinx']
 intersphinx_mapping = {
-    'provider': ('https://tbsync.readthedocs.io/en/latest/', None),
-    'tbsync': ('https://tbsync.readthedocs.io/projects/api/en/latest/', None)
+    'Provider': ('https://tbsync.readthedocs.io/en/latest/', None),
+    'TbSync': ('https://tbsync.readthedocs.io/projects/api/en/latest/', None)
 }
 intersphinx_cache_limit = 0
 root_for_relative_js_paths = '../content'
