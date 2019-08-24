@@ -37,10 +37,10 @@
 
 
 /**
- * ProgessData
+ * ProgressData
  *
  */
-var ProgessData = class {
+var ProgressData = class {
   /**
    * Constructor
    *
@@ -404,7 +404,7 @@ var SyncData = class {
     //internal (private, not to be touched by provider)
     this._syncstate = "accountdone";
     this._accountData = new tbSync.AccountData(accountID);
-    this._progressData = new tbSync.ProgessData();
+    this._progressData = new tbSync.ProgressData();
     this._currentFolderData = null;
   }
 
