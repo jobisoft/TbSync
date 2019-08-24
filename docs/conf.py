@@ -6,7 +6,12 @@ from datetime import datetime
 
 from recommonmark.parser import CommonMarkParser
 
-extensions = ['sphinx_js']
+extensions = ['sphinx_js', 'sphinx.ext.intersphinx']
+intersphinx_mapping = {
+    'provider': ('https://tbsync.readthedocs.io/en/latest/', None),
+    'tbsync': ('https://tbsync.readthedocs.io/projects/api/en/latest/', None)
+}
+intersphinx_cache_limit = 0
 root_for_relative_js_paths = '../content'
 js_source_path = ['../content/passwordPrompt','../content/modules']
 primary_domain = 'js'
