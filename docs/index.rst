@@ -23,7 +23,7 @@ This document tries to cover all aspects of how to create a provider add-on for 
 
    Introduction <https://tbsync.readthedocs.io/en/latest/introduction/introduction.html>
    Getting Started <https://tbsync.readthedocs.io/en/latest/getting_started/getting_started.html>
-   Implementing the Provider Classes <https://tbsync.readthedocs.io/en/latest/implementing.html>
+   Implementing the Provider Classes <https://tbsync.readthedocs.io/en/latest/implementing/implementing.html>
 
 .. toctree::
    :caption: References
