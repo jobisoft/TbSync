@@ -13,10 +13,7 @@ This document tries to cover all aspects of how to create a provider add-on for 
   As promised by the name, this section gets you started by explainig how to create your own basic provider add-on in just a couple of minutes and gives instructions to get it running in Thunderbird.
 
 :doc:`implementing/api`
-  Learn how to interact with TbSync and how to add sync capabilities to your provider add-on.
-
-:doc:`tbsync:api`
-   Test link :class:`tbsync:EventLogInfo`
+  Learn how to interact with TbSync.
 
 
 .. toctree::
@@ -33,5 +30,5 @@ This document tries to cover all aspects of how to create a provider add-on for 
    :hidden:
    :maxdepth: 3
 
-   Class Definitions <https://tbsync.readthedocs.io/en/latest/classes/classes.html>
+   Class Definitions <https://tbsync.readthedocs.io/en/latest/classes.html>
    API Reference <api>
