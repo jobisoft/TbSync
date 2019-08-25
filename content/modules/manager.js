@@ -116,7 +116,7 @@ var manager = {
   /**
    * Functions used by the folderlist in the main account settings tab
    */
-  DefaultFolderList : class {
+  FolderList : class {
     constructor(provider) {
       this.provider = provider
     }

@@ -58,7 +58,7 @@ var providers = {
         this.loadedProviders[provider].bundle = Services.strings.createBundle(this[provider].Base.getStringBundleUrl());
 
         // check if provider has its own implementation of folderList
-        if (!this[provider].hasOwnProperty("folderList")) this[provider].folderList = new tbSync.manager.DefaultFolderList(provider);
+        if (!this[provider].hasOwnProperty("folderList")) this[provider].folderList = new tbSync.manager.FolderList(provider);
         
         //load provider
         await this[provider].Base.load();
