@@ -117,6 +117,9 @@ var manager = {
    * Functions used by the folderlist in the main account settings tab
    */
   FolderList : class {
+    /**
+     * @param {string}  provider  Identifier for the provider this FolderListView is created for.
+     */
     constructor(provider) {
       this.provider = provider
     }
