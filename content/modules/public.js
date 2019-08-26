@@ -436,7 +436,7 @@ var FolderData = class {
       if (keepStaleTargetSuffix) {
         let oldName =  this.targetData.targetName;
         this.targetData.targetName = TbSync.getString("target.orphaned") + ": " + oldName + " " + keepStaleTargetSuffix;
-        this.targetData.onDisconnectTarget();
+        this.targetData.onBeforeDisconnectTarget();
       } else {
         this.targetData.removeTarget();
       }

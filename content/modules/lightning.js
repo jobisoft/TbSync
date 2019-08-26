@@ -155,7 +155,7 @@ var lightning = {
      * Is called, when a target is being disconnected from a folder, but
      * not deleted.
      */
-    onDisconnectTarget() {
+    onBeforeDisconnectTarget() {
       if (!TbSync.lightning.isAvailable()) {
           throw new Error("nolightning");
       }

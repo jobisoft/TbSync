@@ -27,7 +27,7 @@ var TbSync = {
   addon: null,
   version: 0,
   debugMode: false,
-  apiVersion: "2.0",
+  apiVersion: "2.1",
 
   bundle: Services.strings.createBundle("chrome://tbsync/locale/tbSync.strings"),
   prefs: Services.prefs.getBranch("extensions.tbsync."),

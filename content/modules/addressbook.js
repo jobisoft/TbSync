@@ -108,7 +108,7 @@ var addressbook = {
      * not deleted.
      * 
      */
-    onDisconnectTarget() {
+    onBeforeDisconnectTarget() {
       let directory = TbSync.addressbook.checkAddressbook(this._folderData);
       if (directory) {
         let target = this._folderData.getFolderProperty("target");
