@@ -228,8 +228,8 @@ var core = {
       if (target) {
         folder.targetData.removeTarget(); 
         folder.resetFolderProperty("target");
+        TbSync.db.clearChangeLog(target);
       }
-      TbSync.db.clearChangeLog(target);
       folder.setFolderProperty("selected", false);
       folder.setFolderProperty("cached", true);
     }

@@ -440,8 +440,8 @@ var FolderData = class {
       } else {
         this.targetData.removeTarget();
       }
+      TbSync.db.clearChangeLog(target);
     }
-    TbSync.db.clearChangeLog(target);
     this.resetFolderProperty("target");
     this.setFolderProperty("cached", true);
   }
