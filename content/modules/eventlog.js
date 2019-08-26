@@ -96,12 +96,12 @@ var eventlog = {
     let localized = "";
     let link = "";        
     if (entry.provider) {
-      localized = tbSync.getString("status." + message, entry.provider);
-      link = tbSync.getString("helplink." + message, entry.provider);
+      localized = TbSync.getString("status." + message, entry.provider);
+      link = TbSync.getString("helplink." + message, entry.provider);
     } else {
-      //try to get localized string from message from tbSync
-      localized = tbSync.getString("status." + message);
-      link = tbSync.getString("helplink." + message);
+      //try to get localized string from message from TbSync
+      localized = TbSync.getString("status." + message);
+      link = TbSync.getString("helplink." + message);
     }
   
     //can we provide a localized version of the event msg?
@@ -115,7 +115,7 @@ var eventlog = {
     }
 
     //dump the non-localized message into debug log
-    tbSync.dump("EventLog", message + (entry.details !== null ? "\n" + entry.details : ""));
+    TbSync.dump("EventLog", message + (entry.details !== null ? "\n" + entry.details : ""));
     this.events.push(entry);
     if (this.events.length > 100) this.events.shift();
     Services.obs.notifyObservers(null, "tbsync.observer.eventlog.update", null);
@@ -148,6 +148,6 @@ var eventlog = {
   
   
   open: function (accountID = null, folderID = null) {
-    this.eventLogWindow = tbSync.manager.prefWindowObj.open("chrome://tbsync/content/manager/eventlog/eventlog.xul", "TbSyncEventLog", "centerscreen,chrome,resizable");
+    this.eventLogWindow = TbSync.manager.prefWindowObj.open("chrome://tbsync/content/manager/eventlog/eventlog.xul", "TbSyncEventLog", "centerscreen,chrome,resizable");
   },    
 }

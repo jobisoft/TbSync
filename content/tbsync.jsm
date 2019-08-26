@@ -8,7 +8,7 @@
  
  "use strict";
 
-var EXPORTED_SYMBOLS = ["tbSync"];
+var EXPORTED_SYMBOLS = ["TbSync"];
 
 var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 var { FileUtils } = ChromeUtils.import("resource://gre/modules/FileUtils.jsm");
@@ -18,7 +18,7 @@ var { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
 var { MailServices } = ChromeUtils.import("resource:///modules/MailServices.jsm");
 var { OverlayManager } = ChromeUtils.import("chrome://tbsync/content/OverlayManager.jsm");
 
-var tbSync = {
+var TbSync = {
 
   enabled: false,
   shutdown: false,
@@ -145,14 +145,14 @@ var tbSync = {
 
     event: {
       notify: function (timer) {
-        if (tbSync.enabled) {
+        if (TbSync.enabled) {
           //get all accounts and check, which one needs sync
-          let accounts = tbSync.db.getAccounts();
+          let accounts = TbSync.db.getAccounts();
           for (let i=0; i<accounts.IDs.length; i++) {
             let syncInterval = accounts.data[accounts.IDs[i]].autosync * 60 * 1000;
             let lastsynctime = accounts.data[accounts.IDs[i]].lastsynctime;
-            if (tbSync.core.isEnabled(accounts.IDs[i]) && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval)) {
-              tbSync.core.syncAccount(accounts.IDs[i]);
+            if (TbSync.core.isEnabled(accounts.IDs[i]) && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval)) {
+              TbSync.core.syncAccount(accounts.IDs[i]);
             }
           }
         }

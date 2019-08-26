@@ -26,10 +26,10 @@ var manager = {
 
   openManagerWindow: function(event) {
     if (!event.button) { //catches zero or undefined
-      if (tbSync.enabled) {
+      if (TbSync.enabled) {
         // check, if a window is already open and just put it in focus
         if (this.prefWindowObj === null) {
-          this.prefWindowObj = tbSync.window.open("chrome://tbsync/content/manager/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen");
+          this.prefWindowObj = TbSync.window.open("chrome://tbsync/content/manager/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen");
         }
         this.prefWindowObj.focus();
       } else {
@@ -39,16 +39,16 @@ var manager = {
   },
 
   popupNotEnabled: function () {
-    tbSync.dump("Oops", "Trying to open account manager, but init sequence not yet finished");
-    let msg = tbSync.getString("OopsMessage") + "\n\n";
+    TbSync.dump("Oops", "Trying to open account manager, but init sequence not yet finished");
+    let msg = TbSync.getString("OopsMessage") + "\n\n";
     let v = Services.appinfo.platformVersion; 
-    if (!tbSync.prefs.getBoolPref("log.tofile")) {
-      if (tbSync.window.confirm(msg + tbSync.getString("UnableToTraceError"))) {
-        tbSync.prefs.setBoolPref("log.tofile", true);
-        tbSync.window.alert(tbSync.getString("RestartThunderbirdAndTryAgain"));
+    if (!TbSync.prefs.getBoolPref("log.tofile")) {
+      if (TbSync.window.confirm(msg + TbSync.getString("UnableToTraceError"))) {
+        TbSync.prefs.setBoolPref("log.tofile", true);
+        TbSync.window.alert(TbSync.getString("RestartThunderbirdAndTryAgain"));
       }
     } else {
-      if (tbSync.window.confirm(msg + tbSync.getString("HelpFixStartupError"))) {
+      if (TbSync.window.confirm(msg + TbSync.getString("HelpFixStartupError"))) {
         this.createBugReport("john.bieling@gmx.de", msg, "");
       }
     }
@@ -56,9 +56,9 @@ var manager = {
   
   openTBtab: function (url) {
     let tabmail = null;
-    if (tbSync.window) {
-      tabmail = tbSync.window.document.getElementById("tabmail");
-      tbSync.window.focus();
+    if (TbSync.window) {
+      tabmail = TbSync.window.document.getElementById("tabmail");
+      TbSync.window.focus();
       tabmail.openTab("contentTab", {
         contentPage: url
       });
@@ -67,9 +67,9 @@ var manager = {
   },
 
   openTranslatedLink: function (url) {
-    let googleCode = tbSync.getString("google.translate.code");
+    let googleCode = TbSync.getString("google.translate.code");
     if (googleCode != "en" && googleCode != "google.translate.code") {
-      this.openLink("https://translate.google.com/translate?hl=en&sl=en&tl="+tbSync.getString("google.translate.code")+"&u="+url);
+      this.openLink("https://translate.google.com/translate?hl=en&sl=en&tl="+TbSync.getString("google.translate.code")+"&u="+url);
     } else {
       this.openLink(url);
     }
@@ -83,8 +83,8 @@ var manager = {
   },
   
   openBugReportWizard: function () {
-    if (!tbSync.debugMode) {
-      this.prefWindowObj.alert(tbSync.getString("NoDebugLog"));
+    if (!TbSync.debugMode) {
+      this.prefWindowObj.alert(TbSync.getString("NoDebugLog"));
     } else {
       this.prefWindowObj.openDialog("chrome://tbsync/content/manager/support-wizard/support-wizard.xul", "support-wizard", "dialog,centerscreen,chrome,resizable=no");
     }
@@ -95,7 +95,7 @@ var manager = {
     let params = Components.classes["@mozilla.org/messengercompose/composeparams;1"].createInstance(Components.interfaces.nsIMsgComposeParams); 
 
     fields.to = email; 
-    fields.subject = "TbSync " + tbSync.addon.version.toString() + " bug report: " + subject; 
+    fields.subject = "TbSync " + TbSync.addon.version.toString() + " bug report: " + subject; 
     fields.body = "Hi,\n\n" +
       "attached you find my debug.log for the following error:\n\n" + 
       description; 
@@ -105,7 +105,7 @@ var manager = {
 
     let attachment = Components.classes["@mozilla.org/messengercompose/attachment;1"].createInstance(Components.interfaces.nsIMsgAttachment);
     attachment.contentType = "text/plain";
-    attachment.url =  'file://' + tbSync.io.getAbsolutePath("debug.log");
+    attachment.url =  'file://' + TbSync.io.getAbsolutePath("debug.log");
     attachment.name = "debug.log";
     attachment.temporary = false;
 
@@ -136,7 +136,7 @@ manager.FolderList = class {
    * @param folderData         [in] FolderData of the selected folder
    */
   onContextMenuShowing(window, folderData) {
-    return tbSync.providers[this.provider].StandardFolderList.onContextMenuShowing(window, folderData);
+    return TbSync.providers[this.provider].StandardFolderList.onContextMenuShowing(window, folderData);
   }
 
 
@@ -147,8 +147,8 @@ manager.FolderList = class {
   getHeader() {
     return [
       {style: "font-weight:bold;", label: "", width: "93"},
-      {style: "font-weight:bold;", label: tbSync.getString("manager.resource"), width:"150"},
-      {style: "font-weight:bold;", label: tbSync.getString("manager.status"), flex :"1"},
+      {style: "font-weight:bold;", label: TbSync.getString("manager.resource"), width:"150"},
+      {style: "font-weight:bold;", label: TbSync.getString("manager.status"), flex :"1"},
     ]
   }
 
@@ -168,12 +168,12 @@ manager.FolderList = class {
 
     //icon
     let itemType = document.createXULElement("image");
-    itemType.setAttribute("src", tbSync.providers[this.provider].StandardFolderList.getTypeImage(folderData));
+    itemType.setAttribute("src", TbSync.providers[this.provider].StandardFolderList.getTypeImage(folderData));
     itemType.setAttribute("style", "margin: 0px 9px 0px 3px;");
 
     //ACL
-    let roAttributes = tbSync.providers[this.provider].StandardFolderList.getAttributesRoAcl(folderData);
-    let rwAttributes = tbSync.providers[this.provider].StandardFolderList.getAttributesRwAcl(folderData);
+    let roAttributes = TbSync.providers[this.provider].StandardFolderList.getAttributesRoAcl(folderData);
+    let rwAttributes = TbSync.providers[this.provider].StandardFolderList.getAttributesRwAcl(folderData);
     let itemACL = document.createXULElement("button");
     itemACL.setAttribute("image", "chrome://tbsync/skin/acl_" + (folderData.getFolderProperty("downloadonly") ? "ro" : "rw") + ".png");
     itemACL.setAttribute("class", "plain");
@@ -272,10 +272,10 @@ manager.FolderList = class {
     
       if (folder.getFolderProperty("selected")) {
         let target = folder.getFolderProperty("target");
-        if (!target || element.ownerDocument.defaultView.confirm(tbSync.getString("prompt.Unsubscribe"))) {
+        if (!target || element.ownerDocument.defaultView.confirm(TbSync.getString("prompt.Unsubscribe"))) {
           if (target) {
             folder.targetData.removeTarget(); 
-            tbSync.db.clearChangeLog(target);
+            TbSync.db.clearChangeLog(target);
             folder.resetFolderProperty("target");              
           }
           folder.setFolderProperty("selected", false);
@@ -344,7 +344,7 @@ manager.FolderList = class {
    * @param folderData        [in] FolderData for that row
    */        
   updateRow(document, listItem, folderData) {
-    let foldername = tbSync.providers[this.provider].StandardFolderList.getFolderDisplayName(folderData);
+    let foldername = TbSync.providers[this.provider].StandardFolderList.getFolderDisplayName(folderData);
     let status = folderData.getFolderStatus();
     let selected = folderData.getFolderProperty("selected");
     

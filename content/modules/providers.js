@@ -42,11 +42,11 @@ var providers = {
       try {
         let addon = await AddonManager.getAddonByID(addonId);
 
-        //load provider subscripts into tbSync
+        //load provider subscripts into TbSync
         this[provider] = {};
         Services.scriptloader.loadSubScript(js, this[provider], "UTF-8");
-        if (tbSync.apiVersion != this[provider].Base.getApiVersion()) {
-          throw new Error("API version mismatch, TbSync@"+tbSync.apiVersion+" vs " + provider + "@" + this[provider].Base.getApiVersion());
+        if (TbSync.apiVersion != this[provider].Base.getApiVersion()) {
+          throw new Error("API version mismatch, TbSync@"+TbSync.apiVersion+" vs " + provider + "@" + this[provider].Base.getApiVersion());
         }
         
         this.loadedProviders[provider] = {};
@@ -58,29 +58,29 @@ var providers = {
         this.loadedProviders[provider].bundle = Services.strings.createBundle(this[provider].Base.getStringBundleUrl());
 
         // check if provider has its own implementation of folderList
-        if (!this[provider].hasOwnProperty("folderList")) this[provider].folderList = new tbSync.manager.FolderList(provider);
+        if (!this[provider].hasOwnProperty("folderList")) this[provider].folderList = new TbSync.manager.FolderList(provider);
         
         //load provider
         await this[provider].Base.load();
 
-        await tbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xul?provider=" + provider, this[provider].Base.getEditAccountOverlayUrl(), [{name: "oninject", value: "tbSyncEditAccountOverlay.onload(window, new tbSync.AccountData(tbSyncAccountSettings.accountID));"}]);        
-        tbSync.dump("Loaded provider", provider + "::" + this[provider].Base.getProviderName() + " ("+this.loadedProviders[provider].version+")");
+        await TbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xul?provider=" + provider, this[provider].Base.getEditAccountOverlayUrl(), [{name: "oninject", value: "tbSyncEditAccountOverlay.onload(window, new TbSync.AccountData(tbSyncAccountSettings.accountID));"}]);        
+        TbSync.dump("Loaded provider", provider + "::" + this[provider].Base.getProviderName() + " ("+this.loadedProviders[provider].version+")");
         
         // reset all accounts of this provider
-        let providerData = new tbSync.ProviderData(provider);
+        let providerData = new TbSync.ProviderData(provider);
         let accounts = providerData.getAllAccounts();
         for (let accountData of accounts) {
           // reset sync objects
-          tbSync.core.resetSyncDataObj(accountData.accountID);
+          TbSync.core.resetSyncDataObj(accountData.accountID);
           
           // set all accounts which are syncing to notsyncronized 
           if (accountData.getAccountProperty("status") == "syncing") accountData.setAccountProperty("status", "notsyncronized");
 
           // set each folder with PENDING status to ABORTED
-          let folders = tbSync.db.findFolders({"status": "pending"}, {"accountID": accountData.accountID});
+          let folders = TbSync.db.findFolders({"status": "pending"}, {"accountID": accountData.accountID});
 
           for (let f=0; f < folders.length; f++) {
-            tbSync.db.setFolderProperty(folders[f].accountID, folders[f].folderID, "status", "aborted");
+            TbSync.db.setFolderProperty(folders[f].accountID, folders[f].folderID, "status", "aborted");
           }
         }
         
@@ -95,7 +95,7 @@ var providers = {
             let storedProvider = addressBook.getStringValue("tbSyncProvider", "");
             if (provider == storedProvider && providerData.getFolders({"target": addressBook.UID}).length == 0) {
               let name = addressBook.dirName;
-              addressBook.dirName = tbSync.getString("target.orphaned") + ": " + name;              
+              addressBook.dirName = TbSync.getString("target.orphaned") + ": " + name;              
               addressBook.setStringValue("tbSyncIcon", "orphaned");
               addressBook.setStringValue("tbSyncProvider", "orphaned");
               addressBook.setStringValue("tbSyncAccountID", "");
@@ -103,12 +103,12 @@ var providers = {
           }
         }
         
-		if (tbSync.lightning.isAvailable()) {
-          for (let calendar of tbSync.lightning.cal.getCalendarManager().getCalendars({})) {
+		if (TbSync.lightning.isAvailable()) {
+          for (let calendar of TbSync.lightning.cal.getCalendarManager().getCalendars({})) {
             let storedProvider = calendar.getProperty("tbSyncProvider");
             if (provider == storedProvider && calendar.type == "storage" && providerData.getFolders({"target": calendar.id}).length == 0) {
               let name = calendar.name;
-              calendar.name = tbSync.getString("target.orphaned") + ": " + name;
+              calendar.name = TbSync.getString("target.orphaned") + ": " + name;
               calendar.setProperty("disabled", true);
               calendar.setProperty("tbSyncProvider", "orphaned");
               calendar.setProperty("tbSyncAccountID", "");        
@@ -120,7 +120,7 @@ var providers = {
         delete this.loadedProviders[provider];
         delete this[provider];
         let info = new EventLogInfo(provider);
-        tbSync.eventlog.add("error", info, "FAILED to load provider <"+provider+">", e.message);
+        TbSync.eventlog.add("error", info, "FAILED to load provider <"+provider+">", e.message);
         Components.utils.reportError(e);        
       }
 
@@ -129,7 +129,7 @@ var providers = {
   
   unloadProvider: async function (provider) {        
     if (this.loadedProviders.hasOwnProperty(provider)) {
-      tbSync.dump("Unloading provider", provider);
+      TbSync.dump("Unloading provider", provider);
       
        if (this.loadedProviders[provider].createAccountWindow) {
          this.loadedProviders[provider].createAccountWindow.close();
@@ -144,7 +144,7 @@ var providers = {
   },
   
   getDefaultAccountEntries: function (provider) {
-    let defaults = tbSync.providers[provider].Base.getDefaultAccountEntries();
+    let defaults = TbSync.providers[provider].Base.getDefaultAccountEntries();
     
     //add system properties
     defaults.provider = provider;
@@ -158,8 +158,8 @@ var providers = {
   },
   
   getDefaultFolderEntries: function (accountID) {
-    let provider = tbSync.db.getAccountProperty(accountID, "provider");
-    let defaults = tbSync.providers[provider].Base.getDefaultFolderEntries();
+    let provider = TbSync.db.getAccountProperty(accountID, "provider");
+    let defaults = TbSync.providers[provider].Base.getDefaultFolderEntries();
     
     //add system properties
     defaults.accountID = accountID;

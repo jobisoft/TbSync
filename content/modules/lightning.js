@@ -19,26 +19,26 @@ var lightning = {
     //check for lightning
     let lightning = await AddonManager.getAddonByID("{e2fda1a4-762b-4020-b5ad-a41df1933103}");
     if (lightning !== null) {
-      tbSync.dump("Check4Lightning","Start");
+      TbSync.dump("Check4Lightning","Start");
 
       //try to import
       if ("calICalendar" in Components.interfaces) {
         var { cal } = ChromeUtils.import("resource://calendar/modules/calUtils.jsm");
         var { ICAL } = ChromeUtils.import("resource://calendar/modules/ical.js");
-        tbSync.lightning.cal = cal;
-        tbSync.lightning.ICAL = ICAL;
+        TbSync.lightning.cal = cal;
+        TbSync.lightning.ICAL = ICAL;
       }
 
-      if (typeof tbSync.lightning.cal !== 'undefined') {
+      if (typeof TbSync.lightning.cal !== 'undefined') {
         //adding a global observer
-        tbSync.lightning.cal.getCalendarManager().addCalendarObserver(this.calendarObserver);
-        tbSync.lightning.cal.getCalendarManager().addObserver(this.calendarManagerObserver);
+        TbSync.lightning.cal.getCalendarManager().addCalendarObserver(this.calendarObserver);
+        TbSync.lightning.cal.getCalendarManager().addObserver(this.calendarManagerObserver);
 
         //indicate, that we have initialized 
         this.lightningInitDone = true;
-        tbSync.dump("Check4Lightning","Done");                            
+        TbSync.dump("Check4Lightning","Done");                            
       } else {
-        tbSync.dump("Check4Lightning","Failed!");
+        TbSync.dump("Check4Lightning","Failed!");
       }
     }
 
@@ -47,15 +47,15 @@ var lightning = {
   unload: async function () {
     if (this.isAvailable()) {
       //removing global observer
-      tbSync.lightning.cal.getCalendarManager().removeCalendarObserver(this.calendarObserver);
-      tbSync.lightning.cal.getCalendarManager().removeObserver(this.calendarManagerObserver);
+      TbSync.lightning.cal.getCalendarManager().removeCalendarObserver(this.calendarObserver);
+      TbSync.lightning.cal.getCalendarManager().removeObserver(this.calendarManagerObserver);
 
       //remove listeners on global sync buttons
-      if (tbSync.window.document.getElementById("calendar-synchronize-button")) {
-        tbSync.window.document.getElementById("calendar-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.observer.sync', null);}, false);
+      if (TbSync.window.document.getElementById("calendar-synchronize-button")) {
+        TbSync.window.document.getElementById("calendar-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.observer.sync', null);}, false);
       }
-      if (tbSync.window.document.getElementById("task-synchronize-button")) {
-        tbSync.window.document.getElementById("task-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.observer.sync', null);}, false);
+      if (TbSync.window.document.getElementById("task-synchronize-button")) {
+        TbSync.window.document.getElementById("task-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.observer.sync', null);}, false);
       }
     }
   },
@@ -82,11 +82,11 @@ var lightning = {
     
     // Check, if the target exists and return true/false.
     hasTarget() {
-      if (!tbSync.lightning.isAvailable()) {
+      if (!TbSync.lightning.isAvailable()) {
           throw new Error("nolightning");
       }
 
-      return tbSync.lightning.getCalendar(this._folderData) ? true : false;
+      return TbSync.lightning.getCalendar(this._folderData) ? true : false;
     }
 
     // Returns the target obj, which TbSync should return as the target. It can
@@ -94,20 +94,20 @@ var lightning = {
     // If the target does not exist, it should be created. Throw a simple Error, if that
     // failed.
     getTarget() {
-      if (!tbSync.lightning.isAvailable()) {
+      if (!TbSync.lightning.isAvailable()) {
           throw new Error("nolightning");
       }
 
-      let calendar = tbSync.lightning.getCalendar(this._folderData);
+      let calendar = TbSync.lightning.getCalendar(this._folderData);
       
       if (!calendar) {
-        calendar = tbSync.lightning.createCalendar(this._folderData);
+        calendar = TbSync.lightning.createCalendar(this._folderData);
         if (!calendar)
           throw new Error("notargets");
       }
 
       if (!this._targetObj || this._targetObj.id != calendar.id)
-        this._targetObj = new tbSync.lightning.TbCalendar(calendar, this._folderData);
+        this._targetObj = new TbSync.lightning.TbCalendar(calendar, this._folderData);
 
       return this._targetObj;
     }
@@ -115,45 +115,63 @@ var lightning = {
     // Remove the target and everything that belongs to it. TbSync will reset the target
     // property after this call has been executed.
     removeTarget() {
-      if (!tbSync.lightning.isAvailable()) {
+      if (!TbSync.lightning.isAvailable()) {
           throw new Error("nolightning");
       }
 
-      let calendar = tbSync.lightning.getCalendar(this._folderData);
+      let calendar = TbSync.lightning.getCalendar(this._folderData);
       try {
         if (calendar) {
-          tbSync.lightning.cal.getCalendarManager().removeCalendar(calendar);
+          TbSync.lightning.cal.getCalendarManager().removeCalendar(calendar);
         }
       } catch (e) {}
     }
 
+    set targetName(newName) {
+      if (!TbSync.lightning.isAvailable()) {
+          throw new Error("nolightning");
+      }
+      let calendar = TbSync.lightning.getCalendar(this._folderData);
+      if (calendar && newName) {
+        calendar.name = newName;
+      } else {
+        throw new Error("notargets");
+      }
+    }
+  
+    get targetName() {
+      if (!TbSync.lightning.isAvailable()) {
+          throw new Error("nolightning");
+      }
+      let calendar = TbSync.lightning.getCalendar(this._folderData);
+      if (calendar) {
+        return calendar.name;
+      } else {
+        throw new Error("notargets");
+      }
+    }
+
     /**
-     * This is called, when a folder is removed, but its target should be kept
-     * as a stale/unconnected item.
-     *
-     * @param suffix         [in] Suffix, which should be appended to the name
-     *                            of the target.
-     * @param pendingChanges [in] Array of ChangelogData objects, of unsynced
-     *                            local changes
-     * 
+     * Is called, when a target is being disconnected from a folder, but
+     * not deleted.
      */
-     appendStaleSuffix(suffix, pendingChanges) {
-      if (!tbSync.lightning.isAvailable()) {
+    onDisconnectTarget() {
+      if (!TbSync.lightning.isAvailable()) {
           throw new Error("nolightning");
       }
 
-      let calendar = tbSync.lightning.getCalendar(this._folderData);
-      if (calendar && suffix) {
-        //if there are pending/unsynced changes, append an  (*) to the name of the target
-        if (pendingChanges.length > 0) suffix += " (*)";
-
-        let orig = calendar.name;
-        calendar.name = tbSync.getString("target.orphaned") + ": " + orig + (suffix ? " " + suffix : "");
+      let calendar = TbSync.lightning.getCalendar(this._folderData);
+      if (calendar) {
+        let target = this._folderData.getFolderProperty("target");
+        let changes = TbSync.db.getItemsFromChangeLog(target, 0, "_by_user");        
+        if (changes.length > 0) {
+          this.targetName = this.targetName + " (*)";
+        }
         calendar.setProperty("disabled", true);
         calendar.setProperty("tbSyncProvider", "orphaned");
         calendar.setProperty("tbSyncAccountID", "");
       }
-    }     
+    } 
   },
 
 
@@ -214,7 +232,7 @@ var lightning = {
     }
 
     clone() {
-      return new tbSync.lightning.TbItem(this._tbCalendar, this._item.clone());
+      return new TbSync.lightning.TbItem(this._tbCalendar, this._item.clone());
     }
 
     toString() {
@@ -234,11 +252,11 @@ var lightning = {
     }
         
     get changelogData() {         
-      return tbSync.db.getItemDataFromChangeLog(this._tbCalendar.UID, this.primaryKey);
+      return TbSync.db.getItemDataFromChangeLog(this._tbCalendar.UID, this.primaryKey);
     }
 
     get changelogStatus() {
-      return tbSync.db.getItemStatusFromChangeLog(this._tbCalendar.UID, this.primaryKey);
+      return TbSync.db.getItemStatusFromChangeLog(this._tbCalendar.UID, this.primaryKey);
     }
 
     set changelogStatus(status) {
@@ -246,12 +264,12 @@ var lightning = {
       
       if (value) {
         if (!status) {
-          tbSync.db.removeItemFromChangeLog(this._tbCalendar.UID, value);
+          TbSync.db.removeItemFromChangeLog(this._tbCalendar.UID, value);
           return;
         }
 
         if (this._tbCalendar.logUserChanges || status.endsWith("_by_server")) {
-          tbSync.db.addItemToChangeLog(this._tbCalendar.UID, value, status);
+          TbSync.db.addItemToChangeLog(this._tbCalendar.UID, value, status);
         }
       }
     }
@@ -261,7 +279,7 @@ var lightning = {
   TbCalendar : class {
     constructor(calendar, folderData) {
       this._calendar = calendar;
-      this._promisifyCalendar = tbSync.lightning.cal.async.promisifyCalendar(this._calendar.wrappedJSObject);
+      this._promisifyCalendar = TbSync.lightning.cal.async.promisifyCalendar(this._calendar.wrappedJSObject);
       this._folderData = folderData;
       this._provider = folderData.accountData.getAccountProperty("provider");
      }
@@ -275,7 +293,7 @@ var lightning = {
     }
 
     get logUserChanges() {
-      return tbSync.providers[this._provider].StandardCalendarTarget.logUserChanges;
+      return TbSync.providers[this._provider].StandardCalendarTarget.logUserChanges;
     }
     
     get primaryKeyField() {
@@ -289,13 +307,13 @@ var lightning = {
     }
 
     createNewEvent() {
-      let event = tbSync.lightning.cal.createEvent();
-      return new tbSync.lightning.TbItem(this, event);
+      let event = TbSync.lightning.cal.createEvent();
+      return new TbSync.lightning.TbItem(this, event);
     }
     
     createNewTodo() {
-      let todo = tbSync.lightning.cal.createTodo();
-      return new tbSync.lightning.TbItem(this, todo);
+      let todo = TbSync.lightning.cal.createTodo();
+      return new TbSync.lightning.TbItem(this, todo);
     }
 
     
@@ -303,7 +321,7 @@ var lightning = {
     
     async addItem(tbItem, pretagChangelogWithByServerEntry = true) {
       if (this.primaryKeyField && !tbItem.getProperty(this.primaryKeyField)) {
-        tbItem.setProperty(this.primaryKeyField, tbSync.providers[this._provider].StandardCalendarTarget.generatePrimaryKey(this._folderData));
+        tbItem.setProperty(this.primaryKeyField, TbSync.providers[this._provider].StandardCalendarTarget.generatePrimaryKey(this._folderData));
         //Services.console.logStringMessage("[TbCalendar::addItem] Generated primary key!");
       }
       
@@ -333,14 +351,14 @@ var lightning = {
     // searchId is interpreted as the primaryKeyField, which is the UID for this target
     async getItem (searchId) {
       let item = await this._promisifyCalendar.getItem(searchId); 
-      if (item.length == 1) return new tbSync.lightning.TbItem(this, item[0]);
+      if (item.length == 1) return new TbSync.lightning.TbItem(this, item[0]);
       if (item.length > 1) throw "Oops: getItem returned <"+item.length+"> elements!";
       return null;
     }
 
     async getItemFromProperty(property, value) {
       if (property == "UID") return await this.getItem(value);
-      else throw ("tbSync.lightning.getItemFromProperty: Currently onle the UID property can be used to search for items.");
+      else throw ("TbSync.lightning.getItemFromProperty: Currently onle the UID property can be used to search for items.");
     }
 
     async getAllItems () {
@@ -352,27 +370,27 @@ var lightning = {
   
   
     getAddedItemsFromChangeLog(maxitems = 0) {             
-      return tbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "added_by_user").map(item => item.itemId);
+      return TbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "added_by_user").map(item => item.itemId);
     }
 
     getModifiedItemsFromChangeLog(maxitems = 0) {             
-      return tbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "modified_by_user").map(item => item.itemId);
+      return TbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "modified_by_user").map(item => item.itemId);
     }
     
     getDeletedItemsFromChangeLog(maxitems = 0) {             
-      return tbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "deleted_by_user").map(item => item.itemId);
+      return TbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "deleted_by_user").map(item => item.itemId);
     }
     
     getItemsFromChangeLog(maxitems = 0) {             
-      return tbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "_by_user");
+      return TbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "_by_user");
     }
 
     removeItemFromChangeLog(id, moveToEndInsteadOfDelete = false) {             
-      tbSync.db.removeItemFromChangeLog(this.calendar.id, id, moveToEndInsteadOfDelete);
+      TbSync.db.removeItemFromChangeLog(this.calendar.id, id, moveToEndInsteadOfDelete);
     }
     
     clearChangelog() {
-      tbSync.db.clearChangeLog(this.calendar.id);
+      TbSync.db.clearChangeLog(this.calendar.id);
     }
   },
   
@@ -386,14 +404,14 @@ var lightning = {
   
   isAvailable: function () {
     //if it is known - and still valid - return true
-    return (this.lightningInitDone && typeof tbSync.lightning.cal !== 'undefined');
+    return (this.lightningInitDone && typeof TbSync.lightning.cal !== 'undefined');
   },
   
   getFolderFromCalendarUID: function(calUID) {
-    let folders = tbSync.db.findFolders({"target": calUID});
+    let folders = TbSync.db.findFolders({"target": calUID});
     if (folders.length == 1) {
-      let accountData = new tbSync.AccountData(folders[0].accountID);
-      return new tbSync.FolderData(accountData, folders[0].folderID);
+      let accountData = new TbSync.AccountData(folders[0].accountID);
+      return new TbSync.FolderData(accountData, folders[0].folderID);
     }
     return null;
   },
@@ -408,13 +426,13 @@ var lightning = {
       if (!(aAddedItem && aAddedItem.calendar))
         return;
 
-      let folderData = tbSync.lightning.getFolderFromCalendarUID(aAddedItem.calendar.id);                    
+      let folderData = TbSync.lightning.getFolderFromCalendarUID(aAddedItem.calendar.id);                    
       if (folderData 
-        && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
+        && TbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
 
-        let tbCalendar = new tbSync.lightning.TbCalendar(aAddedItem.calendar, folderData);
-        let tbItem = new tbSync.lightning.TbItem(tbCalendar, aAddedItem);          
+        let tbCalendar = new TbSync.lightning.TbCalendar(aAddedItem.calendar, folderData);
+        let tbItem = new TbSync.lightning.TbItem(tbCalendar, aAddedItem);          
         let itemStatus = tbItem.changelogStatus;
 
         // if this card was created by us, it will be in the log
@@ -437,8 +455,8 @@ var lightning = {
           tbItem.changelogStatus = "added_by_user";
         }
         
-        if (tbCalendar.logUserChanges) tbSync.core.setTargetModified(folderData);
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].StandardCalendarTarget.itemObserver("onAddItem", folderData, tbItem, null);                                        
+        if (tbCalendar.logUserChanges) TbSync.core.setTargetModified(folderData);
+        TbSync.providers[folderData.accountData.getAccountProperty("provider")].StandardCalendarTarget.itemObserver("onAddItem", folderData, tbItem, null);                                        
       }
     },
 
@@ -447,14 +465,14 @@ var lightning = {
       if (!(aNewItem && aNewItem.calendar && aOldItem && aOldItem.calendar && aNewItem.calendar.id == aOldItem.calendar.id))
         return;
 
-      let folderData = tbSync.lightning.getFolderFromCalendarUID(aNewItem.calendar.id);                    
+      let folderData = TbSync.lightning.getFolderFromCalendarUID(aNewItem.calendar.id);                    
       if (folderData 
-        && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
+        && TbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
 
-        let tbCalendar = new tbSync.lightning.TbCalendar(aNewItem.calendar, folderData);
-        let tbNewItem = new tbSync.lightning.TbItem(tbCalendar, aNewItem);          
-        let tbOldItem = new tbSync.lightning.TbItem(tbCalendar, aOldItem);          
+        let tbCalendar = new TbSync.lightning.TbCalendar(aNewItem.calendar, folderData);
+        let tbNewItem = new TbSync.lightning.TbItem(tbCalendar, aNewItem);          
+        let tbOldItem = new TbSync.lightning.TbItem(tbCalendar, aOldItem);          
         let itemStatus = tbNewItem.changelogStatus;
           
         // if this card was created by us, it will be in the log
@@ -475,8 +493,8 @@ var lightning = {
           tbNewItem.changelogStatus = "modified_by_user";
         }
 
-        if (tbCalendar.logUserChanges) tbSync.core.setTargetModified(folderData);
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].StandardCalendarTarget.itemObserver("onModifyItem", folderData, tbNewItem, tbOldItem);                                        
+        if (tbCalendar.logUserChanges) TbSync.core.setTargetModified(folderData);
+        TbSync.providers[folderData.accountData.getAccountProperty("provider")].StandardCalendarTarget.itemObserver("onModifyItem", folderData, tbNewItem, tbOldItem);                                        
       }
     },
 
@@ -484,13 +502,13 @@ var lightning = {
       if (!(aDeletedItem && aDeletedItem.calendar))
         return;
 
-      let folderData = tbSync.lightning.getFolderFromCalendarUID(aDeletedItem.calendar.id);                    
+      let folderData = TbSync.lightning.getFolderFromCalendarUID(aDeletedItem.calendar.id);                    
       if (folderData 
-        && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
+        && TbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
 
-        let tbCalendar = new tbSync.lightning.TbCalendar(aDeletedItem.calendar, folderData);
-        let tbItem = new tbSync.lightning.TbItem(tbCalendar, aDeletedItem);
+        let tbCalendar = new TbSync.lightning.TbCalendar(aDeletedItem.calendar, folderData);
+        let tbItem = new TbSync.lightning.TbItem(tbCalendar, aDeletedItem);
         let itemStatus = tbItem.changelogStatus;
 
         // if this card was created by us, it will be in the log
@@ -513,19 +531,19 @@ var lightning = {
           tbItem.changelogStatus = "deleted_by_user";
         }
 
-        if (tbCalendar.logUserChanges) tbSync.core.setTargetModified(folderData);
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].StandardCalendarTarget.itemObserver("onDeleteItem", folderData, tbItem, null);
+        if (tbCalendar.logUserChanges) TbSync.core.setTargetModified(folderData);
+        TbSync.providers[folderData.accountData.getAccountProperty("provider")].StandardCalendarTarget.itemObserver("onDeleteItem", folderData, tbItem, null);
       }
     },
 
     //Changed properties of the calendar itself (name, color etc.)
     onPropertyChanged : function (aCalendar, aName, aValue, aOldValue) {
-      let folderData = tbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
+      let folderData = TbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
       if (folderData 
-        && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
+        && TbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
 
-        let tbCalendar = new tbSync.lightning.TbCalendar(aCalendar, folderData);
+        let tbCalendar = new TbSync.lightning.TbCalendar(aCalendar, folderData);
           
         switch (aName) {
           case "color":
@@ -540,18 +558,18 @@ var lightning = {
             break;
         }
         
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].StandardCalendarTarget.calendarObserver("onCalendarPropertyChanged", folderData, tbCalendar, aName, aValue, aOldValue);                
+        TbSync.providers[folderData.accountData.getAccountProperty("provider")].StandardCalendarTarget.calendarObserver("onCalendarPropertyChanged", folderData, tbCalendar, aName, aValue, aOldValue);                
       }
     },
 
     //Deleted properties of the calendar itself (name, color etc.)
     onPropertyDeleting : function (aCalendar, aName) {
-      let folderData = tbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
+      let folderData = TbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
       if (folderData 
-        && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
+        && TbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
 
-        let tbCalendar = new tbSync.lightning.TbCalendar(aCalendar, folderData);
+        let tbCalendar = new TbSync.lightning.TbCalendar(aCalendar, folderData);
           
         switch (aName) {
           case "color":
@@ -561,7 +579,7 @@ var lightning = {
           break;
         }
 
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].StandardCalendarTarget.calendarObserver("onCalendarPropertyDeleted", folderData, tbCalendar, aName);                
+        TbSync.providers[folderData.accountData.getAccountProperty("provider")].StandardCalendarTarget.calendarObserver("onCalendarPropertyDeleted", folderData, tbCalendar, aName);                
       }
     }
   },
@@ -571,26 +589,26 @@ var lightning = {
     },
     
     onCalendarUnregistering : function (aCalendar) {
-      /*let folderData = tbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
+      /*let folderData = TbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
       if (folderData 
-        && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
+        && TbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
 
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].StandardCalendarTarget.calendarObserver("onCalendarUnregistered", folderData, aCalendar);                
+        TbSync.providers[folderData.accountData.getAccountProperty("provider")].StandardCalendarTarget.calendarObserver("onCalendarUnregistered", folderData, aCalendar);                
       }*/
     },
       
     onCalendarDeleting : async function (aCalendar) {
-      let folderData = tbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
+      let folderData = TbSync.lightning.getFolderFromCalendarUID(aCalendar.id);                    
       if (folderData 
-        && tbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
+        && TbSync.providers.loadedProviders.hasOwnProperty(folderData.accountData.getAccountProperty("provider"))
         && folderData.getFolderProperty("targetType") == "calendar") {
 
         // If the user switches "offline support", the calendar is deleted and recreated. Thus,
         // we wait a bit and check, if the calendar is back again and ignore the delete event.
-        await tbSync.tools.sleep(1500);
+        await TbSync.tools.sleep(1500);
 
-        let calManager = tbSync.lightning.cal.getCalendarManager();          
+        let calManager = TbSync.lightning.cal.getCalendarManager();          
         for (let calendar of calManager.getCalendars({})) {
             if (calendar.uri.spec == aCalendar.uri.spec) {
                 // update the target
@@ -600,9 +618,9 @@ var lightning = {
         }
 
         //delete any pending changelog of the deleted book
-        tbSync.db.clearChangeLog(aCalendar.id);			
+        TbSync.db.clearChangeLog(aCalendar.id);			
 
-        let tbCalendar = new tbSync.lightning.TbCalendar(aCalendar, folderData);
+        let tbCalendar = new TbSync.lightning.TbCalendar(aCalendar, folderData);
           
         //unselect book if deleted by user and update settings window, if open
         if (folderData.getFolderProperty("selected")) {
@@ -612,7 +630,7 @@ var lightning = {
         }
         
         folderData.resetFolderProperty("target");
-        tbSync.providers[folderData.accountData.getAccountProperty("provider")].StandardCalendarTarget.calendarObserver("onCalendarDeleted", folderData, tbCalendar);                
+        TbSync.providers[folderData.accountData.getAccountProperty("provider")].StandardCalendarTarget.calendarObserver("onCalendarDeleted", folderData, tbCalendar);                
 
       }
     },
@@ -622,12 +640,12 @@ var lightning = {
   getCalendar: function (folderData) {       
     if (!folderData.getFolderProperty("cached")) {
       let target = folderData.getFolderProperty("target");
-      let calManager = tbSync.lightning.cal.getCalendarManager();
+      let calManager = TbSync.lightning.cal.getCalendarManager();
       let targetCal = calManager.getCalendarById(target);
       
       if (targetCal !== null)  {
         //check for double targets - just to make sure
-        let folders = tbSync.db.findFolders({"target": target, "cached": false}, {"accountID": folderData.accountID});
+        let folders = TbSync.db.findFolders({"target": target, "cached": false}, {"accountID": folderData.accountID});
         if (folders.length == 1) {
           return targetCal;
         } else {
@@ -640,7 +658,7 @@ var lightning = {
   
   //this function actually creates a calendar if missing
   createCalendar: function (folderData) {       
-    let calManager = tbSync.lightning.cal.getCalendarManager();
+    let calManager = TbSync.lightning.cal.getCalendarManager();
     let target = folderData.getFolderProperty("target");
     let provider = folderData.accountData.getAccountProperty("provider");
 
@@ -721,10 +739,10 @@ var lightning = {
     }
     
     //create and register new calendar
-    let newCalendar = tbSync.providers[provider].StandardCalendarTarget.createCalendar(newname, folderData);
+    let newCalendar = TbSync.providers[provider].StandardCalendarTarget.createCalendar(newname, folderData);
     newCalendar.setProperty("tbSyncProvider", provider);
     newCalendar.setProperty("tbSyncAccountID", folderData.accountData.accountID);
-    tbSync.providers[provider].Base.onResetTarget(folderData);
+    TbSync.providers[provider].Base.onResetTarget(folderData);
 
     //store id of calendar as target in DB
     folderData.setFolderProperty("target", newCalendar.id); 

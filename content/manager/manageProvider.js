@@ -8,19 +8,19 @@
  
  "use strict";
 
-var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncManageProvider = {
   
   prepInstall: function () {
     let url = window.location.toString();
     let provider = url.split("provider=")[1];
-    window.document.getElementById("header").textContent = tbSync.getString("installProvider.header::" + tbSync.providers.defaultProviders[provider].name);
+    window.document.getElementById("header").textContent = TbSync.getString("installProvider.header::" + TbSync.providers.defaultProviders[provider].name);
 
-    window.document.getElementById("link").textContent = tbSync.providers.defaultProviders[provider].homepageUrl;
-    window.document.getElementById("link").setAttribute("link", tbSync.providers.defaultProviders[provider].homepageUrl);
+    window.document.getElementById("link").textContent = TbSync.providers.defaultProviders[provider].homepageUrl;
+    window.document.getElementById("link").setAttribute("link", TbSync.providers.defaultProviders[provider].homepageUrl);
 
-    window.document.getElementById("warning").hidden = tbSync.providers.defaultProviders[provider].homepageUrl.startsWith("https://addons.thunderbird.net"); 
+    window.document.getElementById("warning").hidden = TbSync.providers.defaultProviders[provider].homepageUrl.startsWith("https://addons.thunderbird.net"); 
   },
 
   prepMissing: function () {
@@ -31,9 +31,9 @@ var tbSyncManageProvider = {
     let v = e.textContent;
     e.textContent = v.replace("##provider##", provider.toUpperCase());
     
-    if (tbSync.providers.defaultProviders.hasOwnProperty(provider)) {
-      window.document.getElementById("link").textContent = tbSync.providers.defaultProviders[provider].homepageUrl;
-      window.document.getElementById("link").setAttribute("link", tbSync.providers.defaultProviders[provider].homepageUrl);
+    if (TbSync.providers.defaultProviders.hasOwnProperty(provider)) {
+      window.document.getElementById("link").textContent = TbSync.providers.defaultProviders[provider].homepageUrl;
+      window.document.getElementById("link").setAttribute("link", TbSync.providers.defaultProviders[provider].homepageUrl);
     }
     
   },    

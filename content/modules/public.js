@@ -112,7 +112,7 @@ var ProviderData = class {
    *
    */
   constructor(provider) {
-    if (!tbSync.providers.hasOwnProperty(provider)) {
+    if (!TbSync.providers.hasOwnProperty(provider)) {
       throw new Error("Provider <" + provider + "> has not been loaded. Failed to create ProviderData.");
     }
     this.provider = provider;
@@ -129,20 +129,20 @@ var ProviderData = class {
   }
 
   getVersion() {
-    return tbSync.providers.loadedProviders[this.provider].version;
+    return TbSync.providers.loadedProviders[this.provider].version;
   }
   
   getStringBundle() {
-    return tbSync.providers.loadedProviders[this.provider].bundle;
+    return TbSync.providers.loadedProviders[this.provider].bundle;
   }
   
   getAllAccounts() {
-    let accounts = tbSync.db.getAccounts();
+    let accounts = TbSync.db.getAccounts();
     let allAccounts = [];
     for (let i=0; i<accounts.IDs.length; i++) {
       let accountID = accounts.IDs[i];
       if (accounts.data[accountID].provider == this.provider) {
-        allAccounts.push(new tbSync.AccountData(accountID));
+        allAccounts.push(new TbSync.AccountData(accountID));
       }
     }
     return allAccounts;
@@ -154,21 +154,21 @@ var ProviderData = class {
     Object.assign(folderSearchCriteria, aFolderSearchCriteria);
     folderSearchCriteria.cached = false;
     
-    let folders = tbSync.db.findFolders(folderSearchCriteria, {"provider": this.provider});
+    let folders = TbSync.db.findFolders(folderSearchCriteria, {"provider": this.provider});
     for (let i=0; i < folders.length; i++) {          
-      allFolders.push(new tbSync.FolderData(new tbSync.AccountData(folders[i].accountID), folders[i].folderID));
+      allFolders.push(new TbSync.FolderData(new TbSync.AccountData(folders[i].accountID), folders[i].folderID));
     }
     return allFolders;
   }
   
   getDefaultAccountEntries() {
-    return  tbSync.providers.getDefaultAccountEntries(this.provider)
+    return  TbSync.providers.getDefaultAccountEntries(this.provider)
   }
   
   addAccount(accountName, accountOptions) {
-    let newAccountID = tbSync.db.addAccount(accountName, accountOptions);
+    let newAccountID = TbSync.db.addAccount(accountName, accountOptions);
     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountsList", newAccountID);
-    return new tbSync.AccountData(newAccountID);        
+    return new TbSync.AccountData(newAccountID);        
   }
 }
 
@@ -189,7 +189,7 @@ var AccountData = class {
   constructor(accountID) {
     this._accountID = accountID;
 
-    if (!tbSync.db.accounts.data.hasOwnProperty(accountID)) {
+    if (!TbSync.db.accounts.data.hasOwnProperty(accountID)) {
       throw new Error("An account with ID <" + accountID + "> does not exist. Failed to create AccountData.");
     }
   }
@@ -212,81 +212,81 @@ var AccountData = class {
   
   getAllFolders() {
     let allFolders = [];
-    let folders = tbSync.db.findFolders({"cached": false}, {"accountID": this.accountID});
+    let folders = TbSync.db.findFolders({"cached": false}, {"accountID": this.accountID});
     for (let i=0; i < folders.length; i++) {          
-      allFolders.push(new tbSync.FolderData(this, folders[i].folderID));
+      allFolders.push(new TbSync.FolderData(this, folders[i].folderID));
     }
     return allFolders;
   }
 
   getAllFoldersIncludingCache() {
     let allFolders = [];
-    let folders = tbSync.db.findFolders({}, {"accountID": this.accountID});
+    let folders = TbSync.db.findFolders({}, {"accountID": this.accountID});
     for (let i=0; i < folders.length; i++) {          
-      allFolders.push(new tbSync.FolderData(this, folders[i].folderID));
+      allFolders.push(new TbSync.FolderData(this, folders[i].folderID));
     }
     return allFolders;
   }
   
   getFolder(setting, value) {
     // ES6 supports variable keys by putting it into brackets
-    let folders = tbSync.db.findFolders({[setting]: value, "cached": false}, {"accountID": this.accountID});
-    if (folders.length > 0) return new tbSync.FolderData(this, folders[0].folderID);
+    let folders = TbSync.db.findFolders({[setting]: value, "cached": false}, {"accountID": this.accountID});
+    if (folders.length > 0) return new TbSync.FolderData(this, folders[0].folderID);
     return null;
   }
 
   getFolderFromCache(setting, value) {
     // ES6 supports variable keys by putting it into brackets
-    let folders = tbSync.db.findFolders({[setting]: value, "cached": true}, {"accountID": this.accountID});
-    if (folders.length > 0) return new tbSync.FolderData(this, folders[0].folderID);
+    let folders = TbSync.db.findFolders({[setting]: value, "cached": true}, {"accountID": this.accountID});
+    if (folders.length > 0) return new TbSync.FolderData(this, folders[0].folderID);
     return null;
   }
   
   createNewFolder() {
-    return new tbSync.FolderData(this, tbSync.db.addFolder(this.accountID));
+    return new TbSync.FolderData(this, TbSync.db.addFolder(this.accountID));
   }
   
   // get data objects
   get providerData() {
-    return new tbSync.ProviderData(
+    return new TbSync.ProviderData(
       this.getAccountProperty("provider"),
     );
   }    
 
   get syncData() {
-    return tbSync.core.getSyncDataObject(this.accountID);
+    return TbSync.core.getSyncDataObject(this.accountID);
   }
 
 
   // shortcuts
   sync(syncDescription = {}) {
-    tbSync.core.syncAccount(this.accountID, syncDescription);
+    TbSync.core.syncAccount(this.accountID, syncDescription);
   }
 
   isSyncing() {
-    return tbSync.core.isSyncing(this.accountID);
+    return TbSync.core.isSyncing(this.accountID);
   }
   
   isEnabled() {
-    return tbSync.core.isEnabled(this.accountID);
+    return TbSync.core.isEnabled(this.accountID);
   }
 
   isConnected() {
-    return tbSync.core.isConnected(this.accountID);
+    return TbSync.core.isConnected(this.accountID);
   }
   
 
   getAccountProperty(field) {
-    return tbSync.db.getAccountProperty(this.accountID, field);
+    return TbSync.db.getAccountProperty(this.accountID, field);
   }
 
   setAccountProperty(field, value) {
-    tbSync.db.setAccountProperty(this.accountID, field, value);
+    TbSync.db.setAccountProperty(this.accountID, field, value);
     Services.obs.notifyObservers(null, "tbsync.observer.manager.reloadAccountSetting", JSON.stringify({accountID: this.accountID, setting: field}));
   }
   
   resetAccountProperty(field) {
-    tbSync.db.resetAccountProperty(this.accountID, field);
+    TbSync.db.resetAccountProperty(this.accountID, field);
     Services.obs.notifyObservers(null, "tbsync.observer.manager.reloadAccountSetting", JSON.stringify({accountID: this.accountID, setting: field}));
   }
 }
@@ -310,7 +310,7 @@ var FolderData = class {
     this._folderID = folderID;
     this._target = null;
     
-    if (!tbSync.db.folders[accountData.accountID].hasOwnProperty(folderID)) {
+    if (!TbSync.db.folders[accountData.accountID].hasOwnProperty(folderID)) {
       throw new Error("A folder with ID <" + folderID + "> does not exist for the given account. Failed to create FolderData.");
     }
   }
@@ -338,19 +338,19 @@ var FolderData = class {
   }
   
   getDefaultFolderEntries() { // remove
-    return tbSync.providers.getDefaultFolderEntries(this.accountID);
+    return TbSync.providers.getDefaultFolderEntries(this.accountID);
   }
   
   getFolderProperty(field) {
-    return tbSync.db.getFolderProperty(this.accountID, this.folderID, field);
+    return TbSync.db.getFolderProperty(this.accountID, this.folderID, field);
   }
   
   setFolderProperty(field, value) {
-    tbSync.db.setFolderProperty(this.accountID, this.folderID, field, value);
+    TbSync.db.setFolderProperty(this.accountID, this.folderID, field, value);
   }
 
   resetFolderProperty(field) {
-    tbSync.db.resetFolderProperty(this.accountID, this.folderID, field);
+    TbSync.db.resetFolderProperty(this.accountID, this.folderID, field);
   }
 
   sync(aSyncDescription = {}) {
@@ -371,7 +371,7 @@ var FolderData = class {
     
     if (this.getFolderProperty("selected")) {
       //default
-      status = tbSync.getString("status." + this.getFolderProperty("status"), this.accountData.getAccountProperty("provider")).split("||")[0];
+      status = TbSync.getString("status." + this.getFolderProperty("status"), this.accountData.getAccountProperty("provider")).split("||")[0];
 
       switch (this.getFolderProperty("status").split(".")[0]) { //the status may have a sub-decleration
         case "success":
@@ -383,7 +383,7 @@ var FolderData = class {
           //add extra info if this folder is beeing synced
           if (this.isSyncing()) {
             let syncdata = this.accountData.syncData;
-            status = tbSync.getString("status.syncing", this.accountData.getAccountProperty("provider"));
+            status = TbSync.getString("status.syncing", this.accountData.getAccountProperty("provider"));
             if (["send","eval","prepare"].includes(syncdata._syncstate.split(".")[0]) && (syncdata.progressData.todo + syncdata.progressData.done) > 0) {
               //add progress information
               status = status + " (" + syncdata.progressData.done + (syncdata.progressData.todo > 0 ? "/" + syncdata.progressData.todo : "") + ")"; 
@@ -411,15 +411,15 @@ var FolderData = class {
           throw new Error("Property <targetType> not set for this folder.");
         
         case "calendar":
-          this._target = new tbSync.lightning.TargetData(this);
+          this._target = new TbSync.lightning.TargetData(this);
           break;
 
         case "addressbook":
-          this._target = new tbSync.addressbook.TargetData(this);
+          this._target = new TbSync.addressbook.TargetData(this);
           break;
 
         default:
-          this._target = new tbSync.providers[this.accountData.getAccountProperty("provider")][this.getFolderProperty("targetType")](this);
+          this._target = new TbSync.providers[this.accountData.getAccountProperty("provider")][this.getFolderProperty("targetType")](this);
       }
     }
     
@@ -434,13 +434,14 @@ var FolderData = class {
     let target = this.getFolderProperty("target");
     if (target) {
       if (keepStaleTargetSuffix) {
-        let changes = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
-        tbSync.db.clearChangeLog(target);      
-        this.targetData.appendStaleSuffix(keepStaleTargetSuffix, changes);
+        let oldName =  this.targetData.targetName;
+        this.targetData.targetName = TbSync.getString("target.orphaned") + ": " + oldName + " " + keepStaleTargetSuffix;
+        this.targetData.onDisconnectTarget();
       } else {
         this.targetData.removeTarget();
       }
     }
+    TbSync.db.clearChangeLog(target);
     this.resetFolderProperty("target");
     this.setFolderProperty("cached", true);
   }
@@ -465,8 +466,8 @@ var SyncData = class {
     
     //internal (private, not to be touched by provider)
     this._syncstate = "accountdone";
-    this._accountData = new tbSync.AccountData(accountID);
-    this._progressData = new tbSync.ProgressData();
+    this._accountData = new TbSync.AccountData(accountID);
+    this._progressData = new TbSync.ProgressData();
     this._currentFolderData = null;
   }
 
@@ -518,7 +519,7 @@ var SyncData = class {
     }
 
     this._syncstate = syncstate;
-    tbSync.dump("setSyncState", msg);
+    TbSync.dump("setSyncState", msg);
 
     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", this.accountData.accountID);
   }
@@ -539,13 +540,13 @@ var SyncData = class {
 
 // simple dumper, who can dump to file or console
 var dump = function (what, aMessage) {
-  if (tbSync.prefs.getBoolPref("log.toconsole")) {
+  if (TbSync.prefs.getBoolPref("log.toconsole")) {
     Services.console.logStringMessage("[TbSync] " + what + " : " + aMessage);
   }
   
   if (this.prefs.getBoolPref("log.tofile")) {
     let now = new Date();
-    tbSync.io.appendToFile("debug.log", "** " + now.toString() + " **\n[" + what + "] : " + aMessage + "\n\n");
+    TbSync.io.appendToFile("debug.log", "** " + now.toString() + " **\n[" + what + "] : " + aMessage + "\n\n");
   }
 }
   
@@ -560,9 +561,9 @@ var getString = function (msg, provider) {
   let parts = msg.split("::");
 
   // if a provider is given, try to get the string from the provider
-  if (provider && tbSync.providers.loadedProviders.hasOwnProperty(provider)) {
+  if (provider && TbSync.providers.loadedProviders.hasOwnProperty(provider)) {
     try {
-      localized = tbSync.providers.loadedProviders[provider].bundle.GetStringFromName(parts[0]);
+      localized = TbSync.providers.loadedProviders[provider].bundle.GetStringFromName(parts[0]);
       success = true;
     } catch (e) {}        
   }
@@ -570,7 +571,7 @@ var getString = function (msg, provider) {
   // if we did not yet succeed, request the tbsync bundle
   if (!success) {
     try {
-      localized = tbSync.bundle.GetStringFromName(parts[0]);
+      localized = TbSync.bundle.GetStringFromName(parts[0]);
       success = true;
     } catch (e) {}                    
   }

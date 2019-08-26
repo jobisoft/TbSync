@@ -9,7 +9,7 @@
  "use strict";
 
 var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncEventLog = {
   
@@ -20,7 +20,7 @@ var tbSyncEventLog = {
     eventlog.hidden = true;
     
     //init list
-    let events = tbSync.eventlog.get();
+    let events = TbSync.eventlog.get();
     for (let i=0; i < events.length; i++) {
       let item = tbSyncEventLog.addLogEntry(events[i]);
       eventlog.appendChild(item);
@@ -32,7 +32,7 @@ var tbSyncEventLog = {
   },
 
   onclear: function () {
-    tbSync.eventlog.clear();
+    TbSync.eventlog.clear();
 
     let eventlog = document.getElementById('tbsync.eventlog');
     eventlog.hidden = true;
@@ -50,7 +50,7 @@ var tbSyncEventLog = {
 
   updateEventLog: {
     observe: function (aSubject, aTopic, aData) {
-      let events = tbSync.eventlog.get();
+      let events = TbSync.eventlog.get();
       if (events.length > 0) {
         let eventlog = document.getElementById('tbsync.eventlog');
         eventlog.hidden = true;
@@ -102,8 +102,8 @@ var tbSyncEventLog = {
 
       if (entry.link) {
         let link = document.createXULElement("button");
-        link.setAttribute("label",  tbSync.getString("manager.help"));
-        link.setAttribute("oncommand",  "tbSync.manager.openLink('" + entry.link + "')");
+        link.setAttribute("label",  TbSync.getString("manager.help"));
+        link.setAttribute("oncommand",  "TbSync.manager.openLink('" + entry.link + "')");
         vBoxRight.appendChild(link);
       }
 

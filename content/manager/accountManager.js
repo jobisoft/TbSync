@@ -9,7 +9,7 @@
  "use strict";
 
 var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncAccountManager = {
   
@@ -18,30 +18,30 @@ var tbSyncAccountManager = {
   },    
   
   onunloadoptions: function () {
-    tbSync.manager.openManagerWindow(0);
+    TbSync.manager.openManagerWindow(0);
   },
   
   onload: function () {
-    tbSync.AccountManagerTabs = ["accounts.xul", "catman.xul", "supporter.xul", "help.xul"];
+    TbSync.AccountManagerTabs = ["accounts.xul", "catman.xul", "supporter.xul", "help.xul"];
     tbSyncAccountManager.selectTab(0);
   },
   
   onunload: function () {
-    tbSync.manager.prefWindowObj = null;
+    TbSync.manager.prefWindowObj = null;
   },
 
   selectTab: function (t) {
     const LOAD_FLAGS_NONE = Components.interfaces.nsIWebNavigation.LOAD_FLAGS_NONE;
 
     //set active tab (css selector for background color)
-    for (let i=0; i<tbSync.AccountManagerTabs.length; i++) {            
+    for (let i=0; i<TbSync.AccountManagerTabs.length; i++) {            
       if (i==t) document.getElementById("tbSyncAccountManager.t" + i).setAttribute("active","true");
       else document.getElementById("tbSyncAccountManager.t" + i).setAttribute("active","false");
     }
-    tbSync.manager.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").hidden=true;
+    TbSync.manager.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").hidden=true;
     
     //load XUL
-    document.getElementById("tbSyncAccountManager.contentWindow").setAttribute("src", "chrome://tbsync/content/manager/"+tbSync.AccountManagerTabs[t]);
+    document.getElementById("tbSyncAccountManager.contentWindow").setAttribute("src", "chrome://tbsync/content/manager/"+TbSync.AccountManagerTabs[t]);
   },
   
   
@@ -49,12 +49,12 @@ var tbSyncAccountManager = {
   //help tab
   getLogPref: function() {
     let log = document.getElementById("tbSyncAccountManager.logPrefCheckbox");
-    log.checked =  tbSync.prefs.getBoolPref("log.tofile");
+    log.checked =  TbSync.prefs.getBoolPref("log.tofile");
   },
   
   toggleLogPref: function() {
     let log = document.getElementById("tbSyncAccountManager.logPrefCheckbox");
-    tbSync.prefs.setBoolPref("log.tofile", log.checked);
+    TbSync.prefs.setBoolPref("log.tofile", log.checked);
   },
   
   initSupportWizard: function() {
@@ -62,11 +62,11 @@ var tbSyncAccountManager = {
 
     let menu = document.getElementById("tbsync.supportwizard.faultycomponent");
 
-    let providers = Object.keys(tbSync.providers.loadedProviders);
+    let providers = Object.keys(TbSync.providers.loadedProviders);
     for (let i=0; i < providers.length; i++) {
       let item = document.createXULElement("menuitem");
       item.setAttribute("value", providers[i]);
-      item.setAttribute("label", tbSync.getString("supportwizard.provider::" + tbSync.providers[providers[i]].Base.getProviderName()));
+      item.setAttribute("label", TbSync.getString("supportwizard.provider::" + TbSync.providers[providers[i]].Base.getProviderName()));
       menu.appendChild(item); 
     }
   
@@ -95,9 +95,9 @@ var tbSyncAccountManager = {
     }
 
     //special if core is selected, which is not a provider
-    let email = (tbSync.providers.loadedProviders.hasOwnProperty(provider)) ? tbSync.providers[provider].Base.getMaintainerEmail() : "john.bieling@gmx.de";
-    let version = (tbSync.providers.loadedProviders.hasOwnProperty(provider)) ? " " + tbSync.providers.loadedProviders[provider].version : "";
-    tbSync.manager.createBugReport(email, "[" + provider.toUpperCase() + version + "] " + subject, description);
+    let email = (TbSync.providers.loadedProviders.hasOwnProperty(provider)) ? TbSync.providers[provider].Base.getMaintainerEmail() : "john.bieling@gmx.de";
+    let version = (TbSync.providers.loadedProviders.hasOwnProperty(provider)) ? " " + TbSync.providers.loadedProviders[provider].version : "";
+    TbSync.manager.createBugReport(email, "[" + provider.toUpperCase() + version + "] " + subject, description);
   },
   
   
@@ -107,15 +107,15 @@ var tbSyncAccountManager = {
     let listOfContributors = document.getElementById("listOfContributors");
     let sponsors = {};
       
-    let providers = Object.keys(tbSync.providers.loadedProviders);
+    let providers = Object.keys(TbSync.providers.loadedProviders);
     for (let i=0; i < providers.length; i++) {
       let provider = providers[i];
       let template = listOfContributors.firstElementChild.cloneNode(true);
       template.setAttribute("provider", provider);
-      template.children[0].setAttribute("src", tbSync.providers[provider].Base.getProviderIcon(48));
-      template.children[1].children[0].textContent = tbSync.providers[provider].Base.getProviderName();
+      template.children[0].setAttribute("src", TbSync.providers[provider].Base.getProviderIcon(48));
+      template.children[1].children[0].textContent = TbSync.providers[provider].Base.getProviderName();
       listOfContributors.appendChild(template);
-      Object.assign(sponsors, tbSync.providers[provider].Base.getSponsors());
+      Object.assign(sponsors, TbSync.providers[provider].Base.getSponsors());
     }
     listOfContributors.removeChild(listOfContributors.firstElementChild);
 
