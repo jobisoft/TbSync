@@ -9,15 +9,23 @@
  "use strict";
 
 /**
- * StatusData
  *
  */
  var StatusData = class {
   /**
-   * Constructor
+   * A StatusData instance must be used as return value by 
+   * :class:`Base.syncFolderList` and :class:`Base.syncFolder`.
+   * 
+   * StatusData also defines the possible StatusDataTypes used by the
+   * :ref:`TbSyncEventLog`.
    *
-   * @param {FolderData} folderData    FolderData of the folder for which the
-   *                                   display name is requested.
+   * @param {StatusDataType} type  Status type (see const definitions below)
+   * @param {string} message  ``Optional`` A message, which will be used as
+   *                          sync status. If this is not a success, it will be
+   *                          used also in the :ref:`TbSyncEventLog` as well.
+   * @param {string} details  ``Optional``  If this is not a success, it will
+   *                          be used as description in the
+   *                          :ref:`TbSyncEventLog`.
    *
    */
   constructor(type = "success", message = "", details = "") {
@@ -25,12 +33,30 @@
     this.message = message;
     this.details = details;
   }
-  
+  /**
+   * Successfull sync. 
+   */
   static get SUCCESS() {return "success"};
+  /**
+   * Sync of the entire account will be aborted.
+   */
   static get ERROR() {return "error"};
+  /**
+   * Sync of this resource will be aborted and continued with next resource.
+   */
   static get WARNING() {return "warning"};
+  /**
+   * Successfull sync, but message and details
+   * provided will be added to the event log.
+   */
   static get INFO() {return "info"};
+  /**
+   * Sync of the entire account will be aborted and restarted completely.
+   */
   static get ACCOUNT_RERUN() {return "account_rerun"}; 
+  /**
+   * Sync of the current folder/resource will be restarted.
+   */
   static get FOLDER_RERUN() {return "folder_rerun"}; 
 }
 
@@ -92,6 +118,16 @@ var ProviderData = class {
     this.provider = provider;
   }
   
+  /**
+   * Getter for an :class:`EventLogInfo` instance with all the information
+   * regarding this ProviderData instance.
+   *
+   */
+  get eventLogInfo() {
+    return new EventLogInfo(
+      this.getAccountProperty("provider"));
+  }
+
   getVersion() {
     return tbSync.providers.loadedProviders[this.provider].version;
   }
@@ -156,6 +192,18 @@ var AccountData = class {
     if (!tbSync.db.accounts.data.hasOwnProperty(accountID)) {
       throw new Error("An account with ID <" + accountID + "> does not exist. Failed to create AccountData.");
     }
+  }
+
+  /**
+   * Getter for an :class:`EventLogInfo` instance with all the information
+   * regarding this AccountData instance.
+   *
+   */
+  get eventLogInfo() {
+    return new EventLogInfo(
+      this.getAccountProperty("provider"),
+      this.getAccountProperty("accountname"),
+      this.accountID);
   }
 
   get accountID() {
@@ -267,6 +315,20 @@ var FolderData = class {
     }
   }
   
+  /**
+   * Getter for an :class:`EventLogInfo` instance with all the information 
+   * regarding this FolderData instance.
+   *
+   */
+  get eventLogInfo() {
+    return new EventLogInfo(
+      this.accountData.getAccountProperty("provider"),
+      this.accountData.getAccountProperty("accountname"),
+      this.accountData.accountID,
+      this.getFolderProperty("foldername"),
+    );
+  }
+
   get folderID() {
     return this._folderID;
   }
@@ -419,6 +481,11 @@ var SyncData = class {
     this._currentFolderData = null;
   }
 
+  /**
+   * Getter for an :class:`EventLogInfo` instance with all the information
+   * regarding this SyncData instance.
+   *
+   */  
   get eventLogInfo() {
     return new EventLogInfo(
       this.accountData.getAccountProperty("provider"),

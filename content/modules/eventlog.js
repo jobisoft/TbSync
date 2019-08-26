@@ -9,52 +9,70 @@
  "use strict";
 
 /**
- * EventLogInfo
  *
  */
 var EventLogInfo = class {
   /**
-   * Constructor
+   * An EventLogInfo instance is used when adding entries to the
+   * :ref:`TbSyncEventLog`. The information given here will be added as a
+   * header to the actual event.
    *
-   * @param {FolderData} folderData    FolderData of the folder for which the
-   *                                   display name is requested.
+   * @param {string} provider     ``Optional`` A provider ID (also used as
+   *                              provider namespace). 
+   * @param {string} accountname  ``Optional`` An account name. Can be
+   *                              arbitrary but should match the accountID
+   *                              (if provided).
+   * @param {string} accountID    ``Optional`` An account ID. Used to filter
+   *                              events for a given account.
+   * @param {string} foldername   ``Optional`` A folder name.
    *
    */
-  constructor(provider, accountname, accountID, foldername = "") {
-    this.provider = provider;
-    this.accountname = accountname;
-    this.accountID = accountID;
-    this.foldername = foldername;
+  constructor(provider, accountname = "", accountID = "", foldername = "") {
+    this._provider = provider;
+    this._accountname = accountname;
+    this._accountID = accountID;
+    this._foldername = foldername;
   }
+  
+  /**
+   * Getter/Setter for the provider ID of this EventLogInfo.
+   */
+  get provider() {return this._provider};
+  /**
+   * Getter/Setter for the account ID of this EventLogInfo.
+   */
+  get accountname() {return this._accountname};
+  /**
+   * Getter/Setter for the account name of this EventLogInfo.
+   */
+  get accountID() {return this._accountID};
+  /**
+   * Getter/Setter for the folder name of this EventLogInfo.
+   */
+  get foldername() {return this._foldername};
+
+  set provider(v) {this._provider = v};
+  set accountname(v) {this._accountname = v};
+  set accountID(v) {this._accountID = v};
+  set foldername(v) {this._foldername = v};
 }
+
+
   
+/**
+ * The TbSync event log 
+ */
 var eventlog = {
-
-  events: null,
-  eventLogWindow: null,
-  
-  load: async function () {
-    this.clear();
-  },
-
-  unload: async function () {
-    if (this.eventLogWindow) {
-      this.eventLogWindow.close();
-    }
-  },
-
-  get: function (accountID = null) {
-    if (accountID) {
-      return this.events.filter(e => e.accountID == accountID);
-    } else {
-      return this.events;
-    }
-  },
-  
-  clear: function () {
-    this.events = [];
-  },
-  
+  /**
+   * Adds an entry to the TbSync event log
+   *
+   * @param {StatusDataType}  type       One of the types defined in
+   *                                      :class:`StatusData`
+   * @param {EventLogInfo}    eventInfo  EventLogInfo for this event.
+   * @param {string}          message    The event message.
+   * @param {string}          details    ``Optional`` The event details.
+   *  
+   */
   add: function (type, eventInfo, message, details = null) {
     let entry = {
       timestamp: Date.now(),
@@ -102,6 +120,32 @@ var eventlog = {
     if (this.events.length > 100) this.events.shift();
     Services.obs.notifyObservers(null, "tbsync.observer.eventlog.update", null);
   },
+
+  events: null,
+  eventLogWindow: null,
+  
+  load: async function () {
+    this.clear();
+  },
+
+  unload: async function () {
+    if (this.eventLogWindow) {
+      this.eventLogWindow.close();
+    }
+  },
+
+  get: function (accountID = null) {
+    if (accountID) {
+      return this.events.filter(e => e.accountID == accountID);
+    } else {
+      return this.events;
+    }
+  },
+  
+  clear: function () {
+    this.events = [];
+  },
+  
   
   open: function (accountID = null, folderID = null) {
     this.eventLogWindow = tbSync.manager.prefWindowObj.open("chrome://tbsync/content/manager/eventlog/eventlog.xul", "TbSyncEventLog", "centerscreen,chrome,resizable");
