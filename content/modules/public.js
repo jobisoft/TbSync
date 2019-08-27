@@ -180,10 +180,6 @@ var ProviderData = class {
  */
 var AccountData = class {
   /**
-   * Constructor
-   *
-   * @param {FolderData} folderData    FolderData of the folder for which the
-   *                                   display name is requested.
    *
    */
   constructor(accountID) {
@@ -258,7 +254,13 @@ var AccountData = class {
   }
 
 
-  // shortcuts
+  /**
+   * Initiate a sync of this entire account by first calling
+   * :class:`Base.syncFolderList`. If that succeeded, :class:`Base.syncFolder`
+   * will be called for each available folder / resource found on the server.
+   *
+   * @param {Object} syncDescription  ``Optional``
+   */
   sync(syncDescription = {}) {
     TbSync.core.syncAccount(this.accountID, syncDescription);
   }
@@ -299,10 +301,6 @@ var AccountData = class {
  */
 var FolderData = class {
   /**
-   * Constructor
-   *
-   * @param {FolderData} folderData    FolderData of the folder for which the
-   *                                   display name is requested.
    *
    */
   constructor(accountData, folderID) {
@@ -353,6 +351,13 @@ var FolderData = class {
     TbSync.db.resetFolderProperty(this.accountID, this.folderID, field);
   }
 
+  /**
+   * Initiate a sync of this folder only by first calling
+   * :class:`Base.syncFolderList` and than :class:`Base.syncFolder` for this
+   * folder / resource only.
+   *
+   * @param {Object} syncDescription  ``Optional``
+   */
   sync(aSyncDescription = {}) {
     let syncDescription = {};
     Object.assign(syncDescription, aSyncDescription);
@@ -384,7 +389,7 @@ var FolderData = class {
           if (this.isSyncing()) {
             let syncdata = this.accountData.syncData;
             status = TbSync.getString("status.syncing", this.accountData.getAccountProperty("provider"));
-            if (["send","eval","prepare"].includes(syncdata._syncstate.split(".")[0]) && (syncdata.progressData.todo + syncdata.progressData.done) > 0) {
+            if (["send","eval","prepare"].includes(syncdata.getSyncState().state.split(".")[0]) && (syncdata.progressData.todo + syncdata.progressData.done) > 0) {
               //add progress information
               status = status + " (" + syncdata.progressData.done + (syncdata.progressData.todo > 0 ? "/" + syncdata.progressData.todo : "") + ")"; 
             }
@@ -402,6 +407,13 @@ var FolderData = class {
     return this._accountData;
   }
 
+  /**
+   * Getter for the :class:`TargetData` instance associated with this
+   * FolderData. See :ref:`TbSyncTargets` for more details.
+   *
+   * @returns {TargetData}
+   *
+   */
   get targetData() {
     // targetData can not be set during construction, because targetType has not been set 
     // create it on the fly - re-create it, if targetType changed
@@ -450,22 +462,21 @@ var FolderData = class {
 
 
 /**
- * SyncData
+ * There is only one SyncData instance per account which contains all
+ * relevant information regarding an ongoing sync. 
  *
- * there is only one syncdata object per account which contains the current state of the sync
  */
 var SyncData = class {
   /**
-   * Constructor
-   *
-   * @param {FolderData} folderData    FolderData of the folder for which the
-   *                                   display name is requested.
    *
    */
   constructor(accountID) {
     
     //internal (private, not to be touched by provider)
-    this._syncstate = "accountdone";
+    this._syncstate = {
+      state: "accountdone",
+      timestamp: Date.now(),
+    }
     this._accountData = new TbSync.AccountData(accountID);
     this._progressData = new TbSync.ProgressData();
     this._currentFolderData = null;
@@ -496,36 +507,76 @@ var SyncData = class {
     );
   }
   
+  /**
+   * Getter for the :class:`FolderData` instance of the folder being currently
+   * synced. Can be ``null`` if no folder is being synced.
+   *
+   */  
   get currentFolderData() {
     return this._currentFolderData;
   }
 
+  /**
+   * Getter for the :class:`AccountData` instance of the account being
+   * currently synced.
+   *
+   */  
   get accountData() {
     return this._accountData;
   }
 
+  /**
+   * Getter for the :class:`ProgressData` instance of the ongoing sync.
+   *
+   */
   get progressData() {
     return this._progressData;
   }
 
+  /**
+   * Sets the syncstate of the ongoing sync, to provide feedback to the user.
+   * 
+   * @param {string} syncstate  A short syncstate identifier. The actual
+   *                            message to be displayed in the UI will be
+   *                            looked up in the string bundle of the provider
+   *                            associated with this SyncData instance
+   *                            (:class:`Base.getStringBundleUrl`) by looking 
+   *                            for ``syncstate.<syncstate>``. The lookup is
+   *                            done via :func:`getString`, so the same 
+   *                            fallback rules apply. If the syncstate
+   *                            starts with ``send.``, the message in the UI
+   *                            will be appended by a timeout countdown with
+   *                            the timeout being defined by
+   *                            :class:`Base.getConnectionTimeout`. 
+   *
+   */  
   setSyncState(syncstate) {
     //set new syncstate
     let msg = "State: " + syncstate + ", Account: " + this.accountData.getAccountProperty("accountname");
     if (this.currentFolderData) msg += ", Folder: " + this.currentFolderData.getFolderProperty("foldername");
 
-    if (syncstate.split(".")[0] == "send") {
-      //add timestamp to be able to display timeout countdown
-      syncstate = syncstate + "||" + Date.now();
-    }
+    let state = {};
+    state.state = syncstate;
+    state.timestamp = Date.now();
 
-    this._syncstate = syncstate;
+    this._syncstate = state;
     TbSync.dump("setSyncState", msg);
 
     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", this.accountData.accountID);
   }
   
-  getSyncState(includingTimeStamp = false) {
-    return includingTimeStamp ? this._syncstate : this._syncstate.split("||")[0];
+  /**
+   * Gets the current syncstate and its timestamp of the ongoing sync. The
+   * returned Object has the following attributes:
+   *
+   * * ``state`` : the current syncsate
+   * * ``timestamp`` : its timestamp
+   *
+   * @returns {Object}
+   *
+   */
+  getSyncState() {
+    return this._syncstate;
   }
 }
 
@@ -552,13 +603,28 @@ var dump = function (what, aMessage) {
   
 
 
-// get localized string from core or provider (if possible)
-var getString = function (msg, provider) {
+/**
+ * Get a localized string from a string bundle.
+ *
+ * @param {string} key       The key to look up in the string bundle
+ * @param {string} provider  ``Optional`` The provider whose string bundle
+ *                           should be used to lookup the key. See
+ *                           :class:`Base.getStringBundleUrl`.
+ *
+ * @returns {string} The entry in the string bundle of the specified provider
+ *                   matching the provided key. If that key is not found in the
+ *                   string bundle of the specified provider or if no provider
+ *                   has been specified, the string bundle of TbSync itself we
+ *                   be used as fallback. If the key could not be found there
+ *                   as well, the key itself is returned.
+ *
+ */
+var getString = function (key, provider) {
   let success = false;
-  let localized = msg;
+  let localized = key;
   
   //spezial treatment of strings with :: like status.httperror::403
-  let parts = msg.split("::");
+  let parts = key.split("::");
 
   // if a provider is given, try to get the string from the provider
   if (provider && TbSync.providers.loadedProviders.hasOwnProperty(provider)) {
