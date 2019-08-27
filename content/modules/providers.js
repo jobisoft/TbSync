@@ -146,13 +146,16 @@ var providers = {
   getDefaultAccountEntries: function (provider) {
     let defaults = TbSync.providers[provider].Base.getDefaultAccountEntries();
     
-    //add system properties
+    // List of default system account properties. 
+    // Do not remove search marker for doc. 
+    // DefaultAccountPropsStart
     defaults.provider = provider;
     defaults.accountID = "";
     defaults.lastsynctime = 0;
-    defaults.status = "disabled"; //global status: disabled, OK, syncing, notsyncronized, nolightning, ...
+    defaults.status = "disabled";
     defaults.autosync = 0;
     defaults.accountname = "";
+    // DefaultAccountPropsEnd
 
     return defaults;
   },
@@ -161,7 +164,9 @@ var providers = {
     let provider = TbSync.db.getAccountProperty(accountID, "provider");
     let defaults = TbSync.providers[provider].Base.getDefaultFolderEntries();
     
-    //add system properties
+    // List of default system folder properties.
+    // Do not remove search marker for doc. 
+    // DefaultFolderPropsStart
     defaults.accountID = accountID;
     defaults.targetType = "";
     defaults.cached = false;
@@ -172,6 +177,7 @@ var providers = {
     defaults.target = "";
     defaults.targetName = "";
     defaults.downloadonly = false;
+    // DefaultFolderPropsEnd
     
     return defaults;
   },
