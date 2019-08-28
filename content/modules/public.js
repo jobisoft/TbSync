@@ -443,10 +443,6 @@ var FolderData = class {
       switch (this.getFolderProperty("targetType")) {
         case "":
           throw new Error("Property <targetType> not set for this folder.");
-        
-        case "calendar":
-          this._target = new TbSync.lightning.TargetData(this);
-          break;
 
         default:
           this._target = new TbSync.providers[this.accountData.getAccountProperty("provider")]["TargetData_" + this.getFolderProperty("targetType")](this);

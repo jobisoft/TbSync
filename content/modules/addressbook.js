@@ -70,7 +70,7 @@ var addressbook = {
       }
       
       if (!this._targetObj || this._targetObj.UID != directory.UID)
-        this._targetObj = new TbSync.addressbook.AbDirectory(directory, this);
+        this._targetObj = new TbSync.addressbook.AbDirectory(directory, this._folderData);
 
       return this._targetObj;
     }
@@ -129,7 +129,13 @@ var addressbook = {
     // * AdvancedTargetData extension  * 
     // * * * * * * * * * * * * * * * * *
     
-    get isAdvancedTargetData() {return true}
+    get isAdvancedAddressbookTargetData() {
+      return true;
+    }
+    
+    get folderData() {
+      return this._folderData;
+    }
     
     // define a card property, which should be used for the changelog
     // basically your primary key for the abItem properties
@@ -423,10 +429,9 @@ var addressbook = {
   },
 
   AbDirectory : class {
-    constructor(directory, targetData) {
+    constructor(directory, folderData) {
       this._directory = directory;
-      this._folderData = targetData._folderData;
-      this._targetData = targetData;
+      this._folderData = folderData;
      }
 
     get directory() {
@@ -434,11 +439,11 @@ var addressbook = {
     }
     
     get logUserChanges() {
-      return this._targetData.logUserChanges;
+      return this._folderData.targetData.logUserChanges;
     }
     
     get primaryKeyField() {
-      return this._targetData.primaryKeyField;
+      return this._folderData.targetData.primaryKeyField;
     }
     
     get UID() {
@@ -462,7 +467,7 @@ var addressbook = {
 
     addItem(abItem, pretagChangelogWithByServerEntry = true) {
       if (this.primaryKeyField && !abItem.getProperty(this.primaryKeyField)) {
-        abItem.setProperty(this.primaryKeyField, this._targetData.generatePrimaryKey());
+        abItem.setProperty(this.primaryKeyField, this._folderData.targetData.generatePrimaryKey());
         //Services.console.logStringMessage("[AbDirectory::addItem] Generated primary key!");
       }
       
@@ -725,7 +730,7 @@ var addressbook = {
           let folderData = TbSync.addressbook.getFolderFromDirectoryUID(bookUID);
           if (folderData 
             && folderData.targetData 
-            && folderData.targetData.isAdvancedTargetData) {
+            && folderData.targetData.isAdvancedAddressbookTargetData) {
               
             switch(aTopic) {
               case "addrbook-updated": 
@@ -771,10 +776,10 @@ var addressbook = {
           let folderData = TbSync.addressbook.getFolderFromDirectoryUID(bookUID);                    
           if (folderData 
             && folderData.targetData 
-            && folderData.targetData.isAdvancedTargetData) {
+            && folderData.targetData.isAdvancedAddressbookTargetData) {
             
             let directory = TbSync.addressbook.getDirectoryFromDirectoryUID(bookUID);
-            let abDirectory = new TbSync.addressbook.AbDirectory(directory, folderData.targetData);
+            let abDirectory = new TbSync.addressbook.AbDirectory(directory, folderData);
             let abItem = new TbSync.addressbook.AbItem(abDirectory, aSubject);
             let itemStatus = abItem.changelogStatus;
 
@@ -923,10 +928,10 @@ var addressbook = {
           let folderData = TbSync.addressbook.getFolderFromDirectoryUID(bookUID);
           if (folderData 
             && folderData.targetData 
-            && folderData.targetData.isAdvancedTargetData) {
+            && folderData.targetData.isAdvancedAddressbookTargetData) {
 
             let directory = TbSync.addressbook.getDirectoryFromDirectoryUID(bookUID);
-            let abDirectory = new TbSync.addressbook.AbDirectory(directory, folderData.targetData);
+            let abDirectory = new TbSync.addressbook.AbDirectory(directory, folderData);
             let abItem = new TbSync.addressbook.AbItem(abDirectory, aSubject);
           
             let itemStatus = abItem.changelogStatus;
@@ -1012,9 +1017,9 @@ var addressbook = {
           let folderData = TbSync.addressbook.getFolderFromDirectoryUID(bookUID);
           if (folderData 
             && folderData.targetData 
-            && folderData.targetData.isAdvancedTargetData) {
+            && folderData.targetData.isAdvancedAddressbookTargetData) {
 
-            let abDirectory = new TbSync.addressbook.AbDirectory(listInfo.directory, folderData.targetData);
+            let abDirectory = new TbSync.addressbook.AbDirectory(listInfo.directory, folderData);
             let abItem = new TbSync.addressbook.AbItem(abDirectory, listInfo.listCard);
 
             let itemStatus = abItem.changelogStatus;
@@ -1071,9 +1076,9 @@ var addressbook = {
           let folderData = TbSync.addressbook.getFolderFromDirectoryUID(bookUID);
           if (folderData 
             && folderData.targetData 
-            && folderData.targetData.isAdvancedTargetData) {
+            && folderData.targetData.isAdvancedAddressbookTargetData) {
             
-            let abDirectory = new TbSync.addressbook.AbDirectory(listInfo.directory, folderData.targetData);
+            let abDirectory = new TbSync.addressbook.AbDirectory(listInfo.directory, folderData);
             let abItem = new TbSync.addressbook.AbItem(abDirectory, listInfo.listCard);
             let abMember = new TbSync.addressbook.AbItem(abDirectory, aSubject);
 
