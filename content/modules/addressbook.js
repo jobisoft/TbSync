@@ -138,7 +138,7 @@ var addressbook = {
       return "UID";
     }
 
-    generatePrimaryKey(folderData) {
+    generatePrimaryKey() {
        return TbSync.generateUUID();
     }
         
@@ -147,7 +147,7 @@ var addressbook = {
       return true;
     }
 
-    directoryObserver(aTopic, folderData) {
+    directoryObserver(aTopic) {
       switch (aTopic) {
         case "addrbook-removed":
         case "addrbook-updated":
@@ -156,7 +156,7 @@ var addressbook = {
       }
     }
         
-    cardObserver(aTopic, folderData, abCardItem) {
+    cardObserver(aTopic, abCardItem) {
       switch (aTopic) {
         case "addrbook-contact-updated":
         case "addrbook-contact-removed":
@@ -166,7 +166,7 @@ var addressbook = {
       }
     }
 
-    listObserver(aTopic, folderData, abListItem, abListMember) {
+    listObserver(aTopic, abListItem, abListMember) {
       switch (aTopic) {
         case "addrbook-list-member-added":
         case "addrbook-list-member-removed":
@@ -462,7 +462,7 @@ var addressbook = {
 
     addItem(abItem, pretagChangelogWithByServerEntry = true) {
       if (this.primaryKeyField && !abItem.getProperty(this.primaryKeyField)) {
-        abItem.setProperty(this.primaryKeyField, this._targetData.generatePrimaryKey(this._folderData));
+        abItem.setProperty(this.primaryKeyField, this._targetData.generatePrimaryKey());
         //Services.console.logStringMessage("[AbDirectory::addItem] Generated primary key!");
       }
       
@@ -754,7 +754,7 @@ var addressbook = {
               break;
             }
             
-            folderData.targetData.directoryObserver(aTopic, folderData);                        
+            folderData.targetData.directoryObserver(aTopic);                        
           }
         }
         break;             
@@ -801,7 +801,7 @@ var addressbook = {
             // new cards must get a NEW(!) primaryKey first
             if (delayedCreation && abDirectory.primaryKeyField && !abItem.getProperty(abDirectory.primaryKeyField)) {
               console.log("Missing primary Key, generated!");
-              abItem.setProperty(abDirectory.primaryKeyField, folderData.targetData.generatePrimaryKey(folderData));
+              abItem.setProperty(abDirectory.primaryKeyField, folderData.targetData.generatePrimaryKey());
               // special case: do not add "modified_by_server"
               abDirectory.modifyItem(abItem, /*pretagChangelogWithByServerEntry */ false);
               return;
@@ -907,7 +907,7 @@ var addressbook = {
             }
 
             if (abDirectory.logUserChanges) TbSync.core.setTargetModified(folderData);
-            folderData.targetData.cardObserver(bTopic, folderData, abItem);
+            folderData.targetData.cardObserver(bTopic, abItem);
           }
         }
         break;
@@ -947,7 +947,7 @@ var addressbook = {
                 
                 if (abDirectory.primaryKeyField) {
                   // Since we do not need to update a list, to make custom properties persistent, we do not need to use delayedCreation as with contacts.
-                  abItem.setProperty(abDirectory.primaryKeyField, folderData.targetData.generatePrimaryKey(folderData));
+                  abItem.setProperty(abDirectory.primaryKeyField, folderData.targetData.generatePrimaryKey());
                 }
                 
                 switch (itemStatus) {
@@ -996,7 +996,7 @@ var addressbook = {
             }
 
             if (abDirectory.logUserChanges) TbSync.core.setTargetModified(folderData);
-            folderData.targetData.listObserver(aTopic, folderData, abItem, null);
+            folderData.targetData.listObserver(aTopic, abItem, null);
           }
         }
         break;
@@ -1053,7 +1053,7 @@ var addressbook = {
             }
             
             if (abDirectory.logUserChanges) TbSync.core.setTargetModified(folderData);
-            folderData.targetData.listObserver(aTopic, folderData, abItem, null);
+            folderData.targetData.listObserver(aTopic, abItem, null);
           }
         }
         break;
@@ -1078,7 +1078,7 @@ var addressbook = {
             let abMember = new TbSync.addressbook.AbItem(abDirectory, aSubject);
 
             if (abDirectory.logUserChanges) TbSync.core.setTargetModified(folderData);
-            folderData.targetData.listObserver(aTopic, folderData, abItem, abMember);
+            folderData.targetData.listObserver(aTopic, abItem, abMember);
 
             // removed, added members cause the list to be changed
             let mailListDirectory = MailServices.ab.getDirectory(listInfo.listCard.mailListURI);
