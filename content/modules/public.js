@@ -448,12 +448,8 @@ var FolderData = class {
           this._target = new TbSync.lightning.TargetData(this);
           break;
 
-        case "addressbook":
-          this._target = new TbSync.addressbook.TargetData(this);
-          break;
-
         default:
-          this._target = new TbSync.providers[this.accountData.getAccountProperty("provider")][this.getFolderProperty("targetType")](this);
+          this._target = new TbSync.providers[this.accountData.getAccountProperty("provider")]["TargetData_" + this.getFolderProperty("targetType")](this);
       }
     }
     
