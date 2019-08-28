@@ -403,7 +403,7 @@ var FolderData = class {
       switch (this.getFolderProperty("status").split(".")[0]) { //the status may have a sub-decleration
         case "success":
         case "modified":
-          status = status + ": " + this.getFolderProperty("targetName");
+          status = status + ": " + this.targetData.targetName;
           break;
           
         case "pending":

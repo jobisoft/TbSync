@@ -174,7 +174,6 @@ var providers = {
     defaults.lastsynctime = 0;
     defaults.status = "";
     defaults.foldername = "";
-    defaults.targetName = "";
     defaults.downloadonly = false;
     // DefaultFolderPropsEnd
     
