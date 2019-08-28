@@ -44,15 +44,15 @@ var messenger = {
   syncstateObserver: {
     observe: function (aSubject, aTopic, aData) {
       //update status bar
-      if (tbSync) {
-        let status = tbSync.window.document.getElementById("tbsync.status");
+      if (TbSync) {
+        let status = TbSync.window.document.getElementById("tbsync.status");
         if (status) {
           let label = "TbSync: ";
           
-          if (tbSync.enabled) {
+          if (TbSync.enabled) {
 
             //check if any account is syncing, if not switch to idle
-            let accounts = tbSync.db.getAccounts();
+            let accounts = TbSync.db.getAccounts();
             let idle = true;
             let err = false;
         
@@ -63,10 +63,10 @@ var messenger = {
               }
         
               //set idle to false, if at least one account is syncing
-              if (tbSync.core.isSyncing(accounts.allIDs[i])) idle = false;
+              if (TbSync.core.isSyncing(accounts.allIDs[i])) idle = false;
           
               //check for errors
-              switch (tbSync.db.getAccountProperty(accounts.allIDs[i], "status")) {
+              switch (TbSync.db.getAccountProperty(accounts.allIDs[i], "status")) {
                 case "success":
                 case "disabled":
                 case "notsyncronized":
@@ -79,10 +79,10 @@ var messenger = {
             }
 
             if (idle) {
-              if (err) label += tbSync.getString("info.error");   
-              else label += tbSync.getString("info.idle");   
+              if (err) label += TbSync.getString("info.error");   
+              else label += TbSync.getString("info.idle");   
             } else {
-              label += tbSync.getString("info.sync");
+              label += TbSync.getString("info.sync");
             }
           } else {
             label += "Loading";
@@ -96,10 +96,10 @@ var messenger = {
   // observer to init sync
   initSyncObserver: {
     observe: function (aSubject, aTopic, aData) {
-      if (tbSync.enabled) {
-        tbSync.core.syncAllAccounts();
+      if (TbSync.enabled) {
+        TbSync.core.syncAllAccounts();
       } else {
-        //tbSync.manager.popupNotEnabled();
+        //TbSync.manager.popupNotEnabled();
       }
     }
   },    

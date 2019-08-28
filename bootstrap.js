@@ -7,7 +7,7 @@
  */
  
 var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-var { OS }  =ChromeUtils.import("resource://gre/modules/osfile.jsm");
+var { OS } = ChromeUtils.import("resource://gre/modules/osfile.jsm");
 
 function install(data, reason) {
 }
@@ -42,7 +42,7 @@ function startup(data, reason) {
 function shutdown(data, reason) {
   //possible reasons: APP_SHUTDOWN, ADDON_DISABLE, ADDON_UNINSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE
 
-  var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+  var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
   let windows = Services.wm.getEnumerator("mail:3pane");
   while (windows.hasMoreElements()) {
@@ -53,11 +53,11 @@ function shutdown(data, reason) {
   // Stop listening for any new windows to open.
   Services.wm.removeListener(WindowListener);
 
-  tbSync.enabled = false;
+  TbSync.enabled = false;
 
-  //unload tbSync module
-  tbSync.dump("TbSync shutdown","Unloading TbSync modules.");
-  tbSync.unload().then(function() {
+  //unload TbSync module
+  TbSync.dump("TbSync shutdown","Unloading TbSync modules.");
+  TbSync.unload().then(function() {
     Cu.unload("chrome://tbsync/content/tbsync.jsm");
     Cu.unload("chrome://tbsync/content/OverlayManager.jsm");
     // HACK WARNING:
@@ -79,8 +79,8 @@ var WindowListener = {
     }
 
     // the main window has loaded, continue with init
-    var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
-    if (!tbSync.enabled) tbSync.load(window);
+    var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+    if (!TbSync.enabled) TbSync.load(window);
   },
 
 

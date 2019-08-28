@@ -41,8 +41,8 @@ var db = {
       this.files[f].write = new DeferredTask(() => this.writeAsync(f), 6000);
       
       try {
-        let data = await OS.File.read(tbSync.io.getAbsolutePath(this.files[f].name));
-        this[f] = JSON.parse(tbSync.decoder.decode(data));
+        let data = await OS.File.read(TbSync.io.getAbsolutePath(this.files[f].name));
+        this[f] = JSON.parse(TbSync.decoder.decode(data));
         this.files[f].found = true;
       } catch (e) {
         //if there is no file, there is no file...
@@ -66,8 +66,8 @@ var db = {
     // try to migrate old accounts file from TB60
     if (!this.files["accounts"].found) {
       try {
-        let data = await OS.File.read(tbSync.io.getAbsolutePath("accounts.json"));
-        let accounts = JSON.parse(tbSync.decoder.decode(data));
+        let data = await OS.File.read(TbSync.io.getAbsolutePath("accounts.json"));
+        let accounts = JSON.parse(TbSync.decoder.decode(data));
         for (let d of Object.values(accounts.data)) {
           console.log("Migrating: " + JSON.stringify(d));
           
@@ -140,10 +140,10 @@ var db = {
       return;
     }
     
-    let filepath = tbSync.io.getAbsolutePath(this.files[f].name);
-    let json = tbSync.encoder.encode(JSON.stringify(this[f]));
+    let filepath = TbSync.io.getAbsolutePath(this.files[f].name);
+    let json = TbSync.encoder.encode(JSON.stringify(this[f]));
     
-    await OS.File.makeDir(tbSync.io.storageDirectory);
+    await OS.File.makeDir(TbSync.io.storageDirectory);
     await OS.File.writeAtomic(filepath, json, {tmpPath: filepath + ".tmp"});
   },
 
@@ -266,7 +266,7 @@ var db = {
 
   getAccounts: function () {
     let accounts = {};
-    accounts.IDs = Object.keys(this.accounts.data).filter(accountID => tbSync.providers.loadedProviders.hasOwnProperty(this.accounts.data[accountID].provider)).sort((a, b) => a - b);
+    accounts.IDs = Object.keys(this.accounts.data).filter(accountID => TbSync.providers.loadedProviders.hasOwnProperty(this.accounts.data[accountID].provider)).sort((a, b) => a - b);
     accounts.allIDs =  Object.keys(this.accounts.data).sort((a, b) => a - b)
     accounts.data = this.accounts.data;
     return accounts;
@@ -286,15 +286,15 @@ var db = {
       return true;
 
     //check if provider is installed
-    if (!tbSync.providers.loadedProviders.hasOwnProperty(provider)) {
-      tbSync.dump("Error @ isValidAccountProperty", "Unknown provider <"+provider+">!");
+    if (!TbSync.providers.loadedProviders.hasOwnProperty(provider)) {
+      TbSync.dump("Error @ isValidAccountProperty", "Unknown provider <"+provider+">!");
       return false;
     }
     
-    if (tbSync.providers.getDefaultAccountEntries(provider).hasOwnProperty(name)) {
+    if (TbSync.providers.getDefaultAccountEntries(provider).hasOwnProperty(name)) {
       return true;
     } else {
-      tbSync.dump("Error @ isValidAccountProperty", "Unknown account setting <"+name+">!");
+      TbSync.dump("Error @ isValidAccountProperty", "Unknown account setting <"+name+">!");
       return false;
     }            
   },
@@ -306,7 +306,7 @@ var db = {
     //check if field is allowed and get value or default value if setting is not set
     if (this.isValidAccountProperty(data.provider, name)) {
       if (data.hasOwnProperty(name)) return data[name];
-      else return tbSync.providers.getDefaultAccountEntries(data.provider)[name];
+      else return TbSync.providers.getDefaultAccountEntries(data.provider)[name];
     }
   }, 
 
@@ -324,7 +324,7 @@ var db = {
   resetAccountProperty: function (accountID , name) {
     // if the requested accountID does not exist, getAccount() will fail
     let data = this.getAccount(accountID);
-    let defaults = tbSync.providers.getDefaultAccountEntries(data.provider);        
+    let defaults = TbSync.providers.getDefaultAccountEntries(data.provider);        
 
     //check if field is allowed, and set given value 
     if (this.isValidAccountProperty(data.provider, name)) {
@@ -339,13 +339,13 @@ var db = {
   // FOLDER FUNCTIONS
 
   addFolder: function(accountID) {
-    let folderID = tbSync.generateUUID();
+    let folderID = TbSync.generateUUID();
     let provider = this.getAccountProperty(accountID, "provider");        
     
     if (!this.folders.hasOwnProperty(accountID)) this.folders[accountID] = {};                        
     
     //create folder with default settings
-    this.folders[accountID][folderID] = tbSync.providers.getDefaultFolderEntries(accountID);
+    this.folders[accountID][folderID] = TbSync.providers.getDefaultFolderEntries(accountID);
     this.saveFolders();
     return folderID;
   },
@@ -363,15 +363,15 @@ var db = {
     
     //check if provider is installed
     let provider = this.getAccountProperty(accountID, "provider");
-    if (!tbSync.providers.loadedProviders.hasOwnProperty(provider)) {
-      tbSync.dump("Error @ isValidFolderProperty", "Unknown provider <"+provider+"> for accountID <"+accountID+">!");
+    if (!TbSync.providers.loadedProviders.hasOwnProperty(provider)) {
+      TbSync.dump("Error @ isValidFolderProperty", "Unknown provider <"+provider+"> for accountID <"+accountID+">!");
       return false;
     }
 
-    if (tbSync.providers.getDefaultFolderEntries(accountID).hasOwnProperty(field)) {
+    if (TbSync.providers.getDefaultFolderEntries(accountID).hasOwnProperty(field)) {
       return true;
     } else {
-      tbSync.dump("Error @ isValidFolderProperty", "Unknown folder setting <"+field+"> for accountID <"+accountID+">!");
+      TbSync.dump("Error @ isValidFolderProperty", "Unknown folder setting <"+field+"> for accountID <"+accountID+">!");
       return false;
     }
   },
@@ -389,7 +389,7 @@ var db = {
         return folder[field];
       } else {
         let provider = this.getAccountProperty(accountID, "provider");
-        let defaultFolder = tbSync.providers.getDefaultFolderEntries(accountID);
+        let defaultFolder = TbSync.providers.getDefaultFolderEntries(accountID);
         //handle internal fields, that do not have a default value (see isValidFolderProperty)
         return (defaultFolder[field] ? defaultFolder[field] : "");
       }
@@ -405,7 +405,7 @@ var db = {
   
   resetFolderProperty: function (accountID, folderID, field) {
     let provider = this.getAccountProperty(accountID, "provider");
-    let defaults = tbSync.providers.getDefaultFolderEntries(accountID);        
+    let defaults = TbSync.providers.getDefaultFolderEntries(accountID);        
     if (this.isValidFolderProperty(accountID, field)) {
       //handle internal fields, that do not have a default value (see isValidFolderProperty)
       this.folders[accountID][folderID][field] = defaults[field] ? defaults[field] : "";
@@ -435,7 +435,7 @@ var db = {
       }
     
       //skip this folder, if it belongs to an account currently not supported (provider not loaded)
-      if (!tbSync.providers.loadedProviders.hasOwnProperty(this.getAccountProperty(aID, "provider"))) {
+      if (!TbSync.providers.loadedProviders.hasOwnProperty(this.getAccountProperty(aID, "provider"))) {
         continue;
       }
 

@@ -90,7 +90,7 @@ var abAutoComplete = {
   
   
   Request: async function(accountData, aSearchString) {
-    let entries = await tbSync.providers[accountData.getAccountProperty("provider")].Base.abAutoComplete(accountData, aSearchString);
+    let entries = await TbSync.providers[accountData.getAccountProperty("provider")].Base.abAutoComplete(accountData, aSearchString);
     return entries.map(entry => ({ ...entry, id: accountData.accountID }));
   },   
 }
@@ -125,7 +125,7 @@ abAutoComplete.Search.prototype = {
    */
   getAutoCompleteResultFor : async function (aSearchString) {
     //check each account and init server request
-    let accounts = tbSync.db.getAccounts();
+    let accounts = TbSync.db.getAccounts();
     let requests = [];
     let values = [];
     let comments = [];
@@ -135,15 +135,15 @@ abAutoComplete.Search.prototype = {
     for (let i=0; i<accounts.IDs.length; i++) {
       let accountID = accounts.IDs[i];
      
-      let accountData = new tbSync.AccountData(accountID);
+      let accountData = new TbSync.AccountData(accountID);
       let provider = accountData.getAccountProperty("provider");
       let status = accountData.getAccountProperty("status");
       
       if (status == "disabled") continue;
       //start all requests parallel (do not wait till done here, push the promise)
-      if (tbSync.providers[provider].Base.abAutoComplete) {
+      if (TbSync.providers[provider].Base.abAutoComplete) {
         try {
-          requests.push(tbSync.abAutoComplete.Request(accountData, aSearchString));
+          requests.push(TbSync.abAutoComplete.Request(accountData, aSearchString));
         } catch (e) {}
       }
     }

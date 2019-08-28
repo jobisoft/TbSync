@@ -20,14 +20,14 @@
                     <html:img 
                     src="" 
                     style="width:48px; height:48px; margin:4px 0 0 10px; float:left" 
-                    onclick="tbSync.manager.openLink(tbSync.providers.loadedProviders[this.parentNode.getAttribute('provider')].addon.homepageURL);" 
+                    onclick="TbSync.manager.openLink(TbSync.providers.loadedProviders[this.parentNode.getAttribute('provider')].addon.homepageURL);" 
                     onmouseover="this.style.cursor='pointer'" 
                     onmouseout="this.style.cursor='default'" />
                     <html:div style="padding-left: 65px;">
                       <html:div>&manager.title;</html:div>
                       <html:div style="font-style:italic">&manager.provider4tbsync;</html:div>
                       <html:div style="font-style:italic;">[<html:span 
-                      onclick="tbSync.manager.openLink(tbSync.providers.loadedProviders[this.parentNode.parentNode.parentNode.getAttribute('provider')].addon.homepageURL);" 
+                      onclick="TbSync.manager.openLink(TbSync.providers.loadedProviders[this.parentNode.parentNode.parentNode.getAttribute('provider')].addon.homepageURL);" 
                       onmouseover="this.style.cursor='pointer'" 
                       onmouseout="this.style.cursor='default'"
                       style="color:blue;text-decoration: underline;">&manager.supporter.details;</html:span>]</html:div>
@@ -38,7 +38,7 @@
                     <html:img 
                     src="chrome://tbsync/skin/tbsync64.png" 
                     style="width:48px; height:48px; margin:4px 0 0 10px; float:left" 
-                    onclick="tbSync.manager.openLink(tbSync.addon.homepageURL);" 
+                    onclick="TbSync.manager.openLink(TbSync.addon.homepageURL);" 
                     onmouseover="this.style.cursor='pointer'" 
                     onmouseout="this.style.cursor='default'" />
                     <html:div style="padding-left: 65px;">
@@ -46,7 +46,7 @@
                       <html:div>TbSync</html:div>
                       <html:div style="font-style:italic">&manager.shorttitle;</html:div>
                       <html:div style="font-style:italic;">[<html:span 
-                      onclick="tbSync.manager.openLink(tbSync.addon.homepageURL);" 
+                      onclick="TbSync.manager.openLink(TbSync.addon.homepageURL);" 
                       onmouseover="this.style.cursor='pointer'" 
                       onmouseout="this.style.cursor='default'"
                       style="color:blue;text-decoration: underline;">&manager.supporter.details;</html:span>]</html:div>
@@ -61,7 +61,7 @@
                 <html:b>&manager.supporter.sponsors;</html:b>
                 <html:div id="listOfSponsors" style="margin-top:10px">
                   <html:div link="" style="width:225px; margin: 0 0 10px 0; float:left;">
-                    <html:img src="chrome://tbsync/skin/user48.png" style="width:48px; height:48px; padding:0px; margin:0 0 0 10px; border:1px solid #d3d3d3; float:left" onclick="if (this.parentNode.getAttribute('link') != '') {tbSync.manager.openLink(this.parentNode.getAttribute('link'));}" onmouseover="if (this.parentNode.getAttribute('link') != '') {this.style.cursor='pointer'}" onmouseout="this.style.cursor='default'" />
+                    <html:img src="chrome://tbsync/skin/user48.png" style="width:48px; height:48px; padding:0px; margin:0 0 0 10px; border:1px solid #d3d3d3; float:left" onclick="if (this.parentNode.getAttribute('link') != '') {TbSync.manager.openLink(this.parentNode.getAttribute('link'));}" onmouseover="if (this.parentNode.getAttribute('link') != '') {this.style.cursor='pointer'}" onmouseout="this.style.cursor='default'" />
                     <html:div style="padding-left: 65px;">
                       <html:div >Name</html:div>
                       <html:div style="font-style:italic">Description</html:div>

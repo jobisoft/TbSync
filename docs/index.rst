@@ -1,5 +1,0 @@
-TbSync API  Documentation
-=================================
-
-TODO
-

@@ -8,42 +8,112 @@
  
  "use strict";
 
+/**
+ *
+ */
  var StatusData = class {
+  /**
+   * A StatusData instance must be used as return value by 
+   * :class:`Base.syncFolderList` and :class:`Base.syncFolder`.
+   * 
+   * StatusData also defines the possible StatusDataTypes used by the
+   * :ref:`TbSyncEventLog`.
+   *
+   * @param {StatusDataType} type  Status type (see const definitions below)
+   * @param {string} message  ``Optional`` A message, which will be used as
+   *                          sync status. If this is not a success, it will be
+   *                          used also in the :ref:`TbSyncEventLog` as well.
+   * @param {string} details  ``Optional``  If this is not a success, it will
+   *                          be used as description in the
+   *                          :ref:`TbSyncEventLog`.
+   *
+   */
   constructor(type = "success", message = "", details = "") {
     this.type = type; //success, info, warning, error
     this.message = message;
     this.details = details;
   }
-  
+  /**
+   * Successfull sync. 
+   */
   static get SUCCESS() {return "success"};
+  /**
+   * Sync of the entire account will be aborted.
+   */
   static get ERROR() {return "error"};
+  /**
+   * Sync of this resource will be aborted and continued with next resource.
+   */
   static get WARNING() {return "warning"};
+  /**
+   * Successfull sync, but message and details
+   * provided will be added to the event log.
+   */
   static get INFO() {return "info"};
+  /**
+   * Sync of the entire account will be aborted and restarted completely.
+   */
   static get ACCOUNT_RERUN() {return "account_rerun"}; 
+  /**
+   * Sync of the current folder/resource will be restarted.
+   */
   static get FOLDER_RERUN() {return "folder_rerun"}; 
 }
 
 
 
-var ProgessData = class {
+/**
+ * ProgressData to manage a ``done`` and a ``todo`` counter. 
+ *
+ * Each :class:`SyncData` instance has an associated ProgressData instance. See
+ * :class:`SyncData.progressData`. The information of that ProgressData
+ * instance is used, when the current syncstate is prefixed by ``send.``,
+ * ``eval.`` or ``prepare.``. See :class:`SyncData.setSyncState`.
+ *
+ */
+var ProgressData = class {
+  /**
+   *
+   */
   constructor() {
     this._todo = 0;
     this._done = 0;
    }
    
+  /**
+   * Reset ``done`` and ``todo`` counter.
+   *
+   * @param {integer} done  ``Optional`` Set a value for the ``done`` counter.
+   * @param {integer} todo  ``Optional`` Set a value for the ``todo`` counter.
+   *
+   */
    reset(done = 0, todo = 0) {
     this._todo = todo;
     this._done = done;
    }
    
+  /**
+   * Increment the ``done`` counter.
+   *
+   * @param {integer} value  ``Optional`` Set incrementation value.
+   *
+   */
    inc(value = 1) {
      this._done += value;
    }
    
+  /**
+   * Getter for the ``todo`` counter.
+   *
+   */
    get todo() {
      return this._todo;
    }
    
+  /**
+   * Getter for the ``done`` counter.
+   *
+   */
    get done() {
      return this._done;
    }
@@ -51,29 +121,50 @@ var ProgessData = class {
 
 
 
+/**
+ * ProviderData
+ *
+ */
 var ProviderData = class {
+  /**
+   * Constructor
+   *
+   * @param {FolderData} folderData    FolderData of the folder for which the
+   *                                   display name is requested.
+   *
+   */
   constructor(provider) {
-    if (!tbSync.providers.hasOwnProperty(provider)) {
+    if (!TbSync.providers.hasOwnProperty(provider)) {
       throw new Error("Provider <" + provider + "> has not been loaded. Failed to create ProviderData.");
     }
     this.provider = provider;
   }
   
+  /**
+   * Getter for an :class:`EventLogInfo` instance with all the information
+   * regarding this ProviderData instance.
+   *
+   */
+  get eventLogInfo() {
+    return new EventLogInfo(
+      this.getAccountProperty("provider"));
+  }
+
   getVersion() {
-    return tbSync.providers.loadedProviders[this.provider].version;
+    return TbSync.providers.loadedProviders[this.provider].version;
   }
   
   getStringBundle() {
-    return tbSync.providers.loadedProviders[this.provider].bundle;
+    return TbSync.providers.loadedProviders[this.provider].bundle;
   }
   
   getAllAccounts() {
-    let accounts = tbSync.db.getAccounts();
+    let accounts = TbSync.db.getAccounts();
     let allAccounts = [];
     for (let i=0; i<accounts.IDs.length; i++) {
       let accountID = accounts.IDs[i];
       if (accounts.data[accountID].provider == this.provider) {
-        allAccounts.push(new tbSync.AccountData(accountID));
+        allAccounts.push(new TbSync.AccountData(accountID));
       }
     }
     return allAccounts;
@@ -85,33 +176,52 @@ var ProviderData = class {
     Object.assign(folderSearchCriteria, aFolderSearchCriteria);
     folderSearchCriteria.cached = false;
     
-    let folders = tbSync.db.findFolders(folderSearchCriteria, {"provider": this.provider});
+    let folders = TbSync.db.findFolders(folderSearchCriteria, {"provider": this.provider});
     for (let i=0; i < folders.length; i++) {          
-      allFolders.push(new tbSync.FolderData(new tbSync.AccountData(folders[i].accountID), folders[i].folderID));
+      allFolders.push(new TbSync.FolderData(new TbSync.AccountData(folders[i].accountID), folders[i].folderID));
     }
     return allFolders;
   }
   
   getDefaultAccountEntries() {
-    return  tbSync.providers.getDefaultAccountEntries(this.provider)
+    return  TbSync.providers.getDefaultAccountEntries(this.provider)
   }
   
   addAccount(accountName, accountOptions) {
-    let newAccountID = tbSync.db.addAccount(accountName, accountOptions);
+    let newAccountID = TbSync.db.addAccount(accountName, accountOptions);
     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountsList", newAccountID);
-    return new tbSync.AccountData(newAccountID);        
+    return new TbSync.AccountData(newAccountID);        
   }
 }
 
 
 
+/**
+ * AccountData
+ *
+ */
 var AccountData = class {
+  /**
+   *
+   */
   constructor(accountID) {
     this._accountID = accountID;
 
-    if (!tbSync.db.accounts.data.hasOwnProperty(accountID)) {
+    if (!TbSync.db.accounts.data.hasOwnProperty(accountID)) {
       throw new Error("An account with ID <" + accountID + "> does not exist. Failed to create AccountData.");
     }
+  }
+
+  /**
+   * Getter for an :class:`EventLogInfo` instance with all the information
+   * regarding this AccountData instance.
+   *
+   */
+  get eventLogInfo() {
+    return new EventLogInfo(
+      this.getAccountProperty("provider"),
+      this.getAccountProperty("accountname"),
+      this.accountID);
   }
 
   get accountID() {
@@ -120,98 +230,125 @@ var AccountData = class {
   
   getAllFolders() {
     let allFolders = [];
-    let folders = tbSync.db.findFolders({"cached": false}, {"accountID": this.accountID});
+    let folders = TbSync.db.findFolders({"cached": false}, {"accountID": this.accountID});
     for (let i=0; i < folders.length; i++) {          
-      allFolders.push(new tbSync.FolderData(this, folders[i].folderID));
+      allFolders.push(new TbSync.FolderData(this, folders[i].folderID));
     }
     return allFolders;
   }
 
   getAllFoldersIncludingCache() {
     let allFolders = [];
-    let folders = tbSync.db.findFolders({}, {"accountID": this.accountID});
+    let folders = TbSync.db.findFolders({}, {"accountID": this.accountID});
     for (let i=0; i < folders.length; i++) {          
-      allFolders.push(new tbSync.FolderData(this, folders[i].folderID));
+      allFolders.push(new TbSync.FolderData(this, folders[i].folderID));
     }
     return allFolders;
   }
   
   getFolder(setting, value) {
     // ES6 supports variable keys by putting it into brackets
-    let folders = tbSync.db.findFolders({[setting]: value, "cached": false}, {"accountID": this.accountID});
-    if (folders.length > 0) return new tbSync.FolderData(this, folders[0].folderID);
+    let folders = TbSync.db.findFolders({[setting]: value, "cached": false}, {"accountID": this.accountID});
+    if (folders.length > 0) return new TbSync.FolderData(this, folders[0].folderID);
     return null;
   }
 
   getFolderFromCache(setting, value) {
     // ES6 supports variable keys by putting it into brackets
-    let folders = tbSync.db.findFolders({[setting]: value, "cached": true}, {"accountID": this.accountID});
-    if (folders.length > 0) return new tbSync.FolderData(this, folders[0].folderID);
+    let folders = TbSync.db.findFolders({[setting]: value, "cached": true}, {"accountID": this.accountID});
+    if (folders.length > 0) return new TbSync.FolderData(this, folders[0].folderID);
     return null;
   }
   
   createNewFolder() {
-    return new tbSync.FolderData(this, tbSync.db.addFolder(this.accountID));
+    return new TbSync.FolderData(this, TbSync.db.addFolder(this.accountID));
   }
   
   // get data objects
   get providerData() {
-    return new tbSync.ProviderData(
+    return new TbSync.ProviderData(
       this.getAccountProperty("provider"),
     );
   }    
 
   get syncData() {
-    return tbSync.core.getSyncDataObject(this.accountID);
+    return TbSync.core.getSyncDataObject(this.accountID);
   }
 
 
-  // shortcuts
+  /**
+   * Initiate a sync of this entire account by calling
+   * :class:`Base.syncFolderList`. If that succeeded, :class:`Base.syncFolder`
+   * will be called for each available folder / resource found on the server.
+   *
+   * @param {Object} syncDescription  ``Optional``
+   */
   sync(syncDescription = {}) {
-    tbSync.core.syncAccount(this.accountID, syncDescription);
+    TbSync.core.syncAccount(this.accountID, syncDescription);
   }
 
   isSyncing() {
-    return tbSync.core.isSyncing(this.accountID);
+    return TbSync.core.isSyncing(this.accountID);
   }
   
   isEnabled() {
-    return tbSync.core.isEnabled(this.accountID);
+    return TbSync.core.isEnabled(this.accountID);
   }
 
   isConnected() {
-    return tbSync.core.isConnected(this.accountID);
+    return TbSync.core.isConnected(this.accountID);
   }
   
 
   getAccountProperty(field) {
-    return tbSync.db.getAccountProperty(this.accountID, field);
+    return TbSync.db.getAccountProperty(this.accountID, field);
   }
 
   setAccountProperty(field, value) {
-    tbSync.db.setAccountProperty(this.accountID, field, value);
+    TbSync.db.setAccountProperty(this.accountID, field, value);
     Services.obs.notifyObservers(null, "tbsync.observer.manager.reloadAccountSetting", JSON.stringify({accountID: this.accountID, setting: field}));
   }
   
   resetAccountProperty(field) {
-    tbSync.db.resetAccountProperty(this.accountID, field);
+    TbSync.db.resetAccountProperty(this.accountID, field);
     Services.obs.notifyObservers(null, "tbsync.observer.manager.reloadAccountSetting", JSON.stringify({accountID: this.accountID, setting: field}));
   }
 }
 
 
 
+/**
+ * FolderData
+ *
+ */
 var FolderData = class {
+  /**
+   *
+   */
   constructor(accountData, folderID) {
     this._accountData = accountData;
     this._folderID = folderID;
     this._target = null;
     
-    if (!tbSync.db.folders[accountData.accountID].hasOwnProperty(folderID)) {
+    if (!TbSync.db.folders[accountData.accountID].hasOwnProperty(folderID)) {
       throw new Error("A folder with ID <" + folderID + "> does not exist for the given account. Failed to create FolderData.");
     }
   }
   
+  /**
+   * Getter for an :class:`EventLogInfo` instance with all the information 
+   * regarding this FolderData instance.
+   *
+   */
+  get eventLogInfo() {
+    return new EventLogInfo(
+      this.accountData.getAccountProperty("provider"),
+      this.accountData.getAccountProperty("accountname"),
+      this.accountData.accountID,
+      this.getFolderProperty("foldername"),
+    );
+  }
+
   get folderID() {
     return this._folderID;
   }
@@ -221,21 +358,28 @@ var FolderData = class {
   }
   
   getDefaultFolderEntries() { // remove
-    return tbSync.providers.getDefaultFolderEntries(this.accountID);
+    return TbSync.providers.getDefaultFolderEntries(this.accountID);
   }
   
   getFolderProperty(field) {
-    return tbSync.db.getFolderProperty(this.accountID, this.folderID, field);
+    return TbSync.db.getFolderProperty(this.accountID, this.folderID, field);
   }
   
   setFolderProperty(field, value) {
-    tbSync.db.setFolderProperty(this.accountID, this.folderID, field, value);
+    TbSync.db.setFolderProperty(this.accountID, this.folderID, field, value);
   }
 
   resetFolderProperty(field) {
-    tbSync.db.resetFolderProperty(this.accountID, this.folderID, field);
+    TbSync.db.resetFolderProperty(this.accountID, this.folderID, field);
   }
 
+  /**
+   * Initiate a sync of this folder only by calling
+   * :class:`Base.syncFolderList` and than :class:`Base.syncFolder` for this
+   * folder / resource only.
+   *
+   * @param {Object} syncDescription  ``Optional``
+   */
   sync(aSyncDescription = {}) {
     let syncDescription = {};
     Object.assign(syncDescription, aSyncDescription);
@@ -254,20 +398,20 @@ var FolderData = class {
     
     if (this.getFolderProperty("selected")) {
       //default
-      status = tbSync.getString("status." + this.getFolderProperty("status"), this.accountData.getAccountProperty("provider")).split("||")[0];
+      status = TbSync.getString("status." + this.getFolderProperty("status"), this.accountData.getAccountProperty("provider")).split("||")[0];
 
       switch (this.getFolderProperty("status").split(".")[0]) { //the status may have a sub-decleration
         case "success":
         case "modified":
-          status = status + ": " + this.getFolderProperty("targetName");
+          status = status + ": " + this.targetData.targetName;
           break;
           
         case "pending":
           //add extra info if this folder is beeing synced
           if (this.isSyncing()) {
             let syncdata = this.accountData.syncData;
-            status = tbSync.getString("status.syncing", this.accountData.getAccountProperty("provider"));
-            if (["send","eval","prepare"].includes(syncdata._syncstate.split(".")[0]) && (syncdata.progressData.todo + syncdata.progressData.done) > 0) {
+            status = TbSync.getString("status.syncing", this.accountData.getAccountProperty("provider"));
+            if (["send","eval","prepare"].includes(syncdata.getSyncState().state.split(".")[0]) && (syncdata.progressData.todo + syncdata.progressData.done) > 0) {
               //add progress information
               status = status + " (" + syncdata.progressData.done + (syncdata.progressData.todo > 0 ? "/" + syncdata.progressData.todo : "") + ")"; 
             }
@@ -285,25 +429,29 @@ var FolderData = class {
     return this._accountData;
   }
 
+  /**
+   * Getter for the :class:`TargetData` instance associated with this
+   * FolderData. See :ref:`TbSyncTargets` for more details.
+   *
+   * @returns {TargetData}
+   *
+   */
   get targetData() {
-    // targetData can not be set during construction, because targetType has not been set 
-    // create it on the fly - re-create it, if targetType changed
-    if (!this._target || this._target.targetType != this.getFolderProperty("targetType")) {
-      switch (this.getFolderProperty("targetType")) {
-        case "":
-          throw new Error("Property <targetType> not set for this folder.");
-        
-        case "calendar":
-          this._target = new tbSync.lightning.TargetData(this);
-          break;
-
-        case "addressbook":
-          this._target = new tbSync.addressbook.TargetData(this);
-          break;
-
-        default:
-          this._target = new tbSync.providers[this.accountData.getAccountProperty("provider")][this.getFolderProperty("targetType")](this);
-      }
+    // targetData is created on demand
+    if (!this._target) {
+      let provider = this.accountData.getAccountProperty("provider");
+      let targetType = this.getFolderProperty("targetType");
+      
+      if (!targetType)
+        throw new Error("Provider <"+provider+"> has not set a proper target type for this folder.");
+      
+      if (!TbSync.providers[provider].hasOwnProperty("TargetData_" + targetType))
+        throw new Error("Provider <"+provider+"> is missing a TargetData implementation for <"+targetType+">.");
+      
+      this._target = new TbSync.providers[provider]["TargetData_" + targetType](this);
+      
+      if (!this._target)
+        throw new Error("notargets");
     }
     
     return this._target;
@@ -314,31 +462,39 @@ var FolderData = class {
   // will be added to its name, to indicate, that it is no longer
   // managed by TbSync.
   remove(keepStaleTargetSuffix = "") {
-    let target = this.getFolderProperty("target");
-    if (target) {
+    if (this.targetData.hasTarget()) {
       if (keepStaleTargetSuffix) {
-        let changes = tbSync.db.getItemsFromChangeLog(target, 0, "_by_user");
-        tbSync.db.clearChangeLog(target);      
-        this.targetData.appendStaleSuffix(keepStaleTargetSuffix, changes);
+        let oldName =  this.targetData.targetName;
+        this.targetData.targetName = TbSync.getString("target.orphaned") + ": " + oldName + " " + keepStaleTargetSuffix;
+        this.targetData.disconnectTarget();
       } else {
         this.targetData.removeTarget();
       }
     }
-    this.resetFolderProperty("target");
     this.setFolderProperty("cached", true);
   }
 }
 
 
 
-// there is only one syncdata object per account which contains the current state of the sync
+/**
+ * There is only one SyncData instance per account which contains all
+ * relevant information regarding an ongoing sync. 
+ *
+ */
 var SyncData = class {
+  /**
+   *
+   */
   constructor(accountID) {
     
     //internal (private, not to be touched by provider)
-    this._syncstate = "accountdone";
-    this._accountData = new tbSync.AccountData(accountID);
-    this._progressData = new tbSync.ProgessData();
+    this._syncstate = {
+      state: "accountdone",
+      timestamp: Date.now(),
+    }
+    this._accountData = new TbSync.AccountData(accountID);
+    this._progressData = new TbSync.ProgressData();
     this._currentFolderData = null;
   }
 
@@ -353,6 +509,11 @@ var SyncData = class {
     this._currentFolderData = null;
   }
 
+  /**
+   * Getter for an :class:`EventLogInfo` instance with all the information
+   * regarding this SyncData instance.
+   *
+   */  
   get eventLogInfo() {
     return new EventLogInfo(
       this.accountData.getAccountProperty("provider"),
@@ -362,36 +523,83 @@ var SyncData = class {
     );
   }
   
+  /**
+   * Getter for the :class:`FolderData` instance of the folder being currently
+   * synced. Can be ``null`` if no folder is being synced.
+   *
+   */  
   get currentFolderData() {
     return this._currentFolderData;
   }
 
+  /**
+   * Getter for the :class:`AccountData` instance of the account being
+   * currently synced.
+   *
+   */  
   get accountData() {
     return this._accountData;
   }
 
+  /**
+   * Getter for the :class:`ProgressData` instance of the ongoing sync.
+   *
+   */
   get progressData() {
     return this._progressData;
   }
 
-  setSyncState(syncstate) {
+  /**
+   * Sets the syncstate of the ongoing sync, to provide feedback to the user.
+   * The selected state can trigger special UI features, if it starts with one
+   * of the following prefixes:
+   *
+   *   * ``send.``, ``eval.``, ``prepare.`` :
+   *     The status message in the UI will be appended with the current progress
+   *     stored in the :class:`ProgressData` associated with this SyncData
+   *     instance. See :class:`SyncData.progressData`. 
+   * 
+   *   * ``send.`` : 
+   *     The status message in the UI will be appended by a timeout countdown
+   *     with the timeout being defined by :class:`Base.getConnectionTimeout`.
+   *
+   * @param {string} state      A short syncstate identifier. The actual
+   *                            message to be displayed in the UI will be
+   *                            looked up in the string bundle of the provider
+   *                            associated with this SyncData instance
+   *                            (:class:`Base.getStringBundleUrl`) by looking 
+   *                            for ``syncstate.<state>``. The lookup is
+   *                            done via :func:`getString`, so the same 
+   *                            fallback rules apply. 
+   *
+   */  
+  setSyncState(state) {
     //set new syncstate
-    let msg = "State: " + syncstate + ", Account: " + this.accountData.getAccountProperty("accountname");
+    let msg = "State: " + state + ", Account: " + this.accountData.getAccountProperty("accountname");
     if (this.currentFolderData) msg += ", Folder: " + this.currentFolderData.getFolderProperty("foldername");
 
-    if (syncstate.split(".")[0] == "send") {
-      //add timestamp to be able to display timeout countdown
-      syncstate = syncstate + "||" + Date.now();
-    }
+    let syncstate = {};
+    syncstate.state = state;
+    syncstate.timestamp = Date.now();
 
     this._syncstate = syncstate;
-    tbSync.dump("setSyncState", msg);
+    TbSync.dump("setSyncState", msg);
 
     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", this.accountData.accountID);
   }
   
-  getSyncState(includingTimeStamp = false) {
-    return includingTimeStamp ? this._syncstate : this._syncstate.split("||")[0];
+  /**
+   * Gets the current syncstate and its timestamp of the ongoing sync. The
+   * returned Object has the following attributes:
+   *
+   *   * ``state`` : the current syncstate
+   *   * ``timestamp`` : its timestamp
+   *
+   * @returns {Object}  The syncstate and its timestamp.
+   *
+   */
+  getSyncState() {
+    return this._syncstate;
   }
 }
 
@@ -404,32 +612,50 @@ var SyncData = class {
 
 
 
-// simple dumper, who can dump to file or console
+// Simple dumper, who can dump to file or console
+// It is suggested to use the event log instead of dumping directly.
 var dump = function (what, aMessage) {
-  if (tbSync.prefs.getBoolPref("log.toconsole")) {
+  if (TbSync.prefs.getBoolPref("log.toconsole")) {
     Services.console.logStringMessage("[TbSync] " + what + " : " + aMessage);
   }
   
   if (this.prefs.getBoolPref("log.tofile")) {
     let now = new Date();
-    tbSync.io.appendToFile("debug.log", "** " + now.toString() + " **\n[" + what + "] : " + aMessage + "\n\n");
+    TbSync.io.appendToFile("debug.log", "** " + now.toString() + " **\n[" + what + "] : " + aMessage + "\n\n");
   }
 }
   
 
 
-// get localized string from core or provider (if possible)
-var getString = function (msg, provider) {
+/**
+ * Get a localized string from a string bundle.
+ *
+ * TODO: Explain placeholder and :: notation.
+ *
+ * @param {string} key       The key to look up in the string bundle
+ * @param {string} provider  ``Optional`` The provider whose string bundle
+ *                           should be used to lookup the key. See
+ *                           :class:`Base.getStringBundleUrl`.
+ *
+ * @returns {string} The entry in the string bundle of the specified provider
+ *                   matching the provided key. If that key is not found in the
+ *                   string bundle of the specified provider or if no provider
+ *                   has been specified, the string bundle of TbSync itself we
+ *                   be used as fallback. If the key could not be found there
+ *                   as well, the key itself is returned.
+ *
+ */
+var getString = function (key, provider) {
   let success = false;
-  let localized = msg;
+  let localized = key;
   
   //spezial treatment of strings with :: like status.httperror::403
-  let parts = msg.split("::");
+  let parts = key.split("::");
 
   // if a provider is given, try to get the string from the provider
-  if (provider && tbSync.providers.loadedProviders.hasOwnProperty(provider)) {
+  if (provider && TbSync.providers.loadedProviders.hasOwnProperty(provider)) {
     try {
-      localized = tbSync.providers.loadedProviders[provider].bundle.GetStringFromName(parts[0]);
+      localized = TbSync.providers.loadedProviders[provider].bundle.GetStringFromName(parts[0]);
       success = true;
     } catch (e) {}        
   }
@@ -437,7 +663,7 @@ var getString = function (msg, provider) {
   // if we did not yet succeed, request the tbsync bundle
   if (!success) {
     try {
-      localized = tbSync.bundle.GetStringFromName(parts[0]);
+      localized = TbSync.bundle.GetStringFromName(parts[0]);
       success = true;
     } catch (e) {}                    
   }

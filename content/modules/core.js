@@ -20,23 +20,23 @@ var core = {
   },
 
   isSyncing: function (accountID) {
-    let status = tbSync.db.getAccountProperty(accountID, "status"); //global status of the account
+    let status = TbSync.db.getAccountProperty(accountID, "status"); //global status of the account
     return (status == "syncing");
   },
   
   isEnabled: function (accountID) {
-    let status = tbSync.db.getAccountProperty(accountID, "status");
+    let status = TbSync.db.getAccountProperty(accountID, "status");
     return  (status != "disabled");
   },
 
   isConnected: function (accountID) {
-    let status = tbSync.db.getAccountProperty(accountID, "status");
-    let validFolders = tbSync.db.findFolders({"cached": false}, {"accountID": accountID});
+    let status = TbSync.db.getAccountProperty(accountID, "status");
+    let validFolders = TbSync.db.findFolders({"cached": false}, {"accountID": accountID});
     return (status != "disabled" && validFolders.length > 0);
   },
   
   resetSyncDataObj: function (accountID) {
-    this.syncDataObj[accountID] = new tbSync.SyncData(accountID);          
+    this.syncDataObj[accountID] = new TbSync.SyncData(accountID);          
   },
   
   getSyncDataObject: function (accountID) {
@@ -47,7 +47,7 @@ var core = {
   },
   
   getNextPendingFolder: function (syncData) {
-    let sortedFolders = tbSync.providers[syncData.accountData.getAccountProperty("provider")].Base.getSortedFolders(syncData.accountData);
+    let sortedFolders = TbSync.providers[syncData.accountData.getAccountProperty("provider")].Base.getSortedFolders(syncData.accountData);
     for (let i=0; i < sortedFolders.length; i++) {
       if (sortedFolders[i].getFolderProperty("status") != "pending") continue;
       syncData._setCurrentFolderData(sortedFolders[i]);
@@ -60,7 +60,7 @@ var core = {
 
   syncAllAccounts: function () {
     //get info of all accounts
-    let accounts = tbSync.db.getAccounts();
+    let accounts = TbSync.db.getAccounts();
 
     for (let i=0; i < accounts.IDs.length; i++) {
       // core async sync function, but we do not wait until it has finished,
@@ -87,10 +87,10 @@ var core = {
     let syncData = this.getSyncDataObject(accountID);
     
     //send GUI into lock mode (status == syncing)
-    tbSync.db.setAccountProperty(accountID, "status", "syncing");
+    TbSync.db.setAccountProperty(accountID, "status", "syncing");
     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", accountID);
     
-    let overallStatusData = new tbSync.StatusData();
+    let overallStatusData = new TbSync.StatusData();
     let accountRerun;
     let accountRuns = 0;
     
@@ -98,7 +98,7 @@ var core = {
       accountRerun = false;
 
       if (accountRuns > syncDescription.maxAccountReruns) {
-        overallStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "resync-loop");
+        overallStatusData = new TbSync.StatusData(TbSync.StatusData.ERROR, "resync-loop");
         break;
       }      
       accountRuns++;
@@ -106,21 +106,21 @@ var core = {
       if (syncDescription.syncList) {
         let listStatusData;
         try {
-          listStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].Base.syncFolderList(syncData, syncDescription.syncJob, accountRuns);
+          listStatusData = await TbSync.providers[syncData.accountData.getAccountProperty("provider")].Base.syncFolderList(syncData, syncDescription.syncJob, accountRuns);
         } catch (e) {
-          listStatusData = new tbSync.StatusData(tbSync.StatusData.WARNING, "JavaScriptError", e.message + "\n\n" + e.stack);
+          listStatusData = new TbSync.StatusData(TbSync.StatusData.WARNING, "JavaScriptError", e.message + "\n\n" + e.stack);
         }
           
-        if (!(listStatusData instanceof tbSync.StatusData)) {
-          overallStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": Base.syncFolderList() must return a StatusData object");
+        if (!(listStatusData instanceof TbSync.StatusData)) {
+          overallStatusData = new TbSync.StatusData(TbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": Base.syncFolderList() must return a StatusData object");
           break;
         }
         
         //if we have an error during folderList sync, there is no need to go on
-        if (listStatusData.type != tbSync.StatusData.SUCCESS) {
+        if (listStatusData.type != TbSync.StatusData.SUCCESS) {
           overallStatusData = listStatusData;
-          accountRerun = (listStatusData.type == tbSync.StatusData.ACCOUNT_RERUN)
-          tbSync.eventlog.add(listStatusData.type, syncData.eventLogInfo, listStatusData.message, listStatusData.details);
+          accountRerun = (listStatusData.type == TbSync.StatusData.ACCOUNT_RERUN)
+          TbSync.eventlog.add(listStatusData.type, syncData.eventLogInfo, listStatusData.message, listStatusData.details);
           continue; //jumps to the while condition check
         }
         
@@ -145,7 +145,7 @@ var core = {
           let folderRuns = 1;
           do {
             if (folderRuns > syncDescription.maxFolderReruns) {
-              overallStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "resync-loop");
+              overallStatusData = new TbSync.StatusData(TbSync.StatusData.ERROR, "resync-loop");
               break;
             }
             
@@ -156,19 +156,19 @@ var core = {
             
             let folderStatusData;
             try {
-              folderStatusData = await tbSync.providers[syncData.accountData.getAccountProperty("provider")].Base.syncFolder(syncData, syncDescription.syncJob, folderRuns);
+              folderStatusData = await TbSync.providers[syncData.accountData.getAccountProperty("provider")].Base.syncFolder(syncData, syncDescription.syncJob, folderRuns);
             } catch (e) {
-              folderStatusData = new tbSync.StatusData(tbSync.StatusData.WARNING, "JavaScriptError", e.message + "\n\n" + e.stack);
+              folderStatusData = new TbSync.StatusData(TbSync.StatusData.WARNING, "JavaScriptError", e.message + "\n\n" + e.stack);
             }
             
-            if (!(folderStatusData instanceof tbSync.StatusData)) {
-              folderStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": Base.syncFolder() must return a StatusData object");
+            if (!(folderStatusData instanceof TbSync.StatusData)) {
+              folderStatusData = new TbSync.StatusData(TbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": Base.syncFolder() must return a StatusData object");
             }
 
             // if one of the folders indicated a FOLDER_RERUN, do not finish this
             // folder but do it again
-            if (folderStatusData.type == tbSync.StatusData.FOLDER_RERUN) {
-              tbSync.eventlog.add(folderStatusData.type, syncData.eventLogInfo, folderStatusData.message, folderStatusData.details);
+            if (folderStatusData.type == TbSync.StatusData.FOLDER_RERUN) {
+              TbSync.eventlog.add(folderStatusData.type, syncData.eventLogInfo, folderStatusData.message, folderStatusData.details);
               folderRuns++;
               continue;
             } else {
@@ -178,12 +178,12 @@ var core = {
             this.finishFolderSync(syncData, folderStatusData);
 
             //if one of the folders indicated an ERROR, abort sync
-            if (folderStatusData.type == tbSync.StatusData.ERROR) {
+            if (folderStatusData.type == TbSync.StatusData.ERROR) {
               break;
             }
             
             //if the folder has send an ACCOUNT_RERUN, abort sync and rerun the entire account
-            if (folderStatusData.type == tbSync.StatusData.ACCOUNT_RERUN) {
+            if (folderStatusData.type == TbSync.StatusData.ACCOUNT_RERUN) {
               syncDescription.syncList = true;
               accountRerun = true;
               break;
@@ -191,7 +191,7 @@ var core = {
             
           } while (true);
         } else {
-          overallStatusData = new tbSync.StatusData(tbSync.StatusData.ERROR, "no-folders-found-on-server");
+          overallStatusData = new TbSync.StatusData(TbSync.StatusData.ERROR, "no-folders-found-on-server");
         }
       }
     
@@ -211,25 +211,23 @@ var core = {
   },
   
   enableAccount: function(accountID) {
-    let accountData = new tbSync.AccountData(accountID);
-    tbSync.providers[accountData.getAccountProperty("provider")].Base.onEnableAccount(accountData);
+    let accountData = new TbSync.AccountData(accountID);
+    TbSync.providers[accountData.getAccountProperty("provider")].Base.onEnableAccount(accountData);
     accountData.setAccountProperty("status", "notsyncronized");
     accountData.resetAccountProperty("lastsynctime");        
   },
 
   disableAccount: function(accountID) {
-    let accountData = new tbSync.AccountData(accountID);
-    tbSync.providers[accountData.getAccountProperty("provider")].Base.onDisableAccount(accountData);
+    let accountData = new TbSync.AccountData(accountID);
+    TbSync.providers[accountData.getAccountProperty("provider")].Base.onDisableAccount(accountData);
     accountData.setAccountProperty("status", "disabled");
     
     let folders = accountData.getAllFolders();
     for (let folder of folders) {
-      let target = folder.getFolderProperty("target");
-      if (target) {
+      if (folder.getFolderProperty("selected")) {
         folder.targetData.removeTarget(); 
-        tbSync.db.clearChangeLog(target);
+        folder.setFolderProperty("selected", false);
       }
-      folder.setFolderProperty("selected", false);
       folder.setFolderProperty("cached", true);
     }
   },
@@ -241,7 +239,7 @@ var core = {
     for (let folder of folders) {
       //delete all leftover cached folders
       if (folder.getFolderProperty("cached")) {
-        tbSync.db.deleteFolder(folder.accountID, folder.folderID);
+        TbSync.db.deleteFolder(folder.accountID, folder.folderID);
         continue;
       } else {
         //set well defined cache state
@@ -265,15 +263,15 @@ var core = {
   },
   
   finishFolderSync: function(syncData, statusData) {        
-    if (statusData.type != tbSync.StatusData.SUCCESS) {
+    if (statusData.type != TbSync.StatusData.SUCCESS) {
       //report error
-      tbSync.eventlog.add(statusData.type, syncData.eventLogInfo, statusData.message, statusData.details);
+      TbSync.eventlog.add(statusData.type, syncData.eventLogInfo, statusData.message, statusData.details);
     }
     
     //if this is a success, prepend success to the status message, 
     //otherwise just set the message
     let status;
-    if (statusData.type == tbSync.StatusData.SUCCESS || statusData.message == "") {
+    if (statusData.type == TbSync.StatusData.SUCCESS || statusData.message == "") {
       status = statusData.type;
       if (statusData.message) status = status + "." + statusData.message;
     } else {
@@ -292,15 +290,15 @@ var core = {
 
   finishAccountSync: function(syncData, statusData) {
     // set each folder with PENDING status to ABORTED
-    let folders = tbSync.db.findFolders({"status": "pending"}, {"accountID": syncData.accountData.accountID});
+    let folders = TbSync.db.findFolders({"status": "pending"}, {"accountID": syncData.accountData.accountID});
     for (let i=0; i < folders.length; i++) {
-      tbSync.db.setFolderProperty(folders[i].accountID, folders[i].folderID, "status", "aborted");
+      TbSync.db.setFolderProperty(folders[i].accountID, folders[i].folderID, "status", "aborted");
     }
     
     //if this is a success, prepend success to the status message, 
     //otherwise just set the message
     let status;
-    if (statusData.type == tbSync.StatusData.SUCCESS || statusData.message == "") {
+    if (statusData.type == TbSync.StatusData.SUCCESS || statusData.message == "") {
       status = statusData.type;
       if (statusData.message) status = status + "." + statusData.message;
     } else {
@@ -308,15 +306,15 @@ var core = {
     }
 
     
-    if (statusData.type != tbSync.StatusData.SUCCESS) {
+    if (statusData.type != TbSync.StatusData.SUCCESS) {
       //report error
-      tbSync.eventlog.add("warning", syncData.eventLogInfo, statusData.message, statusData.details);
+      TbSync.eventlog.add("warning", syncData.eventLogInfo, statusData.message, statusData.details);
     } else {
       //account itself is ok, search for folders with error
-      folders = tbSync.db.findFolders({"selected": true, "cached": false}, {"accountID": syncData.accountData.accountID});
+      folders = TbSync.db.findFolders({"selected": true, "cached": false}, {"accountID": syncData.accountData.accountID});
       for (let i in folders) {
         let folderstatus = folders[i].data.status.split(".")[0];
-        if (folderstatus != "" && folderstatus != tbSync.StatusData.SUCCESS && folderstatus != "aborted") {
+        if (folderstatus != "" && folderstatus != TbSync.StatusData.SUCCESS && folderstatus != "aborted") {
           status = "foldererror";
           break;
         }

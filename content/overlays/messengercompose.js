@@ -8,7 +8,7 @@
  
  "use strict";
 
-var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 /*
   The contact sidebar is loaded inside a browser element. That load is not seen by the windowlistener and thus overlays are not injected.
@@ -25,7 +25,7 @@ var tbSyncMessengerCompose = {
           let targetWindow = window.document.getElementById("sidebar").contentWindow.wrappedJSObject;
           if (targetWindow) {
             window.clearInterval(tbSyncMessengerCompose.timer);
-            tbSync.messenger.overlayManager.injectAllOverlays(targetWindow);
+            TbSync.messenger.overlayManager.injectAllOverlays(targetWindow);
           }
         }, 1000);  
       });    
@@ -44,7 +44,7 @@ var tbSyncMessengerCompose = {
 
   onRemove: function (window) {
     let targetWindow = window.document.getElementById("sidebar").contentWindow.wrappedJSObject;
-    tbSync.messenger.overlayManager.removeAllOverlays(targetWindow);
+    TbSync.messenger.overlayManager.removeAllOverlays(targetWindow);
     tbSyncMessengerCompose.mObserver.disconnect();
     
     // Remove autoComplete for TbSync

@@ -20,7 +20,7 @@ var tools = {
   sleep : function (_delay, useRequestIdleCallback = false) {
     let useIdleCallback = false;
     let delay = _delay;
-    if (tbSync.window.requestIdleCallback && useRequestIdleCallback) {
+    if (TbSync.window.requestIdleCallback && useRequestIdleCallback) {
       useIdleCallback = true;
       delay= 2;
     }
@@ -30,7 +30,7 @@ var tools = {
       let event = {
         notify: function(timer) {
           if (useIdleCallback) {
-            tbSync.window.requestIdleCallback(resolve);                        
+            TbSync.window.requestIdleCallback(resolve);                        
           } else {
             resolve();
           }

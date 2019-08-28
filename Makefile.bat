@@ -9,3 +9,11 @@ del TbSync-beta.xpi
 "C:\Program Files\7-Zip\7zG.exe" a -tzip TbSync-beta.xpi content _locales skin chrome.manifest manifest.json LICENSE README.md bootstrap.js CONTRIBUTORS.md
 
 
+REM Copy sources to doc repository
+rd /s /q ..\Provider-4-TbSync\docs\sources 
+mkdir ..\Provider-4-TbSync\docs\sources 
+
+copy content\OverlayManager.jsm ..\Provider-4-TbSync\docs\sources\
+
+Xcopy /E /I content\passwordPrompt ..\Provider-4-TbSync\docs\sources\passwordPrompt\
+Xcopy /E /I content\modules ..\Provider-4-TbSync\docs\sources\modules\

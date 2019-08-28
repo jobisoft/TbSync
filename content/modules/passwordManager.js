@@ -26,7 +26,7 @@ var passwordManager = {
         try {
           Services.logins.removeLogin(currentLoginInfo);
         } catch (e) {
-          tbSync.dump("Error removing loginInfo", e);
+          TbSync.dump("Error removing loginInfo", e);
         }
       }
     }
@@ -41,7 +41,7 @@ var passwordManager = {
     try {
       Services.logins.addLogin(newLoginInfo);
     } catch (e) {
-      tbSync.dump("Error adding loginInfo", e);
+      TbSync.dump("Error adding loginInfo", e);
     }
   },
   
@@ -69,7 +69,7 @@ var passwordManager = {
       let url = "chrome://tbsync/content/passwordPrompt/passwordPrompt.xul";
   
       return await new Promise(function(resolve, reject) {
-       reference[data.windowID] = tbSync.window.openDialog(url, "TbSyncPasswordPrompt:" + data.accountName, "centerscreen,chrome,resizable=no", data, resolve);
+       reference[data.windowID] = TbSync.window.openDialog(url, "TbSyncPasswordPrompt:" + data.accountName, "centerscreen,chrome,resizable=no", data, resolve);
       });
     }
     

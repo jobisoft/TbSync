@@ -10,7 +10,7 @@
 
 var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 var { OS }  =ChromeUtils.import("resource://gre/modules/osfile.jsm");
-var { tbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncAccountSettings = {
 
@@ -56,7 +56,7 @@ var tbSyncAccountSettings = {
       //only run if is request for this account and main frame is visible
       let accountID = aData;            
       if (accountID == tbSyncAccountSettings.accountID && !document.getElementById('tbsync.accountsettings.frame').hidden) {
-        let syncstate = tbSync.core.getSyncDataObject(accountID).getSyncState();
+        let syncstate = TbSync.core.getSyncDataObject(accountID).getSyncState().state;
         if (syncstate == "accountdone") {
           tbSyncAccountSettings.updateGui();
         } else {
@@ -77,14 +77,14 @@ var tbSyncAccountSettings = {
     Services.obs.addObserver(tbSyncAccountSettings.updateSyncstateObserver, "tbsync.observer.manager.updateSyncstate", false);
     //get the selected account from the loaded URI
     tbSyncAccountSettings.accountID = window.location.toString().split("id=")[1];
-    tbSyncAccountSettings.accountData = new tbSync.AccountData(tbSyncAccountSettings.accountID);
+    tbSyncAccountSettings.accountData = new TbSync.AccountData(tbSyncAccountSettings.accountID);
 
     //get information for that acount
-    tbSyncAccountSettings.provider = tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, "provider");
-    tbSyncAccountSettings.settings = Object.keys(tbSync.providers.getDefaultAccountEntries(tbSyncAccountSettings.provider)).sort();
+    tbSyncAccountSettings.provider = TbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, "provider");
+    tbSyncAccountSettings.settings = Object.keys(TbSync.providers.getDefaultAccountEntries(tbSyncAccountSettings.provider)).sort();
 
     //add header to folderlist
-    let header = tbSync.providers[tbSyncAccountSettings.provider].folderList.getHeader();
+    let header = TbSync.providers[tbSyncAccountSettings.provider].folderList.getHeader();
     let folderlistHeader = window.document.getElementById('tbsync.accountsettings.folderlist.header');
     for (let h=0; h < header.length; h++) {
       let listheader = window.document.createXULElement("treecol");
@@ -97,7 +97,7 @@ var tbSyncAccountSettings = {
     }        
     
     //load overlays from the provider (if any)
-    tbSync.messenger.overlayManager.injectAllOverlays(window, "chrome://tbsync/content/manager/editAccount.xul?provider=" + tbSyncAccountSettings.provider);
+    TbSync.messenger.overlayManager.injectAllOverlays(window, "chrome://tbsync/content/manager/editAccount.xul?provider=" + tbSyncAccountSettings.provider);
     tbSyncAccountSettings.loadSettings();
     
     //done, folderlist must be updated while visible
@@ -136,11 +136,11 @@ var tbSyncAccountSettings = {
       //is this a checkbox?
       if (pref.tagName == "checkbox") {
         //BOOL
-        if (tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, setting)) pref.setAttribute("checked", true);
+        if (TbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, setting)) pref.setAttribute("checked", true);
         else pref.setAttribute("checked", false);
       } else {
         //Not BOOL
-        pref.value = tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, setting);
+        pref.value = TbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, setting);
       }
     }    
   },
@@ -160,16 +160,16 @@ var tbSyncAccountSettings = {
         let event = "blur";
         if (pref.tagName == "checkbox") {
           //BOOL
-          if (tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i])) pref.setAttribute("checked", true);
+          if (TbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i])) pref.setAttribute("checked", true);
           else pref.setAttribute("checked", false);
           event = "command";
         } else {
           //Not BOOL
           if (pref.tagName == "menulist") {
-            pref.value = tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]);
+            pref.value = TbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]);
             event = "command";
           } else {
-            pref.setAttribute("value", tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]));
+            pref.setAttribute("value", TbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i]));
           }
         }
         
@@ -181,11 +181,11 @@ var tbSyncAccountSettings = {
   },
 
   updateGui: function () {
-    let status = tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, "status");
+    let status = TbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, "status");
 
-    let isConnected = tbSync.core.isConnected(tbSyncAccountSettings.accountID);
-    let isEnabled = tbSync.core.isEnabled(tbSyncAccountSettings.accountID);      
-    let isSyncing = tbSync.core.isSyncing(tbSyncAccountSettings.accountID);
+    let isConnected = TbSync.core.isConnected(tbSyncAccountSettings.accountID);
+    let isEnabled = TbSync.core.isEnabled(tbSyncAccountSettings.accountID);      
+    let isSyncing = TbSync.core.isSyncing(tbSyncAccountSettings.accountID);
     
     { //disable settings if connected or syncing
       let items = document.getElementsByClassName("lockIfConnected");
@@ -202,7 +202,7 @@ var tbSyncAccountSettings = {
 
     document.getElementById('tbsync.accountsettings.connectbtn.container').hidden = !(isEnabled && !isConnected && !isSyncing); 
     //currently we use a fixed button which is hidden during sync
-    //document.getElementById('tbsync.accountsettings.connectbtn').label = tbSync.getString("manager." + (isSyncing ? "connecting" : "tryagain"));
+    //document.getElementById('tbsync.accountsettings.connectbtn').label = TbSync.getString("manager." + (isSyncing ? "connecting" : "tryagain"));
     
     { //show elements if connected (this also hides/unhides the folderlist)
       let items = document.getElementsByClassName("showIfConnected");
@@ -242,7 +242,7 @@ var tbSyncAccountSettings = {
       
       default:
         document.getElementById("syncstate").setAttribute("style","color: red");
-        showEventLogButton = tbSync.eventlog.get(tbSyncAccountSettings.accountID).length > 0;
+        showEventLogButton = TbSync.eventlog.get(tbSyncAccountSettings.accountID).length > 0;
     }
     document.getElementById('tbsync.accountsettings.eventlogbtn').hidden = !showEventLogButton;
   },
@@ -251,38 +251,38 @@ var tbSyncAccountSettings = {
     tbSyncAccountSettings.updateTimer.cancel();
 
     // if this account is beeing synced, display syncstate, otherwise print status
-    let status = tbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, "status");
-    let isSyncing = tbSync.core.isSyncing(tbSyncAccountSettings.accountID);
-    let isConnected = tbSync.core.isConnected(tbSyncAccountSettings.accountID);
-    let isEnabled = tbSync.core.isEnabled(tbSyncAccountSettings.accountID);
-    let syncdata = tbSync.core.getSyncDataObject(tbSyncAccountSettings.accountID);
+    let status = TbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, "status");
+    let isSyncing = TbSync.core.isSyncing(tbSyncAccountSettings.accountID);
+    let isConnected = TbSync.core.isConnected(tbSyncAccountSettings.accountID);
+    let isEnabled = TbSync.core.isEnabled(tbSyncAccountSettings.accountID);
+    let syncdata = TbSync.core.getSyncDataObject(tbSyncAccountSettings.accountID);
 
     if (isSyncing) {
-      let accounts = tbSync.db.getAccounts().data;
+      let accounts = TbSync.db.getAccounts().data;
       
-      let parts = syncdata.getSyncState(/* including timestamp: */ true).split("||");
-      let syncstate = parts[0];
-      let synctime = (parts.length>1 ? parts[1] : Date.now());
+      let s = syncdata.getSyncState();
+      let syncstate = s.state;
+      let synctime = s.timestamp;
 
-      let msg = tbSync.getString("syncstate." + syncstate, tbSyncAccountSettings.provider);
+      let msg = TbSync.getString("syncstate." + syncstate, tbSyncAccountSettings.provider);
     
       if (syncstate.split(".")[0] == "send") {
         // append timeout countdown
         let diff = Date.now() - synctime;
-        if (diff > 2000) msg = msg + " (" + Math.round((tbSync.providers[tbSyncAccountSettings.provider].Base.getConnectionTimeout(tbSyncAccountSettings.accountData) - diff)/1000) + "s)";
+        if (diff > 2000) msg = msg + " (" + Math.round((TbSync.providers[tbSyncAccountSettings.provider].Base.getConnectionTimeout(tbSyncAccountSettings.accountData) - diff)/1000) + "s)";
         // re-schedule update, if this is a waiting syncstate
         tbSyncAccountSettings.updateTimer.init(tbSyncAccountSettings.updateSyncstate, 1000, 0);
       }            
       document.getElementById("syncstate").textContent = msg;
     } else {
-      let localized = tbSync.getString("status." + (isEnabled ? status : "disabled"), tbSyncAccountSettings.provider);
+      let localized = TbSync.getString("status." + (isEnabled ? status : "disabled"), tbSyncAccountSettings.provider);
       document.getElementById("syncstate").textContent = localized;
     }
         
     
     if (tbSyncAccountSettings.folderListVisible()) {
       //update syncstates of folders in folderlist, if visible - remove obsolete entries while we are here
-      let folderData = tbSync.providers[tbSyncAccountSettings.provider].Base.getSortedFolders(tbSyncAccountSettings.accountData);
+      let folderData = TbSync.providers[tbSyncAccountSettings.provider].Base.getSortedFolders(tbSyncAccountSettings.accountData);
       let folderList = document.getElementById("tbsync.accountsettings.folderlist");
 
       for (let i=folderList.getRowCount()-1; i>=0; i--) {
@@ -290,7 +290,7 @@ var tbSyncAccountSettings = {
         if (folderData.filter(f => f.folderID == item.folderData.folderID).length == 0) {
           item.remove();
         } else {
-          tbSync.providers[tbSyncAccountSettings.provider].folderList.updateRow(document, item, item.folderData);
+          TbSync.providers[tbSyncAccountSettings.provider].folderList.updateRow(document, item, item.folderData);
         }
       }
     }
@@ -298,7 +298,7 @@ var tbSyncAccountSettings = {
 
   updateFolderList: function () {
     //get updated list of folderIDs
-    let folderData = tbSync.providers[tbSyncAccountSettings.provider].Base.getSortedFolders(tbSyncAccountSettings.accountData);
+    let folderData = TbSync.providers[tbSyncAccountSettings.provider].Base.getSortedFolders(tbSyncAccountSettings.accountData);
     
     //remove entries from folderlist, which no longer exists and build reference array with  current elements
     let folderList = document.getElementById("tbsync.accountsettings.folderlist");
@@ -327,12 +327,12 @@ var tbSyncAccountSettings = {
         nextItem.folderData = folderData[i];
         
         //add row
-        nextItem.appendChild(tbSync.providers[tbSyncAccountSettings.provider].folderList.getRow(document, folderData[i]));
+        nextItem.appendChild(TbSync.providers[tbSyncAccountSettings.provider].folderList.getRow(document, folderData[i]));
       }
 
       //add/move row and update its content
       let addedItem = folderList.appendChild(nextItem);
-      tbSync.providers[tbSyncAccountSettings.provider].folderList.updateRow(document, addedItem, folderData[i]);
+      TbSync.providers[tbSyncAccountSettings.provider].folderList.updateRow(document, addedItem, folderData[i]);
 
       //ensureElementIsVisible also forces internal update of rowCount, which sometimes is not updated automatically upon appendChild
       folderList.ensureElementIsVisible(addedItem);
@@ -354,22 +354,22 @@ var tbSyncAccountSettings = {
     } else {
       value = field.value;
     }
-    tbSync.db.setAccountProperty(tbSyncAccountSettings.accountID, setting, value);
+    TbSync.db.setAccountProperty(tbSyncAccountSettings.accountID, setting, value);
     
     if (setting == "accountname") {
       Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountName", tbSyncAccountSettings.accountID + ":" + field.value);
     }
-    tbSync.db.saveAccounts(); //write modified accounts to disk
+    TbSync.db.saveAccounts(); //write modified accounts to disk
   },
 
   toggleEnableState: function (element) {
-    if (!tbSync.core.isConnected(tbSyncAccountSettings.accountID)) {
+    if (!TbSync.core.isConnected(tbSyncAccountSettings.accountID)) {
       //if not connected, we can toggle without prompt
       Services.obs.notifyObservers(null, "tbsync.observer.manager.toggleEnableState", tbSyncAccountSettings.accountID);
       return;
     }      
 
-    if (window.confirm(tbSync.getString("prompt.Disable"))) {
+    if (window.confirm(TbSync.getString("prompt.Disable"))) {
       Services.obs.notifyObservers(null, "tbsync.observer.manager.toggleEnableState", tbSyncAccountSettings.accountID);
     } else {
       //invalid, toggle checkbox back
@@ -384,9 +384,9 @@ var tbSyncAccountSettings = {
     let menupopup = document.getElementById("tbsync.accountsettings.FolderListContextMenu");
     
     if (aFolderIsSelected) {
-      tbSync.providers[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(window, folderList.selectedItem.folderData);
+      TbSync.providers[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(window, folderList.selectedItem.folderData);
     } else {
-      tbSync.providers[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(window, null);
+      TbSync.providers[tbSyncAccountSettings.provider].folderList.onContextMenuShowing(window, null);
     }
   },
 
