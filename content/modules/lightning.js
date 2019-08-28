@@ -72,14 +72,8 @@ var lightning = {
   
   AdvancedTargetData : class {
     constructor(folderData) {            
-      this._targetType = folderData.getFolderProperty("targetType");
       this._folderData = folderData;
       this._targetObj = null;           
-    }
-    
-    // Return the targetType, this was initialized with.
-    get targetType() {
-      return this._targetType;
     }
     
     // Check, if the target exists and return true/false.
@@ -87,8 +81,11 @@ var lightning = {
       if (!TbSync.lightning.isAvailable()) {
           throw new Error("nolightning");
       }
-
-      return TbSync.lightning.getCalendar(this._folderData) ? true : false;
+      let calManager = TbSync.lightning.cal.getCalendarManager();
+      let target = this._folderData.getFolderProperty("target");
+      let calendar = calManager.getCalendarById(target);
+      
+      return calendar ? true : false;
     }
 
     // Returns the target obj, which TbSync should return as the target. It can
@@ -99,8 +96,9 @@ var lightning = {
       if (!TbSync.lightning.isAvailable()) {
           throw new Error("nolightning");
       }
-
-      let calendar = TbSync.lightning.getCalendar(this._folderData);
+      let calManager = TbSync.lightning.cal.getCalendarManager();
+      let target = this._folderData.getFolderProperty("target");
+      let calendar = calManager.getCalendarById(target);
       
       if (!calendar) {
         calendar = TbSync.lightning.createCalendar(this._folderData);
@@ -114,27 +112,66 @@ var lightning = {
       return this._targetObj;
     }
     
-    // Remove the target and everything that belongs to it. TbSync will reset the target
-    // property after this call has been executed.
+    /**
+     * Removes the target from the local storage. If it does not exist, return
+     * silently. A call to ``hasTarget()`` should return false, after this has
+     * been executed.
+     *
+     */
     removeTarget() {
       if (!TbSync.lightning.isAvailable()) {
           throw new Error("nolightning");
       }
+      let calManager = TbSync.lightning.cal.getCalendarManager();
+      let target = this._folderData.getFolderProperty("target");
+      let calendar = calManager.getCalendarById(target);
 
-      let calendar = TbSync.lightning.getCalendar(this._folderData);
       try {
         if (calendar) {
           TbSync.lightning.cal.getCalendarManager().removeCalendar(calendar);
         }
       } catch (e) {}
+      TbSync.db.clearChangeLog(target);
+      this._folderData.resetFolderProperty("target");             
     }
 
+
+    /**
+     * Disconnects the target in the local storage from this TargetData, but
+     * does not delete it, so it becomes a stale "left over" . A call
+     * to ``hasTarget()`` should return false, after this has been executed.
+     * 
+     */
+    disconnectTarget() {
+      if (!TbSync.lightning.isAvailable()) {
+          throw new Error("nolightning");
+      }
+      let calManager = TbSync.lightning.cal.getCalendarManager();
+      let target = this._folderData.getFolderProperty("target");
+      let calendar = calManager.getCalendarById(target);
+
+      if (calendar) {
+        let changes = TbSync.db.getItemsFromChangeLog(target, 0, "_by_user");        
+        if (changes.length > 0) {
+          this.targetName = this.targetName + " (*)";
+        }
+        calendar.setProperty("disabled", true);
+        calendar.setProperty("tbSyncProvider", "orphaned");
+        calendar.setProperty("tbSyncAccountID", "");
+      }
+      TbSync.db.clearChangeLog(target);
+      this._folderData.resetFolderProperty("target");        
+    } 
+    
     set targetName(newName) {
       if (!TbSync.lightning.isAvailable()) {
           throw new Error("nolightning");
       }
-      let calendar = TbSync.lightning.getCalendar(this._folderData);
-      if (calendar && newName) {
+      let calManager = TbSync.lightning.cal.getCalendarManager();
+      let target = this._folderData.getFolderProperty("target");
+      let calendar = calManager.getCalendarById(target);
+
+      if (calendar) {
         calendar.name = newName;
       } else {
         throw new Error("notargets");
@@ -145,7 +182,10 @@ var lightning = {
       if (!TbSync.lightning.isAvailable()) {
           throw new Error("nolightning");
       }
-      let calendar = TbSync.lightning.getCalendar(this._folderData);
+      let calManager = TbSync.lightning.cal.getCalendarManager();
+      let target = this._folderData.getFolderProperty("target");
+      let calendar = calManager.getCalendarById(target);
+
       if (calendar) {
         return calendar.name;
       } else {
@@ -153,27 +193,12 @@ var lightning = {
       }
     }
 
-    /**
-     * Is called, when a target is being disconnected from a folder, but
-     * not deleted.
-     */
-    onBeforeDisconnectTarget() {
-      if (!TbSync.lightning.isAvailable()) {
-          throw new Error("nolightning");
+    setReadOnly(value) {
+      if (this.hasTarget()) {
+        this.getTarget().calendar.setProperty("readOnly", value);
       }
+    }
 
-      let calendar = TbSync.lightning.getCalendar(this._folderData);
-      if (calendar) {
-        let target = this._folderData.getFolderProperty("target");
-        let changes = TbSync.db.getItemsFromChangeLog(target, 0, "_by_user");        
-        if (changes.length > 0) {
-          this.targetName = this.targetName + " (*)";
-        }
-        calendar.setProperty("disabled", true);
-        calendar.setProperty("tbSyncProvider", "orphaned");
-        calendar.setProperty("tbSyncAccountID", "");
-      }
-    } 
     
     // * * * * * * * * * * * * * * * * *
     // * AdvancedTargetData extension  * 
@@ -696,27 +721,6 @@ var lightning = {
   },
 
   
-  getCalendar: function (folderData) {
-    if (!folderData.getFolderProperty("cached")) {
-      let target = folderData.getFolderProperty("target");
-      let calManager = TbSync.lightning.cal.getCalendarManager();
-      let targetCal = calManager.getCalendarById(target);
-      
-      if (targetCal !== null)  {
-        //check for double targets - just to make sure
-        let folders = TbSync.db.findFolders({"target": target, "cached": false}, {"accountID": folderData.accountID});
-        if (folders.length == 1) {
-          return targetCal;
-        } else {
-          console.log("Multi:");
-          for (let folder of folders)
-            console.log(JSON.stringify(folder));
-          throw "Target with multiple source folders found! Forcing hard fail (" + target +" )."; 
-        }
-      }
-    }
-    return null;
-  },
   
   //this function actually creates a calendar if missing
   createCalendar: function (folderData) {       

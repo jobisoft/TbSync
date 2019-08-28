@@ -271,15 +271,9 @@ manager.FolderList = class {
         return;
     
       if (folder.getFolderProperty("selected")) {
-        let target = folder.getFolderProperty("target");
-        if (!target || element.ownerDocument.defaultView.confirm(TbSync.getString("prompt.Unsubscribe"))) {
-          if (target) {
-            folder.targetData.removeTarget(); 
-            TbSync.db.clearChangeLog(target);
-            folder.resetFolderProperty("target");              
-          }
-          folder.setFolderProperty("selected", false);
-          
+        if (!folder.targetData.hasTarget() || element.ownerDocument.defaultView.confirm(TbSync.getString("prompt.Unsubscribe"))) {
+          folder.targetData.removeTarget();           
+          folder.setFolderProperty("selected", false);          
         } else {
           if (element) {
             //undo users action
@@ -312,27 +306,13 @@ manager.FolderList = class {
 
       //update icon
       let button = element.parentNode.parentNode;
-      if (value == "0") {
-        button.setAttribute('image','chrome://tbsync/skin/acl_rw.png');
-      } else {
+      if (value) {
         button.setAttribute('image','chrome://tbsync/skin/acl_ro.png');
+      } else {
+        button.setAttribute('image','chrome://tbsync/skin/acl_rw.png');
       }
         
-      //update ro flag if calendar (the default folderlist only support addressbook and calendar target)
-      let type = folder.getFolderProperty("targetType");
-      switch (type) {
-        case "addressbook":
-          break;
-        case "calendar":
-          {
-            // get it, if it exists, does not create it
-            let target = folder.targetData.getTarget();
-            if (target) {
-              target.setProperty("readOnly", value == '1');
-            }
-          }
-          break;
-      }
+      folder.targetData.setReadOnly(value);
     }
   }
 
