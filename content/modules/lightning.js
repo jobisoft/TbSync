@@ -305,15 +305,6 @@ var lightning = {
       return this._item.id;
     }
     
-    // for simplicity, we include an id getter/setter which gets passed thru
-    get id() {
-      return this._item.id;
-    }
-    
-    set id(v) {
-      this._item.id = v;
-    }
-    
     get primaryKey() {
       // no custom key possible with lightning, must use the UID
       return this._item.id;
