@@ -1,7 +1,7 @@
 <!ENTITY popup.opensettings "TbSync Kontoverwaltung öffnen">
 <!ENTITY menu.settingslabel "Synchronisationseinstellungen (TbSync)">
 
-<!ENTITY toolbar.label " Synchronisiere alle TbSync Konten">
+<!ENTITY toolbar.label "Synchronisiere alle TbSync Konten">
 <!ENTITY toolbar.tooltiptext "Gleiche alle TbSync Konten mit den Servern ab">
 
 <!ENTITY manager.AccountActions "Konto Aktionen">
@@ -13,7 +13,7 @@
 <!ENTITY manager.DisableAccount "Konto deaktivieren">
 <!ENTITY manager.DeleteAccount "Konto löschen">
 <!ENTITY manager.ShowEventLog "Ereignisprotokoll anzeigen">
-<!ENTITY manager.RetryConnectAccount "Erneut versuchen mit dem  Server zu verbinden">
+<!ENTITY manager.RetryConnectAccount "Erneut versuchen mit dem Server zu verbinden">
 
 <!ENTITY manager.noaccounts "Es sind aktuell noch keine Konten konfiguriert.">
 
