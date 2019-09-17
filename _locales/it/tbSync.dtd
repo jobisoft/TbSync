@@ -1,7 +1,7 @@
 <!ENTITY popup.opensettings "Apri il Gestore account TbSync">
 <!ENTITY menu.settingslabel "Impostazioni sincronizzazione (TbSync)">
 
-<!ENTITY toolbar.label " Sincronizza tutti gli account TbSync">
+<!ENTITY toolbar.label "Sincronizza tutti gli account TbSync">
 <!ENTITY toolbar.tooltiptext "Sincronizza le ultime modifiche">
 
 <!ENTITY manager.AccountActions "Azioni account">
