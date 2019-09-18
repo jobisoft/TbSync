@@ -64,7 +64,7 @@
 <!ENTITY manager.help.createbugreportinfo "Per far sì che TbSync raccolga solo i messaggi di debug significativi per la segnalazione d'errore, riavvia Thunderbird e ripeti esattamente i passaggi necessari per riprodurre il comportamento errato. In seguito puoi creare qui la segnalazione d'errore.">
 <!ENTITY manager.help.createbugreport "Crea segnalazione d'errore">
 
-<!ENTITY supportwizard.title "Crea segnalazione d'errore'">
+<!ENTITY supportwizard.title "Crea segnalazione d'errore">
 <!ENTITY supportwizard.pagetitle "Raccolta di tutte le informazioni necessarie per gestire efficacemente la segnalazione d'errore.">
 <!ENTITY supportwizard.label.faultycomponent "Componente di TbSync dove hai osservato l'errore:">
 <!ENTITY supportwizard.label.selectcomponent "Seleziona componente...">
