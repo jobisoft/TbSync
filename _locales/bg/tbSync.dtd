@@ -1,0 +1,77 @@
+<!ENTITY popup.opensettings "TbSync отвори управлението на регистрациите">
+<!ENTITY menu.settingslabel "Настройка на синхронизациите (TbSync)">
+
+<!ENTITY toolbar.label "Синхронизирай всички TbSync регистрации">
+<!ENTITY toolbar.tooltiptext "Синхронизирай информацията от всички TbSync регистрации със сървърите">
+
+<!ENTITY manager.AccountActions "Действия с регистрацията">
+<!ENTITY manager.AddAccount "Добавяне на регистрация">
+<!ENTITY manager.SyncAll "Синхронизиране на всички включени регистрации">
+
+<!ENTITY manager.SynchronizeAccount "Синхронизиране на регистрацията">
+<!ENTITY manager.EnableAccount "Включване на регистрацията и свързване със сървъра">
+<!ENTITY manager.DisableAccount "Изключване на регистрацията">
+<!ENTITY manager.DeleteAccount "Изтриване на регистрацията">
+<!ENTITY manager.ShowEventLog "Показване на протокола със събитията">
+<!ENTITY manager.RetryConnectAccount "Опитай отново да се свържеш със сървъра">
+
+<!ENTITY manager.noaccounts "Още няма настроени регистрации.">
+
+<!ENTITY manager.title "TbSync Управление на регистрацията">
+<!ENTITY manager.shorttitle "Управление на регистрацията">
+<!ENTITY manager.provider4tbsync "Доставчик за TbSync">
+<!ENTITY manager.accountsettings "Настройки на регистрацията">
+<!ENTITY manager.help "Помощ">
+<!ENTITY manager.community "Общество/Потребители">
+<!ENTITY manager.provider "Инсталиране на TbSync доставчик">
+
+<!ENTITY password.title "TbSync информация за регистрацията">
+<!ENTITY password.description "Моля подновете данните за следната TbSync регистрация:">
+<!ENTITY password.account "Регистрация:">
+<!ENTITY password.user "Потребителско име:">
+<!ENTITY password.password "Парола:">
+
+<!ENTITY manager.accounts "Регистрации">
+<!ENTITY manager.status "Състояние">
+
+<!ENTITY manager.tabs.status "Състояние на синхронизирането">
+<!ENTITY manager.tabs.status.general "Общи">
+<!ENTITY manager.tabs.status.enableThisAccount "Включване на регистрацията и синхронизиране">
+<!ENTITY manager.tabs.status.sync "Синхронизирай сега">
+<!ENTITY manager.tabs.status.tryagain "Опитай отново да се свържеш със сървъра">
+<!ENTITY manager.tabs.status.autotime "Периодично синхронизиране (в минути)">
+<!ENTITY manager.tabs.status.never "Стойност 0 изключва периодичното синхронизиране. Промяната на данни, местни или на сървъра, сама по себе си не предизвиква автоматична синхронизация.">
+<!ENTITY manager.tabs.status.resources "Налични ресурси">
+<!ENTITY manager.tabs.status.resources.intro "Изберете кои от откритите ресурси да се синхронизират с Thunderbird.">
+<!ENTITY manager.lockedsettings.description "За да се избегнат грешки по време на синхронизирането, някои настройки не могат да бъдат променяни, докато регистрацията е включена.">
+
+<!ENTITY manager.catman.text "TbSync синхронизира и категории контакти, които са заместител за несинхронизираните списъци с контакти на Thunderbird. За да разширите възможностите на адресния указател на Thunderbird, инсталирайте добавката 'Category Manager'. Тя позволява вмъкването на контакти в много категории (групи) и др. Добавката може да е инсталира от официалното депо за добавки на Mozilla:">
+
+<!ENTITY manager.installprovider.link "Последвайте препратката за да посетите страницата на липсващия TbSync доставчик. Там ще намерите допълнитена информация за доставчика и може да го инсталирате от там:">
+<!ENTITY manager.installprovider.warning "Този доставчик не произхожда от официалното депо за добавки на Thunderbird и не е бил проверен от екипа на Thunderbird. Този TbSync доставчик би могъл да направи пакости. Използвайте на собствена отговорност.">
+<!ENTITY manager.missingprovider "Тази регистрация изисква TbSync доставчика ##provider##, който не е инсталиран.">
+
+<!ENTITY manager.supporter.contributors "Разработчици и преводачи">
+<!ENTITY manager.supporter.sponsors "Предоставили регистрации за експерименти">
+<!ENTITY manager.supporter.details "Детайли">
+
+<!ENTITY manager.help.needhelp "Трябва ли ви помощ?">
+<!ENTITY manager.help.wiki "Посетете вики страниците на проекта TbSync, където има допълнителна информация, ръководства за потребителя и подробни описания на настройките.">
+
+<!ENTITY manager.help.foundabug "Открихте ли грешка?">
+<!ENTITY manager.help.fixit "Може да помогнете за отстраняването ѝ, като изпратите на разработчика доклад за грешката.  За това е необходимо да включите режима за подробно протоколиране.">
+<!ENTITY manager.help.enabledebuglog "Режим за подробно протоколиране: Записване на всички съобщения на програмата и на всички данни, които TbSync получава и изпраща. Thunderbird може да стане значително по-бавен.">
+<!ENTITY manager.help.createbugreportinfo "За да събере TbSync единствено информацията, която се отнася за грешката, рестартирайте Thunderbird, и повторете стъпките, за да се стигне отново до грешка. Накрая може тук да създадете доклад за грешката.">
+<!ENTITY manager.help.createbugreport "Създаване на доклад за грешка">
+
+<!ENTITY supportwizard.title "Създаване на доклад за грешка">
+<!ENTITY supportwizard.pagetitle "Събиране на всякаква информация за да може да може от доклада за грешки да се разбере какво куца.">
+<!ENTITY supportwizard.label.faultycomponent "Компонента на TbSync, при която наблюдавахте грешката:">
+<!ENTITY supportwizard.label.selectcomponent "Изберете компонента…">
+<!ENTITY supportwizard.label.summary "Обобщение на грешката:">
+<!ENTITY supportwizard.label.description "Подробно описание на грешката:">
+<!ENTITY supportwizard.footer "От тази информация на следващата стъпка ще се отвори незавършено писмо, което можете да променяте (например да включите снимки от екрана). Едва чрез изпращане на писмото, докладът за грешка ще замине.">
+
+<!ENTITY eventlog.title "Протокол на събитията">
+<!ENTITY eventlog.close "Затваряне>
+<!ENTITY eventlog.clear "Изчистване">
