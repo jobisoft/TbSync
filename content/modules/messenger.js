@@ -82,7 +82,7 @@ var messenger = {
               if (err) label += TbSync.getString("info.error");   
               else label += TbSync.getString("info.idle");   
             } else {
-              label += TbSync.getString("info.sync");
+              label += TbSync.getString("status.syncing");
             }
           } else {
             label += "Loading";
