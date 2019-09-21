@@ -65,10 +65,19 @@ var HttpRequest = class {
         this.onerror = function () {};
         this.onload = function () {};
         this.ontimeout = function () {};
-
-        this.realmCallback = function (username, realm, host) {};
-        this.passwordCallback = function (username, realm, host) {return null};
         
+        // Redirects are handled internally, this callback is just called to
+        // inform the caller about the redirect.
+        this.onredirect = function(status, newUri) {};
+
+        // Whenever a WWW-Authenticate header has been parsed, this callback is
+        // called to inform the caller about the found realm.
+        this.realmCallback = function (username, realm, host) {};
+        
+        // Whenever a channel needs authentication, but the caller has only provided a username
+        // this callback is called to request the password.
+        this.passwordCallback = function (username, realm, host) {return null};
+
         var self = this;
 
         this.notificationCallbacks = {
@@ -138,6 +147,8 @@ var HttpRequest = class {
                     aOldChannel.requestMethod, 
                     uploadData, 
                     uploadContent);
+                
+                self.onredirect(aOldChannel.responseStatus, aNewChannel.URI);
                 aCallback.onRedirectVerifyCallback(Components.results.NS_OK);
             }
         };
@@ -294,17 +305,17 @@ var HttpRequest = class {
         //store the data, so we can rerun
         this._xhr.data = data;
         
-		// The sandbox will have a loadingNode
+        // The sandbox will have a loadingNode
         let sandbox = getSandboxForOrigin(this._xhr.username, this._xhr.uri);
-		
-		// The XHR in the sandbox will have the correct loadInfo, which will allow us
-		// to use cookies and a CodebasePrincipal for us to use userContextIds and to
-		// contact nextcloud servers (error 503).
-		// We will not use the XHR or the sandbox itself.
-		let XHR = new sandbox.XMLHttpRequest();
-		XHR.open(this._xhr.method, this._xhr.uri.spec);
+        
+        // The XHR in the sandbox will have the correct loadInfo, which will allow us
+        // to use cookies and a CodebasePrincipal for us to use userContextIds and to
+        // contact nextcloud servers (error 503).
+        // We will not use the XHR or the sandbox itself.
+        let XHR = new sandbox.XMLHttpRequest();
+        XHR.open(this._xhr.method, this._xhr.uri.spec);
 
-		// Create the channel with the loadInfo from the sandboxed XHR
+        // Create the channel with the loadInfo from the sandboxed XHR
         let channel = Services.io.newChannelFromURIWithLoadInfo(this._xhr.uri, XHR.channel.loadInfo);
 
         /*
@@ -347,10 +358,10 @@ var HttpRequest = class {
            this.setRequestHeader("Accept", "*/*");
         }
 
-		// Set non-standard header to request authorization (https://github.com/jobisoft/DAV-4-TbSync/issues/106)
-		if (this._xhr.username) {
-			this.setRequestHeader("X-EnforceAuthentication", "True");
-		}
+        // Set non-standard header to request authorization (https://github.com/jobisoft/DAV-4-TbSync/issues/106)
+        if (this._xhr.username) {
+            this.setRequestHeader("X-EnforceAuthentication", "True");
+        }
 
         // calculate length of request and add header
         if (data) {
@@ -528,7 +539,7 @@ var HttpRequestPrompt = class {
     //                    in nsIAuthInformation authInfo)
     promptAuth (aChannel, aLevel, aAuthInfo) {      
         this.mRealmCallback(this.mUsername, aAuthInfo.realm, aChannel.URI.host);
-		if (this.mUsername && this.mPassword) {
+        if (this.mUsername && this.mPassword) {
             console.log("Passing provided credentials for user <"+this.mUsername+"> to nsIHttpChannel.");
             aAuthInfo.username = this.mUsername;
             aAuthInfo.password = this.mPassword;
@@ -556,31 +567,31 @@ var HttpRequestPrompt = class {
 
 
 function getSandboxForOrigin(username, uri) {
-	let options = {};
-	let origin = uri.hostPort;
-	
-	if (username) {		
-		options.userContextId = getContainerIdForUser(username);
-		origin = options.userContextId + "@" + origin;
-	}
-	
-	if (!sandboxes.hasOwnProperty(origin)) {
-		console.log("Creating sandbox for <"+origin+">");
-		let principal = Services.scriptSecurityManager.createCodebasePrincipal(uri, options);    
-		sandboxes[origin] = Components.utils.Sandbox(principal, {
-			wantXrays: true,
-			wantGlobalProperties: ["XMLHttpRequest"],
-		});
-	}
-	
-	return sandboxes[origin];
+    let options = {};
+    let origin = uri.hostPort;
+    
+    if (username) {		
+        options.userContextId = getContainerIdForUser(username);
+        origin = options.userContextId + "@" + origin;
+    }
+    
+    if (!sandboxes.hasOwnProperty(origin)) {
+        console.log("Creating sandbox for <"+origin+">");
+        let principal = Services.scriptSecurityManager.createCodebasePrincipal(uri, options);    
+        sandboxes[origin] = Components.utils.Sandbox(principal, {
+            wantXrays: true,
+            wantGlobalProperties: ["XMLHttpRequest"],
+        });
+    }
+    
+    return sandboxes[origin];
 }
 
 function getContainerIdForUser(username) {
     // Define the allowed range of container ids to be used
     // TbSync is using 10000 - 19999
     // Lightning is using 20000 - 29999
-	// Cardbook is using 30000 - 39999
+    // Cardbook is using 30000 - 39999
     let min = 10000;
     let max = 19999;
     
