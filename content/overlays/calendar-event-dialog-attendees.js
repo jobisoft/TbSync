@@ -14,19 +14,21 @@ var tbSyncAttendeeEventDialog = {
 
   onInject: function (window) {
     // Add autoComplete for TbSync
-    if (window.document.getElementById("attendeesInput")) {
-      let autocompletesearch = window.document.getElementById("attendeesInput").getAttribute("autocompletesearch");
+    let elements = window.document.getElementsByClassName("textbox-addressingWidget");
+    for (let element of elements) {
+      let autocompletesearch = element.getAttribute("autocompletesearch");
       if (autocompletesearch.indexOf("tbSyncAutoCompleteSearch") == -1) {
-        window.document.getElementById("attendeesInput").setAttribute("autocompletesearch", autocompletesearch + " tbSyncAutoCompleteSearch");
+        element.setAttribute("autocompletesearch", autocompletesearch + " tbSyncAutoCompleteSearch");
       }
     }    
   },
 
   onRemove: function (window) {
     // Remove autoComplete for TbSync
-    if (window.document.getElementById("attendeesInput")) {
-      let autocompletesearch = window.document.getElementById("attendeesInput").getAttribute("autocompletesearch").replace("tbSyncAutoCompleteSearch", "");
-      window.document.getElementById("attendeesInput").setAttribute("autocompletesearch", autocompletesearch.trim());
+    let elements = window.document.getElementsByClassName("textbox-addressingWidget");
+    for (let element of elements) {
+      let autocompletesearch = element.getAttribute("autocompletesearch").replace("tbSyncAutoCompleteSearch", "");
+      element.setAttribute("autocompletesearch", autocompletesearch.trim());
     }
   }
 
