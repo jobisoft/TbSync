@@ -59,6 +59,7 @@ function shutdown(data, reason) {
   TbSync.dump("TbSync shutdown","Unloading TbSync modules.");
   TbSync.unload().then(function() {
     Cu.unload("chrome://tbsync/content/tbsync.jsm");
+    Cu.unload("chrome://tbsync/content/HttpRequest.jsm");
     Cu.unload("chrome://tbsync/content/OverlayManager.jsm");
     // HACK WARNING:
     //  - the Addon Manager does not properly clear all addon related caches on update;
