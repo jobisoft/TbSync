@@ -68,10 +68,10 @@ var HttpRequest = class {
         
         // Redirects are handled internally, this callback is just called to
         // inform the caller about the redirect.
-		// Flags: (https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIChannelEventSink)
-		// - Ci.nsIChannelEventSink.REDIRECT_PERMANENT
-		// - Ci.nsIChannelEventSink.REDIRECT_TEMPORARY
-		// - Ci.nsIChannelEventSink.REDIRECT_INTERNAL
+        // Flags: (https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIChannelEventSink)
+        // - Ci.nsIChannelEventSink.REDIRECT_PERMANENT
+        // - Ci.nsIChannelEventSink.REDIRECT_TEMPORARY
+        // - Ci.nsIChannelEventSink.REDIRECT_INTERNAL
         this.onredirect = function(flags, newUri) {};
 
         // Whenever a WWW-Authenticate header has been parsed, this callback is
@@ -152,6 +152,7 @@ var HttpRequest = class {
                     uploadData, 
                     uploadContent);
                 
+                self._xhr.httpchannel = aNewChannel;
                 self.onredirect(aFlags, aNewChannel.URI);
                 aCallback.onRedirectVerifyCallback(Components.results.NS_OK);
             }
