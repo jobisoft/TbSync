@@ -60,7 +60,9 @@ var HttpRequest = class {
         this._xhr.mozAnon = false;
         this._xhr.mozBackgroundRequest = false;
         this._xhr.timeout = 0;
-
+        this._xhr.redirectFlags = null;
+        this._xhr.manualRetryOfRedirectsDueToCorsError = 0;
+        
         this.onreadystatechange = function () {};
         this.onerror = function () {};
         this.onload = function () {};
@@ -153,6 +155,7 @@ var HttpRequest = class {
                     uploadContent);
                 
                 self._xhr.httpchannel = aNewChannel;
+                self._xhr.redirectFlags = aFlags;
                 self.onredirect(aFlags, aNewChannel.URI);
                 aCallback.onRedirectVerifyCallback(Components.results.NS_OK);
             }
@@ -214,7 +217,7 @@ var HttpRequest = class {
                             self._xhr.readyState = 4;
                             self.onreadystatechange();				
                             self.ontimeout();
-                            break;
+                            return;
                         case Components.results.NS_BINDING_ABORTED:
                             self._xhr.httpchannel = aChannel;
                             self._xhr.responseText = aResult;
@@ -223,7 +226,14 @@ var HttpRequest = class {
                             self._xhr.readyState = 0;
                             self.onreadystatechange();				
                             self.onerror();
-                            break;
+                            return;
+                        case 0x805303F4: //NS_ERROR_DOM_BAD_URI (CORS Error on Redirect http -> https)
+                            if (self._xhr.redirectFlags && self._xhr.manualRetryOfRedirectsDueToCorsError < 2) {
+                                self._xhr.manualRetryOfRedirectsDueToCorsError++;
+                                self._xhr.uri = aChannel.URI;
+                                self.send(self._xhr.data);
+                                return;
+                            }
                         default:
                             self._xhr.httpchannel = aChannel;
                             self._xhr.responseText = aResult;
@@ -232,9 +242,8 @@ var HttpRequest = class {
                             self._xhr.readyState = 4;
                             self.onreadystatechange();				
                             self.onerror();
-                            break;
+                            return;
                     }
-                    return;
                 }
                 
                 // mitigation for bug https://bugzilla.mozilla.org/show_bug.cgi?id=669675
@@ -310,7 +319,8 @@ var HttpRequest = class {
         
         //store the data, so we can rerun
         this._xhr.data = data;
-        
+        this._xhr.redirectFlags = null;
+
         // The sandbox will have a loadingNode
         let sandbox = getSandboxForOrigin(this._xhr.username, this._xhr.uri);
         
