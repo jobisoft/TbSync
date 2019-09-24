@@ -162,7 +162,7 @@ var HttpRequest = class {
 
             //nsIStreamListener (aUseStreamLoader = false)
             onStartRequest: function(aRequest) {
-                //Services.console.logStringMessage("[onStartRequest] ");
+                //Services.console.logStringMessage("[onStartRequest] " +  aRequest.URI.spec);
                 this._buffer = [];
                 
                 if (self._xhr.overrideMimeType) {
@@ -170,7 +170,7 @@ var HttpRequest = class {
                 }
             },
             onDataAvailable: function (aRequest, aInputStream, aOffset, aCount) {
-                //Services.console.logStringMessage("[onDataAvailable] " + aCount);				
+                //Services.console.logStringMessage("[onDataAvailable] " +  aRequest.URI.spec + " : " + aCount);				
                 let buffer = new ArrayBuffer(aCount);
                 let stream = Components.classes["@mozilla.org/binaryinputstream;1"].createInstance(Components.interfaces.nsIBinaryInputStream);
                 stream.setInputStream(aInputStream);
@@ -180,7 +180,7 @@ var HttpRequest = class {
                 this._buffer.push(Array.from(new Uint8Array(buffer)));
             },        
             onStopRequest: function(aRequest, aStatusCode) {
-                //Services.console.logStringMessage("[onStopRequest] " + aStatusCode);
+                //Services.console.logStringMessage("[onStopRequest] " +  aRequest.URI.spec + " : " + aStatusCode);
                 // combine all binary chunks to create a flat byte array;				
                 let combined = [].concat.apply([], this._buffer);
                 let data = convertByteArray(combined);
@@ -196,6 +196,7 @@ var HttpRequest = class {
             },
             
             processResponse: function(aChannel, aStatus, aResult) {                
+                //Services.console.logStringMessage("[processResponse] " + aChannel.URI.spec + " : " + aStatus);
                 // do not set any channal response data, before we know we failed
                 // and before we know we do not have to rerun (due to bug 669675)
                 
@@ -572,7 +573,7 @@ var HttpRequestPrompt = class {
 
 function getSandboxForOrigin(username, uri) {
     let options = {};
-    let origin = uri.hostPort;
+    let origin = uri.scheme + "://" + uri.hostPort;
     
     if (username) {		
         options.userContextId = getContainerIdForUser(username);
