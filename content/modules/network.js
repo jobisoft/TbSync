@@ -55,6 +55,7 @@ var network = {
   createTCPErrorFromFailedRequest: function (request) {
     //adapted from :
     //https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/How_to_check_the_secruity_state_of_an_XMLHTTPRequest_over_SSL		
+    //codes: https://developer.mozilla.org/en-US/docs/Mozilla/Errors
     let status = request.status;
 
     if ((status & 0xff0000) === 0x5a0000) { // Security module
@@ -101,6 +102,7 @@ var network = {
         case 0x804B000E: return 'network::NS_ERROR_NET_TIMEOUT';
         case 0x804B001E: return 'network::NS_ERROR_UNKNOWN_HOST';
         case 0x804B0047: return 'network::NS_ERROR_NET_INTERRUPT';
+        case 0x805303F4: return 'network::NS_ERROR_DOM_BAD_URI';
       }
       return 'network::UNKNOWN_NETWORK_ERROR';
 
