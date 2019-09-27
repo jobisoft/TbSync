@@ -40,7 +40,7 @@
 <!ENTITY manager.tabs.status.sync "Synchroniser maintenant">
 <!ENTITY manager.tabs.status.tryagain "Essayer à nouveau de se connecter au serveur">
 <!ENTITY manager.tabs.status.autotime "Synchronisation périodique (minutes)">
-<!ENTITY manager.tabs.status.never "Lorsque l'option est à 0, la synchronisation est désactivé. La synchronisation "push" n'est pas encore implémentéea.">
+<!ENTITY manager.tabs.status.never "A setting of 0 disables periodic sync. Push sync is not yet implemented.">
 <!ENTITY manager.tabs.status.resources "Ressources disponibles">
 <!ENTITY manager.tabs.status.resources.intro "Choisissez, parmi les ressources disponible, celles que vous désirez synchroniser avec Thunderbird.">
 <!ENTITY manager.lockedsettings.description "Afin d'éviter des erreurs de synchronisation, certains paramètres ne peuvent être modifié tant que ce compte est activé.">
