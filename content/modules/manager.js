@@ -230,20 +230,21 @@ manager.FolderList = class {
     //group2
     let itemHGroup2 = document.createXULElement("hbox");
     itemHGroup2.setAttribute("align", "center");
-    itemHGroup2.setAttribute("width", "146");
+    itemHGroup2.setAttribute("style", "border: 1px center");
     itemHGroup2.appendChild(itemLabel);
 
     let itemVGroup2 = document.createXULElement("vbox");
+    itemVGroup2.setAttribute("width", "150");
     itemVGroup2.setAttribute("style", "padding: 3px");
     itemVGroup2.appendChild(itemHGroup2);
 
     //group3
     let itemHGroup3 = document.createXULElement("hbox");
     itemHGroup3.setAttribute("align", "center");
-    itemHGroup3.setAttribute("width", "227");
     itemHGroup3.appendChild(itemStatus);
 
     let itemVGroup3 = document.createXULElement("vbox");
+    itemVGroup3.setAttribute("width", "250");
     itemVGroup3.setAttribute("style", "padding: 3px");
     itemVGroup3.appendChild(itemHGroup3);
 
@@ -337,7 +338,10 @@ manager.FolderList = class {
     // update fields
     fields.foldername.setAttribute("disabled", !selected);
     fields.foldername.setAttribute("style", selected ? "" : "font-style:italic");
-    if (fields.foldername.textContent != foldername) fields.foldername.textContent = foldername;
+    if (fields.foldername.textContent != foldername) {
+      fields.foldername.textContent = foldername;
+      fields.foldername.flex = "1";
+    }
     
     fields.status.setAttribute("style", selected ? "" : "font-style:italic");
     if (fields.status.textContent != status) {
