@@ -56,13 +56,13 @@ var tbSyncAccounts = {
       //some item is selected
       let selectedItem = accountsList.selectedItem;
       selectedAccount = selectedItem.value;
-      selectedAccountName = selectedItem.getAttribute("label");
+      selectedAccountName = selectedItem.childNodes[1].getAttribute("value");
       isSyncing = TbSync.core.isSyncing(selectedAccount);
       isConnected = TbSync.core.isConnected(selectedAccount);
       isEnabled = TbSync.core.isEnabled(selectedAccount);
       isInstalled = tbSyncAccounts.hasInstalledProvider(selectedAccount);
     }
-    
+
     //hide if no accounts are avail (which is identical to no account selected)
     if (isActionsDropdown) document.getElementById(selector + "SyncAllAccounts").hidden = (selectedAccount === null);
     
