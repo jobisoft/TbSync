@@ -29,7 +29,7 @@ var TbSync = {
   debugMode: false,
   apiVersion: "2.2",
 
-  bundle: Services.strings.createBundle("chrome://tbsync/locale/tbSync.strings"),
+  bundle: Services.strings.createBundle("chrome://tbsync/locale/tbSync.properties"),
   prefs: Services.prefs.getBranch("extensions.tbsync."),
   
   decoder: new TextDecoder(),

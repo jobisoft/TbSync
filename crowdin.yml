@@ -1,0 +1,4 @@
+files:
+  - source: /_locales/en-US/*
+    translation: /_locales/%osx_locale%/%original_file_name%
+    escape_special_characters: 0
