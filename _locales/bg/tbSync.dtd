@@ -47,7 +47,7 @@
 
 <!ENTITY manager.catman.text "TbSync синхронизира и категории контакти, които са заместител за несинхронизираните списъци с контакти на Thunderbird. За да разширите възможностите на адресния указател на Thunderbird, инсталирайте добавката 'Category Manager'. Тя позволява вмъкването на контакти в много категории (групи) и др. Добавката може да се инсталира от официалното депо за добавки на Mozilla:">
 
-<!ENTITY manager.installprovider.link "Последвайте препратката за да посетите страницата на липсващия TbSync доставчик. Там ще намерите допълнитена информация за доставчика и може да го инсталирате от там:">
+<!ENTITY manager.installprovider.link "Последвайте препратката за да посетите страницата на липсващия TbSync доставчик. Там ще намерите допълнителна информация за доставчика и може да го инсталирате от там:">
 <!ENTITY manager.installprovider.warning "Този доставчик не произхожда от официалното депо за добавки на Thunderbird и не е бил проверен от екипа на Thunderbird. Този TbSync доставчик би могъл да направи пакости. Използвайте на собствена отговорност.">
 <!ENTITY manager.missingprovider "Тази регистрация изисква TbSync доставчика ##provider##, който не е инсталиран.">
 
@@ -59,15 +59,15 @@
 <!ENTITY manager.help.wiki "Посетете вики страниците на проекта TbSync, където има допълнителна информация, ръководства за потребителя и подробни описания на настройките.">
 
 <!ENTITY manager.help.foundabug "Открихте ли грешка?">
-<!ENTITY manager.help.fixit "Може да помогнете за отстраняването ѝ, като изпратите на разработчика доклад за грешката.  За това е необходимо да включите режима за подробно протоколиране.">
+<!ENTITY manager.help.fixit "Може да помогнете за отстраняването ѝ, като изпратите на разработчика доклад за грешката. За това е необходимо да включите режима за подробно протоколиране.">
 <!ENTITY manager.help.createbugreportinfo "За да събере TbSync единствено информацията, която се отнася за грешката, рестартирайте Thunderbird, и повторете стъпките, за да се стигне отново до грешка. Накрая може тук да създадете доклад за грешката.">
 <!ENTITY manager.help.createbugreport "Създаване на доклад за грешка">
 
 <!ENTITY manager.help.debugmode "Debug mode:">
 <!ENTITY manager.help.debuglevel.0 "Disabled">
-<!ENTITY manager.help.debuglevel.1 "Enabled: Logging errors only">
-<!ENTITY manager.help.debuglevel.2 "Enabled: Logging all data sends and received">
-<!ENTITY manager.help.debuglevel.3 "Enabled: Logging all data and some internal debug values">
+<!ENTITY manager.help.debuglevel.1 "Enabled: Logging of errors only">
+<!ENTITY manager.help.debuglevel.2 "Enabled: Logging of all sent and received data">
+<!ENTITY manager.help.debuglevel.3 "Enabled: Logging of all data and some internal debug values">
 
 <!ENTITY supportwizard.title "Създаване на доклад за грешка">
 <!ENTITY supportwizard.pagetitle "Събиране на всякаква информация за да може да може от доклада за грешки да се разбере какво куца.">
