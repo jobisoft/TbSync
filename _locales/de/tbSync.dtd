@@ -63,10 +63,10 @@
 <!ENTITY manager.help.createbugreportinfo "Damit TbSync nur die für Ihren Fehlerbericht relevanten Debug-Daten sammelt, starten Sie Thunderbird bitte neu und wiederholen dann genau die Schritte, die das fehlerhafte Verhalten reproduzieren. Anschließend können Sie hier Ihren Fehlerbericht erstellen.">
 <!ENTITY manager.help.createbugreport "Fehlerbericht erstellen">
 
-<!ENTITY manager.help.debuglevel.0 "Debug mode disabled.">
-<!ENTITY manager.help.debuglevel.1 "Debug mode enabled: Logging errors only.">
-<!ENTITY manager.help.debuglevel.2 "Debug mode enabled: Logging all program messages and all data that TbSync sends and receives.">
-<!ENTITY manager.help.debuglevel.3 "Debug mode enabled: Logging all program messages, all data that TbSync sends and receives and some internal values of parsed data.">
+<!ENTITY manager.help.debuglevel.0 "Debug-Modus deaktiviert.">
+<!ENTITY manager.help.debuglevel.1 "Aktiviert: Protokolliert alle Fehler.">
+<!ENTITY manager.help.debuglevel.2 "Aktiviert: Protokolliert alle gesendeten &amp; empfangenen Daten.">
+<!ENTITY manager.help.debuglevel.3 "Aktiviert: Protokolliert alle Daten und einige interne Debug-Werte.">
 
 <!ENTITY supportwizard.title "Fehlerbericht erstellen">
 <!ENTITY supportwizard.pagetitle "Erfassung aller Informationen zur effektiven Bearbeitung des Fehlerberichtes.">
