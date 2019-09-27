@@ -20,6 +20,17 @@ If you like TbSync and want to support its development, please consider a donati
 [![](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FL89EHHQZ2CFL&source=url)
 
 
+## Want to add or fix a localization?
+To help translating this project, please visit to [crowdin.com](https://crowdin.com/profile/jobisoft), where the localizations are managed. If you want to add a new language, just contact me and I will set it up.
+
+Here are some general information regarding translations:
+
+* [Localization content best practices](https://developer.mozilla.org/en-US/docs/Mozilla/Localization/Localization_content_best_practices)
+* [Summary table of quotation marks per language](https://en.wikipedia.org/wiki/Quotation_mark#Summary_table)
+* [Transvision](https://transvision.mozfr.org/) provides translations for various languages
+* by Thunderbird supported [locale codes](https://searchfox.org/comm-central/source/mail/locales/all-locales)
+
+
 ## Where is this going?
 
 I started to work on TbSync, because we needed ActiveSync (EAS) support in Thunderbird. Soon after, I realized that the current situation for sync accounts is very confusing in terms of user experience: There was no central place to set up sync accounts. The same DAV account had to be setup in lightning and again in the sogo-connector or in CardBook. EWS accounts are setup differently again and for google we need 3 different add-ons for contacts, calendars and tasks.
@@ -44,16 +55,6 @@ All the information needed, to build a new provider add-on for TbSync and thus e
 ```
 https://tbsync.readthedocs.org
 ```
-
-
-## Translations and localizations
-
-* [Localization content best practices](https://developer.mozilla.org/en-US/docs/Mozilla/Localization/Localization_content_best_practices)
-* [Summary table of quotation marks per language](https://en.wikipedia.org/wiki/Quotation_mark#Summary_table)
-* [Transvision](https://transvision.mozfr.org/) provides translations for various languages
-* by Thunderbird supported [locale codes](https://searchfox.org/comm-central/source/mail/locales/all-locales)
-
-If you encounter a misspelled translation key, do not correct it but report it to me. The translation keys are only used as variables in the code and are not visible. But changing a translation key requires all other translations and all references to that key in the code to be changed as well. Since translation keys are sometimes build up by string concatenation, it is not as easy as doing a global find and replace.
 
 
 ## Icon sources and attributions
