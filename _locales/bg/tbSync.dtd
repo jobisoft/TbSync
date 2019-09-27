@@ -60,9 +60,13 @@
 
 <!ENTITY manager.help.foundabug "Открихте ли грешка?">
 <!ENTITY manager.help.fixit "Може да помогнете за отстраняването ѝ, като изпратите на разработчика доклад за грешката.  За това е необходимо да включите режима за подробно протоколиране.">
-<!ENTITY manager.help.enabledebuglog "Режим за подробно протоколиране: Записване на всички съобщения на програмата и на всички данни, които TbSync получава и изпраща. Thunderbird може да стане значително по-бавен.">
 <!ENTITY manager.help.createbugreportinfo "За да събере TbSync единствено информацията, която се отнася за грешката, рестартирайте Thunderbird, и повторете стъпките, за да се стигне отново до грешка. Накрая може тук да създадете доклад за грешката.">
 <!ENTITY manager.help.createbugreport "Създаване на доклад за грешка">
+
+<!ENTITY manager.help.debuglevel.0 "Debug mode disabled.">
+<!ENTITY manager.help.debuglevel.1 "Debug mode enabled: Logging errors only.">
+<!ENTITY manager.help.debuglevel.2 "Debug mode enabled: Logging all program messages and all data that TbSync sends and receives.">
+<!ENTITY manager.help.debuglevel.3 "Debug mode enabled: Logging all program messages, all data that TbSync sends and receives and some internal values of parsed data.">
 
 <!ENTITY supportwizard.title "Създаване на доклад за грешка">
 <!ENTITY supportwizard.pagetitle "Събиране на всякаква информация за да може да може от доклада за грешки да се разбере какво куца.">
