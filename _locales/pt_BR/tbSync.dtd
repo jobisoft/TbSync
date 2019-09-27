@@ -60,9 +60,13 @@
 
 <!ENTITY manager.help.foundabug "Encontrou um bug?">
 <!ENTITY manager.help.fixit "Você pode ajudar a consertá-lo enviando um relatório de bug. Isso requer a ativação do modo de depuração.">
-<!ENTITY manager.help.enabledebuglog "Modo de depuração: Registro de todas as mensagens do programa e todos os dados que o TbSync recebe e envia. O Thunderbird pode funcionar significativamente mais devagar.">
 <!ENTITY manager.help.createbugreportinfo "Para que o TbSync colete apenas os dados de depuração relevantes para o seu relatório de erros, reinicie o Thunderbird e repita exatamente as etapas que reproduzem o comportamento de bugs. Então você pode criar seu relatório de bug aqui.">
 <!ENTITY manager.help.createbugreport "Criar relatório de bug">
+
+<!ENTITY manager.help.debuglevel.0 "Debug mode disabled.">
+<!ENTITY manager.help.debuglevel.1 "Debug mode enabled: Logging errors only.">
+<!ENTITY manager.help.debuglevel.2 "Debug mode enabled: Logging all program messages and all data that TbSync sends and receives.">
+<!ENTITY manager.help.debuglevel.3 "Debug mode enabled: Logging all program messages, all data that TbSync sends and receives and some internal values of parsed data.">
 
 <!ENTITY supportwizard.title "Criar relatório de bug">
 <!ENTITY supportwizard.pagetitle "Coletar todas as informações para processar efetivamente o relatório de erros.">

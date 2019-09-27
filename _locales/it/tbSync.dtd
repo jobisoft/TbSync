@@ -60,9 +60,13 @@
 
 <!ENTITY manager.help.foundabug "Hai trovato un bug?">
 <!ENTITY manager.help.fixit "Puoi contribuire a correggerlo inviando una segnalazione d'errore. Quest'operazione richiede di attivare la modalità di debug.">
-<!ENTITY manager.help.enabledebuglog "Modalità di debug: registra tutti i messaggi del programma e tutti i dati ricevuti e inviati da TbSync. Il funzionamento di Thunderbird potrebbe essere notevolmente rallentato..">
 <!ENTITY manager.help.createbugreportinfo "Per far sì che TbSync raccolga solo i messaggi di debug significativi per la segnalazione d'errore, riavvia Thunderbird e ripeti esattamente i passaggi necessari per riprodurre il comportamento errato. In seguito puoi creare qui la segnalazione d'errore.">
 <!ENTITY manager.help.createbugreport "Crea segnalazione d'errore">
+
+<!ENTITY manager.help.debuglevel.0 "Debug mode disabled.">
+<!ENTITY manager.help.debuglevel.1 "Debug mode enabled: Logging errors only.">
+<!ENTITY manager.help.debuglevel.2 "Debug mode enabled: Logging all program messages and all data that TbSync sends and receives.">
+<!ENTITY manager.help.debuglevel.3 "Debug mode enabled: Logging all program messages, all data that TbSync sends and receives and some internal values of parsed data.">
 
 <!ENTITY supportwizard.title "Crea segnalazione d'errore">
 <!ENTITY supportwizard.pagetitle "Raccolta di tutte le informazioni necessarie per gestire efficacemente la segnalazione d'errore.">
