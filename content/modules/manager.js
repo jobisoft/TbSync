@@ -42,9 +42,9 @@ var manager = {
     TbSync.dump("Oops", "Trying to open account manager, but init sequence not yet finished");
     let msg = TbSync.getString("OopsMessage") + "\n\n";
     let v = Services.appinfo.platformVersion; 
-    if (!TbSync.prefs.getBoolPref("log.tofile")) {
+    if (TbSync.prefs.getIntPref("log.userdatalevel") == 0) {
       if (TbSync.window.confirm(msg + TbSync.getString("UnableToTraceError"))) {
-        TbSync.prefs.setBoolPref("log.tofile", true);
+        TbSync.prefs.setIntPref("log.userdatalevel", 1);
         TbSync.window.alert(TbSync.getString("RestartThunderbirdAndTryAgain"));
       }
     } else {

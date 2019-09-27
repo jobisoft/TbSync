@@ -96,7 +96,7 @@ var TbSync = {
     }
     
     //was debug mode enabled during startup?
-    this.debugMode = this.prefs.getBoolPref("log.tofile");
+    this.debugMode = (this.prefs.getIntPref("log.userdatalevel") > 0);
 
     //enable TbSync
     this.enabled = true;

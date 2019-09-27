@@ -21,10 +21,8 @@ function startup(data, reason) {
   // set default prefs
   let defaults = Services.prefs.getDefaultBranch("extensions.tbsync.");
   defaults.setBoolPref("debug.testoptions", false);
-
   defaults.setBoolPref("log.toconsole", false);
-  defaults.setBoolPref("log.tofile", false);
-  defaults.setIntPref("log.userdatalevel", 0); //0 - metadata only (except errors)   1 - including userdata,  2 - redacted xml , 3 - raw xml + wbxml
+  defaults.setIntPref("log.userdatalevel", 0); //0 - off   1 - userdata only on errors   2 - including full userdata,  3 - extra infos
 
   // Check if the main window has finished loading
   let windows = Services.wm.getEnumerator("mail:3pane");

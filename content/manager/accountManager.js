@@ -48,13 +48,13 @@ var tbSyncAccountManager = {
   
   //help tab
   getLogPref: function() {
-    let log = document.getElementById("tbSyncAccountManager.logPrefCheckbox");
-    log.checked =  TbSync.prefs.getBoolPref("log.tofile");
+    let log = document.getElementById("tbSyncAccountManager.logLevel");
+    log.value = Math.min(3, TbSync.prefs.getIntPref("log.userdatalevel"));
   },
   
   toggleLogPref: function() {
-    let log = document.getElementById("tbSyncAccountManager.logPrefCheckbox");
-    TbSync.prefs.setBoolPref("log.tofile", log.checked);
+    let log = document.getElementById("tbSyncAccountManager.logLevel");
+    TbSync.prefs.setIntPref("log.userdatalevel", log.value);
   },
   
   initSupportWizard: function() {

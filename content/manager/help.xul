@@ -27,8 +27,16 @@
                 <html:span>&manager.help.fixit;</html:span>
             </html:p>
 
-            <hbox>
-              <checkbox flex="1" id="tbSyncAccountManager.logPrefCheckbox" label="&manager.help.enabledebuglog;" oncommand="tbSyncAccountManager.toggleLogPref();" />
+            <hbox align="center">
+                <label value="&manager.help.debugmode;" />
+                <menulist flex="0" id="tbSyncAccountManager.logLevel" oncommand="tbSyncAccountManager.toggleLogPref();">
+                  <menupopup>
+                      <menuitem label="&manager.help.debuglevel.0;" value="0" />
+                      <menuitem label="&manager.help.debuglevel.1;" value="1" />
+                      <menuitem label="&manager.help.debuglevel.2;" value="2" />
+                      <menuitem label="&manager.help.debuglevel.3;" value="3" />
+                </menupopup>
+              </menulist>
             </hbox>
 
             <html:p> 

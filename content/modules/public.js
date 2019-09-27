@@ -619,7 +619,7 @@ var dump = function (what, aMessage) {
     Services.console.logStringMessage("[TbSync] " + what + " : " + aMessage);
   }
   
-  if (this.prefs.getBoolPref("log.tofile")) {
+  if (TbSync.prefs.getIntPref("log.userdatalevel") > 0) {
     let now = new Date();
     TbSync.io.appendToFile("debug.log", "** " + now.toString() + " **\n[" + what + "] : " + aMessage + "\n\n");
   }
