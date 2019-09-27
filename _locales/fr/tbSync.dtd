@@ -1,7 +1,7 @@
 <!ENTITY popup.opensettings "Ouvrir le gestionnaire de comptes TbSync">
 <!ENTITY menu.settingslabel "Paramètres de synchronisation (TbSync)">
 
-<!ENTITY toolbar.label " Synchroniser tous les comptes TbSync">
+<!ENTITY toolbar.label "Synchroniser tous les comptes TbSync">
 <!ENTITY toolbar.tooltiptext "Synchroniser les dernières modifications">
 
 <!ENTITY manager.AccountActions "Actions sur les comptes">
@@ -40,7 +40,7 @@
 <!ENTITY manager.tabs.status.sync "Synchroniser maintenant">
 <!ENTITY manager.tabs.status.tryagain "Essayer à nouveau de se connecter au serveur">
 <!ENTITY manager.tabs.status.autotime "Synchronisation périodique (minutes)">
-<!ENTITY manager.tabs.status.never "Lorsque l'option est à 0, la synchronisation est désactivé. La synchronisation "push" n'est pas encore implémentéea.">
+<!ENTITY manager.tabs.status.never "Un paramètre de 0 désactive la synchronisation périodique. La synchronisation push n'est pas encore implémentée.">
 <!ENTITY manager.tabs.status.resources "Ressources disponibles">
 <!ENTITY manager.tabs.status.resources.intro "Choisissez, parmi les ressources disponible, celles que vous désirez synchroniser avec Thunderbird.">
 <!ENTITY manager.lockedsettings.description "Afin d'éviter des erreurs de synchronisation, certains paramètres ne peuvent être modifié tant que ce compte est activé.">
@@ -51,7 +51,7 @@
 <!ENTITY manager.installprovider.warning "Ce provider de synchronisation n'est pas hébergé sur le dépôt Thunderbird officiel et n'a donc pas été validé par l'équipe de Thunderbird. Il se peut donc qu'il ait un comportement néfaste pour votre système. Utilisez-le à vos propres risques.">
 <!ENTITY manager.missingprovider "Ce compte nécessite le provider de synchronisation (##provider##), lequel n'est pas installé.">
 
-<!ENTITY manager.supporter.contributors "Contributeurs  et traducteurs">
+<!ENTITY manager.supporter.contributors "Contributeurs et traducteurs">
 <!ENTITY manager.supporter.sponsors "Sponsors fournissant des comptes de test">
 <!ENTITY manager.supporter.details "Détails">
 
@@ -67,10 +67,10 @@
 <!ENTITY supportwizard.title "Créer un rapport d'erreur">
 <!ENTITY supportwizard.pagetitle "Récolte de toutes les informations nécessaires pour gérer efficacement le rapport d'erreur.">
 <!ENTITY supportwizard.label.faultycomponent "Composant de TbSync où vous avez observé l'erreur:">
-<!ENTITY supportwizard.label.selectcomponent "Sélectionnez un composant...">
-<!ENTITY supportwizard.label.summary "Bref résumé de l'erreur:'">
-<!ENTITY supportwizard.label.description "Description détaillée de l'erreur:'">
-<!ENTITY supportwizard.footer "Un courriel sera généré à partir des informations fournies ici. Vous aurez la possibilité de le modifier par la suite (par exemple, pour y ajouter des captures d'écrans). Ce n'estque lorsque vous aurez envoyé l'e-mail que le rapport d'erreur nous sera envoyé..">
+<!ENTITY supportwizard.label.selectcomponent "Sélectionnez un composant…">
+<!ENTITY supportwizard.label.summary "Bref résumé de l'erreur:">
+<!ENTITY supportwizard.label.description "Description détaillée de l'erreur:">
+<!ENTITY supportwizard.footer "Un courriel sera généré à partir des informations fournies ici. Vous aurez la possibilité de le modifier par la suite (par exemple, pour y ajouter des captures d'écrans). Ce n'estque lorsque vous aurez envoyé l'e-mail que le rapport d'erreur nous sera envoyé.">
 
 <!ENTITY eventlog.title "Journal d'événements">
 <!ENTITY eventlog.close "Fermer">
