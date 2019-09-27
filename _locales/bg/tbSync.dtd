@@ -63,10 +63,11 @@
 <!ENTITY manager.help.createbugreportinfo "За да събере TbSync единствено информацията, която се отнася за грешката, рестартирайте Thunderbird, и повторете стъпките, за да се стигне отново до грешка. Накрая може тук да създадете доклад за грешката.">
 <!ENTITY manager.help.createbugreport "Създаване на доклад за грешка">
 
-<!ENTITY manager.help.debuglevel.0 "Debug mode disabled.">
-<!ENTITY manager.help.debuglevel.1 "Enabled: Logging errors only.">
-<!ENTITY manager.help.debuglevel.2 "Enabled: Logging all data sends and received.">
-<!ENTITY manager.help.debuglevel.3 "Enabled: Logging all data and some internal debug values.">
+<!ENTITY manager.help.debugmode "Debug mode:">
+<!ENTITY manager.help.debuglevel.0 "Disabled">
+<!ENTITY manager.help.debuglevel.1 "Enabled: Logging errors only">
+<!ENTITY manager.help.debuglevel.2 "Enabled: Logging all data sends and received">
+<!ENTITY manager.help.debuglevel.3 "Enabled: Logging all data and some internal debug values">
 
 <!ENTITY supportwizard.title "Създаване на доклад за грешка">
 <!ENTITY supportwizard.pagetitle "Събиране на всякаква информация за да може да може от доклада за грешки да се разбере какво куца.">
