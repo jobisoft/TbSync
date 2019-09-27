@@ -60,9 +60,13 @@
 
 <!ENTITY manager.help.foundabug "Vous avez trouvé une bogue?">
 <!ENTITY manager.help.fixit "Vous pouvez nous aider à la corriger en nous envoyant un rapport d'erreur. Cette opération nécessite l'activitation du mode de débogage.">
-<!ENTITY manager.help.enabledebuglog "Mode de débogage: enregistre tous les messages du programmes, et toutes les données envoyées et reçues par TbSync. Le fonctionnement de Thunderbird peut en être ralenti considérablement.">
 <!ENTITY manager.help.createbugreportinfo "Afin que TbSync ne collecte que les données de débogages pertinentes pour résoudre votre bogue, veuillez redémarrer Thunderbird et ensuite répéter exactement les étapes qui causent le comportement indésiré. Ensuite, vous pourrez créer un rapport d'erreur depuis cette fenêtre-ci.">
 <!ENTITY manager.help.createbugreport "Créer un rapport d'erreur">
+
+<!ENTITY manager.help.debuglevel.0 "Debug mode disabled.">
+<!ENTITY manager.help.debuglevel.1 "Debug mode enabled: Logging errors only.">
+<!ENTITY manager.help.debuglevel.2 "Debug mode enabled: Logging all program messages and all data that TbSync sends and receives.">
+<!ENTITY manager.help.debuglevel.3 "Debug mode enabled: Logging all program messages, all data that TbSync sends and receives and some internal values of parsed data.">
 
 <!ENTITY supportwizard.title "Créer un rapport d'erreur">
 <!ENTITY supportwizard.pagetitle "Récolte de toutes les informations nécessaires pour gérer efficacement le rapport d'erreur.">
