@@ -63,10 +63,11 @@
 <!ENTITY manager.help.createbugreportinfo "Чтобы TbSync собирал только отладочные сообщения, относящиеся к вашему отчету об ошибке, перезапустите Thunderbird, а затем повторите шаги, которые воспроизводят поведение ошибки. Затем вы можете создать свой отчет об ошибках здесь.">
 <!ENTITY manager.help.createbugreport "Создать отчет об ошибке">
 
-<!ENTITY manager.help.debuglevel.0 "Debug mode disabled.">
-<!ENTITY manager.help.debuglevel.1 "Enabled: Logging errors only.">
-<!ENTITY manager.help.debuglevel.2 "Enabled: Logging all data sends and received.">
-<!ENTITY manager.help.debuglevel.3 "Enabled: Logging all data and some internal debug values.">
+<!ENTITY manager.help.debugmode "Debug mode:">
+<!ENTITY manager.help.debuglevel.0 "Disabled">
+<!ENTITY manager.help.debuglevel.1 "Enabled: Logging errors only">
+<!ENTITY manager.help.debuglevel.2 "Enabled: Logging all data sends and received">
+<!ENTITY manager.help.debuglevel.3 "Enabled: Logging all data and some internal debug values">
 
 <!ENTITY supportwizard.title "Создать отчет об ошибке">
 <!ENTITY supportwizard.pagetitle "Сбор всей информации для эффективной обработки отчета об ошибке.">
