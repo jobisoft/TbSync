@@ -63,10 +63,11 @@
 <!ENTITY manager.help.createbugreportinfo "In order for TbSync to collect only the debug data relevant to your bug report, please restart Thunderbird and then repeat exactly the steps that reproduce the buggy behavior. Then you can create your bug report here.">
 <!ENTITY manager.help.createbugreport "Create bug report">
 
-<!ENTITY manager.help.debuglevel.0 "Debug mode disabled.">
-<!ENTITY manager.help.debuglevel.1 "Enabled: Logging errors only.">
-<!ENTITY manager.help.debuglevel.2 "Enabled: Logging all data sends and received.">
-<!ENTITY manager.help.debuglevel.3 "Enabled: Logging all data and some internal debug values.">
+<!ENTITY manager.help.debugmode "Debug mode:">
+<!ENTITY manager.help.debuglevel.0 "Disabled">
+<!ENTITY manager.help.debuglevel.1 "Enabled: Logging errors only">
+<!ENTITY manager.help.debuglevel.2 "Enabled: Logging all data sends and received">
+<!ENTITY manager.help.debuglevel.3 "Enabled: Logging all data and some internal debug values">
 
 <!ENTITY supportwizard.title "Create bug report">
 <!ENTITY supportwizard.pagetitle "Gathering of all information to effectively process the bug report.">
