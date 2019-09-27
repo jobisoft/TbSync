@@ -63,10 +63,11 @@
 <!ENTITY manager.help.createbugreportinfo "Per far sì che TbSync raccolga solo i messaggi di debug significativi per la segnalazione d'errore, riavvia Thunderbird e ripeti esattamente i passaggi necessari per riprodurre il comportamento errato. In seguito puoi creare qui la segnalazione d'errore.">
 <!ENTITY manager.help.createbugreport "Crea segnalazione d'errore">
 
-<!ENTITY manager.help.debuglevel.0 "Debug mode disabled.">
-<!ENTITY manager.help.debuglevel.1 "Enabled: Logging errors only.">
-<!ENTITY manager.help.debuglevel.2 "Enabled: Logging all data sends and received.">
-<!ENTITY manager.help.debuglevel.3 "Enabled: Logging all data and some internal debug values.">
+<!ENTITY manager.help.debugmode "Debug mode:">
+<!ENTITY manager.help.debuglevel.0 "Disabled">
+<!ENTITY manager.help.debuglevel.1 "Enabled: Logging errors only">
+<!ENTITY manager.help.debuglevel.2 "Enabled: Logging all data sends and received">
+<!ENTITY manager.help.debuglevel.3 "Enabled: Logging all data and some internal debug values">
 
 <!ENTITY supportwizard.title "Crea segnalazione d'errore">
 <!ENTITY supportwizard.pagetitle "Raccolta di tutte le informazioni necessarie per gestire efficacemente la segnalazione d'errore.">
