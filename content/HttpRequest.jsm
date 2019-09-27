@@ -62,6 +62,8 @@ var HttpRequest = class {
         this._xhr.timeout = 0;
         this._xhr.redirectFlags = null;
         this._xhr.manualRetryOfRedirectsDueToCorsError = 0;
+        this._xhr.containerReset = false;
+        this._xhr.containerRealm = "default";
         
         this.onreadystatechange = function () {};
         this.onerror = function () {};
@@ -313,6 +315,16 @@ var HttpRequest = class {
         this.onreadystatechange();
         
     }
+    
+    // must be called after open, before send
+    setContainerRealm(v) {
+        this._xhr.containerRealm = v;
+    }
+    
+    // must be called after open, before send
+    clearContainerCache() {
+        this._xhr.containerReset = true;
+    }
 
     send(data) {
         let options = {};
@@ -322,7 +334,7 @@ var HttpRequest = class {
         this._xhr.redirectFlags = null;
 
         // The sandbox will have a loadingNode
-        let sandbox = getSandboxForOrigin(this._xhr.username, this._xhr.uri);
+        let sandbox = getSandboxForOrigin(this._xhr.username, this._xhr.uri, this._xhr.containerRealm, this._xhr.containerReset);
         
         // The XHR in the sandbox will have the correct loadInfo, which will allow us
         // to use cookies and a CodebasePrincipal for us to use userContextIds and to
@@ -582,14 +594,18 @@ var HttpRequestPrompt = class {
 
 
 
-function getSandboxForOrigin(username, uri) {
+function getSandboxForOrigin(username, uri, containerRealm = "default", containerReset = false) {
     let options = {};
     let origin = uri.scheme + "://" + uri.hostPort;
     
     if (username) {		
-        options.userContextId = getContainerIdForUser(username);
+        options.userContextId = getContainerIdForUser(containerRealm + "::" + username);
         origin = options.userContextId + "@" + origin;
-    }
+        if (containerReset) {
+            resetContainerWithId(options.userContextId);
+        }
+    }    
+    
     
     if (!sandboxes.hasOwnProperty(origin)) {
         console.log("Creating sandbox for <"+origin+">");
@@ -603,6 +619,10 @@ function getSandboxForOrigin(username, uri) {
     return sandboxes[origin];
 }
 
+function resetContainerWithId(id) {
+    Services.clearData.deleteDataFromOriginAttributesPattern({ userContextId: id });
+}
+
 function getContainerIdForUser(username) {
     // Define the allowed range of container ids to be used
     // TbSync is using 10000 - 19999
@@ -614,7 +634,7 @@ function getContainerIdForUser(username) {
     //reset if adding an entry will exceed allowed range
     if (containers.length > (max-min) && containers.indexOf(username) == -1) {
         for (let i=0; i < containers.length; i++) {
-            Services.clearData.deleteDataFromOriginAttributesPattern({ userContextId: i + min });
+            resetContainerWithId(i + min);
         }
         containers = [];
     }
