@@ -327,8 +327,6 @@ var HttpRequest = class {
     }
 
     send(data) {
-        let options = {};
-        
         //store the data, so we can rerun
         this._xhr.data = data;
         this._xhr.redirectFlags = null;
@@ -350,6 +348,7 @@ var HttpRequest = class {
         // as of TB67 newChannelFromURI needs to specify a loading node to have access to the cookie jars
         // using the main window
         // another option would be workers
+        let options = {};
         let mainWindow = Services.wm.getMostRecentWindow("mail:3pane");
         
         let channel = Services.io.newChannelFromURI(
