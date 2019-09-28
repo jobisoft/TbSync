@@ -63,11 +63,11 @@
 <!ENTITY manager.help.createbugreportinfo "Per far sì che TbSync raccolga solo i messaggi di debug significativi per la segnalazione d'errore, riavvia Thunderbird e ripeti esattamente i passaggi necessari per riprodurre il comportamento errato. In seguito puoi creare qui la segnalazione d'errore.">
 <!ENTITY manager.help.createbugreport "Crea segnalazione d'errore">
 
-<!ENTITY manager.help.debugmode "Debug mode:">
-<!ENTITY manager.help.debuglevel.0 "Disabled">
-<!ENTITY manager.help.debuglevel.1 "Enabled: Logging of errors only">
-<!ENTITY manager.help.debuglevel.2 "Enabled: Logging of all sent and received data">
-<!ENTITY manager.help.debuglevel.3 "Enabled: Logging of all data and some internal debug values">
+<!ENTITY manager.help.debugmode "Modalità debug:">
+<!ENTITY manager.help.debuglevel.0 "Disabilitata">
+<!ENTITY manager.help.debuglevel.1 "Abilitata: registra solo gli errori">
+<!ENTITY manager.help.debuglevel.2 "Abilitata: registra tutti i dati inviati e ricevuti">
+<!ENTITY manager.help.debuglevel.3 "Abilitata: registra tutti i dati e alcuni valori interni di debug">
 
 <!ENTITY supportwizard.title "Crea segnalazione d'errore">
 <!ENTITY supportwizard.pagetitle "Raccolta di tutte le informazioni necessarie per gestire efficacemente la segnalazione d'errore.">
@@ -78,5 +78,5 @@
 <!ENTITY supportwizard.footer "Nel prossimo passaggio sarà generato un messaggio di posta elettronica a partire dalle informazioni fornite qui; puoi modificarlo in seguito (ad esempio, aggiungendo schermate o simili). La segnalazione d'errore verrà inviata solo inviando tale messaggio.">
 
 <!ENTITY eventlog.title "Registro eventi">
-<!ENTITY eventlog.close "vicino">
-<!ENTITY eventlog.clear "vuoto">
+<!ENTITY eventlog.close "Chiudi">
+<!ENTITY eventlog.clear "Svuota">
