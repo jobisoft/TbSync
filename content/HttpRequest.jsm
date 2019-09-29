@@ -61,7 +61,6 @@ var HttpRequest = class {
         this._xhr.mozBackgroundRequest = false;
         this._xhr.timeout = 0;
         this._xhr.redirectFlags = null;
-        this._xhr.manualRetryOfRedirectsDueToCorsError = 0;
         this._xhr.containerReset = false;
         this._xhr.containerRealm = "default";
         
@@ -73,9 +72,15 @@ var HttpRequest = class {
         // Redirects are handled internally, this callback is just called to
         // inform the caller about the redirect.
         // Flags: (https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIChannelEventSink)
-        // - Ci.nsIChannelEventSink.REDIRECT_PERMANENT
-        // - Ci.nsIChannelEventSink.REDIRECT_TEMPORARY
-        // - Ci.nsIChannelEventSink.REDIRECT_INTERNAL
+        //  - REDIRECT_TEMPORARY = 1 << 0;
+        //  - REDIRECT_PERMANENT = 1 << 1;
+        //  - REDIRECT_INTERNAL = 1 << 2;
+        // TB enforces a redirect from http -> https without having received a redirect,
+        // but an STS header
+        //  - REDIRECT_STS_UPGRADE = 1 << 3; 
+        // This is a custom bit set by HttpRequest to indicate, that this redirect was missed by the nsIHttpChannel implementation
+        // probably due to a CORS violation (like https -> http)
+        //  - REDIRECT_MISSED = 1 << 7; 
         this.onredirect = function(flags, newUri) {};
 
         // Whenever a WWW-Authenticate header has been parsed, this callback is
@@ -156,7 +161,6 @@ var HttpRequest = class {
                     uploadData, 
                     uploadContent);
                 
-                self._xhr.httpchannel = aNewChannel;
                 self._xhr.redirectFlags = aFlags;
                 self.onredirect(aFlags, aNewChannel.URI);
                 aCallback.onRedirectVerifyCallback(Components.results.NS_OK);
@@ -229,9 +233,11 @@ var HttpRequest = class {
                             self.onreadystatechange();				
                             self.onerror();
                             return;
-                        case 0x805303F4: //NS_ERROR_DOM_BAD_URI (CORS Error on Redirect http -> https)
-                            if (self._xhr.redirectFlags && self._xhr.manualRetryOfRedirectsDueToCorsError < 2) {
-                                self._xhr.manualRetryOfRedirectsDueToCorsError++;
+                        case 0x805303F4: //NS_ERROR_DOM_BAD_URI 
+                            // Error on Strict-Transport-Security induced Redirect http -> https (these do not even show up in the console)
+                            // The redirect has been done already and the channel is already the new channel.
+                            // Due to CORS violation, it cannot be fulfilled.
+                            if (self._xhr.redirectFlags && aChannel.URI.spec != self._xhr.uri.spec) {
                                 self._xhr.uri = aChannel.URI;
                                 self.send(self._xhr.data);
                                 return;
@@ -245,6 +251,23 @@ var HttpRequest = class {
                             self.onreadystatechange();				
                             self.onerror();
                             return;
+                    }
+                }
+                
+                // Usually redirects are handled internally, but a https -> http request
+                // cannot be followed du to CORS violations - any CORS violating request is returning a 30x
+                // if CORS is not allowed. This is not true for STS induced redirects (see above).
+                if ([301,302,307,308].includes(responseStatus)) {
+                    // aChannel is still the old channel
+                    let redirected = self.getResponseHeader("location");
+                    if (redirected && redirected != aChannel.URI.spec) {
+                        let uri = Services.io.newURI(redirected);
+                        let flag = ([301,308].includes(responseStatus)) ? Ci.nsIChannelEventSink.REDIRECT_PERMANENT :  Ci.nsIChannelEventSink.REDIRECT_TEMPORARY;
+                        // inform caller about the redirect and set the REDIRECT_MISSED bit
+                        self.onredirect(flag | 0x80, uri);
+                        self._xhr.uri = uri;
+                        self.send(self._xhr.data);
+                        return;
                     }
                 }
                 
