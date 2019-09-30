@@ -54,6 +54,7 @@ var HttpRequest = class {
         this._xhr.httpchannel = null;
         this._xhr.method = null;
         this._xhr.uri = null;
+        this._xhr.permanentlyRedirectedUrl = null;
         this._xhr.username = "";
         this._xhr.password = "";
         this._xhr.overrideMimeType = null;
@@ -162,6 +163,9 @@ var HttpRequest = class {
                     uploadContent);
                 
                 self._xhr.redirectFlags = aFlags;
+                if (aFlags & Ci.nsIChannelEventSink.REDIRECT_PERMANENT) {
+                    self._xhr.permanentlyRedirectedUrl = aNewChannel.URI.spec;
+                }
                 self.onredirect(aFlags, aNewChannel.URI);
                 aCallback.onRedirectVerifyCallback(Components.results.NS_OK);
             }
@@ -261,9 +265,14 @@ var HttpRequest = class {
                     // aChannel is still the old channel
                     let redirected = self.getResponseHeader("location");
                     if (redirected && redirected != aChannel.URI.spec) {
+                        let flag = Ci.nsIChannelEventSink.REDIRECT_TEMPORARY;
                         let uri = Services.io.newURI(redirected);
-                        let flag = ([301,308].includes(responseStatus)) ? Ci.nsIChannelEventSink.REDIRECT_PERMANENT :  Ci.nsIChannelEventSink.REDIRECT_TEMPORARY;
+                        if ([301,308].includes(responseStatus)) {
+                            flag =  Ci.nsIChannelEventSink.REDIRECT_PERMANENT;
+                            self._xhr.permanentlyRedirectedUrl = uri.spec;
+                        }
                         // inform caller about the redirect and set the REDIRECT_MISSED bit
+
                         self.onredirect(flag | 0x80, uri);
                         self._xhr.uri = uri;
                         self.send(self._xhr.data);
@@ -451,22 +460,23 @@ var HttpRequest = class {
         this._xhr.httpchannel.asyncOpen(this.listener, this._xhr.httpchannel);
     }
 
-    get readyState() {return this._xhr.readyState};
-    get responseURI() {return this._xhr.httpchannel.URI; }
-    get responseURL() {return this._xhr.httpchannel.URI.spec; }
-    get responseText() {return this._xhr.responseText};
-    get status() {return this._xhr.responseStatus};
-    get statusText() {return this._xhr.responseStatusText};
-    get channel() {return this._xhr.httpchannel};
-    get loadFlags() {return this._xhr.loadFlags};
-    get timeout() {return this._xhr.timeout};
-    get mozBackgroundRequest() { return this._xhr.mozBackgroundRequest; };    
-    get mozAnon() { return this._xhr.mozAnon; };    
+    get readyState() { return this._xhr.readyState; }
+    get responseURI() { return this._xhr.httpchannel.URI; }
+    get responseURL() { return this._xhr.httpchannel.URI.spec; }
+    get permanentlyRedirectedUrl() { return this._xhr.permanentlyRedirectedUrl; }
+    get responseText() { return this._xhr.responseText; }
+    get status() { return this._xhr.responseStatus; }
+    get statusText() { return this._xhr.responseStatusText; }
+    get channel() { return this._xhr.httpchannel; }
+    get loadFlags() { return this._xhr.loadFlags; }
+    get timeout() { return this._xhr.timeout; }
+    get mozBackgroundRequest() { return this._xhr.mozBackgroundRequest; }    
+    get mozAnon() { return this._xhr.mozAnon; }    
 
-    set loadFlags(v) {this._xhr.loadFlags = v};
-    set timeout(v) {this._xhr.timeout = v};
-    set mozBackgroundRequest(v) {  this._xhr.mozBackgroundRequest = (v === true); }
-    set mozAnon(v) {  this._xhr.mozAnon = (v === true); }
+    set loadFlags(v) { this._xhr.loadFlags = v; }
+    set timeout(v) { this._xhr.timeout = v; }
+    set mozBackgroundRequest(v) { this._xhr.mozBackgroundRequest = (v === true); }
+    set mozAnon(v) { this._xhr.mozAnon = (v === true); }
     
 
     // case insensitive method to check for headers
@@ -528,19 +538,19 @@ var HttpRequest = class {
 
     /* not used by cardbook */
     
-    get responseXML() {throw new Error("HttpRequest: responseXML not implemented");};
+    get responseXML() { throw new Error("HttpRequest: responseXML not implemented"); }
 
-    get response() {throw new Error("HttpRequest: response not implemented");};
-    set response(v) {throw new Error("HttpRequest: response not implemented");};
+    get response() { throw new Error("HttpRequest: response not implemented"); }
+    set response(v) { throw new Error("HttpRequest: response not implemented"); }
 
-    get responseType() {throw new Error("HttpRequest: response not implemented");};
-    set responseType(v) {throw new Error("HttpRequest: response not implemented");};
+    get responseType() { throw new Error("HttpRequest: response not implemented"); }
+    set responseType(v) { throw new Error("HttpRequest: response not implemented"); }
 
-    get upload() {throw new Error("HttpRequest: upload not implemented");};
-    set upload(v) {throw new Error("HttpRequest: upload not implemented");};
+    get upload() { throw new Error("HttpRequest: upload not implemented"); }
+    set upload(v) { throw new Error("HttpRequest: upload not implemented"); }
 
-    get withCredentials() {throw new Error("HttpRequest: withCredentials not implemented");};
-    set withCredentials(v) {throw new Error("HttpRequest: withCredentials not implemented");};
+    get withCredentials() { throw new Error("HttpRequest: withCredentials not implemented"); }
+    set withCredentials(v) { throw new Error("HttpRequest: withCredentials not implemented"); }
 
 
 
