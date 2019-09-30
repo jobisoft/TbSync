@@ -45,6 +45,7 @@
             
             <hbox>
                 <button style="margin:0 0 0 1em; padding: 0 1ex;" label="&manager.help.createbugreport;" oncommand="TbSync.manager.openBugReportWizard();" />
+                <button style="margin:0 0 0 1em; padding: 0 1ex;" label="&manager.help.viewdebuglog;" oncommand="TbSync.manager.viewDebugLog();" />
             </hbox>
             
             <hbox flex="1">

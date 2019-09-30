@@ -55,15 +55,14 @@ var manager = {
   },
   
   openTBtab: function (url) {
-    let tabmail = null;
-    if (TbSync.window) {
-      tabmail = TbSync.window.document.getElementById("tabmail");
+    let tabmail = TbSync.window.document.getElementById("tabmail");
+    if (TbSync.window && tabmail) {
       TbSync.window.focus();
-      tabmail.openTab("contentTab", {
+      return tabmail.openTab("contentTab", {
         contentPage: url
       });
     }
-    return (tabmail !== null);
+    return null;
   },
 
   openTranslatedLink: function (url) {
@@ -111,9 +110,18 @@ var manager = {
 
     params.composeFields.addAttachment(attachment);        
     MailServices.compose.OpenComposeWindowWithParams (null, params);    
-  }
-}
+  },
 
+  viewDebugLog: function() {
+
+    if (this.debugLogWindow) {
+      let tabmail = TbSync.window.document.getElementById("tabmail");
+      tabmail.closeTab(this.debugLogWindow.tabNode);
+      this.debugLogWindow = null;
+    } 
+    this.debugLogWindow = this.openTBtab('file://' + TbSync.io.getAbsolutePath("debug.log"));
+  },
+}
 
 
 
