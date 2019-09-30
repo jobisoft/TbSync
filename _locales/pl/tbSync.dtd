@@ -73,7 +73,7 @@
 <!ENTITY supportwizard.title "Utwórz raport o błędzie">
 <!ENTITY supportwizard.pagetitle "Zbieranie wszystkich informacji w celu skutecznego przetworzenia zgłoszenia błędu.">
 <!ENTITY supportwizard.label.faultycomponent "Składnik TbSync, w którym zaobserwowano błąd:">
-<!ENTITY supportwizard.label.selectcomponent "Select component…">
+<!ENTITY supportwizard.label.selectcomponent "Wybierz składnik…">
 <!ENTITY supportwizard.label.summary "Krótkie podsumowanie błędu:">
 <!ENTITY supportwizard.label.description "Szczegółowy opis błędu:">
 <!ENTITY supportwizard.footer "Z podanych tutaj informacji w następnym kroku zostanie wygenerowany e-mail, który możesz następnie edytować (na przykład dodając zrzuty ekranu lub podobne). Tylko poprzez faktyczne wysłanie tej wiadomości e-mail zostanie wysłany raport o błędzie.">
