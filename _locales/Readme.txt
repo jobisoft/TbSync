@@ -1,6 +1,6 @@
 Want to add or fix a localization?
 
-To help translating this project, please visit to 
+To help translating this project, please visit 
 
 	https://crowdin.com/profile/jobisoft
 
