@@ -62,6 +62,7 @@
 <!ENTITY manager.help.fixit "Hibajelentés küldése a javításhoz. Hibakeresési mód bekapcsolása engedélyeket igényel.">
 <!ENTITY manager.help.createbugreportinfo "Indítsa újra a Thunderbird alkalmazást, majd ismételje meg a pontos lépéseket a hiba reprodukálásához. Ez csak a hibajelentéssel kapcsolatos hibajelentéseket gyűjti össze. Hibabejelentés létrehozása itt.">
 <!ENTITY manager.help.createbugreport "Hibabejelentés létrehozása">
+<!ENTITY manager.help.viewdebuglog "View debug log">
 
 <!ENTITY manager.help.debugmode "Debug mode:">
 <!ENTITY manager.help.debuglevel.0 "Disabled">
