@@ -1,3 +1,4 @@
+commit_message: https://crowdin.com/project/tbsync
 files:
   - source: /_locales/en-US/*
     translation: /_locales/%osx_locale%/%original_file_name%
