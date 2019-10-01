@@ -17,7 +17,7 @@ Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wi
 
 If you like TbSync and want to support its development, please consider a donation.
 
-[![](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=FL89EHHQZ2CFL&source=url)
+[![](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.me/johnbieling)
 
 
 ## Want to add or fix a localization?
