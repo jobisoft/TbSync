@@ -56,13 +56,13 @@ var addressbook = {
     // be whatever you want and is returned by FolderData.targetData.getTarget().
     // If the target does not exist, it should be created. Throw a simple Error, if that
     // failed.
-    getTarget() { 
+    async getTarget() { 
       let target = this._folderData.getFolderProperty("target");
       let directory = TbSync.addressbook.getDirectoryFromDirectoryUID(target);
       
       if (!directory) {
         // create a new addressbook and store its UID in folderData
-        directory = TbSync.addressbook.createAddressbook(this._folderData);
+        directory = await TbSync.addressbook.prepareAndCreateAddressbook(this._folderData);
         if (!directory)
           throw new Error("notargets");
       }
@@ -203,7 +203,9 @@ var addressbook = {
       }
     }
 
-    createAddressbook(newname) {
+    // replace this with your own implementation to create the actual addressbook,
+    // when this class is extended
+    async createAddressbook(newname) {
       let dirPrefId = MailServices.ab.newAddressBook(newname, "", 2);
       let directory = MailServices.ab.getDirectoryFromId(dirPrefId);
       return directory;
@@ -620,36 +622,16 @@ var addressbook = {
   // * Internal Functions
   // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-  createAddressbook: function (folderData) {
+  prepareAndCreateAddressbook: async function (folderData) {
     let target = folderData.getFolderProperty("target");
     let provider = folderData.accountData.getAccountProperty("provider");
     
     // Get cached or new unique name for new address book
     let cachedName = folderData.getFolderProperty("targetName");                         
     let newname = cachedName == "" ? folderData.accountData.getAccountProperty("accountname") + " (" + folderData.getFolderProperty("foldername")+ ")" : cachedName;
-
-    /* this seems to cause more troube than it helps
-    let count = 1;
-    let unique = false;
-    let newname = basename;
-    do {
-      unique = true;
-      let booksIter = MailServices.ab.directories;
-      while (booksIter.hasMoreElements()) {
-        let data = booksIter.getNext();
-        if (data instanceof Components.interfaces.nsIAbDirectory && data.dirName == newname) {
-          unique = false;
-          break;
-        }
-      }
-      if (!unique) {
-        newname = basename + " #" + count;
-        count = count + 1;
-      }
-    } while (!unique); */
-    
+   
     //Create the new book with the unique name
-    let directory = folderData.targetData.createAddressbook(newname);
+    let directory = await folderData.targetData.createAddressbook(newname);
     if (directory && directory instanceof Components.interfaces.nsIAbDirectory) {
       directory.setStringValue("tbSyncProvider", provider);
       directory.setStringValue("tbSyncAccountID", folderData.accountData.accountID);
