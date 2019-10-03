@@ -104,7 +104,7 @@ var providers = {
           }
         }
         
-		if (TbSync.lightning.isAvailable()) {
+        if (TbSync.lightning.isAvailable()) {
           for (let calendar of TbSync.lightning.cal.getCalendarManager().getCalendars({})) {
             let storedProvider = calendar.getProperty("tbSyncProvider");
             if (provider == storedProvider && calendar.type == "storage" && providerData.getFolders({"target": calendar.id}).length == 0) {
