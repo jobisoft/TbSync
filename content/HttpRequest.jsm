@@ -122,6 +122,14 @@ var HttpRequest = class {
         this.redirect = {
             // nsIChannelEventSink implementation
             asyncOnChannelRedirect: function(aOldChannel, aNewChannel, aFlags, aCallback) {
+                // Disallow redirects from https to http.
+                if (aOldChannel.URI.scheme == "hhtps" && aNewChannel.URI.scheme == "http") {
+                    // Using an unused error code according to https://developer.mozilla.org/en-US/docs/Mozilla/Errors.
+                    // REJECTED_REDIRECT_FROM_HTTPS_TO_HTTP'
+                    aCallback.onRedirectVerifyCallback(0x804B002F);
+                    return;
+                }
+                
                 let uploadData;
                 let uploadContent;
                 if (aOldChannel instanceof Ci.nsIUploadChannel &&
@@ -229,6 +237,7 @@ var HttpRequest = class {
                             self.ontimeout();
                             return;
                         case Components.results.NS_BINDING_ABORTED:
+                        case 0x804B002F: //Custom error (REJECTED_REDIRECT_FROM_HTTPS_TO_HTTP')
                             self._xhr.httpchannel = aChannel;
                             self._xhr.responseText = aResult;
                             self._xhr.responseStatus = 0;
@@ -258,9 +267,8 @@ var HttpRequest = class {
                     }
                 }
                 
-                // Usually redirects are handled internally, but a https -> http request
-                // cannot be followed du to CORS violations - any CORS violating request is returning a 30x
-                // if CORS is not allowed. This is not true for STS induced redirects (see above).
+                // Usually redirects are handled internally, but any CORS violating request is 
+                // returning a 30x, if CORS is not allowed. This is not true for STS induced redirects (see above).
                 if ([301,302,307,308].includes(responseStatus)) {
                     // aChannel is still the old channel
                     let redirected = self.getResponseHeader("location");

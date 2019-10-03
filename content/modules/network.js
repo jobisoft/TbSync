@@ -103,6 +103,8 @@ var network = {
         case 0x804B001E: return 'network::NS_ERROR_UNKNOWN_HOST';
         case 0x804B0047: return 'network::NS_ERROR_NET_INTERRUPT';
         case 0x805303F4: return 'network::NS_ERROR_DOM_BAD_URI';
+        // Custom error
+        case 0x804B002F: return 'network::REJECTED_REDIRECT_FROM_HTTPS_TO_HTTP';
       }
       return 'network::UNKNOWN_NETWORK_ERROR';
 
