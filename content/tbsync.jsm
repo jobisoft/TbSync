@@ -49,6 +49,7 @@ var TbSync = {
 
     this.window = window;
     this.addon = await AddonManager.getAddonByID("tbsync@jobisoft.de");
+    this.addon.contributorsURL = "https://github.com/jobisoft/TbSync/blob/master/CONTRIBUTORS.md";
     this.dump("TbSync init","Start (" + this.addon.version.toString() + ")");
 
     //print information about Thunderbird version and OS

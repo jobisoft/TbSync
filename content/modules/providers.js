@@ -56,6 +56,7 @@ var providers = {
         this.loadedProviders[provider].createAccountWindow = null;
 
         this.loadedProviders[provider].bundle = Services.strings.createBundle(this[provider].Base.getStringBundleUrl());
+        addon.contributorsURL = this[provider].Base.getContributorsUrl();
 
         // check if provider has its own implementation of folderList
         if (!this[provider].hasOwnProperty("folderList")) this[provider].folderList = new TbSync.manager.FolderList(provider);

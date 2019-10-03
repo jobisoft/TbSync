@@ -27,7 +27,7 @@
                       <html:div>&manager.title;</html:div>
                       <html:div style="font-style:italic">&manager.provider4tbsync;</html:div>
                       <html:div style="font-style:italic;">[<html:span 
-                      onclick="TbSync.manager.openLink(TbSync.providers.loadedProviders[this.parentNode.parentNode.parentNode.getAttribute('provider')].addon.homepageURL);" 
+                      onclick="TbSync.manager.openLink(TbSync.providers.loadedProviders[this.parentNode.parentNode.parentNode.getAttribute('provider')].addon.contributorsURL);" 
                       onmouseover="this.style.cursor='pointer'" 
                       onmouseout="this.style.cursor='default'"
                       style="color:blue;text-decoration: underline;">&manager.supporter.details;</html:span>]</html:div>
@@ -46,7 +46,7 @@
                       <html:div>TbSync</html:div>
                       <html:div style="font-style:italic">&manager.shorttitle;</html:div>
                       <html:div style="font-style:italic;">[<html:span 
-                      onclick="TbSync.manager.openLink(TbSync.addon.homepageURL);" 
+                      onclick="TbSync.manager.openLink(TbSync.addon.contributorsURL);" 
                       onmouseover="this.style.cursor='pointer'" 
                       onmouseout="this.style.cursor='default'"
                       style="color:blue;text-decoration: underline;">&manager.supporter.details;</html:span>]</html:div>
