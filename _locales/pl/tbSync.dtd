@@ -45,13 +45,13 @@
 <!ENTITY manager.tabs.status.resources.intro "Wybierz, które ze znalezionych zasobów powinny być zsynchronizowane z Thunderbirdem.">
 <!ENTITY manager.lockedsettings.description "Aby zapobiec błędom synchronizacji, niektórych ustawień nie można edytować, gdy konto jest włączone.">
 
-<!ENTITY manager.catman.text "TbSync synchronizuje również kategorie kontaktów, które są potężnym zamiennikiem dla niesynchronizujących się list kontaktów. Aby móc z nich korzystać w książce adresowej Thunderbird, możesz zainstalować dodatek Category Manager. Pozwala zarządzać nakładającymi się grupami kontaktów opartymi na kategoriach i zapewnia szereg innych funkcji związanych z kategoriami. Można go znaleźć w oficjalnym repozytorium dodatków Mozilla:">
+<!ENTITY manager.catman.text "TbSync synchronizuje również kategorie kontaktów, które są potężnym zamiennikiem dla niesynchronizowanych list kontaktów. Aby móc z nich korzystać w książce adresowej Thunderbird, możesz zainstalować dodatek Category Manager. Pozwala zarządzać nakładającymi się grupami kontaktów opartymi na kategoriach i zapewnia szereg innych funkcji związanych z kategoriami. Można go znaleźć w oficjalnym repozytorium dodatków Mozilla:">
 
 <!ENTITY manager.installprovider.link "Kliknij poniższy link, aby otworzyć stronę informacyjną brakującego dostawcy synchronizacji. Znajdziesz tam dodatkowe informacje na temat dostawcy i będziesz mógł go zainstalować:">
 <!ENTITY manager.installprovider.warning "Ten dostawca synchronizacji nie jest hostowany w oficjalnym repozytorium dodatków Thunderbird, a zatem nie został sprawdzony przez pracowników Thunderbirda. Dostawca może wyrządzić szkody w Twoim systemie. Używaj go na własne ryzyko.">
 <!ENTITY manager.missingprovider "To konto wymaga dostawcy synchronizacji ##dostawca##, który obecnie nie jest zainstalowany.">
 
-<!ENTITY manager.supporter.contributors "Współpracownicy i tłumacze">
+<!ENTITY manager.supporter.contributors "Współpracownicy i Tłumacze">
 <!ENTITY manager.supporter.sponsors "Sponsorzy kont testowych">
 <!ENTITY manager.supporter.details "Szczegóły">
 
@@ -68,7 +68,7 @@
 <!ENTITY manager.help.debuglevel.0 "Wyłączony">
 <!ENTITY manager.help.debuglevel.1 "Włączony: Rejestrowanie tylko błędów">
 <!ENTITY manager.help.debuglevel.2 "Włączony: Rejestrowanie wszystkich wysłanych i odebranych danych">
-<!ENTITY manager.help.debuglevel.3 "Włączone: rejestrowanie wszystkich danych i niektórych wewnętrznych wartości debugowania">
+<!ENTITY manager.help.debuglevel.3 "Włączone: Rejestrowanie wszystkich danych i niektórych wewnętrznych wartości debugowania">
 
 <!ENTITY supportwizard.title "Utwórz raport o błędzie">
 <!ENTITY supportwizard.pagetitle "Zbieranie wszystkich informacji w celu skutecznego przetworzenia zgłoszenia błędu.">
