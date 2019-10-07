@@ -2,7 +2,7 @@
 <!ENTITY menu.settingslabel "Ustawienia synchronizacji (TbSync)">
 
 <!ENTITY toolbar.label "Synchronizuj wszystkie konta TbSync">
-<!ENTITY toolbar.tooltiptext "Synchronizuj ostatnie zmiany">
+<!ENTITY toolbar.tooltiptext "Synchronizuj najnowsze zmiany">
 
 <!ENTITY manager.AccountActions "Akcje konta">
 <!ENTITY manager.AddAccount "Dodaj nowe konto">
@@ -13,7 +13,7 @@
 <!ENTITY manager.DisableAccount "Wyłącz konto">
 <!ENTITY manager.DeleteAccount "Usuń konto">
 <!ENTITY manager.ShowEventLog "Otwórz dziennik zdarzeń">
-<!ENTITY manager.RetryConnectAccount "Spróbuj ponownie połączyć się z serwerem">
+<!ENTITY manager.RetryConnectAccount "Spróbuj ponownie połączyć do serwera">
 
 <!ENTITY manager.noaccounts "Nie ma jeszcze zdefiniowanych kont.">
 
@@ -38,7 +38,7 @@
 <!ENTITY manager.tabs.status.general "Ogólne">
 <!ENTITY manager.tabs.status.enableThisAccount "Włącz i synchronizuj to konto">
 <!ENTITY manager.tabs.status.sync "Synchronizuj teraz">
-<!ENTITY manager.tabs.status.tryagain "Spróbuj ponownie połączyć się z serwerem">
+<!ENTITY manager.tabs.status.tryagain "Spróbuj ponownie połączyć z serwerem">
 <!ENTITY manager.tabs.status.autotime "Okresowa synchronizacja (w minutach)">
 <!ENTITY manager.tabs.status.never "Ustawienie 0 wyłącza okresową synchronizację. Synchronizacja push nie jest jeszcze zaimplementowana.">
 <!ENTITY manager.tabs.status.resources "Dostępne zasoby">
@@ -59,8 +59,8 @@
 <!ENTITY manager.help.wiki "Otwórz strony wiki projektu TbSync, zawierają one dodatkowe informacje, przewodniki i szczegółowe opisy konfiguracji.">
 
 <!ENTITY manager.help.foundabug "Znalazłeś błąd?">
-<!ENTITY manager.help.fixit "Możesz pomóc to naprawić, wysyłając raport o błędzie. Wymaga to aktywacji trybu debugowania.">
-<!ENTITY manager.help.createbugreportinfo "Aby TbSync zbierał tylko dane debugowania istotne dla twojego zgłoszenia błędu, uruchom ponownie Thunderbirda, a następnie powtórz dokładnie kroki, które odtworzą błędne zachowanie. Następnie możesz tutaj utworzyć raport o błędzie.">
+<!ENTITY manager.help.fixit "Możesz pomóc to naprawić, wysyłając raport o błędzie. Wymaga to włączenia trybu debugowania.">
+<!ENTITY manager.help.createbugreportinfo "Aby TbSync zbierał tylko dane debugowania istotne dla Twojego zgłoszenia błędu, uruchom ponownie Thunderbirda, a następnie powtórz dokładnie kroki, które odtworzą błędne zachowanie. Następnie możesz tutaj utworzyć raport o błędzie.">
 <!ENTITY manager.help.createbugreport "Utwórz raport o błędzie">
 <!ENTITY manager.help.viewdebuglog "Zobacz log debugowania">
 
