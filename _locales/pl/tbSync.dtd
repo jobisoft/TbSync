@@ -76,7 +76,7 @@
 <!ENTITY supportwizard.label.selectcomponent "Wybierz składnik…">
 <!ENTITY supportwizard.label.summary "Krótkie podsumowanie błędu:">
 <!ENTITY supportwizard.label.description "Szczegółowy opis błędu:">
-<!ENTITY supportwizard.footer "Z podanych tutaj informacji w następnym kroku zostanie wygenerowany e-mail, który możesz następnie edytować (na przykład dodając zrzuty ekranu lub podobne). Tylko poprzez faktyczne wysłanie tej wiadomości e-mail zostanie wysłany raport o błędzie.">
+<!ENTITY supportwizard.footer "Z podanych tutaj informacji w następnym kroku zostanie wygenerowany e-mail, który możesz następnie edytować (na przykład dodając zrzuty ekranu lub podobne). Tylko poprzez faktyczne wysłanie tej wiadomości zostanie wysłany raport o błędzie.">
 
 <!ENTITY eventlog.title "Dziennik zdarzeń">
 <!ENTITY eventlog.close "Zamknij">
