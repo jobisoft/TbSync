@@ -48,8 +48,8 @@
 <!ENTITY manager.catman.text "TbSync synchronizuje również kategorie kontaktów, które są potężnym zamiennikiem dla niesynchronizowanych list kontaktów. Aby móc z nich korzystać w książce adresowej Thunderbird, możesz zainstalować dodatek Category Manager. Pozwala zarządzać nakładającymi się grupami kontaktów opartymi na kategoriach i zapewnia szereg innych funkcji związanych z kategoriami. Można go znaleźć w oficjalnym repozytorium dodatków Mozilla:">
 
 <!ENTITY manager.installprovider.link "Kliknij poniższy link, aby otworzyć stronę informacyjną brakującego dostawcy synchronizacji. Znajdziesz tam dodatkowe informacje na temat dostawcy i będziesz mógł go zainstalować:">
-<!ENTITY manager.installprovider.warning "Ten dostawca synchronizacji nie jest hostowany w oficjalnym repozytorium dodatków Thunderbird, a zatem nie został sprawdzony przez pracowników Thunderbirda. Dostawca może wyrządzić szkody w Twoim systemie. Używaj go na własne ryzyko.">
-<!ENTITY manager.missingprovider "To konto wymaga dostawcy synchronizacji ##dostawca##, który obecnie nie jest zainstalowany.">
+<!ENTITY manager.installprovider.warning "Ten dostawca synchronizacji nie jest udostępniony w oficjalnym repozytorium dodatków Thunderbird, a zatem nie został sprawdzony przez pracowników Thunderbirda. Dostawca może wyrządzić szkody w Twoim systemie. Używaj go na własne ryzyko.">
+<!ENTITY manager.missingprovider "To konto wymaga dostawcy synchronizacji ##provider##, który obecnie nie jest zainstalowany.">
 
 <!ENTITY manager.supporter.contributors "Współpracownicy i Tłumacze">
 <!ENTITY manager.supporter.sponsors "Sponsorzy kont testowych">
@@ -76,7 +76,7 @@
 <!ENTITY supportwizard.label.selectcomponent "Wybierz składnik…">
 <!ENTITY supportwizard.label.summary "Krótkie podsumowanie błędu:">
 <!ENTITY supportwizard.label.description "Szczegółowy opis błędu:">
-<!ENTITY supportwizard.footer "Z podanych tutaj informacji w następnym kroku zostanie wygenerowany e-mail, który możesz następnie edytować (na przykład dodając zrzuty ekranu lub podobne). Tylko poprzez faktyczne wysłanie tej wiadomości e-mail zostanie wysłany raport o błędzie.">
+<!ENTITY supportwizard.footer "Z podanych tutaj informacji w następnym kroku zostanie wygenerowany e-mail, który możesz następnie edytować (na przykład dodając zrzuty ekranu lub podobne). Tylko poprzez faktyczne wysłanie tej wiadomości zostanie wysłany raport o błędzie.">
 
 <!ENTITY eventlog.title "Dziennik zdarzeń">
 <!ENTITY eventlog.close "Zamknij">
