@@ -22,7 +22,7 @@
 <!ENTITY manager.provider4tbsync "Provider pour TbSync">
 <!ENTITY manager.accountsettings "Paramètres du compte">
 <!ENTITY manager.help "Aide">
-<!ENTITY manager.community "Communcauté">
+<!ENTITY manager.community "Communauté">
 <!ENTITY manager.provider "Installer un provider">
 
 <!ENTITY password.title "Demande de mots de passe TbSync">
@@ -62,10 +62,10 @@
 <!ENTITY manager.help.fixit "Vous pouvez nous aider à la corriger en nous envoyant un rapport d'erreur. Cette opération nécessite l'activitation du mode de débogage.">
 <!ENTITY manager.help.createbugreportinfo "Afin que TbSync ne collecte que les données de débogages pertinentes pour résoudre votre bogue, veuillez redémarrer Thunderbird et ensuite répéter exactement les étapes qui causent le comportement indésiré. Ensuite, vous pourrez créer un rapport d'erreur depuis cette fenêtre-ci.">
 <!ENTITY manager.help.createbugreport "Créer un rapport d'erreur">
-<!ENTITY manager.help.viewdebuglog "View debug log">
+<!ENTITY manager.help.viewdebuglog "Voir le journal de débogage">
 
 <!ENTITY manager.help.debugmode "Debug mode:">
-<!ENTITY manager.help.debuglevel.0 "Disabled">
+<!ENTITY manager.help.debuglevel.0 "Désactivé">
 <!ENTITY manager.help.debuglevel.1 "Enabled: Logging of errors only">
 <!ENTITY manager.help.debuglevel.2 "Enabled: Logging of all sent and received data">
 <!ENTITY manager.help.debuglevel.3 "Enabled: Logging of all data and some internal debug values">
