@@ -86,11 +86,11 @@ var TbSync = {
     for (let module of this.modules) {
       if (module.state == 1) {
         try {
+          this.dump("Initializing module", "<" + module.name + ">");
           await this[module.name].load();
           module.state = 2;
-          this.dump("Initializing module <" + module.name + ">", "OK");
         } catch (e) {
-          this.dump("Initializing module <" + module.name + ">", "FAILED!");
+          this.dump("Initialization of module <" + module.name + "> FAILED", e.message + "\n" + e.stack);
           Components.utils.reportError(e);
         }
       }
