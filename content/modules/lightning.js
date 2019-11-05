@@ -19,8 +19,13 @@ var lightning = {
     //check for lightning
     let lightning = await AddonManager.getAddonByID("{e2fda1a4-762b-4020-b5ad-a41df1933103}");
     if (lightning !== null) {
-      TbSync.dump("Check4Lightning","Start");
-
+      TbSync.dump("Check4Lightning ("+lightning.version+")","Start");
+      
+      // Lightning version should match TB version
+      if (Services.appinfo.version != lightning.version) {
+        throw new Error("Wrong Lightning version, need <"+Services.appinfo.version+">, but found <"+lightning.version+">");
+      }
+      
       //try to import
       if ("calICalendar" in Components.interfaces) {
         var { cal } = ChromeUtils.import("resource://calendar/modules/calUtils.jsm");

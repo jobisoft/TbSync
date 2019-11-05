@@ -53,7 +53,7 @@ var TbSync = {
     this.dump("TbSync init","Start (" + this.addon.version.toString() + ")");
 
     //print information about Thunderbird version and OS
-    this.dump(Services.appinfo.name, Services.appinfo.platformVersion + " on " + OS.Constants.Sys.Name);
+    this.dump(Services.appinfo.name, Services.appinfo.version + " on " + OS.Constants.Sys.Name);
 
     // register modules to be used by TbSync
     this.modules.push({name: "db", state: 0});
