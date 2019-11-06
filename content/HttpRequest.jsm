@@ -34,6 +34,7 @@ var bug669675 = [];
 var containers = [];
 var sandboxes = {};
 
+var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 
 var HttpRequest = class {
     constructor() {
