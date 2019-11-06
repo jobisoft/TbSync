@@ -15,26 +15,46 @@ var lightning = {
   cal: null,
   ICAL: null,
   
-  load: async function () {
-    //check for lightning
-    let lightning = await AddonManager.getAddonByID("{e2fda1a4-762b-4020-b5ad-a41df1933103}");
-    if (lightning !== null) {
-      TbSync.dump("Check4Lightning ("+lightning.version+")","Start");
-      
-      // Lightning version should match TB version
-      if (Services.appinfo.version != lightning.version) {
-        throw new Error("Wrong Lightning version, need <"+Services.appinfo.version+">, but found <"+lightning.version+">");
-      }
-      
+  importLightning: function () {
+    try {
       //try to import
       if ("calICalendar" in Components.interfaces) {
         var { cal } = ChromeUtils.import("resource://calendar/modules/calUtils.jsm");
         var { ICAL } = ChromeUtils.import("resource://calendar/modules/ical.js");
         TbSync.lightning.cal = cal;
         TbSync.lightning.ICAL = ICAL;
+        return true;
+      } else {
+        TbSync.dump("Check4Lightning","calICalendar not found");
+      }
+    } catch (e) {
+        TbSync.dump("Check4Lightning","Error during lightning module import");
+        Components.utils.reportError(e);
+    }
+    return false;
+  },
+  
+  load: async function () {
+    //check for lightning
+    let lightning = await AddonManager.getAddonByID("{e2fda1a4-762b-4020-b5ad-a41df1933103}");
+    if (lightning !== null) {
+      TbSync.dump("Check4Lightning", lightning.version);
+      
+      // Lightning version should match TB version
+      if (Services.appinfo.version != lightning.version) {
+        throw new Error("Wrong Lightning version, need <"+Services.appinfo.version+">, but found <"+lightning.version+">");
+      }
+      
+      for (let retry=0; retry < 15; retry++) {
+        if (this.importLightning()) {
+          break;
+        }
+        
+        TbSync.dump("Check4Lightning","Lightning not yet ready #" + retry);
+        await TbSync.tools.sleep(1000);
       }
 
-      if (typeof TbSync.lightning.cal !== 'undefined') {
+      if (TbSync.lightning.cal && typeof TbSync.lightning.cal !== 'undefined') {
         //adding a global observer
         TbSync.lightning.cal.getCalendarManager().addCalendarObserver(this.calendarObserver);
         TbSync.lightning.cal.getCalendarManager().addObserver(this.calendarManagerObserver);
