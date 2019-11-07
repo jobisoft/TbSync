@@ -15,7 +15,7 @@ var lightning = {
   cal: null,
   ICAL: null,
   
-  importLightning: function () {
+  importLightningModules: function () {
     try {
       //try to import
       if ("calICalendar" in Components.interfaces) {
@@ -28,7 +28,7 @@ var lightning = {
         TbSync.dump("Check4Lightning","calICalendar not found");
       }
     } catch (e) {
-        TbSync.dump("Check4Lightning","Error during lightning module import");
+        TbSync.dump("Check4Lightning","Error during lightning module import: " + e.toString() + "\n" + e.stack);
         Components.utils.reportError(e);
     }
     return false;
@@ -45,14 +45,7 @@ var lightning = {
         throw new Error("Wrong Lightning version, need <"+Services.appinfo.version+">, but found <"+lightning.version+">");
       }
       
-      for (let retry=0; retry < 15; retry++) {
-        if (this.importLightning()) {
-          break;
-        }
-        
-        TbSync.dump("Check4Lightning","Lightning not yet ready #" + retry);
-        await TbSync.tools.sleep(1000);
-      }
+      this.importLightningModules();
 
       if (TbSync.lightning.cal && typeof TbSync.lightning.cal !== 'undefined') {
         //adding a global observer
