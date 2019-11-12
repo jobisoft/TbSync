@@ -78,44 +78,43 @@ var passwordManager = {
   
   asyncOAuthPrompt: async function(data, reference) {
     if (data.windowID) {
-      let authCode = null;
-      let accessToken = null;
-      
+    
       let parameters = [];
       for (let key of Object.keys(data.auth_opt)) {
         parameters.push(key + "=" + encodeURIComponent(data.auth_opt[key])); 
       }
       let auth_url = data.auth_url + "?" + parameters.join("&");      
-
       reference[data.windowID] = TbSync.window.openDialog(auth_url, "TbSyncOAuthPrompt:" + data.accountName, "centerscreen,chrome,width=500,height=700");
+      console.log("auth_url: " + auth_url);
 
       let timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
 
       // Try to get an auth code
-      authCode = await new Promise(function(resolve, reject) {
+      let auth_rv = await new Promise(function(resolve, reject) {
         var loaded = false;
-        var code = null;
+        var last_url = "";
         
         let event = { 
           notify: function(timer) {
             let done = false;
-            
+            let rv = {};
+
             try {
               let url = reference[data.windowID].location.href;
-              console.log(url);
+              if (last_url != url) console.log("current_url:" + url);
+              last_url = url;
               
+              // Must be set after accessing the location.href (which might fail).
               loaded = true;
               
               // Abort, if we hit the redirect_url.
               if (url.startsWith(data.auth_redirect_uri)) {
-                done = true;
 
-                let vars = {};
                 let parts = url.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
-                  vars[key] = value;
+                  rv[key] = value;
                 });
 
-                code = vars[data.auth_codefield];
+                done = true;                
               }
             } catch (e) {
               // Did the window has been loaded, but the user closed it?
@@ -125,7 +124,7 @@ var passwordManager = {
             
             if (done) {
               timer.cancel();
-              resolve(code);
+              resolve({code: rv[data.auth_codefield], error: decodeURIComponent(rv["error_description"])});
             }
             
           }
@@ -141,12 +140,12 @@ var passwordManager = {
         //Components.utils.reportError(e);
       }
             
-      console.log("authCode:" + authCode);
-      if (!authCode)
-        return;
+      console.log("authCode:" + auth_rv.code);
+      if (!auth_rv.code)
+        throw new Error(auth_rv.error);
       
       // Try to get an access token
-      accessToken = await new Promise(function(resolve, reject) {        
+      let accessToken = await new Promise(function(resolve, reject) {        
           let req = new XMLHttpRequest();
           req.mozBackgroundRequest = true;
           req.open("POST", data.access_url, true);
@@ -159,16 +158,14 @@ var passwordManager = {
           let parameters = [];
           for (let key of Object.keys(data.access_opt)) {
             parameters.push(key + "=" + encodeURIComponent(data.access_opt[key])); 
-            //parameters.push(key + "=" + data.access_opt[key]); 
           }
-          parameters.push(data.access_codefield + "=" + authCode);
-          console.log(parameters);
+          parameters.push(data.access_codefield + "=" + auth_rv.code);
           
           req.onload = function() {              
               switch(req.status) {
                   case 200: //OK
                     {
-                      console.log("response:" + req.responseText);
+                      console.log(req.responseText);
                       resolve(JSON.parse(req.responseText).access_token);
                     }                      
                     break;
@@ -181,7 +178,6 @@ var passwordManager = {
           req.send(parameters.join("&"));
       });      
 
-      console.log("accessToken:" + accessToken);
       return accessToken;
       
     }    
