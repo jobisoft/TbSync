@@ -69,7 +69,7 @@ var passwordManager = {
       let url = "chrome://tbsync/content/passwordPrompt/passwordPrompt.xul";
   
       return await new Promise(function(resolve, reject) {
-       reference[data.windowID] = TbSync.window.openDialog(url, "TbSyncPasswordPrompt:" + data.accountName, "centerscreen,chrome,resizable=no", data, resolve);
+       reference[data.windowID] = TbSync.window.openDialog(url, "TbSyncPasswordPrompt:" + data.windowID, "centerscreen,chrome,resizable=no", data, resolve);
       });
     }
     
@@ -84,7 +84,7 @@ var passwordManager = {
         parameters.push(key + "=" + encodeURIComponent(data.auth_opt[key])); 
       }
       let auth_url = data.auth_url + "?" + parameters.join("&");      
-      reference[data.windowID] = TbSync.window.openDialog(auth_url, "TbSyncOAuthPrompt:" + data.accountName, "centerscreen,chrome,width=500,height=700");
+      reference[data.windowID] = TbSync.window.openDialog(auth_url, "TbSyncOAuthPrompt:" + data.windowID, "centerscreen,chrome,width=500,height=700");
       console.log("auth_url: " + auth_url);
 
       let timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
