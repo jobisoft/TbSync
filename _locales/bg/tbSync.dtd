@@ -64,7 +64,7 @@
 <!ENTITY manager.help.createbugreport "Създаване на доклад за грешка">
 <!ENTITY manager.help.viewdebuglog "Покажи подробния протокол">
 
-<!ENTITY manager.help.debugmode "Debug mode:">
+<!ENTITY manager.help.debugmode "Режим на подробно протоколиране:">
 <!ENTITY manager.help.debuglevel.0 "Изключено">
 <!ENTITY manager.help.debuglevel.1 "Включено: Протоколиране само на грешки">
 <!ENTITY manager.help.debuglevel.2 "Включено: протоколиране на всички изпратени и получени данни">
