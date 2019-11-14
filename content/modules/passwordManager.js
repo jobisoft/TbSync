@@ -96,7 +96,7 @@ var passwordManager = {
       // Before actually asking the user again, assume we have a refresh token, and can get a new token silently
       let step2Url = data.refresh.url;
       let step2RequestParameters = data.refresh.requestParameters;
-      let step2ResponseFields = data.refresh.requestParameters;
+      let step2ResponseFields = data.refresh.responseFields;
       let step2Token = this.getOAuthToken(currentTokenString, "refresh");
 
       if (!step2Token) {
