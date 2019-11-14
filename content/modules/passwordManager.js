@@ -89,6 +89,7 @@ var passwordManager = {
   },
   
   // returns obj: {error, tokens}
+  // https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow#refresh-the-access-token
   asyncOAuthPrompt: async function(data, reference, currentTokenString = "") {
     if (data.windowID) {      
      
@@ -198,7 +199,7 @@ var passwordManager = {
                 case 200: //OK
                   {
                     let tokens = JSON.parse(req.responseText);
-                    resolve({access: tokens[step2ResponseFields.accessToken], refresh: tokens[step2ResponseFields.accessToken], errorStep2: ""});
+                    resolve({access: tokens[step2ResponseFields.accessToken], refresh: tokens[step2ResponseFields.refreshToken], errorStep2: ""});
                   }                      
                   break;
                   
