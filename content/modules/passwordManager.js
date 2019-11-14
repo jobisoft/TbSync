@@ -90,87 +90,97 @@ var passwordManager = {
   
   // returns obj: {error, tokens}
   asyncOAuthPrompt: async function(data, reference, currentTokenString = "") {
-    if (data.windowID) {
-      
-      // Before actually asking the user again, check if we have a refresh token, and can get a new token silently
-      console.log("refresh: " + this.getOAuthToken(currentTokenString, "refresh"));
-      
-      let parameters = [];
-      for (let key of Object.keys(data.auth_opt)) {
-        parameters.push(key + "=" + encodeURIComponent(data.auth_opt[key])); 
-      }
-      let auth_url = data.auth_url + "?" + parameters.join("&");      
-      reference[data.windowID] = TbSync.window.openDialog(auth_url, "TbSyncOAuthPrompt:" + data.windowID, "centerscreen,chrome,width=500,height=700");
-      let timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
+    if (data.windowID) {      
+     
+      // Before actually asking the user again, assume we have a refresh token, and can get a new token silently
+      let step2Url = data.refresh.url;
+      let step2RequestParameters = data.refresh.requestParameters;
+      let step2ResponseFields = data.refresh.requestParameters;
+      let step2Token = this.getOAuthToken(currentTokenString, "refresh");
 
-      // Try to get an auth code
-      const {auth, errorStep1} = await new Promise(function(resolve, reject) {
-        var loaded = false;
+      if (!step2Token) {
+        let parameters = [];
+        for (let key of Object.keys(data.auth.requestParameters)) {
+          parameters.push(key + "=" + encodeURIComponent(data.auth.requestParameters[key])); 
+        }
+        let authUrl = data.auth.url + "?" + parameters.join("&");      
+        reference[data.windowID] = TbSync.window.openDialog(authUrl, "TbSyncOAuthPrompt:" + data.windowID, "centerscreen,chrome,width=500,height=700");
+        let timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
+
+        // Try to get an auth token
+        const {authToken, errorStep1} = await new Promise(function(resolve, reject) {
+          var loaded = false;
+          
+          let event = { 
+            notify: function(timer) {
+              let done = false;
+              let rv = {};
+
+              try {
+                let url = reference[data.windowID].location.href;
+                
+                // Must be set after accessing the location.href (which might fail).
+                loaded = true;
+                
+                // Abort, if we hit the redirectUrl
+                if (url.startsWith(data.auth.redirectUrl)) {
+                  let parts = url.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+                    rv[key] = decodeURIComponent(value);
+                  });
+                  done = true;                
+                }
+              } catch (e) {
+                // Did the window has been loaded, but the user closed it?
+                if (loaded) {
+                  done = "OAuthAbortError";
+                }
+                //Components.utils.reportError(e);
+              }
+              
+              if (done) {
+                timer.cancel();
+
+                let errorStep1 = "";
+                if (done !==true) errorStep1 = done;
+                else if (rv.hasOwnProperty(data.auth.responseFields.error) && rv[data.auth.responseFields.error]) errorStep1 =  rv[data.auth.responseFields.error];
+                resolve({authToken: rv[data.auth.responseFields.authToken], errorStep1});
+              }
+              
+            }
+          }
+          
+          timer.initWithCallback(event, 200, Components.interfaces.nsITimer.TYPE_REPEATING_SLACK);          
+        });
         
-        let event = { 
-          notify: function(timer) {
-            let done = false;
-            let rv = {};
-
-            try {
-              let url = reference[data.windowID].location.href;
-              
-              // Must be set after accessing the location.href (which might fail).
-              loaded = true;
-              
-              // Abort, if we hit the redirect_url.
-              if (url.startsWith(data.auth_redirect_uri)) {
-                let parts = url.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
-                  rv[key] = decodeURIComponent(value);
-                });
-                done = true;                
-              }
-            } catch (e) {
-              // Did the window has been loaded, but the user closed it?
-              if (loaded) {
-                done = "aborted";
-              }
-              //Components.utils.reportError(e);
-            }
-            
-            if (done) {
-              timer.cancel();
-
-              let errorStep1 = "";
-              if (done == "aborted") errorStep1 = "OAuthAbortError";
-              else if (rv.hasOwnProperty(data.auth_errorfield) && rv[data.auth_errorfield]) errorStep1 =  rv[data.auth_errorfield];
-              resolve({auth: rv[data.auth_codefield], errorStep1});
-            }
-            
+        
+        // Try to close the window.
+        try {
+          reference[data.windowID].close();
+          reference[data.windowID] = null;
+        } catch (e) {
+          //Components.utils.reportError(e);
+        }
+       
+        if (errorStep1) {
+          return {
+            error: errorStep1, 
+            tokens: JSON.stringify({access: "", refresh: ""})
           }
         }
         
-        timer.initWithCallback(event, 200, Components.interfaces.nsITimer.TYPE_REPEATING_SLACK);          
-      });
-      
-      
-      // Try to close the window.
-      try {
-        reference[data.windowID].close();
-        reference[data.windowID] = null;
-      } catch (e) {
-        //Components.utils.reportError(e);
+        // switch step2 from "refresh token" to "get access token"
+        step2Url = data.access.url;
+        step2RequestParameters = data.access.requestParameters;
+        step2ResponseFields = data.access.responseFields;
+        step2Token = authToken;
       }
-     
-      if (errorStep1) {
-        return {
-          error: errorStep1, 
-          tokens: JSON.stringify({access: "", refresh: "", auth})
-        }
-      }
+
       
-
-
-      // Try to get an access token
+      // Try to get new access and refresh token
       const {access , refresh, errorStep2} = await new Promise(function(resolve, reject) {
         let req = new XMLHttpRequest();
         req.mozBackgroundRequest = true;
-        req.open("POST", data.access_url, true);
+        req.open("POST", data.access.url, true);
         req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded"); // POST data needs to be urlencoded!
 
         req.onerror = function () {
@@ -178,17 +188,17 @@ var passwordManager = {
         };
 
         let parameters = [];
-        for (let key of Object.keys(data.access_opt)) {
-          parameters.push(key + "=" + encodeURIComponent(data.access_opt[key])); 
+        for (let key of Object.keys(step2RequestParameters)) {
+          // a parameter value of null indicates the token field
+          parameters.push(key + "=" + (step2RequestParameters[key] === null ? encodeURIComponent(step2Token) : encodeURIComponent(step2RequestParameters[key]))); 
         }
-        parameters.push(data.access_codefield + "=" +encodeURIComponent(auth));
         
         req.onload = function() {              
             switch(req.status) {
                 case 200: //OK
                   {
                     let tokens = JSON.parse(req.responseText);
-                    resolve({access: tokens.access_token, refresh: tokens.refresh_token, errorStep2: ""});
+                    resolve({access: tokens[step2ResponseFields.accessToken], refresh: tokens[step2ResponseFields.accessToken], errorStep2: ""});
                   }                      
                   break;
                   
@@ -202,7 +212,7 @@ var passwordManager = {
 
       return {
         error: errorStep2, 
-        tokens: JSON.stringify({access, refresh, auth})
+        tokens: JSON.stringify({access, refresh})
       };
 
     }
