@@ -769,9 +769,11 @@ var addressbook = {
             // -> store creation type
             if (aTopic == "addrbook-contact-created") {
               TbSync.db.addItemToChangeLog(bookUID, aSubject.uuid + "#DelayedCreation", itemStatus == "added_by_server" ? itemStatus : "added_by_user"); //uuid = directoryId+localId
+              TbSync.db.addItemToChangeLog(bookUID, aSubject.uuid + "#DelayedCreationOriginalPrimaryKey", abDirectory.primaryKeyField ? abItem.getProperty(abDirectory.primaryKeyField) : ""); //uuid = directoryId+localId
             } 
             // during follow up MODs we can identify this card via
             let delayedCreation = TbSync.db.getItemStatusFromChangeLog(bookUID, aSubject.uuid + "#DelayedCreation");
+            let delayedCreationOriginalPrimaryKey = TbSync.db.getItemStatusFromChangeLog(bookUID, aSubject.uuid + "#DelayedCreationOriginalPrimaryKey");
               
             // during create it could happen, that this card comes without a UID Property - bug 1554782
             // a call to .UID will generate a UID but will also send an update notification for the the card
@@ -782,8 +784,8 @@ var addressbook = {
             }
 
             // new cards must get a NEW(!) primaryKey first
-            if (delayedCreation && abDirectory.primaryKeyField && !abItem.getProperty(abDirectory.primaryKeyField)) {
-              console.log("Missing primary Key, generated!");
+            if (delayedCreation ==  "added_by_user" && abDirectory.primaryKeyField && delayedCreationOriginalPrimaryKey == abItem.getProperty(abDirectory.primaryKeyField)) {
+              console.log("New primary Key generated!");
               abItem.setProperty(abDirectory.primaryKeyField, folderData.targetData.generatePrimaryKey());
               // special case: do not add "modified_by_server"
               abDirectory.modifyItem(abItem, /*pretagChangelogWithByServerEntry */ false);
@@ -806,6 +808,7 @@ var addressbook = {
                 //if delayedCreation is "added_by_server", then itemStatus is "added_by_server" as well, 
                 // we can remove it here
                 TbSync.db.removeItemFromChangeLog(bookUID, aSubject.uuid + "#DelayedCreation");
+                TbSync.db.removeItemFromChangeLog(bookUID, aSubject.uuid + "#DelayedCreationOriginalPrimaryKey");
               default:
                 break;
             }
