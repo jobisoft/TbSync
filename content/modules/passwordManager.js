@@ -199,7 +199,10 @@ var passwordManager = {
                 case 200: //OK
                   {
                     let tokens = JSON.parse(req.responseText);
-                    resolve({access: tokens[step2ResponseFields.accessToken], refresh: tokens[step2ResponseFields.refreshToken], errorStep2: ""});
+                    // the refresh-token may or may not be renewed
+                    let _access = tokens[step2ResponseFields.accessToken];
+                    let _refresh = (step2ResponseFields.hasOwnProperty("refreshToken") && tokens.hasOwnProperty(step2ResponseFields.refreshToken)) ? tokens[step2ResponseFields.refreshToken] : step2Token;
+                    resolve({access: _access, refresh: _refresh, errorStep2: ""});
                   }                      
                   break;
                   
