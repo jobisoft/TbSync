@@ -519,6 +519,15 @@ var lightning = {
     return null;
   },
   
+  getFolderFromCalendarURL: function(calURL) {
+    let folders = TbSync.db.findFolders({"url": calURL});
+    if (folders.length == 1) {
+      let accountData = new TbSync.AccountData(folders[0].accountID);
+      return new TbSync.FolderData(accountData, folders[0].folderID);
+    }
+    return null;
+  },  
+  
   calendarObserver : { 
     onStartBatch : function () {},
     onEndBatch : function () {},
