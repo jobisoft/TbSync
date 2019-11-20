@@ -90,7 +90,10 @@ var abAutoComplete = {
   
   
   Request: async function(accountData, aSearchString) {
-    let entries = await TbSync.providers[accountData.getAccountProperty("provider")].Base.abAutoComplete(accountData, aSearchString);
+    let entries = [];
+    if (accountData.isConnected()) {
+      entries = await TbSync.providers[accountData.getAccountProperty("provider")].Base.abAutoComplete(accountData, aSearchString);
+    }
     return entries.map(entry => ({ ...entry, id: accountData.accountID }));
   },   
 }
