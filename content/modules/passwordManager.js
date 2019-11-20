@@ -90,7 +90,7 @@ var passwordManager = {
   
   // returns obj: {error, tokens}
   // https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow#refresh-the-access-token
-  asyncOAuthPrompt: async function(data, reference, currentTokenString = "") {
+  asyncOAuthPrompt: async function(data, reference, currentTokenString = "", refreshOnly = false) {
     if (data.windowID) {      
      
       // Before actually asking the user again, assume we have a refresh token, and can get a new token silently
@@ -100,6 +100,13 @@ var passwordManager = {
       let step2Token = this.getOAuthToken(currentTokenString, "refresh");
 
       if (!step2Token) {
+        if (refreshOnly) {
+          return {
+            error: "RefreshOnlyButRefreshFailed", 
+            tokens: JSON.stringify({access: "", refresh: ""})
+          }
+        }
+        
         let parameters = [];
         for (let key of Object.keys(data.auth.requestParameters)) {
           parameters.push(key + "=" + encodeURIComponent(data.auth.requestParameters[key])); 
