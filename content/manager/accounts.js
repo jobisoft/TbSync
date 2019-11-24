@@ -122,6 +122,13 @@ var tbSyncAccounts = {
       } else if (confirm(TbSync.getString("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
         //cache all folders and remove associated targets 
         TbSync.core.disableAccount(accountsList.selectedItem.value);
+        
+        // the following call might fail, as not all providers provide that method, it was mainly added to cleanup stored passwords
+        try  {
+          let accountData = new TbSync.AccountData(accountsList.selectedItem.value);
+          TbSync.providers[accountData.getAccountProperty("provider")].Base.onDeleteAccount(accountData);
+        } catch (e) {                Components.utils.reportError(e);}
+
         //delete account and all folders from db
         TbSync.db.removeAccount(accountsList.selectedItem.value);
         //update list
