@@ -113,7 +113,7 @@ var tbSyncAccounts = {
       }
       
       if (!tbSyncAccounts.hasInstalledProvider(accountsList.selectedItem.value)) {
-        if (confirm(TbSync.getString("prompt.EraseAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
+        if (confirm(TbSync.getString("prompt.Erase").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
           //delete account and all folders from db
           TbSync.db.removeAccount(accountsList.selectedItem.value);
           //update list
