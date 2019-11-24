@@ -16,12 +16,12 @@ var passwordManager = {
   unload: async function () {
   },
 
-  removeLoginInfos: function(origin, realm, users) {
+  removeLoginInfos: function(origin, realm, users = null) {
     let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
 
     let logins = Services.logins.findLogins(origin, null, realm);
     for (let i = 0; i < logins.length; i++) {
-      if (users.includes(logins[i].username)) {
+      if (!users || users.includes(logins[i].username)) {
         let currentLoginInfo = new nsLoginInfo(origin, null, realm, logins[i].username, logins[i].password, "", "");
         try {
           Services.logins.removeLogin(currentLoginInfo);
