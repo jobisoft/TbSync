@@ -93,7 +93,7 @@ var providers = {
         while (allAddressBooks.hasMoreElements()) {
           let addressBook = allAddressBooks.getNext();
           if (addressBook instanceof Components.interfaces.nsIAbDirectory) {
-            let storedProvider = addressBook.getStringValue("tbSyncProvider", "");
+            let storedProvider = TbSync.addressbook.getStringValue(addressBook, "tbSyncProvider", "");
             if (provider == storedProvider && providerData.getFolders({"target": addressBook.UID}).length == 0) {
               let name = addressBook.dirName;
               addressBook.dirName = TbSync.getString("target.orphaned") + ": " + name;              

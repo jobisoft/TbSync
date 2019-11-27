@@ -23,7 +23,7 @@ var tbSyncAddressBook = {
         let type = "";
         if (!this._directory.isMailList && !this._directory.isRemote) {
           try {
-            type = this._directory.getStringValue("tbSyncIcon", "");
+            type = TbSync.addressbook.getStringValue(this._directory, "tbSyncIcon", "");
           } catch (e) {}
         }
         

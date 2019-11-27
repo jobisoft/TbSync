@@ -29,8 +29,14 @@ var addressbook = {
   },
 
 
-
-
+  // needed due to sogo issue not implementing this method in their Ab
+  getStringValue : function (ab, value, fallback) {
+    try {
+      return ab.getStringValue(value, fallback);
+    } catch (e) {
+      return fallback;
+    }
+  },
   
   // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   // * AdvancedTargetData, an extended TargetData implementation, providers

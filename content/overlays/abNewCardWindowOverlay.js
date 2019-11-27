@@ -24,7 +24,7 @@ var tbSyncNewCardWindow = {
         let ab = MailServices.ab.getDirectory(abURI);
         if (!ab.isMailList && !ab.isRemote) {
           try {
-            icon = ab.getStringValue("tbSyncIcon", "");
+            icon = TbSync.addressbook.getStringValue(ab, "tbSyncIcon", "");
           } catch (e) {}
         }
       }
