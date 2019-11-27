@@ -21,7 +21,7 @@ If you like TbSync and want to support its development, please consider a donati
 
 
 ## Want to add or fix a localization?
-To help translating this project, please visit to [crowdin.com](https://crowdin.com/profile/jobisoft), where the localizations are managed. If you want to add a new language, just contact me and I will set it up.
+To help translating this project, please visit [crowdin.com](https://crowdin.com/profile/jobisoft), where the localizations are managed. If you want to add a new language, just contact me and I will set it up.
 
 Here are some general information regarding translations:
 
