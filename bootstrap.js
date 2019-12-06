@@ -77,9 +77,12 @@ var WindowListener = {
       });
     }
 
-    // the main window has loaded, continue with init
-    var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
-    if (!TbSync.enabled) TbSync.load(window);
+    // Check if the opened window is the one we want to modify.
+    if (window.document.documentElement.getAttribute("windowtype") === "mail:3pane") {
+      // the main window has loaded, continue with init
+      var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+      if (!TbSync.enabled) TbSync.load(window);
+    }
   },
 
 
@@ -90,10 +93,8 @@ var WindowListener = {
   onOpenWindow(xulWindow) {
     // A new window has opened.
     let domWindow = xulWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
-    // Check if the opened window is the one we want to modify.
-    if (domWindow.document.documentElement.getAttribute("windowtype") === "mail:3pane") {
-      this.loadIntoWindow(domWindow);
-    }
+    // The domWindow.document.documentElement.getAttribute("windowtype") is not set before the load, so we cannot check it here
+    this.loadIntoWindow(domWindow);
   },
 
   onCloseWindow(xulWindow) {

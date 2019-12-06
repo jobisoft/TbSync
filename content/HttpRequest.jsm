@@ -545,7 +545,7 @@ var HttpRequest = class {
 
 
 
-    /* not used by cardbook */
+    /* not used */
     
     get responseXML() { throw new Error("HttpRequest: responseXML not implemented"); }
 
