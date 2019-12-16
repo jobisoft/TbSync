@@ -280,14 +280,20 @@ manager.FolderList = class {
         return;
     
       if (folder.getFolderProperty("selected")) {
-        if (!folder.targetData.hasTarget() || element.ownerDocument.defaultView.confirm(TbSync.getString("prompt.Unsubscribe"))) {
-          folder.targetData.removeTarget();           
-          folder.setFolderProperty("selected", false);          
-        } else {
-          if (element) {
-            //undo users action
-            element.setAttribute("checked", true);
+        // hasTarget() can throw an error, ignore that here
+        try {
+          if (!folder.targetData.hasTarget() || element.ownerDocument.defaultView.confirm(TbSync.getString("prompt.Unsubscribe"))) {
+            folder.targetData.removeTarget();           
+            folder.setFolderProperty("selected", false);          
+          } else {
+            if (element) {
+              //undo users action
+              element.setAttribute("checked", true);
+            }
           }
+        } catch (e) {
+          folder.setFolderProperty("selected", false);
+          Components.utils.reportError(e);
         }
       } else {
         //select and update status

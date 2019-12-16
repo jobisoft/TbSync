@@ -212,8 +212,13 @@ var lightning = {
     }
 
     setReadOnly(value) {
-      if (this.hasTarget()) {
-        this.getTarget().then(target => target.calendar.setProperty("readOnly", value));
+      // hasTarget() can throw an error, ignore that here
+      try {
+        if (this.hasTarget()) {
+          this.getTarget().then(target => target.calendar.setProperty("readOnly", value));
+        }
+      } catch (e) {
+        Components.utils.reportError(e);
       }
     }
 

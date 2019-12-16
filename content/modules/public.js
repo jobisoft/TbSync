@@ -462,14 +462,19 @@ var FolderData = class {
   // will be added to its name, to indicate, that it is no longer
   // managed by TbSync.
   remove(keepStaleTargetSuffix = "") {
-    if (this.targetData.hasTarget()) {
-      if (keepStaleTargetSuffix) {
-        let oldName =  this.targetData.targetName;
-        this.targetData.targetName = TbSync.getString("target.orphaned") + ": " + oldName + " " + keepStaleTargetSuffix;
-        this.targetData.disconnectTarget();
-      } else {
-        this.targetData.removeTarget();
+    // hasTarget() can throw an error, ignore that here
+    try {
+      if (this.targetData.hasTarget()) {
+        if (keepStaleTargetSuffix) {
+          let oldName =  this.targetData.targetName;
+          this.targetData.targetName = TbSync.getString("target.orphaned") + ": " + oldName + " " + keepStaleTargetSuffix;
+          this.targetData.disconnectTarget();
+        } else {
+          this.targetData.removeTarget();
+        }
       }
+    } catch (e) {
+        Components.utils.reportError(e);
     }
     this.setFolderProperty("cached", true);
   }
