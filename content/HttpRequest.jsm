@@ -124,7 +124,7 @@ var HttpRequest = class {
             // nsIChannelEventSink implementation
             asyncOnChannelRedirect: function(aOldChannel, aNewChannel, aFlags, aCallback) {
                 // Disallow redirects from https to http.
-                if (aOldChannel.URI.scheme == "hhtps" && aNewChannel.URI.scheme == "http") {
+                if (aOldChannel.URI.scheme == "https" && aNewChannel.URI.scheme == "http") {
                     // Using an unused error code according to https://developer.mozilla.org/en-US/docs/Mozilla/Errors.
                     // REJECTED_REDIRECT_FROM_HTTPS_TO_HTTP'
                     aCallback.onRedirectVerifyCallback(0x804B002F);
