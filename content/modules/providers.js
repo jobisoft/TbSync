@@ -155,6 +155,7 @@ var providers = {
     defaults.lastsynctime = 0;
     defaults.status = "disabled";
     defaults.autosync = 0;
+    defaults.noAutosyncUntil = 0;
     defaults.accountname = "";
     // DefaultAccountPropsEnd
 

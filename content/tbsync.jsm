@@ -68,7 +68,7 @@ var TbSync = {
     this.modules.push({name: "tools", state: 0});
     this.modules.push({name: "manager", state: 0});
     this.modules.push({name: "providers", state: 0});
-	this.modules.push({name: "messenger", state: 0});
+    this.modules.push({name: "messenger", state: 0});
 
     //load modules
     for (let module of this.modules) {
@@ -150,10 +150,12 @@ var TbSync = {
           //get all accounts and check, which one needs sync
           let accounts = TbSync.db.getAccounts();
           for (let i=0; i<accounts.IDs.length; i++) {
+            let now = Date.now();
             let syncInterval = accounts.data[accounts.IDs[i]].autosync * 60 * 1000;
             let lastsynctime = accounts.data[accounts.IDs[i]].lastsynctime;
-            if (TbSync.core.isEnabled(accounts.IDs[i]) && (syncInterval > 0) && ((Date.now() - lastsynctime) > syncInterval)) {
-              TbSync.core.syncAccount(accounts.IDs[i]);
+            let noAutosyncUntil = accounts.data[accounts.IDs[i]].noAutosyncUntil || 0;
+            if (TbSync.core.isEnabled(accounts.IDs[i]) && (syncInterval > 0) && (now > (lastsynctime + syncInterval)) && (now > noAutosyncUntil)) {
+                TbSync.core.syncAccount(accounts.IDs[i]);
             }
           }
         }
