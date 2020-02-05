@@ -388,20 +388,19 @@ var addressbook = {
       }
     }
     
-    addPhoto(photo, data) {	
+    addPhoto(photo, data, extension = "jpg", url = "") {	
       let dest = [];
       let card = this._card;
       let bookUID = this.abDirectory.UID;
-      
+
       // TbSync storage must be set as last
       let book64 = btoa(bookUID);
       let photo64 = btoa(photo);	    
-      let photoName64 = book64 + "_" + photo64;
-      
-      TbSync.dump("PhotoName", photoName64);
+      let photoName64 = book64 + "_" + photo64 + "." + extension;
       
       dest.push(["Photos", photoName64]);
-      dest.push(["TbSync","Photos", book64, photo64]);
+      // I no longer see a reason for this
+      // dest.push(["TbSync","Photos", book64, photo64]);
       
       let filePath = "";
       for (let i=0; i < dest.length; i++) {
@@ -413,7 +412,7 @@ var addressbook = {
         try {
           binary = atob(data.split(" ").join(""));
         } catch (e) {
-          TbSync.dump("Failed to decode base64 string:", data);
+          console.log("Failed to decode base64 string:", data);
         }
         foStream.write(binary, binary.length);
         foStream.close();
@@ -421,8 +420,8 @@ var addressbook = {
         filePath = 'file:///' + file.path.replace(/\\/g, '\/').replace(/^\s*\/?/, '').replace(/\ /g, '%20');
       }
       card.setProperty("PhotoName", photoName64);
-      card.setProperty("PhotoType", "file");
-      card.setProperty("PhotoURI", filePath);
+      card.setProperty("PhotoType", url ? "web" : "file");
+      card.setProperty("PhotoURI", url ? url : filePath);
       return filePath;
     }
 
