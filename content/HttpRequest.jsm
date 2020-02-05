@@ -45,7 +45,8 @@ var HttpRequest = class {
         // streamLoader seems to be the more modern approach.
         // BUT in order to overide MimeType, we need to call onStartRequest
         this._xhr.useStreamLoader = false;
-
+		this._xhr.responseAsBase64 = false;
+		
         this._xhr.loadFlags =  Components.interfaces.nsIRequest.LOAD_BYPASS_CACHE;
         this._xhr.headers = {};
         this._xhr.readyState = 0;
@@ -206,7 +207,7 @@ var HttpRequest = class {
                 //Services.console.logStringMessage("[onStopRequest] " +  aRequest.URI.spec + " : " + aStatusCode);
                 // combine all binary chunks to create a flat byte array;				
                 let combined = [].concat.apply([], this._buffer);
-                let data = convertByteArray(combined);
+                let data = convertByteArray(combined, self.responseAsBase64);
                 this.processResponse(aRequest.QueryInterface(Components.interfaces.nsIHttpChannel), aStatusCode, data);
             },
         
@@ -214,7 +215,7 @@ var HttpRequest = class {
 
             //nsIStreamLoaderObserver (aUseStreamLoader = true)
             onStreamComplete: function(aLoader, aContext, aStatus, aResultLength, aResult) {
-                let result = convertByteArray(aResult);  
+                let result = convertByteArray(aResult, self.responseAsBase64);  
                 this.processResponse(aLoader.request.QueryInterface(Components.interfaces.nsIHttpChannel), aStatus, result);
             },
             
@@ -541,9 +542,8 @@ var HttpRequest = class {
         this._cancel(Components.results.NS_BINDING_ABORTED);
     }
 
-
-
-
+    get responseAsBase64() { return this._xhr.responseAsBase64; }
+    set responseAsBase64(v) { this._xhr.responseAsBase64 = (v == true);}
 
     /* not used */
     
@@ -725,19 +725,30 @@ function prepHttpChannelUploadData(aHttpChannel, aMethod, aUploadData, aContentT
 /**
  * Convert a byte array to a string - copied from lightning
  *
- * @param {octet[]} aResult         The bytes to convert
- * @param {String} aCharset         The character set of the bytes, defaults to utf-8
- * @param {Boolean} aThrow          If true, the function will raise an exception on error
- * @returns {?String}                The string result, or null on error
+ * @param {octet[]} aResult            The bytes to convert
+ * @param {Boolean} responseAsBase64   Return a base64 encoded string
+ * @param {String} aCharset            The character set of the bytes, defaults to utf-8
+ * @param {Boolean} aThrow             If true, the function will raise an exception on error
+ * @returns {?String}                  The string result, or null on error
  */
-function convertByteArray(aResult, aCharset="utf-8", aThrow) {
-    try {
-        return new TextDecoder(aCharset).decode(Uint8Array.from(aResult));
-    } catch (e) {
-        if (aThrow) {
-            throw e;
-        }
-    }
+function convertByteArray(aResult, responseAsBase64 = false, aCharset="utf-8", aThrow) {
+	if (responseAsBase64) {
+		var bin = '';
+		var bytes = Uint8Array.from(aResult);
+		var len = bytes.byteLength;
+		for (var i = 0; i < len; i++) {
+			bin += String.fromCharCode( bytes[ i ] );
+		}
+		return btoa( bin ); // if we ever need raw, return bin
+	} else {
+		try {
+			return new TextDecoder(aCharset).decode(Uint8Array.from(aResult));
+		} catch (e) {
+			if (aThrow) {
+				throw e;
+			}
+		}
+	}
     return null;
 }
 
