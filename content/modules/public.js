@@ -403,7 +403,13 @@ var FolderData = class {
       switch (this.getFolderProperty("status").split(".")[0]) { //the status may have a sub-decleration
         case "success":
         case "modified":
-          status = status + ": " + this.targetData.targetName;
+          try {
+            status = status + ": " + this.targetData.targetName;
+          } catch (e) {
+            this.resetFolderProperty("target");
+            this.setFolderProperty("status","notsyncronized");
+            return TbSync.getString("status.notsyncronized");
+          }
           break;
           
         case "pending":
