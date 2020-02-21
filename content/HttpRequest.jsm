@@ -45,8 +45,8 @@ var HttpRequest = class {
         // streamLoader seems to be the more modern approach.
         // BUT in order to overide MimeType, we need to call onStartRequest
         this._xhr.useStreamLoader = false;
-		this._xhr.responseAsBase64 = false;
-		
+        this._xhr.responseAsBase64 = false;
+        
         this._xhr.loadFlags =  Components.interfaces.nsIRequest.LOAD_BYPASS_CACHE;
         this._xhr.headers = {};
         this._xhr.readyState = 0;
@@ -639,14 +639,15 @@ function getSandboxForOrigin(username, uri, containerRealm = "default", containe
     let options = {};
     let origin = uri.scheme + "://" + uri.hostPort;
     
-    if (username) {		
-        options.userContextId = getContainerIdForUser(containerRealm + "::" + username);
-        origin = options.userContextId + "@" + origin;
-        if (containerReset) {
-            resetContainerWithId(options.userContextId);
-        }
+    // Note:
+    // Disabled check for username to always use containers, even if no username is given.
+    // There was an issue with NC (in its container) and google being in the default container,
+    // causing NC to fail with 503. Putting google inside a container as well fixed it.
+    options.userContextId = getContainerIdForUser(containerRealm + "::" + username);
+    origin = options.userContextId + "@" + origin;
+    if (containerReset) {
+        resetContainerWithId(options.userContextId);
     }    
-    
     
     if (!sandboxes.hasOwnProperty(origin)) {
         console.log("Creating sandbox for <"+origin+">");
@@ -732,23 +733,23 @@ function prepHttpChannelUploadData(aHttpChannel, aMethod, aUploadData, aContentT
  * @returns {?String}                  The string result, or null on error
  */
 function convertByteArray(aResult, responseAsBase64 = false, aCharset="utf-8", aThrow) {
-	if (responseAsBase64) {
-		var bin = '';
-		var bytes = Uint8Array.from(aResult);
-		var len = bytes.byteLength;
-		for (var i = 0; i < len; i++) {
-			bin += String.fromCharCode( bytes[ i ] );
-		}
-		return btoa( bin ); // if we ever need raw, return bin
-	} else {
-		try {
-			return new TextDecoder(aCharset).decode(Uint8Array.from(aResult));
-		} catch (e) {
-			if (aThrow) {
-				throw e;
-			}
-		}
-	}
+    if (responseAsBase64) {
+        var bin = '';
+        var bytes = Uint8Array.from(aResult);
+        var len = bytes.byteLength;
+        for (var i = 0; i < len; i++) {
+            bin += String.fromCharCode( bytes[ i ] );
+        }
+        return btoa( bin ); // if we ever need raw, return bin
+    } else {
+        try {
+            return new TextDecoder(aCharset).decode(Uint8Array.from(aResult));
+        } catch (e) {
+            if (aThrow) {
+                throw e;
+            }
+        }
+    }
     return null;
 }
 
