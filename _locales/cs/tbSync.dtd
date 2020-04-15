@@ -1,11 +1,11 @@
-<!ENTITY popup.opensettings "Open TbSync account manager">
-<!ENTITY menu.settingslabel "Synchronization Settings (TbSync)">
+<!ENTITY popup.opensettings "Otevřít správce účtu TbSync">
+<!ENTITY menu.settingslabel "Nastavení synchronizace (TbSync)">
 
-<!ENTITY toolbar.label "Synchronize all TbSync accounts">
-<!ENTITY toolbar.tooltiptext "Synchronize latest changes">
+<!ENTITY toolbar.label "Synchronizovat všechny TbSync účty">
+<!ENTITY toolbar.tooltiptext "Synchronizovat poslední změny">
 
 <!ENTITY manager.AccountActions "Account actions">
-<!ENTITY manager.AddAccount "Add new account">
+<!ENTITY manager.AddAccount "Přidat nový účet">
 <!ENTITY manager.SyncAll "Synchronize all enabled accounts">
 
 <!ENTITY manager.SynchronizeAccount "Synchronize account">
