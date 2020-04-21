@@ -1,4 +1,4 @@
-<!ENTITY popup.opensettings "Otevřít správce účtu TbSync">
+<!ENTITY popup.opensettings "Správce účtů TbSync">
 <!ENTITY menu.settingslabel "Nastavení synchronizace (TbSync)">
 
 <!ENTITY toolbar.label "Synchronizovat všechny TbSync účty">
@@ -75,9 +75,9 @@
 <!ENTITY supportwizard.label.faultycomponent "Komponenta TbSync, kde jste zaznamenali chybu:">
 <!ENTITY supportwizard.label.selectcomponent "Vyberte komponentu…">
 <!ENTITY supportwizard.label.summary "Krátké shrnutí chyby:">
-<!ENTITY supportwizard.label.description "Detailed error description:">
-<!ENTITY supportwizard.footer "From the information given here, an e-mail will be generated in the next step, which you can subsequently edit (for example, adding screenshots or similar). Only by actually sending that e-mail, the error report will be sent.">
+<!ENTITY supportwizard.label.description "Podrobný popis chyby:">
+<!ENTITY supportwizard.footer "Z informací zde uvedených bude v dalším kroku vygenerován e-mail, který můžete následně upravit (například přidání screenshotů). Zasláním e-mailu bude teprve zaslána chybová zpráva.">
 
-<!ENTITY eventlog.title "Event log">
-<!ENTITY eventlog.close "Close">
-<!ENTITY eventlog.clear "Clear">
+<!ENTITY eventlog.title "Protokol událostí">
+<!ENTITY eventlog.close "Zavřít">
+<!ENTITY eventlog.clear "Vymazat">
