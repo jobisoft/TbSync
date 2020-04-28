@@ -3,11 +3,13 @@ content tbsync  content/
 skin    tbsync  classic/1.0 skin/
 
 locale  tbsync  bg      _locales/bg/
+locale  tbsync  cs      _locales/cs/
 locale  tbsync  de      _locales/de/
 locale  tbsync  en-US   _locales/en-US/
 locale  tbsync  fr      _locales/fr/
 locale  tbsync  hu      _locales/hu/
 locale  tbsync  it      _locales/it/
+locale  tbsync  ja      _locales/ja/
 locale  tbsync  pl      _locales/pl/
 locale  tbsync  pt-BR   _locales/pt_BR/
 locale  tbsync  ru      _locales/ru/
