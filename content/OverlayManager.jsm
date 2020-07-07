@@ -448,7 +448,8 @@ function OverlayManager(options = {}) {
   //read file from within the XPI package
   this.readChromeFile = function (aURL) {
     return new Promise((resolve, reject) => {
-      let uri = Services.io.newURI(aURL);
+      // Temporary patch to to fix providers still requesting /skin/
+      let uri = Services.io.newURI(aURL.replace("://tbsync/skin/","://tbsync/content/skin/"));
       let channel = Services.io.newChannelFromURI(uri,
                  null,
                  Services.scriptSecurityManager.getSystemPrincipal(),
