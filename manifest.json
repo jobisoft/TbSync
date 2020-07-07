@@ -16,6 +16,19 @@
   "icons": {
     "32": "content/skin/tbsync.png"
   },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "experiment_apis": {
+    "ConversionHelper": {
+      "schema": "content/api/ConversionHelper/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "paths": [["ConversionHelper"]],
+        "script": "content/api/ConversionHelper/implementation.js"
+      }
+    }
+  },
   "legacy": {
     "type": "bootstrap",
     "options": {

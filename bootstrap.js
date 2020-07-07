@@ -80,6 +80,8 @@ var WindowListener = {
     // Check if the opened window is the one we want to modify.
     if (window.document.documentElement.getAttribute("windowtype") === "mail:3pane") {
       // the main window has loaded, continue with init
+      var { ConversionHelper } = ChromeUtils.import("chrome://tbsync/content/api/ConversionHelper/ConversionHelper.jsm");
+      await ConversionHelper.webExtensionStartupCompleted();
       var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
       if (!TbSync.enabled) TbSync.load(window);
     }

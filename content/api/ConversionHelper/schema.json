@@ -1,0 +1,111 @@
+[
+  {
+    "namespace": "ConversionHelper",
+    "functions": [
+      {
+        "name": "registerChromeUrl",
+        "type": "function",
+        "description": "Register folders which should be available as chrome:// urls (as defined in the legacy chrome.manifest)",
+        "async": true,
+        "parameters": [
+          {
+            "name": "chromeData",
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items" : {
+                "type": "string"
+              }
+            },
+            "description": "Array of ChromeData Arrays."
+          }
+        ]
+      },
+      {
+        "name": "registerApiFolder",
+        "type": "function",
+        "description": "Declare the location of the folder which contains the JSM files belonging to this API.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "aPath",
+            "type": "string",
+            "description": "Either the chrome:// path to the folder or its relative location from the root of the extension (in case of pure WX). If a JSM is loaded via relative path, it cannot be loaded via chrome path in other parts of the addon!"
+          }
+        ]
+      },
+      {
+        "name": "notifyStartupCompleted",
+        "type": "function",
+        "description": "Notify legacy code that startup of WebExtension has finished.",
+        "async": true,
+        "parameters": []
+      },
+      {
+        "name": "registerUnloadScript",
+        "type": "function",
+        "description": "Register a script, which is executed upon add-on shutdown",
+        "async": true,
+        "parameters": [
+          {
+            "name": "aPath",
+            "type": "string",
+            "description": "Either the chrome:// path to the script or its relative location from the root of the extension,"
+          }
+        ]
+      },
+      {
+        "name": "setOverlayVerbosity",
+        "type": "function",
+        "description": "Sets the verbosity of the overlay manager.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "level",
+            "type": "integer",
+            "description": "Verbosity level"
+          }
+        ]
+      },
+      {
+        "name": "getOverlayVerbosity",
+        "type": "function",
+        "description": "Gets the verbosity of the overlay manager.",
+        "async": true,
+        "parameters": []
+      },
+      {
+        "name": "activateOverlays",
+        "type": "function",
+        "description": "Activates the overlay manager.",
+        "async": true,
+        "parameters": []
+      },
+      {
+        "name": "deactivateOverlays",
+        "type": "function",
+        "description": "Deactivates the overlay manager.",
+        "async": true,
+        "parameters": []
+      },
+      {
+        "name": "registerOverlay",
+        "type": "function",
+        "description": "registers an overlay",
+        "async": true,
+        "parameters": [
+          {
+            "name": "dst",
+            "type": "string",
+            "description": "File to be overlayed."
+          },
+          {
+            "name": "overlay",
+            "type": "string",
+            "description": "Overlay file."
+          }
+        ]
+      }      
+    ]
+  }
+]
