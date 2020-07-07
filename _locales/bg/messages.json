@@ -1,5 +1,362 @@
 {
-  "extensionDescription": {
-    "message": "TbSync е добавка за управление на регистрации и синхронизиране със сървъри на вашите контакти, задачи и събития с Thunderbird."
-  }
+    "HelpFixStartupError": {
+        "message": "За отстраняване на тази грешка може да изпратите доклад на разработчика. Желаете ли да ви покажем доклада за изпращане?"
+    },
+    "NoDebugLog": {
+        "message": "Липсват съществени протоколирани съобщения. Включете режима за подробно протоколиране, рестартирайте Thunderbird и повторете всички стъпки за да се стигне отново до грешка."
+    },
+    "OopsMessage": {
+        "message": "Ужас! TbSync не можа да се зареди!"
+    },
+    "RestartThunderbirdAndTryAgain": {
+        "message": "Режимът за подробно протоколиране на събитията е включен. Рестартирайте Thunderbird и опитайте да отворите отново TbSync."
+    },
+    "UnableToTraceError": {
+        "message": "Не е възможно да се изследва грешката, тъй като не всички действия са протоколирани. Желаете ли да започне подробно протоколиране на събитията, за да може грешката да се анализира и отстрани?"
+    },
+    "accountacctions.delete": {
+        "message": "Изтриване на регистрация \"##accountname##\""
+    },
+    "accountacctions.disable": {
+        "message": "Изключване на регистрация \"##accountname##\""
+    },
+    "accountacctions.enable": {
+        "message": "Включване на регистрация \"##accountname##\" и свързване със сървъра"
+    },
+    "accountacctions.sync": {
+        "message": "Синхронизиране на регистрация \"##accountname##\""
+    },
+    "addressbook.searchall": {
+        "message": "Претърсване на всички адресни указатели"
+    },
+    "addressbook.searchgal": {
+        "message": "Претърсване на този адресен указател и на глобалния указател на сървъра (##replace.1##)"
+    },
+    "addressbook.searchthis": {
+        "message": "Претърсване на този адресен указател"
+    },
+    "eventlog.clear": {
+        "message": "Изчистване"
+    },
+    "eventlog.close": {
+        "message": "Затваряне"
+    },
+    "eventlog.title": {
+        "message": "Протокол на събитията"
+    },
+    "extensionDescription": {
+        "message": "TbSync е добавка за управление на регистрации и синхронизиране със сървъри на вашите контакти, задачи и събития с Thunderbird."
+    },
+    "google.translate.code": {
+        "message": "bg"
+    },
+    "helplink.security": {
+        "message": "https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F"
+    },
+    "info.error": {
+        "message": "Грешка"
+    },
+    "info.idle": {
+        "message": "Празен ход"
+    },
+    "installProvider.header": {
+        "message": "Доставчик \"##replace.1##\" за TbSync не е инсталиран."
+    },
+    "manager.AccountActions": {
+        "message": "Действия с регистрацията"
+    },
+    "manager.AddAccount": {
+        "message": "Добавяне на регистрация"
+    },
+    "manager.DeleteAccount": {
+        "message": "Изтриване на регистрацията"
+    },
+    "manager.DisableAccount": {
+        "message": "Изключване на регистрацията"
+    },
+    "manager.EnableAccount": {
+        "message": "Enable account &amp; try to connect to server"
+    },
+    "manager.RetryConnectAccount": {
+        "message": "Опитай отново да се свържеш със сървъра"
+    },
+    "manager.ShowEventLog": {
+        "message": "Показване на протокола със събитията"
+    },
+    "manager.SyncAll": {
+        "message": "Синхронизиране на всички включени регистрации"
+    },
+    "manager.SynchronizeAccount": {
+        "message": "Синхронизиране на регистрацията"
+    },
+    "manager.accounts": {
+        "message": "Регистрации"
+    },
+    "manager.accountsettings": {
+        "message": "Настройки на регистрацията"
+    },
+    "manager.catman.text": {
+        "message": "TbSync синхронизира и категории контакти, които са заместител за несинхронизираните списъци с контакти на Thunderbird. За да разширите възможностите на адресния указател на Thunderbird, инсталирайте добавката 'Category Manager'. Тя позволява вмъкването на контакти в много категории (групи) и др. Добавката може да се инсталира от официалното депо за добавки на Mozilla:"
+    },
+    "manager.community": {
+        "message": "Общество/Потребители"
+    },
+    "manager.connecting": {
+        "message": "Осъществяване на връзка"
+    },
+    "manager.help": {
+        "message": "Помощ"
+    },
+    "manager.help.createbugreport": {
+        "message": "Създаване на доклад за грешка"
+    },
+    "manager.help.createbugreportinfo": {
+        "message": "За да събере TbSync единствено информацията, която се отнася за грешката, рестартирайте Thunderbird, и повторете стъпките, за да се стигне отново до грешка. Накрая може тук да създадете доклад за грешката."
+    },
+    "manager.help.debuglevel.0": {
+        "message": "Изключено"
+    },
+    "manager.help.debuglevel.1": {
+        "message": "Включено: Протоколиране само на грешки"
+    },
+    "manager.help.debuglevel.2": {
+        "message": "Включено: протоколиране на всички изпратени и получени данни"
+    },
+    "manager.help.debuglevel.3": {
+        "message": "Включено: протоколиране на всички данни и някои подробности за отстраняване на грешки"
+    },
+    "manager.help.debugmode": {
+        "message": "Режим на подробно протоколиране:"
+    },
+    "manager.help.fixit": {
+        "message": "Може да помогнете за отстраняването ѝ, като изпратите на разработчика доклад за грешката. За това е необходимо да включите режима за подробно протоколиране."
+    },
+    "manager.help.foundabug": {
+        "message": "Открихте ли грешка?"
+    },
+    "manager.help.needhelp": {
+        "message": "Трябва ли ви помощ?"
+    },
+    "manager.help.viewdebuglog": {
+        "message": "Покажи подробния протокол"
+    },
+    "manager.help.wiki": {
+        "message": "Посетете вики страниците на проекта TbSync, където има допълнителна информация, ръководства за потребителя и подробни описания на настройките."
+    },
+    "manager.installprovider.link": {
+        "message": "Последвайте препратката за да посетите страницата на липсващия TbSync доставчик. Там ще намерите допълнителна информация за доставчика и може да го инсталирате от там:"
+    },
+    "manager.installprovider.warning": {
+        "message": "Този доставчик не произхожда от официалното депо за добавки на Thunderbird и не е бил проверен от екипа на Thunderbird. Този TbSync доставчик би могъл да направи пакости. Използвайте на собствена отговорност."
+    },
+    "manager.lockedsettings.description": {
+        "message": "За да се избегнат грешки по време на синхронизирането, някои настройки не могат да бъдат променяни, докато регистрацията е включена."
+    },
+    "manager.missingprovider": {
+        "message": "Тази регистрация изисква TbSync доставчика ##provider##, който не е инсталиран."
+    },
+    "manager.noaccounts": {
+        "message": "Още няма настроени регистрации."
+    },
+    "manager.provider": {
+        "message": "Инсталиране на TbSync доставчик"
+    },
+    "manager.provider4tbsync": {
+        "message": "Доставчик за TbSync"
+    },
+    "manager.resource": {
+        "message": "Ресурс"
+    },
+    "manager.shorttitle": {
+        "message": "Управление на регистрацията"
+    },
+    "manager.status": {
+        "message": "Статус"
+    },
+    "manager.supporter.contributors": {
+        "message": "Contributors &amp; Translators"
+    },
+    "manager.supporter.details": {
+        "message": "Детайли"
+    },
+    "manager.supporter.sponsors": {
+        "message": "Предоставили регистрации за експерименти"
+    },
+    "manager.tabs.status": {
+        "message": "Състояние на синхронизирането"
+    },
+    "manager.tabs.status.autotime": {
+        "message": "Периодично синхронизиране (в минути)"
+    },
+    "manager.tabs.status.enableThisAccount": {
+        "message": "Включване на регистрацията и синхронизиране"
+    },
+    "manager.tabs.status.general": {
+        "message": "Общи"
+    },
+    "manager.tabs.status.never": {
+        "message": "Стойност 0 изключва периодичното синхронизиране. Промяната на данни, местни или на сървъра, сама по себе си не предизвиква автоматична синхронизация."
+    },
+    "manager.tabs.status.resources": {
+        "message": "Налични ресурси"
+    },
+    "manager.tabs.status.resources.intro": {
+        "message": "Изберете кои от откритите ресурси да се синхронизират с Thunderbird."
+    },
+    "manager.tabs.status.sync": {
+        "message": "Синхронизирай сега"
+    },
+    "manager.tabs.status.tryagain": {
+        "message": "Нов опит за връзка със сървъра"
+    },
+    "manager.title": {
+        "message": "TbSync Управление на регистрацията"
+    },
+    "manager.tryagain": {
+        "message": "Нов опит за връзка със сървъра"
+    },
+    "menu.settingslabel": {
+        "message": "Настройка на синхронизациите (TbSync)"
+    },
+    "password.account": {
+        "message": "Регистрация:"
+    },
+    "password.description": {
+        "message": "Моля подновете данните за следната TbSync регистрация:"
+    },
+    "password.password": {
+        "message": "Парола:"
+    },
+    "password.title": {
+        "message": "TbSync информация за регистрацията"
+    },
+    "password.user": {
+        "message": "Потребителско име:"
+    },
+    "popup.opensettings": {
+        "message": "TbSync отвори управлението на регистрациите"
+    },
+    "prompt.DeleteAccount": {
+        "message": "Сигурни ли сте, че искате да изтриете регистрация ##accountName##?"
+    },
+    "prompt.Disable": {
+        "message": "Сигурни ли сте, че искате да изключите тази регистрация? Всички местни промени, които още не са синхронизирани, ще се изпарят!"
+    },
+    "prompt.Erase": {
+        "message": "Сигурни ли сте, че тази регистрация от непознат доставчик искате да я премахнете от списъка с регистрации?"
+    },
+    "prompt.Unsubscribe": {
+        "message": "Сигурни ли сте, че за този ресурс не желаете да сте повече абониран? Всички местни промени, които още не са синхронизирани, ще се изпарят!"
+    },
+    "status.JavaScriptError": {
+        "message": "Javascript грешка! Проверете протокола със събитията за подробности."
+    },
+    "status.OAuthAbortError": {
+        "message": "Процесът на OAuth 2.0 удоствоверяване беше прекъснат от потребителя."
+    },
+    "status.OAuthHttpError": {
+        "message": "Удостоверяването по OAuth 2.0 не стана (HTTP грешка ##replace.1##)."
+    },
+    "status.OAuthNetworkError": {
+        "message": "Не можах да се свържа с OAuth 2.0 сървъра."
+    },
+    "status.OAuthServerError": {
+        "message": " OAuth 2.0 authentication server returned: ##replace.1##"
+    },
+    "status.aborted": {
+        "message": "Не е синхронизиран"
+    },
+    "status.apiError": {
+        "message": "API Грешка при програмирането"
+    },
+    "status.disabled": {
+        "message": "Регистрацията и синхронизацията са изключени."
+    },
+    "status.foldererror": {
+        "message": "Поне при един ресурс се появи грешка при синхронизирането. Проверете протокола със събията за подробности."
+    },
+    "status.modified": {
+        "message": "Местни промени"
+    },
+    "status.network": {
+        "message": "Не можеше да се установи връзка със сървъра (##replace.1##)."
+    },
+    "status.no-folders-found-on-server": {
+        "message": "На сървъра не бяха намерени ресурси."
+    },
+    "status.nolightning": {
+        "message": "Добавката Lightning не е инсталирана, календарът е неизползваем."
+    },
+    "status.notargets": {
+        "message": "Синхронизирането прекъсна, тъй като на компютъра ви не можеха да се създадат нови ресурси."
+    },
+    "status.notsyncronized": {
+        "message": "Регистрацията трябва да бъде синхронизира."
+    },
+    "status.pending": {
+        "message": "Чакане за синхронизация"
+    },
+    "status.security": {
+        "message": "Грешка при осъществяването на защитена връзка. Използвате ли собственоръчно направен сертификат или сертификат, на който Thunderbird няма доверие? (##replace.1##)"
+    },
+    "status.skipped": {
+        "message": "Не се поддържа, пропуснато"
+    },
+    "status.success": {
+        "message": "Добре"
+    },
+    "status.syncing": {
+        "message": "Синхронизиране"
+    },
+    "supportwizard.footer": {
+        "message": "От тази информация на следващата стъпка ще се отвори незавършено писмо, което можете да променяте (например да включите снимки от екрана). Едва чрез изпращане на писмото, докладът за грешка ще замине."
+    },
+    "supportwizard.label.description": {
+        "message": "Подробно описание на грешката:"
+    },
+    "supportwizard.label.faultycomponent": {
+        "message": "Компонента на TbSync, при която наблюдавахте грешката:"
+    },
+    "supportwizard.label.selectcomponent": {
+        "message": "Изберете компонента…"
+    },
+    "supportwizard.label.summary": {
+        "message": "Обобщение на грешката:"
+    },
+    "supportwizard.pagetitle": {
+        "message": "Събиране на всякаква информация за да може да може от доклада за грешки да се разбере какво куца."
+    },
+    "supportwizard.provider": {
+        "message": "Provider: ##replace.1##"
+    },
+    "supportwizard.title": {
+        "message": "Създаване на доклад за грешка"
+    },
+    "syncstate.accountdone": {
+        "message": "Синхронизирането на регистрацията приключи"
+    },
+    "syncstate.done": {
+        "message": "Подготовка на следващия ресурс за синхронизация"
+    },
+    "syncstate.oauthprompt": {
+        "message": "OAuth 2.0 удостоверяване"
+    },
+    "syncstate.passwordprompt": {
+        "message": "Подкана за въвеждане на информация за регистрация"
+    },
+    "syncstate.preparing": {
+        "message": "Подготовка на следващия ресурс за синхронизация"
+    },
+    "syncstate.syncing": {
+        "message": "Започване на синхронизацията"
+    },
+    "target.orphaned": {
+        "message": "Прекъсната връзка"
+    },
+    "toolbar.label": {
+        "message": "Синхронизирай всички TbSync регистрации"
+    },
+    "toolbar.tooltiptext": {
+        "message": "Синхронизирай информацията от всички TbSync регистрации със сървърите"
+    }
 }
