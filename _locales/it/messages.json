@@ -75,7 +75,7 @@
         "message": "Disabilita account"
     },
     "manager.EnableAccount": {
-        "message": "Enable account &amp; try to connect to server"
+        "message": "Abilita account e prova a connetterti al server"
     },
     "manager.RetryConnectAccount": {
         "message": "Riprova a collegarti al server"
@@ -174,7 +174,7 @@
         "message": "Stato"
     },
     "manager.supporter.contributors": {
-        "message": "Contributors &amp; Translators"
+        "message": "Collaboratori e traduttori"
     },
     "manager.supporter.details": {
         "message": "Dettagli"
