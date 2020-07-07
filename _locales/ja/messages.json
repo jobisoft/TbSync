@@ -174,7 +174,7 @@
         "message": "状態"
     },
     "manager.supporter.contributors": {
-        "message": "Contributors &amp; Translators"
+        "message": "貢献者 &amp; 翻訳者"
     },
     "manager.supporter.details": {
         "message": "詳細"
@@ -327,7 +327,7 @@
         "message": "Gathering of all information to effectively process the bug report."
     },
     "supportwizard.provider": {
-        "message": "Provider: ##replace.1##"
+        "message": "プロパイダ: ##replace.1##"
     },
     "supportwizard.title": {
         "message": "バグレポートを作成"
