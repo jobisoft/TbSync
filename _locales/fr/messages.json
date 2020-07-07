@@ -75,7 +75,7 @@
         "message": "Désactiver le compte"
     },
     "manager.EnableAccount": {
-        "message": "Enable account &amp; try to connect to server"
+        "message": "Activer le compte et essayer de se connecter au serveur"
     },
     "manager.RetryConnectAccount": {
         "message": "Essayer à nouveau de se connecter au serveur"
@@ -174,7 +174,7 @@
         "message": "Statut"
     },
     "manager.supporter.contributors": {
-        "message": "Contributors &amp; Translators"
+        "message": "Contributeurs et traducteurs"
     },
     "manager.supporter.details": {
         "message": "Détails"
@@ -261,7 +261,7 @@
         "message": "Impossible de se connecter au serveur d'authentification OAuth 2.0."
     },
     "status.OAuthServerError": {
-        "message": " OAuth 2.0 authentication server returned: ##replace.1##"
+        "message": " Le serveur d’authentification OAuth 2.0 a retourné : ##replace.1##"
     },
     "status.aborted": {
         "message": "Non synchronisé"
@@ -327,7 +327,7 @@
         "message": "Récolte de toutes les informations nécessaires pour gérer efficacement le rapport d'erreur."
     },
     "supportwizard.provider": {
-        "message": "Provider: ##replace.1##"
+        "message": "Fournisseur : ##replace.1##"
     },
     "supportwizard.title": {
         "message": "Créer un rapport d'erreur"
