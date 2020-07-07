@@ -40,6 +40,10 @@ var TbSync = {
   // global load
   load: async function (window) { 
     
+    let { ConversionHelper } = ChromeUtils.import("chrome://tbsync/content/api/ConversionHelper/ConversionHelper.jsm");
+    this.ConversionHelper =  ConversionHelper;
+    await this.ConversionHelper.webExtensionStartupCompleted();
+
     //public module and IO module needs to be loaded beforehand
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/public.js", this, "UTF-8");
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/io.js", this, "UTF-8");
