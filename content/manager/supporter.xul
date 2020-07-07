@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
 <?xml-stylesheet href="chrome://tbsync/content/manager/manager.css" type="text/css"?>
-<!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
 
 <window 
     xmlns:html="http://www.w3.org/1999/xhtml"
@@ -13,7 +12,7 @@
     <hbox flex="1" id="mainframe">
         <vbox flex="1">
             <html:p>
-                <html:b>&manager.supporter.contributors;</html:b>
+                <html:b>__TBSYNCMSG_manager.supporter.contributors__</html:b>
                 <html:div id="listOfContributors" style="margin-top:10px">
 
                   <html:div provider="" style="width:225px; margin: 0 0 10px 0; float:left;">
@@ -24,13 +23,13 @@
                     onmouseover="this.style.cursor='pointer'" 
                     onmouseout="this.style.cursor='default'" />
                     <html:div style="padding-left: 65px;">
-                      <html:div>&manager.title;</html:div>
-                      <html:div style="font-style:italic">&manager.provider4tbsync;</html:div>
+                      <html:div>__TBSYNCMSG_manager.title__</html:div>
+                      <html:div style="font-style:italic">__TBSYNCMSG_manager.provider4tbsync__</html:div>
                       <html:div style="font-style:italic;">[<html:span 
                       onclick="TbSync.manager.openLink(TbSync.providers.loadedProviders[this.parentNode.parentNode.parentNode.getAttribute('provider')].addon.contributorsURL);" 
                       onmouseover="this.style.cursor='pointer'" 
                       onmouseout="this.style.cursor='default'"
-                      style="color:blue;text-decoration: underline;">&manager.supporter.details;</html:span>]</html:div>
+                      style="color:blue;text-decoration: underline;">__TBSYNCMSG_manager.supporter.details__</html:span>]</html:div>
                     </html:div>
                   </html:div>
 
@@ -44,12 +43,12 @@
                     <html:div style="padding-left: 65px;">
                       <html:span></html:span>
                       <html:div>TbSync</html:div>
-                      <html:div style="font-style:italic">&manager.shorttitle;</html:div>
+                      <html:div style="font-style:italic">__TBSYNCMSG_manager.shorttitle__</html:div>
                       <html:div style="font-style:italic;">[<html:span 
                       onclick="TbSync.manager.openLink(TbSync.addon.contributorsURL);" 
                       onmouseover="this.style.cursor='pointer'" 
                       onmouseout="this.style.cursor='default'"
-                      style="color:blue;text-decoration: underline;">&manager.supporter.details;</html:span>]</html:div>
+                      style="color:blue;text-decoration: underline;">__TBSYNCMSG_manager.supporter.details__</html:span>]</html:div>
                     </html:div>
                   </html:div>
 
@@ -58,7 +57,7 @@
 
 
             <html:p>
-                <html:b>&manager.supporter.sponsors;</html:b>
+                <html:b>__TBSYNCMSG_manager.supporter.sponsors__</html:b>
                 <html:div id="listOfSponsors" style="margin-top:10px">
                   <html:div link="" style="width:225px; margin: 0 0 10px 0; float:left;">
                     <html:img src="chrome://tbsync/content/skin/user48.png" style="width:48px; height:48px; padding:0px; margin:0 0 0 10px; border:1px solid #d3d3d3; float:left" onclick="if (this.parentNode.getAttribute('link') != '') {TbSync.manager.openLink(this.parentNode.getAttribute('link'));}" onmouseover="if (this.parentNode.getAttribute('link') != '') {this.style.cursor='pointer'}" onmouseout="this.style.cursor='default'" />
@@ -74,5 +73,5 @@
     </hbox>
     
     <script type="text/javascript" src="chrome://tbsync/content/manager/accountManager.js" /> 
-
+    <script type="text/javascript" src="chrome://tbsync/content/scripts/locales.js" /> 
 </window>

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
 <?xml-stylesheet href="chrome://tbsync/content/manager/manager.css" type="text/css"?>
-<!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
 
 <window
     xmlns:html="http://www.w3.org/1999/xhtml"
@@ -12,7 +11,7 @@
     <hbox flex="1" id="mainframe">
         <vbox flex="1">
             <html:p>
-                &manager.catman.text;
+                __TBSYNCMSG_manager.catman.text__
             </html:p>
             
             <html:p onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="TbSync.manager.openLink('https://addons.thunderbird.net/addon/categorymanager/');" style="color:blue;text-decoration: underline;padding-left:1em;">
@@ -22,5 +21,5 @@
     </hbox>
     
     <script type="text/javascript" src="chrome://tbsync/content/manager/accountManager.js" /> 
-    
+    <script type="text/javascript" src="chrome://tbsync/content/scripts/locales.js" /> 
 </window>

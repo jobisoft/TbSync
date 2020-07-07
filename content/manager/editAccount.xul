@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
 <?xml-stylesheet href="chrome://tbsync/content/manager/manager.css" type="text/css"?>
-<!DOCTYPE window [
-  <!ENTITY % tbsyncDTD SYSTEM "chrome://tbsync/locale/tbSync.dtd">
-  %tbsyncDTD;
-]>
 
 <window id="tbsync.accountsettings" 
     xmlns:html="http://www.w3.org/1999/xhtml"
@@ -15,6 +11,7 @@
     title="" >
 
     <script type="text/javascript" src="chrome://tbsync/content/manager/editAccount.js" /> 
+    <script type="text/javascript" src="chrome://tbsync/content/scripts/locales.js" /> 
 
     <popupset>
         <menupopup 
@@ -24,7 +21,7 @@
             <menuitem 
             class="menuitem-iconic"
             image="chrome://tbsync/content/skin/warning16.png"
-            label="&manager.ShowEventLog;"
+            label="__TBSYNCMSG_manager.ShowEventLog__"
             oncommand="TbSync.eventlog.open(tbSyncAccountSettings.accountID, this.parentNode.getAttribute('folderID'));"/>
         </menupopup>
     </popupset>
@@ -32,32 +29,32 @@
     <tabbox id="tbsync.accountsettings.frame" hidden="true" flex="1">
 
         <tabs  id="manager.tabs" orient="horizontal" value="">
-            <tab id="manager.tabs.status" label="&manager.tabs.status;" />
+            <tab id="manager.tabs.status" label="__TBSYNCMSG_manager.tabs.status__" />
         </tabs>
       
         <tabpanels flex="1" id="manager.tabpanels" style="margin:0;padding:1ex;">
             <tabpanel  id="manager.tabpanels.status" orient="vertical"><!-- STATUS -->
                 <vbox flex="1">
-                    <label class="header" style="margin-left:0; margin-bottom:1ex;" value="&manager.tabs.status.general;" />
-                    <checkbox id="tbsync.accountsettings.enabled" oncommand="tbSyncAccountSettings.toggleEnableState(this);" label="&manager.tabs.status.enableThisAccount;"  />
+                    <label class="header" style="margin-left:0; margin-bottom:1ex;" value="__TBSYNCMSG_manager.tabs.status.general__" />
+                    <checkbox id="tbsync.accountsettings.enabled" oncommand="tbSyncAccountSettings.toggleEnableState(this);" label="__TBSYNCMSG_manager.tabs.status.enableThisAccount__"  />
 
                     <vbox class="showIfEnabled">
                         <hbox flex="1">
                             <vbox flex="1">
-                                <label class="header" style="margin-left:0; margin-bottom:1ex; margin-top:2ex;" value="&manager.status;" />
+                                <label class="header" style="margin-left:0; margin-bottom:1ex; margin-top:2ex;" value="__TBSYNCMSG_manager.status__" />
                                 <description flex="1" id="syncstate"></description>
                             </vbox>
                             <vbox flex="0">
                                 <label class="header" style="margin-left:0; margin-bottom:1ex; margin-top:1ex; visibility: hidden" value="nix" />
-                                <button id="tbsync.accountsettings.eventlogbtn" label="&manager.ShowEventLog;" oncommand="TbSync.eventlog.open()" />
+                                <button id="tbsync.accountsettings.eventlogbtn" label="__TBSYNCMSG_manager.ShowEventLog__" oncommand="TbSync.eventlog.open()" />
                             </vbox>
                         </hbox>
                     </vbox>
                     
                     <vbox flex="1">
                         <vbox class="showIfConnected" flex="1">
-                            <label style="margin-left:0; margin-bottom: 1ex; margin-top: 2ex" class="header" value="&manager.tabs.status.resources;"/>
-                            <description>&manager.tabs.status.resources.intro;</description>
+                            <label style="margin-left:0; margin-bottom: 1ex; margin-top: 2ex" class="header" value="__TBSYNCMSG_manager.tabs.status.resources__"/>
+                            <description>__TBSYNCMSG_manager.tabs.status.resources.intro__</description>
                             <richlistbox 
                               id="tbsync.accountsettings.folderlist"
                               flex="1"
@@ -69,16 +66,16 @@
                             </richlistbox>
                             <vbox flex="0" style="margin:1ex 0 0 0;">
                                 <hbox flex="1" align="center" pack="end">
-                                    <description style="text-align:right" flex="1" control="tbsync.accountsettings.pref.autosync" tooltiptext="&manager.tabs.status.never;">&manager.tabs.status.autotime;</description>
-                                    <textbox style="width:50px;margin-bottom:0; margin-top:0" id="tbsync.accountsettings.pref.autosync" tooltiptext="&manager.tabs.status.never;" />
-                                    <button id="tbsync.accountsettings.syncbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.sync;" oncommand="TbSync.core.syncAccount(tbSyncAccountSettings.accountID)" />
+                                    <description style="text-align:right" flex="1" control="tbsync.accountsettings.pref.autosync" tooltiptext="__TBSYNCMSG_manager.tabs.status.never__">__TBSYNCMSG_manager.tabs.status.autotime__</description>
+                                    <textbox style="width:50px;margin-bottom:0; margin-top:0" id="tbsync.accountsettings.pref.autosync" tooltiptext="__TBSYNCMSG_manager.tabs.status.never__" />
+                                    <button id="tbsync.accountsettings.syncbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="__TBSYNCMSG_manager.tabs.status.sync__" oncommand="TbSync.core.syncAccount(tbSyncAccountSettings.accountID)" />
                                 </hbox>
                             </vbox>
                         </vbox>
                     </vbox>
 
                     <hbox id="tbsync.accountsettings.connectbtn.container" flex="0" style="margin:1ex 0 0 0;" pack="end">
-                        <button id="tbsync.accountsettings.connectbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="&manager.tabs.status.tryagain;" oncommand="TbSync.core.syncAccount(tbSyncAccountSettings.accountID)" />
+                        <button id="tbsync.accountsettings.connectbtn" style="margin-right:0; margin-bottom:0; margin-top:0; padding: 0 1ex;" label="__TBSYNCMSG_manager.tabs.status.tryagain__" oncommand="TbSync.core.syncAccount(tbSyncAccountSettings.accountID)" />
                     </hbox>
         
                 </vbox>

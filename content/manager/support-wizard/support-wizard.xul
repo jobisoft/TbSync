@@ -1,36 +1,35 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
-<!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
 
 <wizard 
   width="500"
   height="600"
   id="SupportWizard" 
-  title="&supportwizard.title;"
+  title="__TBSYNCMSG_supportwizard.title__"
   onload="tbSyncAccountManager.initSupportWizard();"
   xmlns:html="http://www.w3.org/1999/xhtml"
   xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
    
-  <wizardpage onFirstPage="true" label="&supportwizard.pagetitle;">
-    <label value="&supportwizard.label.faultycomponent;"/>
+  <wizardpage onFirstPage="true" label="__TBSYNCMSG_supportwizard.pagetitle__">
+    <label value="__TBSYNCMSG_supportwizard.label.faultycomponent__"/>
     <menulist id="tbsync.supportwizard.faultycomponent.menulist">
       <menupopup id="tbsync.supportwizard.faultycomponent">
-        <menuitem hidden="true" selected="true" label="&supportwizard.label.selectcomponent;" value="" />
-        <menuitem label="&manager.title;" value="core" />
+        <menuitem hidden="true" selected="true" label="__TBSYNCMSG_supportwizard.label.selectcomponent__" value="" />
+        <menuitem label="__TBSYNCMSG_manager.title__" value="core" />
       </menupopup>
     </menulist>    
 
-    <label style="margin-top:1em" value="&supportwizard.label.summary;"/>
+    <label style="margin-top:1em" value="__TBSYNCMSG_supportwizard.label.summary__"/>
    <textbox id="tbsync.supportwizard.summary" oninput="tbSyncAccountManager.checkSupportWizard()" />
   
-   <label style="margin-top:1em" value="&supportwizard.label.description;"/>
+   <label style="margin-top:1em" value="__TBSYNCMSG_supportwizard.label.description__"/>
    <html:textarea rows="15" style="margin-left: 1ex;" id="tbsync.supportwizard.description" />
 
    <description style="margin-top:1em">
-    &supportwizard.footer;
+    __TBSYNCMSG_supportwizard.footer__
    </description>  
   </wizardpage>
 
   <script type="text/javascript" src="chrome://tbsync/content/manager/accountManager.js" /> 
-
+  <script type="text/javascript" src="chrome://tbsync/content/scripts/locales.js" /> 
 </wizard>

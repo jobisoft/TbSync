@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
-<!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
 
 <window
     xmlns:html="http://www.w3.org/1999/xhtml"
@@ -11,12 +10,12 @@
 
     <hbox flex="1" pack="center">
         <vbox flex="1" pack="center">
-            <description style="text-align:center" id="missing">&manager.missingprovider;</description>
+            <description style="text-align:center" id="missing">__TBSYNCMSG_manager.missingprovider__</description>
             <html:p id="link" onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="TbSync.manager.openTBtab(this.getAttribute('link'));" style="color:blue; text-decoration: underline; text-align:center;"></html:p>	             
         </vbox>
 
     </hbox>
 
     <script type="text/javascript" src="chrome://tbsync/content/manager/manageProvider.js" /> 
-
+    <script type="text/javascript" src="chrome://tbsync/content/scripts/locales.js" /> 
 </window>

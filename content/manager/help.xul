@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
 <?xml-stylesheet href="chrome://tbsync/content/manager/manager.css" type="text/css"?>
-<!DOCTYPE window SYSTEM "chrome://tbsync/locale/tbSync.dtd">
 
 <window 
     xmlns:html="http://www.w3.org/1999/xhtml"
@@ -14,8 +13,8 @@
         <vbox flex="1">
 
             <html:p>
-                <html:b>&manager.help.needhelp;</html:b><html:br/><html:br/>
-                &manager.help.wiki;
+                <html:b>__TBSYNCMSG_manager.help.needhelp__</html:b><html:br/><html:br/>
+                __TBSYNCMSG_manager.help.wiki__
             </html:p>
 
             <html:p onmouseover="this.style.cursor='pointer'" onmouseout="this.style.cursor='default'" onclick="TbSync.manager.openTranslatedLink('https://github.com/jobisoft/TbSync/wiki');" style="color:blue;text-decoration: underline;padding-left:1em;margin:0 0 24px 0">
@@ -23,29 +22,29 @@
             </html:p>
 
             <html:p>
-                <html:b>&manager.help.foundabug;</html:b><html:br/><html:br/>
-                <html:span>&manager.help.fixit;</html:span>
+                <html:b>__TBSYNCMSG_manager.help.foundabug__</html:b><html:br/><html:br/>
+                <html:span>__TBSYNCMSG_manager.help.fixit__</html:span>
             </html:p>
 
             <hbox align="center">
-                <label value="&manager.help.debugmode;" />
+                <label value="__TBSYNCMSG_manager.help.debugmode__" />
                 <menulist flex="0" id="tbSyncAccountManager.logLevel" oncommand="tbSyncAccountManager.toggleLogPref();">
                   <menupopup>
-                      <menuitem label="&manager.help.debuglevel.0;" value="0" />
-                      <menuitem label="&manager.help.debuglevel.1;" value="1" />
-                      <menuitem label="&manager.help.debuglevel.2;" value="2" />
-                      <menuitem label="&manager.help.debuglevel.3;" value="3" />
+                      <menuitem label="__TBSYNCMSG_manager.help.debuglevel.0__" value="0" />
+                      <menuitem label="__TBSYNCMSG_manager.help.debuglevel.1__" value="1" />
+                      <menuitem label="__TBSYNCMSG_manager.help.debuglevel.2__" value="2" />
+                      <menuitem label="__TBSYNCMSG_manager.help.debuglevel.3__" value="3" />
                 </menupopup>
               </menulist>
             </hbox>
 
             <html:p> 
-                &manager.help.createbugreportinfo;
+                __TBSYNCMSG_manager.help.createbugreportinfo__
             </html:p>     
             
             <hbox>
-                <button style="margin:0 0 0 1em; padding: 0 1ex;" label="&manager.help.createbugreport;" oncommand="TbSync.manager.openBugReportWizard();" />
-                <button style="margin:0 0 0 1em; padding: 0 1ex;" label="&manager.help.viewdebuglog;" oncommand="TbSync.manager.viewDebugLog();" />
+                <button style="margin:0 0 0 1em; padding: 0 1ex;" label="__TBSYNCMSG_manager.help.createbugreport__" oncommand="TbSync.manager.openBugReportWizard();" />
+                <button style="margin:0 0 0 1em; padding: 0 1ex;" label="__TBSYNCMSG_manager.help.viewdebuglog__" oncommand="TbSync.manager.viewDebugLog();" />
             </hbox>
             
             <hbox flex="1">
@@ -55,5 +54,5 @@
     </hbox>
     
     <script type="text/javascript" src="chrome://tbsync/content/manager/accountManager.js" /> 
-
+    <script type="text/javascript" src="chrome://tbsync/content/scripts/locales.js" /> 
 </window>

@@ -674,7 +674,7 @@ var getString = function (key, provider) {
   // if we did not yet succeed, request the tbsync bundle
   if (!success) {
     try {
-      localized = TbSync.bundle.GetStringFromName(parts[0]);
+      localized = TbSync.ConversionHelper.i18n.getMessage(parts[0]);
       success = true;
     } catch (e) {}                    
   }
