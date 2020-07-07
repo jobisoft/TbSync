@@ -261,7 +261,7 @@
         "message": "Impossibile connettersi al server di autenticazione OAuth 2.0."
     },
     "status.OAuthServerError": {
-        "message": " OAuth 2.0 authentication server returned: ##replace.1##"
+        "message": " Il server di autenticazione OAuth 2.0 ha restituito: ##replace.1##"
     },
     "status.aborted": {
         "message": "Non sincronizzato"
