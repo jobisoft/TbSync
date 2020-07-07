@@ -1,5 +1,362 @@
 {
-  "extensionDescription": {
-    "message": "TbSync - это центральный пользовательский интерфейс для управления облачными учетными записями и синхронизации данных контактов, задач и календаря с Thunderbird."
-  }
+    "HelpFixStartupError": {
+        "message": "Чтобы исправить эту ошибку, вы можете отправить журнал отладки разработчику TbSync. Подготовьте это письмо сейчас?"
+    },
+    "NoDebugLog": {
+        "message": "Не удалось найти пригодные отладочные сообщения. Включите режим отладки, перезапустите Thunderbird и повторите все шаги, необходимые для запуска ошибочного поведения."
+    },
+    "OopsMessage": {
+        "message": "Неудача! TbSync не смог запуститься!"
+    },
+    "RestartThunderbirdAndTryAgain": {
+        "message": "Журнал отладки TbSync включен, перезапустите Thunderbird и снова попытайтесь открыть TbSync."
+    },
+    "UnableToTraceError": {
+        "message": "Невозможно проследить эту ошибку, поскольку журнал отладки в данный момент не включен. Вы хотите включить журнал отладки сейчас, чтобы исправить эту ошибку?"
+    },
+    "accountacctions.delete": {
+        "message": "Удалить аккаунт “##accountname##”"
+    },
+    "accountacctions.disable": {
+        "message": "Запретить аккаунт “##accountname##”"
+    },
+    "accountacctions.enable": {
+        "message": "Разрешить аккаунт “##accountname##” и подключиться к серверу"
+    },
+    "accountacctions.sync": {
+        "message": "Синхронизировать аккаунт “##accountname##”"
+    },
+    "addressbook.searchall": {
+        "message": "Поиск по всем адресным книгам"
+    },
+    "addressbook.searchgal": {
+        "message": "Поиск в этой адресной книге и в глобальном каталоге (##replace.1##)"
+    },
+    "addressbook.searchthis": {
+        "message": "Поиск в этой адресной книге"
+    },
+    "eventlog.clear": {
+        "message": "Стереть"
+    },
+    "eventlog.close": {
+        "message": "Убрать окно"
+    },
+    "eventlog.title": {
+        "message": "журнал событий"
+    },
+    "extensionDescription": {
+        "message": "TbSync - это центральный пользовательский интерфейс для управления облачными учетными записями и синхронизации данных контактов, задач и календаря с Thunderbird."
+    },
+    "google.translate.code": {
+        "message": "ru"
+    },
+    "helplink.security": {
+        "message": "https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F"
+    },
+    "info.error": {
+        "message": "Ошибка"
+    },
+    "info.idle": {
+        "message": "Ожидание"
+    },
+    "installProvider.header": {
+        "message": "Провайдер “##replace.1##” для TbSync не установлен."
+    },
+    "manager.AccountActions": {
+        "message": "Действия для аккаунта"
+    },
+    "manager.AddAccount": {
+        "message": "Добавить новый аккаунт"
+    },
+    "manager.DeleteAccount": {
+        "message": "Удалить аккаунт"
+    },
+    "manager.DisableAccount": {
+        "message": "Запретить аккаунт"
+    },
+    "manager.EnableAccount": {
+        "message": "Разрешить аккаунт &amp; подключить к серверу"
+    },
+    "manager.RetryConnectAccount": {
+        "message": "Повторить подключение к серверу"
+    },
+    "manager.ShowEventLog": {
+        "message": "Показать журнал событий"
+    },
+    "manager.SyncAll": {
+        "message": "Синхронизировать все разрешенные аккаунты"
+    },
+    "manager.SynchronizeAccount": {
+        "message": "Синхронизировать аккаунт"
+    },
+    "manager.accounts": {
+        "message": "Аккаунты"
+    },
+    "manager.accountsettings": {
+        "message": "Настройки аккаунта"
+    },
+    "manager.catman.text": {
+        "message": "TbSync также синхронизирует категории контактов, которые являются мощной заменой несинхронизируемых списков контактов. Чтобы иметь возможность использовать их в адресной книге Thunderbird, вы можете установить надстройку Менеджера Категорий. Он позволяет управлять перекрывающимися контактными группами на основе категорий и предоставляет много других функций, связанных с категорией. Его можно найти в официальном репозитории Mozilla Add-On:"
+    },
+    "manager.community": {
+        "message": "Сообщество"
+    },
+    "manager.connecting": {
+        "message": "Подсоединиться к серверу"
+    },
+    "manager.help": {
+        "message": "помощь"
+    },
+    "manager.help.createbugreport": {
+        "message": "Создать отчет об ошибке"
+    },
+    "manager.help.createbugreportinfo": {
+        "message": "Чтобы TbSync собирал только отладочные сообщения, относящиеся к вашему отчету об ошибке, перезапустите Thunderbird, а затем повторите шаги, которые воспроизводят поведение ошибки. Затем вы можете создать свой отчет об ошибках здесь."
+    },
+    "manager.help.debuglevel.0": {
+        "message": "Disabled"
+    },
+    "manager.help.debuglevel.1": {
+        "message": "Enabled: Logging of errors only"
+    },
+    "manager.help.debuglevel.2": {
+        "message": "Enabled: Logging of all sent and received data"
+    },
+    "manager.help.debuglevel.3": {
+        "message": "Enabled: Logging of all data and some internal debug values"
+    },
+    "manager.help.debugmode": {
+        "message": "Debug mode:"
+    },
+    "manager.help.fixit": {
+        "message": "Вы можете помочь исправить это дополнение, отправив сообщение об ошибке. Для этого требуется активация режима отладки."
+    },
+    "manager.help.foundabug": {
+        "message": "Нашли ошибку?"
+    },
+    "manager.help.needhelp": {
+        "message": "Нужна справка?"
+    },
+    "manager.help.viewdebuglog": {
+        "message": "View debug log"
+    },
+    "manager.help.wiki": {
+        "message": "Откройте wiki-страницы проекта TbSync, они предоставят дополнительную информацию, руководства и подробные описания конфигурации."
+    },
+    "manager.installprovider.link": {
+        "message": "Нажмите на следующую ссылку, чтобы открыть информационную страницу отсутствующего провайдера синхронизации. Там вы найдете дополнительную информацию о провайдере, и у вас будет возможность установить его:"
+    },
+    "manager.installprovider.warning": {
+        "message": "Этот провайдер синхронизации не размещен в официальном репозитории Thunderbird AddOn и, таким образом, не был рассмотрен сотрудниками Thunderbird. Провайдер синхронизации может сделать деструктивные действия в вашей системе. Используйте его на свой страх и риск."
+    },
+    "manager.lockedsettings.description": {
+        "message": "Чтобы предотвратить ошибки синхронизации, некоторые параметры нельзя редактировать, пока учетная запись включена."
+    },
+    "manager.missingprovider": {
+        "message": "Провайдер синхронизации (## provider ##), с которым связана эта учетная запись, не установлен."
+    },
+    "manager.noaccounts": {
+        "message": "Определенных аккаунтов пока нет."
+    },
+    "manager.provider": {
+        "message": "Установить провайдера"
+    },
+    "manager.provider4tbsync": {
+        "message": "Провайдер для TbSync"
+    },
+    "manager.resource": {
+        "message": "Папка"
+    },
+    "manager.shorttitle": {
+        "message": "Менеджер аккаунта"
+    },
+    "manager.status": {
+        "message": "Статус"
+    },
+    "manager.supporter.contributors": {
+        "message": "Помощники &amp; Переводчики"
+    },
+    "manager.supporter.details": {
+        "message": "Подробности"
+    },
+    "manager.supporter.sponsors": {
+        "message": "Спонсоры тестовых аккаунтов"
+    },
+    "manager.tabs.status": {
+        "message": "Статус синхронизации"
+    },
+    "manager.tabs.status.autotime": {
+        "message": "Периодическая синхронизация (в минутах)"
+    },
+    "manager.tabs.status.enableThisAccount": {
+        "message": "Разрешить и синхронизировать этот аккаунт"
+    },
+    "manager.tabs.status.general": {
+        "message": "Главный"
+    },
+    "manager.tabs.status.never": {
+        "message": "Установка 0 отключает периодическую синхронизацию. Push-синхронизации еще не реализована."
+    },
+    "manager.tabs.status.resources": {
+        "message": "Доступные ресурсы"
+    },
+    "manager.tabs.status.resources.intro": {
+        "message": "Выберите, какой из найденных ресурсов следует синхронизировать с Thunderbird."
+    },
+    "manager.tabs.status.sync": {
+        "message": "Синхронизировать сейчас"
+    },
+    "manager.tabs.status.tryagain": {
+        "message": "Повторить подсоединение к серверу"
+    },
+    "manager.title": {
+        "message": "Менеджер аккаунта TbSync"
+    },
+    "manager.tryagain": {
+        "message": "Повторить подсоединение к серверу"
+    },
+    "menu.settingslabel": {
+        "message": "Настройки синхронизации (TbSync)"
+    },
+    "password.account": {
+        "message": "учетная запись:"
+    },
+    "password.description": {
+        "message": "Обновите учетные данные для следующей учетной записи TbSync:"
+    },
+    "password.password": {
+        "message": "пароль:"
+    },
+    "password.title": {
+        "message": "Запрос учетных данных TbSync"
+    },
+    "password.user": {
+        "message": "пользователь:"
+    },
+    "popup.opensettings": {
+        "message": "Открыть менеджер аккаунта TbSync"
+    },
+    "prompt.DeleteAccount": {
+        "message": "Вы уверены, что хотите удалить аккаунт ##accountName##?"
+    },
+    "prompt.Disable": {
+        "message": "Вы действительно хотите запретить этот аккаунт? Все локальные изменения, которые еще не синхронизированы, будут потеряны!"
+    },
+    "prompt.Erase": {
+        "message": "Вы действительно хотите удалить этот аккаунт неизвестного провайдера из списка аккаунтов?"
+    },
+    "prompt.Unsubscribe": {
+        "message": "Вы действительно хотите отменить подписку на этот элемент? Все локальные изменения, которые еще не синхронизированы, будут потеряны!"
+    },
+    "status.JavaScriptError": {
+        "message": "Ошибка JavaScript! Пожалуйста, проверьте журнал событий для более подробной информации."
+    },
+    "status.OAuthAbortError": {
+        "message": "OAuth 2.0 authentication process aborted by user."
+    },
+    "status.OAuthHttpError": {
+        "message": "OAuth 2.0 authentication process failed (HTTP error ##replace.1##)."
+    },
+    "status.OAuthNetworkError": {
+        "message": "Could not connect to OAuth 2.0 authentication server."
+    },
+    "status.OAuthServerError": {
+        "message": " OAuth 2.0 authentication server returned: ##replace.1##"
+    },
+    "status.aborted": {
+        "message": "Не синхронизировано"
+    },
+    "status.apiError": {
+        "message": "Ошибка реализации API"
+    },
+    "status.disabled": {
+        "message": "Аккаунт не включен, синхронизация отключена."
+    },
+    "status.foldererror": {
+        "message": "По крайней мере один ресурс обнаружил ошибку синхронизации. Пожалуйста, проверьте журнал событий для более подробной информации."
+    },
+    "status.modified": {
+        "message": "Локальные изменения"
+    },
+    "status.network": {
+        "message": "Не удалось подключиться к серверу (##replace.1##)."
+    },
+    "status.no-folders-found-on-server": {
+        "message": "Не удалось найти какие-либо ресурсы на сервере."
+    },
+    "status.nolightning": {
+        "message": "Lightning Add-On не установлен, календари не поддерживаются."
+    },
+    "status.notargets": {
+        "message": "Отмена синхронизации, поскольку цели синхронизации не могут быть созданы."
+    },
+    "status.notsyncronized": {
+        "message": "Аккаунт должен быть синхронизирован, по крайней мере один элемент не синхронизирован."
+    },
+    "status.pending": {
+        "message": "Ожидание пока синхронизируется"
+    },
+    "status.security": {
+        "message": "Не удалось установить безопасное соединение. Вы используете самоподписанный или ненадежный сертификат без импорта его в Thunderbird? (##replace.1##)"
+    },
+    "status.skipped": {
+        "message": "Пока не поддерживается, пропущено"
+    },
+    "status.success": {
+        "message": "Готово"
+    },
+    "status.syncing": {
+        "message": "Синхронизация"
+    },
+    "supportwizard.footer": {
+        "message": "Из приведенной здесь информации на следующем шаге будет создано электронное письмо, которое вы можете впоследствии редактировать (например, добавлять скриншоты или аналогичное). Только при отправке этого электронного письма будет отправлен и сам отчет об ошибке."
+    },
+    "supportwizard.label.description": {
+        "message": "Подробное описание ошибки:"
+    },
+    "supportwizard.label.faultycomponent": {
+        "message": "Компонент TbSync, где вы заметили ошибку:"
+    },
+    "supportwizard.label.selectcomponent": {
+        "message": "Выбрать компонент ..."
+    },
+    "supportwizard.label.summary": {
+        "message": "Краткое описание ошибки:"
+    },
+    "supportwizard.pagetitle": {
+        "message": "Сбор всей информации для эффективной обработки отчета об ошибке."
+    },
+    "supportwizard.provider": {
+        "message": "Провайдер: ##replace.1##"
+    },
+    "supportwizard.title": {
+        "message": "Создать отчет об ошибке"
+    },
+    "syncstate.accountdone": {
+        "message": "Завершенный аккаунт"
+    },
+    "syncstate.done": {
+        "message": "Подготовка следующего элемента для синхронизации"
+    },
+    "syncstate.oauthprompt": {
+        "message": "OAuth 2.0 authentication"
+    },
+    "syncstate.passwordprompt": {
+        "message": "Запрос на ввод учетных данных"
+    },
+    "syncstate.preparing": {
+        "message": "Подготовка следующего элемента для синхронизации"
+    },
+    "syncstate.syncing": {
+        "message": "Инициализация синхронизации"
+    },
+    "target.orphaned": {
+        "message": "Соединение разорвано"
+    },
+    "toolbar.label": {
+        "message": "Синхронизировать все аккаунты TbSync"
+    },
+    "toolbar.tooltiptext": {
+        "message": "Синхронизировать последние изменения"
+    }
 }

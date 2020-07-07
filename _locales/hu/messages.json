@@ -1,5 +1,362 @@
 {
-  "extensionDescription": {
-    "message": "A Thunderbird-összehangolás egy központi felhasználói felület kezeli a felhőfiókokat, és összehangolja névjegyzékait, feladatait és naptáradatait a Thunderbird programmal."
-  }
+    "HelpFixStartupError": {
+        "message": "A hiba javításához hibakeresési naplót küldhet a Thunderbird-összehangolás fejlesztőnek. Készüljön fel most arra az e-mailre?"
+    },
+    "NoDebugLog": {
+        "message": "Nem találtak hasznos hibaelhárító üzeneteket. Engedélyezze a hibakeresési módot, indítsa újra a Thunderbird programot, és ismételje meg a hibás viselkedést elindító lépéseket."
+    },
+    "OopsMessage": {
+        "message": "Hoppá, valami hiba történt a Thunderbird-összehangolás indításakor."
+    },
+    "RestartThunderbirdAndTryAgain": {
+        "message": "A Thunderbird-összehangolás hibakeresési napló engedélyezve van, kérjük, indítsa újra a Thunderbird programot, és próbálkozzon újra a Thunderbird-összehangolás megnyitásával."
+    },
+    "UnableToTraceError": {
+        "message": "Nem lehet nyomon követni ezt a hibát, mert a hibakeresési napló jelenleg nincs engedélyezve. Szeretné engedélyezni a hibakeresési naplót, hogy segítsen javítani a hibát?"
+    },
+    "accountacctions.delete": {
+        "message": "A(z) „##accountname##” fiók törlése"
+    },
+    "accountacctions.disable": {
+        "message": "A(z) „##accountname##” fiók letiltása"
+    },
+    "accountacctions.enable": {
+        "message": "A(z) „##accountname##” fiók engedélyezze és próbálja meg csatlakozni a kiszolgálóhoz"
+    },
+    "accountacctions.sync": {
+        "message": "A(z) „##accountname##” fiók összehangolása"
+    },
+    "addressbook.searchall": {
+        "message": "Keresése az összes névjegyzékben"
+    },
+    "addressbook.searchgal": {
+        "message": "Keresése ezt a névjegyzékben és a globális könyvtárban (##replace.1##)"
+    },
+    "addressbook.searchthis": {
+        "message": "Keresése csak ezt a címjegyzékben"
+    },
+    "eventlog.clear": {
+        "message": "üres"
+    },
+    "eventlog.close": {
+        "message": "közel"
+    },
+    "eventlog.title": {
+        "message": "Eseménynapló"
+    },
+    "extensionDescription": {
+        "message": "A Thunderbird-összehangolás egy központi felhasználói felület kezeli a felhőfiókokat, és összehangolja névjegyzékait, feladatait és naptáradatait a Thunderbird programmal."
+    },
+    "google.translate.code": {
+        "message": "hu"
+    },
+    "helplink.security": {
+        "message": "https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F"
+    },
+    "info.error": {
+        "message": "Hiba"
+    },
+    "info.idle": {
+        "message": "Tétlen"
+    },
+    "installProvider.header": {
+        "message": "A(z) „##replace.1##” szolgáltató a Thunderbird-összehangoláshoz még nincs telepítve."
+    },
+    "manager.AccountActions": {
+        "message": "Fiókműveletek"
+    },
+    "manager.AddAccount": {
+        "message": "Új fiók hozzáadása"
+    },
+    "manager.DeleteAccount": {
+        "message": "Fiók törlése"
+    },
+    "manager.DisableAccount": {
+        "message": "Fiók letiltása"
+    },
+    "manager.EnableAccount": {
+        "message": "Engedélyezze a fiókot és próbáljon csatlakozni a kiszolgálóhoz"
+    },
+    "manager.RetryConnectAccount": {
+        "message": "Próbálkozzon újra a kiszolgálóhoz való csatlakozással"
+    },
+    "manager.ShowEventLog": {
+        "message": "Eseménynapló megjelenítése"
+    },
+    "manager.SyncAll": {
+        "message": "Az összes engedélyezett fiók összehangolása"
+    },
+    "manager.SynchronizeAccount": {
+        "message": "Fiók összehangolása"
+    },
+    "manager.accounts": {
+        "message": "Fiókok"
+    },
+    "manager.accountsettings": {
+        "message": "Fiók beállítások"
+    },
+    "manager.catman.text": {
+        "message": "A Thunderbird-összehangolásja az érintkezési kategóriákat is, amelyek hatékonyan helyettesítik a nem összehangolható kapcsolattartókat. A Thunderbird névjegyzékben való használatához telepítheti a Kategóriakezelő kiegészítőt. Lehetővé teszi az átfedő kategóriákon alapuló kapcsolattartó csoportok kezelését és egy sor más kategóriához kapcsolódó funkciót. Ez megtalálható a hivatalos Thunderbird-kiegészítő adattárban:"
+    },
+    "manager.community": {
+        "message": "Közösség"
+    },
+    "manager.connecting": {
+        "message": "Kiszolgáló összekapcsolása"
+    },
+    "manager.help": {
+        "message": "Segítség"
+    },
+    "manager.help.createbugreport": {
+        "message": "Hibabejelentés létrehozása"
+    },
+    "manager.help.createbugreportinfo": {
+        "message": "Indítsa újra a Thunderbird alkalmazást, majd ismételje meg a pontos lépéseket a hiba reprodukálásához. Ez csak a hibajelentéssel kapcsolatos hibajelentéseket gyűjti össze. Hibabejelentés létrehozása itt."
+    },
+    "manager.help.debuglevel.0": {
+        "message": "Tiltva"
+    },
+    "manager.help.debuglevel.1": {
+        "message": "Engedélyezve: Csak hibanaplózása"
+    },
+    "manager.help.debuglevel.2": {
+        "message": "Engedélyezve: Az összes küldött és fogadott adat naplózása"
+    },
+    "manager.help.debuglevel.3": {
+        "message": "Engedélyezve: Minden adat naplózása és néhány belső hibakeresési érték"
+    },
+    "manager.help.debugmode": {
+        "message": "Hibakeresési mód:"
+    },
+    "manager.help.fixit": {
+        "message": "Hibajelentés küldése a javításhoz. Hibakeresési mód bekapcsolása engedélyeket igényel."
+    },
+    "manager.help.foundabug": {
+        "message": "Talált egy hibát?"
+    },
+    "manager.help.needhelp": {
+        "message": "Segítségre van szüksége?"
+    },
+    "manager.help.viewdebuglog": {
+        "message": "Hibakeresési napló megtekintése"
+    },
+    "manager.help.wiki": {
+        "message": "További tudnivalók, útmutatók és részletes beállítások, olvassa el a Thunderbird-összehangolás projekt wiki oldalát."
+    },
+    "manager.installprovider.link": {
+        "message": "Kattintson a következő linkre a hiányzó összhangzós szolgáltató info oldalának megnyitásához. Ott talál további információkat a szolgáltatóról, és lehetősége van a telepítésre:"
+    },
+    "manager.installprovider.warning": {
+        "message": "Ez az összehangoló szolgáltató nem a hivatalos Thunderbird-kiegészítő adattárban található, így a Thunderbird személyzete nem vizsgálta felül. A szolgáltató rossz dolgokat tehet a rendszerében. Használja saját felelősségére."
+    },
+    "manager.lockedsettings.description": {
+        "message": "A összehangolási hibák elkerülése érdekében egyes beállítások nem szerkeszthetők a fiók engedélyezése közben."
+    },
+    "manager.missingprovider": {
+        "message": "A összehangolás szolgáltató (##provider##), amelyhez a fiók társítva van, nincs telepítve."
+    },
+    "manager.noaccounts": {
+        "message": "Még nincsenek fiókok meghatározott."
+    },
+    "manager.provider": {
+        "message": "Szolgáltató telepítése"
+    },
+    "manager.provider4tbsync": {
+        "message": "Thunderbird-összehangolás szolgáltató"
+    },
+    "manager.resource": {
+        "message": "Mappa"
+    },
+    "manager.shorttitle": {
+        "message": "Fiókkezelő"
+    },
+    "manager.status": {
+        "message": "Állapot"
+    },
+    "manager.supporter.contributors": {
+        "message": "Közreműködők és fordítók"
+    },
+    "manager.supporter.details": {
+        "message": "Részletek"
+    },
+    "manager.supporter.sponsors": {
+        "message": "Tesztszámla támogatók"
+    },
+    "manager.tabs.status": {
+        "message": "Összehangolási állapot"
+    },
+    "manager.tabs.status.autotime": {
+        "message": "Időszakos összehangolás (perc)"
+    },
+    "manager.tabs.status.enableThisAccount": {
+        "message": "Fiók engedélyezze és összehangolása"
+    },
+    "manager.tabs.status.general": {
+        "message": "Tábornok"
+    },
+    "manager.tabs.status.never": {
+        "message": "A 0 beállítás letiltja az időszakos összehangolást. A nyomösszehangolást még meg nem valósult."
+    },
+    "manager.tabs.status.resources": {
+        "message": "Elérhető erőforrások"
+    },
+    "manager.tabs.status.resources.intro": {
+        "message": "Válassza ki, hogy a talált erőforrások közül melyiket összehangolni kell a Thunderbird programmal."
+    },
+    "manager.tabs.status.sync": {
+        "message": "Összehangolás"
+    },
+    "manager.tabs.status.tryagain": {
+        "message": "Próbálkozzon újra a kiszolgálóhoz való csatlakozással"
+    },
+    "manager.title": {
+        "message": "Thunderbird-összehangolás fiókkezelő"
+    },
+    "manager.tryagain": {
+        "message": "Próbálkozzon újra a kiszolgálóhoz való csatlakozással"
+    },
+    "menu.settingslabel": {
+        "message": "Összehangolási beállítások"
+    },
+    "password.account": {
+        "message": "Számla:"
+    },
+    "password.description": {
+        "message": "Kérjük, frissítse a következő TbSync-fiók hitelesítő adatait:"
+    },
+    "password.password": {
+        "message": "Jelszó:"
+    },
+    "password.title": {
+        "message": "TbSync hitelesítési kérés"
+    },
+    "password.user": {
+        "message": "Használó:"
+    },
+    "popup.opensettings": {
+        "message": "Thunderbird-összehangolás fiókkezelő megnyitasa"
+    },
+    "prompt.DeleteAccount": {
+        "message": "Biztos benne, hogy törölni szeretne fiók ##accountName##?"
+    },
+    "prompt.Disable": {
+        "message": "Biztosan letiltja ezt a fiókot? Minden helyi módosítás, amely még nincs összehangolva, elveszik!"
+    },
+    "prompt.Erase": {
+        "message": "Biztosan eltávolít egy ismeretlen szolgáltató fiókját a fiókok listáiról?"
+    },
+    "prompt.Unsubscribe": {
+        "message": "Biztosan le szeretné iratkozni ezt az elemet? Minden helyi módosítás, amely még nincs összehangolva, elveszik!"
+    },
+    "status.JavaScriptError": {
+        "message": "Javascript hiba! További részletekért nézze meg az eseménynaplót."
+    },
+    "status.OAuthAbortError": {
+        "message": "Az OAuth 2.0 hitelesítési folyamatot a felhasználó megszakította."
+    },
+    "status.OAuthHttpError": {
+        "message": "Az OAuth 2.0 hitelesítési folyamat sikertelen (HTTP hibakód: ##replace.1##)."
+    },
+    "status.OAuthNetworkError": {
+        "message": "Nem sikerült csatlakozni az OAuth 2.0 hitelesítési kiszolgálóhoz."
+    },
+    "status.OAuthServerError": {
+        "message": " Az OAuth 2.0 hitelesítési kiszolgáló visszatért: ##replace.1##"
+    },
+    "status.aborted": {
+        "message": "Nincs összehangolva"
+    },
+    "status.apiError": {
+        "message": "API végrehajtási hiba"
+    },
+    "status.disabled": {
+        "message": "A fiók nem engedélyezett, az összehangolás le van tiltva."
+    },
+    "status.foldererror": {
+        "message": "Legalább egy erőforrás szinkronizálási hibát észlelt. További részletekért nézze meg az eseménynaplót."
+    },
+    "status.modified": {
+        "message": "Helyi módosítások"
+    },
+    "status.network": {
+        "message": "Nem tudott csatlakozni a kiszolgálóhoz (##replace.1##)."
+    },
+    "status.no-folders-found-on-server": {
+        "message": "A kiszolgálón nem található erőforrás."
+    },
+    "status.nolightning": {
+        "message": "A Lightning-t kiegészítő nincs telepítve, a naptárak nem támogatottak."
+    },
+    "status.notargets": {
+        "message": "A összehangolás abbahagyása, mert a összehangolási célokat nem lehetett létrehozni."
+    },
+    "status.notsyncronized": {
+        "message": "A fiókját összehangolni kell. Legalább egy elem összehangolatlan."
+    },
+    "status.pending": {
+        "message": "Várakozás összehangolásra"
+    },
+    "status.security": {
+        "message": "Biztonsági kapcsolat létrehozása nem sikerült. Ön aláírta vagy egyébként nem megbízható tanúsítványt importálta a Thunderbirdbe? (##replace.1##)"
+    },
+    "status.skipped": {
+        "message": "Még nem támogatott, kimarad"
+    },
+    "status.success": {
+        "message": "Rendben"
+    },
+    "status.syncing": {
+        "message": "Összehangolás folyamatban"
+    },
+    "supportwizard.footer": {
+        "message": "Ebből az információból e-mail készül. További tájékoztatás adhatók hozzá, pl. képernyőképek. A hibajelentés elküldéséhez az e-mailt el kell küldeni."
+    },
+    "supportwizard.label.description": {
+        "message": "Részletes hiba leírása:"
+    },
+    "supportwizard.label.faultycomponent": {
+        "message": "Thunderbird-összehangolás összetevő, ahol hiba történt:"
+    },
+    "supportwizard.label.selectcomponent": {
+        "message": "Összetevő kiválasztása…"
+    },
+    "supportwizard.label.summary": {
+        "message": "A hiba rövid összefoglalása:"
+    },
+    "supportwizard.pagetitle": {
+        "message": "Információgyűjtés a hibajelentés feldolgozásához."
+    },
+    "supportwizard.provider": {
+        "message": "Szolgáltató: ##replace.1##"
+    },
+    "supportwizard.title": {
+        "message": "Hibabejelentés létrehozása"
+    },
+    "syncstate.accountdone": {
+        "message": "Fiók befejezve"
+    },
+    "syncstate.done": {
+        "message": "Az összehangolás következő elem előkészítése"
+    },
+    "syncstate.oauthprompt": {
+        "message": "OAuth 2.0 hitelesítés"
+    },
+    "syncstate.passwordprompt": {
+        "message": "Hitelesítő adatok megadásának kérése"
+    },
+    "syncstate.preparing": {
+        "message": "Az összehangolás következő elem előkészítése"
+    },
+    "syncstate.syncing": {
+        "message": "Összehangolás előkészítése"
+    },
+    "target.orphaned": {
+        "message": "A kapcsolat megszakadt"
+    },
+    "toolbar.label": {
+        "message": "Az összes Thunderbird-összehangolás fiók összehangolása"
+    },
+    "toolbar.tooltiptext": {
+        "message": "A legújabb változtatások összehangolása"
+    }
 }
