@@ -242,7 +242,7 @@ var tbSyncAccounts = {
           break;
 
         case "syncing":
-          switch (current.replace("chrome://tbsync/skin/","")) {
+          switch (current.replace("chrome://tbsync/content/skin/","")) {
             case "sync16_1.png": 
               src = "sync16_2.png"; 
               break;
@@ -271,7 +271,7 @@ var tbSyncAccounts = {
       }
     }
     
-    return "chrome://tbsync/skin/" + src;
+    return "chrome://tbsync/content/skin/" + src;
   },
 
   updateAccountLogo: function (id) {
@@ -279,7 +279,7 @@ var tbSyncAccounts = {
     let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
     if (listItem) {
       let obj = listItem.childNodes[0];
-      obj.src = tbSyncAccounts.hasInstalledProvider(id) ? TbSync.providers[accountData.getAccountProperty("provider")].Base.getProviderIcon(16, accountData) : "chrome://tbsync/skin/provider16.png";
+      obj.src = tbSyncAccounts.hasInstalledProvider(id) ? TbSync.providers[accountData.getAccountProperty("provider")].Base.getProviderIcon(16, accountData) : "chrome://tbsync/content/skin/provider16.png";
     }
   },
 
@@ -438,7 +438,7 @@ var tbSyncAccounts = {
       entry.setAttribute("hidden", false);
     } else if (isDefault) {
       entry.setAttribute("label", TbSync.providers.defaultProviders[provider].name);
-      entry.setAttribute("image", "chrome://tbsync/skin/provider16.png");                    
+      entry.setAttribute("image", "chrome://tbsync/content/skin/provider16.png");                    
       entry.setAttribute("hidden", false);
     } else {
       entry.setAttribute("hidden", true);

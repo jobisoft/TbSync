@@ -23,7 +23,7 @@
         onpopupshowing="tbSyncAccountSettings.onFolderListContextMenuShowing();">
             <menuitem 
             class="menuitem-iconic"
-            image="chrome://tbsync/skin/warning16.png"
+            image="chrome://tbsync/content/skin/warning16.png"
             label="&manager.ShowEventLog;"
             oncommand="TbSync.eventlog.open(tbSyncAccountSettings.accountID, this.parentNode.getAttribute('folderID'));"/>
         </menupopup>

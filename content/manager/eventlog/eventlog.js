@@ -73,7 +73,7 @@ var tbSyncEventLog = {
 
     let image = document.createXULElement("image");
     let src = entry.type.endsWith("_rerun") ? "sync" : entry.type;
-    image.setAttribute("src", "chrome://tbsync/skin/" + src + "16.png");
+    image.setAttribute("src", "chrome://tbsync/content/skin/" + src + "16.png");
     image.setAttribute("style", "margin:4px 4px 4px 4px;");
     leftColumn.appendChild(image);
     

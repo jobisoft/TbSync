@@ -67,8 +67,8 @@ https://tbsync.readthedocs.org
 * [del16.png] by [Jean Victor Balin](https://openclipart.org/detail/16982/cross)
 * [tick16.png] by [Jean Victor Balin](https://openclipart.org/detail/17056/tick)
 * [sync16.png] by [Willleam](https://openclipart.org/detail/287463/circular-arrow-blue)
-* [slider-on.png] by [John Bieling](https://github.com/jobisoft/TbSync/blob/master/skin/src/LICENSE)
-* [slider-off.png] by [John Bieling](https://github.com/jobisoft/TbSync/blob/master/skin/src/LICENSE)
+* [slider-on.png] by [John Bieling](https://github.com/jobisoft/TbSync/blob/master/content/skin/src/LICENSE)
+* [slider-off.png] by [John Bieling](https://github.com/jobisoft/TbSync/blob/master/content/skin/src/LICENSE)
 
 #### CC-BY 3.0
 * [contacts16.png] by [Yusuke Kamiyamane](https://www.iconfinder.com/icons/25910/)

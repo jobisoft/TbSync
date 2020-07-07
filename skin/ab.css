@@ -1,8 +1,0 @@
-treechildren::-moz-tree-image(DirCol, orphaned) {
-  margin-inline-end: 2px;
-  list-style-image: url("chrome://tbsync/skin/error16.png");
-}
-
-.abMenuItem[AddrBook="true"][TbSyncIcon="orphaned"] {
-  list-style-image: url("chrome://tbsync/skin/error16.png");
-}

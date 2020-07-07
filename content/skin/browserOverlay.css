@@ -1,0 +1,10 @@
+/*  skin/toolbar-button.css  */
+
+#tbsync-toolbarbutton {
+  list-style-image: url("chrome://tbsync/content/skin/sync.png");
+}
+
+toolbar[iconsize="small"] #tbsync-toolbarbutton {
+  list-style-image: url("chrome://tbsync/content/skin/syncsmall.png");
+}
+

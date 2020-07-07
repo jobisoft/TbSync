@@ -1,7 +1,5 @@
 content tbsync  content/
 
-skin    tbsync  classic/1.0 skin/
-
 locale  tbsync  bg      _locales/bg/
 locale  tbsync  cs      _locales/cs/
 locale  tbsync  de      _locales/de/
