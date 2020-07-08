@@ -75,7 +75,7 @@
         "message": "Wyłącz konto"
     },
     "manager.EnableAccount": {
-        "message": "Enable account &amp; try to connect to server"
+        "message": "Włącz konto i spróbuj połączyć się z serwerem"
     },
     "manager.RetryConnectAccount": {
         "message": "Spróbuj ponownie połączyć do serwera"
@@ -174,7 +174,7 @@
         "message": "Status"
     },
     "manager.supporter.contributors": {
-        "message": "Contributors &amp; Translators"
+        "message": "Współpracownicy i Tłumacze"
     },
     "manager.supporter.details": {
         "message": "Szczegóły"
@@ -261,7 +261,7 @@
         "message": "Nie można połączyć się z serwerem uwierzytelniania OAuth 2.0."
     },
     "status.OAuthServerError": {
-        "message": " OAuth 2.0 authentication server returned: ##replace.1##"
+        "message": " Serwer uwierzytelniania OAuth 2.0 zwrócił: ##replace.1##"
     },
     "status.aborted": {
         "message": "Nie zsynchronizowane"
@@ -327,7 +327,7 @@
         "message": "Zbieranie wszystkich informacji w celu skutecznego przetworzenia zgłoszenia błędu."
     },
     "supportwizard.provider": {
-        "message": "Provider: ##replace.1##"
+        "message": "Dostawca: ##replace.1##"
     },
     "supportwizard.title": {
         "message": "Utwórz raport o błędzie"
