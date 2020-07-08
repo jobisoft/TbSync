@@ -75,7 +75,7 @@
         "message": "Изключване на регистрацията"
     },
     "manager.EnableAccount": {
-        "message": "Enable account &amp; try to connect to server"
+        "message": "Включи регистрацията и се свържи със сървъра"
     },
     "manager.RetryConnectAccount": {
         "message": "Опитай отново да се свържеш със сървъра"
@@ -174,7 +174,7 @@
         "message": "Статус"
     },
     "manager.supporter.contributors": {
-        "message": "Contributors &amp; Translators"
+        "message": "Помощници и преводачи"
     },
     "manager.supporter.details": {
         "message": "Детайли"
@@ -261,7 +261,7 @@
         "message": "Не можах да се свържа с OAuth 2.0 сървъра."
     },
     "status.OAuthServerError": {
-        "message": " OAuth 2.0 authentication server returned: ##replace.1##"
+        "message": "OAuth 2.0 сървъра отвърна с ##replace.1##"
     },
     "status.aborted": {
         "message": "Не е синхронизиран"
@@ -327,7 +327,7 @@
         "message": "Събиране на всякаква информация за да може да може от доклада за грешки да се разбере какво куца."
     },
     "supportwizard.provider": {
-        "message": "Provider: ##replace.1##"
+        "message": "Доставчик: ##replace.1##"
     },
     "supportwizard.title": {
         "message": "Създаване на доклад за грешка"
