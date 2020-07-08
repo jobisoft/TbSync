@@ -36,13 +36,11 @@ var TbSync = {
   encoder: new TextEncoder(),
 
   modules : [],
+  browser : null,
   
   // global load
-  load: async function (window) { 
-    
-    let { ConversionHelper } = ChromeUtils.import("chrome://tbsync/content/api/ConversionHelper/ConversionHelper.jsm");
-    this.ConversionHelper =  ConversionHelper;
-    await this.ConversionHelper.webExtensionStartupCompleted();
+  load: async function (browser) {
+    this.browser = browser
 
     //public module and IO module needs to be loaded beforehand
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/public.js", this, "UTF-8");
@@ -51,9 +49,10 @@ var TbSync = {
     //clear debug log on start
     this.io.initFile("debug.log");
 
-    this.window = window;
+    this.window = Services.wm.getMostRecentWindow("mail:3pane");
     this.addon = await AddonManager.getAddonByID("tbsync@jobisoft.de");
     this.addon.contributorsURL = "https://github.com/jobisoft/TbSync/blob/master/CONTRIBUTORS.md";
+    this.browser = browser;
     this.dump("TbSync init","Start (" + this.addon.version.toString() + ")");
 
     //print information about Thunderbird version and OS

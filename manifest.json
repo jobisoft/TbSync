@@ -20,20 +20,13 @@
     "scripts": ["background.js"]
   },
   "experiment_apis": {
-    "ConversionHelper": {
-      "schema": "content/api/ConversionHelper/schema.json",
+    "LegacyBootstrap": {
+      "schema": "content/api/LegacyBootstrap/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
-        "paths": [["ConversionHelper"]],
-        "script": "content/api/ConversionHelper/implementation.js"
+        "paths": [["LegacyBootstrap"]],
+        "script": "content/api/LegacyBootstrap/implementation.js"
       }
-    }
-  },
-  "legacy": {
-    "type": "bootstrap",
-    "options": {
-      "page": "chrome://tbsync/content/manager/addonoptions.xul",
-      "open_in_tab": false
     }
   }
 }

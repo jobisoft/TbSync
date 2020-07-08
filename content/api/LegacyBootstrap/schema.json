@@ -1,0 +1,39 @@
+[
+  {
+    "namespace": "LegacyBootstrap",
+    "functions": [
+      {
+        "name": "registerChromeUrl",
+        "type": "function",
+        "description": "Register folders which should be available as chrome:// urls (as defined in the legacy chrome.manifest)",
+        "async": true,
+        "parameters": [
+          {
+            "name": "chromeData",
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items" : {
+                "type": "string"
+              }
+            },
+            "description": "Array of ChromeData Arrays."
+          }
+        ]
+      },
+      {
+        "name": "registerBootstrapScript",
+        "type": "function",
+        "description": "Register a bootstrap.js style script",
+        "async": true,
+        "parameters": [
+          {
+            "name": "aPath",
+            "type": "string",
+            "description": "Either the chrome:// path to the script or its relative location from the root of the extension,"
+          }
+        ]
+      }  
+    ]
+  }
+]
