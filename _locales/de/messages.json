@@ -75,7 +75,7 @@
         "message": "Konto deaktivieren"
     },
     "manager.EnableAccount": {
-        "message": "Konto aktivieren &amp; mit dem Server verbinden"
+        "message": "Konto aktivieren & mit dem Server verbinden"
     },
     "manager.RetryConnectAccount": {
         "message": "Erneut versuchen mit dem Server zu verbinden"
@@ -120,7 +120,7 @@
         "message": "Aktiviert: Protokolliert alle Fehler"
     },
     "manager.help.debuglevel.2": {
-        "message": "Aktiviert: Protokolliert alle gesendeten &amp; empfangenen Daten"
+        "message": "Aktiviert: Protokolliert alle gesendeten & empfangenen Daten"
     },
     "manager.help.debuglevel.3": {
         "message": "Aktiviert: Protokolliert alle Daten und einige interne Debug-Werte"
@@ -174,7 +174,7 @@
         "message": "Status"
     },
     "manager.supporter.contributors": {
-        "message": "Mitwirkende &amp; Übersetzer"
+        "message": "Mitwirkende & Übersetzer"
     },
     "manager.supporter.details": {
         "message": "Details"

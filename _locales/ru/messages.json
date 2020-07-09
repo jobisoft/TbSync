@@ -75,7 +75,7 @@
         "message": "Запретить аккаунт"
     },
     "manager.EnableAccount": {
-        "message": "Разрешить аккаунт &amp; подключить к серверу"
+        "message": "Разрешить аккаунт & подключить к серверу"
     },
     "manager.RetryConnectAccount": {
         "message": "Повторить подключение к серверу"
@@ -174,7 +174,7 @@
         "message": "Статус"
     },
     "manager.supporter.contributors": {
-        "message": "Помощники &amp; Переводчики"
+        "message": "Помощники & Переводчики"
     },
     "manager.supporter.details": {
         "message": "Подробности"
