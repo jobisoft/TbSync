@@ -75,7 +75,7 @@
         "message": "Désactiver le compte"
     },
     "manager.EnableAccount": {
-        "message": "Enable account & try to connect to server"
+        "message": "Activer le compte et tenter de se connecter au serveur"
     },
     "manager.RetryConnectAccount": {
         "message": "Essayer à nouveau de se connecter au serveur"
@@ -174,7 +174,7 @@
         "message": "Statut"
     },
     "manager.supporter.contributors": {
-        "message": "Contributors & Translators"
+        "message": "Contributeurs et traducteurs"
     },
     "manager.supporter.details": {
         "message": "Détails"
