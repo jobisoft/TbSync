@@ -75,7 +75,7 @@
         "message": "Запретить аккаунт"
     },
     "manager.EnableAccount": {
-        "message": "Enable account &amp; try to connect to server"
+        "message": "Enable account & try to connect to server"
     },
     "manager.RetryConnectAccount": {
         "message": "Повторить подключение к серверу"
@@ -174,7 +174,7 @@
         "message": "Статус"
     },
     "manager.supporter.contributors": {
-        "message": "Contributors &amp; Translators"
+        "message": "Contributors & Translators"
     },
     "manager.supporter.details": {
         "message": "Подробности"
