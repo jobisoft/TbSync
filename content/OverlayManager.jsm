@@ -193,14 +193,18 @@ function OverlayManager(extension, options = {}) {
             Components.utils.reportError(e);          
           }
         }
+        
+        let omscopename = overlayNode.hasAttribute("omscope") ? overlayNode.getAttribute("omscope") : null;
+        let omscope = omscopename ? window[omscopename] : window;
 
-        //eval onbeforeinject, if that returns false, inject is aborted
         let inject = true;
-        if (overlayNode.hasAttribute("onbeforeinject")) {
-          let onbeforeinject = overlayNode.getAttribute("onbeforeinject");
-          if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Executing: " + onbeforeinject);
-          // the source for this eval is part of this XPI, cannot be changed by user.
-          inject = window.eval(onbeforeinject);
+        if (omscope.hasOwnProperty("onBeforeInject")) {
+          if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Executing " + (omscopename ? omscopename : "window") + ".onBeforeInject()");
+          try {
+            inject = omscope.onBeforeInject(window);
+          } catch (e) {
+            Components.utils.reportError(e);          
+          }
         }
 
         if (inject) {
@@ -219,14 +223,22 @@ function OverlayManager(extension, options = {}) {
           }                        
 
           this.insertXulOverlay(window, overlayNode.children);
+          if (omscope.hasOwnProperty("onInject")) {
+            if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Executing " + (omscopename ? omscopename : "window") + ".onInject()");
+            try {
+              omscope.onInject(window);
+            } catch (e) {
+              Components.utils.reportError(e);          
+            }
+          }
           
           // add to injectCounter
           return true;
         }
       }
     }
-	
-    // nothing injected,do not add to inject counter
+
+    // nothing injected, do not add to inject counter
     return false;
   };
 
@@ -241,25 +253,32 @@ function OverlayManager(extension, options = {}) {
     if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] Removing: " + overlay);
     window.injectedOverlays = window.injectedOverlays.filter(e => (e != overlay));
     
-//            let rootNode = this.getDataFromXULString(window, this.overlays[overlay]);
     let rootNode = this.overlays[overlay];
-    let overlayNode = rootNode.documentElement;
-    
-    if (overlayNode.hasAttribute("onremove")) {
-      let onremove = overlayNode.getAttribute("onremove");
-      if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Executing: " + onremove);
-      // the source for this eval is part of this XPI, cannot be changed by user.
-      window.eval(onremove);
-    }
+    if (rootNode) {
+      let overlayNode = rootNode.documentElement;
+      if (overlayNode) {
+        let omscopename = overlayNode.hasAttribute("omscope") ? overlayNode.getAttribute("omscope") : null;
+        let omscope = omscopename ? window[omscopename] : window;
+        
+        if (omscope.hasOwnProperty("onRemove")) {
+          if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Executing " + (omscopename ? omscopename : "window") + ".onRemove()");
+          try {
+            omscope.onRemove(window);
+          } catch (e) {
+            Components.utils.reportError(e);          
+          }
+        }
 
-    this.removeXulOverlay(window, overlayNode.children);
-
-    //get urls of stylesheets to remove styte tag
-    let styleSheetUrls = this.getStyleSheetUrls(rootNode);
-    for (let i=0; i<styleSheetUrls.length; i++) {
-      let element = window.document.getElementById(styleSheetUrls[i]);
-      if (element) {
-        element.parentNode.removeChild(element);
+        this.removeXulOverlay(window, overlayNode.children);
+      }
+      
+      //get urls of stylesheets to remove styte tag
+      let styleSheetUrls = this.getStyleSheetUrls(rootNode);
+      for (let i=0; i<styleSheetUrls.length; i++) {
+        let element = window.document.getElementById(styleSheetUrls[i]);
+        if (element) {
+          element.parentNode.removeChild(element);
+        }
       }
     }
   };
