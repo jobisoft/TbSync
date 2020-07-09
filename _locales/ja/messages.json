@@ -75,7 +75,7 @@
         "message": "アカウントを無効化"
     },
     "manager.EnableAccount": {
-        "message": "Enable account & try to connect to server"
+        "message": "アカウントを有効化し、サーバーへの接続を試みる"
     },
     "manager.RetryConnectAccount": {
         "message": "Try again to connect to server"
@@ -153,7 +153,7 @@
         "message": "同期エラーを防ぐため、アカウントが有効化されている状態では、いくつかの設定は変更できません。"
     },
     "manager.missingprovider": {
-        "message": "This account requires the ##provider## synchronization provider, which is currently not installed."
+        "message": "このアカウントには ##provider## 同期プロバイダが必要です。これは現在インストールされていません。"
     },
     "manager.noaccounts": {
         "message": "There are not yet any accounts defined."
@@ -174,7 +174,7 @@
         "message": "状態"
     },
     "manager.supporter.contributors": {
-        "message": "Contributors & Translators"
+        "message": "貢献者と翻訳者"
     },
     "manager.supporter.details": {
         "message": "詳細"
@@ -267,7 +267,7 @@
         "message": "同期されていません"
     },
     "status.apiError": {
-        "message": "API implementation error"
+        "message": "API 実装エラー"
     },
     "status.disabled": {
         "message": "アカウントは有効化されておらず、同期は無効化されています。"
