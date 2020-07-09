@@ -75,7 +75,7 @@
         "message": "Fiók letiltása"
     },
     "manager.EnableAccount": {
-        "message": "Enable account &amp; try to connect to server"
+        "message": "Enable account & try to connect to server"
     },
     "manager.RetryConnectAccount": {
         "message": "Próbálkozzon újra a kiszolgálóhoz való csatlakozással"
@@ -174,7 +174,7 @@
         "message": "Állapot"
     },
     "manager.supporter.contributors": {
-        "message": "Contributors &amp; Translators"
+        "message": "Contributors & Translators"
     },
     "manager.supporter.details": {
         "message": "Részletek"
