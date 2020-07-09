@@ -13,11 +13,12 @@ var EXPORTED_SYMBOLS = ["OverlayManager"];
 var { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
 var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 
-function OverlayManager(options = {}) {
+function OverlayManager(extension, options = {}) {
   this.registeredOverlays = {};
   this.overlays =  {};
   this.stylesheets = {};
   this.options = {verbose: 0};
+  this.extension = extension;
   
   let userOptions = Object.keys(options);
   for (let i=0; i < userOptions.length; i++) {
@@ -42,7 +43,7 @@ function OverlayManager(options = {}) {
   this.startObserving = function () {
     let windows = Services.wm.getEnumerator(null);
     while (windows.hasMoreElements()) {
-      let window = windows.getNext().QueryInterface(Components.interfaces.nsIDOMWindow);
+      let window = windows.getNext();
       //inject overlays for this window
       this.injectAllOverlays(window);
     }
@@ -55,7 +56,7 @@ function OverlayManager(options = {}) {
 
     let  windows = Services.wm.getEnumerator(null);
     while (windows.hasMoreElements()) {
-      let window = windows.getNext().QueryInterface(Components.interfaces.nsIDOMWindow);            
+      let window = windows.getNext();            
       //remove overlays (if any)
       this.removeAllOverlays(window);
     }
@@ -67,7 +68,13 @@ function OverlayManager(options = {}) {
 
   this.registerOverlay = async function (dst, overlay, attributesOverrides = []) {
     if (overlay.startsWith("chrome://")) {
-      let xul = await this.readChromeFile(overlay);
+      let xul = null;
+      try {
+        xul = await this.readChromeFile(overlay);
+      } catch (e) {
+        console.log("Error reading file <"+overlay+"> : " + e);
+        return;
+      }
       let rootNode = this.getDataFromXULString(null, xul);
   
       //get urls of stylesheets to load them
@@ -88,7 +95,8 @@ function OverlayManager(options = {}) {
       }
       this.overlays[overlay] = rootNode;
     } else {
-      throw "Only chrome:// URIs can be registered as overlays."
+      console.log("Only chrome:// URIs can be registered as overlays.");
+      return;
     }
   };  
 
@@ -138,8 +146,15 @@ function OverlayManager(options = {}) {
     }
 
     let href = (_href === null) ? window.location.href : _href;   
+    if (this.options.verbose>1) Services.console.logStringMessage("[OverlayManager] Injecting into new window: " + href);
+    let injectCount = 0;
     for (let i=0; this.registeredOverlays[href] && i < this.registeredOverlays[href].length; i++) {
-      this.injectOverlay(window, this.registeredOverlays[href][i]);
+      if (this.injectOverlay(window, this.registeredOverlays[href][i])) injectCount++;
+    }
+    if (injectCount > 0) {
+        // dispatch a custom event to indicate we finished loading the overlay
+        let event = new Event("DOMOverlayLoaded_" + this.extension.id);
+        window.document.dispatchEvent(event);
     }
   };
 
@@ -160,9 +175,9 @@ function OverlayManager(options = {}) {
 
     if (window.injectedOverlays.includes(overlay)) {
       if (this.options.verbose>2) Services.console.logStringMessage("[OverlayManager] NOT Injecting: " + overlay);
-      return;
+      return false;
     }            
-    
+
     let rootNode = this.overlays[overlay];
 
     if (rootNode) {
@@ -172,7 +187,11 @@ function OverlayManager(options = {}) {
         let scripts = this.getScripts(rootNode, overlayNode);
         for (let i=0; i < scripts.length; i++){
           if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Loading: " + scripts[i]);
-          Services.scriptloader.loadSubScript(scripts[i], window);
+          try {
+            Services.scriptloader.loadSubScript(scripts[i], window);
+          } catch (e) {
+            Components.utils.reportError(e);          
+          }
         }
 
         //eval onbeforeinject, if that returns false, inject is aborted
@@ -201,16 +220,14 @@ function OverlayManager(options = {}) {
 
           this.insertXulOverlay(window, overlayNode.children);
           
-          //execute oninject
-          if (overlayNode.hasAttribute("oninject")) {
-            let oninject = overlayNode.getAttribute("oninject");
-            if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Executing: " + oninject);
-            // the source for this eval is part of this XPI, cannot be changed by user.
-            window.eval(oninject);
-          }
+          // add to injectCounter
+          return true;
         }
       }
     }
+	
+    // nothing injected,do not add to inject counter
+    return false;
   };
 
   this.removeOverlay = function (window, overlay) {
@@ -277,11 +294,8 @@ function OverlayManager(options = {}) {
 
     let node;
     while (node = nodeIterator.iterateNext()) {
-      switch (node.getAttribute("type")) {
-        case "text/javascript":
-        case "application/javascript":
-          if (node.hasAttribute("src")) scripts.push(node.getAttribute("src"));
-          break;
+      if (node.hasAttribute("src") && node.hasAttribute("type") && node.getAttribute("type").toLowerCase().includes("javascript")) {
+        scripts.push(node.getAttribute("src"));
       }
     } 
     return scripts;
@@ -301,7 +315,17 @@ function OverlayManager(options = {}) {
     let typedef = forcedNodeName ? forcedNodeName.split(":") : node.nodeName.split(":");
     if (typedef.length == 2) typedef[0] = node.lookupNamespaceURI(typedef[0]);
     
-    let element = (typedef.length==2) ? window.document.createElementNS(typedef[0], typedef[1]) : window.document.createXULElement(typedef[0]);
+    let CE = {}
+    if (node.attributes && node.attributes.getNamedItem("is")) {
+      for  (let i=0; i <node.attributes.length; i++) {
+        if (node.attributes[i].name == "is") {
+          CE = { "is" : node.attributes[i].value };
+          break;
+        }
+      }
+    }
+
+    let element = (typedef.length==2) ? window.document.createElementNS(typedef[0], typedef[1]) : window.document.createXULElement(typedef[0], CE);
     if  (node.attributes) {
       for  (let i=0; i <node.attributes.length; i++) {
         element.setAttribute(node.attributes[i].name, node.attributes[i].value);
@@ -342,8 +366,6 @@ function OverlayManager(options = {}) {
       
       if (node.nodeName == "script" && node.hasAttribute("src")) {
         //skip, since they are handled by getScripts()
-      } else if (node.nodeName == "toolbarpalette") {
-        // handle toolbarpalette tags
       } else if (node.nodeType == 1) {
 
         if (!parentElement) { //misleading: if it does not have a parentElement, it is a top level element
@@ -447,9 +469,9 @@ function OverlayManager(options = {}) {
 
   //read file from within the XPI package
   this.readChromeFile = function (aURL) {
+    if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Reading file: " + aURL);
     return new Promise((resolve, reject) => {
-      // Temporary patch to to fix providers still requesting /skin/
-      let uri = Services.io.newURI(aURL.replace("://tbsync/skin/","://tbsync/content/skin/"));
+      let uri = Services.io.newURI(aURL);
       let channel = Services.io.newChannelFromURI(uri,
                  null,
                  Services.scriptSecurityManager.getSystemPrincipal(),

@@ -36,11 +36,11 @@ var providers = {
 
   
   
-  loadProvider:  async function (addonId, provider, js) {
+  loadProvider:  async function (extension, provider, js) {
     //only load, if not yet loaded and if the provider name does not shadow a fuction inside provider.js
     if (!this.loadedProviders.hasOwnProperty(provider) && !this.hasOwnProperty(provider) && js.startsWith("chrome://")) {
       try {
-        let addon = await AddonManager.getAddonByID(addonId);
+        let addon = await AddonManager.getAddonByID(extension.id);
 
         //load provider subscripts into TbSync
         this[provider] = {};
@@ -51,11 +51,11 @@ var providers = {
         
         this.loadedProviders[provider] = {};
         this.loadedProviders[provider].addon = addon;
-        this.loadedProviders[provider].addonId = addonId;
+        this.loadedProviders[provider].extension = extension;
+        this.loadedProviders[provider].addonId = extension.id;
         this.loadedProviders[provider].version = addon.version.toString();
         this.loadedProviders[provider].createAccountWindow = null;
 
-        this.loadedProviders[provider].bundle = Services.strings.createBundle(this[provider].Base.getStringBundleUrl());
         addon.contributorsURL = this[provider].Base.getContributorsUrl();
 
         // check if provider has its own implementation of folderList

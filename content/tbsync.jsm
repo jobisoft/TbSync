@@ -27,22 +27,19 @@ var TbSync = {
   addon: null,
   version: 0,
   debugMode: false,
-  apiVersion: "2.2",
+  apiVersion: "2.3",
 
-  bundle: Services.strings.createBundle("chrome://tbsync/locale/tbSync.properties"),
   prefs: Services.prefs.getBranch("extensions.tbsync."),
   
   decoder: new TextDecoder(),
   encoder: new TextEncoder(),
 
   modules : [],
-  browser : null,
+  extension : null,
   
   // global load
-  load: async function (browser) {
-    this.browser = browser
-
-    //public module and IO module needs to be loaded beforehand
+  load: async function (addon, extension) {
+	  //public module and IO module needs to be loaded beforehand
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/public.js", this, "UTF-8");
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/io.js", this, "UTF-8");
 
@@ -50,9 +47,9 @@ var TbSync = {
     this.io.initFile("debug.log");
 
     this.window = Services.wm.getMostRecentWindow("mail:3pane");
-    this.addon = await AddonManager.getAddonByID("tbsync@jobisoft.de");
+    this.addon = addon;
     this.addon.contributorsURL = "https://github.com/jobisoft/TbSync/blob/master/CONTRIBUTORS.md";
-    this.browser = browser;
+    this.extension = extension;
     this.dump("TbSync init","Start (" + this.addon.version.toString() + ")");
 
     //print information about Thunderbird version and OS

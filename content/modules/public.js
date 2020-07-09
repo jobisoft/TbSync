@@ -154,8 +154,8 @@ var ProviderData = class {
     return TbSync.providers.loadedProviders[this.provider].version;
   }
   
-  getStringBundle() {
-    return TbSync.providers.loadedProviders[this.provider].bundle;
+  get extension() {
+    return TbSync.providers.loadedProviders[this.provider].extension;
   }
   
   getAllAccounts() {
@@ -576,12 +576,10 @@ var SyncData = class {
    *
    * @param {string} state      A short syncstate identifier. The actual
    *                            message to be displayed in the UI will be
-   *                            looked up in the string bundle of the provider
-   *                            associated with this SyncData instance
-   *                            (:class:`Base.getStringBundleUrl`) by looking 
-   *                            for ``syncstate.<state>``. The lookup is
-   *                            done via :func:`getString`, so the same 
-   *                            fallback rules apply. 
+   *                            looked up in the locales of the provider
+   *                            by looking for ``syncstate.<state>``. 
+   *                            The lookup is done via :func:`getString`,
+   *                            so the same fallback rules apply. 
    *
    */  
   setSyncState(state) {
@@ -639,21 +637,18 @@ var dump = function (what, aMessage) {
 
 
 /**
- * Get a localized string from a string bundle.
+ * Get a localized string.
  *
  * TODO: Explain placeholder and :: notation.
  *
- * @param {string} key       The key to look up in the string bundle
- * @param {string} provider  ``Optional`` The provider whose string bundle
- *                           should be used to lookup the key. See
- *                           :class:`Base.getStringBundleUrl`.
+ * @param {string} key       The key of the message to look up
+ * @param {string} provider  ``Optional`` The provider the key belongs to.
  *
- * @returns {string} The entry in the string bundle of the specified provider
- *                   matching the provided key. If that key is not found in the
- *                   string bundle of the specified provider or if no provider
- *                   has been specified, the string bundle of TbSync itself we
- *                   be used as fallback. If the key could not be found there
- *                   as well, the key itself is returned.
+ * @returns {string} The message belonging to the key of the specified provider.
+ *                   If that key is not found in the in the specified provider
+ *                   or if no provider has been specified, the messages of
+ *                   TbSync itself we be used as fallback. If the key could not
+ *                   be found there as well, the key itself is returned.
  *
  */
 var getString = function (key, provider) {
@@ -666,15 +661,15 @@ var getString = function (key, provider) {
   // if a provider is given, try to get the string from the provider
   if (provider && TbSync.providers.loadedProviders.hasOwnProperty(provider)) {
     try {
-      localized = TbSync.providers.loadedProviders[provider].bundle.GetStringFromName(parts[0]);
+      localized = TbSync.providers.loadedProviders[provider].extension.localeData.localizeMessage(parts[0]);
       success = true;
     } catch (e) {}        
   }
 
-  // if we did not yet succeed, request the tbsync bundle
+  // if we did not yet succeed, check the locales of tbsync itself
   if (!success) {
     try {
-      localized = TbSync.browser.i18n.getMessage(parts[0]);
+      localized = TbSync.extension.localeData.localizeMessage(parts[0]);
       success = true;
     } catch (e) {}                    
   }

@@ -12,7 +12,7 @@ var messenger = {
   overlayManager : null,
   
   load: async function () {
-    this.overlayManager = new OverlayManager({verbose: 0});
+    this.overlayManager = new OverlayManager(TbSync.extension, {verbose: 0});
     await this.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
     await this.overlayManager.registerOverlay("chrome://messenger/content/messengercompose/messengercompose.xul", "chrome://tbsync/content/overlays/messengercompose.xul");
     await this.overlayManager.registerOverlay("chrome://calendar/content/calendar-event-dialog-attendees.xul", "chrome://tbsync/content/overlays/calendar-event-dialog-attendees.xul");

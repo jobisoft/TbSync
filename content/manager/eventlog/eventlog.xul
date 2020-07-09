@@ -6,8 +6,6 @@
     height="400"
     title="__TBSYNCMSG_eventlog.title__"
     buttons="cancel, extra1"
-    buttonlabelcancel="__TBSYNCMSG_eventlog.close__"
-    buttonlabelextra1="__TBSYNCMSG_eventlog.clear__"
     onload="tbSyncEventLog.onload();"
     onunload="tbSyncEventLog.onunload();"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >

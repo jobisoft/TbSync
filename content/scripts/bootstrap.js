@@ -10,16 +10,16 @@ var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 
-function startup(data, reason) {
+function startup(addon, extension, browser) {
   let defaults = Services.prefs.getDefaultBranch("extensions.tbsync.");
   defaults.setBoolPref("debug.testoptions", false);
   defaults.setBoolPref("log.toconsole", false);
   defaults.setIntPref("log.userdatalevel", 0); //0 - off   1 - userdata only on errors   2 - including full userdata,  3 - extra infos
 
-  if (!TbSync.enabled) TbSync.load(browser);
+  if (!TbSync.enabled) TbSync.load(addon, extension);
 }
 
-function shutdown(data, reason) {
+function shutdown(addon, extension, browser) {
   var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
   TbSync.enabled = false;

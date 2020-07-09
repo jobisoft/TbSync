@@ -1,5 +1,3 @@
-/* eslint-disable object-shorthand */
-
 // Get various parts of the WebExtension framework that we need.
 var { ExtensionCommon } = ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
@@ -14,39 +12,38 @@ var LegacyBootstrap = class extends ExtensionCommon.ExtensionAPI {
     this.pathToBootstrapScript = null;
     this.chromeHandle = null;
     this.bootstrapObj = {};
-    this.addon = null;
+    this.extension = context.extension;
     
-    const aomStartup = Cc["@mozilla.org/addons/addon-manager-startup;1"].getService(Ci.amIAddonManagerStartup);
+    let self = this;
 
-    let that = this;
-    
     return {
       LegacyBootstrap: {
 
         registerChromeUrl: async function(chromeData) {
+          const aomStartup = Cc["@mozilla.org/addons/addon-manager-startup;1"].getService(Ci.amIAddonManagerStartup);
           const manifestURI = Services.io.newURI(
             "manifest.json",
             null,
             context.extension.rootURI
           );
-          that.chromeHandle = aomStartup.registerChrome(manifestURI, chromeData);          
+          self.chromeHandle = aomStartup.registerChrome(manifestURI, chromeData);          
         },
        
         registerBootstrapScript: async function(aPath) {
-          that.pathToBootstrapScript = aPath.startsWith("chrome://") 
+          self.pathToBootstrapScript = aPath.startsWith("chrome://") 
             ? aPath
             : context.extension.rootURI.resolve(aPath);
-          // Load special objects into namespace of bootstrap script.
-          that.bootstrapObj.extension = context.extension;
-          that.bootstrapObj.browser = Array.from(context.extension.views).find(
-                    view => view.viewType === "background").xulBrowser.contentWindow
-                    .wrappedJSObject.browser;
+          
+          // Get the browser obj
+          self.browser = Array.from(context.extension.views).find(
+                view => view.viewType === "background").xulBrowser.contentWindow
+                .wrappedJSObject.browser;
           // Get the addon object belonging to this extension.
-          that.addon = await AddonManager.getAddonByID(context.extension.id);
+          self.addon = await AddonManager.getAddonByID(context.extension.id);
           // Load registered bootstrap scripts and execute its startup() function.
           try {
-            if (that.pathToBootstrapScript) Services.scriptloader.loadSubScript(that.pathToBootstrapScript, that.bootstrapObj, "UTF-8");
-            if (that.bootstrapObj.startup) that.bootstrapObj.startup(that.addon);
+            if (self.pathToBootstrapScript) Services.scriptloader.loadSubScript(self.pathToBootstrapScript, self.bootstrapObj, "UTF-8");
+            if (self.bootstrapObj.startup) self.bootstrapObj.startup(self.addon, self.extension, self.browser);
           } catch (e) {
             Components.utils.reportError(e)
           }
@@ -60,7 +57,7 @@ var LegacyBootstrap = class extends ExtensionCommon.ExtensionAPI {
 
     // Execute registered shutdown()
     try {
-      if (this.bootstrapObj.shutdown) this.bootstrapObj.shutdown(this.addon);
+      if (this.bootstrapObj.shutdown) this.bootstrapObj.shutdown(this.addon, this.extension, this.browser);
     } catch (e) {
       Components.utils.reportError(e)
     }

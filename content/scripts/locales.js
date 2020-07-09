@@ -8,8 +8,6 @@
 
 var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
-// This file can be used in WX but also in legacy code, where it adds to the global
-// scope. Therefore, it is encapsuled.
 (function (addonId, keyPrefix){
 
 	let localization = {
@@ -19,7 +17,8 @@ var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 			let re = new RegExp(keyPrefix + "(.+?)__", "g");
 			return string.replace(re, matched => {
 				const key = matched.slice(keyPrefix.length, -2);
-				return this.i18n.getMessage(key) || matched;
+				let message = TbSync.getString(key);
+				return message || matched;
 			});
 		},
 		
@@ -50,11 +49,6 @@ var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 		},
 		
 		async updateDocument() {
-			try {
-				if (browser) this.i18n = browser.i18n;
-			} catch (e) {
-				this.i18n = TbSync.browser.i18n;
-			}
 			this.updateSubtree(document);
 		}
 	};
