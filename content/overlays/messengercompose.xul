@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
 <overlay 
 	id="TbSyncMessengerComposeOverlay" 
-	oninject="tbSyncMessengerCompose.onInject(window)"
-	onremove="tbSyncMessengerCompose.onRemove(window)"
+	omscope="tbSyncMessengerCompose"
 	xmlns:html="http://www.w3.org/1999/xhtml">
 
    <script type="application/javascript" src="chrome://tbsync/content/overlays/messengercompose.js" />
