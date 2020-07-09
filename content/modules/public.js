@@ -652,30 +652,28 @@ var dump = function (what, aMessage) {
  *
  */
 var getString = function (key, provider) {
-  let success = false;
-  let localized = key;
+  let localized = null;
   
   //spezial treatment of strings with :: like status.httperror::403
   let parts = key.split("::");
 
-  // if a provider is given, try to get the string from the provider
+  // if a provider is given, try to get the string from the provider  
   if (provider && TbSync.providers.loadedProviders.hasOwnProperty(provider)) {
-    try {
+    let localeData = TbSync.providers.loadedProviders[provider].extension.localeData;
+    if (localeData.messages.get(localeData.selectedLocale).has(parts[0].toLowerCase())) {
       localized = TbSync.providers.loadedProviders[provider].extension.localeData.localizeMessage(parts[0]);
-      success = true;
-    } catch (e) {}        
+    }
   }
 
   // if we did not yet succeed, check the locales of tbsync itself
-  if (!success) {
-    try {
-      localized = TbSync.extension.localeData.localizeMessage(parts[0]);
-      success = true;
-    } catch (e) {}                    
+  if (!localized) {
+    localized = TbSync.extension.localeData.localizeMessage(parts[0]);
   }
-
-  //replace placeholders in returned string
-  if (success) {
+  
+  if (!localized) {
+    localized = key;
+  } else {
+    //replace placeholders in returned string
     for (let i = 0; i<parts.length; i++) {
       let regex = new RegExp( "##replace\."+i+"##", "g");
       localized = localized.replace(regex, parts[i]);
