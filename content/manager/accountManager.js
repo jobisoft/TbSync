@@ -73,6 +73,9 @@ var tbSyncAccountManager = {
     document.getElementById("tbsync.supportwizard.faultycomponent.menulist").addEventListener("select", tbSyncAccountManager.checkSupportWizard);
     document.getElementById("tbsync.supportwizard.description").addEventListener("input", tbSyncAccountManager.checkSupportWizard);
     document.addEventListener("wizardfinish", tbSyncAccountManager.prepareBugReport);
+
+    // bug https://bugzilla.mozilla.org/show_bug.cgi?id=1618252
+    document.getElementById('SupportWizard')._adjustWizardHeader();
   },
   
   checkSupportWizard: function() {
