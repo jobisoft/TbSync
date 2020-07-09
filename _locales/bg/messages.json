@@ -75,7 +75,7 @@
         "message": "Изключване на регистрацията"
     },
     "manager.EnableAccount": {
-        "message": "Enable account & try to connect to server"
+        "message": "Включи регистрацията и се вържи към сървъра"
     },
     "manager.RetryConnectAccount": {
         "message": "Опитай отново да се свържеш със сървъра"
@@ -174,7 +174,7 @@
         "message": "Статус"
     },
     "manager.supporter.contributors": {
-        "message": "Contributors & Translators"
+        "message": "Помощници и преводачи"
     },
     "manager.supporter.details": {
         "message": "Детайли"
