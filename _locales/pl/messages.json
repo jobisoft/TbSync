@@ -75,7 +75,7 @@
         "message": "Wyłącz konto"
     },
     "manager.EnableAccount": {
-        "message": "Włącz konto i spróbuj połączyć się z serwerem"
+        "message": "Enable account & try to connect to server"
     },
     "manager.RetryConnectAccount": {
         "message": "Spróbuj ponownie połączyć do serwera"
@@ -174,7 +174,7 @@
         "message": "Status"
     },
     "manager.supporter.contributors": {
-        "message": "Współpracownicy i Tłumacze"
+        "message": "Contributors & Translators"
     },
     "manager.supporter.details": {
         "message": "Szczegóły"
