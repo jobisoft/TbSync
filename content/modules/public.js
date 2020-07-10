@@ -684,7 +684,7 @@ var getString = function (key, provider) {
 }
 
 
-var localize = function (window, provider) {
+var localizeNow = function (window, provider) {
   let document = window.document;
   let keyPrefix = "__" + (provider ? provider.toUpperCase() + "4" : "") + "TBSYNCMSG_";
   
@@ -699,7 +699,7 @@ var localize = function (window, provider) {
 			});
 		},
 		
-		updateSubtree(node) {
+		updateDocument(node) {
 			const texts = document.evaluate(
 				'descendant::text()[contains(self::text(), "' + keyPrefix + '")]',
 				node,
@@ -723,16 +723,16 @@ var localize = function (window, provider) {
 				const attribute = attributes.snapshotItem(i);
 				if (attribute.value.includes(keyPrefix)) attribute.value = this.updateString(attribute.value);
 			}
-		},
-		
-		async updateDocument() {
-			this.updateSubtree(document);
-		}
+		}		
 	};
 
+  localization.updateDocument(document);
+}
+
+var localizeOnLoad = function (window, provider) {  
 	// standard event if loaded by a standard window
-	document.addEventListener('DOMContentLoaded', () => {
-		localization.updateDocument();
+	window.document.addEventListener('DOMContentLoaded', () => {
+		TbSync.localizeNow(window, provider);
 	}, { once: true });
 
 	// custom event, fired by the overlay loader after it has finished loading
@@ -740,10 +740,9 @@ var localize = function (window, provider) {
 	let eventId = "DOMOverlayLoaded_"
       + (!provider || window.location.href.startsWith("chrome://tbsync/content/manager/editAccount.") ? "" : provider + "4")
       + "tbsync@jobisoft.de";
-    document.addEventListener(eventId, () => {
-		localization.updateDocument();
+  window.document.addEventListener(eventId, () => {
+		TbSync.localizeNow(window, provider);
 	}, { once: true });
-
 }
 
 
