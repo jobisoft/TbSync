@@ -67,7 +67,12 @@ var tbSyncAccountSettings = {
   },
 
 
-
+  onInject: function (window) {
+    //called when the provider is injecting, call its onload function and pass in his AccountData Obj
+    if (tbSyncEditAccountOverlay && tbSyncEditAccountOverlay.hasOwnProperty("onload")) {
+      tbSyncEditAccountOverlay.onload(window, new TbSync.AccountData(tbSyncAccountSettings.accountID));
+    }
+  },
 
   onload: function () {
     //load observers
