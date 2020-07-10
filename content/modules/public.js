@@ -684,6 +684,69 @@ var getString = function (key, provider) {
 }
 
 
+var localize = function (window, provider) {
+  let document = window.document;
+  let keyPrefix = "__" + (provider ? provider.toUpperCase() + "4" : "") + "TBSYNCMSG_";
+  
+	let localization = {
+		i18n: null,
+		
+		updateString(string) {
+			let re = new RegExp(keyPrefix + "(.+?)__", "g");
+			return string.replace(re, matched => {
+				const key = matched.slice(keyPrefix.length, -2);
+				return TbSync.getString(key, provider) || matched;
+			});
+		},
+		
+		updateSubtree(node) {
+			const texts = document.evaluate(
+				'descendant::text()[contains(self::text(), "' + keyPrefix + '")]',
+				node,
+				null,
+				XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+				null
+			);
+			for (let i = 0, maxi = texts.snapshotLength; i < maxi; i++) {
+				const text = texts.snapshotItem(i);
+				if (text.nodeValue.includes(keyPrefix)) text.nodeValue = this.updateString(text.nodeValue);
+			}
+			
+			const attributes = document.evaluate(
+				'descendant::*/attribute::*[contains(., "' + keyPrefix + '")]',
+				node,
+				null,
+				XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+				null
+			);
+			for (let i = 0, maxi = attributes.snapshotLength; i < maxi; i++) {
+				const attribute = attributes.snapshotItem(i);
+				if (attribute.value.includes(keyPrefix)) attribute.value = this.updateString(attribute.value);
+			}
+		},
+		
+		async updateDocument() {
+			this.updateSubtree(document);
+		}
+	};
+
+	// standard event if loaded by a standard window
+	document.addEventListener('DOMContentLoaded', () => {
+		localization.updateDocument();
+	}, { once: true });
+
+	// custom event, fired by the overlay loader after it has finished loading
+  // the editAccount dialog is never called as a provider, but from tbsync itself
+	let eventId = "DOMOverlayLoaded_"
+      + (!provider || window.location.href.startsWith("chrome://tbsync/content/manager/editAccount.") ? "" : provider + "4")
+      + "tbsync@jobisoft.de";
+    document.addEventListener(eventId, () => {
+		localization.updateDocument();
+	}, { once: true });
+
+}
+
+
 
 var generateUUID = function () {
   const uuidGenerator  = Cc["@mozilla.org/uuid-generator;1"].getService(Ci.nsIUUIDGenerator);
