@@ -148,6 +148,6 @@ var eventlog = {
   
   
   open: function (accountID = null, folderID = null) {
-    this.eventLogWindow = TbSync.manager.prefWindowObj.open("chrome://tbsync/content/manager/eventlog/eventlog.xul", "TbSyncEventLog", "centerscreen,chrome,resizable");
+    this.eventLogWindow = TbSync.manager.prefWindowObj.open("chrome://tbsync/content/manager/eventlog/eventlog.xhtml", "TbSyncEventLog", "centerscreen,chrome,resizable");
   },    
 }

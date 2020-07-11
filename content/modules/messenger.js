@@ -13,15 +13,15 @@ var messenger = {
   
   load: async function () {
     this.overlayManager = new OverlayManager(TbSync.extension, {verbose: 0});
-    await this.overlayManager.registerOverlay("chrome://messenger/content/messenger.xul", "chrome://tbsync/content/overlays/messenger.xul");        
-    await this.overlayManager.registerOverlay("chrome://messenger/content/messengercompose/messengercompose.xul", "chrome://tbsync/content/overlays/messengercompose.xul");
-    await this.overlayManager.registerOverlay("chrome://calendar/content/calendar-event-dialog-attendees.xul", "chrome://tbsync/content/overlays/calendar-event-dialog-attendees.xul");
-    await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/addressbookiconsoverlay.xul");
-    await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/overlays/abNewCardWindowOverlay.xul");
+    await this.overlayManager.registerOverlay("chrome://messenger/content/messenger.xhtml", "chrome://tbsync/content/overlays/messenger.xhtml");        
+    await this.overlayManager.registerOverlay("chrome://messenger/content/messengercompose/messengercompose.xhtml", "chrome://tbsync/content/overlays/messengercompose.xhtml");
+    await this.overlayManager.registerOverlay("chrome://calendar/content/calendar-event-dialog-attendees.xhtml", "chrome://tbsync/content/overlays/calendar-event-dialog-attendees.xhtml");
+    await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xhtml", "chrome://tbsync/content/overlays/addressbookiconsoverlay.xhtml");
+    await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xhtml", "chrome://tbsync/content/overlays/abNewCardWindowOverlay.xhtml");
 
     // The abCSS.xul overlay is just adding a CSS file.
-    await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xul", "chrome://tbsync/content/overlays/abCSS.xul");
-    await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xul", "chrome://tbsync/content/overlays/abCSS.xul");
+    await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xhtml", "chrome://tbsync/content/overlays/abCSS.xhtml");
+    await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xhtml", "chrome://tbsync/content/overlays/abCSS.xhtml");
     
     //inject overlays
     this.overlayManager.startObserving();
@@ -87,7 +87,7 @@ var messenger = {
           } else {
             label += "Loading";
           }
-          status.label = label;
+          status.value = label;
         }
       }
     }

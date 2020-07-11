@@ -66,7 +66,7 @@ var passwordManager = {
   */
   asyncPasswordPrompt: async function(data, reference) {
     if (data.windowID) {
-      let url = "chrome://tbsync/content/passwordPrompt/passwordPrompt.xul";
+      let url = "chrome://tbsync/content/passwordPrompt/passwordPrompt.xhtml";
   
       return await new Promise(function(resolve, reject) {
        reference[data.windowID] = TbSync.window.openDialog(url, "TbSyncPasswordPrompt:" + data.windowID, "centerscreen,chrome,resizable=no", data, resolve);

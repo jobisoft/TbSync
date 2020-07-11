@@ -102,7 +102,7 @@ var tbSyncAccountSettings = {
     }        
     
     //load overlays from the provider (if any)
-    TbSync.messenger.overlayManager.injectAllOverlays(window, "chrome://tbsync/content/manager/editAccount.xul?provider=" + tbSyncAccountSettings.provider);
+    TbSync.messenger.overlayManager.injectAllOverlays(window, "chrome://tbsync/content/manager/editAccount.xhtml?provider=" + tbSyncAccountSettings.provider);
     tbSyncAccountSettings.loadSettings();
     
     //done, folderlist must be updated while visible

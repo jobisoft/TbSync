@@ -22,7 +22,7 @@ var tbSyncAccountManager = {
   },
   
   onload: function () {
-    TbSync.AccountManagerTabs = ["accounts.xul", "catman.xul", "supporter.xul", "help.xul"];
+    TbSync.AccountManagerTabs = ["accounts.xhtml", "catman.xhtml", "supporter.xhtml", "help.xhtml"];
     tbSyncAccountManager.selectTab(0);
   },
   

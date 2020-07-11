@@ -29,7 +29,7 @@ var manager = {
       if (TbSync.enabled) {
         // check, if a window is already open and just put it in focus
         if (this.prefWindowObj === null) {
-          this.prefWindowObj = TbSync.window.open("chrome://tbsync/content/manager/accountManager.xul", "TbSyncAccountManagerWindow", "chrome,centerscreen");
+          this.prefWindowObj = TbSync.window.open("chrome://tbsync/content/manager/accountManager.xhtml", "TbSyncAccountManagerWindow", "chrome,centerscreen");
         }
         this.prefWindowObj.focus();
       } else {
@@ -85,7 +85,7 @@ var manager = {
     if (!TbSync.debugMode) {
       this.prefWindowObj.alert(TbSync.getString("NoDebugLog"));
     } else {
-      this.prefWindowObj.openDialog("chrome://tbsync/content/manager/support-wizard/support-wizard.xul", "support-wizard", "dialog,centerscreen,chrome,resizable=no");
+      this.prefWindowObj.openDialog("chrome://tbsync/content/manager/support-wizard/support-wizard.xhtml", "support-wizard", "dialog,centerscreen,chrome,resizable=no");
     }
   },
   
