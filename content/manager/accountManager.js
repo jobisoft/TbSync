@@ -58,7 +58,7 @@ var tbSyncAccountManager = {
   },
   
   initSupportWizard: function() {
-    document.documentElement.getButton("finish").disabled = true;
+    document.getElementById("SupportWizard").getButton("finish").disabled = true;
 
     let menu = document.getElementById("tbsync.supportwizard.faultycomponent");
 
@@ -84,7 +84,7 @@ var tbSyncAccountManager = {
     let description = document.getElementById("tbsync.supportwizard.description").value;
 
     //just check and update button status
-    document.documentElement.getButton("finish").disabled = (provider == "" || subject == "" || description== "");        
+    document.getElementById("SupportWizard").getButton("finish").disabled = (provider == "" || subject == "" || description== "");        
   },
 
   prepareBugReport: function(event) {
