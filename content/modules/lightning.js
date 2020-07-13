@@ -10,71 +10,32 @@
   
 var lightning = {
 
-  lightningInitDone : false,
-  
   cal: null,
   ICAL: null,
-  
-  importLightningModules: function () {
-    try {
-      //try to import
-      if ("calICalendar" in Components.interfaces) {
-        var { cal } = ChromeUtils.import("resource://calendar/modules/calUtils.jsm");
-        var { ICAL } = ChromeUtils.import("resource://calendar/modules/ical.js");
-        TbSync.lightning.cal = cal;
-        TbSync.lightning.ICAL = ICAL;
-        return true;
-      } else {
-        TbSync.dump("Check4Lightning","calICalendar not found");
-      }
-    } catch (e) {
-        TbSync.dump("Check4Lightning","Error during lightning module import: " + e.toString() + "\n" + e.stack);
-        Components.utils.reportError(e);
-    }
-    return false;
-  },
-  
+   
   load: async function () {
-    //check for lightning
-    let lightning = await AddonManager.getAddonByID("{e2fda1a4-762b-4020-b5ad-a41df1933103}");
-    if (lightning !== null) {
-      TbSync.dump("Check4Lightning", lightning.version);
-      
-      // Lightning version should match TB version
-      if (Services.appinfo.version != lightning.version) {
-        TbSync.dump("Check4Lightning", "This may be a wrong Lightning version, expected <"+Services.appinfo.version+">, but found <"+lightning.version+">");
-      }
-      
-      this.importLightningModules();
-
-      if (TbSync.lightning.cal && typeof TbSync.lightning.cal !== 'undefined') {
-        //adding a global observer
-        TbSync.lightning.cal.getCalendarManager().addCalendarObserver(this.calendarObserver);
-        TbSync.lightning.cal.getCalendarManager().addObserver(this.calendarManagerObserver);
-
-        //indicate, that we have initialized 
-        this.lightningInitDone = true;
-        TbSync.dump("Check4Lightning","Done");                            
-      } else {
-        TbSync.dump("Check4Lightning","Failed!");
-      }
+    try {
+      TbSync.lightning.cal = ChromeUtils.import("resource:///modules/calendar/calUtils.jsm").cal;
+      TbSync.lightning.ICAL = ChromeUtils.import("resource:///modules/calendar/Ical.jsm").ICAL;
+      TbSync.lightning.cal.getCalendarManager().addCalendarObserver(this.calendarObserver);
+      TbSync.lightning.cal.getCalendarManager().addObserver(this.calendarManagerObserver);
+    } catch (e) {
+      TbSync.dump("Check4Lightning","Error during lightning module import: " + e.toString() + "\n" + e.stack);
+      Components.utils.reportError(e);
     }
-
   },
 
   unload: async function () {
-    if (this.isAvailable()) {
-      //removing global observer
-      TbSync.lightning.cal.getCalendarManager().removeCalendarObserver(this.calendarObserver);
-      TbSync.lightning.cal.getCalendarManager().removeObserver(this.calendarManagerObserver);
+    //removing global observer
+    TbSync.lightning.cal.getCalendarManager().removeCalendarObserver(this.calendarObserver);
+    TbSync.lightning.cal.getCalendarManager().removeObserver(this.calendarManagerObserver);
 
-      //remove listeners on global sync buttons
-      if (TbSync.window.document.getElementById("calendar-synchronize-button")) {
-        TbSync.window.document.getElementById("calendar-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.observer.sync', null);}, false);
-      }
-      if (TbSync.window.document.getElementById("task-synchronize-button")) {
-        TbSync.window.document.getElementById("task-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.observer.sync', null);}, false);
-      }
+    //remove listeners on global sync buttons
+    if (TbSync.window.document.getElementById("calendar-synchronize-button")) {
+      TbSync.window.document.getElementById("calendar-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.observer.sync', null);}, false);
+    }
+    if (TbSync.window.document.getElementById("task-synchronize-button")) {
+      TbSync.window.document.getElementById("task-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.observer.sync', null);}, false);
     }
   },
 
@@ -96,9 +57,6 @@ var lightning = {
     
     // Check, if the target exists and return true/false.
     hasTarget() {
-      if (!TbSync.lightning.isAvailable()) {
-          throw new Error("nolightning");
-      }
       let calManager = TbSync.lightning.cal.getCalendarManager();
       let target = this._folderData.getFolderProperty("target");
       let calendar = calManager.getCalendarById(target);
@@ -111,9 +69,6 @@ var lightning = {
     // If the target does not exist, it should be created. Throw a simple Error, if that
     // failed.
     async getTarget() {
-      if (!TbSync.lightning.isAvailable()) {
-          throw new Error("nolightning");
-      }
       let calManager = TbSync.lightning.cal.getCalendarManager();
       let target = this._folderData.getFolderProperty("target");
       let calendar = calManager.getCalendarById(target);
@@ -137,9 +92,6 @@ var lightning = {
      *
      */
     removeTarget() {
-      if (!TbSync.lightning.isAvailable()) {
-          throw new Error("nolightning");
-      }
       let calManager = TbSync.lightning.cal.getCalendarManager();
       let target = this._folderData.getFolderProperty("target");
       let calendar = calManager.getCalendarById(target);
@@ -161,9 +113,6 @@ var lightning = {
      * 
      */
     disconnectTarget() {
-      if (!TbSync.lightning.isAvailable()) {
-          throw new Error("nolightning");
-      }
       let calManager = TbSync.lightning.cal.getCalendarManager();
       let target = this._folderData.getFolderProperty("target");
       let calendar = calManager.getCalendarById(target);
@@ -182,9 +131,6 @@ var lightning = {
     } 
     
     set targetName(newName) {
-      if (!TbSync.lightning.isAvailable()) {
-          throw new Error("nolightning");
-      }
       let calManager = TbSync.lightning.cal.getCalendarManager();
       let target = this._folderData.getFolderProperty("target");
       let calendar = calManager.getCalendarById(target);
@@ -197,9 +143,6 @@ var lightning = {
     }
   
     get targetName() {
-      if (!TbSync.lightning.isAvailable()) {
-          throw new Error("nolightning");
-      }
       let calManager = TbSync.lightning.cal.getCalendarManager();
       let target = this._folderData.getFolderProperty("target");
       let calendar = calManager.getCalendarById(target);
@@ -271,9 +214,6 @@ var lightning = {
     // replace this with your own implementation to create the actual addressbook,
     // when this class is extended
     async createCalendar(newname) {
-      if (!TbSync.lightning.isAvailable()) {
-          throw new Error("nolightning");
-      }
       let calManager = TbSync.lightning.cal.getCalendarManager();
       let newCalendar = calManager.createCalendar("storage", Services.io.newURI("moz-storage-calendar://"));
       newCalendar.id = TbSync.lightning.cal.getUUID();
@@ -509,11 +449,6 @@ var lightning = {
   // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
   // * Internal Functions
   // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-  
-  isAvailable: function () {
-    //if it is known - and still valid - return true
-    return (this.lightningInitDone && typeof TbSync.lightning.cal !== 'undefined');
-  },
   
   getFolderFromCalendarUID: function(calUID) {
     let folders = TbSync.db.findFolders({"target": calUID});

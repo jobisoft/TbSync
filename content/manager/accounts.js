@@ -231,7 +231,6 @@ var tbSyncAccounts = {
           break;
         
         case "info":
-        case "nolightning":
         case "notsyncronized":
         case "modified":
           src = "info16.png";

@@ -284,10 +284,7 @@
     "status.no-folders-found-on-server": {
         "message": "Impossible de trouver les ressources sur le serveur."
     },
-    "status.nolightning": {
-        "message": "Le module complémentaire Lightning nest pas installé, les calendriers ne seront donc pas supportés."
-    },
-    "status.notargets": {
+"status.notargets": {
         "message": "Annulation de la synchronisation en cours: il est impossibble de créer les destinations de synchronisation."
     },
     "status.notsyncronized": {

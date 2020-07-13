@@ -236,7 +236,6 @@ var tbSyncAccountSettings = {
     switch (status) {
       case "success":
       case "disabled":
-      case "nolightning":
       case "syncing":
         document.getElementById("syncstate").removeAttribute("style");
         break;

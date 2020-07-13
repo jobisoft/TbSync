@@ -284,9 +284,6 @@
     "status.no-folders-found-on-server": {
         "message": "Не удалось найти какие-либо ресурсы на сервере."
     },
-    "status.nolightning": {
-        "message": "Lightning Add-On не установлен, календари не поддерживаются."
-    },
     "status.notargets": {
         "message": "Отмена синхронизации, поскольку цели синхронизации не могут быть созданы."
     },

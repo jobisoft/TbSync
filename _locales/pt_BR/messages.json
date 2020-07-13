@@ -284,9 +284,6 @@
     "status.no-folders-found-on-server": {
         "message": "Não foi possível encontrar nenhum recurso no servidor."
     },
-    "status.nolightning": {
-        "message": "O complemento Lightning não está instalado, os calendários não serão suportados."
-    },
     "status.notargets": {
         "message": "Anulando a sincronização, porque os destinos de sincronização não puderam ser criados."
     },

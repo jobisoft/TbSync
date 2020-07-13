@@ -284,9 +284,6 @@
     "status.no-folders-found-on-server": {
         "message": "A kiszolgálón nem található erőforrás."
     },
-    "status.nolightning": {
-        "message": "A Lightning-t kiegészítő nincs telepítve, a naptárak nem támogatottak."
-    },
     "status.notargets": {
         "message": "A összehangolás abbahagyása, mert a összehangolási célokat nem lehetett létrehozni."
     },

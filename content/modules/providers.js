@@ -104,16 +104,14 @@ var providers = {
           }
         }
         
-        if (TbSync.lightning.isAvailable()) {
-          for (let calendar of TbSync.lightning.cal.getCalendarManager().getCalendars({})) {
-            let storedProvider = calendar.getProperty("tbSyncProvider");
-            if (provider == storedProvider && calendar.type == "storage" && providerData.getFolders({"target": calendar.id}).length == 0) {
-              let name = calendar.name;
-              calendar.name = TbSync.getString("target.orphaned") + ": " + name;
-              calendar.setProperty("disabled", true);
-              calendar.setProperty("tbSyncProvider", "orphaned");
-              calendar.setProperty("tbSyncAccountID", "");        
-            }
+        for (let calendar of TbSync.lightning.cal.getCalendarManager().getCalendars({})) {
+          let storedProvider = calendar.getProperty("tbSyncProvider");
+          if (provider == storedProvider && calendar.type == "storage" && providerData.getFolders({"target": calendar.id}).length == 0) {
+            let name = calendar.name;
+            calendar.name = TbSync.getString("target.orphaned") + ": " + name;
+            calendar.setProperty("disabled", true);
+            calendar.setProperty("tbSyncProvider", "orphaned");
+            calendar.setProperty("tbSyncAccountID", "");        
           }
         }
         

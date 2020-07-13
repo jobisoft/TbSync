@@ -284,9 +284,6 @@
     "status.no-folders-found-on-server": {
         "message": "Auf dem Server wurden keine Resourcen gefunden."
     },
-    "status.nolightning": {
-        "message": "Lightning Add-On nicht installiert, Kalender nicht nutzbar."
-    },
     "status.notargets": {
         "message": "Synchronisation abgebrochen da die Elemente zum Synchronisieren nicht erstellt werden konnten."
     },
