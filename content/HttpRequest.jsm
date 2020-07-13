@@ -396,7 +396,7 @@ var HttpRequest = class {
         let channel = Services.io.newChannelFromURI(
             this._xhr.uri,
             mainWindow.document,
-            Services.scriptSecurityManager.createCodebasePrincipal(this._xhr.uri, options),
+            Services.scriptSecurityManager.createContentPrincipal(this._xhr.uri, options),
             null,
             Components.interfaces.nsILoadInfo.SEC_ALLOW_CROSS_ORIGIN_DATA_IS_NULL,
             Components.interfaces.nsIContentPolicy.TYPE_OTHER);
@@ -651,7 +651,7 @@ function getSandboxForOrigin(username, uri, containerRealm = "default", containe
     
     if (!sandboxes.hasOwnProperty(origin)) {
         console.log("Creating sandbox for <"+origin+">");
-        let principal = Services.scriptSecurityManager.createCodebasePrincipal(uri, options);    
+        let principal = Services.scriptSecurityManager.createContentPrincipal(uri, options);    
         sandboxes[origin] = Components.utils.Sandbox(principal, {
             wantXrays: true,
             wantGlobalProperties: ["XMLHttpRequest"],
