@@ -6,7 +6,7 @@
           "update_info_url": "https://github.com/jobisoft/TbSync/releases",
           "update_link": "%LINK%",
           "applications": {
-            "gecko": { "strict_min_version": "68.0" } } }
+            "gecko": { "strict_min_version": "78.0" } } }
       ]
     }
   }
