@@ -43,7 +43,7 @@ var LegacyBootstrap = class extends ExtensionCommon.ExtensionAPI {
           // Load registered bootstrap scripts and execute its startup() function.
           try {
             if (self.pathToBootstrapScript) Services.scriptloader.loadSubScript(self.pathToBootstrapScript, self.bootstrapObj, "UTF-8");
-            if (self.bootstrapObj.startup) self.bootstrapObj.startup(self.addon, self.extension, self.browser);
+            if (self.bootstrapObj.startup) self.bootstrapObj.startup.call(self.bootstrapObj, self.addon, self.extension, self.browser);
           } catch (e) {
             Components.utils.reportError(e)
           }
@@ -57,7 +57,7 @@ var LegacyBootstrap = class extends ExtensionCommon.ExtensionAPI {
 
     // Execute registered shutdown()
     try {
-      if (this.bootstrapObj.shutdown) this.bootstrapObj.shutdown(this.addon, this.extension, this.browser);
+      if (this.bootstrapObj.shutdown) this.bootstrapObj.shutdown.call(this.bootstrapObj, this.addon, this.extension, this.browser);
     } catch (e) {
       Components.utils.reportError(e)
     }
