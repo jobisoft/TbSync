@@ -15,16 +15,16 @@
         "message": "Non è possibile localizzare quest'errore perché i log di debug non sono attualmente abilitati. Abilitare ora il log di debug per contribuire a correggere quest'errore?"
     },
     "accountacctions.delete": {
-        "message": "Elimina l'account '##accountname##'"
+        "message": "Elimina l'account \"##accountname##\""
     },
     "accountacctions.disable": {
-        "message": "Disabilita l'account '##accountname##'"
+        "message": "Disabilita l'account \"##accountname##\""
     },
     "accountacctions.enable": {
-        "message": "Abilita l'account '##accountname##' e tenta la connessione al server"
+        "message": "Abilita l'account \"##accountname##\" e tenta la connessione al server"
     },
     "accountacctions.sync": {
-        "message": "Sincronizza l'account '##accountname##'"
+        "message": "Sincronizza l'account \"##accountname##\""
     },
     "addressbook.searchall": {
         "message": "Cerca in tutte le rubriche"
@@ -60,7 +60,7 @@
         "message": "Inattivo"
     },
     "installProvider.header": {
-        "message": "Il provider '##replace.1##' per TbSync non è ancora installato."
+        "message": "Il provider \"##replace.1##\" per TbSync non è ancora installato."
     },
     "manager.AccountActions": {
         "message": "Azioni account"
@@ -283,6 +283,9 @@
     },
     "status.no-folders-found-on-server": {
         "message": "Impossibile trovare risorse sul server."
+    },
+    "status.nolightning": {
+        "message": "Componente aggiuntivo Lightning non installato, i calendari non sono supportati."
     },
     "status.notargets": {
         "message": "Interruzione sincronizzazione in corso: non è possibile creare le destinazioni sincronizzazione."
