@@ -15,16 +15,16 @@
         "message": "Не е възможно да се изследва грешката, тъй като не всички действия са протоколирани. Желаете ли да започне подробно протоколиране на събитията, за да може грешката да се анализира и отстрани?"
     },
     "accountacctions.delete": {
-        "message": "Изтриване на регистрация '##accountname##'"
+        "message": "Изтриване на регистрация \"##accountname##\""
     },
     "accountacctions.disable": {
-        "message": "Изключване на регистрация '##accountname##'"
+        "message": "Изключване на регистрация \"##accountname##\""
     },
     "accountacctions.enable": {
-        "message": "Включване на регистрация '##accountname##' и свързване със сървъра"
+        "message": "Включване на регистрация \"##accountname##\" и свързване със сървъра"
     },
     "accountacctions.sync": {
-        "message": "Синхронизиране на регистрация '##accountname##'"
+        "message": "Синхронизиране на регистрация \"##accountname##\""
     },
     "addressbook.searchall": {
         "message": "Претърсване на всички адресни указатели"
@@ -60,7 +60,7 @@
         "message": "Празен ход"
     },
     "installProvider.header": {
-        "message": "Доставчик '##replace.1##' за TbSync не е инсталиран."
+        "message": "Доставчик \"##replace.1##\" за TbSync не е инсталиран."
     },
     "manager.AccountActions": {
         "message": "Действия с регистрацията"
@@ -75,7 +75,7 @@
         "message": "Изключване на регистрацията"
     },
     "manager.EnableAccount": {
-        "message": "Включване на регистрацията и свързване със сървъра"
+        "message": "Включи регистрацията и се вържи към сървъра"
     },
     "manager.RetryConnectAccount": {
         "message": "Опитай отново да се свържеш със сървъра"
@@ -174,7 +174,7 @@
         "message": "Статус"
     },
     "manager.supporter.contributors": {
-        "message": "Разработчици и преводачи"
+        "message": "Помощници и преводачи"
     },
     "manager.supporter.details": {
         "message": "Детайли"
@@ -207,7 +207,7 @@
         "message": "Синхронизирай сега"
     },
     "manager.tabs.status.tryagain": {
-        "message": "Опитай отново да се свържеш със сървъра"
+        "message": "Нов опит за връзка със сървъра"
     },
     "manager.title": {
         "message": "TbSync Управление на регистрацията"
@@ -261,7 +261,7 @@
         "message": "Не можах да се свържа с OAuth 2.0 сървъра."
     },
     "status.OAuthServerError": {
-        "message": " OAuth 2.0 сървъра отвърна с ##replace.1##"
+        "message": "OAuth 2.0 сървъра отвърна с ##replace.1##"
     },
     "status.aborted": {
         "message": "Не е синхронизиран"
@@ -283,6 +283,9 @@
     },
     "status.no-folders-found-on-server": {
         "message": "На сървъра не бяха намерени ресурси."
+    },
+    "status.nolightning": {
+        "message": "Добавката Lightning не е инсталирана, календарът е неизползваем."
     },
     "status.notargets": {
         "message": "Синхронизирането прекъсна, тъй като на компютъра ви не можеха да се създадат нови ресурси."
