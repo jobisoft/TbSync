@@ -33,13 +33,14 @@ var tbSyncMessengerCompose = {
      
     tbSyncMessengerCompose.mObserver.observe(window.document.getElementById("sidebar"), { attributes: true, childList: false, characterData: false });
     
-    // Add autoComplete for TbSync
-    if (window.document.getElementById("addressCol2#1")) {
-      let autocompletesearch = window.document.getElementById("addressCol2#1").getAttribute("autocompletesearch");
+    // Add autoComplete for TbSync - find all fields with autocompletesearch attribute
+    let fields = window.document.querySelectorAll('[autocompletesearch]');
+    for (let field of fields) {
+      let autocompletesearch = field.getAttribute("autocompletesearch");
       if (autocompletesearch.indexOf("tbSyncAutoCompleteSearch") == -1) {
-        window.document.getElementById("addressCol2#1").setAttribute("autocompletesearch", autocompletesearch + " tbSyncAutoCompleteSearch");
+        field.setAttribute("autocompletesearch", autocompletesearch + " tbSyncAutoCompleteSearch");
       }
-    }    
+    }
   },
 
   onRemove: function (window) {
@@ -48,9 +49,10 @@ var tbSyncMessengerCompose = {
     tbSyncMessengerCompose.mObserver.disconnect();
     
     // Remove autoComplete for TbSync
-    if (window.document.getElementById("addressCol2#1")) {
-      let autocompletesearch = window.document.getElementById("addressCol2#1").getAttribute("autocompletesearch").replace("tbSyncAutoCompleteSearch", "");
-      window.document.getElementById("addressCol2#1").setAttribute("autocompletesearch", autocompletesearch.trim());
+    let fields = window.document.querySelectorAll('[autocompletesearch]');
+    for (let field of fields) {
+      let autocompletesearch = field.getAttribute("autocompletesearch").replace("tbSyncAutoCompleteSearch", "");
+      field.setAttribute("autocompletesearch", autocompletesearch.trim());
     }
   }
 }

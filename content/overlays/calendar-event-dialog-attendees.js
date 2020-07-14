@@ -13,22 +13,22 @@ var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 var tbSyncAttendeeEventDialog = {
 
   onInject: function (window) {
-    // Add autoComplete for TbSync
-    let elements = window.document.getElementsByClassName("textbox-addressingWidget");
-    for (let element of elements) {
-      let autocompletesearch = element.getAttribute("autocompletesearch");
+    // Add autoComplete for TbSync - find all fields with autocompletesearch attribute
+    let fields = window.document.querySelectorAll('[autocompletesearch]');
+    for (let field of fields) {
+      let autocompletesearch = field.getAttribute("autocompletesearch");
       if (autocompletesearch.indexOf("tbSyncAutoCompleteSearch") == -1) {
-        element.setAttribute("autocompletesearch", autocompletesearch + " tbSyncAutoCompleteSearch");
+        field.setAttribute("autocompletesearch", autocompletesearch + " tbSyncAutoCompleteSearch");
       }
-    }    
+    }
   },
 
   onRemove: function (window) {
     // Remove autoComplete for TbSync
-    let elements = window.document.getElementsByClassName("textbox-addressingWidget");
-    for (let element of elements) {
-      let autocompletesearch = element.getAttribute("autocompletesearch").replace("tbSyncAutoCompleteSearch", "");
-      element.setAttribute("autocompletesearch", autocompletesearch.trim());
+    let fields = window.document.querySelectorAll('[autocompletesearch]');
+    for (let field of fields) {
+      let autocompletesearch = field.getAttribute("autocompletesearch").replace("tbSyncAutoCompleteSearch", "");
+      field.setAttribute("autocompletesearch", autocompletesearch.trim());
     }
   }
 
