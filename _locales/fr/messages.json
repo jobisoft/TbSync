@@ -1,6 +1,6 @@
 {
     "HelpFixStartupError": {
-        "message": "Pour aider à la résolution de cette erreur, vous pourriez envoyer le journal de débogage au développeur de TbSync. Voulez-vous qu'on prépare un courriel à cette fin?"
+        "message": "Pour aider à la résolution de cette erreur, vous pourriez envoyer le journal de débogage au développeur de TbSync. Voulez-vous qu'on prépare un courriel à cette fin? "
     },
     "NoDebugLog": {
         "message": "Il n'a pas été possible de trouver un message de débogage utile. Merci d'activer le mode de débogage, de redémarrer Thunderbird puis de répéter les étapes qui ont menées au comportement anormal du programme."
@@ -15,16 +15,16 @@
         "message": "Il n'est pas possible de localiser cette erreur, parce que le journal de débogage n'est actuellement pas activé. Désirez-vous activer le journal de débogage maintenant, afin d'aider à résoudre cette erreur?"
     },
     "accountacctions.delete": {
-        "message": "Supprimer le compte '##accountname##'"
+        "message": "Supprimer le compte \"##accountname##\""
     },
     "accountacctions.disable": {
-        "message": "Désactiver le compte '##accountname##'"
+        "message": "Désactiver le compte \"##accountname##\""
     },
     "accountacctions.enable": {
-        "message": "Activer le compte '##accountname##' et tenter de se connecter au serveur"
+        "message": "Activer le compte \"##accountname##\" et tenter de se connecter au serveur"
     },
     "accountacctions.sync": {
-        "message": "Synchroniser le compte '##accountname##'"
+        "message": "Synchroniser le compte \"##accountname##\""
     },
     "addressbook.searchall": {
         "message": "Rechercher dans tous les carnets d'adresses"
@@ -60,7 +60,7 @@
         "message": "Inactif"
     },
     "installProvider.header": {
-        "message": "Le provider TbSync '##replace.1##' n'est pas encore installé."
+        "message": "Le provider TbSync \"##replace.1##\" n'est pas encore installé."
     },
     "manager.AccountActions": {
         "message": "Actions sur les comptes"
@@ -75,7 +75,7 @@
         "message": "Désactiver le compte"
     },
     "manager.EnableAccount": {
-        "message": "Activer le compte et tester la connexion au serveur"
+        "message": "Activer le compte et tenter de se connecter au serveur"
     },
     "manager.RetryConnectAccount": {
         "message": "Essayer à nouveau de se connecter au serveur"
@@ -261,7 +261,7 @@
         "message": "Impossible de se connecter au serveur d'authentification OAuth 2.0."
     },
     "status.OAuthServerError": {
-        "message": " Le serveur d'authentification OAuth 2.0 a donné le retour suivant: ##replace.1##"
+        "message": " Le serveur d’authentification OAuth 2.0 a retourné : ##replace.1##"
     },
     "status.aborted": {
         "message": "Non synchronisé"
@@ -284,7 +284,10 @@
     "status.no-folders-found-on-server": {
         "message": "Impossible de trouver les ressources sur le serveur."
     },
-"status.notargets": {
+    "status.nolightning": {
+        "message": "Le module complémentaire Lightning nest pas installé, les calendriers ne seront donc pas supportés."
+    },
+    "status.notargets": {
         "message": "Annulation de la synchronisation en cours: il est impossibble de créer les destinations de synchronisation."
     },
     "status.notsyncronized": {
@@ -324,7 +327,7 @@
         "message": "Récolte de toutes les informations nécessaires pour gérer efficacement le rapport d'erreur."
     },
     "supportwizard.provider": {
-        "message": "Provider: ##replace.1##"
+        "message": "Fournisseur : ##replace.1##"
     },
     "supportwizard.title": {
         "message": "Créer un rapport d'erreur"
@@ -345,7 +348,7 @@
         "message": "Préparation de la synchronisation du prochain élément"
     },
     "syncstate.syncing": {
-        "message": "Initialisation de la synchronisation"
+        "message": "Initialisation de la synchronisation "
     },
     "target.orphaned": {
         "message": "Connexion rompue"
