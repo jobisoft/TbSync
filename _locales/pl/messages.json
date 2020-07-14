@@ -284,6 +284,9 @@
     "status.no-folders-found-on-server": {
         "message": "Nie można znaleźć żadnych zasobów na serwerze."
     },
+    "status.nolightning": {
+        "message": "Dodatek Lightning nie zainstalowany, kalendarze nie są obsługiwane."
+    },
     "status.notargets": {
         "message": "Przerywanie synchronizacji, ponieważ nie można utworzyć celów synchronizacji."
     },
