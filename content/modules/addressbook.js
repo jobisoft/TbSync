@@ -561,9 +561,7 @@ var addressbook = {
       if (pretagChangelogWithByServerEntry) {
         abItem.changelogStatus = "deleted_by_server";
       }
-      let delArray = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-      delArray.appendElement(abItem._card, true);
-      this._directory.deleteCards(delArray);
+      this._directory.deleteCards([abItem._card]);
     }
 
     async getItem(searchId) {
