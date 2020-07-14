@@ -15,16 +15,16 @@
         "message": "Es ist im Augenblick nicht möglich, diesen Fehler zu untersuchen, da der TbSync Debug-Modus nicht aktiviert ist. Soll der Debug-Modus aktiviert werden, damit dieser Fehler untersucht und behoben werden kann?"
     },
     "accountacctions.delete": {
-        "message": "Konto '##accountname##' löschen"
+        "message": "Konto \"##accountname##\" löschen "
     },
     "accountacctions.disable": {
-        "message": "Konto '##accountname##' deaktivieren"
+        "message": "Konto \"##accountname##\" deaktivieren "
     },
     "accountacctions.enable": {
-        "message": "Konto '##accountname##' aktivieren & Server kontaktieren"
+        "message": "Konto \"##accountname##\" aktivieren & Server kontaktieren"
     },
     "accountacctions.sync": {
-        "message": "Konto '##accountname##' synchronisieren"
+        "message": "Konto \"##accountname##\" synchronisieren "
     },
     "addressbook.searchall": {
         "message": "Alle Adressbücher durchsuchen"
@@ -60,7 +60,7 @@
         "message": "Leerlauf"
     },
     "installProvider.header": {
-        "message": "Provider '##replace.1##' für TbSync ist noch nicht installiert."
+        "message": "Provider \"##replace.1##\" für TbSync ist noch nicht installiert. "
     },
     "manager.AccountActions": {
         "message": "Konto Aktionen"
@@ -75,7 +75,7 @@
         "message": "Konto deaktivieren"
     },
     "manager.EnableAccount": {
-        "message": "Konto aktivieren & mit dem Server verbinden"
+        "message": "Enable account & try to connect to server"
     },
     "manager.RetryConnectAccount": {
         "message": "Erneut versuchen mit dem Server zu verbinden"
@@ -174,7 +174,7 @@
         "message": "Status"
     },
     "manager.supporter.contributors": {
-        "message": "Mitwirkende & Übersetzer"
+        "message": "Contributors & Translators"
     },
     "manager.supporter.details": {
         "message": "Details"
@@ -261,7 +261,7 @@
         "message": "Verbindung zum OAuth 2.0 Authentifizierungsserver nicht möglich."
     },
     "status.OAuthServerError": {
-        "message": " OAuth 2.0 Authentifizierungsserver meldet: ##replace.1##"
+        "message": " OAuth 2.0 authentication server returned: ##replace.1##"
     },
     "status.aborted": {
         "message": "Nicht synchronisiert"
@@ -283,6 +283,9 @@
     },
     "status.no-folders-found-on-server": {
         "message": "Auf dem Server wurden keine Resourcen gefunden."
+    },
+    "status.nolightning": {
+        "message": "Lightning Add-On nicht installiert, Kalender nicht nutzbar."
     },
     "status.notargets": {
         "message": "Synchronisation abgebrochen da die Elemente zum Synchronisieren nicht erstellt werden konnten."
