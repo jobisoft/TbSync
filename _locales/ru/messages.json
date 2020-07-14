@@ -75,7 +75,7 @@
         "message": "Запретить аккаунт"
     },
     "manager.EnableAccount": {
-        "message": "Разрешить аккаунт & подключить к серверу"
+        "message": "Enable account & try to connect to server"
     },
     "manager.RetryConnectAccount": {
         "message": "Повторить подключение к серверу"
@@ -174,7 +174,7 @@
         "message": "Статус"
     },
     "manager.supporter.contributors": {
-        "message": "Помощники & Переводчики"
+        "message": "Contributors & Translators"
     },
     "manager.supporter.details": {
         "message": "Подробности"
@@ -284,6 +284,9 @@
     "status.no-folders-found-on-server": {
         "message": "Не удалось найти какие-либо ресурсы на сервере."
     },
+    "status.nolightning": {
+        "message": "Lightning Add-On не установлен, календари не поддерживаются."
+    },
     "status.notargets": {
         "message": "Отмена синхронизации, поскольку цели синхронизации не могут быть созданы."
     },
@@ -324,7 +327,7 @@
         "message": "Сбор всей информации для эффективной обработки отчета об ошибке."
     },
     "supportwizard.provider": {
-        "message": "Провайдер: ##replace.1##"
+        "message": "Provider: ##replace.1##"
     },
     "supportwizard.title": {
         "message": "Создать отчет об ошибке"
