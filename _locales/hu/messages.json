@@ -75,7 +75,7 @@
         "message": "Fiók letiltása"
     },
     "manager.EnableAccount": {
-        "message": "Engedélyezze a fiókot és próbáljon csatlakozni a kiszolgálóhoz"
+        "message": "Enable account & try to connect to server"
     },
     "manager.RetryConnectAccount": {
         "message": "Próbálkozzon újra a kiszolgálóhoz való csatlakozással"
@@ -174,7 +174,7 @@
         "message": "Állapot"
     },
     "manager.supporter.contributors": {
-        "message": "Közreműködők és fordítók"
+        "message": "Contributors & Translators"
     },
     "manager.supporter.details": {
         "message": "Részletek"
@@ -261,7 +261,7 @@
         "message": "Nem sikerült csatlakozni az OAuth 2.0 hitelesítési kiszolgálóhoz."
     },
     "status.OAuthServerError": {
-        "message": " Az OAuth 2.0 hitelesítési kiszolgáló visszatért: ##replace.1##"
+        "message": " OAuth 2.0 authentication server returned: ##replace.1##"
     },
     "status.aborted": {
         "message": "Nincs összehangolva"
@@ -283,6 +283,9 @@
     },
     "status.no-folders-found-on-server": {
         "message": "A kiszolgálón nem található erőforrás."
+    },
+    "status.nolightning": {
+        "message": "A Lightning-t kiegészítő nincs telepítve, a naptárak nem támogatottak."
     },
     "status.notargets": {
         "message": "A összehangolás abbahagyása, mert a összehangolási célokat nem lehetett létrehozni."
@@ -324,7 +327,7 @@
         "message": "Információgyűjtés a hibajelentés feldolgozásához."
     },
     "supportwizard.provider": {
-        "message": "Szolgáltató: ##replace.1##"
+        "message": "Provider: ##replace.1##"
     },
     "supportwizard.title": {
         "message": "Hibabejelentés létrehozása"
