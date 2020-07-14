@@ -75,7 +75,7 @@
         "message": "Deaktivovat Účet"
     },
     "manager.EnableAccount": {
-        "message": "Povolit účet a pokusit se připojit k serveru"
+        "message": "Enable account & try to connect to server"
     },
     "manager.RetryConnectAccount": {
         "message": "Zkusit znovu připojit k serveru"
@@ -174,7 +174,7 @@
         "message": "Stav"
     },
     "manager.supporter.contributors": {
-        "message": "Přispěvatelé a překladatelé"
+        "message": "Contributors & Translators"
     },
     "manager.supporter.details": {
         "message": "Podrobnosti"
@@ -283,6 +283,9 @@
     },
     "status.no-folders-found-on-server": {
         "message": "Could not find any resources on the server."
+    },
+    "status.nolightning": {
+        "message": "Lightning add-on not installed, calendars are not supported."
     },
     "status.notargets": {
         "message": "Aborting synchronization, because sync targets could not be created."
