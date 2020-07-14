@@ -15,16 +15,16 @@
         "message": "Não é possível rastrear este erro, porque o log de depuração não está habilitado no momento. Deseja ativar o log de depuração agora para ajudar a corrigir esse erro?"
     },
     "accountacctions.delete": {
-        "message": "Excluir conta '##accountname##'"
+        "message": "Excluir conta \"##accountname##\""
     },
     "accountacctions.disable": {
-        "message": "Desativar conta '##accountname##'"
+        "message": "Desativar conta \"##accountname##\""
     },
     "accountacctions.enable": {
-        "message": "Ativar conta '##accountname##' e tentar conectar-se ao servidor"
+        "message": "Ativar conta \"##accountname##\" e tentar conectar-se ao servidor"
     },
     "accountacctions.sync": {
-        "message": "Sincronizar conta '##accountname##'"
+        "message": "Sincronizar conta \"##accountname##\""
     },
     "addressbook.searchall": {
         "message": "Pesquisar todos os catálogos de endereços"
@@ -60,7 +60,7 @@
         "message": "Ocioso"
     },
     "installProvider.header": {
-        "message": "O provedor '##replace.1##' para o TbSync ainda não está instalado."
+        "message": "O provedor \"##replace.1##\" para o TbSync ainda não está instalado."
     },
     "manager.AccountActions": {
         "message": "Ações da conta"
@@ -75,7 +75,7 @@
         "message": "Desativar conta"
     },
     "manager.EnableAccount": {
-        "message": "Ativar conta e tentar conectar ao servidor"
+        "message": "Enable account & try to connect to server"
     },
     "manager.RetryConnectAccount": {
         "message": "Tentar conectar no servidor novamente"
@@ -174,7 +174,7 @@
         "message": "Status"
     },
     "manager.supporter.contributors": {
-        "message": "Contribuidores e Tradutores"
+        "message": "Contributors & Translators"
     },
     "manager.supporter.details": {
         "message": "Detalhes"
@@ -207,7 +207,7 @@
         "message": "Sincronizar agora"
     },
     "manager.tabs.status.tryagain": {
-        "message": "Tente conectar no servidor novamente"
+        "message": "Tentar conectar no servidor novamente"
     },
     "manager.title": {
         "message": "Gerenciador de contas do TbSync"
@@ -261,7 +261,7 @@
         "message": "Não foi possível conectar ao servidor de autenticação OAuth 2.0."
     },
     "status.OAuthServerError": {
-        "message": " O servidor de autenticação OAuth 2.0 retornou: ##replace.1##"
+        "message": " OAuth 2.0 authentication server returned: ##replace.1##"
     },
     "status.aborted": {
         "message": "Não sincronizado"
@@ -283,6 +283,9 @@
     },
     "status.no-folders-found-on-server": {
         "message": "Não foi possível encontrar nenhum recurso no servidor."
+    },
+    "status.nolightning": {
+        "message": "O complemento Lightning não está instalado, os calendários não serão suportados."
     },
     "status.notargets": {
         "message": "Anulando a sincronização, porque os destinos de sincronização não puderam ser criados."
@@ -324,7 +327,7 @@
         "message": "Coletar todas as informações para processar efetivamente o relatório de erros."
     },
     "supportwizard.provider": {
-        "message": "Provedor: ##replace.1##"
+        "message": "Provider: ##replace.1##"
     },
     "supportwizard.title": {
         "message": "Criar relatório de bug"
