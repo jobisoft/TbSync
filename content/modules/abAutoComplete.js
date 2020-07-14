@@ -106,8 +106,9 @@ abAutoComplete.Search.prototype = {
   constructor: abAutoComplete.Search,
 
   // nsIAutoCompleteSearch implementation
-  startSearch : function (aSearchString, aSearchParam, aPreviousResult, aListener) {
-    this.getAutoCompleteResultFor(aSearchString).then(result => aListener.onSearchResult(this, result));
+  startSearch : async function (aSearchString, aSearchParam, aPreviousResult, aListener) {
+    let result = await this.getAutoCompleteResultFor(aSearchString);
+    aListener.onSearchResult(this, result);
   },
 
   stopSearch() {},
