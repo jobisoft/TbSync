@@ -284,6 +284,9 @@
     "status.no-folders-found-on-server": {
         "message": "Impossibile trovare risorse sul server."
     },
+    "status.nolightning": {
+        "message": "Componente aggiuntivo Lightning non installato, i calendari non sono supportati."
+    },
     "status.notargets": {
         "message": "Interruzione sincronizzazione in corso: non è possibile creare le destinazioni sincronizzazione."
     },
