@@ -237,19 +237,19 @@
         "message": "Ouvrir le gestionnaire de comptes TbSync"
     },
     "prompt.DeleteAccount": {
-        "message": "Êtes-vous certain de vouloir supprimer le compte ##accountName##?"
+        "message": "Êtes-vous certain de vouloir supprimer le compte ##accountName## ?"
     },
     "prompt.Disable": {
-        "message": "Êtes-vous certain de vouloir désactiver ce compte? Toutes les modifications locales non encore synchronisées seront perdues!"
+        "message": "Êtes-vous certain de vouloir désactiver ce compte ? Toutes les modifications locales non encore synchronisées seront perdues !"
     },
     "prompt.Erase": {
-        "message": "Êtes-vous certain de vouloir supprimer ce compte d'un provider inconnu de la liste des comptes?"
+        "message": "Êtes-vous certain de vouloir supprimer ce compte d'un provider inconnu de la liste des comptes ?"
     },
     "prompt.Unsubscribe": {
-        "message": "Êtes-vous certain de vouloir supprimer l'abonnement à cet élément? Toutes les modifications locales non encore synchronisées seront perdues!"
+        "message": "Êtes-vous certain de vouloir supprimer l'abonnement à cet élément ? Toutes les modifications locales non encore synchronisées seront perdues !"
     },
     "status.JavaScriptError": {
-        "message": "Erreur Javascript! Veuillez lire le journal de débogage pour plus de détails."
+        "message": "Erreur Javascript ! Veuillez lire le journal de débogage pour plus de détails."
     },
     "status.OAuthAbortError": {
         "message": "Processus d'authentification OAuth 2.0 abandonné par l'utilisateur."
@@ -261,7 +261,7 @@
         "message": "Impossible de se connecter au serveur d'authentification OAuth 2.0."
     },
     "status.OAuthServerError": {
-        "message": " Le serveur d'authentification OAuth 2.0 a donné le retour suivant: ##replace.1##"
+        "message": " Le serveur d’authentification OAuth 2.0 a retourné : ##replace.1##"
     },
     "status.aborted": {
         "message": "Non synchronisé"
@@ -285,16 +285,16 @@
         "message": "Impossible de trouver les ressources sur le serveur."
     },
     "status.notargets": {
-        "message": "Annulation de la synchronisation en cours: il est impossibble de créer les destinations de synchronisation."
+        "message": "Annulation de la synchronisation en cours : il est impossible de créer les destinations de synchronisation."
     },
     "status.notsyncronized": {
-        "message": "Le compte doit être synchronisé: au moins un éléments est désynchronisé."
+        "message": "Le compte doit être synchronisé : au moins un éléments n'est pas synchronisé."
     },
     "status.pending": {
         "message": "En attente de synchronisation"
     },
     "status.security": {
-        "message": "Impossible d'établir une connexion sécurisée. Votre serveur utilise-t-il un certificat auto-signé ou non certifié de confiance, que vous n'avez pas importé dans Thunderbird? (##replace.1##)"
+        "message": "Impossible d'établir une connexion sécurisée. Votre serveur utilise-t-il un certificat auto-signé ou non certifié de confiance, que vous n'avez pas importé dans Thunderbird ? (##replace.1##)"
     },
     "status.skipped": {
         "message": "Non encore supporté, ignoré."
@@ -312,7 +312,7 @@
         "message": "Description détaillée de l'erreur:"
     },
     "supportwizard.label.faultycomponent": {
-        "message": "Composant de TbSync où vous avez observé l'erreur:"
+        "message": "Composant de TbSync où vous avez observé l'erreur :"
     },
     "supportwizard.label.selectcomponent": {
         "message": "Sélectionnez un composant…"
@@ -345,7 +345,7 @@
         "message": "Préparation de la synchronisation du prochain élément"
     },
     "syncstate.syncing": {
-        "message": "Initialisation de la synchronisation "
+        "message": "Initialisation de la synchronisation"
     },
     "target.orphaned": {
         "message": "Connexion rompue"
