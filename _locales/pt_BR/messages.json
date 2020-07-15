@@ -213,7 +213,7 @@
         "message": "Gerenciador de contas do TbSync"
     },
     "manager.tryagain": {
-        "message": "Tentar conectar no servidor novamente"
+        "message": "Tente conectar no servidor novamente"
     },
     "menu.settingslabel": {
         "message": "Configurações de sincronização (TbSync)"
