@@ -70,7 +70,6 @@ var messenger = {
                 case "success":
                 case "disabled":
                 case "notsyncronized":
-                case "nolightning":
                 case "syncing":
                   break;
                 default:

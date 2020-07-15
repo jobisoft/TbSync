@@ -8,19 +8,35 @@
  
 var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
-
+var gExtension = null;
+var gAddon = null;
 
 function startup(addon, extension, browser) {
+  gExtension = extension;
+  gAddon = addon;
+  
   let defaults = Services.prefs.getDefaultBranch("extensions.tbsync.");
   defaults.setBoolPref("debug.testoptions", false);
   defaults.setBoolPref("log.toconsole", false);
   defaults.setIntPref("log.userdatalevel", 0); //0 - off   1 - userdata only on errors   2 - including full userdata,  3 - extra infos
 
-  if (!TbSync.enabled) TbSync.load(addon, extension);
+// Check if the main window has finished loading
+  let windows = Services.wm.getEnumerator("mail:3pane");
+  while (windows.hasMoreElements()) {
+    let domWindow = windows.getNext();
+    WindowListener.loadIntoWindow(domWindow);
+  }
+
+  // Wait for any new windows to open.
+  Services.wm.addListener(WindowListener);
+  
+  //DO NOT ADD ANYTHING HERE!
 }
 
+
 function shutdown(addon, extension, browser) {
-  var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+  // Stop listening for any new windows to open.
+  Services.wm.removeListener(WindowListener);
 
   TbSync.enabled = false;
 
@@ -32,3 +48,41 @@ function shutdown(addon, extension, browser) {
     Cu.unload("chrome://tbsync/content/OverlayManager.jsm");
   });
 }
+
+
+
+var WindowListener = {
+
+  async loadIntoWindow(window) {
+    if (window.document.readyState != "complete") {
+      // Make sure the window load has completed.
+      await new Promise(resolve => {
+        window.addEventListener("load", resolve, { once: true });
+      });
+    }
+
+    // Check if the opened window is the one we want to modify.
+    if (window.document.documentElement.getAttribute("windowtype") === "mail:3pane") {
+      // the main window has loaded, continue with init
+      if (!TbSync.enabled) TbSync.load(window, gAddon, gExtension);
+    }
+  },
+
+
+  unloadFromWindow(window) {
+  },
+
+  // nsIWindowMediatorListener functions
+  onOpenWindow(xulWindow) {
+    // A new window has opened.
+    let domWindow = xulWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
+    // The domWindow.document.documentElement.getAttribute("windowtype") is not set before the load, so we cannot check it here
+    this.loadIntoWindow(domWindow);
+  },
+
+  onCloseWindow(xulWindow) {
+  },
+
+  onWindowTitleChange(xulWindow, newTitle) {
+  },
+};
