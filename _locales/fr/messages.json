@@ -1,6 +1,6 @@
 {
     "HelpFixStartupError": {
-        "message": "Pour aider à la résolution de cette erreur, vous pourriez envoyer le journal de débogage au développeur de TbSync. Voulez-vous qu'on prépare un courriel à cette fin?"
+        "message": "Pour aider à la résolution de cette erreur, vous pourriez envoyer le journal de débogage au développeur de TbSync. Voulez-vous qu'on prépare un courriel à cette fin? "
     },
     "NoDebugLog": {
         "message": "Il n'a pas été possible de trouver un message de débogage utile. Merci d'activer le mode de débogage, de redémarrer Thunderbird puis de répéter les étapes qui ont menées au comportement anormal du programme."
@@ -284,7 +284,7 @@
     "status.no-folders-found-on-server": {
         "message": "Impossible de trouver les ressources sur le serveur."
     },
-"status.notargets": {
+    "status.notargets": {
         "message": "Annulation de la synchronisation en cours: il est impossibble de créer les destinations de synchronisation."
     },
     "status.notsyncronized": {
@@ -324,7 +324,7 @@
         "message": "Récolte de toutes les informations nécessaires pour gérer efficacement le rapport d'erreur."
     },
     "supportwizard.provider": {
-        "message": "Provider: ##replace.1##"
+        "message": "Fournisseur : ##replace.1##"
     },
     "supportwizard.title": {
         "message": "Créer un rapport d'erreur"
@@ -345,7 +345,7 @@
         "message": "Préparation de la synchronisation du prochain élément"
     },
     "syncstate.syncing": {
-        "message": "Initialisation de la synchronisation"
+        "message": "Initialisation de la synchronisation "
     },
     "target.orphaned": {
         "message": "Connexion rompue"

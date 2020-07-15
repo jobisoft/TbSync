@@ -1,6 +1,6 @@
 {
     "HelpFixStartupError": {
-        "message": "To help fix this error, you could send a debug log to the TbSync developer. Prepare that email now?"
+        "message": "エラー修正を補助するために、 TbSync 開発者にデバッグログを送ることができます。今すぐメールを準備しますか？"
     },
     "NoDebugLog": {
         "message": "有用なデバッグメッセージを見つけることができませんでした。デバッグモードを有効化し、 Thunderbird を再起動した後、誤動作を引き起こすのに必要な全ての手順を繰り返してください。"
@@ -12,7 +12,7 @@
         "message": "TbSync のデバッグログが有効化されました。Thunderbird を再起動し、もう一度 TbSync を開いてみてください。"
     },
     "UnableToTraceError": {
-        "message": "It is not possible to trace this error, because debug log is currently not enabled. Do you want to enable debug log now, to help fix this error?"
+        "message": "デバッグログは現在有効ではないため、このエラーを追跡することはできません。 エラー修正を補助するために、デバッグログを今すぐ有効にしますか?"
     },
     "accountacctions.delete": {
         "message": "アカウント “##accountname##” を削除"
@@ -96,7 +96,7 @@
         "message": "アカウント設定"
     },
     "manager.catman.text": {
-        "message": "TbSync also syncs contact categories, which are a powerful replacement for the non-synchronizable contact lists. To be able to use them in the Thunderbird address book you can install the Category Manager add-on. It allows to manage overlapping category based contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla add-on repository:"
+        "message": "TbSync は、非同期の連絡先リストに代わる、強力なコンタクトカテゴリも同期します。 Thunderbird のアドレス帳でそれらを使用できるようにするには、Category Manager アドオンをインストールすることができます。 重複するカテゴリベースのコンタクトグループを管理し、その他たくさんのカテゴリ関連機能を提供します。  Mozilla 公式のアドオンリポジトリにあります:"
     },
     "manager.community": {
         "message": "コミュニティ"
@@ -153,7 +153,7 @@
         "message": "同期エラーを防ぐため、アカウントが有効化されている状態では、いくつかの設定は変更できません。"
     },
     "manager.missingprovider": {
-        "message": "This account requires the ##provider## synchronization provider, which is currently not installed."
+        "message": "このアカウントには ##provider## 同期プロバイダが必要です。これは現在インストールされていません。"
     },
     "manager.noaccounts": {
         "message": "There are not yet any accounts defined."
@@ -246,7 +246,7 @@
         "message": "Are you sure you want to remove this account of an unknown provider from the accounts lists?"
     },
     "prompt.Unsubscribe": {
-        "message": "Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!"
+        "message": "この項目の登録を解除しますか？ 同期されていない全てのローカルの変更は失われます！"
     },
     "status.JavaScriptError": {
         "message": "Javascript エラー! 詳細はイベントログを確認してください。"
@@ -267,7 +267,7 @@
         "message": "同期されていません"
     },
     "status.apiError": {
-        "message": "API implementation error"
+        "message": "API 実装エラー"
     },
     "status.disabled": {
         "message": "アカウントは有効化されておらず、同期は無効化されています。"
