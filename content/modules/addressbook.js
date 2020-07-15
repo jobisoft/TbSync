@@ -10,7 +10,7 @@
 
 var addressbook = {
   
-  load : function () {
+  load : async function () {
     // Geoffs addrbook-contact-created observer does not fire on moves, so we do not use it
     // Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-created", false);
     Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-updated", false);
@@ -19,7 +19,7 @@ var addressbook = {
     this.addressbookListener.add();
   },
 
-  unload : function () {
+  unload : async function () {
     // Geoffs addrbook-contact-created observer does not fire on moves, so we do not use it
     // Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-created");
     Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-updated");
