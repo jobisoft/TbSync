@@ -1,18 +1,18 @@
 {
     "HelpFixStartupError": {
-        "message": "Pour aider à la résolution de cette erreur, vous pourriez envoyer le journal de débogage au développeur de TbSync. Voulez-vous qu'on prépare un courriel à cette fin? "
+        "message": "Pour aider à la résolution de cette erreur, vous pourriez envoyer le journal de débogage au développeur de TbSync. Voulez-vous qu'on prépare un courriel à cette fin ?"
     },
     "NoDebugLog": {
         "message": "Il n'a pas été possible de trouver un message de débogage utile. Merci d'activer le mode de débogage, de redémarrer Thunderbird puis de répéter les étapes qui ont menées au comportement anormal du programme."
     },
     "OopsMessage": {
-        "message": "Oups! TbSync n'a pas réussi à démarrer!"
+        "message": "Oups! TbSync n'a pas réussi à démarrer !"
     },
     "RestartThunderbirdAndTryAgain": {
         "message": "Le journal de débogage de TbSync a été activé. Veuillez redémarrer Thunderbird et essayer à nouveau d'ouvrir TbSync."
     },
     "UnableToTraceError": {
-        "message": "Il n'est pas possible de localiser cette erreur, parce que le journal de débogage n'est actuellement pas activé. Désirez-vous activer le journal de débogage maintenant, afin d'aider à résoudre cette erreur?"
+        "message": "Il n'est pas possible de localiser cette erreur, parce que le journal de débogage n'est actuellement pas activé. Désirez-vous activer le journal de débogage maintenant, afin d'aider à résoudre cette erreur ?"
     },
     "accountacctions.delete": {
         "message": "Supprimer le compte '##accountname##'"
@@ -135,7 +135,7 @@
         "message": "Vous avez trouvé un bogue ?"
     },
     "manager.help.needhelp": {
-        "message": "Besoin d'aide?"
+        "message": "Besoin d'aide ?"
     },
     "manager.help.viewdebuglog": {
         "message": "Voir le journal de débogage"
@@ -144,7 +144,7 @@
         "message": "Ouvrez la page du wiki du projet TbSync; celle-ci fournit des informations complémentaire, un guide d'utilisation ainsi qu'une description détaillé de la configuration du programme."
     },
     "manager.installprovider.link": {
-        "message": "Cliquez sur le lien ci-dessous pour ouvrir la page d'information sur le provider de synchronisation manquant. Vous y touverez de plus amples informations sur le provider et aurez la possibilité de l'installer:"
+        "message": "Cliquez sur le lien ci-dessous pour ouvrir la page d'information sur le provider de synchronisation manquant. Vous y trouverez de plus amples informations sur le provider et aurez la possibilité de l'installer :"
     },
     "manager.installprovider.warning": {
         "message": "Ce provider de synchronisation n'est pas hébergé sur le dépôt Thunderbird officiel et n'a donc pas été validé par l'équipe de Thunderbird. Il se peut donc qu'il ait un comportement néfaste pour votre système. Utilisez-le à vos propres risques."
@@ -195,7 +195,7 @@
         "message": "Général"
     },
     "manager.tabs.status.never": {
-        "message": "Un paramètre de 0 désactive la synchronisation périodique. La synchronisation push n'est pas encore implémentée."
+        "message": "Fixer ce paramètre à 0 désactive la synchronisation périodique. La synchronisation push n'est pas encore implémentée."
     },
     "manager.tabs.status.resources": {
         "message": "Ressources disponibles"
@@ -219,37 +219,37 @@
         "message": "Paramètres de synchronisation (TbSync)"
     },
     "password.account": {
-        "message": "Compte:"
+        "message": "Compte :"
     },
     "password.description": {
-        "message": "Veuilliez mettre à jour le mot de passe pour le compte TbSync suivant:"
+        "message": "Veuillez mettre à jour le mot de passe pour le compte TbSync suivant :"
     },
     "password.password": {
-        "message": "Mot de passe:"
+        "message": "Mot de passe :"
     },
     "password.title": {
         "message": "Demande de mots de passe TbSync"
     },
     "password.user": {
-        "message": "Utilisateur:"
+        "message": "Utilisateur :"
     },
     "popup.opensettings": {
         "message": "Ouvrir le gestionnaire de comptes TbSync"
     },
     "prompt.DeleteAccount": {
-        "message": "Êtes-vous certain de vouloir supprimer le compte ##accountName##?"
+        "message": "Êtes-vous certain de vouloir supprimer le compte ##accountName## ?"
     },
     "prompt.Disable": {
-        "message": "Êtes-vous certain de vouloir désactiver ce compte? Toutes les modifications locales non encore synchronisées seront perdues!"
+        "message": "Êtes-vous certain de vouloir désactiver ce compte ? Toutes les modifications locales non encore synchronisées seront perdues !"
     },
     "prompt.Erase": {
-        "message": "Êtes-vous certain de vouloir supprimer ce compte d'un provider inconnu de la liste des comptes?"
+        "message": "Êtes-vous certain de vouloir supprimer ce compte d'un provider inconnu de la liste des comptes ?"
     },
     "prompt.Unsubscribe": {
-        "message": "Êtes-vous certain de vouloir supprimer l'abonnement à cet élément? Toutes les modifications locales non encore synchronisées seront perdues!"
+        "message": "Êtes-vous certain de vouloir supprimer l'abonnement à cet élément ? Toutes les modifications locales non encore synchronisées seront perdues !"
     },
     "status.JavaScriptError": {
-        "message": "Erreur Javascript! Veuillez lire le journal de débogage pour plus de détails."
+        "message": "Erreur Javascript ! Veuillez lire le journal de débogage pour plus de détails."
     },
     "status.OAuthAbortError": {
         "message": "Processus d'authentification OAuth 2.0 abandonné par l'utilisateur."
@@ -261,7 +261,7 @@
         "message": "Impossible de se connecter au serveur d'authentification OAuth 2.0."
     },
     "status.OAuthServerError": {
-        "message": " Le serveur d'authentification OAuth 2.0 a donné le retour suivant: ##replace.1##"
+        "message": " Le serveur d’authentification OAuth 2.0 a retourné : ##replace.1##"
     },
     "status.aborted": {
         "message": "Non synchronisé"
@@ -285,16 +285,16 @@
         "message": "Impossible de trouver les ressources sur le serveur."
     },
     "status.notargets": {
-        "message": "Annulation de la synchronisation en cours: il est impossibble de créer les destinations de synchronisation."
+        "message": "Annulation de la synchronisation en cours : il est impossible de créer les destinations de synchronisation."
     },
     "status.notsyncronized": {
-        "message": "Le compte doit être synchronisé: au moins un éléments est désynchronisé."
+        "message": "Le compte doit être synchronisé : au moins un éléments n'est pas synchronisé."
     },
     "status.pending": {
         "message": "En attente de synchronisation"
     },
     "status.security": {
-        "message": "Impossible d'établir une connexion sécurisée. Votre serveur utilise-t-il un certificat auto-signé ou non certifié de confiance, que vous n'avez pas importé dans Thunderbird? (##replace.1##)"
+        "message": "Impossible d'établir une connexion sécurisée. Votre serveur utilise-t-il un certificat auto-signé ou non certifié de confiance, que vous n'avez pas importé dans Thunderbird ? (##replace.1##)"
     },
     "status.skipped": {
         "message": "Non encore supporté, ignoré."
@@ -312,7 +312,7 @@
         "message": "Description détaillée de l'erreur:"
     },
     "supportwizard.label.faultycomponent": {
-        "message": "Composant de TbSync où vous avez observé l'erreur:"
+        "message": "Composant de TbSync où vous avez observé l'erreur :"
     },
     "supportwizard.label.selectcomponent": {
         "message": "Sélectionnez un composant…"
@@ -345,7 +345,7 @@
         "message": "Préparation de la synchronisation du prochain élément"
     },
     "syncstate.syncing": {
-        "message": "Initialisation de la synchronisation "
+        "message": "Initialisation de la synchronisation"
     },
     "target.orphaned": {
         "message": "Connexion rompue"
