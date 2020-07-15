@@ -284,6 +284,9 @@
     "status.no-folders-found-on-server": {
         "message": "Could not find any resources on the server."
     },
+    "status.nolightning": {
+        "message": "Lightning add-on not installed, calendars are not supported."
+    },
     "status.notargets": {
         "message": "Aborting synchronization, because sync targets could not be created."
     },
