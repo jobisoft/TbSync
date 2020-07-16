@@ -36,7 +36,7 @@
         "message": "Rechercher dans ce carnet d'adresse"
     },
     "eventlog.clear": {
-        "message": "Vider"
+        "message": "Effacer"
     },
     "eventlog.close": {
         "message": "Fermer"
@@ -279,7 +279,7 @@
         "message": "Modifications locales présentes"
     },
     "status.network": {
-        "message": "Impossibile de se connecter au serveur (##replace.1##)."
+        "message": "Impossible de se connecter au serveur (##replace.1##)."
     },
     "status.no-folders-found-on-server": {
         "message": "Impossible de trouver les ressources sur le serveur."
@@ -330,7 +330,7 @@
         "message": "Créer un rapport d'erreur"
     },
     "syncstate.accountdone": {
-        "message": "Synchronisation du compte finie"
+        "message": "Synchronisation du compte terminée"
     },
     "syncstate.done": {
         "message": "Préparation de la synchronisation du prochain élément"
