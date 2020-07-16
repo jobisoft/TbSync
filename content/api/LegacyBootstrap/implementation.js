@@ -4,10 +4,31 @@ var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 var { AddonManager } = ChromeUtils.import("resource://gre/modules/AddonManager.jsm");
 
 var LegacyBootstrap = class extends ExtensionCommon.ExtensionAPI {
+  onShutdown() {
+    // This function is called if the extension is disabled or removed, or Thunderbird closes.
+
+    // Execute registered shutdown()
+    try {
+      if (this.bootstrapObj.shutdown) this.bootstrapObj.shutdown.call(this.bootstrapObj, this.addon, this.extension, this.browser);
+    } catch (e) {
+      Components.utils.reportError(e)
+    }
+  
+    // after unloading also flush all caches
+    Services.obs.notifyObservers(null, "startupcache-invalidate");
+
+    if (this.chromeHandle) {
+      this.chromeHandle.destruct();
+      this.chromeHandle = null;
+    }
+
+    console.log("LegacyBootstrap for " + this.extension.id + " unloaded!");
+  }
+  
   getAPI(context) {
     // To be notified of the extension going away, call callOnClose with any object that has a
     // close function, such as this one.
-    context.callOnClose(this);
+    //context.callOnClose(this);
 
     this.pathToBootstrapScript = null;
     this.chromeHandle = null;
@@ -53,23 +74,6 @@ var LegacyBootstrap = class extends ExtensionCommon.ExtensionAPI {
   }
   
   close() {
-    // This function is called if the extension is disabled or removed, or Thunderbird closes.
-
-    // Execute registered shutdown()
-    try {
-      if (this.bootstrapObj.shutdown) this.bootstrapObj.shutdown.call(this.bootstrapObj, this.addon, this.extension, this.browser);
-    } catch (e) {
-      Components.utils.reportError(e)
-    }
-  
-    // after unloading also flush all caches
-    Services.obs.notifyObservers(null, "startupcache-invalidate");
-
-    if (this.chromeHandle) {
-      this.chromeHandle.destruct();
-      this.chromeHandle = null;
-    }
-
-    console.log("LegacyBootstrap for " + this.extension.id + " unloaded!");
+    // Replaced by onShutdown()
   }  
 };
