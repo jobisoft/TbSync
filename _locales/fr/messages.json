@@ -36,7 +36,7 @@
         "message": "Rechercher dans ce carnet d'adresse"
     },
     "eventlog.clear": {
-        "message": "Vider"
+        "message": "Effacer"
     },
     "eventlog.close": {
         "message": "Fermer"
@@ -117,10 +117,10 @@
         "message": "Désactivé"
     },
     "manager.help.debuglevel.1": {
-        "message": "Activé: Seules les erreurs seront journalisées"
+        "message": "Activé : Seules les erreurs seront journalisées"
     },
     "manager.help.debuglevel.2": {
-        "message": "Activé: Toutes les données reçues et envoyées seront journalisées"
+        "message": "Activé : Toutes les données reçues et envoyées seront journalisées"
     },
     "manager.help.debuglevel.3": {
         "message": "Activé: Toutes les données ainsi que certaines valeurs de débogages internes seront journalisées"
@@ -171,7 +171,7 @@
         "message": "Gestionnaire de comptes"
     },
     "manager.status": {
-        "message": "Statut"
+        "message": "État"
     },
     "manager.supporter.contributors": {
         "message": "Contributeurs et traducteurs"
@@ -201,7 +201,7 @@
         "message": "Ressources disponibles"
     },
     "manager.tabs.status.resources.intro": {
-        "message": "Choisissez, parmi les ressources disponible, celles que vous désirez synchroniser avec Thunderbird."
+        "message": "Choisissez, parmi les ressources disponibles, celles que vous désirez synchroniser avec Thunderbird."
     },
     "manager.tabs.status.sync": {
         "message": "Synchroniser maintenant"
@@ -279,7 +279,7 @@
         "message": "Modifications locales présentes"
     },
     "status.network": {
-        "message": "Impossibile de se connecter au serveur (##replace.1##)."
+        "message": "Impossible de se connecter au serveur (##replace.1##)."
     },
     "status.no-folders-found-on-server": {
         "message": "Impossible de trouver les ressources sur le serveur."
@@ -297,7 +297,7 @@
         "message": "Impossible d'établir une connexion sécurisée. Votre serveur utilise-t-il un certificat auto-signé ou non certifié de confiance, que vous n'avez pas importé dans Thunderbird ? (##replace.1##)"
     },
     "status.skipped": {
-        "message": "Non encore supporté, ignoré."
+        "message": "Pas encore pris en charge, ignoré"
     },
     "status.success": {
         "message": "OK"
@@ -306,10 +306,10 @@
         "message": "Synchronisation en cours"
     },
     "supportwizard.footer": {
-        "message": "Un courriel sera généré à partir des informations fournies ici. Vous aurez la possibilité de le modifier par la suite (par exemple, pour y ajouter des captures d'écrans). Ce n'estque lorsque vous aurez envoyé l'e-mail que le rapport d'erreur nous sera envoyé."
+        "message": "Un courriel sera généré à partir des informations fournies ici. Vous aurez la possibilité de le modifier par la suite (par exemple, pour y ajouter des captures d'écrans). Ce n'est que lorsque vous aurez envoyé l'e-mail que le rapport d'erreur nous sera envoyé."
     },
     "supportwizard.label.description": {
-        "message": "Description détaillée de l'erreur:"
+        "message": "Description détaillée de l'erreur :"
     },
     "supportwizard.label.faultycomponent": {
         "message": "Composant de TbSync où vous avez observé l'erreur :"
@@ -318,7 +318,7 @@
         "message": "Sélectionnez un composant…"
     },
     "supportwizard.label.summary": {
-        "message": "Bref résumé de l'erreur:"
+        "message": "Bref résumé de l'erreur :"
     },
     "supportwizard.pagetitle": {
         "message": "Récolte de toutes les informations nécessaires pour gérer efficacement le rapport d'erreur."
@@ -330,7 +330,7 @@
         "message": "Créer un rapport d'erreur"
     },
     "syncstate.accountdone": {
-        "message": "Synchronisation du compte finie"
+        "message": "Synchronisation du compte terminée"
     },
     "syncstate.done": {
         "message": "Préparation de la synchronisation du prochain élément"
