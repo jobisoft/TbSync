@@ -20,11 +20,11 @@ function startup(addon, extension, browser) {
   defaults.setBoolPref("log.toconsole", false);
   defaults.setIntPref("log.userdatalevel", 0); //0 - off   1 - userdata only on errors   2 - including full userdata,  3 - extra infos
 
-// Check if the main window has finished loading
+  // Check if at least one main window has finished loading
   let windows = Services.wm.getEnumerator("mail:3pane");
-  while (windows.hasMoreElements()) {
+  if (windows.hasMoreElements()) {
     let domWindow = windows.getNext();
-    WindowListener.loadIntoWindow(domWindow);
+    WindowListener.waitForWindow(domWindow);
   }
 
   // Wait for any new windows to open.
@@ -53,7 +53,7 @@ function shutdown(addon, extension, browser) {
 
 var WindowListener = {
 
-  async loadIntoWindow(window) {
+  async waitForWindow(window) {
     if (window.document.readyState != "complete") {
       // Make sure the window load has completed.
       await new Promise(resolve => {
@@ -77,7 +77,7 @@ var WindowListener = {
     // A new window has opened.
     let domWindow = xulWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
     // The domWindow.document.documentElement.getAttribute("windowtype") is not set before the load, so we cannot check it here
-    this.loadIntoWindow(domWindow);
+    this.waitForWindow(domWindow);
   },
 
   onCloseWindow(xulWindow) {

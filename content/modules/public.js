@@ -732,7 +732,7 @@ var localizeNow = function (window, provider) {
 var localizeOnLoad = function (window, provider) {
   // standard event if loaded by a standard window
   window.document.addEventListener('DOMContentLoaded', () => {
-    TbSync.localizeNow(window, provider);
+    this.localizeNow(window, provider);
   }, { once: true });
 
   // custom event, fired by the overlay loader after it has finished loading

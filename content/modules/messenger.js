@@ -23,12 +23,12 @@ var messenger = {
     await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xhtml", "chrome://tbsync/content/overlays/abCSS.xhtml");
     await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xhtml", "chrome://tbsync/content/overlays/abCSS.xhtml");
     
+    Services.obs.addObserver(this.initSyncObserver, "tbsync.observer.sync", false);
+    Services.obs.addObserver(this.syncstateObserver, "tbsync.observer.manager.updateSyncstate", false);
+
     //inject overlays
     this.overlayManager.startObserving();
 
-    Services.obs.addObserver(this.initSyncObserver, "tbsync.observer.sync", false);
-    Services.obs.addObserver(this.syncstateObserver, "tbsync.observer.manager.updateSyncstate", false);
-    Services.obs.addObserver(this.syncstateObserver, "tbsync.observer.initialized", false);	
   },
 
   unload: async function () {
@@ -37,56 +37,59 @@ var messenger = {
 
     Services.obs.removeObserver(this.initSyncObserver, "tbsync.observer.sync");
     Services.obs.removeObserver(this.syncstateObserver, "tbsync.observer.manager.updateSyncstate");
-    Services.obs.removeObserver(this.syncstateObserver, "tbsync.observer.initialized");        
   },
 
   // observer to catch changing syncstate and to update the status bar.
   syncstateObserver: {
     observe: function (aSubject, aTopic, aData) {
-      //update status bar
-      if (TbSync) {
-        let status = TbSync.window.document.getElementById("tbsync.status");
-        if (status) {
-          let label = "TbSync: ";
-          
-          if (TbSync.enabled) {
+      //update status bar in all main windows
+      let windows = Services.wm.getEnumerator("mail:3pane");
+      while (windows.hasMoreElements()) {
+        let domWindow = windows.getNext();
+        if (TbSync) {
+          let status = domWindow.document.getElementById("tbsync.status");
+          if (status) {
+            let label = "TbSync: ";
+            
+            if (TbSync.enabled) {
 
-            //check if any account is syncing, if not switch to idle
-            let accounts = TbSync.db.getAccounts();
-            let idle = true;
-            let err = false;
-        
-            for (let i=0; i<accounts.allIDs.length && idle; i++) {
-              if (!accounts.IDs.includes(accounts.allIDs[i])) {
-                err = true;
-                continue;
-              }
-        
-              //set idle to false, if at least one account is syncing
-              if (TbSync.core.isSyncing(accounts.allIDs[i])) idle = false;
+              //check if any account is syncing, if not switch to idle
+              let accounts = TbSync.db.getAccounts();
+              let idle = true;
+              let err = false;
           
-              //check for errors
-              switch (TbSync.db.getAccountProperty(accounts.allIDs[i], "status")) {
-                case "success":
-                case "disabled":
-                case "notsyncronized":
-                case "syncing":
-                  break;
-                default:
+              for (let i=0; i<accounts.allIDs.length && idle; i++) {
+                if (!accounts.IDs.includes(accounts.allIDs[i])) {
                   err = true;
+                  continue;
+                }
+          
+                //set idle to false, if at least one account is syncing
+                if (TbSync.core.isSyncing(accounts.allIDs[i])) idle = false;
+            
+                //check for errors
+                switch (TbSync.db.getAccountProperty(accounts.allIDs[i], "status")) {
+                  case "success":
+                  case "disabled":
+                  case "notsyncronized":
+                  case "syncing":
+                    break;
+                  default:
+                    err = true;
+                }
               }
-            }
 
-            if (idle) {
-              if (err) label += TbSync.getString("info.error");   
-              else label += TbSync.getString("info.idle");   
+              if (idle) {
+                if (err) label += TbSync.getString("info.error");   
+                else label += TbSync.getString("info.idle");   
+              } else {
+                label += TbSync.getString("status.syncing");
+              }
             } else {
-              label += TbSync.getString("status.syncing");
+              label += "Loading";
             }
-          } else {
-            label += "Loading";
+            status.value = label;
           }
-          status.value = label;
         }
       }
     }

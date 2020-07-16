@@ -13,6 +13,7 @@ var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 var tbSyncMessenger = {
 
   onInject: function (window) {
+    Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
   },
 
   onRemove: function (window) {
