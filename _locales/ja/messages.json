@@ -198,10 +198,10 @@
         "message": "0を設定すると、定期的な同期をしません。プッシュ同期には、まだ対応していません。"
     },
     "manager.tabs.status.resources": {
-        "message": "Available resources"
+        "message": "利用可能なリソース"
     },
     "manager.tabs.status.resources.intro": {
-        "message": "Select which of the found resources should be synchronized with Thunderbird."
+        "message": "Thunderbird と同期させるリソースを選択します。"
     },
     "manager.tabs.status.sync": {
         "message": "今すぐ同期"
