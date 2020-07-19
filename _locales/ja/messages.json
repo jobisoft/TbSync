@@ -1,6 +1,6 @@
 {
     "HelpFixStartupError": {
-        "message": "エラー修正を補助するために、 TbSync 開発者にデバッグログを送ることができます。今すぐメールを準備しますか？"
+        "message": "エラー修正を補助するために、 TbSync 開発者にデバッグログを送ることができます。今すぐメールを準備しますか?"
     },
     "NoDebugLog": {
         "message": "有用なデバッグメッセージを見つけることができませんでした。デバッグモードを有効化し、 Thunderbird を再起動した後、誤動作を引き起こすのに必要な全ての手順を繰り返してください。"
@@ -132,10 +132,10 @@
         "message": "バグレポートを送信することにより、修正するのを助けることができます。これにはデバッグモードの有効化が必要です。"
     },
     "manager.help.foundabug": {
-        "message": "不具合を見つけたら？"
+        "message": "不具合を見つけたら?"
     },
     "manager.help.needhelp": {
-        "message": "お困りですか？"
+        "message": "お困りですか?"
     },
     "manager.help.viewdebuglog": {
         "message": "デバッグ ログを見る"
@@ -147,7 +147,7 @@
         "message": "Click on the following link to open the info page of the missing synchronization provider. There you will find further information about the provider and you will have the option to install it:"
     },
     "manager.installprovider.warning": {
-        "message": "This synchronization provider is not hosted in the official Thunderbird add-on repository and thus has not been reviewed by Thunderbird staff. The provider could do bad things to your system. Use it at your own risk."
+        "message": "この同期プロバイダは、公式の Thunderbird アドオンリポジトリではホストされていないため、 Thunderbird スタッフによって確認されていません。 プロバイダはシステムに悪影響を及ぼす可能性があります。自己責任で使用してください。"
     },
     "manager.lockedsettings.description": {
         "message": "同期エラーを防ぐため、アカウントが有効化されている状態では、いくつかの設定は変更できません。"
@@ -198,10 +198,10 @@
         "message": "0を設定すると、定期的な同期をしません。プッシュ同期には、まだ対応していません。"
     },
     "manager.tabs.status.resources": {
-        "message": "Available resources"
+        "message": "利用可能なリソース"
     },
     "manager.tabs.status.resources.intro": {
-        "message": "Select which of the found resources should be synchronized with Thunderbird."
+        "message": "Thunderbird と同期させるリソースを選択します。"
     },
     "manager.tabs.status.sync": {
         "message": "今すぐ同期"
@@ -237,16 +237,16 @@
         "message": "TbSync アカウントマネージャーを開く"
     },
     "prompt.DeleteAccount": {
-        "message": "アカウント ##accountName## を削除しますか？"
+        "message": "アカウント ##accountName## を削除しますか?"
     },
     "prompt.Disable": {
-        "message": "このアカウントを無効化しますか？ 同期されていない全てのローカルの変更は失われます！"
+        "message": "このアカウントを無効化しますか? 同期されていない全てのローカルの変更は失われます!"
     },
     "prompt.Erase": {
         "message": "Are you sure you want to remove this account of an unknown provider from the accounts lists?"
     },
     "prompt.Unsubscribe": {
-        "message": "この項目の登録を解除しますか？ 同期されていない全てのローカルの変更は失われます！"
+        "message": "この項目の登録を解除しますか? 同期されていない全てのローカルの変更は失われます!"
     },
     "status.JavaScriptError": {
         "message": "Javascript エラー! 詳細はイベントログを確認してください。"
@@ -261,7 +261,7 @@
         "message": "OAuth 2.0 認証サーバーに接続できません。"
     },
     "status.OAuthServerError": {
-        "message": " OAuth 2.0 authentication server returned: ##replace.1##"
+        "message": " OAuth 2.0 認証サーバーが返答しました: ##replace.1##"
     },
     "status.aborted": {
         "message": "同期されていません"
@@ -282,7 +282,7 @@
         "message": "サーバーに接続できません (##replace.1##)。"
     },
     "status.no-folders-found-on-server": {
-        "message": "Could not find any resources on the server."
+        "message": "サーバー上のリソースが見つかりませんでした。"
     },
     "status.notargets": {
         "message": "Aborting synchronization, because sync targets could not be created."
@@ -306,7 +306,7 @@
         "message": "同期中"
     },
     "supportwizard.footer": {
-        "message": "From the information given here, an e-mail will be generated in the next step, which you can subsequently edit (for example, adding screenshots or similar). Only by actually sending that e-mail, the error report will be sent."
+        "message": "ここに記載されている情報から、次のステップで電子メールが生成され、その後編集することができます (例えば、スクリーンショットや類似したものを追加するなど)。 そのメールを実際に送信することによってのみ、エラーレポートが送信されます。"
     },
     "supportwizard.label.description": {
         "message": "エラーの詳細な説明:"
