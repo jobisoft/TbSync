@@ -1,6 +1,6 @@
 [
   {
-    "namespace": "LegacyBootstrap",
+    "namespace": "BootstrapLoader",
     "functions": [
       {
         "name": "registerChromeUrl",

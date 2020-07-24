@@ -19,12 +19,12 @@
     "scripts": ["background.js"]
   },
   "experiment_apis": {
-    "LegacyBootstrap": {
-      "schema": "content/api/LegacyBootstrap/schema.json",
+    "BootstrapLoader": {
+      "schema": "content/api/BootstrapLoader/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
-        "paths": [["LegacyBootstrap"]],
-        "script": "content/api/LegacyBootstrap/implementation.js"
+        "paths": [["BootstrapLoader"]],
+        "script": "content/api/BootstrapLoader/implementation.js"
       }
     }
   }

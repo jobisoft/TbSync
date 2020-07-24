@@ -7,14 +7,11 @@
  */
  
 var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
-var gExtension = null;
-var gAddon = null;
 
-function startup(addon, extension, browser) {
-  gExtension = extension;
-  gAddon = addon;
-  
+function startup(data, reason) {
+  // possible reasons: APP_STARTUP, ADDON_ENABLE, ADDON_INSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE.
+
+  // set default prefs
   let defaults = Services.prefs.getDefaultBranch("extensions.tbsync.");
   defaults.setBoolPref("debug.testoptions", false);
   defaults.setBoolPref("log.toconsole", false);
@@ -24,7 +21,7 @@ function startup(addon, extension, browser) {
   let windows = Services.wm.getEnumerator("mail:3pane");
   if (windows.hasMoreElements()) {
     let domWindow = windows.getNext();
-    WindowListener.waitForWindow(domWindow);
+    WindowListener.loadIntoWindow(domWindow);
   }
 
   // Wait for any new windows to open.
@@ -33,27 +30,30 @@ function startup(addon, extension, browser) {
   //DO NOT ADD ANYTHING HERE!
 }
 
+function shutdown(data, reason) {
+  //possible reasons: APP_SHUTDOWN, ADDON_DISABLE, ADDON_UNINSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE
 
-function shutdown(addon, extension, browser) {
   // Stop listening for any new windows to open.
   Services.wm.removeListener(WindowListener);
 
+  var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
   TbSync.enabled = false;
-
-  //unload TbSync module
-  TbSync.dump("TbSync shutdown","Unloading TbSync modules.");
   TbSync.unload().then(function() {
     Cu.unload("chrome://tbsync/content/tbsync.jsm");
     Cu.unload("chrome://tbsync/content/HttpRequest.jsm");
     Cu.unload("chrome://tbsync/content/OverlayManager.jsm");
+    // HACK WARNING:
+    //  - the Addon Manager does not properly clear all addon related caches on update;
+    //  - in order to fully update images and locales, their caches need clearing here
+    Services.obs.notifyObservers(null, "startupcache-invalidate");
+    Services.obs.notifyObservers(null, "chrome-flush-caches"); 
   });
 }
 
 
-
 var WindowListener = {
 
-  async waitForWindow(window) {
+  async loadIntoWindow(window) {
     if (window.document.readyState != "complete") {
       // Make sure the window load has completed.
       await new Promise(resolve => {
@@ -64,7 +64,8 @@ var WindowListener = {
     // Check if the opened window is the one we want to modify.
     if (window.document.documentElement.getAttribute("windowtype") === "mail:3pane") {
       // the main window has loaded, continue with init
-      if (!TbSync.enabled) TbSync.load(window, gAddon, gExtension);
+      var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+      if (!TbSync.enabled) TbSync.load(window, addon, extension);
     }
   },
 
@@ -77,7 +78,7 @@ var WindowListener = {
     // A new window has opened.
     let domWindow = xulWindow.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
     // The domWindow.document.documentElement.getAttribute("windowtype") is not set before the load, so we cannot check it here
-    this.waitForWindow(domWindow);
+    this.loadIntoWindow(domWindow);
   },
 
   onCloseWindow(xulWindow) {
