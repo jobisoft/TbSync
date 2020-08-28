@@ -33,7 +33,7 @@
             "description": "Either the chrome:// path to the script or its relative location from the root of the extension,"
           }
         ]
-      }  
+      }
     ]
   }
 ]
