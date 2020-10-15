@@ -230,7 +230,7 @@ var db = {
     let log = [];
     let counts = 0;
     for (let i=0; i<this.changelog.length && (log.length < maxnumbertosend || maxnumbertosend == 0); i++) {
-      if (this.changelog[i].parentId == parentId && (status === null || this.changelog[i].status.indexOf(status) != -1)) log.push(this.changelog[i]);
+      if (this.changelog[i].parentId == parentId && (status === null || (typeof this.changelog[i].status == "string" && this.changelog[i].status.indexOf(status) != -1))) log.push(this.changelog[i]);
     }
     return log;
   },
