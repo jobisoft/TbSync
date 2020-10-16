@@ -318,14 +318,24 @@ var addressbook = {
         return this.UID;
       
       if (this._isMailList) {
-        let mailListDirectory = this._tempListDirectory || MailServices.ab.getDirectory(this._card.mailListURI);
-        switch(property) {
-          case"ListName": return mailListDirectory.dirName || fallback;
-          case"ListNickName": return mailListDirectory.listNickName || fallback;
-          case"ListDescription": return mailListDirectory.description || fallback;
+        const directListProperties = {
+          ListName: "dirName",
+          ListNickName: "listNickName",
+          ListDescription: "description"
+        };
+        
+        let value;
+        if (directListProperties.hasOwnProperty(property)) {
+          try {
+            let mailListDirectory = this._tempListDirectory || MailServices.ab.getDirectory(this._card.mailListURI);
+            value = mailListDirectory[directListProperties[property]];
+          } catch (e) {
+            // list does not exists
+          }
+        } else {
+          value = this._tempProperties ? this._tempProperties[property] : TbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID + "#" + this.UID, property);
         }
-        let value = this._tempProperties ? this._tempProperties[property] : TbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID + "#" + this.UID, property);
-        return value || fallback;
+        return value || fallback;        
       } else {
         return this._card.getProperty(property, fallback);
       }
@@ -342,12 +352,20 @@ var addressbook = {
       }
       
       if (this._isMailList) {
-        let mailListDirectory = this._tempListDirectory || MailServices.ab.getDirectory(this._card.mailListURI);                
-        switch(property) {
-          case"ListName": return (mailListDirectory.dirName = value);
-          case"ListNickName": return (mailListDirectory.listNickName  = value);
-          case"ListDescription": return (mailListDirectory.description = value);
-          default: 
+        const directListProperties = {
+          ListName: "dirName",
+          ListNickName: "listNickName",
+          ListDescription: "description"
+        };
+        
+        if (directListProperties.hasOwnProperty(property)) {
+          try {
+            let mailListDirectory = this._tempListDirectory || MailServices.ab.getDirectory(this._card.mailListURI);
+            mailListDirectory[directListProperties[property]] = value;
+          } catch (e) {
+            // list does not exists
+          }     
+        } else {
             if (this._tempProperties) {
               this._tempProperties[property] = value;
             } else {
@@ -429,7 +447,7 @@ var addressbook = {
       }
     }
 
-    removeListMembers(property, members) {
+    removeListMembers(property, candidates) {
       if (this._card && this._card.isMailList) {
         let members = this.getMembersPropertyList(property);
         let mailListDirectory = MailServices.ab.getDirectory(this._card.mailListURI);
