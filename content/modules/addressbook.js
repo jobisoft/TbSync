@@ -256,11 +256,13 @@ var addressbook = {
       this._abDirectory = abDirectory;
       this._card = null;
       this._tempListDirectory = null;
+      this._tempProperties = null;
       this._isMailList = false;
       
       if (item instanceof Components.interfaces.nsIAbDirectory) {
         this._tempListDirectory = item;
         this._isMailList = true;
+        this._tempProperties = {};
       } else {
         this._card = item;
         this._isMailList = item.isMailList;
@@ -316,8 +318,14 @@ var addressbook = {
         return this.UID;
       
       if (this._isMailList) {
-        let value = TbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID + "#" + this.UID, property);
-        return value ? value : fallback;    
+        let mailListDirectory = this._tempListDirectory || MailServices.ab.getDirectory(this._card.mailListURI);
+        switch(property) {
+          case"ListName": return mailListDirectory.dirName || fallback;
+          case"ListNickName": return mailListDirectory.listNickName || fallback;
+          case"ListDescription": return mailListDirectory.description || fallback;
+        }
+        let value = this._tempProperties ? this._tempProperties[property] : TbSync.db.getItemStatusFromChangeLog(this._abDirectory.UID + "#" + this.UID, property);
+        return value || fallback;
       } else {
         return this._card.getProperty(property, fallback);
       }
@@ -325,6 +333,7 @@ var addressbook = {
 
     // mailinglist aware method to set properties of cards
     // mailinglist properties cannot be stored in mailinglists themselves, so we store them in changelog
+    // while the list has not been added, wekeep all props in an object (UID changes on adding)
     setProperty(property, value) {
       // UID cannot be changed (currently)
       if (property == "UID") {
@@ -333,7 +342,18 @@ var addressbook = {
       }
       
       if (this._isMailList) {
-        TbSync.db.addItemToChangeLog(this._abDirectory.UID + "#" + this.UID, property, value);
+        let mailListDirectory = this._tempListDirectory || MailServices.ab.getDirectory(this._card.mailListURI);                
+        switch(property) {
+          case"ListName": return (mailListDirectory.dirName = value);
+          case"ListNickName": return (mailListDirectory.listNickName  = value);
+          case"ListDescription": return (mailListDirectory.description = value);
+          default: 
+            if (this._tempProperties) {
+              this._tempProperties[property] = value;
+            } else {
+               TbSync.db.addItemToChangeLog(this._abDirectory.UID + "#" + this.UID, property, value);
+            }
+        }
       } else {
         this._card.setProperty(property, value);
       }
@@ -341,7 +361,11 @@ var addressbook = {
     
     deleteProperty(property) {
       if (this._isMailList) {
-        TbSync.db.removeItemFromChangeLog(this._abDirectory.UID + "#" + this.UID, property);
+        if (this._tempProperties) {
+          delete this._tempProperties[property];
+        } else {
+          TbSync.db.removeItemFromChangeLog(this._abDirectory.UID + "#" + this.UID, property);
+        }
       } else {
         this._card.deleteProperty(property);
       }
@@ -380,33 +404,48 @@ var addressbook = {
       if (this._card && this._card.isMailList) {
         // get mailListDirectory
         let mailListDirectory = MailServices.ab.getDirectory(this._card.mailListURI);                
-        for (let i = 0; i < mailListDirectory.addressLists.length; i++) {
-          let member = mailListDirectory.addressLists.queryElementAt(i, Components.interfaces.nsIAbCard);
-          let id = member.getProperty(property, "");
-          if (id) members.push(id);
+        let cards = mailListDirectory.childCards;
+        while (cards.hasMoreElements()) {
+          let member = cards.getNext().QueryInterface(Components.interfaces.nsIAbCard)
+          let prop = member.getProperty(property, "");
+          if (prop) members.push(prop);
         }
       }
       return members;
     }
     
-    // update mail list with a the given member list, each entry being the value of the given property for each member
-    setMembersByPropertyList(property, members) {
+    addListMembers(property, candidates) {
       if (this._card && this._card.isMailList) {            
-        // get mailListDirectory
-        let mailListDirectory = MailServices.ab.getDirectory(this._card.mailListURI);
-        let list = Components.classes["@mozilla.org/array;1"].createInstance(Components.interfaces.nsIMutableArray);
-        for (let member of members) {
-          let card = this._abDirectory._directory.getCardFromProperty(property, member, true);
-          if (card) list.appendElement(card, false);
+        let members = this.getMembersPropertyList(property);
+        let mailListDirectory = MailServices.ab.getDirectory(this._card.mailListURI);                
+
+        for (let candidate of candidates) {
+          if (members.includes(candidate))
+            continue;
+
+          let card = this._abDirectory._directory.getCardFromProperty(property, candidate, true);
+          if (card) mailListDirectory.addCard(card);
         }
-        mailListDirectory.addressLists = list;
-        if (this.changelogStatus != "modified_by_user") {
-          this.changelogStatus = "modified_by_server";
-        }
-        mailListDirectory.editMailListToDatabase(this._card);                
       }
     }
-    
+
+    removeListMembers(property, members) {
+      if (this._card && this._card.isMailList) {
+        let members = this.getMembersPropertyList(property);
+        let mailListDirectory = MailServices.ab.getDirectory(this._card.mailListURI);
+
+        let cardsToRemove = [];
+        for (let candidate of candidates) {
+          if (!members.includes(candidate))
+            continue;
+
+          let card = this._abDirectory._directory.getCardFromProperty(property, candidate, true);
+          if (card) cardsToRemove.push(card);
+        }
+        if (cardsToRemove.length > 0) mailListDirectory.deleteCards(cardsToRemove);        
+      }
+    }
+       
     addPhoto(photo, data, extension = "jpg", url = "") {	
       let dest = [];
       let card = this._card;
@@ -515,17 +554,21 @@ var addressbook = {
       }
       
       if (abItem.isMailList && abItem._tempListDirectory) {
-        // update directory props first
-        abItem._tempListDirectory.dirName = abItem.getProperty("ListName");
-        abItem._tempListDirectory.listNickName = abItem.getProperty("ListNickName");
-        abItem._tempListDirectory.description = abItem.getProperty("ListDescription");
-        this._directory.addMailList(abItem._tempListDirectory);
-        
+        let list = this._directory.addMailList(abItem._tempListDirectory);
         // the list has been added and we can now get the corresponding card via its UID
-        let found = await this.getItemFromProperty("UID", abItem.UID);
+        let found = await this.getItemFromProperty("UID", list.UID);
+        
+        // clone and clear temporary properties
+        let props = {...abItem._tempProperties};
         abItem._tempListDirectory = null;
-        abItem._card = found._card;
+        abItem._tempProperties = null;
+        
+        // store temporary properties
+        for (const [property, value] of Object.entries(props)) {
+          found.setProperty(property, value);
+        }
 
+        abItem._card = found._card;
       } else if (!abItem.isMailList) {
         this._directory.addCard(abItem._card);
 
@@ -544,11 +587,6 @@ var addressbook = {
       if (abItem.isMailList) {                
         // get mailListDirectory
         let mailListDirectory = MailServices.ab.getDirectory(abItem._card.mailListURI);
-        
-        //update directory props
-        mailListDirectory.dirName = abItem.getProperty("ListName");
-        mailListDirectory.listNickName = abItem.getProperty("ListNickName");
-        mailListDirectory.description = abItem.getProperty("ListDescription");
 
         // store
         mailListDirectory.editMailListToDatabase(abItem._card);
@@ -697,11 +735,11 @@ var addressbook = {
     while (directories.hasMoreElements()) {
       let directory = directories.getNext();
       if (directory instanceof Components.interfaces.nsIAbDirectory && !directory.isRemote) {
-        let searchList = "(IsMailList,=,TRUE)(UID,=,"+UID+")";
+        let searchList = "(IsMailList,=,TRUE)";
         let foundCards = await TbSync.addressbook.searchDirectory(directory.URI, "(and" + searchList+")");
         for (let listCard of foundCards) {
           //return after first found card
-          return {directory, listCard};
+          if (listCard.UID == UID) return {directory, listCard};
         }
       }
     }       
@@ -942,12 +980,7 @@ var addressbook = {
             // update changelog based on old status
             switch (aTopic) {
               case "addrbook-list-created":
-              {
-                // To simplify mail list management, we shadow its core properties, need to update them now
-                abItem.setProperty("ListName", aSubject.displayName);
-                abItem.setProperty("ListNickName", aSubject.getProperty("NickName", ""));
-                abItem.setProperty("ListDescription", aSubject.getProperty("Notes", ""));
-                
+              {               
                 if (abDirectory.primaryKeyField) {
                   // Since we do not need to update a list, to make custom properties persistent, we do not need to use delayedUserCreation as with contacts.
                   abItem.setProperty(abDirectory.primaryKeyField, folderData.targetData.generatePrimaryKey());
@@ -1031,11 +1064,6 @@ var addressbook = {
             switch (aTopic) {
               case "addrbook-list-updated":
               {
-                // To simplify mail list management, we shadow its core properties, need to update them now
-                abItem.setProperty("ListName", aSubject.dirName);
-                abItem.setProperty("ListNickName", aSubject.listNickName);
-                abItem.setProperty("ListDescription", aSubject.description);
-
                 switch (itemStatus) {
                   case "added_by_user": 
                     // unprocessed add for this card, keep status

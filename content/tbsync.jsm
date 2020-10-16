@@ -27,7 +27,7 @@ var TbSync = {
   addon: null,
   version: 0,
   debugMode: false,
-  apiVersion: "2.3",
+  apiVersion: "2.4",
 
   prefs: Services.prefs.getBranch("extensions.tbsync."),
   
