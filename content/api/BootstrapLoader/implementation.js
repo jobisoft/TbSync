@@ -2,6 +2,9 @@
  * This file is provided by the addon-developer-support repository at
  * https://github.com/thundernest/addon-developer-support
  *
+ * Version: 1.3
+ * - flush cache
+ *
  * Version: 1.2
  * - add support for resource urls
  *
@@ -143,7 +146,8 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
       this.chromeHandle.destruct();
       this.chromeHandle = null;
     }
-
+    // Flush all caches
+    Services.obs.notifyObservers(null, "startupcache-invalidate");
     console.log("BootstrapLoader for " + this.extension.id + " unloaded!");
   }
 };
