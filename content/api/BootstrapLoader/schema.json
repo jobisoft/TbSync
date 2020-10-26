@@ -3,6 +3,17 @@
     "namespace": "BootstrapLoader",
     "functions": [
       {
+        "name": "registerOptionsPage",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "aPath",
+            "type": "string",
+            "description": "Path to the options page, which should be made accessible in the (legacy) Add-On Options menu."
+          }
+        ]
+      },
+      {
         "name": "registerChromeUrl",
         "type": "function",
         "description": "Register folders which should be available as chrome:// urls (as defined in the legacy chrome.manifest)",

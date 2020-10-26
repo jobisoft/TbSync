@@ -7,6 +7,7 @@ async function main() {
   //messenger.runtime.onUpdateAvailable.addListener(handleUpdateAvailable);
 
   await messenger.BootstrapLoader.registerChromeUrl([ ["content", "tbsync", "content/"] ]);
+  await messenger.BootstrapLoader.registerOptionsPage("chrome://tbsync/content/manager/addonoptions.xhtml");
   await messenger.BootstrapLoader.registerBootstrapScript("chrome://tbsync/content/scripts/bootstrap.js");  
 }
 

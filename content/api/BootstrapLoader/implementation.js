@@ -2,6 +2,9 @@
  * This file is provided by the addon-developer-support repository at
  * https://github.com/thundernest/addon-developer-support
  *
+ * Version 1.4
+ * - add registerOptionsPage
+ *
  * Version: 1.3
  * - flush cache
  *
@@ -17,12 +20,19 @@
 
 // Get various parts of the WebExtension framework that we need.
 var { ExtensionCommon } = ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
-var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+var { ExtensionSupport } = ChromeUtils.import("resource:///modules/ExtensionSupport.jsm");
 var { AddonManager } = ChromeUtils.import("resource://gre/modules/AddonManager.jsm");
+var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 
 var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
   getAPI(context) {
+    this.uniqueRandomID = "AddOnNS" + context.extension.instanceId;
+    this.menu_addonsManager_id ="addonsManager";
+    this.menu_addonsManager_prefs_id = "addonsManager_prefs_revived";
+    this.menu_addonPrefs_id = "addonPrefs_revived";
+
     this.pathToBootstrapScript = null;
+    this.pathToOptionsPage = null;
     this.chromeHandle = null;
     this.chromeData = null;
     this.resourceData = null;    
@@ -54,6 +64,12 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
 
     return {
       BootstrapLoader: {
+
+        registerOptionsPage(optionsUrl) {
+          self.pathToOptionsPage = optionsUrl.startsWith("chrome://")
+            ? optionsUrl
+            : context.extension.rootURI.resolve(optionsUrl);
+        },
 
         registerChromeUrl(data) {
           let chromeData = [];
@@ -112,12 +128,80 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
           } catch (e) {
             Components.utils.reportError(e)
           }
+          
+          // Register window listener for main TB window
+          if (self.pathToOptionsPage) {
+            ExtensionSupport.registerWindowListener("injectListener_" + self.uniqueRandomID, {
+              chromeURLs: [
+                "chrome://messenger/content/messenger.xul",
+                "chrome://messenger/content/messenger.xhtml",              
+              ],
+              async onLoadWindow(window) {
+                try {
+                  // add the add-on options menu if needed
+                  if (!window.document.getElementById(self.menu_addonsManager_prefs_id)) {
+                    let addonprefs = window.MozXULElement.parseXULToFragment(`
+                      <menu id="${self.menu_addonsManager_prefs_id}" label="&addonPrefs.label;">
+                        <menupopup id="${self.menu_addonPrefs_id}">
+                        </menupopup>
+                      </menu>
+                    `, ["chrome://messenger/locale/messenger.dtd"]);
+
+                    let element_addonsManager = window.document.getElementById(self.menu_addonsManager_id);
+                    element_addonsManager.parentNode.insertBefore(addonprefs, element_addonsManager.nextSibling);
+                  }
+
+                  // add the options entry
+                  let element_addonPrefs = window.document.getElementById(self.menu_addonPrefs_id);
+                  let id = self.menu_addonPrefs_id + "_" + self.uniqueRandomID;
+
+                  // Get the best size of the icon (16px or bigger)
+                  let iconSizes = Object.keys(self.extension.manifest.icons);
+                  iconSizes.sort((a,b)=>a-b);
+                  let bestSize = iconSizes.filter(e => parseInt(e) >= 16).shift();
+                  let icon = bestSize ? self.extension.manifest.icons[bestSize] : "";
+
+                  let name = self.extension.manifest.name;
+                  let entry = window.MozXULElement.parseXULToFragment(
+                    `<menuitem class="menuitem-iconic" id="${id}" image="${icon}" label="${name}" />`);
+                  element_addonPrefs.appendChild(entry);
+                  let BL = {}
+                  BL.extension = self.extension;
+                  BL.messenger = Array.from(self.extension.views).find(
+                    view => view.viewType === "background").xulBrowser.contentWindow
+                    .wrappedJSObject.browser;
+                  window.document.getElementById(id).addEventListener("command", function() {window.openDialog(self.pathToOptionsPage, "AddonOptions", null, BL)});
+                } catch (e) {
+                  Components.utils.reportError(e)
+                }
+              },
+
+              onUnloadWindow(window) {          
+              }
+            });
+          }
         }
       }
     };
   }
 
   onShutdown(isAppShutdown) {
+    //remove our entry in the add-on options menu
+    if (this.pathToOptionsPage) {
+      for (let window of Services.wm.getEnumerator("mail:3pane")) {
+        let id = this.menu_addonPrefs_id + "_" + this.uniqueRandomID;
+        window.document.getElementById(id).remove();
+
+        //do we have to remove the entire add-on options menu?
+        let element_addonPrefs = window.document.getElementById(this.menu_addonPrefs_id);
+        if (element_addonPrefs.children.length == 0) {
+          window.document.getElementById(this.menu_addonsManager_prefs_id).remove();
+        }
+      }
+      // Stop listening for new windows.
+      ExtensionSupport.unregisterWindowListener("injectListener_" + this.uniqueRandomID);
+    }
+
     // Execute registered shutdown()
     try {
       if (this.bootstrappedObj.shutdown) {
