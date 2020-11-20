@@ -1,15 +1,15 @@
 {
     "HelpFixStartupError": {
-        "message": "To help fix this error, you could send a debug log to the TbSync developer. Prepare that email now?"
+        "message": "Můžete pomoci odstranit tuto chybu tím, že zašlete vývojáři doplňku TbSync chybové hlášení. Chcete nyní připravit email s hlášením chyby?"
     },
     "NoDebugLog": {
-        "message": "Could not find any useful debug messages. Please activate debug mode, restart Thunderbird and repeat all the steps needed to trigger the erroneous behavior."
+        "message": "Nebyly nalezeny žádné použitelné ladící záznamy. Prosím, aktivujte ladící režim, restartujte Thunderbird a zopakujte kroky, které vedly k této chybě."
     },
     "OopsMessage": {
-        "message": "Oops! TbSync was not able to start!"
+        "message": "Ups! Nebylo možné spustit TbSync!"
     },
     "RestartThunderbirdAndTryAgain": {
-        "message": "TbSync debug log has been enabled, please restart Thunderbird and again try to open TbSync."
+        "message": "Ladící záznam TbSync byl aktivován. Prosím, restartujte Thunderbird a zkuste znovu otevřít TbSync."
     },
     "UnableToTraceError": {
         "message": "It is not possible to trace this error, because debug log is currently not enabled. Do you want to enable debug log now, to help fix this error?"
