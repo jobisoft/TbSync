@@ -36,19 +36,19 @@
         "message": "Buscar en esta libreta de direcciones"
     },
     "eventlog.clear": {
-        "message": "Clear"
+        "message": "Borrar"
     },
     "eventlog.close": {
-        "message": "Close"
+        "message": "Cerrar"
     },
     "eventlog.title": {
-        "message": "Event log"
+        "message": "Registro de eventos"
     },
     "extensionDescription": {
-        "message": "TbSync is a central user interface to manage cloud accounts and to synchronize their contact, task and calendar information with Thunderbird."
+        "message": "TbSync es una interfaz para administrar cuentas en la nube de forma centralizada y sincronizar los datos de contactos, tareas y calendarios con Thunderbird."
     },
     "google.translate.code": {
-        "message": "en"
+        "message": "es-ES"
     },
     "helplink.security": {
         "message": "https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F"
@@ -57,94 +57,94 @@
         "message": "Error"
     },
     "info.idle": {
-        "message": "Idle"
+        "message": "En espera"
     },
     "installProvider.header": {
-        "message": "Provider “##replace.1##” for TbSync is not yet installed."
+        "message": "Aún no está instalado el proveedor «##replace.1##» para TbSync."
     },
     "manager.AccountActions": {
-        "message": "Account actions"
+        "message": "Acciones de cuenta"
     },
     "manager.AddAccount": {
-        "message": "Add new account"
+        "message": "Añadir una cuenta"
     },
     "manager.DeleteAccount": {
-        "message": "Delete account"
+        "message": "Eliminar la cuenta"
     },
     "manager.DisableAccount": {
-        "message": "Disable account"
+        "message": "Desactivar la cuenta"
     },
     "manager.EnableAccount": {
-        "message": "Enable account & try to connect to server"
+        "message": "Activar la cuenta y conectarse al servidor"
     },
     "manager.RetryConnectAccount": {
-        "message": "Try again to connect to server"
+        "message": "Volver a intentar conectarse al servidor"
     },
     "manager.ShowEventLog": {
-        "message": "Open event log"
+        "message": "Abrir registro de eventos"
     },
     "manager.SyncAll": {
-        "message": "Synchronize all enabled accounts"
+        "message": "Sincronizar todas las cuentas activadas"
     },
     "manager.SynchronizeAccount": {
-        "message": "Synchronize account"
+        "message": "Sincronizar la cuenta"
     },
     "manager.accounts": {
-        "message": "Accounts"
+        "message": "Cuentas"
     },
     "manager.accountsettings": {
-        "message": "Account Settings"
+        "message": "Configurar cuentas"
     },
     "manager.catman.text": {
-        "message": "TbSync also syncs contact categories, which are a powerful replacement for the non-synchronizable contact lists. To be able to use them in the Thunderbird address book you can install the Category Manager add-on. It allows to manage overlapping category based contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla add-on repository:"
+        "message": "TbSync también sincroniza categorías de contactos, un sustituto eficaz de las listas de contactos, que no son sincronizables. Para usar las categorías en la libreta de direcciones de Thunderbird, puede instalar el complemento Category Manager. Permite gestionar grupos de contactos con categorías superpuestas y ofrece múltiples funciones relacionadas con las categorías. Está disponible en el repositorio oficial de complementos de Mozilla:"
     },
     "manager.community": {
-        "message": "Community"
+        "message": "Comunidad"
     },
     "manager.connecting": {
-        "message": "Connecting to server"
+        "message": "Conectando al servidor"
     },
     "manager.help": {
-        "message": "Help"
+        "message": "Ayuda"
     },
     "manager.help.createbugreport": {
-        "message": "Create bug report"
+        "message": "Crear informe de errores"
     },
     "manager.help.createbugreportinfo": {
-        "message": "In order for TbSync to collect only the debug data relevant to your bug report, please restart Thunderbird and then repeat exactly the steps that reproduce the buggy behavior. Then you can create your bug report here."
+        "message": "Para que TbSync recopile únicamente los datos de depuración relevantes para su informe de fallos, reinicie Thunderbird y repita exactamente los pasos que reproducen el comportamiento erróneo. Después podrá crear su informe de fallos aquí."
     },
     "manager.help.debuglevel.0": {
-        "message": "Disabled"
+        "message": "Desactivado"
     },
     "manager.help.debuglevel.1": {
-        "message": "Enabled: Logging of errors only"
+        "message": "Activado: solo registro de errores"
     },
     "manager.help.debuglevel.2": {
-        "message": "Enabled: Logging of all sent and received data"
+        "message": "Activado: registro de todos los datos enviados y recibidos"
     },
     "manager.help.debuglevel.3": {
-        "message": "Enabled: Logging of all data and some internal debug values"
+        "message": "Activado: registro de todos los datos y ciertos valores de depuración internos"
     },
     "manager.help.debugmode": {
-        "message": "Debug mode:"
+        "message": "Modo de depuración:"
     },
     "manager.help.fixit": {
-        "message": "You can help to fix it by sending in a bug report. This requires the activation of debug mode."
+        "message": "Puede ayudar a solucionarlo enviando un informe de error. Para ello, el modo de depuración debe estar activo."
     },
     "manager.help.foundabug": {
-        "message": "Found a bug?"
+        "message": "¿Ha encontrado un fallo?"
     },
     "manager.help.needhelp": {
-        "message": "Need Help?"
+        "message": "¿Necesita ayuda?"
     },
     "manager.help.viewdebuglog": {
-        "message": "View debug log"
+        "message": "Ver registro"
     },
     "manager.help.wiki": {
-        "message": "Open the wiki pages of the TbSync project, they provide additional information, guides and detailed configuration descriptions."
+        "message": "Visite el wiki del proyecto TbSync, que proporciona más información, guías y descripciones detalladas de la configuración."
     },
     "manager.installprovider.link": {
-        "message": "Click on the following link to open the info page of the missing synchronization provider. There you will find further information about the provider and you will have the option to install it:"
+        "message": "Haga clic en el siguiente enlace para abrir la página de información del proveedor de sincronización que falta. En ella encontrará más información sobre el proveedor y tendrá la opción de instalarlo:"
     },
     "manager.installprovider.warning": {
         "message": "This synchronization provider is not hosted in the official Thunderbird add-on repository and thus has not been reviewed by Thunderbird staff. The provider could do bad things to your system. Use it at your own risk."
@@ -327,7 +327,7 @@
         "message": "Provider: ##replace.1##"
     },
     "supportwizard.title": {
-        "message": "Create bug report"
+        "message": "Crear informe de errores"
     },
     "syncstate.accountdone": {
         "message": "Finished account"
