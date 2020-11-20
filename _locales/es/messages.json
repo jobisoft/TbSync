@@ -1,6 +1,6 @@
 {
     "HelpFixStartupError": {
-        "message": "Puedes enviar un registro de depuración al desarrollador de TbSync para que corrija este error. ¿Quieres hacerlo ahora?"
+        "message": "Puede enviar un registro de depuración al desarrollador de TbSync para ayudar a corregir este error. ¿Quiere hacerlo ahora?"
     },
     "NoDebugLog": {
         "message": "No se ha encontrado ningún mensaje de depuración útil. Active el modo de depuración, reinicie Thunderbird y repita los pasos que provocaron el comportamiento erróneo."
@@ -12,7 +12,7 @@
         "message": "Se ha habilitado el registro de depuración de TbSync. Reinicie Thunderbird y vuelva a abrir TbSync."
     },
     "UnableToTraceError": {
-        "message": "No es posible rastrear este error porque el registro de depuración no está habilitado. ¿Quiere habilitarlo ahora para ayudar a corregir este error?"
+        "message": "No es posible rastrear este error porque el registro de depuración no está habilitado. ¿Quiere habilitarlo ahora para ayudar a corregir el error?"
     },
     "accountacctions.delete": {
         "message": "Eliminar la cuenta «##accountname##»"
@@ -273,87 +273,87 @@
         "message": "La cuenta no está activada, la sincronización está desactivada."
     },
     "status.foldererror": {
-        "message": "At least one resource encountered a synchronization error. Please check the event log for more details."
+        "message": "Uno o varios recursos tuvieron errores de sincronización. Examine el registro de eventos para ver más detalles."
     },
     "status.modified": {
-        "message": "Local modifications"
+        "message": "Modificaciones locales"
     },
     "status.network": {
-        "message": "Could not connect to server (##replace.1##)."
+        "message": "No ha sido posible conectar al servidor (##replace.1##)."
     },
     "status.no-folders-found-on-server": {
-        "message": "Could not find any resources on the server."
+        "message": "No se ha encontrado ningún recurso en el servidor."
     },
     "status.notargets": {
-        "message": "Aborting synchronization, because sync targets could not be created."
+        "message": "Sincronización interrumpida: no se han podido crear los destinos de sincronización."
     },
     "status.notsyncronized": {
-        "message": "Account needs to be synchronized, at least one item is out of sync."
+        "message": "Es necesario sincronizar la cuenta. Uno o varios elementos están sin sincronizar."
     },
     "status.pending": {
-        "message": "Waiting to be synchronized"
+        "message": "Esperando sincronización"
     },
     "status.security": {
-        "message": "Could not establish a secure connection. Are you using a self-signed or otherwise untrusted certificate without importing it into Thunderbird? (##replace.1##)"
+        "message": "No ha sido posible establecer una conexión segura. ¿Estás usando un certificado autofirmado, o que no es de confianza, sin importarlo a Thunderbird? (##replace.1##)"
     },
     "status.skipped": {
-        "message": "Not yet supported, skipped"
+        "message": "No se admite aún; omitido"
     },
     "status.success": {
         "message": "OK"
     },
     "status.syncing": {
-        "message": "Synchronizing"
+        "message": "Sincronizando"
     },
     "supportwizard.footer": {
-        "message": "From the information given here, an e-mail will be generated in the next step, which you can subsequently edit (for example, adding screenshots or similar). Only by actually sending that e-mail, the error report will be sent."
+        "message": "En el paso siguiente, la información proporcionada aquí se incluirá en un mensaje de correo electrónico que podrá modificar (por ejemplo, para añadir capturas de pantalla). El informe de error no se enviará hasta que envíe ese mensaje de correo."
     },
     "supportwizard.label.description": {
-        "message": "Detailed error description:"
+        "message": "Descripción detallada del error:"
     },
     "supportwizard.label.faultycomponent": {
-        "message": "Component of TbSync where you have observed the error:"
+        "message": "Componente de TbSync en el que ha observado el error:"
     },
     "supportwizard.label.selectcomponent": {
-        "message": "Select component…"
+        "message": "Seleccionar componente…"
     },
     "supportwizard.label.summary": {
-        "message": "Short summary of the error:"
+        "message": "Resumen breve del error:"
     },
     "supportwizard.pagetitle": {
-        "message": "Gathering of all information to effectively process the bug report."
+        "message": "Recopilación de todos los datos para procesar eficazmente el informe de error."
     },
     "supportwizard.provider": {
-        "message": "Provider: ##replace.1##"
+        "message": "Proveedor: ##replace.1##"
     },
     "supportwizard.title": {
         "message": "Crear informe de errores"
     },
     "syncstate.accountdone": {
-        "message": "Finished account"
+        "message": "Cuenta finalizada"
     },
     "syncstate.done": {
-        "message": "Preparing next item for synchronization"
+        "message": "Preparando el siguiente elemento para la sincronización"
     },
     "syncstate.oauthprompt": {
-        "message": "OAuth 2.0 authentication"
+        "message": "Autenticación OAuth 2.0"
     },
     "syncstate.passwordprompt": {
-        "message": "Prompting for credentials"
+        "message": "Solicitando credenciales"
     },
     "syncstate.preparing": {
-        "message": "Preparing next item for synchronization"
+        "message": "Preparando el siguiente elemento para la sincronización"
     },
     "syncstate.syncing": {
-        "message": "Initialize synchronization"
+        "message": "Iniciar sincronización"
     },
     "target.orphaned": {
-        "message": "Disconnected"
+        "message": "Desconectado"
     },
     "toolbar.label": {
-        "message": "Synchronize all TbSync accounts"
+        "message": "Sincronizar todas las cuentas de TbSync"
     },
     "toolbar.tooltiptext": {
-        "message": "Synchronize latest changes"
+        "message": "Sincronizar los últimos cambios"
     }
 }
