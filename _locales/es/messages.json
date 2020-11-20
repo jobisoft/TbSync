@@ -27,13 +27,13 @@
         "message": "Sincronizar la cuenta «##accountname##»"
     },
     "addressbook.searchall": {
-        "message": "Search all address books"
+        "message": "Buscar en todas las libretas de direcciones"
     },
     "addressbook.searchgal": {
-        "message": "Search this address book and the global directory (##replace.1##)"
+        "message": "Buscar en esta libreta de direcciones y en el directorio global (##replace.1##)"
     },
     "addressbook.searchthis": {
-        "message": "Search this address book"
+        "message": "Buscar en esta libreta de direcciones"
     },
     "eventlog.clear": {
         "message": "Clear"
