@@ -153,124 +153,124 @@
         "message": "Para evitar errores de sincronización, ciertos ajustes no se pueden modificar mientras la cuenta está activada."
     },
     "manager.missingprovider": {
-        "message": "This account requires the ##provider## synchronization provider, which is currently not installed."
+        "message": "Esta cuenta requiere el proveedor de sincronización ##provider###, que no está instalado actualmente."
     },
     "manager.noaccounts": {
-        "message": "There are not yet any accounts defined."
+        "message": "Aún no se ha definido ninguna cuenta."
     },
     "manager.provider": {
-        "message": "Install Provider"
+        "message": "Instalar proveedor"
     },
     "manager.provider4tbsync": {
-        "message": "Provider for TbSync"
+        "message": "Proveedor de TbSync"
     },
     "manager.resource": {
-        "message": "Resource"
+        "message": "Recurso"
     },
     "manager.shorttitle": {
-        "message": "Account manager"
+        "message": "Administrador de cuentas"
     },
     "manager.status": {
-        "message": "Status"
+        "message": "Estado"
     },
     "manager.supporter.contributors": {
-        "message": "Contributors & Translators"
+        "message": "Colaboradores y traductores"
     },
     "manager.supporter.details": {
-        "message": "Details"
+        "message": "Detalles"
     },
     "manager.supporter.sponsors": {
-        "message": "Sponsors of test accounts"
+        "message": "Patrocinadores de cuentas de prueba"
     },
     "manager.tabs.status": {
-        "message": "Synchronization status"
+        "message": "Estado de sincronización"
     },
     "manager.tabs.status.autotime": {
-        "message": "Periodic synchronization (in minutes)"
+        "message": "Sincronización periódica (en minutos)"
     },
     "manager.tabs.status.enableThisAccount": {
-        "message": "Enable and synchronize this account"
+        "message": "Activar y sincronizar esta cuenta"
     },
     "manager.tabs.status.general": {
         "message": "General"
     },
     "manager.tabs.status.never": {
-        "message": "A setting of 0 disables periodic sync. Push sync is not yet implemented."
+        "message": "Un 0 desactiva la sincronización periódica. La sincronización push aún no está incluida."
     },
     "manager.tabs.status.resources": {
-        "message": "Available resources"
+        "message": "Recursos disponibles"
     },
     "manager.tabs.status.resources.intro": {
-        "message": "Select which of the found resources should be synchronized with Thunderbird."
+        "message": "Seleccione cuáles de los recursos detectados quiere sincronizar con Thunderbird."
     },
     "manager.tabs.status.sync": {
-        "message": "Synchronize now"
+        "message": "Sincronizar ahora"
     },
     "manager.tabs.status.tryagain": {
-        "message": "Try again to connect server"
+        "message": "Volver a intentar conectar al servidor"
     },
     "manager.title": {
-        "message": "TbSync account manager"
+        "message": "Administrador de cuentas TbSync"
     },
     "manager.tryagain": {
-        "message": "Try again to connect server"
+        "message": "Volver a intentar conectar al servidor"
     },
     "menu.settingslabel": {
-        "message": "Synchronization Settings (TbSync)"
+        "message": "Ajustes de sincronización (TbSync)"
     },
     "password.account": {
-        "message": "Account:"
+        "message": "Cuenta:"
     },
     "password.description": {
-        "message": "Please update the credentials for the following TbSync account:"
+        "message": "Actualice las credenciales de la siguiente cuenta de TbSync:"
     },
     "password.password": {
-        "message": "Password:"
+        "message": "Contraseña:"
     },
     "password.title": {
-        "message": "TbSync Credential Request"
+        "message": "TbSync solicita credenciales"
     },
     "password.user": {
-        "message": "User:"
+        "message": "Usuario:"
     },
     "popup.opensettings": {
-        "message": "Open TbSync account manager"
+        "message": "Abrir el administrador de cuentas TbSync"
     },
     "prompt.DeleteAccount": {
-        "message": "Are you sure you want to delete account ##accountName##?"
+        "message": "¿Realmente quiere eliminar la cuenta ##accountName##?"
     },
     "prompt.Disable": {
-        "message": "Are you sure you want to disable this account? All local modifications, which have not been synced yet, will be lost!"
+        "message": "¿Realmente quiere desactivar esta cuenta? ¡Se perderán todas las modificaciones locales que no se hayan sincronizado aún!"
     },
     "prompt.Erase": {
-        "message": "Are you sure you want to remove this account of an unknown provider from the accounts lists?"
+        "message": "¿Realmente quiere quitar de las listas de cuentas esta cuenta de un proveedor desconocido?"
     },
     "prompt.Unsubscribe": {
-        "message": "Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!"
+        "message": "¿Realmente quiere cancelar la suscripción a este elemento? ¡Se perderán todas las modificaciones locales que no se hayan sincronizado aún!"
     },
     "status.JavaScriptError": {
-        "message": "Javascript Error! Please check the event log for more details."
+        "message": "¡Error de JavaScript! Examine el registro de eventos para ver detalles."
     },
     "status.OAuthAbortError": {
-        "message": "OAuth 2.0 authentication process aborted by user."
+        "message": "El usuario interrumpió el proceso de autenticación OAuth 2.0."
     },
     "status.OAuthHttpError": {
-        "message": "OAuth 2.0 authentication process failed (HTTP error ##replace.1##)."
+        "message": "Ha fallado el proceso de autenticación OAuth 2.0 (error HTTP ##replace.1##)."
     },
     "status.OAuthNetworkError": {
-        "message": "Could not connect to OAuth 2.0 authentication server."
+        "message": "No ha sido posible conectar al servidor de autenticación OAuth 2.0."
     },
     "status.OAuthServerError": {
-        "message": " OAuth 2.0 authentication server returned: ##replace.1##"
+        "message": " El servidor de autenticación OAuth 2.0 ha respondido: ##replace.1##"
     },
     "status.aborted": {
-        "message": "Not synchronized"
+        "message": "Sin sincronizar"
     },
     "status.apiError": {
-        "message": "API implementation error"
+        "message": "Error de implementación de API"
     },
     "status.disabled": {
-        "message": "Account is not enabled, synchronization is disabled."
+        "message": "La cuenta no está activada, la sincronización está desactivada."
     },
     "status.foldererror": {
         "message": "At least one resource encountered a synchronization error. Please check the event log for more details."
