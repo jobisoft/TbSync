@@ -1,30 +1,30 @@
 {
     "HelpFixStartupError": {
-        "message": "To help fix this error, you could send a debug log to the TbSync developer. Prepare that email now?"
+        "message": "Puedes enviar un registro de depuración al desarrollador de TbSync para que corrija este error. ¿Quieres hacerlo ahora?"
     },
     "NoDebugLog": {
-        "message": "Could not find any useful debug messages. Please activate debug mode, restart Thunderbird and repeat all the steps needed to trigger the erroneous behavior."
+        "message": "No se ha encontrado ningún mensaje de depuración útil. Active el modo de depuración, reinicie Thunderbird y repita los pasos que provocaron el comportamiento erróneo."
     },
     "OopsMessage": {
-        "message": "Oops! TbSync was not able to start!"
+        "message": "¡TbSync no se ha podido iniciar!"
     },
     "RestartThunderbirdAndTryAgain": {
-        "message": "TbSync debug log has been enabled, please restart Thunderbird and again try to open TbSync."
+        "message": "Se ha habilitado el registro de depuración de TbSync. Reinicie Thunderbird y vuelva a abrir TbSync."
     },
     "UnableToTraceError": {
-        "message": "It is not possible to trace this error, because debug log is currently not enabled. Do you want to enable debug log now, to help fix this error?"
+        "message": "No es posible rastrear este error porque el registro de depuración no está habilitado. ¿Quiere habilitarlo ahora para ayudar a corregir este error?"
     },
     "accountacctions.delete": {
-        "message": "Delete account “##accountname##”"
+        "message": "Eliminar la cuenta «##accountname##»"
     },
     "accountacctions.disable": {
-        "message": "Disable account “##accountname##”"
+        "message": "Desactivar la cuenta «##accountname##»"
     },
     "accountacctions.enable": {
-        "message": "Enable account “##accountname##” & try to connect to server"
+        "message": "Activar la cuenta «##accountname##» y conectarse al servidor"
     },
     "accountacctions.sync": {
-        "message": "Synchronize account “##accountname##”"
+        "message": "Sincronizar la cuenta «##accountname##»"
     },
     "addressbook.searchall": {
         "message": "Search all address books"
