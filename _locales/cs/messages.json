@@ -264,7 +264,7 @@
         "message": " Ověřovací server OAuth 2.0 hlásí: ##replace.1##"
     },
     "status.aborted": {
-        "message": "Not synchronized"
+        "message": "Nesynchronizováno"
     },
     "status.apiError": {
         "message": "Chyba implementace API"
