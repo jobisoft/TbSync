@@ -237,7 +237,7 @@
         "message": "Správce účtů TbSync"
     },
     "prompt.DeleteAccount": {
-        "message": "Jste si jisti, že chcete smazat účet ##accountName##?"
+        "message": "Opravdu chcete smazat účet ##accountName##?"
     },
     "prompt.Disable": {
         "message": "Opravdu chcete zakázat tento účet? Všechny místní změny, které ještě nebyly synchronizovány, budou ztraceny!"
@@ -276,7 +276,7 @@
         "message": "Nejméně u jednoho zdroje se vyskytla chyba synchronizace. Pro více informací zkontrolujte protokol událostí."
     },
     "status.modified": {
-        "message": "Local modifications"
+        "message": "Místní změny"
     },
     "status.network": {
         "message": "Nelze se připojit k serveru (##replace.1##)."
@@ -330,7 +330,7 @@
         "message": "Vytvořit hlášení o chybě"
     },
     "syncstate.accountdone": {
-        "message": "Finished account"
+        "message": "Synchronizace účtu dokončena"
     },
     "syncstate.done": {
         "message": "Příprava další položky na synchronizaci"
@@ -339,16 +339,16 @@
         "message": "Ověření OAuth 2.0"
     },
     "syncstate.passwordprompt": {
-        "message": "Prompting for credentials"
+        "message": "Jsou vyžadovány přihlašovací údaje"
     },
     "syncstate.preparing": {
         "message": "Příprava další položky na synchronizaci"
     },
     "syncstate.syncing": {
-        "message": "Initialize synchronization"
+        "message": "Inicializuji synchronizaci"
     },
     "target.orphaned": {
-        "message": "Disconnected"
+        "message": "Odpojeno"
     },
     "toolbar.label": {
         "message": "Synchronizovat všechny TbSync účty"
