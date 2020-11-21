@@ -285,7 +285,7 @@
         "message": "No se ha encontrado ningún recurso en el servidor."
     },
     "status.notargets": {
-        "message": "Sincronización interrumpida: no se han podido crear los destinos de sincronización."
+        "message": "Sincronización interrumpida porque no se han podido crear los destinos de la sincronización."
     },
     "status.notsyncronized": {
         "message": "Es necesario sincronizar la cuenta: uno o varios elementos están sin sincronizar."
