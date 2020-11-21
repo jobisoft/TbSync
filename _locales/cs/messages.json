@@ -1,18 +1,18 @@
 {
     "HelpFixStartupError": {
-        "message": "Můžete pomoci odstranit tuto chybu tím, že zašlete vývojáři doplňku TbSync chybové hlášení. Chcete nyní připravit email s hlášením chyby?"
+        "message": "Abyste usnadnili opravení chyby, můžete vývojáři doplňku TbSync odeslat ladící informace. Chcete nyní připravit email?"
     },
     "NoDebugLog": {
-        "message": "Nebyly nalezeny žádné použitelné ladící záznamy. Prosím, aktivujte ladící režim, restartujte Thunderbird a zopakujte kroky, které vedly k této chybě."
+        "message": "Nebyly nalezeny žádné užitečné ladící zprávy. Prosím, aktivujte režim ladění, restartujte Thunderbird a zopakujte kroky, které vedly k této chybě."
     },
     "OopsMessage": {
-        "message": "Ups! Nebylo možné spustit TbSync!"
+        "message": "Jejda! TbSync se nepodařilo spustit!"
     },
     "RestartThunderbirdAndTryAgain": {
-        "message": "Ladící záznam TbSync byl aktivován. Prosím, restartujte Thunderbird a zkuste znovu otevřít TbSync."
+        "message": "Ukládání ladících informací TbSync bylo povoleno. Prosím, restartujte Thunderbird a zkuste znovu otevřít TbSync."
     },
     "UnableToTraceError": {
-        "message": "Nebylo možné vysledovat tuto chybu, protože není povolený ladící záznam. Chcete jej nyní povolit?"
+        "message": "Není možné vysledovat tuto chybu, protože není povoleno ukládání ladících informací. Chcete ho nyní povolit?"
     },
     "accountacctions.delete": {
         "message": "Smazat účet “##accountname##”"
@@ -21,7 +21,7 @@
         "message": "Zakázat účet “##accountname##”"
     },
     "accountacctions.enable": {
-        "message": "Povolit účet “##accountname##” a pokusit se připojit na server"
+        "message": "Povolit účet “##accountname##” a pokusit se připojit k serveru"
     },
     "accountacctions.sync": {
         "message": "Synchronizovat účet “##accountname##”"
@@ -36,7 +36,7 @@
         "message": "Prohledat tento adresář"
     },
     "eventlog.clear": {
-        "message": "Vymazat"
+        "message": "Vyprázdnit"
     },
     "eventlog.close": {
         "message": "Zavřít"
@@ -45,7 +45,7 @@
         "message": "Protokol událostí"
     },
     "extensionDescription": {
-        "message": "TbSync je společné rozhraní pro správu cloudových účtů a synchronizaci kontaktů, úkolů a kalendářů s Thunderbirdem."
+        "message": "TbSync je společné rozhraní pro správu cloudových účtů a synchronizaci jejich kontaktů, úkolů a kalendářů s Thunderbirdem."
     },
     "google.translate.code": {
         "message": "cs"
@@ -195,7 +195,7 @@
         "message": "Obecné"
     },
     "manager.tabs.status.never": {
-        "message": "Nastav 0 pro zákaz periodické synchronizace. Push synchronizace zatím není implementována."
+        "message": "Hodnota 0 zakáže periodické synchronizace. Push synchronizace zatím není implementována."
     },
     "manager.tabs.status.resources": {
         "message": "Dostupné zdroje"
