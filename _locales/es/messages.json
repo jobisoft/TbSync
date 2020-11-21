@@ -108,10 +108,10 @@
         "message": "Ayuda"
     },
     "manager.help.createbugreport": {
-        "message": "Crear informe de errores"
+        "message": "Crear informe de error"
     },
     "manager.help.createbugreportinfo": {
-        "message": "Para que TbSync recopile únicamente los datos de depuración relevantes para su informe de fallos, reinicie Thunderbird y repita exactamente los pasos que reproducen el comportamiento erróneo. Después podrá crear su informe de fallos aquí."
+        "message": "Para que TbSync recopile únicamente los datos de depuración relevantes para su informe de error, reinicie Thunderbird y repita exactamente los pasos que reproducen el comportamiento erróneo. Después podrá crear su informe de error aquí."
     },
     "manager.help.debuglevel.0": {
         "message": "Desactivado"
@@ -327,7 +327,7 @@
         "message": "Proveedor: ##replace.1##"
     },
     "supportwizard.title": {
-        "message": "Crear informe de errores"
+        "message": "Crear informe de error"
     },
     "syncstate.accountdone": {
         "message": "Cuenta finalizada"
