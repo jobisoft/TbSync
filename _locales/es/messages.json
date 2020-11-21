@@ -288,7 +288,7 @@
         "message": "Sincronización interrumpida: no se han podido crear los destinos de sincronización."
     },
     "status.notsyncronized": {
-        "message": "Es necesario sincronizar la cuenta. Uno o varios elementos están sin sincronizar."
+        "message": "Es necesario sincronizar la cuenta: uno o varios elementos están sin sincronizar."
     },
     "status.pending": {
         "message": "Esperando sincronización"
