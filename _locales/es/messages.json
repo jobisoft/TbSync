@@ -96,7 +96,7 @@
         "message": "Configurar cuentas"
     },
     "manager.catman.text": {
-        "message": "TbSync también sincroniza categorías de contactos, un sustituto eficaz de las listas de contactos, que no son sincronizables. Para usar las categorías en la libreta de direcciones de Thunderbird, puede instalar el complemento Category Manager. Permite gestionar grupos de contactos con categorías superpuestas y ofrece múltiples funciones relacionadas con las categorías. Está disponible en el repositorio oficial de complementos de Mozilla:"
+        "message": "TbSync también sincroniza categorías de contactos, un sustituto eficaz de las listas de contactos, que no son sincronizables. Para usar las categorías en la libreta de direcciones de Thunderbird, puede instalar el complemento Category Manager. Permite gestionar grupos de contactos con categorías superpuestas y ofrece diversas funciones relacionadas con las categorías. Está disponible en el repositorio oficial de complementos de Mozilla:"
     },
     "manager.community": {
         "message": "Comunidad"
