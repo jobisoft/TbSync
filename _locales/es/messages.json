@@ -57,7 +57,7 @@
         "message": "Error"
     },
     "info.idle": {
-        "message": "En espera"
+        "message": "Inactivo"
     },
     "installProvider.header": {
         "message": "Aún no está instalado el proveedor «##replace.1##» para TbSync."
@@ -93,7 +93,7 @@
         "message": "Cuentas"
     },
     "manager.accountsettings": {
-        "message": "Configurar cuentas"
+        "message": "Configuración de cuentas"
     },
     "manager.catman.text": {
         "message": "TbSync también sincroniza categorías de contactos, un sustituto eficaz de las listas de contactos, que no son sincronizables. Para usar las categorías en la libreta de direcciones de Thunderbird, puede instalar el complemento Category Manager. Permite gestionar grupos de contactos con categorías superpuestas y ofrece diversas funciones relacionadas con las categorías. Está disponible en el repositorio oficial de complementos de Mozilla:"
@@ -153,7 +153,7 @@
         "message": "Para evitar errores de sincronización, ciertos ajustes no se pueden modificar mientras la cuenta está activada."
     },
     "manager.missingprovider": {
-        "message": "Esta cuenta requiere el proveedor de sincronización ##provider###, que no está instalado actualmente."
+        "message": "Esta cuenta requiere el proveedor de sincronización ##provider##, que no está instalado actualmente."
     },
     "manager.noaccounts": {
         "message": "Aún no se ha definido ninguna cuenta."
