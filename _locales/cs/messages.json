@@ -1,42 +1,42 @@
 {
     "HelpFixStartupError": {
-        "message": "To help fix this error, you could send a debug log to the TbSync developer. Prepare that email now?"
+        "message": "Abyste usnadnili opravení chyby, můžete vývojáři doplňku TbSync odeslat ladící informace. Chcete nyní připravit email?"
     },
     "NoDebugLog": {
-        "message": "Could not find any useful debug messages. Please activate debug mode, restart Thunderbird and repeat all the steps needed to trigger the erroneous behavior."
+        "message": "Nebyly nalezeny žádné užitečné ladící zprávy. Prosím, aktivujte režim ladění, restartujte Thunderbird a zopakujte kroky, které vedly k této chybě."
     },
     "OopsMessage": {
-        "message": "Oops! TbSync was not able to start!"
+        "message": "Jejda! TbSync se nepodařilo spustit!"
     },
     "RestartThunderbirdAndTryAgain": {
-        "message": "TbSync debug log has been enabled, please restart Thunderbird and again try to open TbSync."
+        "message": "Ukládání ladících informací TbSync bylo povoleno. Prosím, restartujte Thunderbird a zkuste znovu otevřít TbSync."
     },
     "UnableToTraceError": {
-        "message": "It is not possible to trace this error, because debug log is currently not enabled. Do you want to enable debug log now, to help fix this error?"
+        "message": "Není možné vysledovat tuto chybu, protože není povoleno ukládání ladících informací. Chcete ho nyní povolit?"
     },
     "accountacctions.delete": {
-        "message": "Delete account “##accountname##”"
+        "message": "Smazat účet “##accountname##”"
     },
     "accountacctions.disable": {
-        "message": "Disable account “##accountname##”"
+        "message": "Zakázat účet “##accountname##”"
     },
     "accountacctions.enable": {
-        "message": "Enable account “##accountname##” & try to connect to server"
+        "message": "Povolit účet “##accountname##” a pokusit se připojit k serveru"
     },
     "accountacctions.sync": {
-        "message": "Synchronize account “##accountname##”"
+        "message": "Synchronizovat účet “##accountname##”"
     },
     "addressbook.searchall": {
-        "message": "Search all address books"
+        "message": "Prohledat všechny adresáře"
     },
     "addressbook.searchgal": {
-        "message": "Search this address book and the global directory (##replace.1##)"
+        "message": "Prohledat tento adresář a globální adresář (##replace.1##)"
     },
     "addressbook.searchthis": {
-        "message": "Search this address book"
+        "message": "Prohledat tento adresář"
     },
     "eventlog.clear": {
-        "message": "Vymazat"
+        "message": "Vyprázdnit"
     },
     "eventlog.close": {
         "message": "Zavřít"
@@ -45,22 +45,22 @@
         "message": "Protokol událostí"
     },
     "extensionDescription": {
-        "message": "TbSync je společné rozhraní pro správu cloudových účtů a synchronizaci kontaktů, úkolů a kalendářů s Thunderbirdem."
+        "message": "TbSync je společné rozhraní pro správu cloudových účtů a synchronizaci jejich kontaktů, úkolů a kalendářů s Thunderbirdem."
     },
     "google.translate.code": {
-        "message": "en"
+        "message": "cs"
     },
     "helplink.security": {
         "message": "https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F"
     },
     "info.error": {
-        "message": "Error"
+        "message": "Chyba"
     },
     "info.idle": {
-        "message": "Idle"
+        "message": "Nečinný"
     },
     "installProvider.header": {
-        "message": "Provider “##replace.1##” for TbSync is not yet installed."
+        "message": "Modul poskytovatele “##replace.1##” pro TbSync není nainstalován."
     },
     "manager.AccountActions": {
         "message": "Akce s účty"
@@ -102,7 +102,7 @@
         "message": "Komunita"
     },
     "manager.connecting": {
-        "message": "Connecting to server"
+        "message": "Připojuji se na server"
     },
     "manager.help": {
         "message": "Nápověda"
@@ -165,7 +165,7 @@
         "message": "Poskytovatel pro TbSync"
     },
     "manager.resource": {
-        "message": "Resource"
+        "message": "Zdroj"
     },
     "manager.shorttitle": {
         "message": "Správce účtů"
@@ -195,7 +195,7 @@
         "message": "Obecné"
     },
     "manager.tabs.status.never": {
-        "message": "Nastav 0 pro zákaz periodické synchronizace. Push synchronizace zatím není implementována."
+        "message": "Hodnota 0 zakáže periodické synchronizace. Push synchronizace zatím není implementována."
     },
     "manager.tabs.status.resources": {
         "message": "Dostupné zdroje"
@@ -237,73 +237,73 @@
         "message": "Správce účtů TbSync"
     },
     "prompt.DeleteAccount": {
-        "message": "Are you sure you want to delete account ##accountName##?"
+        "message": "Opravdu chcete smazat účet ##accountName##?"
     },
     "prompt.Disable": {
-        "message": "Are you sure you want to disable this account? All local modifications, which have not been synced yet, will be lost!"
+        "message": "Opravdu chcete zakázat tento účet? Všechny místní změny, které ještě nebyly synchronizovány, budou ztraceny!"
     },
     "prompt.Erase": {
-        "message": "Are you sure you want to remove this account of an unknown provider from the accounts lists?"
+        "message": "Opravdu chcete odstranit tento neznámý účet ze seznamu účtů?"
     },
     "prompt.Unsubscribe": {
-        "message": "Are you sure you want to unsubscribe this item? All local modifications, which have not been synced yet, will be lost!"
+        "message": "Opravdu chcete zrušit synchronizaci této položky? Všechny místní změny, které ještě nebyly synchronizovány, budou ztraceny!"
     },
     "status.JavaScriptError": {
-        "message": "Javascript Error! Please check the event log for more details."
+        "message": "Chyba Javascriptu! Pro více informací zkontrolujte protokol událostí."
     },
     "status.OAuthAbortError": {
-        "message": "OAuth 2.0 authentication process aborted by user."
+        "message": "Proces ověřování OAuth 2.0 byl zrušen uživatelem."
     },
     "status.OAuthHttpError": {
-        "message": "OAuth 2.0 authentication process failed (HTTP error ##replace.1##)."
+        "message": "Proces ověřování OAuth 2.0 selhal (HTTP chyba ##replace.1##)."
     },
     "status.OAuthNetworkError": {
-        "message": "Could not connect to OAuth 2.0 authentication server."
+        "message": "Nelze se připojit k ověřovacímu serveru OAuth 2.0."
     },
     "status.OAuthServerError": {
-        "message": " OAuth 2.0 authentication server returned: ##replace.1##"
+        "message": " Ověřovací server OAuth 2.0 hlásí: ##replace.1##"
     },
     "status.aborted": {
-        "message": "Not synchronized"
+        "message": "Nesynchronizováno"
     },
     "status.apiError": {
-        "message": "API implementation error"
+        "message": "Chyba implementace API"
     },
     "status.disabled": {
-        "message": "Account is not enabled, synchronization is disabled."
+        "message": "Účet není povolen, synchronizace je zakázána."
     },
     "status.foldererror": {
-        "message": "At least one resource encountered a synchronization error. Please check the event log for more details."
+        "message": "Nejméně u jednoho zdroje se vyskytla chyba synchronizace. Pro více informací zkontrolujte protokol událostí."
     },
     "status.modified": {
-        "message": "Local modifications"
+        "message": "Místní změny"
     },
     "status.network": {
-        "message": "Could not connect to server (##replace.1##)."
+        "message": "Nelze se připojit k serveru (##replace.1##)."
     },
     "status.no-folders-found-on-server": {
-        "message": "Could not find any resources on the server."
+        "message": "Na serveru nebyly nalezeny žádné zdroje pro synchronizaci."
     },
     "status.notargets": {
-        "message": "Aborting synchronization, because sync targets could not be created."
+        "message": "Synchronizace byla přerušena, protože nebylo možné vytvořit cíle pro synchronizaci."
     },
     "status.notsyncronized": {
-        "message": "Account needs to be synchronized, at least one item is out of sync."
+        "message": "Účet musí být synchronizován, alespoň jedna položka není synchronizována."
     },
     "status.pending": {
-        "message": "Waiting to be synchronized"
+        "message": "Čeká se na synchronizaci"
     },
     "status.security": {
-        "message": "Could not establish a secure connection. Are you using a self-signed or otherwise untrusted certificate without importing it into Thunderbird? (##replace.1##)"
+        "message": "Nelze navázat zabezpečené spojení. Používáte samopodepsaný nebo jinak nedůvěryhodný certifikát, aniž byste jej importovali do Thunderbirdu? (##replace.1##)"
     },
     "status.skipped": {
-        "message": "Not yet supported, skipped"
+        "message": "Ještě není podporováno, přeskočeno"
     },
     "status.success": {
         "message": "OK"
     },
     "status.syncing": {
-        "message": "Synchronizing"
+        "message": "Probíhá synchronizace"
     },
     "supportwizard.footer": {
         "message": "Z informací zde uvedených bude v dalším kroku vygenerován e-mail, který můžete následně upravit (například přidání screenshotů). Zasláním e-mailu bude teprve zaslána chybová zpráva."
@@ -324,31 +324,31 @@
         "message": "Shromažďování všech informací pro efektivní zpracování hlášení o chybě."
     },
     "supportwizard.provider": {
-        "message": "Provider: ##replace.1##"
+        "message": "Modul poskytovatele: ##replace.1##"
     },
     "supportwizard.title": {
         "message": "Vytvořit hlášení o chybě"
     },
     "syncstate.accountdone": {
-        "message": "Finished account"
+        "message": "Synchronizace účtu dokončena"
     },
     "syncstate.done": {
-        "message": "Preparing next item for synchronization"
+        "message": "Příprava další položky na synchronizaci"
     },
     "syncstate.oauthprompt": {
-        "message": "OAuth 2.0 authentication"
+        "message": "Ověření OAuth 2.0"
     },
     "syncstate.passwordprompt": {
-        "message": "Prompting for credentials"
+        "message": "Jsou vyžadovány přihlašovací údaje"
     },
     "syncstate.preparing": {
-        "message": "Preparing next item for synchronization"
+        "message": "Příprava další položky na synchronizaci"
     },
     "syncstate.syncing": {
-        "message": "Initialize synchronization"
+        "message": "Inicializuji synchronizaci"
     },
     "target.orphaned": {
-        "message": "Disconnected"
+        "message": "Odpojeno"
     },
     "toolbar.label": {
         "message": "Synchronizovat všechny TbSync účty"
