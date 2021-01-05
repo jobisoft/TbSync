@@ -30,7 +30,7 @@
         "message": "全てのアドレス帳を検索"
     },
     "addressbook.searchgal": {
-        "message": "Search this address book and the global directory (##replace.1##)"
+        "message": "このアドレス帳とグローバルディレクトリを検索します (##replace.1##)"
     },
     "addressbook.searchthis": {
         "message": "このアドレス帳を検索"
@@ -144,7 +144,7 @@
         "message": "TbSync プロジェクトの Wiki ページを開いてください。そこでは追加の情報、ガイドや、詳細設定に関する説明を提供しています。"
     },
     "manager.installprovider.link": {
-        "message": "Click on the following link to open the info page of the missing synchronization provider. There you will find further information about the provider and you will have the option to install it:"
+        "message": "次のリンクをクリックして、存在しない同期プロバイダの情報ページを開きます。ここには、プロバイダについての詳細情報があります。オプションでインストールすることもできます。"
     },
     "manager.installprovider.warning": {
         "message": "この同期プロバイダは、公式の Thunderbird アドオンリポジトリではホストされていないため、 Thunderbird スタッフによって確認されていません。 プロバイダはシステムに悪影響を及ぼす可能性があります。自己責任で使用してください。"
@@ -156,7 +156,7 @@
         "message": "このアカウントには ##provider## 同期プロバイダが必要です。これは現在インストールされていません。"
     },
     "manager.noaccounts": {
-        "message": "There are not yet any accounts defined."
+        "message": "まだアカウントが定義されていません。"
     },
     "manager.provider": {
         "message": "プロパイダをインストール"
@@ -180,7 +180,7 @@
         "message": "詳細"
     },
     "manager.supporter.sponsors": {
-        "message": "Sponsors of test accounts"
+        "message": "テストアカウントのスポンサー"
     },
     "manager.tabs.status": {
         "message": "同期状態"
@@ -207,13 +207,13 @@
         "message": "今すぐ同期"
     },
     "manager.tabs.status.tryagain": {
-        "message": "Try again to connect server"
+        "message": "サーバーへの接続を再試行"
     },
     "manager.title": {
         "message": "TbSync アカウントマネージャー"
     },
     "manager.tryagain": {
-        "message": "Try again to connect server"
+        "message": "サーバーへの接続を再試行"
     },
     "menu.settingslabel": {
         "message": "同期設定 (TbSync)"
@@ -243,7 +243,7 @@
         "message": "このアカウントを無効化しますか? 同期されていない全てのローカルの変更は失われます!"
     },
     "prompt.Erase": {
-        "message": "Are you sure you want to remove this account of an unknown provider from the accounts lists?"
+        "message": "アカウントリストから不明なプロバイダのアカウントを削除してもよろしいですか?"
     },
     "prompt.Unsubscribe": {
         "message": "この項目の登録を解除しますか? 同期されていない全てのローカルの変更は失われます!"
@@ -285,7 +285,7 @@
         "message": "サーバー上のリソースが見つかりませんでした。"
     },
     "status.notargets": {
-        "message": "Aborting synchronization, because sync targets could not be created."
+        "message": "同期ターゲットを作成できなかったため、同期を中止します。"
     },
     "status.notsyncronized": {
         "message": "アカウントを同期する必要があります。一つ以上のアイテムが同期されていません。"
@@ -294,7 +294,7 @@
         "message": "同期待ち"
     },
     "status.security": {
-        "message": "Could not establish a secure connection. Are you using a self-signed or otherwise untrusted certificate without importing it into Thunderbird? (##replace.1##)"
+        "message": "安全な接続を確立できませんでした。自己署名証明書や信頼できない証明書を、Thunderbirdにインポートせずに使用していますか?(##replace.1##)"
     },
     "status.skipped": {
         "message": "サポートされていません。スキップします。"
@@ -312,7 +312,7 @@
         "message": "エラーの詳細な説明:"
     },
     "supportwizard.label.faultycomponent": {
-        "message": "Component of TbSync where you have observed the error:"
+        "message": "エラーが発生したTbSyncのコンポーネント:"
     },
     "supportwizard.label.selectcomponent": {
         "message": "コンポーネントを選択…"
@@ -321,7 +321,7 @@
         "message": "エラーの概要:"
     },
     "supportwizard.pagetitle": {
-        "message": "Gathering of all information to effectively process the bug report."
+        "message": "バグレポートを効果的に処理するために、すべての情報を収集します。"
     },
     "supportwizard.provider": {
         "message": "プロパイダ: ##replace.1##"
@@ -330,25 +330,25 @@
         "message": "バグレポートを作成"
     },
     "syncstate.accountdone": {
-        "message": "Finished account"
+        "message": "完了したアカウント"
     },
     "syncstate.done": {
-        "message": "Preparing next item for synchronization"
+        "message": "同期のために次のアイテムを準備中"
     },
     "syncstate.oauthprompt": {
         "message": "OAuth 2.0 認証"
     },
     "syncstate.passwordprompt": {
-        "message": "Prompting for credentials"
+        "message": "認証情報を要求しています"
     },
     "syncstate.preparing": {
-        "message": "Preparing next item for synchronization"
+        "message": "同期のために次のアイテムを準備中"
     },
     "syncstate.syncing": {
-        "message": "Initialize synchronization"
+        "message": "同期を初期化"
     },
     "target.orphaned": {
-        "message": "Disconnected"
+        "message": "切断されました"
     },
     "toolbar.label": {
         "message": "全ての TbSync アカウントを同期"
