@@ -1,6 +1,6 @@
 {
     "HelpFixStartupError": {
-        "message": "A hiba javításához hibakeresési naplót küldhet a Thunderbird-összehangolás fejlesztőnek. Készüljön fel most arra az e-mailre?"
+        "message": "A hiba javításához hibakeresési naplót küldhet a TbSync fejlesztőjének. Előkészíti most azt az e-mailt?"
     },
     "NoDebugLog": {
         "message": "Nem találtak hasznos hibaelhárító üzeneteket. Engedélyezze a hibakeresési módot, indítsa újra a Thunderbird programot, és ismételje meg a hibás viselkedést elindító lépéseket."
@@ -333,27 +333,27 @@
         "message": "Fiók befejezve"
     },
     "syncstate.done": {
-        "message": "Az összehangolás következő elem előkészítése"
+        "message": "A következő elem előkészítése szinkronizálásra"
     },
     "syncstate.oauthprompt": {
         "message": "OAuth 2.0 hitelesítés"
     },
     "syncstate.passwordprompt": {
-        "message": "Hitelesítő adatok megadásának kérése"
+        "message": "Hitelesítő adatok kérése"
     },
     "syncstate.preparing": {
-        "message": "Az összehangolás következő elem előkészítése"
+        "message": "A következő elem előkészítése szinkronizálásra"
     },
     "syncstate.syncing": {
-        "message": "Összehangolás előkészítése"
+        "message": "Szinkronizálás előkészítése"
     },
     "target.orphaned": {
-        "message": "A kapcsolat megszakadt"
+        "message": "Leválasztva"
     },
     "toolbar.label": {
-        "message": "Az összes Thunderbird-összehangolás fiók összehangolása"
+        "message": "Az összes TbSync-fiók szinkronizálása"
     },
     "toolbar.tooltiptext": {
-        "message": "A legújabb változtatások összehangolása"
+        "message": "A legújabb változtatások szinkronizálása"
     }
 }
