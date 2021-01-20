@@ -66,14 +66,6 @@ var tbSyncAccountSettings = {
     }
   },
 
-
-  onInject: function (window) {
-    //called when the provider is injecting, call its onload function and pass in his AccountData Obj
-    if (tbSyncEditAccountOverlay && tbSyncEditAccountOverlay.hasOwnProperty("onload")) {
-      tbSyncEditAccountOverlay.onload(window, new TbSync.AccountData(tbSyncAccountSettings.accountID));
-    }
-  },
-
   onload: function () {
     //load observers
     Services.obs.addObserver(tbSyncAccountSettings.updateFolderListObserver, "tbsync.observer.manager.updateFolderList", false);
@@ -103,6 +95,9 @@ var tbSyncAccountSettings = {
     
     //load overlays from the provider (if any)
     TbSync.messenger.overlayManager.injectAllOverlays(window, "chrome://tbsync/content/manager/editAccount.xhtml?provider=" + tbSyncAccountSettings.provider);
+    if (window.tbSyncEditAccountOverlay && window.tbSyncEditAccountOverlay.hasOwnProperty("onload")) {
+      tbSyncEditAccountOverlay.onload(window, new TbSync.AccountData(tbSyncAccountSettings.accountID));
+    }
     tbSyncAccountSettings.loadSettings();
     
     //done, folderlist must be updated while visible
