@@ -3,7 +3,7 @@
     "gecko": {
       "id": "tbsync@jobisoft.de",
       "strict_min_version": "78.0",
-      "strict_max_version": "78.*"
+      "strict_max_version": "88.*"
     }
   },
   "manifest_version": 2,
@@ -17,14 +17,14 @@
     "32": "content/skin/tbsync.png"
   },
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [ "background.js" ]
   },
   "experiment_apis": {
     "BootstrapLoader": {
       "schema": "content/api/BootstrapLoader/schema.json",
       "parent": {
-        "scopes": ["addon_parent"],
-        "paths": [["BootstrapLoader"]],
+        "scopes": [ "addon_parent" ],
+        "paths": [ [ "BootstrapLoader" ] ],
         "script": "content/api/BootstrapLoader/implementation.js"
       }
     }
