@@ -2,6 +2,9 @@
  * This file is provided by the addon-developer-support repository at
  * https://github.com/thundernest/addon-developer-support
  *
+ * Version: 1.7
+ * - fix for beta 87
+ * 
  * Version: 1.6
  * - add support for options button/menu in add-on manager and fix 68 double menu entry
  * 
@@ -79,6 +82,24 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
     return parseInt(Services.appinfo.version.split(".").shift());
   }
   
+  getCards(e) {
+    // This gets triggered by real events but also manually by providing the outer window.
+    // The event is attached to the outer browser, get the inner one.
+    let doc;
+    
+    // 78,86, and 87+ need special handholding. *Yeah*.
+    if (this.getThunderbirdMajorVersion() < 86) {
+      let ownerDoc = e.document || e.target.ownerDocument;
+      doc = ownerDoc.getElementById("html-view-browser").contentDocument;
+    } else if (this.getThunderbirdMajorVersion() < 87) {
+      let ownerDoc = e.document || e.target;
+      doc = ownerDoc.getElementById("html-view-browser").contentDocument;
+    } else {
+      doc = e.document || e.target;
+    }
+    return doc.querySelectorAll("addon-card");
+  }
+  
   // Add pref entry to 68
   add68PrefsEntry(event) {
     let id = this.menu_addonPrefs_id + "_" + this.uniqueRandomID;
@@ -134,31 +155,16 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
       
       // update, ViewChanged and manual call for add-on manager options overlay
       default: {
-        // This gets triggered by real events but also manually by providing the outer window.
-        // The event is attached to the outer browser, get the inner one.
-        let doc;
-
-        // 78,86, and 88 need special handholding. *Yeah*.
-        if (this.getThunderbirdMajorVersion() < 86) {
-          let ownerDoc = e.document || e.target.ownerDocument;
-          doc = ownerDoc.getElementById("html-view-browser").contentDocument;
-        } else if (this.getThunderbirdMajorVersion() < 88) {
-          let ownerDoc = e.document || e.target;
-          doc = ownerDoc.getElementById("html-view-browser").contentDocument;
-        } else {
-          doc = e.document || e.target;
-        }
-        
-        let cards = doc.querySelectorAll("addon-card");
+        let cards = this.getCards(e);
         for (let card of cards) {
           // Setup either the options entry in the menu or the button
           if (card.addon.id == this.extension.id) {
             if (this.getThunderbirdMajorVersion() < 88) {
-              // Options menu in 78-86
+              // Options menu in 78-87
               let addonOptionsLegacyEntry = card.querySelector(".extension-options-legacy");
               if (card.addon.isActive && !addonOptionsLegacyEntry) {
                 let addonOptionsEntry = card.querySelector("addon-options panel-list panel-item[action='preferences']");
-                addonOptionsLegacyEntry = doc.createElement("panel-item");
+                addonOptionsLegacyEntry = card.ownerDocument.createElement("panel-item");
                 addonOptionsLegacyEntry.setAttribute("data-l10n-id", "preferences-addon-button");
                 addonOptionsLegacyEntry.classList.add("extension-options-legacy");
                 addonOptionsEntry.parentNode.insertBefore(
@@ -173,7 +179,7 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
               // Add-on button in 88
               let addonOptionsButton = card.querySelector(".extension-options-button2");
               if (card.addon.isActive && !addonOptionsButton) {
-                addonOptionsButton = doc.createElement("button");
+                addonOptionsButton = card.ownerDocument.createElement("button");
                 addonOptionsButton.classList.add("extension-options-button2");
                 addonOptionsButton.style["min-width"] = "auto";
                 addonOptionsButton.style["min-height"] = "auto";
@@ -430,13 +436,32 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
           if (managerWindow && managerWindow[this.uniqueRandomID] && managerWindow[this.uniqueRandomID].hasAddonManagerEventListeners) {
             managerWindow.document.removeEventListener("ViewChanged", this);
             managerWindow.document.removeEventListener("update", this);
+            
+            let cards = this.getCards(managerWindow);
+            if (this.getThunderbirdMajorVersion() < 88) {
+              // Remove options menu in 78-87
+              for (let card of cards) {
+                let addonOptionsLegacyEntry = card.querySelector(".extension-options-legacy");
+                if (addonOptionsLegacyEntry) addonOptionsLegacyEntry.remove();
+              }
+            } else {
+              // Remove options button in 88
+              for (let card of cards) {
+                if (card.addon.id == this.extension.id) {
+                  let addonOptionsButton = card.querySelector(".extension-options-button2");
+                  if (addonOptionsButton) addonOptionsButton.remove();
+                  break;
+                }
+              }
+            }
           }
-
+          
           // Remove tabmonitor
           if (window[this.uniqueRandomID].hasTabMonitor) {
             this.getTabMail(window).unregisterTabMonitor(this.tabMonitor);
             window[this.uniqueRandomID].hasTabMonitor = false;
           }
+                    
         }
       }
       // Stop listening for new windows.
