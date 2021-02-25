@@ -2,6 +2,9 @@
  * This file is provided by the addon-developer-support repository at
  * https://github.com/thundernest/addon-developer-support
  *
+ * Version: 1.8
+ * - fix for beta 68
+ * 
  * Version: 1.7
  * - fix for beta 87
  * 
@@ -120,6 +123,8 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
           `<menuitem id="${id}" label="${name}" />`);
     
     event.target.appendChild(entry);
+    let noPrefsElem = event.target.querySelector('[disabled="true"]');
+    noPrefsElem.setAttribute("collapsed", "true");    
     event.target.ownerGlobal.document.getElementById(id).addEventListener("command", this);
   }   
 
