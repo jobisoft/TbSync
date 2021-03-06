@@ -78,7 +78,7 @@
         "message": "アカウントを有効化し、サーバーへの接続を試みる"
     },
     "manager.RetryConnectAccount": {
-        "message": "Try again to connect to server"
+        "message": "サーバーへの接続を再試行"
     },
     "manager.ShowEventLog": {
         "message": "イベントログを開く"
