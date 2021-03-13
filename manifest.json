@@ -2,13 +2,13 @@
   "applications": {
     "gecko": {
       "id": "tbsync@jobisoft.de",
-      "strict_min_version": "78.0",
+      "strict_min_version": "78.7.0",
       "strict_max_version": "78.*"
     }
   },
   "manifest_version": 2,
   "name": "TbSync",
-  "version": "2.20",
+  "version": "2.21",
   "author": "John Bieling",
   "homepage_url": "https://github.com/jobisoft/TbSync",
   "default_locale": "en-US",
@@ -16,6 +16,13 @@
   "icons": {
     "32": "content/skin/tbsync.png"
   },
+  "browser_action": {
+    "default_title": "TbSync",
+    "default_label": "",    
+    "default_icon": {
+      "32": "content/skin/tbsync.png"
+    }
+  }, 
   "background": {
     "scripts": ["background.js"]
   },

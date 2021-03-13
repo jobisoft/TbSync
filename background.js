@@ -12,3 +12,5 @@ async function main() {
 }
 
 main();
+
+messenger.browserAction.onClicked.addListener(tab => { messenger.BootstrapLoader.openOptionsDialog(tab.windowId); });

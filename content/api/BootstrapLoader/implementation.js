@@ -2,8 +2,11 @@
  * This file is provided by the addon-developer-support repository at
  * https://github.com/thundernest/addon-developer-support
  *
- * Version: 1.8
- * - fix for beta 68
+ * Version: 1.11
+ * - add openOptionsDialog()
+ * 
+ * Version: 1.10
+ * - fix for 68
  * 
  * Version: 1.7
  * - fix for beta 87
@@ -124,7 +127,9 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
     
     event.target.appendChild(entry);
     let noPrefsElem = event.target.querySelector('[disabled="true"]');
-    noPrefsElem.setAttribute("collapsed", "true");    
+    // using collapse could be undone by core, so we use display none
+    // noPrefsElem.setAttribute("collapsed", "true");
+    noPrefsElem.style.display = "none";
     event.target.ownerGlobal.document.getElementById(id).addEventListener("command", this);
   }   
 
@@ -340,6 +345,14 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
             : context.extension.rootURI.resolve(optionsUrl);
         },
 
+        openOptionsDialog(windowId) {
+          let window = context.extension.windowManager.get(windowId, context).window
+          let BL = {}
+          BL.extension = self.extension;
+          BL.messenger = self.getMessenger(self.context);
+          window.openDialog(self.pathToOptionsPage, "AddonOptions", "chrome,resizable,centerscreen", BL);        
+        },
+
         registerChromeUrl(data) {
           let chromeData = [];
           let resourceData = [];
@@ -435,6 +448,14 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
         if (this.getThunderbirdMajorVersion() < 78) {
           let element_addonPrefs = window.document.getElementById(this.menu_addonPrefs_id);
           element_addonPrefs.removeEventListener("popupshowing", this);
+          // Remove our entry.
+          let entry = window.document.getElementById(this.menu_addonPrefs_id + "_" + this.uniqueRandomID);
+          if (entry) entry.remove();
+          // Do we have to unhide the noPrefsElement?
+          if (element_addonPrefs.children.length == 1) {
+              let noPrefsElem = element_addonPrefs.querySelector('[disabled="true"]');
+              noPrefsElem.style.display = "inline";
+          }              
         } else {
           // Remove event listener for addon manager view changes
           let managerWindow = this.getAddonManagerFromWindow(window);

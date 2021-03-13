@@ -14,6 +14,17 @@
         ]
       },
       {
+        "name": "openOptionsDialog",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "windowId",
+            "type": "integer",
+            "description": "Id of the window the dialog should be opened from."
+          }
+        ]
+      },
+      {
         "name": "registerChromeUrl",
         "type": "function",
         "description": "Register folders which should be available as chrome:// urls (as defined in the legacy chrome.manifest)",
