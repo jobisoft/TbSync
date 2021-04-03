@@ -43,6 +43,13 @@ var TbSync = {
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/public.js", this, "UTF-8");
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/io.js", this, "UTF-8");
 
+    Services.scriptloader.loadSubScript("chrome://tbsync/content/scripts/notifyTools/notifyTools.js", this, "UTF-8");
+    Services.obs.addObserver(
+      this.notifyTools.onNotifyExperimentObserver,
+      "WindowListenerNotifyExperimentObserver",
+      false
+    );
+
     //clear debug log on start
     this.io.initFile("debug.log");
 
@@ -54,7 +61,7 @@ var TbSync = {
 
     //print information about Thunderbird version and OS
     this.dump(Services.appinfo.name, Services.appinfo.version + " on " + OS.Constants.Sys.Name);
-
+	  
     // register modules to be used by TbSync
     this.modules.push({name: "db", state: 0});
     this.modules.push({name: "abAutoComplete", state: 0});
@@ -99,8 +106,22 @@ var TbSync = {
     //was debug mode enabled during startup?
     this.debugMode = (this.prefs.getIntPref("log.userdatalevel") > 0);
 
+    // Forward requests from the background page.
+    this.notifyTools.registerListener(data => {
+      console.log(data);
+      switch (data.command) {
+        case "loadProvider":
+          TbSync.providers.loadProvider(data.id);
+          break;
+        case "unloadProvider":
+          TbSync.providers.loadProvider(data.id);
+          break;
+      }
+    });
+	
     //enable TbSync
     this.enabled = true;
+    this.notifyTools.notifyBackground({command: "enabled"});
 
     //notify about finished init of TbSync
     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
@@ -117,6 +138,11 @@ var TbSync = {
     //cancel sync timer
     this.syncTimer.cancel();
     
+	Services.obs.removeObserver(
+		this.notifyTools.onNotifyExperimentObserver,
+		"WindowListenerNotifyExperimentObserver"
+	);
+	  
     //unload modules in reverse order
     this.modules.reverse();
     for (let module of this.modules) {

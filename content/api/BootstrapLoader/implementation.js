@@ -335,9 +335,84 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
         self.setupAddonManager(self.getAddonManagerFromTab(aTab), false);
       },
     };    
+
+    this.onNotifyBackgroundObserver = {
+      observe: async function (aSubject, aTopic, aData) {
+        if (
+          Object.keys(self.observerTracker).length > 0 &&
+          aData == self.extension.id
+        ) {
+          let payload = aSubject.wrappedJSObject;
+          // This is called from the BL observer.js and therefore it should have a resolve
+          // payload, but better check.
+          if (payload.resolve) {
+            let observerTrackerPromises = [];
+            // Push listener into promise array, so they can run in parallel
+            for (let listener of Object.values(self.observerTracker)) {
+              observerTrackerPromises.push(listener(payload.data));
+            }
+            // We still have to await all of them but wait time is just the time needed
+            // for the slowest one.
+            let results = [];
+            for (let observerTrackerPromise of observerTrackerPromises) {
+              let rv = await observerTrackerPromise;
+              if (rv != null) results.push(rv);
+            }
+            if (results.length == 0) {
+              payload.resolve();
+            } else {
+              if (results.length > 1) {
+                console.warn(
+                  "Received multiple results from onNotifyBackground listeners. Using the first one, which can lead to inconsistent behavior.",
+                  results
+                );
+              }
+              payload.resolve(results[0]);
+            }
+          } else {
+            // Just call the listener.
+            for (let listener of Object.values(self.observerTracker)) {
+              listener(payload.data);
+            }
+          }
+        }
+      },
+    };
+
+    this.observerTracker = {};
+    this.observerTrackerNext = 1;
+    // Add observer for notifyTools.js
+    Services.obs.addObserver(
+      this.onNotifyBackgroundObserver,
+      "WindowListenerNotifyBackgroundObserver",
+      false
+    );
     
     return {
       BootstrapLoader: {
+
+        notifyExperiment(data) {
+          console.log("dkfj");
+          Services.obs.notifyObservers(
+            // Stuff data in an array so simple strings can be used as payload
+            // without the observerService complaining.
+            [data],
+            "WindowListenerNotifyExperimentObserver",
+            self.extension.id
+          );
+        },
+
+        onNotifyBackground: new ExtensionCommon.EventManager({
+          context,
+          name: "BootstrapLoader.onNotifyBackground",
+          register: (fire) => {
+            let trackerId = self.observerTrackerNext++;
+            self.observerTracker[trackerId] = fire.sync;
+            return () => {
+              delete self.observerTracker[trackerId];
+            };
+          },
+        }).api(),
 
         registerOptionsPage(optionsUrl) {
           self.pathToOptionsPage = optionsUrl.startsWith("chrome://")
@@ -442,6 +517,12 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
   }
 
   onShutdown(isAppShutdown) {
+    // Remove observer for notifyTools.js
+    Services.obs.removeObserver(
+      this.onNotifyBackgroundObserver,
+      "WindowListenerNotifyBackgroundObserver"
+    );
+
     //remove our entry in the add-on options menu
     if (this.pathToOptionsPage) {
       for (let window of Services.wm.getEnumerator("mail:3pane")) {

@@ -26,6 +26,10 @@
   "background": {
     "scripts": ["background.js"]
   },
+  "permissions": [
+    "notifications",
+    "management"    
+  ],
   "experiment_apis": {
     "BootstrapLoader": {
       "schema": "content/api/BootstrapLoader/schema.json",

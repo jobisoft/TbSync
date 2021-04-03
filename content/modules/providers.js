@@ -7,7 +7,8 @@
  */
  
  "use strict";
- 
+var { ExtensionParent } = ChromeUtils.import("resource://gre/modules/ExtensionParent.jsm");
+
 var providers = {
 
   //list of default providers (available in add menu, even if not installed)
@@ -36,23 +37,17 @@ var providers = {
 
   
   
-  loadProvider:  async function (extension, provider, js) {
+  loadProvider:  async function (provider) {
     //only load, if not yet loaded and if the provider name does not shadow a fuction inside provider.js
-    if (!this.loadedProviders.hasOwnProperty(provider) && !this.hasOwnProperty(provider) && js.startsWith("chrome://")) {
-      try {
-        let addon = await AddonManager.getAddonByID(extension.id);
-
-        //load provider subscripts into TbSync
+    if (!this.loadedProviders.hasOwnProperty(provider) && !this.hasOwnProperty(provider)) {
+      try {        
+        let extension = ExtensionParent.GlobalManager.getExtension(provider);
+        let addon = await AddonManager.getAddonByID(provider);
         this[provider] = {};
-        Services.scriptloader.loadSubScript(js, this[provider], "UTF-8");
-        if (TbSync.apiVersion != this[provider].Base.getApiVersion()) {
-          throw new Error("API version mismatch, TbSync@"+TbSync.apiVersion+" vs " + provider + "@" + this[provider].Base.getApiVersion());
-        }
-        
         this.loadedProviders[provider] = {};
         this.loadedProviders[provider].addon = addon;
         this.loadedProviders[provider].extension = extension;
-        this.loadedProviders[provider].addonId = extension.id;
+        this.loadedProviders[provider].addonId = provider;
         this.loadedProviders[provider].version = addon.version.toString();
         this.loadedProviders[provider].createAccountWindow = null;
 
