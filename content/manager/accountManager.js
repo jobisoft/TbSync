@@ -106,7 +106,7 @@ var tbSyncAccountManager = {
   
   
   //community tab
-  initCommunity: function() {
+  initCommunity: async function() {
     let listOfContributors = document.getElementById("listOfContributors");
     let sponsors = {};
       
@@ -115,10 +115,10 @@ var tbSyncAccountManager = {
       let provider = providers[i];
       let template = listOfContributors.firstElementChild.cloneNode(true);
       template.setAttribute("provider", provider);
-      template.children[0].setAttribute("src", TbSync.providers[provider].Base.getProviderIcon(48));
-      template.children[1].children[0].textContent = TbSync.providers[provider].Base.getProviderName();
+      template.children[0].setAttribute("src", await TbSync.providers[provider].Base.getProviderIcon(48));
+      template.children[1].children[0].textContent = await TbSync.providers[provider].Base.getProviderName();
       listOfContributors.appendChild(template);
-      Object.assign(sponsors, TbSync.providers[provider].Base.getSponsors());
+      Object.assign(sponsors, await TbSync.providers[provider].Base.getSponsors());
     }
     listOfContributors.removeChild(listOfContributors.firstElementChild);
 

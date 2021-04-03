@@ -67,33 +67,29 @@ function OverlayManager(extension, options = {}) {
   };
 
   this.registerOverlay = async function (dst, overlay) {
-    if (overlay.startsWith("chrome://")) {
-      let xul = null;
-      try {
-        xul = await this.readChromeFile(overlay);
-      } catch (e) {
-        console.log("Error reading file <"+overlay+"> : " + e);
-        return;
+    let xul = null;
+    try {
+      xul = await this.readChromeFile(overlay);
+    } catch (e) {
+      console.log("Error reading file <"+overlay+"> : " + e);
+      return;
+    }
+    let rootNode = this.getDataFromXULString(xul);
+
+    if (rootNode) {
+      //get urls of stylesheets to load them
+      let styleSheetUrls = this.getStyleSheetUrls(rootNode);
+      for (let i=0; i<styleSheetUrls.length; i++) {
+      //we must replace, since we do not know, if it changed - could have been an update
+      //if (!this.stylesheets.hasOwnProperty(styleSheetUrls[i])) {
+        this.stylesheets[styleSheetUrls[i]] = await this.readChromeFile(styleSheetUrls[i]);
+      //}
       }
-      let rootNode = this.getDataFromXULString(xul);
-  
-      if (rootNode) {
-        //get urls of stylesheets to load them
-        let styleSheetUrls = this.getStyleSheetUrls(rootNode);
-        for (let i=0; i<styleSheetUrls.length; i++) {
-        //we must replace, since we do not know, if it changed - could have been an update
-        //if (!this.stylesheets.hasOwnProperty(styleSheetUrls[i])) {
-          this.stylesheets[styleSheetUrls[i]] = await this.readChromeFile(styleSheetUrls[i]);
-        //}
-        }
-        
-        if (!this.registeredOverlays[dst]) this.registeredOverlays[dst] = [];
-        if (!this.registeredOverlays[dst].includes(overlay)) this.registeredOverlays[dst].push(overlay);
-        
-        this.overlays[overlay] = rootNode;
-      }
-    } else {
-      console.log("Only chrome:// URIs can be registered as overlays.");
+      
+      if (!this.registeredOverlays[dst]) this.registeredOverlays[dst] = [];
+      if (!this.registeredOverlays[dst].includes(overlay)) this.registeredOverlays[dst].push(overlay);
+      
+      this.overlays[overlay] = rootNode;
     }
   };  
 

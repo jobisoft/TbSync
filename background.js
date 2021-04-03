@@ -1,22 +1,25 @@
 const tbSyncApiVersion = "3.0";
 var providers = {};
 var enabled = false;
+var queuedRequests = [];
 messenger.browserAction.disable();
 
 var Provider = class {
-    constructor(id, port) {
-        this.id = id;
+    constructor(addon, provider, port) {
+        this.addon = addon;
+        this.provider = provider;
         this.port = port;
         this.portMap = new Map();
         this.portMessageId = 0;
-        
+
         this.port.onMessage.addListener(this.portReceiver.bind(this));
         this.port.onDisconnect.addListener(() => {
             this.port.onMessage.removeListener(this.portReceiver.bind(this));
             this.port = null;
-            messenger.BootstrapLoader.notifyExperiment({command: "unloadProvider", id: this.id});
+            console.log(`TbSync: Lost connection to ${this.addon.id}`);
+            messenger.BootstrapLoader.notifyExperiment({command: "unloadProvider", provider: this.provider});
         });
-        console.log(`TbSync established connection with ${this.id}`);
+        console.log(`TbSync:  Established connection to ${this.addon.id}`);
     }
 
     portReceiver(message, port) {
@@ -42,25 +45,18 @@ var Provider = class {
             this.port.postMessage({origin: "TbSync", id, data});
         });
     }
-    
-    get addon() {
-        if (!this._addon) {
-            this._addon = messenger.management.get(this.id);
-        }
-        return this._addon;
-    }
 }
 
 // Wait for connections attempts from providers.
 messenger.runtime.onMessageExternal.addListener(async (message, sender) => { 
-    if (message == "InitiateConnect") {      
-        port = messenger.runtime.connect(sender.id, {name: "ProviderConnection"});      
+    if (message.command == "InitiateConnect") {      
+        port = messenger.runtime.connect(sender.id, { name: "ProviderConnection" });      
         if (port && !port.error) {
-            // Store port per provider.       
-            let provider = new Provider(sender.id, port);
-            let providerApiVersion = await provider.portSend({command: "getApiVersion"});
+            let addon = await messenger.management.get(sender.id);
+            let provider = new Provider(addon, message.provider, port);
+            
+            let providerApiVersion = await provider.portSend({ command: "Base.getApiVersion" });
             if (providerApiVersion != tbSyncApiVersion) {
-                let addon = await provider.addon;
                 messenger.notifications.create("TbSync", {
                     "type": "basic",
                     "iconUrl": messenger.runtime.getURL("/content/skin/tbsync64.png"),
@@ -68,10 +64,15 @@ messenger.runtime.onMessageExternal.addListener(async (message, sender) => {
                     "message": `TbSync cannot load ${addon.name} because it is using an incompatible API version. Check for updated versions.`
                 });
             } else {
+                // Store provider.       
                 providers[sender.id] = provider;
+                let request = { command: "loadProvider", providerID: sender.id, provider: message.provider }
+
                 // The legacy load of providers should wait after TbSync has finished loading.
                 if (enabled) {
-                    messenger.BootstrapLoader.notifyExperiment({command: "loadProvider", id: sender.id});
+                    messenger.BootstrapLoader.notifyExperiment(request);
+                } else {
+                    queuedRequests.push(request);
                 }
             }
         }
@@ -80,23 +81,26 @@ messenger.runtime.onMessageExternal.addListener(async (message, sender) => {
 
 messenger.BootstrapLoader.onNotifyBackground.addListener(async (info) => {
     switch (info.command) {
-    case "enabled":
-        enabled = true;
-        
-        // Legacy load all providers which have connected already.
-        for (let provider of Object.values(providers)) {
-            messenger.BootstrapLoader.notifyExperiment({command: "loadProvider", id: provider.id});
-        }
+        case "enabled":
+            enabled = true;
+            
+            // Legacy load all providers which have connected already.
+            for (let request of queuedRequests) {
+                messenger.BootstrapLoader.notifyExperiment(request);
+            }
+            queuedRequests = [];
 
-        messenger.browserAction.onClicked.addListener(tab => messenger.BootstrapLoader.openOptionsDialog(tab.windowId));
-        messenger.browserAction.enable();        
-        break;
+            messenger.browserAction.onClicked.addListener(tab => messenger.BootstrapLoader.openOptionsDialog(tab.windowId));
+            messenger.browserAction.enable();        
+            break;
 
-    default:
-        // Any other request is probably a request which should be forwarded to a provider
-        return providers[info.id].portSend();
-  }
-});
+        default:
+            // Any other request is probably a request which should be forwarded to a provider 
+            if (info.command.startsWith("Base.") && providers.hasOwnProperty(info.providerID)) {
+                return providers[info.providerID].portSend(info);
+            }
+    }
+});            
 
 // Startup of legacy part
 async function startLegacy() {

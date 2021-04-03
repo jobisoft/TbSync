@@ -1,5 +1,5 @@
 // Set this to the ID of your add-on.
-const ADDON_ID = "tbsync@jobisoft.de";
+var ADDON_ID = "tbsync@jobisoft.de";
 
 /*
  * This file is provided by the addon-developer-support repository at
@@ -8,7 +8,7 @@ const ADDON_ID = "tbsync@jobisoft.de";
  * For usage descriptions, please check:
  * https://github.com/thundernest/addon-developer-support/tree/master/scripts/notifyTools
  *
- * Version: 1.2
+ * This is a modified version for TbSync.
  *
  * Author: John Bieling (john@thunderbird.net)
  *
@@ -65,31 +65,3 @@ var notifyTools = {
     });
   },
 };
-
-try {
-  window.addEventListener(
-    "load",
-    function (event) {
-      Services.obs.addObserver(
-        notifyTools.onNotifyExperimentObserver,
-        "WindowListenerNotifyExperimentObserver",
-        false
-      );
-      window.addEventListener(
-        "unload",
-        function (event) {
-          Services.obs.removeObserver(
-            notifyTools.onNotifyExperimentObserver,
-            "WindowListenerNotifyExperimentObserver"
-          );
-        },
-        false
-      );
-    },
-    false
-  );
-} catch (e) {
-  console.log(
-    "WindowListenerNotifyExperimentObserver cannot be registered in a window-less environment."
-  );
-}

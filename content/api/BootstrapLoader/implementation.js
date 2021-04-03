@@ -392,7 +392,6 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
       BootstrapLoader: {
 
         notifyExperiment(data) {
-          console.log("dkfj");
           Services.obs.notifyObservers(
             // Stuff data in an array so simple strings can be used as payload
             // without the observerService complaining.

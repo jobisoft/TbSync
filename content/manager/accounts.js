@@ -15,11 +15,11 @@ var tbSyncAccounts = {
 
   selectedAccount: null,
 
-  onload: function () {
+  onload: async function () {
     //scan accounts, update list and select first entry (because no id is passed to updateAccountList)
     //the onSelect event of the List will load the selected account
     //also update/init add menu
-    this.updateAvailableProvider(); 
+    await this.updateAvailableProvider(); 
     
     Services.obs.addObserver(tbSyncAccounts.updateProviderListObserver, "tbsync.observer.manager.updateProviderList", false);
     Services.obs.addObserver(tbSyncAccounts.updateAccountsListObserver, "tbsync.observer.manager.updateAccountsList", false);
@@ -273,12 +273,12 @@ var tbSyncAccounts = {
     return "chrome://tbsync/content/skin/" + src;
   },
 
-  updateAccountLogo: function (id) {
+  updateAccountLogo: async function (id) {
     let accountData = new TbSync.AccountData(id);
     let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
     if (listItem) {
       let obj = listItem.childNodes[0];
-      obj.src = tbSyncAccounts.hasInstalledProvider(id) ? TbSync.providers[accountData.getAccountProperty("provider")].Base.getProviderIcon(16, accountData) : "chrome://tbsync/content/skin/provider16.png";
+      obj.src = tbSyncAccounts.hasInstalledProvider(id) ? await TbSync.providers[accountData.getAccountProperty("provider")].Base.getProviderIcon(16, accountData) : "chrome://tbsync/content/skin/provider16.png";
     }
   },
 
@@ -306,19 +306,19 @@ var tbSyncAccounts = {
     }
   },
   
-  updateAvailableProvider: function (provider = null) {        
+  updateAvailableProvider: async function (provider = null) {        
     //either add/remove a specific provider, or rebuild the list from scratch
     if (provider) {
       //update single provider entry
-      tbSyncAccounts.updateAddMenuEntry(provider);
+      await tbSyncAccounts.updateAddMenuEntry(provider);
     } else {
       //add default providers
       for (let provider in TbSync.providers.defaultProviders) {
-        tbSyncAccounts.updateAddMenuEntry(provider);
+        await tbSyncAccounts.updateAddMenuEntry(provider);
       }
       //update/add all remaining installed providers
       for (let provider in TbSync.providers.loadedProviders) {
-        tbSyncAccounts.updateAddMenuEntry(provider);
+        await tbSyncAccounts.updateAddMenuEntry(provider);
       }
     }
     
@@ -414,7 +414,7 @@ var tbSyncAccounts = {
     }
   },
 
-  updateAddMenuEntry: function (provider) {
+  updateAddMenuEntry: async function (provider) {
     let isDefault = TbSync.providers.defaultProviders.hasOwnProperty(provider);
     let isInstalled = TbSync.providers.loadedProviders.hasOwnProperty(provider);
     
@@ -432,11 +432,11 @@ var tbSyncAccounts = {
     
     //Update label, icon and hidden according to isDefault and isInstalled
     if (isInstalled) {
-      entry.setAttribute("label",  TbSync.providers[provider].Base.getProviderName());
-      entry.setAttribute("image", TbSync.providers[provider].Base.getProviderIcon(16));
+      entry.setAttribute("label",  await TbSync.providers[provider].Base.getProviderName());
+      entry.setAttribute("image", await TbSync.providers[provider].Base.getProviderIcon(16));
       entry.setAttribute("hidden", false);
     } else if (isDefault) {
-      entry.setAttribute("label", TbSync.providers.defaultProviders[provider].name);
+      entry.setAttribute("label", await TbSync.providers.defaultProviders[provider].name);
       entry.setAttribute("image", "chrome://tbsync/content/skin/provider16.png");                    
       entry.setAttribute("hidden", false);
     } else {

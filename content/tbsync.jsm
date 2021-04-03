@@ -108,13 +108,12 @@ var TbSync = {
 
     // Forward requests from the background page.
     this.notifyTools.registerListener(data => {
-      console.log(data);
       switch (data.command) {
         case "loadProvider":
-          TbSync.providers.loadProvider(data.id);
+          TbSync.providers.loadProvider(data.providerID, data.provider);
           break;
         case "unloadProvider":
-          TbSync.providers.loadProvider(data.id);
+          TbSync.providers.unloadProvider(data.provider);
           break;
       }
     });
