@@ -111,9 +111,27 @@ var TbSync = {
         case "unloadProvider":
           TbSync.providers.unloadProvider(data.provider);
           break;
-        default:
-          console.log(data);
-          return "juhu";
+
+        // These are public functions callable by other add-ons / providers.
+        // When TbSync modules are moved out of the legacy blob into the
+        // WebExtension part, they could use these as well, so we only have
+        // to maintain a single Interface.
+        case "getAccountProperty":
+        case "setAccountProperty":
+        case "resetAccountProperty":
+        case "getFolderProperty":
+        case "setFolderProperty":
+        case "resetFolderProperty":
+          return TbSync.db[data.command](...data.parameters);
+        case "getAllFolders": 
+        {
+          let allFolders = [];
+          let folders = TbSync.db.findFolders({"cached": false}, {"accountID":data.parameters[0]});
+          for (let i=0; i < folders.length; i++) {          
+            allFolders.push(folders[i].folderID);
+          }
+          return allFolders;
+        }
       }
     });
 	

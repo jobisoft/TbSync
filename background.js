@@ -33,7 +33,6 @@ var Provider = class {
         } else {
             // This is a request from a provider, forward it to the legacy part of TbSync
             let rv = await messenger.BootstrapLoader.notifyExperiment(message);
-            console.log(rv);
             this.port.postMessage({origin, id, data: rv});    
         }
     }
