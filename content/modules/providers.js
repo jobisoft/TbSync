@@ -10,137 +10,6 @@
 var { ExtensionParent } = ChromeUtils.import("resource://gre/modules/ExtensionParent.jsm");
 
 /**
- * Wrapper for notifyTools to pipe the call thru the background page to the
- * remote add-on.
- */
-var Base = class {
-  constructor(providerID) {
-    this.providerID = providerID
-  }
-  onConnect() { 
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      command: "Base.onConnect" 
-    });
-  }  
-  getProviderName() {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      command: "Base.getProviderName" 
-    });
-  }  
-  getApiVersion() {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      command: "Base.getApiVersion" 
-    });
-  }  
-  getProviderIcon(size, accountID = null) {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      size,
-      accountID,
-      command: "Base.getProviderIcon" 
-    });
-  }  
-  getSponsors() {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      command: "Base.getSponsors" 
-    });
-  }    
-  getContributorsUrl() {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      command: "Base.getContributorsUrl" 
-    });
-  }
-  getMaintainerEmail() {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      command: "Base.getMaintainerEmail" 
-    });
-  }    
-  getCreateAccountWindowUrl() {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      command: "Base.getCreateAccountWindowUrl" 
-    });
-  }    
-  getEditAccountOverlayUrl() {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      command: "Base.getEditAccountOverlayUrl" 
-    });
-  }    
-  getDefaultAccountEntries() {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      command: "Base.getDefaultAccountEntries" 
-    });
-  }    
-  getDefaultFolderEntries() {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      command: "Base.getDefaultFolderEntries" 
-    });
-  }    
-  onEnableAccount(accountID) {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      accountID,
-      command: "Base.onEnableAccount" 
-    });
-  }    
-  onDisableAccount(accountID) {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      accountID,
-      command: "Base.onDisableAccount" 
-    });
-  }    
-  onDeleteAccount(accountID) {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      accountID,
-      command: "Base.onDeleteAccount" 
-    });
-  }
-  getSortedFolders(accountID) {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      accountID,
-      command: "Base.getSortedFolders" 
-    });
-  }  
-  getConnectionTimeout(accountID) {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      accountID,
-      command: "Base.getConnectionTimeout" 
-    });
-  }  
-  syncFolderList(syncData, syncJob, syncRunNr) {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      syncData, 
-      syncJob,
-      syncRunNr,
-      command: "Base.syncFolderList" 
-    });
-  }  
-  syncFolder(syncData, syncJob, syncRunNr) {
-    return TbSync.notifyTools.notifyBackground({
-      providerID: this.providerID,
-      syncData, 
-      syncJob,
-      syncRunNr,
-      command: "Base.syncFolder" 
-    });
-  }
-}
-
-/**
  * Functions used by the folderlist in the main account settings tab
  */
 var FolderList = class {
@@ -426,7 +295,13 @@ var providers = {
     }
   },
 
-
+  request: function(provider, command, parameters) {
+    return TbSync.notifyTools.notifyBackground({
+      providerID:  this.loadedProviders[provider].addonId,
+      command,
+      parameters
+    });
+  },
 
   
   
@@ -442,17 +317,16 @@ var providers = {
         this.loadedProviders[provider].addonId = providerID;
         this.loadedProviders[provider].version = addon.version.toString();
         this.loadedProviders[provider].createAccountWindow = null;
+        this.loadedProviders[provider].defaultFolderEntries = await this.request(provider, "Base.getDefaultFolderEntries");
+        this.loadedProviders[provider].defaultAccountEntries = await this.request(provider, "Base.getDefaultAccountEntries");
 
         this[provider] = {};
-        // Legacy TbSync expects to have "loaded" a provider JS file, but we now
-        // load a fake class which redirects all requests to the actuall add-on.
-        this[provider].Base = new Base(providerID);
         this[provider].folderList = new FolderList(provider);
 
-        addon.contributorsURL = await this[provider].Base.getContributorsUrl();
+        addon.contributorsURL = await this.request(provider, "Base.getContributorsUrl");
         
-        await TbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xhtml?provider=" + provider, await this[provider].Base.getEditAccountOverlayUrl());        
-        TbSync.dump("Loaded provider", provider + "::" + await this[provider].Base.getProviderName() + " ("+this.loadedProviders[provider].version+")");
+        await TbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xhtml?provider=" + provider, await this.request(provider, "Base.getEditAccountOverlayUrl"));        
+        TbSync.dump("Loaded provider", provider + "::" + await this.request(provider, "Base.getProviderName") + " ("+this.loadedProviders[provider].version+")");
         
         // reset all accounts of this provider
         let providerData = new TbSync.ProviderData(provider);
@@ -472,7 +346,7 @@ var providers = {
           }
         }
         
-        await this[provider].Base.onConnect();
+        await this.request(provider, "Base.onConnect");
 
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", provider);
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
@@ -515,7 +389,7 @@ var providers = {
   },
   
   getDefaultAccountEntries: function (provider) {
-    let defaults = TbSync.providers[provider].Base.getDefaultAccountEntries();
+    let defaults = this.loadedProviders[provider].defaultAccountEntries;
     
     // List of default system account properties. 
     // Do not remove search marker for doc. 
@@ -534,7 +408,7 @@ var providers = {
   
   getDefaultFolderEntries: function (accountID) {
     let provider = TbSync.db.getAccountProperty(accountID, "provider");
-    let defaults = TbSync.providers[provider].Base.getDefaultFolderEntries();
+    let defaults = this.loadedProviders[provider].defaultFolderEntries;
     
     // List of default system folder properties.
     // Do not remove search marker for doc. 
