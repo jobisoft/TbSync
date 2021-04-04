@@ -8,7 +8,9 @@ var ADDON_ID = "tbsync@jobisoft.de";
  * For usage descriptions, please check:
  * https://github.com/thundernest/addon-developer-support/tree/master/scripts/notifyTools
  *
- * This is a modified version for TbSync.
+ * Version: 1.3
+ * - registered listeners for notifyExperiment can return a value
+ * - remove WindowListener from name of observer
  *
  * Author: John Bieling (john@thunderbird.net)
  *
@@ -31,14 +33,41 @@ var notifyTools = {
       if (aData != ADDON_ID) {
         return;
       }
-      // The data has been stuffed in an array so simple strings can be used as
-      // payload without the observerService complaining.
-      let [data] = aSubject.wrappedJSObject;
-      for (let registeredCallback of Object.values(
-        notifyTools.registeredCallbacks
-      )) {
-        registeredCallback(data);
-      }
+      let payload = aSubject.wrappedJSObject;
+      if (payload.resolve) {
+        let observerTrackerPromises = [];
+        // Push listener into promise array, so they can run in parallel
+        for (let registeredCallback of Object.values(
+          notifyTools.registeredCallbacks
+        )) {
+          observerTrackerPromises.push(registeredCallback(payload.data));
+        }
+        // We still have to await all of them but wait time is just the time needed
+        // for the slowest one.
+        let results = [];
+        for (let observerTrackerPromise of observerTrackerPromises) {
+          let rv = await observerTrackerPromise;
+          if (rv != null) results.push(rv);
+        }
+        if (results.length == 0) {
+          payload.resolve();
+        } else {
+          if (results.length > 1) {
+            console.warn(
+              "Received multiple results from onNotifyExperiment listeners. Using the first one, which can lead to inconsistent behavior.",
+              results
+            );
+          }
+          payload.resolve(results[0]);
+        }
+      } else {
+        // Just call the listener.
+        for (let registeredCallback of Object.values(
+          notifyTools.registeredCallbacks
+        )) {
+          registeredCallback(payload.data);
+        }
+      }    
     },
   },
 
@@ -59,9 +88,42 @@ var notifyTools = {
     return new Promise((resolve) => {
       Services.obs.notifyObservers(
         { data, resolve },
-        "WindowListenerNotifyBackgroundObserver",
+        "NotifyBackgroundObserver",
         ADDON_ID
       );
     });
   },
+  
+  enable: function() {
+    Services.obs.addObserver(
+      this.onNotifyExperimentObserver,
+      "NotifyExperimentObserver",
+      false
+    );
+  },
+
+  disable: function() {
+    Services.obs.removeObserver(
+      this.onNotifyExperimentObserver,
+      "NotifyExperimentObserver"
+    );
+  },
 };
+
+
+if (window) {
+  window.addEventListener(
+    "load",
+    function (event) {
+      notifyTools.enable();
+      window.addEventListener(
+        "unload",
+        function (event) {
+          notifyTools.disable();
+        },
+        false
+      );
+    },
+    false
+  );
+}

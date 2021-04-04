@@ -22,7 +22,7 @@ var Provider = class {
         console.log(`TbSync:  Established connection to ${this.addon.id}`);
     }
 
-    portReceiver(message, port) {
+    async portReceiver(message, port) {
         // port.name should be "ProviderConnection"
         const {origin, id, data} = message;
         if (origin == "TbSync") {
@@ -31,13 +31,16 @@ var Provider = class {
             this.portMap.delete(id);
             resolve(data);
         } else {
-            // This is a request from a provider.
-            let rv = "juhu";
+            // This is a request from a provider, forward it to the legacy part of TbSync
+            let rv = await messenger.BootstrapLoader.notifyExperiment(message);
+            console.log(rv);
             this.port.postMessage({origin, id, data: rv});    
         }
     }
 
     // https://stackoverflow.com/questions/61307980/sendresponse-in-port-postmessage
+    // Send data to a remote location (another provider add-on) and store a callback which
+    // is resolved when an answer is received by portReceiver().
     portSend(data) {
         return new Promise(resolve => {
             const id = ++this.portMessageId;

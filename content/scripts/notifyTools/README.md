@@ -1,12 +1,14 @@
 ## Objective
 
-This script is intened to be used together with the WindowListener API (WL API v1.45 or later).
+This script is intened to be used together with the WindowListener API (WL API v1.46 or later) or
+BootstrapLoader API (BL API v 1.12).
 
-The WL API provides a `notifyExperiment()` method, which allows to send data from your
+The WL API and the BL API provide a `notifyExperiment()` method, which allows to send data from your
 WebExtension's background page to any privileged script running in any of your Experiments.
-The recieving script must include `notifyTools.js` and register a listener.
+The recieving script must include `notifyTools.js` and register a listener. The value returned by
+the registered listener is passed back as the return value of `notifyExperiment(data)` (as a Promise).
 
-It also allows to send data from any privileged script running in any of your Experiments
+This script also allows to send data from any privileged script running in any of your Experiments
 to your WebExtension background page and await a return value.
 
 ![messaging](https://user-images.githubusercontent.com/5830621/111921572-90db8d80-8a95-11eb-8673-4e1370d49e4b.png)
@@ -27,6 +29,7 @@ Example:
 ```
 function doSomething(data) {
   console.log(data);
+  return true;
 }
 let id = notifyTools.registerListener(doSomething);
 ```
@@ -76,3 +79,14 @@ messenger.WindowListener.onNotifyBackground.addListener(async (info) => {
 This allows to work on the add-on uprade in smaller steps, as single calls (like `window.openDialog()`)
 in the middle of legacy code can be replaced by WebExtension calls, by stepping out of the Experiment
 and back in when the task has been finished.
+
+### enable()
+
+The script attaches its `enable()` method to the `load` event of the current window. If the script is
+loaded into a window-less environment, `enable()` needs to be called manually.
+
+### disable()
+
+The script attaches its `disable()` method to the `unload` event of the current window. If the script is
+loaded into a window-less environment, `disable()` needs to be called manually.
+

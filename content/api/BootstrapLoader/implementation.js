@@ -2,6 +2,9 @@
  * This file is provided by the addon-developer-support repository at
  * https://github.com/thundernest/addon-developer-support
  *
+ * Version: 1.12
+ * - add support for notifyExperiment and onNotifyBackground
+ * 
  * Version: 1.11
  * - add openOptionsDialog()
  * 
@@ -384,7 +387,7 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
     // Add observer for notifyTools.js
     Services.obs.addObserver(
       this.onNotifyBackgroundObserver,
-      "WindowListenerNotifyBackgroundObserver",
+      "NotifyBackgroundObserver",
       false
     );
     
@@ -392,13 +395,13 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
       BootstrapLoader: {
 
         notifyExperiment(data) {
-          Services.obs.notifyObservers(
-            // Stuff data in an array so simple strings can be used as payload
-            // without the observerService complaining.
-            [data],
-            "WindowListenerNotifyExperimentObserver",
-            self.extension.id
-          );
+          return new Promise(resolve => {
+            Services.obs.notifyObservers(
+              { data, resolve },
+              "NotifyExperimentObserver",
+              self.extension.id
+            );
+          });
         },
 
         onNotifyBackground: new ExtensionCommon.EventManager({
@@ -519,7 +522,7 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
     // Remove observer for notifyTools.js
     Services.obs.removeObserver(
       this.onNotifyBackgroundObserver,
-      "WindowListenerNotifyBackgroundObserver"
+      "NotifyBackgroundObserver"
     );
 
     //remove our entry in the add-on options menu

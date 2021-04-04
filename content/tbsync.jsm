@@ -44,11 +44,7 @@ var TbSync = {
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/io.js", this, "UTF-8");
 
     Services.scriptloader.loadSubScript("chrome://tbsync/content/scripts/notifyTools/notifyTools.js", this, "UTF-8");
-    Services.obs.addObserver(
-      this.notifyTools.onNotifyExperimentObserver,
-      "WindowListenerNotifyExperimentObserver",
-      false
-    );
+    this.notifyTools.enable();
 
     //clear debug log on start
     this.io.initFile("debug.log");
@@ -115,6 +111,9 @@ var TbSync = {
         case "unloadProvider":
           TbSync.providers.unloadProvider(data.provider);
           break;
+        default:
+          console.log(data);
+          return "juhu";
       }
     });
 	
@@ -136,11 +135,7 @@ var TbSync = {
   unload: async function() {
     //cancel sync timer
     this.syncTimer.cancel();
-    
-	Services.obs.removeObserver(
-		this.notifyTools.onNotifyExperimentObserver,
-		"WindowListenerNotifyExperimentObserver"
-	);
+    this.notifyTools.disable();
 	  
     //unload modules in reverse order
     this.modules.reverse();
