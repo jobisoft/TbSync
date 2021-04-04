@@ -178,10 +178,23 @@ function OverlayManager(extension, options = {}) {
       if (overlayNode) {
         //get and load scripts
         let scripts = this.getScripts(rootNode, overlayNode);
-        for (let i=0; i < scripts.length; i++){
-          if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Loading: " + scripts[i]);
+        let baseUrl = "";
+        try {
+            let uri = Services.io.newURI(overlay);
+            baseUrl = uri.prePath;
+        } catch (e) {
+            Components.utils.reportError(e);
+        }
+               
+        for (let script of scripts){
+          // Do we have to reconstruct a absolute URL?
+          if (script.startsWith("/")) {
+            script = baseUrl + script;
+          }
+          
+          if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Loading: " + script);
           try {
-            Services.scriptloader.loadSubScript(scripts[i], window);
+            Services.scriptloader.loadSubScript(script, window);
           } catch (e) {
             Components.utils.reportError(e);          
           }
