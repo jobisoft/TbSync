@@ -102,7 +102,7 @@ var tbSyncAccounts = {
     }
   },
 
-  deleteAccount: function () {
+  deleteAccount: async function () {
     let accountsList = document.getElementById("tbSyncAccounts.accounts");
     if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)  && !TbSync.core.isSyncing(accountsList.selectedItem.value)) {
       let nextAccount =  -1;
@@ -117,22 +117,24 @@ var tbSyncAccounts = {
           //delete account and all folders from db
           TbSync.db.removeAccount(accountsList.selectedItem.value);
           //update list
-          this.updateAccountsList(nextAccount);
+          await this.updateAccountsList(nextAccount);
         } 
       } else if (confirm(TbSync.getString("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
         //cache all folders and remove associated targets 
-        TbSync.core.disableAccount(accountsList.selectedItem.value);
+        await TbSync.core.disableAccount(accountsList.selectedItem.value);
         
         // the following call might fail, as not all providers provide that method, it was mainly added to cleanup stored passwords
         try  {
           let accountData = new TbSync.AccountData(accountsList.selectedItem.value);
-          TbSync.providers[accountData.getAccountProperty("provider")].Base.onDeleteAccount(accountData);
-        } catch (e) {                Components.utils.reportError(e);}
+          await TbSync.providers.request(accountData.getAccountProperty("provider"),"Base.onDeleteAccount", [accountData.accountID]);
+        } catch (e) {                
+          Components.utils.reportError(e);
+        }
 
         //delete account and all folders from db
         TbSync.db.removeAccount(accountsList.selectedItem.value);
         //update list
-        this.updateAccountsList(nextAccount);
+        await this.updateAccountsList(nextAccount);
       }
     }
   },
@@ -157,13 +159,13 @@ var tbSyncAccounts = {
     }
   },    
 
-  toggleEnableState: function () {
+  toggleEnableState: async function () {
     let accountsList = document.getElementById("tbSyncAccounts.accounts");
     
     if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value) && !TbSync.core.isSyncing(accountsList.selectedItem.value)) {            
       let isConnected = TbSync.core.isConnected(accountsList.selectedItem.value);
       if (!isConnected || window.confirm(TbSync.getString("prompt.Disable"))) {           
-        tbSyncAccounts.toggleAccountEnableState(accountsList.selectedItem.value);
+        await tbSyncAccounts.toggleAccountEnableState(accountsList.selectedItem.value);
       }
     }
   },
@@ -172,24 +174,24 @@ var tbSyncAccounts = {
   * Observer to catch enable state toggle
   */
   toggleEnableStateObserver: {
-    observe: function (aSubject, aTopic, aData) {
-      tbSyncAccounts.toggleAccountEnableState(aData);
+    observe: async function (aSubject, aTopic, aData) {
+      await tbSyncAccounts.toggleAccountEnableState(aData);
     }
   },
   
   //is not prompting, this is doing the actual toggle
-  toggleAccountEnableState: function (accountID) {
+  toggleAccountEnableState: async function (accountID) {
     if (tbSyncAccounts.hasInstalledProvider(accountID)) {
       let isEnabled = TbSync.core.isEnabled(accountID);
       
       if (isEnabled) {
         //we are enabled and want to disable (do not ask, if not connected)
-        TbSync.core.disableAccount(accountID);
+        await TbSync.core.disableAccount(accountID);
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", accountID);
         tbSyncAccounts.updateAccountStatus(accountID);
       } else {
         //we are disabled and want to enabled
-        TbSync.core.enableAccount(accountID);
+        await TbSync.core.enableAccount(accountID);
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", accountID);
         TbSync.core.syncAccount(accountID);
       }
@@ -208,7 +210,7 @@ var tbSyncAccounts = {
     }
   },
 
-  setStatusImage: function (accountID, obj) {
+  setStatusImage: async function (accountID, obj) {
     let statusImage = this.getStatusImage(accountID, obj.src);
     if (statusImage != obj.src) {
       obj.src = statusImage;
@@ -278,7 +280,7 @@ var tbSyncAccounts = {
     let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
     if (listItem) {
       let obj = listItem.childNodes[0];
-      obj.src = tbSyncAccounts.hasInstalledProvider(id) ? await TbSync.providers[accountData.getAccountProperty("provider")].Base.getProviderIcon(16, accountData) : "chrome://tbsync/content/skin/provider16.png";
+      obj.src = tbSyncAccounts.hasInstalledProvider(id) ? await TbSync.providers.request(accountData.getAccountProperty("provider"), "Base.getProviderIcon", [16, accountData.accountID]) : "chrome://tbsync/content/skin/provider16.png";
     }
   },
 
@@ -322,7 +324,7 @@ var tbSyncAccounts = {
       }
     }
     
-    this.updateAccountsList();
+    await this.updateAccountsList();
     
     let selectedAccount = this.getSelectedAccount();
     if (selectedAccount !== null && TbSync.db.getAccountProperty(selectedAccount, "provider") == provider) {
@@ -330,7 +332,7 @@ var tbSyncAccounts = {
     }
   },
   
-  updateAccountsList: function (accountToSelect = null) {
+  updateAccountsList: async function (accountToSelect = null) {
     let accountsList = document.getElementById("tbSyncAccounts.accounts");
     let accounts = TbSync.db.getAccounts();
 
@@ -432,8 +434,8 @@ var tbSyncAccounts = {
     
     //Update label, icon and hidden according to isDefault and isInstalled
     if (isInstalled) {
-      entry.setAttribute("label",  await TbSync.providers[provider].Base.getProviderName());
-      entry.setAttribute("image", await TbSync.providers[provider].Base.getProviderIcon(16));
+      entry.setAttribute("label",  await TbSync.providers.request(provider, "Base.getProviderName"));
+      entry.setAttribute("image", await TbSync.providers.request(provider, "Base.getProviderIcon", [16]));
       entry.setAttribute("hidden", false);
     } else if (isDefault) {
       entry.setAttribute("label", await TbSync.providers.defaultProviders[provider].name);
@@ -456,7 +458,6 @@ var tbSyncAccounts = {
   //load the pref page for the currently selected account (triggered by onSelect)
   loadSelectedAccount: function () {
     let selectedAccount = this.getSelectedAccount();
-    
     if (selectedAccount !== null) { //account id could be 0, so need to check for null explicitly
       let provider = TbSync.db.getAccountProperty(selectedAccount, "provider");            
       if (tbSyncAccounts.hasInstalledProvider(selectedAccount)) {
@@ -481,8 +482,8 @@ var tbSyncAccounts = {
     }
   },
   
-  addAccount: function (provider) {
-    TbSync.providers.loadedProviders[provider].createAccountWindow = window.openDialog(TbSync.providers[provider].Base.getCreateAccountWindowUrl(), "TbSyncNewAccountWindow", "centerscreen,resizable=no");
+  addAccount: async function (provider) {
+    TbSync.providers.loadedProviders[provider].createAccountWindow = window.openDialog(await TbSync.providers.request(provider, "Base.getCreateAccountWindowUrl"), "TbSyncNewAccountWindow", "centerscreen,resizable=no");
     TbSync.providers.loadedProviders[provider].createAccountWindow.addEventListener("unload", function () { TbSync.manager.prefWindowObj.focus(); });
   },
 

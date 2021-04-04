@@ -46,8 +46,8 @@ var core = {
     return this.syncDataObj[accountID];        
   },
   
-  getNextPendingFolder: function (syncData) {
-    let sortedFolders = TbSync.providers[syncData.accountData.getAccountProperty("provider")].Base.getSortedFolders(syncData.accountData);
+  getNextPendingFolder: async function (syncData) {
+    let sortedFolders = await TbSync.providers.request(syncData.accountData.getAccountProperty("provider"), "Base.getSortedFolders", [syncData.accountData.accountID]);
     for (let i=0; i < sortedFolders.length; i++) {
       if (sortedFolders[i].getFolderProperty("status") != "pending") continue;
       syncData._setCurrentFolderData(sortedFolders[i]);
@@ -106,7 +106,7 @@ var core = {
       if (syncDescription.syncList) {
         let listStatusData;
         try {
-          listStatusData = await TbSync.providers[syncData.accountData.getAccountProperty("provider")].Base.syncFolderList(syncData, syncDescription.syncJob, accountRuns);
+          listStatusData = await TbSync.providers.request(syncData.accountData.getAccountProperty("provider"), "Base.syncFolderList", [syncData, syncDescription.syncJob, accountRuns]);
         } catch (e) {
           listStatusData = new TbSync.StatusData(TbSync.StatusData.WARNING, "JavaScriptError", e.message + "\n\n" + e.stack);
         }
@@ -150,13 +150,13 @@ var core = {
             }
             
             // getNextPendingFolder will set or clear currentFolderData of syncData
-            if (!this.getNextPendingFolder(syncData)) {
+            if (!(await this.getNextPendingFolder(syncData))) {
               break;
             }
             
             let folderStatusData;
             try {
-              folderStatusData = await TbSync.providers[syncData.accountData.getAccountProperty("provider")].Base.syncFolder(syncData, syncDescription.syncJob, folderRuns);
+              folderStatusData = await TbSync.providers.request(syncData.accountData.getAccountProperty("provider"), "Base.syncFolder", [syncData, syncDescription.syncJob, folderRuns]);
             } catch (e) {
               folderStatusData = new TbSync.StatusData(TbSync.StatusData.WARNING, "JavaScriptError", e.message + "\n\n" + e.stack);
             }
@@ -210,16 +210,16 @@ var core = {
     }
   },
   
-  enableAccount: function(accountID) {
+  enableAccount: async function(accountID) {
     let accountData = new TbSync.AccountData(accountID);
-    TbSync.providers[accountData.getAccountProperty("provider")].Base.onEnableAccount(accountData);
+    await TbSync.providers.request(accountData.getAccountProperty("provider"), "Base.onEnableAccount", [accountData.accountID]);
     accountData.setAccountProperty("status", "notsyncronized");
     accountData.resetAccountProperty("lastsynctime");        
   },
 
-  disableAccount: function(accountID) {
+  disableAccount: async function(accountID) {
     let accountData = new TbSync.AccountData(accountID);
-    TbSync.providers[accountData.getAccountProperty("provider")].Base.onDisableAccount(accountData);
+    await TbSync.providers.request(accountData.getAccountProperty("provider"), "Base.onDisableAccount", [accountData.accountID]);
     accountData.setAccountProperty("status", "disabled");
     
     let folders = accountData.getAllFolders();

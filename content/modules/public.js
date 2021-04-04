@@ -366,11 +366,11 @@ var FolderData = class {
   }
   
   setFolderProperty(field, value) {
-    TbSync.db.setFolderProperty(this.accountID, this.folderID, field, value);
+    return TbSync.db.setFolderProperty(this.accountID, this.folderID, field, value);
   }
 
   resetFolderProperty(field) {
-    TbSync.db.resetFolderProperty(this.accountID, this.folderID, field);
+    return TbSync.db.resetFolderProperty(this.accountID, this.folderID, field);
   }
 
   /**

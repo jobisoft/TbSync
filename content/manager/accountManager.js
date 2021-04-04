@@ -57,7 +57,7 @@ var tbSyncAccountManager = {
     TbSync.prefs.setIntPref("log.userdatalevel", log.value);
   },
   
-  initSupportWizard: function() {
+  initSupportWizard: async function() {
     document.getElementById("SupportWizard").getButton("finish").disabled = true;
 
     let menu = document.getElementById("tbsync.supportwizard.faultycomponent");
@@ -66,7 +66,7 @@ var tbSyncAccountManager = {
     for (let i=0; i < providers.length; i++) {
       let item = document.createXULElement("menuitem");
       item.setAttribute("value", providers[i]);
-      item.setAttribute("label", TbSync.getString("supportwizard.provider::" + TbSync.providers[providers[i]].Base.getProviderName()));
+      item.setAttribute("label", TbSync.getString("supportwizard.provider::" + await TbSync.providers.request(providers[i], "Base.getProviderName")));
       menu.appendChild(item); 
     }
   
@@ -87,7 +87,7 @@ var tbSyncAccountManager = {
     document.getElementById("SupportWizard").getButton("finish").disabled = (provider == "" || subject == "" || description== "");        
   },
 
-  prepareBugReport: function(event) {
+  prepareBugReport: async function(event) {
     let provider = document.getElementById("tbsync.supportwizard.faultycomponent").parentNode.value;
     let subject = document.getElementById("tbsync.supportwizard.summary").value;
     let description = document.getElementById("tbsync.supportwizard.description").value;
@@ -98,7 +98,7 @@ var tbSyncAccountManager = {
     }
 
     //special if core is selected, which is not a provider
-    let email = (TbSync.providers.loadedProviders.hasOwnProperty(provider)) ? TbSync.providers[provider].Base.getMaintainerEmail() : "john.bieling@gmx.de";
+    let email = (TbSync.providers.loadedProviders.hasOwnProperty(provider)) ? await TbSync.providers.request(provider, "Base.getMaintainerEmail") : "john.bieling@gmx.de";
     let version = (TbSync.providers.loadedProviders.hasOwnProperty(provider)) ? " " + TbSync.providers.loadedProviders[provider].version : "";
     TbSync.manager.createBugReport(email, "[" + provider.toUpperCase() + version + "] " + subject, description);
   },
@@ -115,10 +115,10 @@ var tbSyncAccountManager = {
       let provider = providers[i];
       let template = listOfContributors.firstElementChild.cloneNode(true);
       template.setAttribute("provider", provider);
-      template.children[0].setAttribute("src", await TbSync.providers[provider].Base.getProviderIcon(48));
-      template.children[1].children[0].textContent = await TbSync.providers[provider].Base.getProviderName();
+      template.children[0].setAttribute("src", await TbSync.providers.request(provider, "Base.getProviderIcon", [48]));
+      template.children[1].children[0].textContent = await TbSync.providers.request(provider, "Base.getProviderName");
       listOfContributors.appendChild(template);
-      Object.assign(sponsors, await TbSync.providers[provider].Base.getSponsors());
+      Object.assign(sponsors, await TbSync.providers.request(provider, "Base.getSponsors"));
     }
     listOfContributors.removeChild(listOfContributors.firstElementChild);
 

@@ -16,8 +16,13 @@ var FolderList = class {
   /**
    * @param {string}  provider  Identifier for the provider this FolderListView is created for.
    */
-  constructor(provider) {
-    this.provider = provider
+  constructor(parent, provider) {
+    this.parent = parent; // provider class
+    this.provider = provider; // provider short name
+  }
+  
+  request(command, parameters) {
+    return this.parent.request(this.provider, command, parameters);
   }
   
   /**
@@ -27,8 +32,9 @@ var FolderList = class {
    * @param document       [in] document object of the account settings window - element.ownerDocument - menuentry?
    * @param folderData         [in] FolderData of the selected folder
    */
-  onContextMenuShowing(window, folderData) {
-    return TbSync.providers[this.provider].StandardFolderList.onContextMenuShowing(window, folderData);
+  async onContextMenuShowing(window, folderData) {
+    return await this.request("Base.onContextMenuShowing", [folderData.accountID, folderData.folderID]);
+    //TbSync.providers[this.provider].StandardFolderList.onContextMenuShowing(window, folderData);
   }
 
 
@@ -51,7 +57,7 @@ var FolderList = class {
    * @param document        [in] document object of the account settings window
    * @param folderData         [in] FolderData of the folder in the row
    */        
-  getRow(document, folderData) {
+  async getRow(document, folderData) {
     //create checkBox for select state
     let itemSelCheckbox = document.createXULElement("checkbox");
     itemSelCheckbox.setAttribute("updatefield", "selectbox");
@@ -60,12 +66,12 @@ var FolderList = class {
 
     //icon
     let itemType = document.createXULElement("image");
-    itemType.setAttribute("src", TbSync.providers[this.provider].StandardFolderList.getTypeImage(folderData));
+    itemType.setAttribute("src", await this.request("Base.getTypeImage", [folderData.accountID, folderData.folderID])); //TbSync.providers[this.provider].StandardFolderList.getTypeImage(folderData)
     itemType.setAttribute("style", "margin: 0px 9px 0px 3px;");
 
     //ACL
-    let roAttributes = TbSync.providers[this.provider].StandardFolderList.getAttributesRoAcl(folderData);
-    let rwAttributes = TbSync.providers[this.provider].StandardFolderList.getAttributesRwAcl(folderData);
+    let roAttributes = await this.request("Base.getAttributesRoAcl", [folderData.accountID, folderData.folderID]);
+    let rwAttributes = await this.request("Base.getAttributesRwAcl", [folderData.accountID, folderData.folderID]);
     let itemACL = document.createXULElement("button");
     itemACL.setAttribute("image", "chrome://tbsync/content/skin/acl_" + (folderData.getFolderProperty("downloadonly") ? "ro" : "rw") + ".png");
     itemACL.setAttribute("class", "plain");
@@ -222,8 +228,8 @@ var FolderList = class {
    * @param listItem       [in] the listitem of the row, which needs to be updated
    * @param folderData        [in] FolderData for that row
    */        
-  updateRow(document, listItem, folderData) {
-    let foldername = TbSync.providers[this.provider].StandardFolderList.getFolderDisplayName(folderData);
+  async updateRow(document, listItem, folderData) {
+    let foldername = await this.request("Base.getFolderDisplayName", [folderData.accountID, folderData.folderID]);
     let status = folderData.getFolderStatus();
     let selected = folderData.getFolderProperty("selected");
     
@@ -321,7 +327,7 @@ var providers = {
         this.loadedProviders[provider].defaultAccountEntries = await this.request(provider, "Base.getDefaultAccountEntries");
 
         this[provider] = {};
-        this[provider].folderList = new FolderList(provider);
+        this[provider].folderList = new FolderList(this, provider);
 
         addon.contributorsURL = await this.request(provider, "Base.getContributorsUrl");
         
