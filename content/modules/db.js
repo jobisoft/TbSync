@@ -253,6 +253,20 @@ var db = {
     }            
   },
 
+  getAccountProperties: function (accountID, props) {
+    let rv = {};
+    let provider = this.getAccountProperty(accountID, "provider");
+    
+    // If props is not given, return all props.
+    let names = props 
+      ? props
+      : Object.keys(TbSync.providers.getDefaultAccountEntries(provider));
+    
+    for (let name of names) {
+      rv[name] = this.getAccountProperty(accountID, name);
+    }
+    return rv;
+  },
   getAccountProperty: function (accountID, name) {
     // if the requested accountID does not exist, getAccount() will fail
     let data = this.getAccount(accountID);
@@ -264,6 +278,11 @@ var db = {
     }
   }, 
 
+  setAccountProperties: function (accountID, props) {
+    for (let [name, value] of Object.entries(props)) {
+      this.setAccountProperty(accountID, name, value);
+    }
+  },
   setAccountProperty: function (accountID , name, value) {
     // if the requested accountID does not exist, getAccount() will fail
     let data = this.getAccount(accountID);
@@ -275,6 +294,11 @@ var db = {
     this.saveAccounts();
   },
 
+  resetAccountProperties: function (accountID, props) {
+    for (let name of props) {
+      this.resetAccountProperty(accountID, name);
+    }
+  },
   resetAccountProperty: function (accountID , name) {
     // if the requested accountID does not exist, getAccount() will fail
     let data = this.getAccount(accountID);
@@ -330,6 +354,20 @@ var db = {
     }
   },
 
+  getFolderProperties: function(accountID, folderID, props) {
+    let rv = {};
+    let provider = this.getAccountProperty(accountID, "provider");
+    
+    // If props is not given, return all props.
+    let fields = props 
+      ? props
+      : Object.keys(TbSync.providers.getDefaultFolderEntries(accountID));
+    
+    for (let field of fields) {
+      rv[field] = this.getFolderProperty(accountID, folderID, field);
+    }
+    return rv;
+  },
   getFolderProperty: function(accountID, folderID, field) {
     //does the field exist?
     let folder = (this.folders.hasOwnProperty(accountID) && this.folders[accountID].hasOwnProperty(folderID)) ? this.folders[accountID][folderID] : null;
@@ -350,6 +388,11 @@ var db = {
     }
   },
 
+  setFolderProperties: function (accountID, folderID, props) {
+    for (let [field, value] of Object.entries(props)) {
+      this.setFolderProperty(accountID, folderID, field, value);
+    }
+  },
   setFolderProperty: function (accountID, folderID, field, value) {
     if (this.isValidFolderProperty(accountID, field)) {
       this.folders[accountID][folderID][field] = value;
@@ -357,6 +400,11 @@ var db = {
     }
   },
   
+  resetFolderProperties: function (accountID, folderID, props) {
+    for (let field of props) {
+      this.resetFolderProperty(accountID, folderID, field);
+    }
+  },
   resetFolderProperty: function (accountID, folderID, field) {
     let provider = this.getAccountProperty(accountID, "provider");
     let defaults = TbSync.providers.getDefaultFolderEntries(accountID);        

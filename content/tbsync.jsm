@@ -116,6 +116,12 @@ var TbSync = {
         // When TbSync modules are moved out of the legacy blob into the
         // WebExtension part, they could use these as well, so we only have
         // to maintain a single Interface.
+        case "getAccountProperties":
+        case "setAccountProperties":
+        case "resetAccountProperties":
+        case "getFolderProperties":
+        case "setFolderProperties":
+        case "resetFolderProperties":
         case "getAccountProperty":
         case "setAccountProperty":
         case "resetAccountProperty":
