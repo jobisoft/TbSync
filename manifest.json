@@ -24,7 +24,7 @@
     }
   }, 
   "background": {
-    "scripts": ["background.js"]
+    "page": "background.html"
   },
   "permissions": [
     "notifications",

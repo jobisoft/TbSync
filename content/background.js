@@ -1,3 +1,15 @@
+/*
+ * This file is part of TbSync.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
+ */
+
+"use strict";
+
+import * as tools from './scripts/webext/tools.js'
+
 const tbSyncApiVersion = "3.0";
 var providers = {};
 var enabled = false;
@@ -31,9 +43,17 @@ var Provider = class {
             this.portMap.delete(id);
             resolve(data);
         } else {
-            // This is a request from a provider, forward it to the legacy part of TbSync
-            // Only pass on the data, id and origin are not needed in the Experiment.
-            let rv = await messenger.BootstrapLoader.notifyExperiment(message.data);
+            // This is a request from a provider.
+            // Try to handle the request here or forward it to the Legacy part if needed
+            let rv;
+            switch (message.data.command) {
+                case "getString":
+                    rv = tools.getString(...message.data.parameters);
+                    break;
+                default:
+                    // Forward to legacy: only pass on the data, id and origin are not needed in the Experiment.
+                    rv = await messenger.BootstrapLoader.notifyExperiment(message.data);
+            }
             this.port.postMessage({origin, id, data: rv});    
         }
     }
@@ -53,7 +73,7 @@ var Provider = class {
 // Wait for connections attempts from providers.
 messenger.runtime.onMessageExternal.addListener(async (message, sender) => { 
     if (message.command == "InitiateConnect") {      
-        port = messenger.runtime.connect(sender.id, { name: "ProviderConnection" });      
+        let port = messenger.runtime.connect(sender.id, { name: "ProviderConnection" });      
         if (port && !port.error) {
             let addon = await messenger.management.get(sender.id);
             let provider = new Provider(addon, message.provider, port);
@@ -96,6 +116,9 @@ messenger.BootstrapLoader.onNotifyBackground.addListener(async (info) => {
             messenger.browserAction.onClicked.addListener(tab => messenger.BootstrapLoader.openOptionsDialog(tab.windowId));
             messenger.browserAction.enable();        
             break;
+        
+        case "getString":
+            return tools.getString(...info.arguments);
 
         default:
             // Any other request is probably a request which should be forwarded to a provider 
