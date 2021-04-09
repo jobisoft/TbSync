@@ -401,8 +401,12 @@ var FolderData = class {
       status = TbSync.getString("status." + this.getFolderProperty("status"), this.accountData.getAccountProperty("provider")).split("||")[0];
 
       switch (this.getFolderProperty("status").split(".")[0]) { //the status may have a sub-decleration
-        case "success":
         case "modified":
+          //trigger periodic sync (TbSync.syncTimer, tbsync.jsm)
+          if (!this.isSyncing()) {
+            this.accountData.setAccountProperty("lastsynctime", 0);
+          }
+        case "success":
           try {
             status = status + ": " + this.targetData.targetName;
           } catch (e) {
