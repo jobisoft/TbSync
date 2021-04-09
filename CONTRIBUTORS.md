@@ -5,7 +5,7 @@
 * John Bieling
 * Jan Dagefoerde
 * Nam Ldmpub
-
+* Fonic
 
 ## Translators
 * John Bieling (de, en-US)
