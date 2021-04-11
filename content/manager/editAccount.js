@@ -66,6 +66,10 @@ var tbSyncAccountSettings = {
     }
   },
 
+  getCurrentFolderListData() {
+    return TbSync.providers.request(this.provider, "Base.getSortedFolders", [TbSync.providers.getAccountObject(this.accountData)]);
+  },
+  
   onload: async function () {
     //load observers
     Services.obs.addObserver(tbSyncAccountSettings.updateFolderListObserver, "tbsync.observer.manager.updateFolderList", false);
@@ -81,7 +85,10 @@ var tbSyncAccountSettings = {
     tbSyncAccountSettings.settings = Object.keys(TbSync.providers.getDefaultAccountEntries(tbSyncAccountSettings.provider)).sort();
 
     //add header to folderlist
-    let header = TbSync.providers[tbSyncAccountSettings.provider].folderList.getHeader();
+    this.folderListView = new TbSync.manager.FolderListView(tbSyncAccountSettings.provider);
+    this.folderListData = await this.getCurrentFolderListData();
+    let header = this.folderListView.getHeader();
+    
     let folderlistHeader = window.document.getElementById('tbsync.accountsettings.folderlist.header');
     for (let h=0; h < header.length; h++) {
       let listheader = window.document.createXULElement("treecol");
@@ -102,7 +109,7 @@ var tbSyncAccountSettings = {
     
     //done, folderlist must be updated while visible
     document.getElementById('tbsync.accountsettings.frame').hidden = false;	    
-    await tbSyncAccountSettings.updateFolderList();      
+    await tbSyncAccountSettings.updateFolderList(false);      
 
     if (OS.Constants.Sys.Name == "Darwin") { //we might need to find a way to detect MacOS like styling, other themes move the header bar into the tabpanel as well
       document.getElementById('manager.tabpanels').style["padding-top"] = "3ex";
@@ -281,31 +288,32 @@ var tbSyncAccountSettings = {
     
     if (tbSyncAccountSettings.folderListVisible()) {
       //update syncstates of folders in folderlist, if visible - remove obsolete entries while we are here
-      let folderIDs = await TbSync.providers.request(tbSyncAccountSettings.provider, "Base.getSortedFolders", [tbSyncAccountSettings.accountData.accountID]);
+      this.folderListData = await this.getCurrentFolderListData();
       let folderList = document.getElementById("tbsync.accountsettings.folderlist");
 
       for (let i=folderList.getRowCount()-1; i>=0; i--) {
         let item = folderList.getItemAtIndex(i);
-        if (folderIDs.filter(f => f == item.folderData.folderID).length == 0) {
+        if (this.folderListData.filter(f => f.folderID == item.folderData.folderID).length == 0) {
           item.remove();
         } else {
-          await TbSync.providers[tbSyncAccountSettings.provider].folderList.updateRow(document, item, item.folderData);
+          await folderListView.updateRow(document, item, item.folderListRowData);
         }
       }
     }
   },
 
-  updateFolderList: async function () {
-    //get updated list of folderIDs
-    let folderIDs = await TbSync.providers.request(tbSyncAccountSettings.provider, "Base.getSortedFolders", [tbSyncAccountSettings.accountData.accountID]);
-    
+  updateFolderList: async function (update = true) {
+    if (update) {
+      this.folderListData = await this.getCurrentFolderListData();
+    }
+        
     //remove entries from folderlist, which no longer exists and build reference array with  current elements
     let folderList = document.getElementById("tbsync.accountsettings.folderlist");
     folderList.hidden=true;
 
     let foldersElements = {};
     for (let i=folderList.getRowCount()-1; i>=0; i--) {
-      if (folderIDs.filter(f => f == folderList.getItemAtIndex(i).folderData.folderID).length == 0) {
+      if (this.folderListData.filter(f => f.folderID == folderList.getItemAtIndex(i).folderData.folderID).length == 0) {
         folderList.getItemAtIndex(i).remove();
       } else {
         foldersElements[folderList.getItemAtIndex(i).folderData.folderID] = folderList.getItemAtIndex(i);
@@ -313,9 +321,9 @@ var tbSyncAccountSettings = {
     }
 
     //update folderlist
-    for (let i=0; i < folderIDs.length; i++) {
+    for (let i=0; i < this.folderListData.length; i++) {
       let nextItem = null;
-      let folderData = new TbSync.FolderData(tbSyncAccountSettings.accountData, folderIDs[i]);
+      let folderData = new TbSync.FolderData(tbSyncAccountSettings.accountData, this.folderListData[i].folderID);
       
       //if this entry does not exist, create it
       if (foldersElements.hasOwnProperty(folderData.folderID)) {
@@ -324,15 +332,15 @@ var tbSyncAccountSettings = {
       } else {
         //add new entry, attach FolderData of this folder as folderData
         nextItem = document.createXULElement("richlistitem");
-        nextItem.folderData = folderData;
+        nextItem.folderListRowData = this.folderListData[i];
         
         //add row
-        nextItem.appendChild(await TbSync.providers[tbSyncAccountSettings.provider].folderList.getRow(document, folderData));
+        nextItem.appendChild(await this.folderListView.getRow(document, this.folderListData[i]));
       }
 
       //add/move row and update its content
       let addedItem = folderList.appendChild(nextItem);
-      await TbSync.providers[tbSyncAccountSettings.provider].folderList.updateRow(document, addedItem, folderData);
+      await this.folderListView.updateRow(document, addedItem, this.folderListData[i]);
 
       //ensureElementIsVisible also forces internal update of rowCount, which sometimes is not updated automatically upon appendChild
       folderList.ensureElementIsVisible(addedItem);
