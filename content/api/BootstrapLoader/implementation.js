@@ -2,6 +2,15 @@
  * This file is provided by the addon-developer-support repository at
  * https://github.com/thundernest/addon-developer-support
  *
+ * Version: 1.14
+ * - fix for TB90 ("view-loaded" event) and TB78.10 (wrench icon for options)
+ *
+ * Version: 1.13
+ * - removed notifyTools and move it into its own NotifyTools API
+ *
+ * Version: 1.12
+ * - add support for notifyExperiment and onNotifyBackground
+ * 
  * Version: 1.11
  * - add openOptionsDialog()
  * 
@@ -84,8 +93,12 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
     return messenger;
   }
 
-  getThunderbirdMajorVersion() {
-    return parseInt(Services.appinfo.version.split(".").shift());
+  getThunderbirdVersion() {
+    let parts = Services.appinfo.version.split(".");
+    return {
+      major: parseInt(parts[0]),
+      minor: parseInt(parts[1]),
+    }
   }
   
   getCards(e) {
@@ -94,10 +107,10 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
     let doc;
     
     // 78,86, and 87+ need special handholding. *Yeah*.
-    if (this.getThunderbirdMajorVersion() < 86) {
+    if (this.getThunderbirdVersion().major < 86) {
       let ownerDoc = e.document || e.target.ownerDocument;
       doc = ownerDoc.getElementById("html-view-browser").contentDocument;
-    } else if (this.getThunderbirdMajorVersion() < 87) {
+    } else if (this.getThunderbirdVersion().major < 87) {
       let ownerDoc = e.document || e.target;
       doc = ownerDoc.getElementById("html-view-browser").contentDocument;
     } else {
@@ -169,8 +182,11 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
         for (let card of cards) {
           // Setup either the options entry in the menu or the button
           if (card.addon.id == this.extension.id) {
-            if (this.getThunderbirdMajorVersion() < 88) {
-              // Options menu in 78-87
+            let optionsMenu = 
+              (this.getThunderbirdVersion().major > 78 && this.getThunderbirdVersion().major < 88) ||
+              (this.getThunderbirdVersion().major == 78 && this.getThunderbirdVersion().minor < 10);
+            if (optionsMenu) {
+              // Options menu in 78.0-78.10 and 79-87
               let addonOptionsLegacyEntry = card.querySelector(".extension-options-legacy");
               if (card.addon.isActive && !addonOptionsLegacyEntry) {
                 let addonOptionsEntry = card.querySelector("addon-options panel-list panel-item[action='preferences']");
@@ -256,6 +272,7 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
     }
     managerWindow.document.addEventListener("ViewChanged", this);
     managerWindow.document.addEventListener("update", this);
+    managerWindow.document.addEventListener("view-loaded", this);    
     managerWindow[this.uniqueRandomID] = {};
     managerWindow[this.uniqueRandomID].hasAddonManagerEventListeners = true;
     if (paint) {
@@ -419,7 +436,7 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
                 "chrome://messenger/content/messenger.xhtml",              
               ],
               async onLoadWindow(window) {
-                if (self.getThunderbirdMajorVersion() < 78) {
+                if (self.getThunderbirdVersion().major < 78) {
                   let element_addonPrefs = window.document.getElementById(self.menu_addonPrefs_id);
                   element_addonPrefs.addEventListener("popupshowing", self);
                 } else {
@@ -445,7 +462,7 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
     //remove our entry in the add-on options menu
     if (this.pathToOptionsPage) {
       for (let window of Services.wm.getEnumerator("mail:3pane")) {
-        if (this.getThunderbirdMajorVersion() < 78) {
+        if (this.getThunderbirdVersion().major < 78) {
           let element_addonPrefs = window.document.getElementById(this.menu_addonPrefs_id);
           element_addonPrefs.removeEventListener("popupshowing", this);
           // Remove our entry.
@@ -462,9 +479,10 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
           if (managerWindow && managerWindow[this.uniqueRandomID] && managerWindow[this.uniqueRandomID].hasAddonManagerEventListeners) {
             managerWindow.document.removeEventListener("ViewChanged", this);
             managerWindow.document.removeEventListener("update", this);
+            managerWindow.document.removeEventListener("view-loaded", this);
             
             let cards = this.getCards(managerWindow);
-            if (this.getThunderbirdMajorVersion() < 88) {
+            if (this.getThunderbirdVersion().major < 88) {
               // Remove options menu in 78-87
               for (let card of cards) {
                 let addonOptionsLegacyEntry = card.querySelector(".extension-options-legacy");
