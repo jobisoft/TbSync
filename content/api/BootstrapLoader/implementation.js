@@ -2,38 +2,7 @@
  * This file is provided by the addon-developer-support repository at
  * https://github.com/thundernest/addon-developer-support
  *
- * Version: 1.14
- * - fix for TB90 ("view-loaded" event) and TB78.10 (wrench icon for options)
- *
- * Version: 1.13
- * - removed notifyTools and move it into its own NotifyTools API
- *
- * Version: 1.12
- * - add support for notifyExperiment and onNotifyBackground
- * 
- * Version: 1.11
- * - add openOptionsDialog()
- * 
- * Version: 1.10
- * - fix for 68
- * 
- * Version: 1.7
- * - fix for beta 87
- * 
- * Version: 1.6
- * - add support for options button/menu in add-on manager and fix 68 double menu entry
- * 
- * Version: 1.5
- * - fix for e10s
- * 
- * Version 1.4
- * - add registerOptionsPage
- *
- * Version: 1.3
- * - flush cache
- *
- * Version: 1.2
- * - add support for resource urls
+ * Version: 1.16
  *
  * Author: John Bieling (john@thunderbird.net)
  *
@@ -244,9 +213,11 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
   // returns the outer browser, not the nested browser of the add-on manager
   // events must be attached to the outer browser
   getAddonManagerFromTab(tab) {
-    let win = tab.browser.contentWindow;
-    if (win && win.location.href == "about:addons") {
-      return win;
+    if (tab.browser) {
+      let win = tab.browser.contentWindow;
+      if (win && win.location.href == "about:addons") {
+        return win;
+      }
     }
   }
 
@@ -351,8 +322,8 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
         // let the ViewChange event do it
         self.setupAddonManager(self.getAddonManagerFromTab(aTab), false);
       },
-    };    
-    
+    };
+
     return {
       BootstrapLoader: {
 
@@ -459,6 +430,10 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
   }
 
   onShutdown(isAppShutdown) {
+    if (isAppShutdown) {
+      return; // the application gets unloaded anyway
+    }
+    
     //remove our entry in the add-on options menu
     if (this.pathToOptionsPage) {
       for (let window of Services.wm.getEnumerator("mail:3pane")) {
