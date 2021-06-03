@@ -12,6 +12,9 @@ var providers = {
 
   //list of default providers (available in add menu, even if not installed)
   defaultProviders: {
+    "google" : {
+      name: "Google's People API", 
+      homepageUrl: "https://addons.thunderbird.net/addon/google-4-tbsync/"},
     "dav" : {
       name: "CalDAV & CardDAV", 
       homepageUrl: "https://addons.thunderbird.net/addon/dav-4-tbsync/"},
