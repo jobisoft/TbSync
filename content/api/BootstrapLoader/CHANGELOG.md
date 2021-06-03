@@ -1,6 +1,11 @@
+Version: 1.17
+-------------
+- fix "ownerDoc.getElementById() is undefined" bug
+
+
 Version: 1.16
 -------------
-- fix " tab.browser is undefined" bug
+- fix "tab.browser is undefined" bug
 
 Version 1.15
 ------------

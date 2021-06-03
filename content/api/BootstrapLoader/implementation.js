@@ -2,7 +2,7 @@
  * This file is provided by the addon-developer-support repository at
  * https://github.com/thundernest/addon-developer-support
  *
- * Version: 1.16
+ * Version: 1.17
  *
  * Author: John Bieling (john@thunderbird.net)
  *
@@ -231,7 +231,7 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
     }
   }
 
-  setupAddonManager(managerWindow, paint = true) {
+  setupAddonManager(managerWindow, forceLoad = false) {
     if (!managerWindow) {
       return;
     }
@@ -246,7 +246,7 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
     managerWindow.document.addEventListener("view-loaded", this);    
     managerWindow[this.uniqueRandomID] = {};
     managerWindow[this.uniqueRandomID].hasAddonManagerEventListeners = true;
-    if (paint) {
+    if (forceLoad) {
       this.handleEvent(managerWindow);
     }
   }
@@ -290,37 +290,41 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
       onTabClosing(aTab) {},
       onTabPersist(aTab) {},
       onTabRestored(aTab) {},
-      onTabSwitched(aNewTab, aOldTab) {},
+      onTabSwitched(aNewTab, aOldTab) {
+        //self.setupAddonManager(self.getAddonManagerFromTab(aNewTab));
+      },
       async onTabOpened(aTab) {
-        if (!aTab.pageLoaded) {
-          // await a location change if browser is not loaded yet
-          await new Promise(resolve => {
-            let reporterListener = {
-              QueryInterface: ChromeUtils.generateQI([
-                "nsIWebProgressListener",
-                "nsISupportsWeakReference",
-              ]),
-              onStateChange() {},
-              onProgressChange() {},
-              onLocationChange(
-                  /* in nsIWebProgress*/ aWebProgress,
-                  /* in nsIRequest*/ aRequest,
-                  /* in nsIURI*/ aLocation
-              ) {
-                aTab.browser.removeProgressListener(reporterListener);  
-                resolve();
-              },
-              onStatusChange() {},
-              onSecurityChange() {},
-              onContentBlockingEvent() {}
-            }          
-            aTab.browser.addProgressListener(reporterListener);  
-          });
+        if (aTab.browser) {
+          if (!aTab.pageLoaded) {
+            // await a location change if browser is not loaded yet
+            await new Promise(resolve => {
+              let reporterListener = {
+                QueryInterface: ChromeUtils.generateQI([
+                  "nsIWebProgressListener",
+                  "nsISupportsWeakReference",
+                ]),
+                onStateChange() {},
+                onProgressChange() {},
+                onLocationChange(
+                    /* in nsIWebProgress*/ aWebProgress,
+                    /* in nsIRequest*/ aRequest,
+                    /* in nsIURI*/ aLocation
+                ) {
+                  aTab.browser.removeProgressListener(reporterListener);  
+                  resolve();
+                },
+                onStatusChange() {},
+                onSecurityChange() {},
+                onContentBlockingEvent() {}
+              }          
+              aTab.browser.addProgressListener(reporterListener);  
+            });
+          }
+          // Setup the ViewChange event listener in the outer browser of the add-on,
+          // but do not actually add the button/menu, as the inner browser is not yet ready,
+          // let the ViewChange event do it
+          self.setupAddonManager(self.getAddonManagerFromTab(aTab));
         }
-        // Setup the ViewChange event listener in the outer browser of the add-on,
-        // but do not actually add the button/menu, as the inner browser is not yet ready,
-        // let the ViewChange event do it
-        self.setupAddonManager(self.getAddonManagerFromTab(aTab), false);
       },
     };
 
@@ -412,7 +416,10 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
                   element_addonPrefs.addEventListener("popupshowing", self);
                 } else {
                   // Setup the options button/menu in the add-on manager, if it is already open.
-                  self.setupAddonManager(self.getAddonManagerFromWindow(window));
+                  self.setupAddonManager(
+                    self.getAddonManagerFromWindow(window),
+                    true
+                  );
                   // Add a tabmonitor, to be able to setup the options button/menu in the add-on manager.
                   self.getTabMail(window).registerTabMonitor(self.tabMonitor);
                   window[self.uniqueRandomID] = {};
