@@ -1,0 +1,126 @@
+<!doctype html>
+
+<html lang="en" class="fullsize">
+<head>
+  <meta charset="utf-8">
+  <link rel='stylesheet' type='text/css' href="chrome://global/skin/in-content/common.css">
+  <link rel="stylesheet" type='text/css' href="manager.css">
+  <link rel="stylesheet" type='text/css' href="/content/vendor/jspanel/src/panel-style.css">
+</head>
+
+<body id="accountsBody">
+
+        <!--popupset>
+                <menupopup id="tbsync.accountmanger.ContextMenu" onpopupshowing="tbSyncAccounts.updateDropdown('contextMenu');">
+                        <menuitem id="contextMenuRetryConnectAccount" 
+                                class="menuitem-iconic"
+                                image="chrome://tbsync/content/skin/connect16.png"
+                                label="__TBSYNCMSG_manager.RetryConnectAccount__" 
+                                oncommand="tbSyncAccounts.synchronizeAccount();"/>
+                        <menuitem id="contextMenuSyncAccount" 
+                                class="menuitem-iconic"
+                                image="chrome://tbsync/content/skin/sync16.png"
+                                label="__TBSYNCMSG_manager.SynchronizeAccount__" 
+                                oncommand="tbSyncAccounts.synchronizeAccount();"/>
+                        <menuitem id="contextMenuEnableAccount" 
+                                class="menuitem-iconic"
+                                image="chrome://tbsync/content/skin/connect16.png"
+                                label="__TBSYNCMSG_manager.EnableAccount__" 
+                                oncommand="tbSyncAccounts.toggleEnableState();"/>
+                        <menuitem id="contextMenuDisableAccount" 
+                                class="menuitem-iconic"
+                                image="chrome://tbsync/content/skin/disabled16.png"
+                                label="__TBSYNCMSG_manager.DisableAccount__" 
+                                oncommand="tbSyncAccounts.toggleEnableState();"/>
+                        <menuitem id="contextMenuDeleteAccount"
+                                class="menuitem-iconic"
+                                image="chrome://tbsync/content/skin/del16.png"
+                                label="__TBSYNCMSG_manager.DeleteAccount__"
+                                oncommand="tbSyncAccounts.deleteAccount();"/>
+                </menupopup>
+        </popupset-->
+                
+        <div class="hbox fullsize alignstart">
+                <div class="vbox fullsize">
+                        <div id="account-selection-box-header" 
+                                 class="account-selection-box-header" 
+                                 style="width:200px">
+                                 <div class="account-selection-header">head</div>
+                        </div>
+                        <div id="account-selection-box-items" 
+                                 class="account-selection-box-items flex" 
+                                 style="width:200px">
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                                 <div class="account-selection-item">account name</div>
+                        </div>
+                        
+                        <!-- richlistbox 
+                        id="tbSyncAccounts.accounts"
+                        flex="1"
+                        style="margin: 0 1px"
+                        seltype="single"
+                        context="tbsync.accountmanger.ContextMenu"                
+                        onkeypress="if (event.keyCode == 46) {tbSyncAccounts.deleteAccount();}"
+                        onselect="tbSyncAccounts.loadSelectedAccount();">
+                        <listheader style="border-bottom: 1px solid lightgrey;">
+                                <treecol style="font-weight:bold;" label="" width="26" flex="0" />
+                                <treecol style="font-weight:bold;" label="__TBSYNCMSG_manager.accounts__" flex="1" />
+                                <treecol style="font-weight:bold;text-align:right;" label="__TBSYNCMSG_manager.status__" flex="0" />
+                        </listheader>
+                        </richlistbox -->
+
+                        <div class="hbox" id="actionButtons">
+                                <img class="flex" src="/content/skin/sync16.png">
+                                <img class="flex" src="/content/skin/warning16.png">
+                                <img class="flex" src="/content/skin/add16.png">
+                        </div>
+
+                </div>
+                <div style="width:12px;"></div>
+                <iframe class="fullsize flex" id="tbSyncAccounts.contentFrame" src="noaccounts.html"></iframe>	
+        </div>
+
+    <script src="../scripts/i18n.js"></script>
+    <script src="/content/scripts/preferences/preferences.js"></script>
+    <script src="/content/vendor/jspanel/src/JSPanel.js"></script>    
+    <script src="accounts.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo for JSPanel</title>
+
+    <link rel="stylesheet" href="./panel-style.css">
+
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1 {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-weight: 400;
+            text-align: center;
+            margin: 0;
+        }
+
+        #container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+        }
+
+        #panel-controller {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            background-color: #fff;
+            border: 1px solid #dfe3eb;
+            box-shadow: 0 0 3px rgba(204, 204, 204, 0.75);
+            color: #303030;
+            font-size: 22px;
+            transition: transform 200ms ease;
+        }
+
+        #panel-controller[aria-expanded="true"] {
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Look the button right there, here, you see it ?</h1>
+
+    <button type="button" onclick="panel.removeItems([0, 1, 2])">CLICK</button>
+    
+    <div id="container">
+        <button id="panel-controller">+</button>
+    </div>
+
+    <script src="./JSPanel.js"></script>
+    <script>
+        const button = document.querySelector("#panel-controller");
+        const panel = new JSPanel(button, {
+            bottom: 0 + button.getBoundingClientRect().height,
+            right: 0,
+            items: [
+                { title: "My Profile", fontawesome_icon: "far fa-user", onclick: () => console.log("clicked on profile") },
+                { title: "Settings", fontawesome_icon: "fas fa-cog", onclick: () => console.log("clicked on settings") },
+                { separator: true, },
+                { title: "Close", fontawesome_icon: "far fa-window-close", onclick: () => console.log("clicked on close") },
+            ],
+        });
+    </script>
+</body>
+</html>

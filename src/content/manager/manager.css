@@ -1,0 +1,137 @@
+.fullsize, html.fullsize body {
+    background-color: #f0f0f0;
+    margin: 0;
+    height: 100%;
+}
+
+body {
+    font-size: 11pt;
+}
+
+#manager {
+    display: flex;
+    flex-direction: column;
+}
+
+#tbtoolbar {
+    border:1px solid darkgrey;
+    border-radius: 3px;
+    background-color: #ffffff; 
+    padding: 0; 
+    margin:8px 12px 12px 12px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: center;
+    align-content: center;
+}
+
+.vbox  {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;    
+}
+
+.hbox  {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-content: center;    
+}
+
+.alignstart {
+    align-items: flex-start;
+}
+
+.flex {
+    flex:2;
+}
+
+#tbtoolbar .vbox  {
+    margin: 0;
+    padding:8px 8px 3px 8px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;    
+}
+
+#tbtoolbar .label {
+    text-align: center;   
+}
+
+#tbtoolbar .vbox:hover  {
+    background-color: #e0e8f6;
+}
+
+#tbtoolbar .vbox[active="true"]  {
+    background-color: #c1d2ee;
+}
+
+#contentWindow {
+    margin:8px 12px 12px 12px;
+    border: none;
+    flex:2;
+}
+
+#mainframe {
+    padding:0 12px;
+    margin:0;
+}
+
+.row vbox {
+    width:140px;
+}
+
+iframe {
+    margin:0;
+    padding:0;
+    border: none;
+}
+
+#actionButtons img {
+    margin:5px;
+    padding:5px;
+    border:1px solid darkgrey;
+    border-radius: 3px;
+}
+
+.account-selection-box {
+	border: 1px solid var(--in-content-box-border-color);
+    border-radius: 2px;
+}
+
+.account-selection-box-header {
+	background-color: var(--in-content-box-background);
+	border-bottom: 1px solid var(--in-content-box-border-color);
+    font-size: 10pt;
+}
+.account-selection-box-items {
+	overflow: auto;
+	overflow-x: hidden;
+	background-color: var(--in-content-box-background);
+    font-size: 10pt;
+}
+
+.account-selection-item {
+	padding: .3em;
+	cursor: default;
+	user-select: none;
+}
+
+.account-selection-header {
+	padding: .3em;
+	user-select: none;
+}
+
+.account-selection-item:hover {
+	background-color: var(--in-content-item-hover);
+}
+
+.account-selection-item[selected] {
+	color: var(--in-content-selected-text);
+	background-color: var(--in-content-item-selected)
+}

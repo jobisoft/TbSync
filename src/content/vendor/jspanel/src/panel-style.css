@@ -1,0 +1,107 @@
+:root {
+    --panel-z-index: 1001;
+    --panel-background-color: #fff;
+    --panel-box-shadow: 0 0 4px rgba(204, 204, 204, 0.75);
+    --panel-width: 160px;
+    --panel-text-color: #404040;
+    --panel-hover-item-background-color: #f4f6fa;
+    --panel-hover-item-color: #385074;
+    --panel-icon-width: 13px;
+    --panel-separator-color: #dfe3eb;
+}
+
+/* the pannel */
+.jspanel {
+    box-sizing: border-box;
+    position: absolute;
+    z-index: var(--panel-z-index, 1001);
+    background-color: var(--panel-background-color, #fff);
+    box-shadow: var(--panel-box-shadow, 0 0 4px rgba(204, 204, 204, 0.75));
+    border-radius: 5px;
+    padding: 10px 0;
+    width: var(--panel-width, 160px);
+    min-height: 50px;
+    height: auto;
+    visibility: visible; /* important */
+}
+
+/* Never change the visibility of the sign by yourself. */
+.jspanel.panel-hidden {
+    visibility: hidden;
+}
+
+/* the list of items */
+.jspanel .container-items {
+    box-sizing: border-box;
+    display:flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+/* for each item */
+.jspanel button {
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    height: 30px;
+    box-sizing: border-box;
+    padding: 0 20px;
+    color: var(--panel-text-color, #404040);
+    background-color: transparent;
+    display: flex;
+    align-items: center;
+}
+
+.jspanel button[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.jspanel button:hover {
+    background-color: var(--panel-hover-item-background-color, #f4f6fa);
+    color: var(--panel-hover-item-color, #385074);
+}
+
+.jspanel button:focus {
+    outline: auto;
+}
+
+/* the title of the item */
+.jspanel button span {
+    pointer-events: none;
+    -webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+    display: flex;
+    width: 100%;
+    text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+/* img is an `icon`, i is a `fontawesome_icon` */
+.jspanel button img,
+.jspanel button i {
+    pointer-events: none;
+    -webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+    margin-right: 10px;
+}
+
+/* the icon */
+.jspanel button img {
+    width: var(--panel-icon-width, 13px);
+    height: auto;
+}
+
+/* for each separator */
+.jspanel .jspanel-separator {
+    height: 1px;
+    width: 80%;
+    margin: 8px 0;
+    background-color: var(--panel-separator-color, #dfe3eb);
+}
