@@ -1,50 +1,52 @@
 <!doctype html>
 
 <html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <link rel="stylesheet" href="manager.css">
+    <meta charset="utf-8">
+    <link rel='stylesheet' type='text/css' href="chrome://global/skin/in-content/common.css">
+    <link rel="stylesheet" href="manager.css">
 </head>
 
 <body id="helpBody">
 
     <div id="mainframe">
-            <p>
-                <b>__MSG_manager.help.needhelp__</b><br/><br/>
-                __MSG_manager.help.wiki__
-            </p>
+        <p>
+            <b>__MSG_manager.help.needhelp__</b><br /><br />
+            __MSG_manager.help.wiki__
+        </p>
 
-            <a href="javascript:void(0)" id="wikilink">https://github.com/jobisoft/TbSync/wiki</a>
+        <a href="javascript:void(0)" id="wikilink">https://github.com/jobisoft/TbSync/wiki</a>
 
-            <p>
-                <b>__MSG_manager.help.foundabug__</b><br/><br/>
-                <span>__MSG_manager.help.fixit__</span>
-            </p>
+        <p>
+            <b>__MSG_manager.help.foundabug__</b><br /><br />
+            <span>__MSG_manager.help.fixit__</span>
+        </p>
 
-            <div align="center">
-                <label for="logLevel">__MSG_manager.help.debugmode__</label>
-                <select id="logLevel">
-                    <option value="0">__MSG_manager.help.debuglevel.0__</option>
-                    <option value="1">__MSG_manager.help.debuglevel.1__</option>
-                    <option value="2">__MSG_manager.help.debuglevel.2__</option>
-                    <option value="3">__MSG_manager.help.debuglevel.3__</option>
-                </select>
-            </div>
+        <div align="center">
+            <label for="logLevel">__MSG_manager.help.debugmode__</label>
+            <select id="logLevel">
+                <option value="0">__MSG_manager.help.debuglevel.0__</option>
+                <option value="1">__MSG_manager.help.debuglevel.1__</option>
+                <option value="2">__MSG_manager.help.debuglevel.2__</option>
+                <option value="3">__MSG_manager.help.debuglevel.3__</option>
+            </select>
+        </div>
 
-            <p> 
-                __MSG_manager.help.createbugreportinfo__
-            </p>     
-            
-            <!--div>
+        <p>
+            __MSG_manager.help.createbugreportinfo__
+        </p>
+
+        <!--div>
                 <button style="margin:0 0 0 1em; padding: 0 1ex;" label="__MSG_manager.help.createbugreport__" oncommand="TbSync.manager.openBugReportWizard();" />
                 <button style="margin:0 0 0 1em; padding: 0 1ex;" label="__MSG_manager.help.viewdebuglog__" oncommand="TbSync.manager.viewDebugLog();" />
             </div-->
-            
+
     </div>
 
     <script src="../scripts/i18n.js"></script>
     <script src="/content/scripts/preferences/preferences.js"></script>
     <script src="accountManager.js"></script>
 </body>
-</html>
 
+</html>

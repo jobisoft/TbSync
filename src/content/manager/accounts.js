@@ -498,16 +498,11 @@ var tbSyncAccounts = {
 function load() {
   i18n.updateDocument({})
 
-  const button = document.getElementById("tbSyncAccounts.btnAccountActions");
+  const button = document.getElementById("action.addAccount");
   const panel = new JSPanel(button, {
-      bottom: 0 + button.getBoundingClientRect().height,
-      right: 0,
+      bottom: 8 + button.getBoundingClientRect().height,
+      left: 0,
       items: [
-          { title: messenger.i18n.getMessage("manager.SyncAll"), icon: "/content/skin/sync16.png", onclick: () => console.log("clicked on accountActionsSyncAllAccounts / TbSync.core.syncAllAccounts();") },
-          { title: messenger.i18n.getMessage("manager.ShowEventLog"), icon: "/content/skin/warning16.png", onclick: () => console.log("clicked on accountActionsShowEventLog / TbSync.eventlog.open()") },
-          { separator: true, },
-          { title: messenger.i18n.getMessage("manager.DeleteAccount"), icon: "/content/skin/del16.png", onclick: () => console.log("clicked on accountActionsDeleteAccount / tbSyncAccounts.deleteAccount();") },
-          { title: messenger.i18n.getMessage("manager.DisableAccount"), icon: "/content/skin/disabled16.png", onclick: () => console.log("clicked on accountActionsDisableAccount / tbSyncAccounts.toggleEnableState();") },
           { title: messenger.i18n.getMessage("manager.EnableAccount"), icon: "/content/skin/connect16.png", onclick: () => console.log("clicked on accountActionsEnableAccount / tbSyncAccounts.toggleEnableState();") },
           { title: messenger.i18n.getMessage("manager.SynchronizeAccount"), icon: "/content/skin/sync16.png", onclick: () => console.log("clicked on accountActionsSyncAccount / tbSyncAccounts.synchronizeAccount();") },
           { title: messenger.i18n.getMessage("manager.RetryConnectAccount"), icon: "/content/skin/connect16.png", onclick: () => console.log("clicked on accountActionsRetryConnectAccount / tbSyncAccounts.synchronizeAccount();") },

@@ -1,13 +1,13 @@
 :root {
     --panel-z-index: 1001;
-    --panel-background-color: #fff;
-    --panel-box-shadow: 0 0 4px rgba(204, 204, 204, 0.75);
-    --panel-width: 160px;
-    --panel-text-color: #404040;
-    --panel-hover-item-background-color: #f4f6fa;
-    --panel-hover-item-color: #385074;
-    --panel-icon-width: 13px;
-    --panel-separator-color: #dfe3eb;
+    --panel-background-color: var(--in-content-page-background);
+    /*--panel-box-shadow: 0 0 4px rgba(204, 204, 204, 0.75);*/
+    --panel-width: 260px;
+    /*--panel-text-color: #404040;*/
+    --panel-hover-item-background-color: var(--in-content-item-hover);
+    /*--panel-hover-item-color: #385074;*/
+    --panel-icon-width: 16px;
+    --panel-separator-color: var(--in-content-box-border-color);
 }
 
 /* the pannel */
@@ -15,10 +15,11 @@
     box-sizing: border-box;
     position: absolute;
     z-index: var(--panel-z-index, 1001);
-    background-color: var(--panel-background-color, #fff);
-    box-shadow: var(--panel-box-shadow, 0 0 4px rgba(204, 204, 204, 0.75));
-    border-radius: 5px;
-    padding: 10px 0;
+    background-color: var(--in-content-box-background, #fff);
+    /*box-shadow: var(--panel-box-shadow, 0 0 4px rgba(204, 204, 204, 0.75));*/
+    border: 1px solid var(--in-content-box-border-color);
+    border-radius: 3px;
+    padding: 6px 0;
     width: var(--panel-width, 160px);
     min-height: 50px;
     height: auto;
@@ -47,7 +48,7 @@
     height: 30px;
     box-sizing: border-box;
     padding: 0 20px;
-    color: var(--panel-text-color, #404040);
+    /*color: var(--panel-text-color, #404040);*/
     background-color: transparent;
     display: flex;
     align-items: center;
@@ -60,12 +61,12 @@
 
 .jspanel button:hover {
     background-color: var(--panel-hover-item-background-color, #f4f6fa);
-    color: var(--panel-hover-item-color, #385074);
+    /*color: var(--panel-hover-item-color, #385074);*/
 }
 
-.jspanel button:focus {
+/*.jspanel button:focus {
     outline: auto;
-}
+}*/
 
 /* the title of the item */
 .jspanel button span {
@@ -94,7 +95,7 @@
 
 /* the icon */
 .jspanel button img {
-    width: var(--panel-icon-width, 13px);
+    width: var(--panel-icon-width, 16px);
     height: auto;
 }
 

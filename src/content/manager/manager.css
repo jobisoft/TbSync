@@ -1,10 +1,10 @@
 .fullsize, html.fullsize body {
-    background-color: #f0f0f0;
     margin: 0;
     height: 100%;
 }
 
-body {
+html, body {
+    /*background-color: var(--in-content-categories-background);*/
     font-size: 11pt;
 }
 
@@ -14,9 +14,9 @@ body {
 }
 
 #tbtoolbar {
-    border:1px solid darkgrey;
+    border:1px solid var(--in-content-box-border-color);
     border-radius: 3px;
-    background-color: #ffffff; 
+    background-color: var(--in-content-box-background); 
     padding: 0; 
     margin:8px 12px 12px 12px;
     display: flex;
@@ -52,7 +52,7 @@ body {
 #tbtoolbar .vbox  {
     margin: 0;
     padding:8px 8px 3px 8px;
-    background-color: #ffffff;
+    background-color: var(--in-content-box-background);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -64,11 +64,12 @@ body {
 }
 
 #tbtoolbar .vbox:hover  {
-    background-color: #e0e8f6;
+    background-color: var(--in-content-item-hover);
 }
 
 #tbtoolbar .vbox[active="true"]  {
-    background-color: #c1d2ee;
+	color: var(--in-content-selected-text);
+    background-color: var(--in-content-item-selected)
 }
 
 #contentWindow {
@@ -92,45 +93,74 @@ iframe {
     border: none;
 }
 
-#actionButtons img {
+#actionButtons > img {
     margin:5px;
     padding:5px;
-    border:1px solid darkgrey;
+    border:1px solid var(--in-content-box-border-color);;
     border-radius: 3px;
 }
 
+/* richlistbox replacement */
 .account-selection-box {
 	border: 1px solid var(--in-content-box-border-color);
     border-radius: 2px;
+    overflow: hidden;
 }
 
+/* header layout */
 .account-selection-box-header {
 	background-color: var(--in-content-box-background);
 	border-bottom: 1px solid var(--in-content-box-border-color);
-    font-size: 10pt;
+    font-size: 10pt;    
 }
+.account-selection-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-content: center;     
+}
+.account-selection-header div {
+	padding: 0.3em;
+    font-weight: bold;
+    font-size: 9pt;
+}
+.account-selection-header div:nth-child(1){
+    width: 16px;
+}
+.account-selection-header div:nth-child(2){
+    flex: 2;
+    border-left: 1px solid var(--in-content-box-border-color);
+    border-right: 1px solid var(--in-content-box-border-color);
+}
+
+/* items layout */
 .account-selection-box-items {
 	overflow: auto;
 	overflow-x: hidden;
 	background-color: var(--in-content-box-background);
-    font-size: 10pt;
 }
 
 .account-selection-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-content: center;     
+}
+.account-selection-item div{
 	padding: .3em;
 	cursor: default;
 	user-select: none;
+    font-size: 9pt;
 }
-
-.account-selection-header {
-	padding: .3em;
-	user-select: none;
+.account-selection-item div:nth-child(1){
+    width: 16px;
 }
-
+.account-selection-item div:nth-child(2){
+    flex: 2;
+}
 .account-selection-item:hover {
 	background-color: var(--in-content-item-hover);
 }
-
 .account-selection-item[selected] {
 	color: var(--in-content-selected-text);
 	background-color: var(--in-content-item-selected)
