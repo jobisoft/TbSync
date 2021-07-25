@@ -33,5 +33,15 @@
     "notifications",
     "management",
     "accountsRead"
-  ]
+  ],
+  "experiment_apis": {
+    "BootstrapLoader": {
+      "schema": "api/BootstrapLoader/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "paths": [["BootstrapLoader"]],
+        "script": "api/BootstrapLoader/implementation.js"
+      }
+    }
+  } 
 }

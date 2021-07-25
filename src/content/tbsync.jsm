@@ -16,7 +16,7 @@ var { OS }  =ChromeUtils.import("resource://gre/modules/osfile.jsm");
 var { AddonManager } = ChromeUtils.import("resource://gre/modules/AddonManager.jsm");
 var { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
 var { MailServices } = ChromeUtils.import("resource:///modules/MailServices.jsm");
-var { OverlayManager } = ChromeUtils.import("chrome://tbsync/content/OverlayManager.jsm");
+//var { OverlayManager } = ChromeUtils.import("chrome://tbsync/content/OverlayManager.jsm");
 
 var TbSync = {
 
@@ -42,7 +42,6 @@ var TbSync = {
 	  //public module and IO module needs to be loaded beforehand
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/public.js", this, "UTF-8");
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/io.js", this, "UTF-8");
-
     Services.scriptloader.loadSubScript("chrome://tbsync/content/scripts/notifyTools/notifyTools.js", this, "UTF-8");
     this.notifyTools.enable();
 
@@ -60,18 +59,18 @@ var TbSync = {
 	  
     // register modules to be used by TbSync
     this.modules.push({name: "db", state: 0});
-    this.modules.push({name: "abAutoComplete", state: 0});
-    this.modules.push({name: "addressbook", state: 0});
-    this.modules.push({name: "lightning", state: 0});
-    this.modules.push({name: "cardbook", state: 0});
-    this.modules.push({name: "eventlog", state: 0});
-    this.modules.push({name: "core", state: 0});
-    this.modules.push({name: "passwordManager", state: 0});
-    this.modules.push({name: "network", state: 0});
-    this.modules.push({name: "tools", state: 0});
-    this.modules.push({name: "manager", state: 0});
+    //this.modules.push({name: "abAutoComplete", state: 0});
+    //this.modules.push({name: "addressbook", state: 0});
+    //this.modules.push({name: "lightning", state: 0});
+    //this.modules.push({name: "cardbook", state: 0});
+    //this.modules.push({name: "eventlog", state: 0});
+    //this.modules.push({name: "core", state: 0});
+    //this.modules.push({name: "passwordManager", state: 0});
+    //this.modules.push({name: "network", state: 0});
+    //this.modules.push({name: "tools", state: 0});
+    //this.modules.push({name: "manager", state: 0});
     this.modules.push({name: "providers", state: 0});
-    this.modules.push({name: "messenger", state: 0});
+    //this.modules.push({name: "messenger", state: 0});
 
     //load modules
     for (let module of this.modules) {
@@ -100,7 +99,7 @@ var TbSync = {
     }
     
     //was debug mode enabled during startup?
-    this.debugMode = (this.prefs.getIntPref("log.userdatalevel") > 0);
+    //this.debugMode = (this.prefs.getIntPref("log.userdatalevel") > 0);
 
     // Forward requests from the background page.
     this.notifyTools.registerListener(data => {
@@ -146,10 +145,10 @@ var TbSync = {
     this.notifyTools.notifyBackground({command: "enabled"});
 
     //notify about finished init of TbSync
-    Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
+    //Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
 
     //activate sync timer
-    this.syncTimer.start();
+    //this.syncTimer.start();
 
     this.dump("TbSync init","Done");
   },
@@ -157,7 +156,7 @@ var TbSync = {
   // global unload
   unload: async function() {
     //cancel sync timer
-    this.syncTimer.cancel();
+    //this.syncTimer.cancel();
     this.notifyTools.disable();
 	  
     //unload modules in reverse order
@@ -176,7 +175,7 @@ var TbSync = {
   },
 
   // timer for periodic sync
-  syncTimer: {
+  /*syncTimer: {
     timer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
     start: function () {
@@ -205,5 +204,5 @@ var TbSync = {
         }
       }
     }
-  }
+  }*/
 };

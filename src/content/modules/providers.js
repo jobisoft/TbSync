@@ -59,10 +59,8 @@ var providers = {
         this.loadedProviders[provider].defaultAccountEntries = await this.request(provider, "Base.getDefaultAccountEntries");
 
         this[provider] = {};
-
-        addon.contributorsURL = await this.request(provider, "Base.getContributorsUrl");
         
-        await TbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xhtml?provider=" + provider, await this.request(provider, "Base.getEditAccountOverlayUrl"));        
+        //await TbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xhtml?provider=" + provider, await this.request(provider, "Base.getEditAccountOverlayUrl"));        
         TbSync.dump("Loaded provider", provider + "::" + await this.request(provider, "Base.getProviderName") + " ("+this.loadedProviders[provider].version+")");
         
         // reset all accounts of this provider
@@ -70,7 +68,7 @@ var providers = {
         let accounts = providerData.getAllAccounts();
         for (let accountData of accounts) {
           // reset sync objects
-          TbSync.core.resetSyncDataObj(accountData.accountID);
+          //TbSync.core.resetSyncDataObj(accountData.accountID);
           
           // set all accounts which are syncing to notsyncronized 
           if (accountData.getAccountProperty("status") == "syncing") accountData.setAccountProperty("status", "notsyncronized");
@@ -88,7 +86,7 @@ var providers = {
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", provider);
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
         
-        for (let calendar of TbSync.lightning.cal.getCalendarManager().getCalendars({})) {
+        /*for (let calendar of TbSync.lightning.cal.getCalendarManager().getCalendars({})) {
           let storedProvider = calendar.getProperty("tbSyncProvider");
           if (provider == storedProvider && calendar.type == "storage" && providerData.getFolders({"target": calendar.id}).length == 0) {
             let name = calendar.name;
@@ -97,13 +95,13 @@ var providers = {
             calendar.setProperty("tbSyncProvider", "orphaned");
             calendar.setProperty("tbSyncAccountID", "");        
           }
-        }
+        }*/
         
       } catch (e) {
         delete this.loadedProviders[provider];
         delete this[provider];
-        let info = new EventLogInfo(provider);
-        TbSync.eventlog.add("error", info, "FAILED to load provider <"+provider+">", e.message);
+        //let info = new EventLogInfo(provider);
+        //TbSync.eventlog.add("error", info, "FAILED to load provider <"+provider+">", e.message);
         Components.utils.reportError(e);        
       }
 
