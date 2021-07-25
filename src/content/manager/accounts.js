@@ -10,35 +10,66 @@
 
 var tbSyncAccounts = {
 
+  // Installed providers do not need a homepageUrl, so we use that as indicator,
+  // if the provider is installed or not.
+  defaultProviders: new Map([
+    [
+      "google@jobisoft.de",
+      {
+        name: "Google's People API", 
+        icon16: "/content/skin/provider16.png",
+        homepageUrl: "https://addons.thunderbird.net/addon/google-4-tbsync/",
+      },
+    ],
+    [
+      "dav4tbsync@jobisoft.de",
+      {
+        name: "CalDAV & CardDAV", 
+        icon16: "/content/skin/provider16.png",
+        homepageUrl: "https://addons.thunderbird.net/addon/dav-4-tbsync/",
+      },
+    ],
+    [
+      "eas4tbsync@jobisoft.de",
+      {
+        name: "Exchange ActiveSync", 
+        icon16: "/content/skin/provider16.png",
+        homepageUrl: "https://addons.thunderbird.net/addon/eas-4-tbsync/",
+      },
+    ]
+  ]),
+
   selectedAccount: null,
 
-  onload: async function () {
+  onload: async function() {
+    i18n.updateDocument({})
+
     //scan accounts, update list and select first entry (because no id is passed to updateAccountList)
     //the onSelect event of the List will load the selected account
     //also update/init add menu
     await this.updateAvailableProvider(); 
     
-    Services.obs.addObserver(tbSyncAccounts.updateProviderListObserver, "tbsync.observer.manager.updateProviderList", false);
+  /*  Services.obs.addObserver(tbSyncAccounts.updateProviderListObserver, "tbsync.observer.manager.updateProviderList", false);
     Services.obs.addObserver(tbSyncAccounts.updateAccountsListObserver, "tbsync.observer.manager.updateAccountsList", false);
     Services.obs.addObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.observer.manager.updateSyncstate", false);
     Services.obs.addObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.observer.manager.updateAccountName", false);
-    Services.obs.addObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.observer.manager.toggleEnableState", false);
+    Services.obs.addObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.observer.manager.toggleEnableState", false);*/
   },
 
-  onunload: function () {
+  /*onunload: function () {
     Services.obs.removeObserver(tbSyncAccounts.updateProviderListObserver, "tbsync.observer.manager.updateProviderList");
     Services.obs.removeObserver(tbSyncAccounts.updateAccountsListObserver, "tbsync.observer.manager.updateAccountsList");
     Services.obs.removeObserver(tbSyncAccounts.updateAccountSyncStateObserver, "tbsync.observer.manager.updateSyncstate");
     Services.obs.removeObserver(tbSyncAccounts.updateAccountNameObserver, "tbsync.observer.manager.updateAccountName");
     Services.obs.removeObserver(tbSyncAccounts.toggleEnableStateObserver, "tbsync.observer.manager.toggleEnableState");
-  },       
+  },*/
   
-  hasInstalledProvider: function (accountID) {
+  /*hasInstalledProvider: function (accountID) {
     let provider = TbSync.db.getAccountProperty(accountID, "provider");
     return TbSync.providers.loadedProviders.hasOwnProperty(provider);
-  },
+  },*/
 
-  updateDropdown: function (selector) {
+  /*updateDropdown: function (selector) {
     let accountsList = document.getElementById("tbSyncAccounts.accounts");
     let selectedAccount = null;
     let selectedAccountName = "";
@@ -141,7 +172,7 @@ var tbSyncAccounts = {
   /* * *
   * Observer to catch update list request (upon provider load/unload)
   */
-  updateAccountsListObserver: {
+  /*updateAccountsListObserver: {
     observe: function (aSubject, aTopic, aData) {
       //aData is the accountID to be selected
       //if missing, it will try to not change selection
@@ -165,12 +196,12 @@ var tbSyncAccounts = {
         await tbSyncAccounts.toggleAccountEnableState(accountsList.selectedItem.value);
       }
     }
-  },
+  },*/
 
   /* * *
   * Observer to catch enable state toggle
   */
-  toggleEnableStateObserver: {
+  /*toggleEnableStateObserver: {
     observe: async function (aSubject, aTopic, aData) {
       await tbSyncAccounts.toggleAccountEnableState(aData);
     }
@@ -193,21 +224,21 @@ var tbSyncAccounts = {
         TbSync.core.syncAccount(accountID);
       }
     }
-  },
+  },*/
 
   /* * *
   * Observer to catch synstate changes and to update account icons
   */
-  updateAccountSyncStateObserver: {
+  /*updateAccountSyncStateObserver: {
     observe: function (aSubject, aTopic, aData) {
       if (aData) {
         //since we want rotating arrows on each syncstate change, we need to run this on each syncstate
         tbSyncAccounts.updateAccountStatus(aData);
       }
     }
-  },
+  },*/
 
-  setStatusImage: async function (accountID, obj) {
+  /*setStatusImage: async function (accountID, obj) {
     let statusImage = this.getStatusImage(accountID, obj.src);
     if (statusImage != obj.src) {
       obj.src = statusImage;
@@ -270,9 +301,9 @@ var tbSyncAccounts = {
     }
     
     return "chrome://tbsync/content/skin/" + src;
-  },
+  },*/
 
-  updateAccountLogo: async function (id) {
+ /* updateAccountLogo: async function (id) {
     let accountData = new TbSync.AccountData(id);
     let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
     if (listItem) {
@@ -304,31 +335,49 @@ var tbSyncAccounts = {
       listItem.childNodes[1].setAttribute("value", name);
     }
   },
-  
-  updateAvailableProvider: async function (provider = null) {        
-    //either add/remove a specific provider, or rebuild the list from scratch
-    if (provider) {
-      //update single provider entry
-      await tbSyncAccounts.updateAddMenuEntry(provider);
-    } else {
-      //add default providers
-      for (let provider in TbSync.providers.defaultProviders) {
-        await tbSyncAccounts.updateAddMenuEntry(provider);
+  */
+  updateAvailableProvider: async function () {        
+      // Default providers should always have the default order and sit at top.
+      let providers = new Map(this.defaultProviders);
+      // Update default provider to installed, if available and add other installed
+      // providers.
+      let installedProviders = await messenger.runtime.sendMessage({
+        command: "getInstalledProviders"
+      });
+      for (let [id, provider] of installedProviders) {
+        providers.set(id, provider.info);
       }
-      //update/add all remaining installed providers
-      for (let provider in TbSync.providers.loadedProviders) {
-        await tbSyncAccounts.updateAddMenuEntry(provider);
+
+      // Build items for add menu.
+      let items = [];
+      for (let [id, info] of providers) {
+        items.push({
+          title: info.name,
+          icon: info.icon16,
+          onclick: info.homepageUrl 
+            ? () => this.installProvider(id)
+            : () => this.addAccount(id)
+        })
       }
-    }
-    
-    await this.updateAccountsList();
+      
+      if (this.panel) {
+        this.panel.deletePanel();
+      }
+      const button = document.getElementById("action.addAccount");
+      this.panel = new JSPanel(button, {
+          bottom: 8 + button.getBoundingClientRect().height,
+          left: 6,
+          items
+        })      
+
+    /*await this.updateAccountsList();
     
     let selectedAccount = this.getSelectedAccount();
     if (selectedAccount !== null && TbSync.db.getAccountProperty(selectedAccount, "provider") == provider) {
       tbSyncAccounts.loadSelectedAccount();
-    }
+    }*/
   },
-  
+  /*
   updateAccountsList: async function (accountToSelect = null) {
     let accountsList = document.getElementById("tbSyncAccounts.accounts");
     let accounts = TbSync.db.getAccounts();
@@ -412,7 +461,7 @@ var tbSyncAccounts = {
       document.getElementById("tbSyncAccounts.contentFrame").setAttribute("src", "chrome://tbsync/content/manager/noaccounts.xhtml");
     }
   },
-
+*/
   updateAddMenuEntry: async function (provider) {
     let isDefault = TbSync.providers.defaultProviders.hasOwnProperty(provider);
     let isInstalled = TbSync.providers.loadedProviders.hasOwnProperty(provider);
@@ -442,7 +491,7 @@ var tbSyncAccounts = {
       entry.setAttribute("hidden", true);
     }
   },
-
+/*
   getSelectedAccount: function () {
     let accountsList = document.getElementById("tbSyncAccounts.accounts");
     if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)) {
@@ -482,9 +531,12 @@ var tbSyncAccounts = {
   addAccount: async function (provider) {
     TbSync.providers.loadedProviders[provider].createAccountWindow = window.openDialog(await TbSync.providers.request(provider, "Base.getCreateAccountWindowUrl"), "TbSyncNewAccountWindow", "centerscreen,resizable=no");
     TbSync.providers.loadedProviders[provider].createAccountWindow.addEventListener("unload", function () { TbSync.manager.prefWindowObj.focus(); });
-  },
+  },*/
 
-  installProvider: function (provider) {
+  installProvider: function (providerId) {
+    messenger.runtime.sendMessage({command: "disableManager"});
+    return;
+    
     for (let i=0; i<TbSync.AccountManagerTabs.length; i++) {            
        TbSync.manager.prefWindowObj.document.getElementById("tbSyncAccountManager.t" + i).setAttribute("active","false");
     }
@@ -492,29 +544,6 @@ var tbSyncAccounts = {
     TbSync.manager.prefWindowObj.document.getElementById("tbSyncAccountManager.installProvider").setAttribute("active","true");
     TbSync.manager.prefWindowObj.document.getElementById("tbSyncAccountManager.contentWindow").setAttribute("src", "chrome://tbsync/content/manager/installProvider.xhtml?provider="+provider);        
   },
-      
 };
 
-async function load() {
-  i18n.updateDocument({})
-  let providers = await messenger.runtime.sendMessage({command: "getInstalledProviders"});
-  let items = [];
-  console.log(providers);
-  for (let providerId of Object.keys(providers)) {
-    console.log(providerId)
-    items.push({
-      title: providers[providerId].info.name,
-      icon: providers[providerId].info.icon16,
-    })
-
-  }
-   console.log(items)
-  const button = document.getElementById("action.addAccount");
-  const panel = new JSPanel(button, {
-      bottom: 8 + button.getBoundingClientRect().height,
-      left: 6,
-      items
-    })
-};
-
-window.addEventListener('DOMContentLoaded', load);
+window.addEventListener('DOMContentLoaded', tbSyncAccounts.onload.bind(tbSyncAccounts));

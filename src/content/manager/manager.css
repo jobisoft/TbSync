@@ -165,3 +165,14 @@ iframe {
 	color: var(--in-content-selected-text);
 	background-color: var(--in-content-item-selected)
 }
+
+#cover {
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.6);
+    z-index:5000;
+    display: none;
+}

@@ -25,8 +25,20 @@ var tbSyncAccountManager = {
           let element = document.getElementById(key);
           element.addEventListener("click",() => {this.selectTab(key)});
           element.addEventListener("mouseover", (e) => {e.target.style.cursor = "pointer"});
-          element.addEventListener("oouseout", (e) => {e.target.style.cursor = "default"});
+          element.addEventListener("mouseout", (e) => {e.target.style.cursor = "default"});
         }
+
+        // Listener to disable/enable the entire manager.
+        messenger.runtime.onMessage.addListener(async (message, sender) => {
+          switch (message.command) {
+              case "disableManager":
+                  document.getElementById("cover").style.display="block";
+              break;
+              case "enableManager":
+                document.getElementById("cover").style.display="none";
+              break;
+          }
+        });
       break;
 
       case "helpBody":
@@ -86,7 +98,7 @@ var tbSyncAccountManager = {
     preferences.setPref("log.userdatalevel", log.value);
   },
   
-  initSupportWizard: async function() {
+  /*initSupportWizard: async function() {
     document.getElementById("SupportWizard").getButton("finish").disabled = true;
 
     let menu = document.getElementById("tbsync.supportwizard.faultycomponent");
@@ -130,7 +142,7 @@ var tbSyncAccountManager = {
     let email = (TbSync.providers.loadedProviders.hasOwnProperty(provider)) ? await TbSync.providers.request(provider, "Base.getMaintainerEmail") : "john.bieling@gmx.de";
     let version = (TbSync.providers.loadedProviders.hasOwnProperty(provider)) ? " " + TbSync.providers.loadedProviders[provider].version : "";
     TbSync.manager.createBugReport(email, "[" + provider.toUpperCase() + version + "] " + subject, description);
-  },       
+  },*/
 };
 
 window.addEventListener('DOMContentLoaded', tbSyncAccountManager.onload.bind(tbSyncAccountManager));

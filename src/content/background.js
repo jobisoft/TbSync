@@ -11,7 +11,7 @@
 import * as tools from './scripts/tools.js'
 
 const tbSyncApiVersion = "3.0";
-var providers = {};
+var installedProviders = new Map();
 //var enabled = false;
 var queuedRequests = [];
 messenger.browserAction.disable();
@@ -100,7 +100,7 @@ messenger.runtime.onMessageExternal.addListener(async (message, sender) => {
                 });
             } else {
                 // Store provider.       
-                providers[sender.id] = {provider, info: message.info};
+                installedProviders.set(sender.id, {provider, info: message.info});
                 console.log(message);
                 // The legacy load of providers should wait after TbSync has finished loading.
                 /*if (enabled) {
@@ -116,7 +116,7 @@ messenger.runtime.onMessageExternal.addListener(async (message, sender) => {
 messenger.runtime.onMessage.addListener(async (message, sender) => {
     switch (message.command) {
         case "getInstalledProviders":
-            return providers;
+            return installedProviders;
         break;
     }
 });
