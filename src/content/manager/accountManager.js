@@ -29,7 +29,7 @@ var tbSyncAccountManager = {
         }
 
         // Listener to disable/enable the entire manager.
-        messenger.runtime.onMessage.addListener(async (message, sender) => {
+        messenger.runtime.onMessage.addListener((message, sender) => {
           switch (message.command) {
               case "disableManager":
                   document.getElementById("cover").style.display="block";

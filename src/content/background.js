@@ -34,7 +34,7 @@ var Provider = class {
         console.log(`TbSync:  Established connection to ${this.addon.id}`);
     }
 
-    async portReceiver(message, port) {
+    portReceiver(message, port) {
         // port.name should be "ProviderConnection"
         const {origin, id, data} = message;
         if (origin == "TbSync") {
@@ -113,10 +113,10 @@ messenger.runtime.onMessageExternal.addListener(async (message, sender) => {
     }
 });
 
-messenger.runtime.onMessage.addListener(async (message, sender) => {
+messenger.runtime.onMessage.addListener((message, sender) => {
     switch (message.command) {
         case "getInstalledProviders":
-            return installedProviders;
+            return Promise.resolve(installedProviders);
         break;
     }
 });
