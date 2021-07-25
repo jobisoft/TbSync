@@ -495,18 +495,25 @@ var tbSyncAccounts = {
       
 };
 
-function load() {
+async function load() {
   i18n.updateDocument({})
+  let providers = await messenger.runtime.sendMessage({command: "getInstalledProviders"});
+  let items = [];
+  console.log(providers);
+  for (let providerId of Object.keys(providers)) {
+    console.log(providerId)
+    items.push({
+      title: providers[providerId].info.name,
+      icon: providers[providerId].info.icon16,
+    })
 
+  }
+   console.log(items)
   const button = document.getElementById("action.addAccount");
   const panel = new JSPanel(button, {
       bottom: 8 + button.getBoundingClientRect().height,
-      left: 0,
-      items: [
-          { title: messenger.i18n.getMessage("manager.EnableAccount"), icon: "/content/skin/connect16.png", onclick: () => console.log("clicked on accountActionsEnableAccount / tbSyncAccounts.toggleEnableState();") },
-          { title: messenger.i18n.getMessage("manager.SynchronizeAccount"), icon: "/content/skin/sync16.png", onclick: () => console.log("clicked on accountActionsSyncAccount / tbSyncAccounts.synchronizeAccount();") },
-          { title: messenger.i18n.getMessage("manager.RetryConnectAccount"), icon: "/content/skin/connect16.png", onclick: () => console.log("clicked on accountActionsRetryConnectAccount / tbSyncAccounts.synchronizeAccount();") },
-      ]
+      left: 6,
+      items
     })
 };
 

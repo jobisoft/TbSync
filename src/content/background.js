@@ -44,7 +44,6 @@ var Provider = class {
             resolve(data);
         } else {
             // This is a request from a provider.
-            // Try to handle the request here or forward it to the Legacy part if needed
             let rv;
             switch (message.data.command) {
                 case "getString":
@@ -91,7 +90,7 @@ messenger.runtime.onMessageExternal.addListener(async (message, sender) => {
             let addon = await messenger.management.get(sender.id);
             let provider = new Provider(addon, message.provider, port);
             
-            let providerApiVersion = await provider.portSend({ command: "Base.getApiVersion" });
+            let providerApiVersion = message.info.apiVersion;
             if (providerApiVersion != tbSyncApiVersion) {
                 messenger.notifications.create("TbSync", {
                     "type": "basic",
@@ -101,9 +100,8 @@ messenger.runtime.onMessageExternal.addListener(async (message, sender) => {
                 });
             } else {
                 // Store provider.       
-                providers[sender.id] = provider;
-                let request = { command: "loadProvider", providerID: sender.id, provider: message.provider }
-                console.log(request);
+                providers[sender.id] = {provider, info: message.info};
+                console.log(message);
                 // The legacy load of providers should wait after TbSync has finished loading.
                 /*if (enabled) {
                     messenger.BootstrapLoader.notifyExperiment(request);
@@ -112,6 +110,14 @@ messenger.runtime.onMessageExternal.addListener(async (message, sender) => {
                 }*/
             }
         }
+    }
+});
+
+messenger.runtime.onMessage.addListener(async (message, sender) => {
+    switch (message.command) {
+        case "getInstalledProviders":
+            return providers;
+        break;
     }
 });
 
