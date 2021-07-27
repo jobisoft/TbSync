@@ -56,7 +56,7 @@ var addressbook = {
         }
       }
     
-      let result = MailServices.ab.getDirectory(uri).search(search, listener);
+      let result = MailServices.ab.getDirectory(uri).search(search, "", listener);
     });
   },
   
