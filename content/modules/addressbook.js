@@ -1103,7 +1103,7 @@ var addressbook = {
         }
         break;
         
-        // unknow, if called for programatically added members as well, probably not
+        // unknown, if called for programmatically added members as well, probably not
         case "addrbook-list-member-added": //exclude contact without Email - notification is wrongly send
         case "addrbook-list-member-removed":
         {
