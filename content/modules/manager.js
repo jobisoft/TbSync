@@ -116,7 +116,11 @@ var manager = {
 
     if (this.debugLogWindow && this.debugLogWindow.tabNode) {
       let tabmail = TbSync.window.document.getElementById("tabmail");
-      tabmail.closeTab(this.debugLogWindow);
+      try {
+        tabmail.closeTab(this.debugLogWindow);
+      } catch (e) {
+        // nope
+      }
       this.debugLogWindow = null;
     } 
     this.debugLogWindow = this.openTBtab('file://' + TbSync.io.getAbsolutePath("debug.log"));
