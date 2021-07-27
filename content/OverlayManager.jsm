@@ -485,30 +485,7 @@ function OverlayManager(extension, options = {}) {
 
   //read file from within the XPI package
   this.readChromeFile = function (aURL) {
-    if (this.options.verbose>3) Services.console.logStringMessage("[OverlayManager] Reading file: " + aURL);
-    return new Promise((resolve, reject) => {
-      let uri = Services.io.newURI(aURL);
-      let channel = Services.io.newChannelFromURI(uri,
-                 null,
-                 Services.scriptSecurityManager.getSystemPrincipal(),
-                 null,
-                 Components.interfaces.nsILoadInfo.SEC_REQUIRE_SAME_ORIGIN_DATA_INHERITS,
-                 Components.interfaces.nsIContentPolicy.TYPE_OTHER);
-
-      NetUtil.asyncFetch(channel, (inputStream, status) => {
-        if (!Components.isSuccessCode(status)) {
-          reject(status);
-          return;
-        }
-
-        try {
-          let data = NetUtil.readInputStreamToString(inputStream, inputStream.available());
-          resolve(data);
-        } catch (ex) {
-          reject(ex);
-        }
-      });
-    });
-  };
-    
+    let uri = Services.io.newURI(aURL);
+    return Components.utils.readUTF8URI(uri);
+  }
 }
