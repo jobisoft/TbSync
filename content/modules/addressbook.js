@@ -419,9 +419,7 @@ var addressbook = {
       if (this._card && this._card.isMailList) {
         // get mailListDirectory
         let mailListDirectory = MailServices.ab.getDirectory(this._card.mailListURI);                
-        let cards = mailListDirectory.childCards;
-        while (cards.hasMoreElements()) {
-          let member = cards.getNext().QueryInterface(Components.interfaces.nsIAbCard)
+        for (let member of mailListDirectory.childCards) {
           let prop = member.getProperty(property, "");
           if (prop) members.push(prop);
         }
@@ -647,14 +645,8 @@ var addressbook = {
     
     getAllItems () {
       let rv = [];
-      let cards = this._directory.childCards;
-      while (true) {
-        let more = false;
-        try { more = cards.hasMoreElements() } catch (e) { Components.utils.reportError(e); }
-        if (!more) break;
-
-        let card = new TbSync.addressbook.AbItem( this._directory, cards.getNext().QueryInterface(Components.interfaces.nsIAbCard));
-        rv.push(card);
+      for (let card of this._directory.childCards) {
+        rv.push(new TbSync.addressbook.AbItem( this._directory, card ));
       }
       return rv;
     }
