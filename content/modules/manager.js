@@ -59,7 +59,7 @@ var manager = {
     if (TbSync.window && tabmail) {
       TbSync.window.focus();
       return tabmail.openTab("contentTab", {
-        contentPage: url
+        url
       });
     }
     return null;
