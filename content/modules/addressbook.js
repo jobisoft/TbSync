@@ -34,7 +34,15 @@ var addressbook = {
       Services.obs.removeObserver(this.addressbookObserver, topic);
     }
   },
-  
+
+  getStringValue : function (ab, value, fallback) {
+    try {
+      return ab.getStringValue(value, fallback);
+    } catch (e) {
+      return fallback;
+    }
+  },
+
   searchDirectory: function (uri, search) {
     return new Promise((resolve, reject) => {
       let listener = {
