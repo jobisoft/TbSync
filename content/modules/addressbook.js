@@ -10,31 +10,28 @@
 
 var addressbook = {
   
+  _notifications: [
+    "addrbook-directory-updated",
+    "addrbook-directory-deleted",
+    "addrbook-contact-created",
+    "addrbook-contact-updated",
+    "addrbook-contact-deleted",
+    "addrbook-list-member-added",
+    "addrbook-list-member-removed",
+    "addrbook-list-deleted",
+    "addrbook-list-updated",
+    "addrbook-list-created"
+  ],
+
   load : async function () {
-    // Geoffs addrbook-contact-created observer does not fire on moves, so we do not use it
-    // Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-created", false);
-    Services.obs.addObserver(this.addressbookObserver, "addrbook-contact-updated", false);
-    Services.obs.addObserver(this.addressbookObserver, "addrbook-list-member-added", false);
-    Services.obs.addObserver(this.addressbookObserver, "addrbook-list-updated", false);
-    this.addressbookListener.add();
+    for (let topic of this._notifications) {
+      Services.obs.addObserver(this.addressbookObserver, topic);
+    }
   },
 
   unload : async function () {
-    // Geoffs addrbook-contact-created observer does not fire on moves, so we do not use it
-    // Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-created");
-    Services.obs.removeObserver(this.addressbookObserver, "addrbook-contact-updated");
-    Services.obs.removeObserver(this.addressbookObserver, "addrbook-list-member-added");
-    Services.obs.removeObserver(this.addressbookObserver, "addrbook-list-updated");
-    this.addressbookListener.remove();
-  },
-
-
-  // needed due to sogo issue not implementing this method in their Ab
-  getStringValue : function (ab, value, fallback) {
-    try {
-      return ab.getStringValue(value, fallback);
-    } catch (e) {
-      return fallback;
+    for (let topic of this._notifications) {
+      Services.obs.removeObserver(this.addressbookObserver, topic);
     }
   },
   
@@ -192,8 +189,8 @@ var addressbook = {
 
     directoryObserver(aTopic) {
       switch (aTopic) {
-        case "addrbook-removed":
-        case "addrbook-updated":
+        case "addrbook-directory-deleted":
+        case "addrbook-directory-updated":
           //Services.console.logStringMessage("["+ aTopic + "] " + folderData.getFolderProperty("foldername"));
           break;
       }
@@ -202,7 +199,7 @@ var addressbook = {
     cardObserver(aTopic, abCardItem) {
       switch (aTopic) {
         case "addrbook-contact-updated":
-        case "addrbook-contact-removed":
+        case "addrbook-contact-deleted":
         case "addrbook-contact-created":
           //Services.console.logStringMessage("["+ aTopic + "] " + abCardItem.getProperty("DisplayName"));
           break;
@@ -216,7 +213,7 @@ var addressbook = {
           //Services.console.logStringMessage("["+ aTopic + "] MemberName: " + abListMember.getProperty("DisplayName"));
           break;
         
-        case "addrbook-list-removed":
+        case "addrbook-list-deleted":
         case "addrbook-list-updated":
           //Services.console.logStringMessage("["+ aTopic + "] ListName: " + abListItem.getProperty("ListName"));
           break;
@@ -776,8 +773,8 @@ var addressbook = {
     observe: async function (aSubject, aTopic, aData) {
       switch (aTopic) {
         // we do not need addrbook-created
-        case "addrbook-updated":
-        case "addrbook-removed":
+        case "addrbook-directory-updated":
+        case "addrbook-directory-deleted":
         {
           //aSubject: nsIAbDirectory (we can get URI and UID directly from the object, but the directory no longer exists)
           aSubject.QueryInterface(Components.interfaces.nsIAbDirectory);
@@ -789,7 +786,7 @@ var addressbook = {
             && folderData.targetData.isAdvancedAddressbookTargetData) {
               
             switch(aTopic) {
-              case "addrbook-updated": 
+              case "addrbook-directory-updated": 
               {
                 //update name of target (if changed)
                 folderData.setFolderProperty("targetName", aSubject.dirName);                         
@@ -798,7 +795,7 @@ var addressbook = {
               }
               break;
 
-              case "addrbook-removed": 
+              case "addrbook-directory-deleted": 
               {
                 //delete any pending changelog of the deleted book
                 TbSync.db.clearChangeLog(bookUID);			
@@ -822,7 +819,7 @@ var addressbook = {
 
         case "addrbook-contact-created":
         case "addrbook-contact-updated":
-        case "addrbook-contact-removed":
+        case "addrbook-contact-deleted":
         {
           //aSubject: nsIAbCard
           aSubject.QueryInterface(Components.interfaces.nsIAbCard);
@@ -938,7 +935,7 @@ var addressbook = {
               }
               break;
               
-              case "addrbook-contact-removed":
+              case "addrbook-contact-deleted":
               {
                 switch (itemStatus) {
                   case "added_by_user": 
@@ -972,7 +969,7 @@ var addressbook = {
         break;
 
         case "addrbook-list-created": 
-        case "addrbook-list-removed": 
+        case "addrbook-list-deleted": 
         {
           //aSubject: nsIAbCard (ListCard)
           aSubject.QueryInterface(Components.interfaces.nsIAbCard);
@@ -1027,7 +1024,7 @@ var addressbook = {
               }
               break;
 
-              case "addrbook-list-removed":
+              case "addrbook-list-deleted":
               {
                 switch (itemStatus) {
                   case "added_by_user": 
@@ -1141,78 +1138,4 @@ var addressbook = {
     }
   },
   
-
-  // Geoff added new observers but these observers cannot catch everything
-  // Use the listeners to make up for that
-  addressbookListener: {
-
-    onItemPropertyChanged: function addressbookListener_onItemPropertyChanged(aItem, aProperty, aOldValue, aNewValue) {
-      //redirect to addrbook-updated observers
-      if (aItem instanceof Components.interfaces.nsIAbDirectory
-          && !aItem.isMailList) {
-        TbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-updated", null);
-      }
-    },
-
-    onItemRemoved: function addressbookListener_onItemRemoved (aParentDir, aItem) {
-      // redirect to addrbook-list-member-removed observers 
-      // unsafe and buggy - see bug 1555294 - can be removed after that landed
-      if (aItem instanceof Components.interfaces.nsIAbCard
-          && aParentDir instanceof Components.interfaces.nsIAbDirectory 
-          && !aItem.isMailList
-          && aParentDir.isMailList) {
-        TbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-list-member-removed", aParentDir.UID)
-      }
-
-      //redirect to addrbook-contact-removed observers
-      if (aItem instanceof Components.interfaces.nsIAbCard 
-          && aParentDir instanceof Components.interfaces.nsIAbDirectory 
-          && !aItem.isMailList
-          && !aParentDir.isMailList) {
-        TbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-contact-removed", aParentDir.UID)
-      }
-
-      //redirect to addrbook-list-removed observers
-      if (aItem instanceof Components.interfaces.nsIAbCard 
-          && aParentDir instanceof Components.interfaces.nsIAbDirectory 
-          && aItem.isMailList
-          && !aParentDir.isMailList) {
-        TbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-list-removed", aParentDir.UID)
-      }
-
-      //redirect to addrbook-removed observers
-      if (aItem instanceof Components.interfaces.nsIAbDirectory
-          && !aItem.isMailList) {
-        TbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-removed", null)
-      }
-    },
-
-    onItemAdded: function addressbookListener_onItemAdded (aParentDir, aItem) {          
-      //redirect to addrbook-list-created observers
-      if (aItem instanceof Components.interfaces.nsIAbCard 
-          && aParentDir instanceof Components.interfaces.nsIAbDirectory 
-          && aItem.isMailList
-          && !aParentDir.isMailList) {
-        TbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-list-created", aParentDir.UID)
-      } 
-      
-      //redirect to addrbook-contact-created observers
-      if (aItem instanceof Components.interfaces.nsIAbCard 
-          && aParentDir instanceof Components.interfaces.nsIAbDirectory 
-          //&& aItem.getProperty("UID","") == "" //detect the only case where the original addrbook-contact-created observer fails to notify
-          && !aItem.isMailList
-          && !aParentDir.isMailList) {
-        TbSync.addressbook.addressbookObserver.observe(aItem, "addrbook-contact-created", aParentDir.UID)
-      } 
-    },
-
-    add: function addressbookListener_add () {
-      let flags = Components.interfaces.nsIAbListener;
-      MailServices.ab.addAddressBookListener(this, flags.all);
-    },
-
-    remove: function addressbookListener_remove () {
-      MailServices.ab.removeAddressBookListener(this);
-    }
-  },
 }
