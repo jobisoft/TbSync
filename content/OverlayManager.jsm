@@ -492,8 +492,8 @@ function OverlayManager(extension, options = {}) {
                  null,
                  Services.scriptSecurityManager.getSystemPrincipal(),
                  null,
-                 Components.interfaces.nsILoadInfo.SEC_REQUIRE_SAME_ORIGIN_DATA_INHERITS,
-                 Components.interfaces.nsIContentPolicy.TYPE_OTHER);
+                 Ci.nsILoadInfo.SEC_REQUIRE_SAME_ORIGIN_INHERITS_SEC_CONTEXT,
+                 Ci.nsIContentPolicy.TYPE_OTHER);
 
       NetUtil.asyncFetch(channel, (inputStream, status) => {
         if (!Components.isSuccessCode(status)) {
