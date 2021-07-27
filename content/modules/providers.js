@@ -92,9 +92,7 @@ var providers = {
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
 
         // TB60 -> TB68 migration - remove icon and rename target if stale
-        let allAddressBooks = MailServices.ab.directories;
-        while (allAddressBooks.hasMoreElements()) {
-          let addressBook = allAddressBooks.getNext();
+        for (let addressBook of MailServices.ab.directories) {
           if (addressBook instanceof Components.interfaces.nsIAbDirectory) {
             let storedProvider = TbSync.addressbook.getStringValue(addressBook, "tbSyncProvider", "");
             if (provider == storedProvider && providerData.getFolders({"target": addressBook.UID}).length == 0) {

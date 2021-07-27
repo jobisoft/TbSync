@@ -727,9 +727,10 @@ var addressbook = {
   },
   
   getDirectoryFromDirectoryUID: function(UID) {
-    let directories = MailServices.ab.directories;
-    while (UID && directories.hasMoreElements()) {
-      let directory = directories.getNext();
+    if (!UID)
+      return null;
+
+    for (let directory of MailServices.ab.directories) {
       if (directory instanceof Components.interfaces.nsIAbDirectory) {
         if (directory.UID == UID) return directory;
       }
@@ -738,9 +739,7 @@ var addressbook = {
   },
   
   getListInfoFromListUID: async function(UID) {
-    let directories = MailServices.ab.directories;
-    while (directories.hasMoreElements()) {
-      let directory = directories.getNext();
+    for (let directory of MailServices.ab.directories) {
       if (directory instanceof Components.interfaces.nsIAbDirectory && !directory.isRemote) {
         let searchList = "(IsMailList,=,TRUE)";
         let foundCards = await TbSync.addressbook.searchDirectory(directory.URI, "(and" + searchList+")");
