@@ -332,7 +332,7 @@ var addressbook = {
         let value;
         if (directListProperties.hasOwnProperty(property)) {
           try {
-            let mailListDirectory = this._tempListDirectory || MailServices.ab.getDirectory(this._card.mailListURI);
+            let mailListDirectory = this._tempListDirectory || MailServices.ab.getDirectory(this._card.mailListURI); //this._card.asDirectory
             value = mailListDirectory[directListProperties[property]];
           } catch (e) {
             // list does not exists
@@ -426,7 +426,7 @@ var addressbook = {
       let members = [];
       if (this._card && this._card.isMailList) {
         // get mailListDirectory
-        let mailListDirectory = MailServices.ab.getDirectory(this._card.mailListURI);                
+        let mailListDirectory = MailServices.ab.getDirectory(this._card.mailListURI);
         for (let member of mailListDirectory.childCards) {
           let prop = member.getProperty(property, "");
           if (prop) members.push(prop);
@@ -438,7 +438,7 @@ var addressbook = {
     addListMembers(property, candidates) {
       if (this._card && this._card.isMailList) {            
         let members = this.getMembersPropertyList(property);
-        let mailListDirectory = MailServices.ab.getDirectory(this._card.mailListURI);                
+        let mailListDirectory = MailServices.ab.getDirectory(this._card.mailListURI);
 
         for (let candidate of candidates) {
           if (members.includes(candidate))
@@ -970,8 +970,8 @@ var addressbook = {
         case "addrbook-list-created": 
         case "addrbook-list-deleted": 
         {
-          //aSubject: nsIAbCard (ListCard)
-          aSubject.QueryInterface(Components.interfaces.nsIAbCard);
+          //aSubject: nsIAbDirectory
+          aSubject.QueryInterface(Components.interfaces.nsIAbDirectory);
           //aData: 128-bit unique identifier for the parent directory
           let bookUID = aData;
 
