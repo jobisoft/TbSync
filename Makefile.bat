@@ -10,10 +10,10 @@ del TbSync-beta.xpi
 
 
 REM Copy sources to doc repository
-rd /s /q ..\Provider-4-TbSync\docs\sources 
-mkdir ..\Provider-4-TbSync\docs\sources 
+REM rd /s /q ..\Provider-4-TbSync\docs\sources 
+REM mkdir ..\Provider-4-TbSync\docs\sources 
 
-copy content\OverlayManager.jsm ..\Provider-4-TbSync\docs\sources\
+REM copy content\OverlayManager.jsm ..\Provider-4-TbSync\docs\sources\
 
-Xcopy /E /I content\passwordPrompt ..\Provider-4-TbSync\docs\sources\passwordPrompt\
-Xcopy /E /I content\modules ..\Provider-4-TbSync\docs\sources\modules\
+REM Xcopy /E /I content\passwordPrompt ..\Provider-4-TbSync\docs\sources\passwordPrompt\
+REM Xcopy /E /I content\modules ..\Provider-4-TbSync\docs\sources\modules\
