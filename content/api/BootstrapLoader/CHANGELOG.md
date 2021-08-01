@@ -1,7 +1,11 @@
+Version: 1.18
+-------------
+- be precise on which revision the wrench symbol should be displayed, instead of
+  the options button
+
 Version: 1.17
 -------------
 - fix "ownerDoc.getElementById() is undefined" bug
-
 
 Version: 1.16
 -------------
