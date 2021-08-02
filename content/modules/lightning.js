@@ -7,6 +7,16 @@
  */
  
  "use strict";
+
+ var { XPCOMUtils } = ChromeUtils.import("resource://gre/modules/XPCOMUtils.jsm");
+ 
+ XPCOMUtils.defineLazyModuleGetters(this, {
+  CalAlarm: "resource:///modules/CalAlarm.jsm",
+  CalAttachment: "resource:///modules/CalAttachment.jsm",
+  CalAttendee: "resource:///modules/CalAttendee.jsm",
+  CalEvent: "resource:///modules/CalEvent.jsm",
+  CalTodo: "resource:///modules/CalTodo.jsm",
+}); 
   
 var lightning = {
 
@@ -355,12 +365,12 @@ var lightning = {
     }
 
     createNewEvent() {
-      let event = TbSync.lightning.cal.createEvent();
+      let event = new CalEvent();
       return new TbSync.lightning.TbItem(this, event);
     }
     
     createNewTodo() {
-      let todo = TbSync.lightning.cal.createTodo();
+      let todo = new CalTodo();
       return new TbSync.lightning.TbItem(this, todo);
     }
 
