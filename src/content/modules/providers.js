@@ -81,7 +81,7 @@ var providers = {
           }
         }
         
-        await this.request(provider, "Base.onConnect");
+        await this.request(provider, "Base.onConnect"); // This should be onEstablished, as TbSync has activly confirmed the connection
 
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", provider);
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
