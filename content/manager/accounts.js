@@ -280,7 +280,7 @@ var tbSyncAccounts = {
     let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
     if (listItem) {
       let obj = listItem.childNodes[0];
-      obj.src = tbSyncAccounts.hasInstalledProvider(id) ? TbSync.providers[accountData.getAccountProperty("provider")].Base.getProviderIcon(16, accountData) : "chrome://tbsync/content/skin/provider16.png";
+      obj.src = tbSyncAccounts.hasInstalledProvider(id) ? await TbSync.request(accountData.getAccountProperty("provider"), "Base.getProviderIcon", [16, accountData.accountID]) : "chrome://tbsync/content/skin/provider16.png";
     }
   },
 
