@@ -303,6 +303,16 @@ var db = {
     // if the requested accountID does not exist, getAccount() will fail
     let data = this.getAccount(accountID);
     
+    // Migration hack 
+    let oldProviderIds = {
+      "dav" : "dav4tbsync@jobisoft.de",
+      "eas" : "eas4tbsync@jobisoft.de",
+      "google" : "google-4-tbsync@marcozanon.com"
+    }
+    if (Object.keys(oldProviderIds).includes(data.provider)) {
+      data.provider = oldProviderIds[data.provider];
+    }
+
     //check if field is allowed and get value or default value if setting is not set
     if (this.isValidAccountProperty(data.provider, name)) {
       if (data.hasOwnProperty(name)) return data[name];
