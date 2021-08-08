@@ -19,14 +19,14 @@
                     <html:img 
                     src="" 
                     style="width:48px; height:48px; margin:4px 0 0 10px; float:left" 
-                    onclick="TbSync.manager.openLink(TbSync.providers.loadedProviders[this.parentNode.getAttribute('provider')].addon.homepageURL);" 
+                    onclick="TbSync.manager.openLink(TbSync.providers.loadedProviders[this.parentNode.getAttribute('providerID')].addon.homepageURL);" 
                     onmouseover="this.style.cursor='pointer'" 
                     onmouseout="this.style.cursor='default'" />
                     <html:div style="padding-left: 65px;">
                       <html:div>__TBSYNCMSG_manager.title__</html:div>
                       <html:div style="font-style:italic">__TBSYNCMSG_manager.provider4tbsync__</html:div>
                       <html:div style="font-style:italic;">[<html:span 
-                      onclick="TbSync.manager.openLink(TbSync.providers.loadedProviders[this.parentNode.parentNode.parentNode.getAttribute('provider')].addon.contributorsURL);" 
+                      onclick="TbSync.manager.openLink(TbSync.providers.loadedProviders[this.parentNode.parentNode.parentNode.getAttribute('providerID')].addon.contributorsURL);" 
                       onmouseover="this.style.cursor='pointer'" 
                       onmouseout="this.style.cursor='default'"
                       style="color:blue;text-decoration: underline;">__TBSYNCMSG_manager.supporter.details__</html:span>]</html:div>
