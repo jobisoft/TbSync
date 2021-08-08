@@ -16,9 +16,8 @@ var enabled = false;
 messenger.browserAction.disable();
 
 var Provider = class {
-    constructor(addon, provider, port) {
+    constructor(addon, port) {
         this.addon = addon;
-        this.provider = provider;
         this.port = port;
         this.portMap = new Map();
         this.portMessageId = 0;
@@ -28,7 +27,7 @@ var Provider = class {
             this.port.onMessage.removeListener(this.portReceiver.bind(this));
             this.port = null;
             console.log(`TbSync: Lost connection to ${this.addon.id}`);
-            //messenger.BootstrapLoader.notifyExperiment({command: "unloadProvider", provider: this.provider});
+            messenger.BootstrapLoader.notifyExperiment({command: "unloadProvider", providerID: this.addon.id});
         });
         console.log(`TbSync:  Established connection to ${this.addon.id}`);
     }
@@ -88,7 +87,7 @@ messenger.runtime.onMessageExternal.addListener(async (message, sender) => {
         let port = messenger.runtime.connect(sender.id, { name: "ProviderConnection" });
         if (port && !port.error) {
             let addon = await messenger.management.get(sender.id);
-            let provider = new Provider(addon, message.provider, port);
+            let provider = new Provider(addon, port);
 
             let providerApiVersion = message.info.apiVersion;
             if (providerApiVersion != tbSyncApiVersion) {

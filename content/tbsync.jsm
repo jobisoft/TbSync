@@ -105,10 +105,10 @@ var TbSync = {
     this.notifyTools.registerListener(data => {
       switch (data.command) {
         case "loadProvider":
-          TbSync.providers.loadProvider(data.providerID, data.provider);
+          TbSync.providers.loadProvider(data.providerID);
           break;
         case "unloadProvider":
-          TbSync.providers.unloadProvider(data.provider);
+          TbSync.providers.unloadProvider(data.providerID);
           break;
 
         // These are public functions callable by other add-ons / providers.
