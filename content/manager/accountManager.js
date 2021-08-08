@@ -57,7 +57,7 @@ var tbSyncAccountManager = {
     TbSync.prefs.setIntPref("log.userdatalevel", log.value);
   },
   
-  initSupportWizard: function() {
+  initSupportWizard: async function() {
     document.getElementById("SupportWizard").getButton("finish").disabled = true;
 
     let menu = document.getElementById("tbsync.supportwizard.faultycomponent");
@@ -66,7 +66,7 @@ var tbSyncAccountManager = {
     for (let i=0; i < providers.length; i++) {
       let item = document.createXULElement("menuitem");
       item.setAttribute("value", providers[i]);
-      item.setAttribute("label", TbSync.getString("supportwizard.providerID::" + TbSync.providers[providers[i]].Base.getProviderName()));
+      item.setAttribute("label", TbSync.getString("supportwizard.provider::" + await TbSync.request(providers[i], "Base.getProviderName")));
       menu.appendChild(item); 
     }
   
@@ -100,7 +100,7 @@ var tbSyncAccountManager = {
     //special if core is selected, which is not a provider
     let email = (TbSync.providers.loadedProviders.hasOwnProperty(providerID)) ? (await TbSync.request(providerID, "Base.getMaintainerEmail")) : "john.bieling@gmx.de";
     let version = (TbSync.providers.loadedProviders.hasOwnProperty(providerID)) ? " " + TbSync.providers.loadedProviders[providerID].version : "";
-    TbSync.manager.createBugReport(email, "[" + providerID.toUpperCase() + version + "] " + subject, description);
+    TbSync.manager.createBugReport(email, `[${await TbSync.request(providerID, "Base.getProviderName")} @ ${version}] ${subject}`, description);
   },
   
   
