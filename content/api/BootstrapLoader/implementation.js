@@ -2,7 +2,32 @@
  * This file is provided by the addon-developer-support repository at
  * https://github.com/thundernest/addon-developer-support
  *
- * Version: 1.18
+ * Version: 1.12
+ * - add support for notifyExperiment and onNotifyBackground
+ * 
+ * Version: 1.11
+ * - add openOptionsDialog()
+ * 
+ * Version: 1.10
+ * - fix for 68
+ * 
+ * Version: 1.7
+ * - fix for beta 87
+ * 
+ * Version: 1.6
+ * - add support for options button/menu in add-on manager and fix 68 double menu entry
+ * 
+ * Version: 1.5
+ * - fix for e10s
+ * 
+ * Version 1.4
+ * - add registerOptionsPage
+ *
+ * Version: 1.3
+ * - flush cache
+ *
+ * Version: 1.2
+ * - add support for resource urls
  *
  * Author: John Bieling (john@thunderbird.net)
  *
@@ -62,13 +87,8 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
     return messenger;
   }
 
-  getThunderbirdVersion() {
-    let parts = Services.appinfo.version.split(".");
-    return {
-      major: parseInt(parts[0]),
-      minor: parseInt(parts[1]),
-      revision: parts.length > 2 ? parseInt(parts[2]) : 0,
-    }
+  getThunderbirdMajorVersion() {
+    return parseInt(Services.appinfo.version.split(".").shift());
   }
   
   getCards(e) {
@@ -77,10 +97,10 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
     let doc;
     
     // 78,86, and 87+ need special handholding. *Yeah*.
-    if (this.getThunderbirdVersion().major < 86) {
+    if (this.getThunderbirdMajorVersion() < 86) {
       let ownerDoc = e.document || e.target.ownerDocument;
       doc = ownerDoc.getElementById("html-view-browser").contentDocument;
-    } else if (this.getThunderbirdVersion().major < 87) {
+    } else if (this.getThunderbirdMajorVersion() < 87) {
       let ownerDoc = e.document || e.target;
       doc = ownerDoc.getElementById("html-view-browser").contentDocument;
     } else {
@@ -152,12 +172,8 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
         for (let card of cards) {
           // Setup either the options entry in the menu or the button
           if (card.addon.id == this.extension.id) {
-            let optionsMenu = 
-              (this.getThunderbirdVersion().major > 78 && this.getThunderbirdVersion().major < 88) ||
-              (this.getThunderbirdVersion().major == 78 && this.getThunderbirdVersion().minor < 10) ||
-              (this.getThunderbirdVersion().major == 78 && this.getThunderbirdVersion().minor == 10 && this.getThunderbirdVersion().revision < 2);
-            if (optionsMenu) {
-              // Options menu in 78.0-78.10 and 79-87
+            if (this.getThunderbirdMajorVersion() < 88) {
+              // Options menu in 78-87
               let addonOptionsLegacyEntry = card.querySelector(".extension-options-legacy");
               if (card.addon.isActive && !addonOptionsLegacyEntry) {
                 let addonOptionsEntry = card.querySelector("addon-options panel-list panel-item[action='preferences']");
@@ -215,11 +231,9 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
   // returns the outer browser, not the nested browser of the add-on manager
   // events must be attached to the outer browser
   getAddonManagerFromTab(tab) {
-    if (tab.browser) {
-      let win = tab.browser.contentWindow;
-      if (win && win.location.href == "about:addons") {
-        return win;
-      }
+    let win = tab.browser.contentWindow;
+    if (win && win.location.href == "about:addons") {
+      return win;
     }
   }
 
@@ -233,7 +247,7 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
     }
   }
 
-  setupAddonManager(managerWindow, forceLoad = false) {
+  setupAddonManager(managerWindow, paint = true) {
     if (!managerWindow) {
       return;
     }
@@ -245,10 +259,9 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
     }
     managerWindow.document.addEventListener("ViewChanged", this);
     managerWindow.document.addEventListener("update", this);
-    managerWindow.document.addEventListener("view-loaded", this);    
     managerWindow[this.uniqueRandomID] = {};
     managerWindow[this.uniqueRandomID].hasAddonManagerEventListeners = true;
-    if (forceLoad) {
+    if (paint) {
       this.handleEvent(managerWindow);
     }
   }
@@ -292,46 +305,116 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
       onTabClosing(aTab) {},
       onTabPersist(aTab) {},
       onTabRestored(aTab) {},
-      onTabSwitched(aNewTab, aOldTab) {
-        //self.setupAddonManager(self.getAddonManagerFromTab(aNewTab));
-      },
+      onTabSwitched(aNewTab, aOldTab) {},
       async onTabOpened(aTab) {
-        if (aTab.browser) {
-          if (!aTab.pageLoaded) {
-            // await a location change if browser is not loaded yet
-            await new Promise(resolve => {
-              let reporterListener = {
-                QueryInterface: ChromeUtils.generateQI([
-                  "nsIWebProgressListener",
-                  "nsISupportsWeakReference",
-                ]),
-                onStateChange() {},
-                onProgressChange() {},
-                onLocationChange(
-                    /* in nsIWebProgress*/ aWebProgress,
-                    /* in nsIRequest*/ aRequest,
-                    /* in nsIURI*/ aLocation
-                ) {
-                  aTab.browser.removeProgressListener(reporterListener);  
-                  resolve();
-                },
-                onStatusChange() {},
-                onSecurityChange() {},
-                onContentBlockingEvent() {}
-              }          
-              aTab.browser.addProgressListener(reporterListener);  
-            });
+        if (!aTab.pageLoaded) {
+          // await a location change if browser is not loaded yet
+          await new Promise(resolve => {
+            let reporterListener = {
+              QueryInterface: ChromeUtils.generateQI([
+                "nsIWebProgressListener",
+                "nsISupportsWeakReference",
+              ]),
+              onStateChange() {},
+              onProgressChange() {},
+              onLocationChange(
+                  /* in nsIWebProgress*/ aWebProgress,
+                  /* in nsIRequest*/ aRequest,
+                  /* in nsIURI*/ aLocation
+              ) {
+                aTab.browser.removeProgressListener(reporterListener);  
+                resolve();
+              },
+              onStatusChange() {},
+              onSecurityChange() {},
+              onContentBlockingEvent() {}
+            }          
+            aTab.browser.addProgressListener(reporterListener);  
+          });
+        }
+        // Setup the ViewChange event listener in the outer browser of the add-on,
+        // but do not actually add the button/menu, as the inner browser is not yet ready,
+        // let the ViewChange event do it
+        self.setupAddonManager(self.getAddonManagerFromTab(aTab), false);
+      },
+    };    
+
+    this.onNotifyBackgroundObserver = {
+      observe: async function (aSubject, aTopic, aData) {
+        if (
+          Object.keys(self.observerTracker).length > 0 &&
+          aData == self.extension.id
+        ) {
+          let payload = aSubject.wrappedJSObject;
+          // This is called from the BL observer.js and therefore it should have a resolve
+          // payload, but better check.
+          if (payload.resolve) {
+            let observerTrackerPromises = [];
+            // Push listener into promise array, so they can run in parallel
+            for (let listener of Object.values(self.observerTracker)) {
+              observerTrackerPromises.push(listener(payload.data));
+            }
+            // We still have to await all of them but wait time is just the time needed
+            // for the slowest one.
+            let results = [];
+            for (let observerTrackerPromise of observerTrackerPromises) {
+              let rv = await observerTrackerPromise;
+              if (rv != null) results.push(rv);
+            }
+            if (results.length == 0) {
+              payload.resolve();
+            } else {
+              if (results.length > 1) {
+                console.warn(
+                  "Received multiple results from onNotifyBackground listeners. Using the first one, which can lead to inconsistent behavior.",
+                  results
+                );
+              }
+              payload.resolve(results[0]);
+            }
+          } else {
+            // Just call the listener.
+            for (let listener of Object.values(self.observerTracker)) {
+              listener(payload.data);
+            }
           }
-          // Setup the ViewChange event listener in the outer browser of the add-on,
-          // but do not actually add the button/menu, as the inner browser is not yet ready,
-          // let the ViewChange event do it
-          self.setupAddonManager(self.getAddonManagerFromTab(aTab));
         }
       },
     };
 
+    this.observerTracker = {};
+    this.observerTrackerNext = 1;
+    // Add observer for notifyTools.js
+    Services.obs.addObserver(
+      this.onNotifyBackgroundObserver,
+      "NotifyBackgroundObserver",
+      false
+    );
+    
     return {
       BootstrapLoader: {
+
+        notifyExperiment(data) {
+          return new Promise(resolve => {
+            Services.obs.notifyObservers(
+              { data, resolve },
+              "NotifyExperimentObserver",
+              self.extension.id
+            );
+          });
+        },
+
+        onNotifyBackground: new ExtensionCommon.EventManager({
+          context,
+          name: "BootstrapLoader.onNotifyBackground",
+          register: (fire) => {
+            let trackerId = self.observerTrackerNext++;
+            self.observerTracker[trackerId] = fire.sync;
+            return () => {
+              delete self.observerTracker[trackerId];
+            };
+          },
+        }).api(),
 
         registerOptionsPage(optionsUrl) {
           self.pathToOptionsPage = optionsUrl.startsWith("chrome://")
@@ -413,15 +496,12 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
                 "chrome://messenger/content/messenger.xhtml",              
               ],
               async onLoadWindow(window) {
-                if (self.getThunderbirdVersion().major < 78) {
+                if (self.getThunderbirdMajorVersion() < 78) {
                   let element_addonPrefs = window.document.getElementById(self.menu_addonPrefs_id);
                   element_addonPrefs.addEventListener("popupshowing", self);
                 } else {
                   // Setup the options button/menu in the add-on manager, if it is already open.
-                  self.setupAddonManager(
-                    self.getAddonManagerFromWindow(window),
-                    true
-                  );
+                  self.setupAddonManager(self.getAddonManagerFromWindow(window));
                   // Add a tabmonitor, to be able to setup the options button/menu in the add-on manager.
                   self.getTabMail(window).registerTabMonitor(self.tabMonitor);
                   window[self.uniqueRandomID] = {};
@@ -439,14 +519,16 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
   }
 
   onShutdown(isAppShutdown) {
-    if (isAppShutdown) {
-      return; // the application gets unloaded anyway
-    }
-    
+    // Remove observer for notifyTools.js
+    Services.obs.removeObserver(
+      this.onNotifyBackgroundObserver,
+      "NotifyBackgroundObserver"
+    );
+
     //remove our entry in the add-on options menu
     if (this.pathToOptionsPage) {
       for (let window of Services.wm.getEnumerator("mail:3pane")) {
-        if (this.getThunderbirdVersion().major < 78) {
+        if (this.getThunderbirdMajorVersion() < 78) {
           let element_addonPrefs = window.document.getElementById(this.menu_addonPrefs_id);
           element_addonPrefs.removeEventListener("popupshowing", this);
           // Remove our entry.
@@ -463,10 +545,9 @@ var BootstrapLoader = class extends ExtensionCommon.ExtensionAPI {
           if (managerWindow && managerWindow[this.uniqueRandomID] && managerWindow[this.uniqueRandomID].hasAddonManagerEventListeners) {
             managerWindow.document.removeEventListener("ViewChanged", this);
             managerWindow.document.removeEventListener("update", this);
-            managerWindow.document.removeEventListener("view-loaded", this);
             
             let cards = this.getCards(managerWindow);
-            if (this.getThunderbirdVersion().major < 88) {
+            if (this.getThunderbirdMajorVersion() < 88) {
               // Remove options menu in 78-87
               for (let card of cards) {
                 let addonOptionsLegacyEntry = card.querySelector(".extension-options-legacy");

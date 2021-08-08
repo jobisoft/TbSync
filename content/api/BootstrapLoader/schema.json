@@ -1,7 +1,34 @@
 [
   {
     "namespace": "BootstrapLoader",
+    "events": [
+      {
+        "name": "onNotifyBackground",
+        "type": "function",
+        "description": "Fired when a new notification from notifyTools.js in an Experiment has been received.",
+        "parameters": [
+          {
+            "name": "data",
+            "type": "any",
+            "description": "Restrictions of the structured clone algorythm apply."
+          }
+        ]
+      }
+    ],
     "functions": [
+      {
+        "name": "notifyExperiment",
+        "type": "function",
+        "description": "Notifies notifyTools.js in an Experiment and sends data.",
+        "async": true,
+        "parameters": [
+          {
+            "name": "data",
+            "type": "any",
+            "description": "Restrictions of the structured clone algorythm apply."
+          }
+        ]
+      },
       {
         "name": "registerOptionsPage",
         "type": "function",

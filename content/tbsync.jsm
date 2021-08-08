@@ -42,6 +42,8 @@ var TbSync = {
 	  //public module and IO module needs to be loaded beforehand
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/public.js", this, "UTF-8");
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/io.js", this, "UTF-8");
+    Services.scriptloader.loadSubScript("chrome://tbsync/content/scripts/notifyTools/notifyTools.js", this, "UTF-8");
+    this.notifyTools.enable();
 
     //clear debug log on start
     this.io.initFile("debug.log");
@@ -99,8 +101,48 @@ var TbSync = {
     //was debug mode enabled during startup?
     this.debugMode = (this.prefs.getIntPref("log.userdatalevel") > 0);
 
+    // Forward requests from the background page.
+    this.notifyTools.registerListener(data => {
+      switch (data.command) {
+        case "loadProvider":
+          TbSync.providers.loadProvider(data.providerID, data.provider);
+          break;
+        case "unloadProvider":
+          TbSync.providers.unloadProvider(data.provider);
+          break;
+
+        // These are public functions callable by other add-ons / providers.
+        // When TbSync modules are moved out of the legacy blob into the
+        // WebExtension part, they could use these as well, so we only have
+        // to maintain a single Interface.
+        case "getAccountProperties":
+        case "setAccountProperties":
+        case "resetAccountProperties":
+        case "getFolderProperties":
+        case "setFolderProperties":
+        case "resetFolderProperties":
+        case "getAccountProperty":
+        case "setAccountProperty":
+        case "resetAccountProperty":
+        case "getFolderProperty":
+        case "setFolderProperty":
+        case "resetFolderProperty":
+          return TbSync.db[data.command](...data.parameters);
+        case "getAllFolders": 
+        {
+          let allFolders = [];
+          let folders = TbSync.db.findFolders({"cached": false}, {"accountID":data.parameters[0]});
+          for (let i=0; i < folders.length; i++) {          
+            allFolders.push(folders[i].folderID);
+          }
+          return allFolders;
+        }
+      }
+    });
+
     //enable TbSync
     this.enabled = true;
+    this.notifyTools.notifyBackground({command: "enabled"});
 
     //notify about finished init of TbSync
     Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
@@ -116,7 +158,8 @@ var TbSync = {
   unload: async function() {
     //cancel sync timer
     this.syncTimer.cancel();
-    
+    this.notifyTools.disable();    
+	  
     //unload modules in reverse order
     this.modules.reverse();
     for (let module of this.modules) {

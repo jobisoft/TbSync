@@ -7,6 +7,7 @@
  */
  
  "use strict";
+var { ExtensionParent } = ChromeUtils.import("resource://gre/modules/ExtensionParent.jsm");
  
 var providers = {
 
@@ -30,48 +31,48 @@ var providers = {
   },
 
   unload: async function () {
-    for (let provider in this.loadedProviders) {
-      await this.unloadProvider(provider);
+    for (let providerID in this.loadedProviders) {
+      await this.unloadProvider(providerID);
     }
   },
 
+  request: function(providerID, command, parameters) {
+    return TbSync.notifyTools.notifyBackground({
+      providerID:  this.loadedProviders[providerID].addonId,
+      command,
+      parameters
+    });
+  },
 
 
   
-  
-  loadProvider:  async function (extension, provider, js) {
+  loadProvider:  async function (providerID) {
+    console.log("loadProvider", providerID);
     //only load, if not yet loaded and if the provider name does not shadow a fuction inside provider.js
-    if (!this.loadedProviders.hasOwnProperty(provider) && !this.hasOwnProperty(provider) && js.startsWith("chrome://")) {
+    if (!this.loadedProviders.hasOwnProperty(providerID) && !this.hasOwnProperty(providerID)) {
       try {
-        let addon = await AddonManager.getAddonByID(extension.id);
+        let extension = ExtensionParent.GlobalManager.getExtension(providerID);
+        let addon = await AddonManager.getAddonByID(providerID);
+        this.loadedProviders[providerID] = {};
+        this.loadedProviders[providerID].addon = addon;
+        this.loadedProviders[providerID].extension = extension;
+        this.loadedProviders[providerID].addonId = providerID;
+        this.loadedProviders[providerID].version = addon.version.toString();
+        this.loadedProviders[providerID].createAccountWindow = null;
+        this.loadedProviders[providerID].defaultFolderEntries = await this.request(providerID, "Base.getDefaultFolderEntries");
+        this.loadedProviders[providerID].defaultAccountEntries = await this.request(providerID, "Base.getDefaultAccountEntries");
+        this.loadedProviders[providerID].addon.contributorsURL = await this.request(providerID, "Base.getContributorsUrl");
+        this.loadedProviders[providerID].editAccountOverlayUrl = await this.request(providerID, "Base.getEditAccountOverlayUrl");
 
-        //load provider subscripts into TbSync
-        this[provider] = {};
-        Services.scriptloader.loadSubScript(js, this[provider], "UTF-8");
-        if (TbSync.apiVersion != this[provider].Base.getApiVersion()) {
-          throw new Error("API version mismatch, TbSync@"+TbSync.apiVersion+" vs " + provider + "@" + this[provider].Base.getApiVersion());
-        }
+
+        // We no longer support custom folder lists. 
+        this[providerID] = {};
+        this[providerID].folderList = new TbSync.manager.FolderList(providerID);
         
-        this.loadedProviders[provider] = {};
-        this.loadedProviders[provider].addon = addon;
-        this.loadedProviders[provider].extension = extension;
-        this.loadedProviders[provider].addonId = extension.id;
-        this.loadedProviders[provider].version = addon.version.toString();
-        this.loadedProviders[provider].createAccountWindow = null;
-
-        addon.contributorsURL = this[provider].Base.getContributorsUrl();
-
-        // check if provider has its own implementation of folderList
-        if (!this[provider].hasOwnProperty("folderList")) this[provider].folderList = new TbSync.manager.FolderList(provider);
-        
-        //load provider
-        await this[provider].Base.load();
-
-        await TbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xhtml?provider=" + provider, this[provider].Base.getEditAccountOverlayUrl());        
-        TbSync.dump("Loaded provider", provider + "::" + this[provider].Base.getProviderName() + " ("+this.loadedProviders[provider].version+")");
+        await TbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xhtml?providerID=" + providerID, this.loadedProviders[providerID].editAccountOverlayUrl);        
         
         // reset all accounts of this provider
-        let providerData = new TbSync.ProviderData(provider);
+        let providerData = new TbSync.ProviderData(providerID);
         let accounts = providerData.getAllAccounts();
         for (let accountData of accounts) {
           // reset sync objects
@@ -88,26 +89,14 @@ var providers = {
           }
         }
         
-        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", provider);
-        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
+        await this.request(providerID, "Base.onConnect"); // This should be onEstablished, as TbSync has activly confirmed the connection - or load
 
-        // TB60 -> TB68 migration - remove icon and rename target if stale
-        for (let addressBook of MailServices.ab.directories) {
-          if (addressBook instanceof Components.interfaces.nsIAbDirectory) {
-            let storedProvider = TbSync.addressbook.getStringValue(addressBook, "tbSyncProvider", "");
-            if (provider == storedProvider && providerData.getFolders({"target": addressBook.UID}).length == 0) {
-              let name = addressBook.dirName;
-              addressBook.dirName = TbSync.getString("target.orphaned") + ": " + name;              
-              addressBook.setStringValue("tbSyncIcon", "orphaned");
-              addressBook.setStringValue("tbSyncProvider", "orphaned");
-              addressBook.setStringValue("tbSyncAccountID", "");
-            }
-          }
-        }
+        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", providerID);
+        Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
         
         for (let calendar of TbSync.lightning.cal.getCalendarManager().getCalendars({})) {
           let storedProvider = calendar.getProperty("tbSyncProvider");
-          if (provider == storedProvider && calendar.type == "storage" && providerData.getFolders({"target": calendar.id}).length == 0) {
+          if (providerID == storedProvider && calendar.type == "storage" && providerData.getFolders({"target": calendar.id}).length == 0) {
             let name = calendar.name;
             calendar.name = TbSync.getString("target.orphaned") + ": " + name;
             calendar.setProperty("disabled", true);
@@ -117,39 +106,39 @@ var providers = {
         }
         
       } catch (e) {
-        delete this.loadedProviders[provider];
-        delete this[provider];
-        let info = new EventLogInfo(provider);
-        TbSync.eventlog.add("error", info, "FAILED to load provider <"+provider+">", e.message);
+        delete this.loadedProviders[providerID];
+        delete this[providerID];
+        let info = new EventLogInfo(providerID);
+        TbSync.eventlog.add("error", info, "FAILED to load provider <"+providerID+">", e.message);
         Components.utils.reportError(e);        
       }
 
     }
   },
   
-  unloadProvider: async function (provider) {        
-    if (this.loadedProviders.hasOwnProperty(provider)) {
-      TbSync.dump("Unloading provider", provider);
+  unloadProvider: async function (providerID) {        
+    console.log("unloadProvider", providerID);
+    if (this.loadedProviders.hasOwnProperty(providerID)) {
+      TbSync.dump("Unloading provider", providerID);
       
-       if (this.loadedProviders[provider].createAccountWindow) {
-         this.loadedProviders[provider].createAccountWindow.close();
+       if (this.loadedProviders[providerID].createAccountWindow) {
+         this.loadedProviders[providerID].createAccountWindow.close();
        }
 
-      await this[provider].Base.unload();
-      delete this.loadedProviders[provider];
-      delete this[provider];            
-      Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", provider);
+      delete this.loadedProviders[providerID];
+      delete this[providerID];            
+      Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", providerID);
       Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);
     }
   },
   
-  getDefaultAccountEntries: function (provider) {
-    let defaults = TbSync.providers[provider].Base.getDefaultAccountEntries();
+  getDefaultAccountEntries: function (providerID) {
+    let defaults = this.loadedProviders[providerID].defaultAccountEntries;
     
     // List of default system account properties. 
     // Do not remove search marker for doc. 
     // DefaultAccountPropsStart
-    defaults.provider = provider;
+    defaults.providerID = providerID;
     defaults.accountID = "";
     defaults.lastsynctime = 0;
     defaults.status = "disabled";
@@ -162,8 +151,8 @@ var providers = {
   },
   
   getDefaultFolderEntries: function (accountID) {
-    let provider = TbSync.db.getAccountProperty(accountID, "provider");
-    let defaults = TbSync.providers[provider].Base.getDefaultFolderEntries();
+    let providerID = TbSync.db.getAccountProperty(accountID, "providerID");
+    let defaults = this.loadedProviders[providerID].defaultFolderEntries;
     
     // List of default system folder properties.
     // Do not remove search marker for doc. 

@@ -13,7 +13,6 @@ import * as tools from './scripts/tools.js'
 const tbSyncApiVersion = "3.0";
 var installedProviders = new Map();
 var enabled = false;
-var queuedRequests = [];
 messenger.browserAction.disable();
 
 var Provider = class {
@@ -85,7 +84,7 @@ localStorageHandler.enableListeners();
 
 // Wait for connections attempts from providers.
 messenger.runtime.onMessageExternal.addListener(async (message, sender) => {
-    if (message.command == "InitiateConnect") {
+    if (enabled && message.command == "InitiateConnect") {
         let port = messenger.runtime.connect(sender.id, { name: "ProviderConnection" });
         if (port && !port.error) {
             let addon = await messenger.management.get(sender.id);
@@ -100,18 +99,10 @@ messenger.runtime.onMessageExternal.addListener(async (message, sender) => {
                     "message": `TbSync cannot load ${addon.name} because it is using an incompatible API version. Check for updated versions.`
                 });
             } else {
-                // Store provider. SHORTNAME HAS TO GO 
                 installedProviders.set(sender.id, { provider, info: message.info });
-                let request = { command: "loadProvider", providerID: sender.id, provider: message.provider }
-                console.log(message);
-
-                // The legacy load of providers should wait after TbSync has finished loading.
-                // PURGE!!!
-                if (enabled) {
-                    messenger.BootstrapLoader.notifyExperiment(request);
-                } else {
-                    queuedRequests.push(request);
-                }
+                let request = { command: "loadProvider", providerID: sender.id }
+                console.log(request);
+                messenger.BootstrapLoader.notifyExperiment(request);
             }
         }
     }
@@ -130,12 +121,6 @@ messenger.BootstrapLoader.onNotifyBackground.addListener(async (info) => {
     switch (info.command) {
         case "enabled":
             enabled = true;
-            
-            // Legacy load all providers which have connected already.
-            for (let request of queuedRequests) {
-                messenger.BootstrapLoader.notifyExperiment(request);
-            }
-            queuedRequests = [];
             break;
         
         case "getString":
