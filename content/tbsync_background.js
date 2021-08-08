@@ -134,7 +134,7 @@ messenger.BootstrapLoader.onNotifyBackground.addListener(async (info) => {
 
         default:
             // Any other request is probably a request which should be forwarded to a provider 
-            console.log(installedProviders.get(info.providerID));
+            console.log("info", info);
             if (info.command.startsWith("Base.") && installedProviders.has(info.providerID)) {
                 return installedProviders.get(info.providerID).provider.portSend(info);
             }

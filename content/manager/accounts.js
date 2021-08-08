@@ -15,11 +15,11 @@ var tbSyncAccounts = {
 
   selectedAccount: null,
 
-  onload: function () {
+  onload: async function () {
     //scan accounts, update list and select first entry (because no id is passed to updateAccountList)
     //the onSelect event of the List will load the selected account
     //also update/init add menu
-    this.updateAvailableProvider(); 
+    await this.updateAvailableProvider(); 
     
     Services.obs.addObserver(tbSyncAccounts.updateProviderListObserver, "tbsync.observer.manager.updateProviderList", false);
     Services.obs.addObserver(tbSyncAccounts.updateAccountsListObserver, "tbsync.observer.manager.updateAccountsList", false);
@@ -306,19 +306,19 @@ var tbSyncAccounts = {
     }
   },
   
-  updateAvailableProvider: function (provider = null) {        
+  updateAvailableProvider: async function (provider = null) {        
     //either add/remove a specific provider, or rebuild the list from scratch
     if (provider) {
       //update single provider entry
-      tbSyncAccounts.updateAddMenuEntry(provider);
+      await tbSyncAccounts.updateAddMenuEntry(provider);
     } else {
       //add default providers
       for (let provider in TbSync.providers.defaultProviders) {
-        tbSyncAccounts.updateAddMenuEntry(provider);
+        await tbSyncAccounts.updateAddMenuEntry(provider);
       }
-      //update/add all remaining installed providers
+      //update/add all remaining installed providers - todo: exclude those already added
       for (let provider in TbSync.providers.loadedProviders) {
-        tbSyncAccounts.updateAddMenuEntry(provider);
+        await tbSyncAccounts.updateAddMenuEntry(provider);
       }
     }
     
