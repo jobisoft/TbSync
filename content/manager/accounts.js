@@ -102,7 +102,7 @@ var tbSyncAccounts = {
     }
   },
 
-  deleteAccount: function () {
+  deleteAccount: async function () {
     let accountsList = document.getElementById("tbSyncAccounts.accounts");
     if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value)  && !TbSync.core.isSyncing(accountsList.selectedItem.value)) {
       let nextAccount =  -1;
@@ -117,7 +117,7 @@ var tbSyncAccounts = {
           //delete account and all folders from db
           TbSync.db.removeAccount(accountsList.selectedItem.value);
           //update list
-          this.updateAccountsList(nextAccount);
+          await this.updateAccountsList(nextAccount);
         } 
       } else if (confirm(TbSync.getString("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
         //cache all folders and remove associated targets 
@@ -127,12 +127,14 @@ var tbSyncAccounts = {
         try  {
           let accountData = new TbSync.AccountData(accountsList.selectedItem.value);
           TbSync.providers[accountData.getAccountProperty("provider")].Base.onDeleteAccount(accountData);
-        } catch (e) {                Components.utils.reportError(e);}
+        } catch (e) {                
+          Components.utils.reportError(e);
+        }
 
         //delete account and all folders from db
         TbSync.db.removeAccount(accountsList.selectedItem.value);
         //update list
-        this.updateAccountsList(nextAccount);
+        await this.updateAccountsList(nextAccount);
       }
     }
   },
@@ -273,7 +275,7 @@ var tbSyncAccounts = {
     return "chrome://tbsync/content/skin/" + src;
   },
 
-  updateAccountLogo: function (id) {
+  updateAccountLogo: async function (id) {
     let accountData = new TbSync.AccountData(id);
     let listItem = document.getElementById("tbSyncAccounts.accounts." + id);
     if (listItem) {
@@ -322,7 +324,7 @@ var tbSyncAccounts = {
       }
     }
     
-    this.updateAccountsList();
+    await this.updateAccountsList();
     
     let selectedAccount = this.getSelectedAccount();
     if (selectedAccount !== null && TbSync.db.getAccountProperty(selectedAccount, "provider") == provider) {
@@ -330,7 +332,7 @@ var tbSyncAccounts = {
     }
   },
   
-  updateAccountsList: function (accountToSelect = null) {
+  updateAccountsList: async function (accountToSelect = null) {
     let accountsList = document.getElementById("tbSyncAccounts.accounts");
     let accounts = TbSync.db.getAccounts();
 
@@ -393,7 +395,7 @@ var tbSyncAccounts = {
         //update/set actual values
         this.updateAccountName(accounts.allIDs[i], accounts.data[accounts.allIDs[i]].accountname);
         this.updateAccountStatus(accounts.allIDs[i]);
-        this.updateAccountLogo(accounts.allIDs[i]);
+        await this.updateAccountLogo(accounts.allIDs[i]);
       }
       
       //find selected item
