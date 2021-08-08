@@ -414,7 +414,7 @@ var tbSyncAccounts = {
     }
   },
 
-  updateAddMenuEntry: function (provider) {
+  updateAddMenuEntry: async function (provider) {
     let isDefault = TbSync.providers.defaultProviders.hasOwnProperty(provider);
     let isInstalled = TbSync.providers.loadedProviders.hasOwnProperty(provider);
     
@@ -432,8 +432,8 @@ var tbSyncAccounts = {
     
     //Update label, icon and hidden according to isDefault and isInstalled
     if (isInstalled) {
-      entry.setAttribute("label",  TbSync.providers[provider].Base.getProviderName());
-      entry.setAttribute("image", TbSync.providers[provider].Base.getProviderIcon(16));
+      entry.setAttribute("label", await TbSync.request(provider, "Base.getProviderName"));
+      entry.setAttribute("image", await TbSync.request(provider, "Base.getProviderIcon", [16]));
       entry.setAttribute("hidden", false);
     } else if (isDefault) {
       entry.setAttribute("label", TbSync.providers.defaultProviders[provider].name);

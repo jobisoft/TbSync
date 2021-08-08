@@ -13,13 +13,13 @@ var providers = {
 
   //list of default providers (available in add menu, even if not installed)
   defaultProviders: {
-    "google" : {
+    "google-4-tbsync@marcozanon.com" : {
       name: "Google's People API", 
       homepageUrl: "https://addons.thunderbird.net/addon/google-4-tbsync/"},
-    "dav" : {
+    "dav4tbsync@jobisoft.de" : {
       name: "CalDAV & CardDAV", 
       homepageUrl: "https://addons.thunderbird.net/addon/dav-4-tbsync/"},
-    "eas" : {
+    "eas4tbsync@jobisoft.de" : {
       name: "Exchange ActiveSync", 
       homepageUrl: "https://addons.thunderbird.net/addon/eas-4-tbsync/"},
   },
