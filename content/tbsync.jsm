@@ -37,6 +37,14 @@ var TbSync = {
   modules : [],
   extension : null,
   
+  request: function (providerID, command, parameters) {
+    return TbSync.notifyTools.notifyBackground({
+      providerID:  TbSync.providers.loadedProviders[providerID].addonId,
+      command,
+      parameters
+    });
+  },
+
   // global load
   load: async function (window, addon, extension) {
 	  //public module and IO module needs to be loaded beforehand

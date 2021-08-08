@@ -36,16 +36,6 @@ var providers = {
     }
   },
 
-  request: function(providerID, command, parameters) {
-    return TbSync.notifyTools.notifyBackground({
-      providerID:  this.loadedProviders[providerID].addonId,
-      command,
-      parameters
-    });
-  },
-
-
-  
   loadProvider:  async function (providerID) {
     console.log("loadProvider", providerID);
     //only load, if not yet loaded and if the provider name does not shadow a fuction inside provider.js
@@ -59,11 +49,10 @@ var providers = {
         this.loadedProviders[providerID].addonId = providerID;
         this.loadedProviders[providerID].version = addon.version.toString();
         this.loadedProviders[providerID].createAccountWindow = null;
-        this.loadedProviders[providerID].defaultFolderEntries = await this.request(providerID, "Base.getDefaultFolderEntries");
-        this.loadedProviders[providerID].defaultAccountEntries = await this.request(providerID, "Base.getDefaultAccountEntries");
-        this.loadedProviders[providerID].addon.contributorsURL = await this.request(providerID, "Base.getContributorsUrl");
-        this.loadedProviders[providerID].editAccountOverlayUrl = await this.request(providerID, "Base.getEditAccountOverlayUrl");
-
+        this.loadedProviders[providerID].defaultFolderEntries = await TbSync.request(providerID, "Base.getDefaultFolderEntries");
+        this.loadedProviders[providerID].defaultAccountEntries = await TbSync.request(providerID, "Base.getDefaultAccountEntries");
+        this.loadedProviders[providerID].addon.contributorsURL = await TbSync.request(providerID, "Base.getContributorsUrl");
+        this.loadedProviders[providerID].editAccountOverlayUrl = await TbSync.request(providerID, "Base.getEditAccountOverlayUrl");
 
         // We no longer support custom folder lists. 
         this[providerID] = {};
@@ -89,7 +78,7 @@ var providers = {
           }
         }
         
-        await this.request(providerID, "Base.onConnect"); // This should be onEstablished, as TbSync has activly confirmed the connection - or load
+        await TbSync.request(providerID, "Base.onConnect"); // This should be onEstablished, as TbSync has activly confirmed the connection - or load
 
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateProviderList", providerID);
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateSyncstate", null);

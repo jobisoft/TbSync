@@ -8,6 +8,13 @@
 
 "use strict";
 
+/**
+ * TODO
+ * 
+ * - regain working state via command proxy (slow)
+ * - move loadProvider / unloadProvider into background/WebExt
+ */
+
 import * as tools from './scripts/tools.js'
 
 const tbSyncApiVersion = "3.0";

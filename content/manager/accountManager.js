@@ -66,7 +66,7 @@ var tbSyncAccountManager = {
     for (let i=0; i < providers.length; i++) {
       let item = document.createXULElement("menuitem");
       item.setAttribute("value", providers[i]);
-      item.setAttribute("label", TbSync.getString("supportwizard.provider::" + TbSync.providers[providers[i]].Base.getProviderName()));
+      item.setAttribute("label", TbSync.getString("supportwizard.providerID::" + TbSync.providers[providers[i]].Base.getProviderName()));
       menu.appendChild(item); 
     }
   
@@ -79,46 +79,46 @@ var tbSyncAccountManager = {
   },
   
   checkSupportWizard: function() {
-    let provider = document.getElementById("tbsync.supportwizard.faultycomponent").parentNode.value;
+    let providerID = document.getElementById("tbsync.supportwizard.faultycomponent").parentNode.value;
     let subject = document.getElementById("tbsync.supportwizard.summary").value;
     let description = document.getElementById("tbsync.supportwizard.description").value;
 
     //just check and update button status
-    document.getElementById("SupportWizard").getButton("finish").disabled = (provider == "" || subject == "" || description== "");        
+    document.getElementById("SupportWizard").getButton("finish").disabled = (providerID == "" || subject == "" || description== "");        
   },
 
-  prepareBugReport: function(event) {
-    let provider = document.getElementById("tbsync.supportwizard.faultycomponent").parentNode.value;
+  prepareBugReport: async function(event) {
+    let providerID = document.getElementById("tbsync.supportwizard.faultycomponent").parentNode.value;
     let subject = document.getElementById("tbsync.supportwizard.summary").value;
     let description = document.getElementById("tbsync.supportwizard.description").value;
 
-    if (provider == "" || subject == "" || description== "") {
+    if (providerID == "" || subject == "" || description== "") {
       event.preventDefault();
       return;
     }
 
     //special if core is selected, which is not a provider
-    let email = (TbSync.providers.loadedProviders.hasOwnProperty(provider)) ? TbSync.providers[provider].Base.getMaintainerEmail() : "john.bieling@gmx.de";
-    let version = (TbSync.providers.loadedProviders.hasOwnProperty(provider)) ? " " + TbSync.providers.loadedProviders[provider].version : "";
-    TbSync.manager.createBugReport(email, "[" + provider.toUpperCase() + version + "] " + subject, description);
+    let email = (TbSync.providers.loadedProviders.hasOwnProperty(providerID)) ? (await TbSync.request(providerID, "Base.getMaintainerEmail")) : "john.bieling@gmx.de";
+    let version = (TbSync.providers.loadedProviders.hasOwnProperty(providerID)) ? " " + TbSync.providers.loadedProviders[providerID].version : "";
+    TbSync.manager.createBugReport(email, "[" + providerID.toUpperCase() + version + "] " + subject, description);
   },
   
   
   
   //community tab
-  initCommunity: function() {
+  initCommunity: async function() {
     let listOfContributors = document.getElementById("listOfContributors");
     let sponsors = {};
       
     let providers = Object.keys(TbSync.providers.loadedProviders);
     for (let i=0; i < providers.length; i++) {
-      let provider = providers[i];
+      let providerID = providers[i];
       let template = listOfContributors.firstElementChild.cloneNode(true);
-      template.setAttribute("provider", provider);
-      template.children[0].setAttribute("src", TbSync.providers[provider].Base.getProviderIcon(48));
-      template.children[1].children[0].textContent = TbSync.providers[provider].Base.getProviderName();
+      template.setAttribute("providerID", providerID);
+      template.children[0].setAttribute("src", await TbSync.request(providerID, "Base.getProviderIcon", [48]));
+      template.children[1].children[0].textContent = await TbSync.request(providerID, "Base.getProviderName");
       listOfContributors.appendChild(template);
-      Object.assign(sponsors, TbSync.providers[provider].Base.getSponsors());
+      Object.assign(sponsors, await TbSync.request(providerID, "Base.getSponsors"));
     }
     listOfContributors.removeChild(listOfContributors.firstElementChild);
 
