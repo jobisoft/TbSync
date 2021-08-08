@@ -7,7 +7,7 @@
   },
   "manifest_version": 2,
   "name": "TbSync",
-  "version": "3.0.1",
+  "version": "4.0",
   "author": "John Bieling",
   "homepage_url": "https://github.com/jobisoft/TbSync",
   "default_locale": "en-US",
@@ -23,8 +23,14 @@
     }
   }, 
   "background": {
-    "scripts": ["background.js"]
+    "page": "background.html"
   },
+  "permissions": [
+    "storage",
+    "notifications",
+    "management",
+    "accountsRead"
+  ],
   "experiment_apis": {
     "BootstrapLoader": {
       "schema": "content/api/BootstrapLoader/schema.json",
