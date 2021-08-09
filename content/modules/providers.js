@@ -56,7 +56,6 @@ var providers = {
 
         // We no longer support custom folder lists. 
         this[providerID] = {};
-        this[providerID].folderList = new TbSync.manager.FolderList(providerID);
         
         await TbSync.messenger.overlayManager.registerOverlay("chrome://tbsync/content/manager/editAccount.xhtml?providerID=" + providerID, this.loadedProviders[providerID].editAccountOverlayUrl);        
         

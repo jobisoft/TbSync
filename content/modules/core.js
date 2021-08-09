@@ -46,8 +46,8 @@ var core = {
     return this.syncDataObj[accountID];        
   },
   
-  getNextPendingFolder: function (syncData) {
-    let sortedFolders = TbSync.providers[syncData.accountData.getAccountProperty("provider")].Base.getSortedFolders(syncData.accountData);
+  getNextPendingFolder: async function (syncData) {
+    let sortedFolders = await TbSync.request(syncData.accountData.getAccountProperty("provider"), "Base.getSortedFolders", [tbSyncAccountSettings.accountData.accountID]);
     for (let i=0; i < sortedFolders.length; i++) {
       if (sortedFolders[i].getFolderProperty("status") != "pending") continue;
       syncData._setCurrentFolderData(sortedFolders[i]);
@@ -150,7 +150,7 @@ var core = {
             }
             
             // getNextPendingFolder will set or clear currentFolderData of syncData
-            if (!this.getNextPendingFolder(syncData)) {
+            if (!(await this.getNextPendingFolder(syncData))) {
               break;
             }
             
