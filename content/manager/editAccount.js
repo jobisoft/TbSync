@@ -20,53 +20,53 @@ var tbSyncAccountSettings = {
   updateTimer: Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer),
 
   updateFolderListObserver: {
-    observe: function (aSubject, aTopic, aData) {
+    observe: async function (aSubject, aTopic, aData) {
       //only run if is request for this account and main frame is visible
       let accountID = aData;            
       if (accountID == tbSyncAccountSettings.accountID && !document.getElementById('tbsync.accountsettings.frame').hidden) {
         //make sure, folderlist is visible, otherwise our updates will be discarded (may cause errors)
-        tbSyncAccountSettings.updateFolderList();
-        tbSyncAccountSettings.updateGui();
+        await tbSyncAccountSettings.updateFolderList();
+        await tbSyncAccountSettings.updateGui();
       }
     }
   },
 
   reloadAccountSettingObserver: {
-    observe: function (aSubject, aTopic, aData) {
+    observe: async function (aSubject, aTopic, aData) {
       //only run if is request for this account and main frame is visible
       let data = JSON.parse(aData);
       if (data.accountID == tbSyncAccountSettings.accountID && !document.getElementById('tbsync.accountsettings.frame').hidden) {
-        tbSyncAccountSettings.reloadSetting(data.setting);
+        await tbSyncAccountSettings.reloadSetting(data.setting);
       }
     }
   },
 
   updateGuiObserver: {
-    observe: function (aSubject, aTopic, aData) {
+    observe: async function (aSubject, aTopic, aData) {
       //only run if is request for this account and main frame is visible
       let accountID = aData;            
       if (accountID == tbSyncAccountSettings.accountID && !document.getElementById('tbsync.accountsettings.frame').hidden) {
-        tbSyncAccountSettings.updateGui();
+        await tbSyncAccountSettings.updateGui();
       }
     }
   },
 
   updateSyncstateObserver: {
-    observe: function (aSubject, aTopic, aData) {
+    observe: async function (aSubject, aTopic, aData) {
       //only run if is request for this account and main frame is visible
       let accountID = aData;            
       if (accountID == tbSyncAccountSettings.accountID && !document.getElementById('tbsync.accountsettings.frame').hidden) {
         let syncstate = TbSync.core.getSyncDataObject(accountID).getSyncState().state;
         if (syncstate == "accountdone") {
-          tbSyncAccountSettings.updateGui();
+          await tbSyncAccountSettings.updateGui();
         } else {
-          tbSyncAccountSettings.updateSyncstate();
+          await tbSyncAccountSettings.updateSyncstate();
         }
       }
     }
   },
 
-  onload: function () {
+  onload: async function () {
     //load observers
     Services.obs.addObserver(tbSyncAccountSettings.updateFolderListObserver, "tbsync.observer.manager.updateFolderList", false);
     Services.obs.addObserver(tbSyncAccountSettings.updateGuiObserver, "tbsync.observer.manager.updateAccountSettingsGui", false);
@@ -98,11 +98,11 @@ var tbSyncAccountSettings = {
     if (window.tbSyncEditAccountOverlay && window.tbSyncEditAccountOverlay.hasOwnProperty("onload")) {
       tbSyncEditAccountOverlay.onload(window, new TbSync.AccountData(tbSyncAccountSettings.accountID));
     }
-    tbSyncAccountSettings.loadSettings();
+    await tbSyncAccountSettings.loadSettings();
     
     //done, folderlist must be updated while visible
     document.getElementById('tbsync.accountsettings.frame').hidden = false;	    
-    tbSyncAccountSettings.updateFolderList();      
+    await tbSyncAccountSettings.updateFolderList();      
 
     if (OS.Constants.Sys.Name == "Darwin") { //we might need to find a way to detect MacOS like styling, other themes move the header bar into the tabpanel as well
       document.getElementById('manager.tabpanels').style["padding-top"] = "3ex";
@@ -150,7 +150,7 @@ var tbSyncAccountSettings = {
    * Run through all defined TbSync settings and if there is a corresponding
    * field in the settings dialog, fill it with the stored value.
    */
-  loadSettings: function () {
+  loadSettings: async function () {
     for (let i=0; i < tbSyncAccountSettings.settings.length; i++) {
       let pref = document.getElementById("tbsync.accountsettings.pref." + tbSyncAccountSettings.settings[i]);
       let label = document.getElementById("tbsync.accountsettings.label." + tbSyncAccountSettings.settings[i]);
@@ -177,10 +177,10 @@ var tbSyncAccountSettings = {
       }
     }
     
-    tbSyncAccountSettings.updateGui();        
+    await tbSyncAccountSettings.updateGui();        
   },
 
-  updateGui: function () {
+  updateGui: async function () {
     let status = TbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, "status");
 
     let isConnected = TbSync.core.isConnected(tbSyncAccountSettings.accountID);
@@ -224,7 +224,7 @@ var tbSyncAccountSettings = {
     document.getElementById('tbsync.accountsettings.syncbtn').disabled = isSyncing;
     document.getElementById('tbsync.accountsettings.connectbtn').disabled = isSyncing;
   
-    tbSyncAccountSettings.updateSyncstate();
+    await tbSyncAccountSettings.updateSyncstate();
   
     //change color of syncstate according to status
     let showEventLogButton = false;
@@ -246,7 +246,7 @@ var tbSyncAccountSettings = {
     document.getElementById('tbsync.accountsettings.eventlogbtn').hidden = !showEventLogButton;
   },
 
-  updateSyncstate: function () {
+  updateSyncstate: async function () {
     tbSyncAccountSettings.updateTimer.cancel();
 
     // if this account is beeing synced, display syncstate, otherwise print status
@@ -268,7 +268,7 @@ var tbSyncAccountSettings = {
       if (syncstate.split(".")[0] == "send") {
         // append timeout countdown
         let diff = Date.now() - synctime;
-        if (diff > 2000) msg = msg + " (" + Math.round((TbSync.providers[tbSyncAccountSettings.provider].Base.getConnectionTimeout(tbSyncAccountSettings.accountData) - diff)/1000) + "s)";
+        if (diff > 2000) msg = msg + " (" + Math.round((await TbSync.request(tbSyncAccountSettings.provider, "Base.getConnectionTimeout" [tbSyncAccountSettings.accountData.accountID]) - diff)/1000) + "s)";
         // re-schedule update, if this is a waiting syncstate
         tbSyncAccountSettings.updateTimer.init(tbSyncAccountSettings.updateSyncstate, 1000, 0);
       }            
@@ -281,7 +281,7 @@ var tbSyncAccountSettings = {
     
     if (tbSyncAccountSettings.folderListVisible()) {
       //update syncstates of folders in folderlist, if visible - remove obsolete entries while we are here
-      let folderData = TbSync.providers[tbSyncAccountSettings.provider].Base.getSortedFolders(tbSyncAccountSettings.accountData);
+      let folderData = await TbSync.request(tbSyncAccountSettings.provider, "Base.getSortedFolders", [tbSyncAccountSettings.accountData.accountID]);
       let folderList = document.getElementById("tbsync.accountsettings.folderlist");
 
       for (let i=folderList.getRowCount()-1; i>=0; i--) {
@@ -295,9 +295,9 @@ var tbSyncAccountSettings = {
     }
   },
 
-  updateFolderList: function () {
+  updateFolderList: async function () {
     //get updated list of folderIDs
-    let folderData = TbSync.providers[tbSyncAccountSettings.provider].Base.getSortedFolders(tbSyncAccountSettings.accountData);
+    let folderData = await TbSync.request(tbSyncAccountSettings.provider, "Base.getSortedFolders", [tbSyncAccountSettings.accountData.accountID]);
     
     //remove entries from folderlist, which no longer exists and build reference array with  current elements
     let folderList = document.getElementById("tbsync.accountsettings.folderlist");
