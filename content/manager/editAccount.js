@@ -290,10 +290,10 @@ var tbSyncAccountSettings = {
 
       for (let i=folderList.getRowCount()-1; i>=0; i--) {
         let item = folderList.getItemAtIndex(i);
-        if (this.folderListData.filter(f => f.folderID == item.folderData.folderID).length == 0) {
+        if (this.folderListData.filter(f => f.folderID == item.folderListRowData.folderID).length == 0) {
           item.remove();
         } else {
-          await folderListView.updateRow(document, item, item.folderListRowData);
+          await this.folderListView.updateRow(document, item, item.folderListRowData);
         }
       }
     }
@@ -314,10 +314,10 @@ var tbSyncAccountSettings = {
 
     let foldersElements = {};
     for (let i=folderList.getRowCount()-1; i>=0; i--) {
-      if (this.folderListData.filter(f => f.folderID == folderList.getItemAtIndex(i).folderData.folderID).length == 0) {
+      if (this.folderListData.filter(f => f.folderID == folderList.getItemAtIndex(i).folderListRowData.folderID).length == 0) {
         folderList.getItemAtIndex(i).remove();
       } else {
-        foldersElements[folderList.getItemAtIndex(i).folderData.folderID] = folderList.getItemAtIndex(i);
+        foldersElements[folderList.getItemAtIndex(i).folderListRowData.folderID] = folderList.getItemAtIndex(i);
       }
     }
 

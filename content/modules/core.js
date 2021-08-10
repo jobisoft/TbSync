@@ -106,7 +106,7 @@ var core = {
       if (syncDescription.syncList) {
         let listStatusData;
         try {
-          listStatusData = await TbSync.providers[syncData.accountData.getAccountProperty("provider")].Base.syncFolderList(syncData, syncDescription.syncJob, accountRuns);
+          listStatusData = await TbSync.request(syncData.accountData.getAccountProperty("provider"), "Base.syncFolderList", [syncData, syncDescription.syncJob, accountRuns]);
         } catch (e) {
           listStatusData = new TbSync.StatusData(TbSync.StatusData.WARNING, "JavaScriptError", e.message + "\n\n" + e.stack);
         }
@@ -156,7 +156,7 @@ var core = {
             
             let folderStatusData;
             try {
-              folderStatusData = await TbSync.providers[syncData.accountData.getAccountProperty("provider")].Base.syncFolder(syncData, syncDescription.syncJob, folderRuns);
+              folderStatusData = await TbSync.request(syncData.accountData.getAccountProperty("provider"), "Base.syncFolder", [syncData, syncDescription.syncJob, folderRuns]);
             } catch (e) {
               folderStatusData = new TbSync.StatusData(TbSync.StatusData.WARNING, "JavaScriptError", e.message + "\n\n" + e.stack);
             }
