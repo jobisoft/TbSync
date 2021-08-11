@@ -158,13 +158,14 @@ var ProviderData = class {
     return TbSync.providers.loadedProviders[this.provider].extension;
   }
   
+  // Return array of account IDs
   getAllAccounts() {
     let accounts = TbSync.db.getAccounts();
     let allAccounts = [];
     for (let i=0; i<accounts.IDs.length; i++) {
       let accountID = accounts.IDs[i];
       if (accounts.data[accountID].provider == this.provider) {
-        allAccounts.push(new TbSync.AccountData(accountID));
+        allAccounts.push(accountID);
       }
     }
     return allAccounts;

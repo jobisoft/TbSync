@@ -135,7 +135,9 @@ var TbSync = {
         case "getFolderProperty":
         case "setFolderProperty":
         case "resetFolderProperty":
+        case "findFolders": 
           return TbSync.db[data.command](...data.parameters);
+          
         case "getAllFolders": 
         {
           let allFolders = [];
