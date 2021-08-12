@@ -111,7 +111,7 @@ var core = {
           listStatusData = new TbSync.StatusData(TbSync.StatusData.WARNING, "JavaScriptError", e.message + "\n\n" + e.stack);
         }
           
-        if (!(listStatusData instanceof TbSync.StatusData)) {
+        if (!(listStatusData.isStatusData)) {
           overallStatusData = new TbSync.StatusData(TbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": Base.syncFolderList() must return a StatusData object");
           break;
         }
@@ -161,7 +161,7 @@ var core = {
               folderStatusData = new TbSync.StatusData(TbSync.StatusData.WARNING, "JavaScriptError", e.message + "\n\n" + e.stack);
             }
             
-            if (!(folderStatusData instanceof TbSync.StatusData)) {
+            if (!(folderStatusData.isStatusData)) {
               folderStatusData = new TbSync.StatusData(TbSync.StatusData.ERROR, "apiError", "TbSync/"+syncData.accountData.getAccountProperty("provider")+": Base.syncFolder() must return a StatusData object");
             }
 
