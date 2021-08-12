@@ -67,7 +67,7 @@ var providers = {
           TbSync.core.resetSyncDataObj(accountID);
           
           // set all accounts which are syncing to notsyncronized 
-          if (TbSync.db.getAccountProperty(accountID, "status") == "syncing") TbSync.db.getAccountProperty(accountID, "status", "notsyncronized");
+          if (TbSync.db.getAccountProperty(accountID, "status") == "syncing") TbSync.db.setAccountProperty(accountID, "status", "notsyncronized");
 
           // set each folder with PENDING status to ABORTED
           let folders = TbSync.db.findFolders({"status": "pending"}, {"accountID": accountID});
