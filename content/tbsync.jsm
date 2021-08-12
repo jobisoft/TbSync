@@ -138,15 +138,11 @@ var TbSync = {
         case "findFolders": 
           return TbSync.db[data.command](...data.parameters);
           
+        case "getAllAccounts":
+          return Object.keys(TbSync.db.accounts.data).filter(accountID => TbSync.db.accounts.data[accountID].provider == data.providerID).sort((a, b) => a - b);
+
         case "getAllFolders": 
-        {
-          let allFolders = [];
-          let folders = TbSync.db.findFolders({"cached": false}, {"accountID":data.parameters[0]});
-          for (let i=0; i < folders.length; i++) {          
-            allFolders.push(folders[i].folderID);
-          }
-          return allFolders;
-        }
+          return TbSync.db.findFolders({"cached": false}, {"accountID":data.parameters[0]}).map(folder => folder.folderID);
       }
     });
 

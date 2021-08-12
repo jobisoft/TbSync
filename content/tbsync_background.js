@@ -42,22 +42,23 @@ var Provider = class {
     // Is async dangerous here? Do we have multiple such listeners?
     async portReceiver(message, port) {
         // port.name should be "ProviderConnection"
-        const { origin, id, data } = message;
+        let { origin, id, data } = message;
         if (origin == "TbSync") {
             // This is an answer for one of our own requests.
             const resolve = this.portMap.get(id);
             this.portMap.delete(id);
             resolve(data);
-        } else {
+        } else if (origin == this.addon.id) {
             // This is a request from a provider.
             let rv;
-            switch (message.data.command) {
+            switch (data.command) {
                 case "getString":
-                    rv = tools.getString(...message.data.parameters);
+                    rv = tools.getString(...data.parameters);
                     break;
                 default:
-                    // Forward to legacy: only pass on the data, id and origin are not needed in the Experiment.
-                    rv = await messenger.BootstrapLoader.notifyExperiment(message.data);
+                    // Forward to legacy.
+                    data.providerID = origin;
+                    rv = await messenger.BootstrapLoader.notifyExperiment(data);
             }
             this.port.postMessage({ origin, id, data: rv });
         }
