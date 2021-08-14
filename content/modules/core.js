@@ -47,7 +47,7 @@ var core = {
   },
   
   getNextPendingFolder: async function (syncData) {
-    let sortedFolders = await TbSync.request(syncData.accountData.getAccountProperty("provider"), "Base.getSortedFolders", [syncData.accountData.accountID]);
+    let sortedFolders = await TbSync.request(syncData.accountData.getAccountProperty("provider"), "Base.getSortedFolders", [syncData.accountData.accountID, /* includeAdditionalInfo */ false]);
     for (let i=0; i < sortedFolders.length; i++) {
       let accountData = new TbSync.AccountData(sortedFolders[i].accountID);
       let folderData = new TbSync.FolderData(accountData, sortedFolders[i].folderID);

@@ -300,7 +300,7 @@ var tbSyncAccountSettings = {
   },
 
   getCurrentFolderListData() {
-    return TbSync.request(this.provider, "Base.getSortedFolders", [tbSyncAccountSettings.accountData.accountID]);
+    return TbSync.request(this.provider, "Base.getSortedFolders", [tbSyncAccountSettings.accountData.accountID, /* includeAdditionalInfo */ true]);
   },
 
   updateFolderList: async function (update = true) {
