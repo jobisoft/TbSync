@@ -121,12 +121,12 @@ var tbSyncAccounts = {
         } 
       } else if (confirm(TbSync.getString("prompt.DeleteAccount").replace("##accountName##", accountsList.selectedItem.getAttribute("label")))) {
         //cache all folders and remove associated targets 
-        TbSync.core.disableAccount(accountsList.selectedItem.value);
+        await TbSync.core.disableAccount(accountsList.selectedItem.value);
         
         // the following call might fail, as not all providers provide that method, it was mainly added to cleanup stored passwords
         try  {
           let accountData = new TbSync.AccountData(accountsList.selectedItem.value);
-          TbSync.providers[accountData.getAccountProperty("provider")].Base.onDeleteAccount(accountData);
+          await TbSync.request(accountData.getAccountProperty("provider"), "Base.onDeleteAccount", [accountData.accountID]);
         } catch (e) {                
           Components.utils.reportError(e);
         }
@@ -159,13 +159,13 @@ var tbSyncAccounts = {
     }
   },    
 
-  toggleEnableState: function () {
+  toggleEnableState: async function () {
     let accountsList = document.getElementById("tbSyncAccounts.accounts");
     
     if (accountsList.selectedItem !== null && !isNaN(accountsList.selectedItem.value) && !TbSync.core.isSyncing(accountsList.selectedItem.value)) {            
       let isConnected = TbSync.core.isConnected(accountsList.selectedItem.value);
       if (!isConnected || window.confirm(TbSync.getString("prompt.Disable"))) {           
-        tbSyncAccounts.toggleAccountEnableState(accountsList.selectedItem.value);
+        await tbSyncAccounts.toggleAccountEnableState(accountsList.selectedItem.value);
       }
     }
   },
@@ -180,18 +180,18 @@ var tbSyncAccounts = {
   },
   
   //is not prompting, this is doing the actual toggle
-  toggleAccountEnableState: function (accountID) {
+  toggleAccountEnableState: async function (accountID) {
     if (tbSyncAccounts.hasInstalledProvider(accountID)) {
       let isEnabled = TbSync.core.isEnabled(accountID);
       
       if (isEnabled) {
         //we are enabled and want to disable (do not ask, if not connected)
-        TbSync.core.disableAccount(accountID);
+        await TbSync.core.disableAccount(accountID);
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", accountID);
         tbSyncAccounts.updateAccountStatus(accountID);
       } else {
         //we are disabled and want to enabled
-        TbSync.core.enableAccount(accountID);
+        await TbSync.core.enableAccount(accountID);
         Services.obs.notifyObservers(null, "tbsync.observer.manager.updateAccountSettingsGui", accountID);
         TbSync.core.syncAccount(accountID);
       }

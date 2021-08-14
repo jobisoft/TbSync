@@ -212,16 +212,16 @@ var core = {
     }
   },
   
-  enableAccount: function(accountID) {
+  enableAccount: async function(accountID) {
     let accountData = new TbSync.AccountData(accountID);
-    TbSync.providers[accountData.getAccountProperty("provider")].Base.onEnableAccount(accountData);
+    await TbSync.request(accountData.getAccountProperty("provider"), "Base.onEnableAccount", [accountID]);
     accountData.setAccountProperty("status", "notsyncronized");
     accountData.resetAccountProperty("lastsynctime");        
   },
 
-  disableAccount: function(accountID) {
+  disableAccount: async function(accountID) {
     let accountData = new TbSync.AccountData(accountID);
-    TbSync.providers[accountData.getAccountProperty("provider")].Base.onDisableAccount(accountData);
+    await TbSync.request(accountData.getAccountProperty("provider"), "Base.onDisableAccount", [accountID]);
     accountData.setAccountProperty("status", "disabled");
     
     let folders = accountData.getAllFolders();
