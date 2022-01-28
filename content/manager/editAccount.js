@@ -161,7 +161,7 @@ var tbSyncAccountSettings = {
         if (pref.tagName == "checkbox") {
           //BOOL
           if (TbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i])) pref.setAttribute("checked", true);
-          else pref.setAttribute("checked", false);
+          else pref.removeAttribute("checked");
           event = "command";
         } else {
           //Not BOOL
