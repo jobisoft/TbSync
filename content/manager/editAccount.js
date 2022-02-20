@@ -347,7 +347,10 @@ var tbSyncAccountSettings = {
     let setting = field.id.replace("tbsync.accountsettings.pref.","");
     let value = "";
     
+/*
     if (field.tagName == "checkbox") {
+*/
+    if ((field.tagName == "checkbox") || ((field.tagName == "input") && (null != field.type) && (field.type == "checkbox"))) {
       if (field.checked) value = true;
       else value = false;
     } else {
