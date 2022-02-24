@@ -134,7 +134,7 @@ var tbSyncAccountSettings = {
 
     if (pref) {
       //is this a checkbox?
-      if (pref.tagName == "checkbox") {
+      if ((pref.tagName == "checkbox") || ((pref.tagName == "input") && (pref.type == "checkbox"))) {
         //BOOL
         if (TbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, setting)) pref.setAttribute("checked", true);
         else pref.setAttribute("checked", false);
@@ -158,7 +158,7 @@ var tbSyncAccountSettings = {
       if (pref) {
         //is this a checkbox?
         let event = "blur";
-        if (pref.tagName == "checkbox") {
+        if ((pref.tagName == "checkbox") || ((pref.tagName == "input") && (pref.type == "checkbox"))) {
           //BOOL
           if (TbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, tbSyncAccountSettings.settings[i])) pref.setAttribute("checked", true);
           else pref.removeAttribute("checked");
@@ -347,10 +347,7 @@ var tbSyncAccountSettings = {
     let setting = field.id.replace("tbsync.accountsettings.pref.","");
     let value = "";
     
-/*
-    if (field.tagName == "checkbox") {
-*/
-    if ((field.tagName == "checkbox") || ((field.tagName == "input") && (null != field.type) && (field.type == "checkbox"))) {
+    if ((field.tagName == "checkbox") || ((field.tagName == "input") && (field.type == "checkbox"))) {
       if (field.checked) value = true;
       else value = false;
     } else {
