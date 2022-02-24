@@ -2,7 +2,8 @@
   "applications": {
     "gecko": {
       "id": "tbsync@jobisoft.de",
-      "strict_min_version": "91.0a1"
+      "strict_min_version": "91.0a1",
+      "strict_max_version": "91.*"
     }
   },
   "manifest_version": 2,
