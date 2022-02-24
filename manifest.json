@@ -7,7 +7,7 @@
   },
   "manifest_version": 2,
   "name": "TbSync",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "author": "John Bieling",
   "homepage_url": "https://github.com/jobisoft/TbSync",
   "default_locale": "en-US",
