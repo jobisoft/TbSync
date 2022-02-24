@@ -137,7 +137,7 @@ var tbSyncAccountSettings = {
       if ((pref.tagName == "checkbox") || ((pref.tagName == "input") && (pref.type == "checkbox"))) {
         //BOOL
         if (TbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, setting)) pref.setAttribute("checked", true);
-        else pref.setAttribute("checked", false);
+        else pref.removeAttribute("checked");
       } else {
         //Not BOOL
         pref.value = TbSync.db.getAccountProperty(tbSyncAccountSettings.accountID, setting);
