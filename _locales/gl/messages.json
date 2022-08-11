@@ -1,6 +1,6 @@
 {
     "HelpFixStartupError": {
-        "message": "To help fix this error, you could send a debug log to the TbSync developer. Prepare that email now?"
+        "message": "Para axudar a corrixir este erro podes enviar un rexistro de depuración ao desenvolvedor de TbSync. Queres preparar a mensaxe de correo agora?"
     },
     "NoDebugLog": {
         "message": "Could not find any useful debug messages. Please activate debug mode, restart Thunderbird and repeat all the steps needed to trigger the erroneous behavior."
