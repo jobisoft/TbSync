@@ -48,7 +48,7 @@
         "message": "TbSync é unha interface de usuario central para xestionar contas na nube e sincronizar os seus contactos, tarefas e calendarios con Thunderbird."
     },
     "google.translate.code": {
-        "message": "en"
+        "message": "gl"
     },
     "helplink.security": {
         "message": "https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F"
@@ -75,7 +75,7 @@
         "message": "Desactivar conta"
     },
     "manager.EnableAccount": {
-        "message": "Activar a conta e tratar de conectar ao servidor"
+        "message": "Activar a conta e conectar ao servidor"
     },
     "manager.RetryConnectAccount": {
         "message": "Volver a intentar conectar ao servidor"
@@ -96,7 +96,7 @@
         "message": "Axustes da conta"
     },
     "manager.catman.text": {
-        "message": "TbSync tamén sincroniza categorías de contactos, que son un substituto moi práctico para as listas de contactos non sincronizables. Para poder usalas no libro de enderezos de Thunderbird tes que instalar o complemento Category Manager. Este complemento permite manexar categorías que se superpoñen baseadas en grupos de contactos e aporta unha morea de características relacionadas coas categorías. Podes atopalo no repositorio oficial de complementos de Mozilla:"
+        "message": "TbSync tamén sincroniza categorías de contactos, que son un substituto moi práctico para as listas de contactos non sincronizables. Para poder usalas no caderno de enderezos de Thunderbird tes que instalar o complemento Category Manager. Este complemento permite manexar categorías que se superpoñen baseadas en grupos de contactos e aporta unha morea de características relacionadas coas categorías. Podes atopalo no repositorio oficial de complementos de Mozilla:"
     },
     "manager.community": {
         "message": "Comunidade"
@@ -228,7 +228,7 @@
         "message": "Contrasinal:"
     },
     "password.title": {
-        "message": "Solicitude de Credenciais de TbSync"
+        "message": "Solicitude de credenciais de TbSync"
     },
     "password.user": {
         "message": "Usuario:"
@@ -273,7 +273,7 @@
         "message": "A conta non está activada, a sincronización está desactivada."
     },
     "status.foldererror": {
-        "message": "Polo menos un recurso tivo un erro de sincronización. Por favor, revisa o rexistro de eventos para dispor de máis detalles."
+        "message": "Hai algún que recurso tivo un erro de sincronización. Por favor, revisa o rexistro de eventos para dispor de máis detalles."
     },
     "status.modified": {
         "message": "Modificacións locais"
@@ -288,7 +288,7 @@
         "message": "Cancelando a sincronización porque non se puideron crear os destinos da sincronización."
     },
     "status.notsyncronized": {
-        "message": "É preciso sincronizar a conta porque hai algún elemento sin sincronizar."
+        "message": "É preciso sincronizar a conta porque hai algún elemento sen sincronizar."
     },
     "status.pending": {
         "message": "Esperando pola sincronización"
@@ -318,10 +318,10 @@
         "message": "Seleccionar compoñente…"
     },
     "supportwizard.label.summary": {
-        "message": "Resumo corto do erro:"
+        "message": "Resumo curto do erro:"
     },
     "supportwizard.pagetitle": {
-        "message": "Recollida de toda a información para procesar de forma efectiva o informe de erro."
+        "message": "Recompilación de toda a información para procesar de forma efectiva o informe de erro."
     },
     "supportwizard.provider": {
         "message": "Provedor: ##replace.1##"
