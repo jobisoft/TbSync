@@ -9,13 +9,13 @@
         "message": "Ou! TbSync non puido iniciar!"
     },
     "RestartThunderbirdAndTryAgain": {
-        "message": "Habilitouse o rexistro de depuración de TbSync. Por favor, reinicia Thunderbird e trata de abrir TbSync outra vez."
+        "message": "Activouse o rexistro de depuración de TbSync. Por favor, reinicia Thunderbird e trata de abrir TbSync outra vez."
     },
     "UnableToTraceError": {
-        "message": "Non é posible obter unha traza deste erro porque o rexistro de depuración non está habilitado. Queres habilitar o rexistro de depuración agora para axudar a corrixir este erro?"
+        "message": "Non é posible obter rastrexar este erro porque o rexistro de depuración non está activado. Queres activalo agora para axudar a corrixir este erro?"
     },
     "accountacctions.delete": {
-        "message": "Borrar a conta “##accountname##”"
+        "message": "Eliminar a conta “##accountname##”"
     },
     "accountacctions.disable": {
         "message": "Desactivar a conta “##accountname##”"
@@ -27,13 +27,13 @@
         "message": "Sincronizar a conta “##accountname##”"
     },
     "addressbook.searchall": {
-        "message": "Buscar en todos os libros de enderezos"
+        "message": "Buscar en todos os cadernos de enderezos"
     },
     "addressbook.searchgal": {
-        "message": "Buscar neste libro de enderezos e no directorio global (##replace.1##)"
+        "message": "Buscar neste caderno de enderezos e no directorio global (##replace.1##)"
     },
     "addressbook.searchthis": {
-        "message": "Buscar neste libro de enderezos"
+        "message": "Buscar neste caderno de enderezos"
     },
     "eventlog.clear": {
         "message": "Limpar"
@@ -237,7 +237,7 @@
         "message": "Abrir o xestor de contas de TbSync"
     },
     "prompt.DeleteAccount": {
-        "message": "Seguro que queres borra a conta ##accountName##?"
+        "message": "Seguro que queres eliminar a conta ##accountName##?"
     },
     "prompt.Disable": {
         "message": "Seguro que queres desactivar esta conta? Perderanse todas as modificacións locais que aínda non foran sincronizadas!"
