@@ -153,7 +153,7 @@
         "message": "Para evitar erros de sincronización algúns axustes non se poden editar coa conta activada."
     },
     "manager.missingprovider": {
-        "message": "Eta conta precisa do provedor de sincronización ##provider## que non está instalado."
+        "message": "Esta conta precisa do provedor de sincronización ##provider## que non está instalado."
     },
     "manager.noaccounts": {
         "message": "Aínda non hai contas definidas."
