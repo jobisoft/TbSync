@@ -416,9 +416,9 @@ var lightning = {
     // searchId is interpreted as the primaryKeyField, which is the UID for this target
     async getItem (searchId) {
       let item = await this._promisifyCalendar.getItem(searchId); 
-      if (item.length == null) return new TbSync.lightning.TbItem(this, item);
-      if (item.length == 1) return new TbSync.lightning.TbItem(this, item[0]);
-      if (item.length > 1) throw "Oops: getItem returned <"+item.length+"> elements!";
+      if (item) {
+        return new TbSync.lightning.TbItem(this, item);
+      }
       return null;
     }
 
