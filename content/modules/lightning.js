@@ -340,7 +340,8 @@ var lightning = {
   TbCalendar : class {
     constructor(calendar, folderData) {
       this._calendar = calendar;
-      if (calendar.getItem.constructor.name == "AsyncFunction") {
+      // Since Thunderbird 96, many calendar functions return promises
+      if (parseInt(Services.appinfo.version.split(".")[0]) >= 96) {
         this._promisifyCalendar = calendar;
       } else {
         this._promisifyCalendar = TbSync.lightning.cal.async.promisifyCalendar(this._calendar.wrappedJSObject);
