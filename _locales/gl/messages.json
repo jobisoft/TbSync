@@ -1,0 +1,359 @@
+{
+    "HelpFixStartupError": {
+        "message": "Para axudar a corrixir este erro podes enviar un rexistro de depuración ao desenvolvedor de TbSync. Queres preparar a mensaxe de correo agora?"
+    },
+    "NoDebugLog": {
+        "message": "Non se puideron atopar mensaxes de depuración útiles. Por favor, activa o modo de depuración, reinicia Thunderbird e repite todos os pasos necesarios para reproducir o comportamento erróneo."
+    },
+    "OopsMessage": {
+        "message": "Ou! TbSync non puido iniciar!"
+    },
+    "RestartThunderbirdAndTryAgain": {
+        "message": "Activouse o rexistro de depuración de TbSync. Por favor, reinicia Thunderbird e trata de abrir TbSync outra vez."
+    },
+    "UnableToTraceError": {
+        "message": "Non é posible obter rastrexar este erro porque o rexistro de depuración non está activado. Queres activalo agora para axudar a corrixir este erro?"
+    },
+    "accountacctions.delete": {
+        "message": "Eliminar a conta “##accountname##”"
+    },
+    "accountacctions.disable": {
+        "message": "Desactivar a conta “##accountname##”"
+    },
+    "accountacctions.enable": {
+        "message": "Activar a conta “##accountname##” e intentar conectar ao servidor"
+    },
+    "accountacctions.sync": {
+        "message": "Sincronizar a conta “##accountname##”"
+    },
+    "addressbook.searchall": {
+        "message": "Buscar en todos os cadernos de enderezos"
+    },
+    "addressbook.searchgal": {
+        "message": "Buscar neste caderno de enderezos e no directorio global (##replace.1##)"
+    },
+    "addressbook.searchthis": {
+        "message": "Buscar neste caderno de enderezos"
+    },
+    "eventlog.clear": {
+        "message": "Limpar"
+    },
+    "eventlog.close": {
+        "message": "Pechar"
+    },
+    "eventlog.title": {
+        "message": "Rexistro de eventos"
+    },
+    "extensionDescription": {
+        "message": "TbSync é unha interface de usuario central para xestionar contas na nube e sincronizar os seus contactos, tarefas e calendarios con Thunderbird."
+    },
+    "google.translate.code": {
+        "message": "gl"
+    },
+    "helplink.security": {
+        "message": "https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F"
+    },
+    "info.error": {
+        "message": "Erro"
+    },
+    "info.idle": {
+        "message": "Inactivo"
+    },
+    "installProvider.header": {
+        "message": "O provedor “##replace.1##” para TbSync aínda non está instalado."
+    },
+    "manager.AccountActions": {
+        "message": "Accións da conta"
+    },
+    "manager.AddAccount": {
+        "message": "Engadir conta nova"
+    },
+    "manager.DeleteAccount": {
+        "message": "Eliminar conta"
+    },
+    "manager.DisableAccount": {
+        "message": "Desactivar conta"
+    },
+    "manager.EnableAccount": {
+        "message": "Activar a conta e conectar ao servidor"
+    },
+    "manager.RetryConnectAccount": {
+        "message": "Volver a intentar conectar ao servidor"
+    },
+    "manager.ShowEventLog": {
+        "message": "Abrir rexistro de eventos"
+    },
+    "manager.SyncAll": {
+        "message": "Sincronizar todas as contas activadas"
+    },
+    "manager.SynchronizeAccount": {
+        "message": "Sincronizar conta"
+    },
+    "manager.accounts": {
+        "message": "Contas"
+    },
+    "manager.accountsettings": {
+        "message": "Axustes da conta"
+    },
+    "manager.catman.text": {
+        "message": "TbSync tamén sincroniza categorías de contactos, que son un substituto moi práctico para as listas de contactos non sincronizables. Para poder usalas no caderno de enderezos de Thunderbird tes que instalar o complemento Category Manager. Este complemento permite manexar categorías que se superpoñen baseadas en grupos de contactos e aporta unha morea de características relacionadas coas categorías. Podes atopalo no repositorio oficial de complementos de Mozilla:"
+    },
+    "manager.community": {
+        "message": "Comunidade"
+    },
+    "manager.connecting": {
+        "message": "Conectando ao servidor"
+    },
+    "manager.help": {
+        "message": "Axuda"
+    },
+    "manager.help.createbugreport": {
+        "message": "Crear informe de erro"
+    },
+    "manager.help.createbugreportinfo": {
+        "message": "Para que TbSync recolla só os datos de depuración relevantes ao teu informe de erro, por favor, reinicia Thunderbird e repite exactamente os pasos para reproducir o comportamento erróneo. A continuación xa podes crear o teu informe de erro aquí."
+    },
+    "manager.help.debuglevel.0": {
+        "message": "Desactivado"
+    },
+    "manager.help.debuglevel.1": {
+        "message": "Activado: só rexistro de erros"
+    },
+    "manager.help.debuglevel.2": {
+        "message": "Activado: rexistro de todos os datos enviados e recibidos"
+    },
+    "manager.help.debuglevel.3": {
+        "message": "Activado: rexistro de todos os datos e algunhas variables internas de depuración"
+    },
+    "manager.help.debugmode": {
+        "message": "Modo de depuración:"
+    },
+    "manager.help.fixit": {
+        "message": "Podes axudar a corrixilo enviando un informe de depuración. Isto precisa da activación do modo de depuración."
+    },
+    "manager.help.foundabug": {
+        "message": "Atopaches un erro?"
+    },
+    "manager.help.needhelp": {
+        "message": "Precisas de axuda?"
+    },
+    "manager.help.viewdebuglog": {
+        "message": "Ver rexistro de depuración"
+    },
+    "manager.help.wiki": {
+        "message": "Abrir as páxinas wiki do proxecto TbSync nas que facilitan información adicional, guías e descricións detalladas da configuración."
+    },
+    "manager.installprovider.link": {
+        "message": "Preme no seguinte enlace para abrir a páxina de información do provedor de sincronización que falta. Aí atoparás máis información sobre o provedor e terás a opción de instalalo:"
+    },
+    "manager.installprovider.warning": {
+        "message": "Este provedor de sincronización non está aloxado no repositorio oficial de complementos de Thunderbird e, polo tanto, non foi revisado polo persoal de Thunderbird. O provedor podería causar dano ao teu sistema. Úsao baixo a túa responsabilidade."
+    },
+    "manager.lockedsettings.description": {
+        "message": "Para evitar erros de sincronización algúns axustes non se poden editar coa conta activada."
+    },
+    "manager.missingprovider": {
+        "message": "Esta conta precisa do provedor de sincronización ##provider## que non está instalado."
+    },
+    "manager.noaccounts": {
+        "message": "Aínda non hai contas definidas."
+    },
+    "manager.provider": {
+        "message": "Instalar provedor"
+    },
+    "manager.provider4tbsync": {
+        "message": "Provedor para TbSync"
+    },
+    "manager.resource": {
+        "message": "Recurso"
+    },
+    "manager.shorttitle": {
+        "message": "Xestor de contas"
+    },
+    "manager.status": {
+        "message": "Estado"
+    },
+    "manager.supporter.contributors": {
+        "message": "Colaboradores e tradutores"
+    },
+    "manager.supporter.details": {
+        "message": "Detalles"
+    },
+    "manager.supporter.sponsors": {
+        "message": "Patrocinadores de contas de proba"
+    },
+    "manager.tabs.status": {
+        "message": "Estado da sincronización"
+    },
+    "manager.tabs.status.autotime": {
+        "message": "Sincronización periódica (en minutos)"
+    },
+    "manager.tabs.status.enableThisAccount": {
+        "message": "Activar e sincronizar esta conta"
+    },
+    "manager.tabs.status.general": {
+        "message": "Xeral"
+    },
+    "manager.tabs.status.never": {
+        "message": "Un 0 desactiva a sincronización periódica. A sincronización push aínda non está implementada."
+    },
+    "manager.tabs.status.resources": {
+        "message": "Recursos dispoñibles"
+    },
+    "manager.tabs.status.resources.intro": {
+        "message": "Selecciona cal dos recursos atopados queres sincronizar con Thunderbird."
+    },
+    "manager.tabs.status.sync": {
+        "message": "Sincronizar agora"
+    },
+    "manager.tabs.status.tryagain": {
+        "message": "Volver a intentar conectar ao servidor"
+    },
+    "manager.title": {
+        "message": "Xestor de contas de TbSync"
+    },
+    "manager.tryagain": {
+        "message": "Volver a intentar conectar ao servidor"
+    },
+    "menu.settingslabel": {
+        "message": "Axustes de sincronización (TbSync)"
+    },
+    "password.account": {
+        "message": "Conta:"
+    },
+    "password.description": {
+        "message": "Por favor, actualiza as credenciais da seguinte conta de TbSync:"
+    },
+    "password.password": {
+        "message": "Contrasinal:"
+    },
+    "password.title": {
+        "message": "Solicitude de credenciais de TbSync"
+    },
+    "password.user": {
+        "message": "Usuario:"
+    },
+    "popup.opensettings": {
+        "message": "Abrir o xestor de contas de TbSync"
+    },
+    "prompt.DeleteAccount": {
+        "message": "Seguro que queres eliminar a conta ##accountName##?"
+    },
+    "prompt.Disable": {
+        "message": "Seguro que queres desactivar esta conta? Perderanse todas as modificacións locais que aínda non foran sincronizadas!"
+    },
+    "prompt.Erase": {
+        "message": "Seguro que queres eliminar esta conta dun provedor descoñecido da lista de contas?"
+    },
+    "prompt.Unsubscribe": {
+        "message": "Seguro que queres cancelar a subscrición a este elemento? Perderanse todas as modificacións locais que aínda non foran sincronizadas!"
+    },
+    "status.JavaScriptError": {
+        "message": "Erro de Javascript! Por favor, comproba o rexistro de eventos para dispor de máis detalles."
+    },
+    "status.OAuthAbortError": {
+        "message": "Proceso de autenticación OAuth 2.0 cancelado polo usuario."
+    },
+    "status.OAuthHttpError": {
+        "message": "O proceso de autenticación OAuth 2.0 fallou (erro HTTP ##replace.1##)."
+    },
+    "status.OAuthNetworkError": {
+        "message": "Non se puido conectar ao servidor de autenticación OAuth 2.0."
+    },
+    "status.OAuthServerError": {
+        "message": " O servidor de autenticación OAuth 2.0 respondeu: ##replace.1##"
+    },
+    "status.aborted": {
+        "message": "Sen sincronizar"
+    },
+    "status.apiError": {
+        "message": "Erro de implementación da API"
+    },
+    "status.disabled": {
+        "message": "A conta non está activada, a sincronización está desactivada."
+    },
+    "status.foldererror": {
+        "message": "Hai algún que recurso tivo un erro de sincronización. Por favor, revisa o rexistro de eventos para dispor de máis detalles."
+    },
+    "status.modified": {
+        "message": "Modificacións locais"
+    },
+    "status.network": {
+        "message": "Non se puido conectar ao servidor (##replace.1##)."
+    },
+    "status.no-folders-found-on-server": {
+        "message": "Non se atopou ningún recurso no servidor."
+    },
+    "status.notargets": {
+        "message": "Cancelando a sincronización porque non se puideron crear os destinos da sincronización."
+    },
+    "status.notsyncronized": {
+        "message": "É preciso sincronizar a conta porque hai algún elemento sen sincronizar."
+    },
+    "status.pending": {
+        "message": "Esperando pola sincronización"
+    },
+    "status.security": {
+        "message": "Non se puido establecer unha conexión segura. Estás a usar algún certificado autofirmado, ou que non sexa de confianza, sen telo importado a Thunderbird? (##replace.1##)"
+    },
+    "status.skipped": {
+        "message": "Aínda non soportado, omitido"
+    },
+    "status.success": {
+        "message": "OK"
+    },
+    "status.syncing": {
+        "message": "Sincronizando"
+    },
+    "supportwizard.footer": {
+        "message": "No seguinte paso, coa información facilitada aquí, xerarase unha mensaxe de correo que poderás editar (por exemplo, engadindo capturas de pantalla ou algo parecido). O informe de erro só será enviando cando envíes esa mensaxe de correo."
+    },
+    "supportwizard.label.description": {
+        "message": "Descrición detallada do erro:"
+    },
+    "supportwizard.label.faultycomponent": {
+        "message": "Compoñente de TbSync no que observaches o erro:"
+    },
+    "supportwizard.label.selectcomponent": {
+        "message": "Seleccionar compoñente…"
+    },
+    "supportwizard.label.summary": {
+        "message": "Resumo curto do erro:"
+    },
+    "supportwizard.pagetitle": {
+        "message": "Recompilación de toda a información para procesar de forma efectiva o informe de erro."
+    },
+    "supportwizard.provider": {
+        "message": "Provedor: ##replace.1##"
+    },
+    "supportwizard.title": {
+        "message": "Crear informe de erro"
+    },
+    "syncstate.accountdone": {
+        "message": "Conta rematada"
+    },
+    "syncstate.done": {
+        "message": "Preparando o seguinte elemento para a sincronización"
+    },
+    "syncstate.oauthprompt": {
+        "message": "Autenticación OAuth 2.0"
+    },
+    "syncstate.passwordprompt": {
+        "message": "Solicitude de credenciais"
+    },
+    "syncstate.preparing": {
+        "message": "Preparando o seguinte elemento para a sincronización"
+    },
+    "syncstate.syncing": {
+        "message": "Iniciar sincronización"
+    },
+    "target.orphaned": {
+        "message": "Desconectado"
+    },
+    "toolbar.label": {
+        "message": "Sincronizar todas as contas de TbSync"
+    },
+    "toolbar.tooltiptext": {
+        "message": "Sincronizar os últimos cambios"
+    }
+}
