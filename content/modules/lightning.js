@@ -416,6 +416,10 @@ var lightning = {
       return null;
     }
 
+    async getAllItems() {
+      return await this._calendar.getItems(Ci.calICalendar.ITEM_FILTER_ALL_ITEMS, 0, null, null);
+    }
+
     async getItemFromProperty(property, value) {
       if (property == "UID") return await this.getItem(value);
       else throw ("TbSync.lightning.getItemFromProperty: Currently onle the UID property can be used to search for items.");
