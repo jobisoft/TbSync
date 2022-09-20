@@ -52,12 +52,12 @@ var providers = {
           throw new Error("API version mismatch, TbSync@"+TbSync.apiVersion+" vs " + provider + "@" + this[provider].Base.getApiVersion());
         }
         
-        this.loadedProviders[provider] = {};
-        this.loadedProviders[provider].addon = addon;
-        this.loadedProviders[provider].extension = extension;
-        this.loadedProviders[provider].addonId = extension.id;
-        this.loadedProviders[provider].version = addon.version.toString();
-        this.loadedProviders[provider].createAccountWindow = null;
+        this.loadedProviders[provider] = {
+          addon, extension, 
+          addonId: extension.id, 
+          version: addon.version.toString(),
+          createAccountWindow: null
+        };
 
         addon.contributorsURL = this[provider].Base.getContributorsUrl();
 
@@ -105,7 +105,7 @@ var providers = {
           }
         }
         
-        let calManager = TbSync.lightning.cal.manager ? TbSync.lightning.cal.manager : TbSync.lightning.cal.getCalendarManager();
+        let calManager = TbSync.lightning.cal.manager;
         for (let calendar of calManager.getCalendars({})) {
           let storedProvider = calendar.getProperty("tbSyncProvider");
           if (provider == storedProvider && calendar.type == "storage" && providerData.getFolders({"target": calendar.id}).length == 0) {
