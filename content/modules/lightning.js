@@ -27,7 +27,7 @@ var lightning = {
     try {
       TbSync.lightning.cal = ChromeUtils.import("resource:///modules/calendar/calUtils.jsm").cal;
       TbSync.lightning.ICAL = ChromeUtils.import("resource:///modules/calendar/Ical.jsm").ICAL;
-      let manager = TbSync.lightning.cal.manager ? TbSync.lightning.cal.manager : TbSync.lightning.cal.getCalendarManager();
+      let manager = TbSync.lightning.cal.manager;
       manager.addCalendarObserver(this.calendarObserver);
       manager.addObserver(this.calendarManagerObserver);
     } catch (e) {
@@ -38,7 +38,7 @@ var lightning = {
 
   unload: async function () {
     //removing global observer
-    let manager = TbSync.lightning.cal.manager ? TbSync.lightning.cal.manager : TbSync.lightning.cal.getCalendarManager();
+    let manager = TbSync.lightning.cal.manager;
     manager.removeCalendarObserver(this.calendarObserver);
     manager.removeObserver(this.calendarManagerObserver);
 
@@ -69,7 +69,7 @@ var lightning = {
     
     // Check, if the target exists and return true/false.
     hasTarget() {
-      let calManager = TbSync.lightning.cal.manager ? TbSync.lightning.cal.manager : TbSync.lightning.cal.getCalendarManager();
+      let calManager = TbSync.lightning.cal.manager;
       let target = this._folderData.getFolderProperty("target");
       let calendar = calManager.getCalendarById(target);
       
@@ -81,7 +81,7 @@ var lightning = {
     // If the target does not exist, it should be created. Throw a simple Error, if that
     // failed.
     async getTarget() {
-      let calManager = TbSync.lightning.cal.manager ? TbSync.lightning.cal.manager : TbSync.lightning.cal.getCalendarManager();
+      let calManager = TbSync.lightning.cal.manager;
       let target = this._folderData.getFolderProperty("target");
       let calendar = calManager.getCalendarById(target);
       
@@ -104,7 +104,7 @@ var lightning = {
      *
      */
     removeTarget() {
-      let calManager = TbSync.lightning.cal.manager ? TbSync.lightning.cal.manager : TbSync.lightning.cal.getCalendarManager();
+      let calManager = TbSync.lightning.cal.manager;
       let target = this._folderData.getFolderProperty("target");
       let calendar = calManager.getCalendarById(target);
 
@@ -125,7 +125,7 @@ var lightning = {
      * 
      */
     disconnectTarget() {
-      let calManager = TbSync.lightning.cal.manager ? TbSync.lightning.cal.manager : TbSync.lightning.cal.getCalendarManager();
+      let calManager = TbSync.lightning.cal.manager;
       let target = this._folderData.getFolderProperty("target");
       let calendar = calManager.getCalendarById(target);
 
@@ -143,7 +143,7 @@ var lightning = {
     } 
     
     set targetName(newName) {
-      let calManager = TbSync.lightning.cal.manager ? TbSync.lightning.cal.manager : TbSync.lightning.cal.getCalendarManager();
+      let calManager = TbSync.lightning.cal.manager;
       let target = this._folderData.getFolderProperty("target");
       let calendar = calManager.getCalendarById(target);
 
@@ -155,7 +155,7 @@ var lightning = {
     }
   
     get targetName() {
-      let calManager = TbSync.lightning.cal.manager ? TbSync.lightning.cal.manager : TbSync.lightning.cal.getCalendarManager();
+      let calManager = TbSync.lightning.cal.manager;
       let target = this._folderData.getFolderProperty("target");
       let calendar = calManager.getCalendarById(target);
 
@@ -226,7 +226,7 @@ var lightning = {
     // replace this with your own implementation to create the actual addressbook,
     // when this class is extended
     async createCalendar(newname) {
-      let calManager = TbSync.lightning.cal.manager ? TbSync.lightning.cal.manager : TbSync.lightning.cal.getCalendarManager();
+      let calManager = TbSync.lightning.cal.manager;
       let newCalendar = calManager.createCalendar("storage", Services.io.newURI("moz-storage-calendar://"));
       newCalendar.id = TbSync.lightning.cal.getUUID();
       newCalendar.name = newname;
@@ -340,12 +340,6 @@ var lightning = {
   TbCalendar : class {
     constructor(calendar, folderData) {
       this._calendar = calendar;
-      // Since Thunderbird 96, many calendar functions return promises
-      if (parseInt(Services.appinfo.version.split(".")[0]) >= 96) {
-        this._promisifyCalendar = calendar;
-      } else {
-        this._promisifyCalendar = TbSync.lightning.cal.async.promisifyCalendar(this._calendar.wrappedJSObject);
-      }
       this._folderData = folderData;
      }
 
@@ -354,7 +348,7 @@ var lightning = {
     }
     
     get promisifyCalendar() {
-      return this._promisifyCalendar;
+      return this._calendar;
     }
 
     get logUserChanges() {
@@ -393,7 +387,7 @@ var lightning = {
       if (pretagChangelogWithByServerEntry) {
         tbItem.changelogStatus = "added_by_server";
       }
-      return await this._promisifyCalendar.adoptItem(tbItem._item);
+      return await this._calendar.adoptItem(tbItem._item);
     }
     
     async modifyItem(tbNewItem, tbOldItem, pretagChangelogWithByServerEntry = true) {
@@ -403,19 +397,19 @@ var lightning = {
         tbNewItem.changelogStatus = "modified_by_server";
       }
       
-      return await this._promisifyCalendar.modifyItem(tbNewItem._item, tbOldItem._item); 
+      return await this._calendar.modifyItem(tbNewItem._item, tbOldItem._item); 
     }        
     
     async deleteItem(tbItem, pretagChangelogWithByServerEntry = true) {
       if (pretagChangelogWithByServerEntry) {
         tbItem.changelogStatus = "deleted_by_server";
       }
-      return await this._promisifyCalendar.deleteItem(tbItem._item); 
+      return await this._calendar.deleteItem(tbItem._item); 
     }
     
     // searchId is interpreted as the primaryKeyField, which is the UID for this target
     async getItem (searchId) {
-      let item = await this._promisifyCalendar.getItem(searchId); 
+      let item = await this._calendar.getItem(searchId); 
       if (item) {
         return new TbSync.lightning.TbItem(this, item);
       }
@@ -427,13 +421,9 @@ var lightning = {
       else throw ("TbSync.lightning.getItemFromProperty: Currently onle the UID property can be used to search for items.");
     }
 
-    async getAllItems () {
-      return await this._promisifyCalendar.getAllItems(); 
+    async getAllItems() {
+      return await this._calendar.getItems(Ci.calICalendar.ITEM_FILTER_ALL_ITEMS, 0, null, null);
     }
-      
-  
-  
-  
   
     getAddedItemsFromChangeLog(maxitems = 0) {             
       return TbSync.db.getItemsFromChangeLog(this.calendar.id, maxitems, "added_by_user").map(item => item.itemId);
@@ -678,7 +668,7 @@ var lightning = {
         // we wait a bit and check, if the calendar is back again and ignore the delete event.
         if (aCalendar.type == "caldav") {
           await TbSync.tools.sleep(1500);
-          let calManager = TbSync.lightning.cal.manager ? TbSync.lightning.cal.manager : TbSync.lightning.cal.getCalendarManager();
+          let calManager = TbSync.lightning.cal.manager;
           for (let calendar of calManager.getCalendars({})) {
             if (calendar.uri.spec == aCalendar.uri.spec) {
               // update the target
@@ -711,7 +701,7 @@ var lightning = {
   
   //this function actually creates a calendar if missing
   prepareAndCreateCalendar: async function (folderData) {       
-    let calManager = TbSync.lightning.cal.manager ? TbSync.lightning.cal.manager : TbSync.lightning.cal.getCalendarManager();
+    let calManager = TbSync.lightning.cal.manager;
     let provider = folderData.accountData.getAccountProperty("provider");
 
     //check if  there is a known/cached name, and use that as starting point to generate unique name for new calendar 
