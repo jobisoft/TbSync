@@ -27,7 +27,7 @@ var TbSync = {
   addon: null,
   version: 0,
   debugMode: false,
-  apiVersion: "2.4",
+  apiVersion: "2.5",
 
   prefs: Services.prefs.getBranch("extensions.tbsync."),
   
@@ -57,10 +57,8 @@ var TbSync = {
 
     // register modules to be used by TbSync
     this.modules.push({name: "db", state: 0});
-    this.modules.push({name: "abAutoComplete", state: 0});
     this.modules.push({name: "addressbook", state: 0});
     this.modules.push({name: "lightning", state: 0});
-    this.modules.push({name: "cardbook", state: 0});
     this.modules.push({name: "eventlog", state: 0});
     this.modules.push({name: "core", state: 0});
     this.modules.push({name: "passwordManager", state: 0});

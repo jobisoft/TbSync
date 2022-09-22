@@ -13,16 +13,7 @@ var messenger = {
   
   load: async function () {
     this.overlayManager = new OverlayManager(TbSync.extension, {verbose: 0});
-    await this.overlayManager.registerOverlay("chrome://messenger/content/messenger.xhtml", "chrome://tbsync/content/overlays/messenger.xhtml");        
-    await this.overlayManager.registerOverlay("chrome://messenger/content/messengercompose/messengercompose.xhtml", "chrome://tbsync/content/overlays/messengercompose.xhtml");
-    await this.overlayManager.registerOverlay("chrome://calendar/content/calendar-event-dialog-attendees.xhtml", "chrome://tbsync/content/overlays/calendar-event-dialog-attendees.xhtml");
-    await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xhtml", "chrome://tbsync/content/overlays/addressbookiconsoverlay.xhtml");
-    await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xhtml", "chrome://tbsync/content/overlays/abNewCardWindowOverlay.xhtml");
-
-    // The abCSS.xul overlay is just adding a CSS file.
-    await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/abNewCardDialog.xhtml", "chrome://tbsync/content/overlays/abCSS.xhtml");
-    await this.overlayManager.registerOverlay("chrome://messenger/content/addressbook/addressbook.xhtml", "chrome://tbsync/content/overlays/abCSS.xhtml");
-    
+    await this.overlayManager.registerOverlay("chrome://messenger/content/messenger.xhtml", "chrome://tbsync/content/overlays/messenger.xhtml");
     Services.obs.addObserver(this.initSyncObserver, "tbsync.observer.sync", false);
     Services.obs.addObserver(this.syncstateObserver, "tbsync.observer.manager.updateSyncstate", false);
 

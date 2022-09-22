@@ -8,6 +8,15 @@
  
  "use strict";
 
+
+ var { XPCOMUtils } = ChromeUtils.import(
+  "resource://gre/modules/XPCOMUtils.jsm"
+);
+
+XPCOMUtils.defineLazyModuleGetters(this, {
+  AddrBookCard: "resource:///modules/AddrBookCard.jsm"
+});
+
 var addressbook = {
   
   _notifications: [
@@ -348,7 +357,7 @@ var addressbook = {
 
     // mailinglist aware method to set properties of cards
     // mailinglist properties cannot be stored in mailinglists themselves, so we store them in changelog
-    // while the list has not been added, wekeep all props in an object (UID changes on adding)
+    // while the list has not been added, we keep all props in an object (UID changes on adding)
     setProperty(property, value) {
       // UID cannot be changed (currently)
       if (property == "UID") {
@@ -554,7 +563,7 @@ var addressbook = {
     }
 
     createNewCard() {
-      let card = Components.classes["@mozilla.org/addressbook/cardproperty;1"].createInstance(Components.interfaces.nsIAbCard);                    
+      let card = new AddrBookCard();
       return new TbSync.addressbook.AbItem(this, card);
     }
 

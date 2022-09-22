@@ -33,28 +33,7 @@ Here are some general information regarding translations:
 
 ## Where is this going?
 
-I started to work on TbSync, because we needed ActiveSync (EAS) support in Thunderbird. Soon after, I realized that the current situation for sync accounts is very confusing in terms of user experience: There was no central place to set up sync accounts. The same DAV account had to be setup in lightning and again in the sogo-connector or in CardBook. EWS accounts are setup differently again and for google we need 3 different add-ons for contacts, calendars and tasks.
-
-With TbSync I want to unify that: A central manager to setup sync accounts (DAV, EAS, EWS, Google, ...) and get contacts, tasks and calendars. I knew that I will not be able to re-create and maintain all the different providers for TbSync by myself. I thus created a TbSync Provider API, which allows other add-ons to hook into TbSync and re-use most of the glue code.
-
-I am in contact with Thunderbird staff and we are trying to get TbSync integrated directly into Thunderbird. No ETA yet.
-
-Future plans:
-* cooperate with [CardBook](https://github.com/jobisoft/TbSync/issues/105), so it does not matter, if the user wants to use the standard Thunderbird address book or the cardbook address book. 
-* add support for Google
-* add support for [EteSync](https://www.etesync.com/)
-* support the [EWS community](https://github.com/ExchangeCalendar/exchangecalendar), which is interested in turning their add-on into a provider for TbSync.
-
-All this requires funding. If you like TbSync and want to support its development, please consider a donation.
-
-
-## Adding support for other sync protocolls by creating a TbSync provider add-on
-
-All the information needed, to build a new provider add-on for TbSync and thus extending its sync capabilities, can be found here:
-
-```
-https://tbsync.readthedocs.org
-```
+I want to adapt Thunderbirds WebExtension APIs to simplify the addition of additional address book and calendar providers. I plan to keep TbSync as a central UI.
 
 
 ## Icon sources and attributions
