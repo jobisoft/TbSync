@@ -141,7 +141,7 @@
         "message": "Ver rexistro de depuración"
     },
     "manager.help.wiki": {
-        "message": "Abrir as páxinas wiki do proxecto TbSync nas que facilitan información adicional, guías e descricións detalladas da configuración."
+        "message": "Abre o wiki do proxecto TbSync no que se facilita información adicional, guías e descricións detalladas da configuración."
     },
     "manager.installprovider.link": {
         "message": "Preme no seguinte enlace para abrir a páxina de información do provedor de sincronización que falta. Aí atoparás máis información sobre o provedor e terás a opción de instalalo:"
