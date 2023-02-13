@@ -21,7 +21,7 @@
         "message": "Konto '##accountname##' deaktivieren"
     },
     "accountacctions.enable": {
-        "message": "Konto '##accountname##' aktivieren & Server kontaktieren"
+        "message": "Konto „##accountname##” aktivieren und Server kontaktieren"
     },
     "accountacctions.sync": {
         "message": "Konto '##accountname##' synchronisieren"
@@ -63,10 +63,10 @@
         "message": "Provider '##replace.1##' für TbSync ist noch nicht installiert."
     },
     "manager.AccountActions": {
-        "message": "Konto Aktionen"
+        "message": "Konto-Aktionen"
     },
     "manager.AddAccount": {
-        "message": "Neues Konto hinzufügen"
+        "message": "Konto hinzufügen"
     },
     "manager.DeleteAccount": {
         "message": "Konto löschen"
@@ -75,10 +75,10 @@
         "message": "Konto deaktivieren"
     },
     "manager.EnableAccount": {
-        "message": "Konto aktivieren & mit dem Server verbinden"
+        "message": "Konto aktivieren und mit dem Server verbinden"
     },
     "manager.RetryConnectAccount": {
-        "message": "Erneut versuchen mit dem Server zu verbinden"
+        "message": "Erneut versuchen, mit dem Server zu verbinden"
     },
     "manager.ShowEventLog": {
         "message": "Ereignisprotokoll anzeigen"
@@ -96,7 +96,7 @@
         "message": "Kontoeinstellungen"
     },
     "manager.catman.text": {
-        "message": "TbSync synchronisiert auch Kontaktkategorien, die einen effizienten Ersatz für die nicht synchronisierbaren Kontaktlisten darstellen. Um diese im Thunderbird Adressbuch zu nutzen, können Sie das Add-On 'Category Manager' installieren. Dieses Add-On ermöglicht die Verwaltung überlappender kategoriebasierter Kontaktgruppen und stellt eine Reihe anderer kategoriespezifischer Funktionen bereit. Es kann aus dem offiziellen Mozilla Add-On Repository heruntergeladen werden:"
+        "message": "TbSync synchronisiert auch Kontaktkategorien, die einen effizienten Ersatz für die nicht synchronisierbaren Kontaktlisten darstellen. Um diese im Thunderbird-Adressbuch zu nutzen, können Sie das Add-On „Category Manager” installieren. Dieses Add-On ermöglicht die Verwaltung überlappender kategoriebasierter Kontaktgruppen und stellt eine Reihe anderer kategoriespezifischer Funktionen bereit. Es kann aus dem offiziellen Mozilla Add-On Repository heruntergeladen werden:"
     },
     "manager.community": {
         "message": "Community"
@@ -141,7 +141,7 @@
         "message": "Debug-Log anzeigen"
     },
     "manager.help.wiki": {
-        "message": "Besuchen Sie die Wikiseiten des TbSync Projektes, diese beinhalten zusätzliche Informationen, Benutzeranleitungen und detaillierte Konfigurationsbeschreibungen."
+        "message": "Besuchen Sie die Wikiseiten des TbSync-Projekts, diese enthalten zusätzliche Informationen, Benutzeranleitungen und detaillierte Konfigurationsbeschreibungen."
     },
     "manager.installprovider.link": {
         "message": "Klicken Sie auf den folgenden Link, um die Informationsseite des fehlenden Provider aufzurufen. Auf dieser Seite finden Sie weitere Informationen zu dem Provider und haben die Möglichkeit, diesen zu installieren:"
@@ -156,7 +156,7 @@
         "message": "Dieses Konto benötigt den ##provider## Synchronisationsprovider, der zur Zeit aber nicht installiert ist."
     },
     "manager.noaccounts": {
-        "message": "Es sind aktuell noch keine Konten konfiguriert."
+        "message": "Es sind noch keine Konten definiert."
     },
     "manager.provider": {
         "message": "Provider installieren"
@@ -207,13 +207,13 @@
         "message": "Jetzt synchronisieren"
     },
     "manager.tabs.status.tryagain": {
-        "message": "Erneut versuchen mit dem Server zu verbinden"
+        "message": "Erneut versuchen, mit dem Server zu verbinden"
     },
     "manager.title": {
         "message": "TbSync Kontoverwaltung"
     },
     "manager.tryagain": {
-        "message": "Erneut versuchen mit dem Server zu verbinden"
+        "message": "Erneut versuchen, mit dem Server zu verbinden"
     },
     "menu.settingslabel": {
         "message": "Synchronisationseinstellungen (TbSync)"
@@ -258,10 +258,10 @@
         "message": "OAuth 2.0 Authentifizierungsprozess fehlgeschlagen (HTTP Error ##replace.1##)."
     },
     "status.OAuthNetworkError": {
-        "message": "Verbindung zum OAuth 2.0 Authentifizierungsserver nicht möglich."
+        "message": "Verbindung zum OAuth-2.0-Authentifizierungsserver nicht möglich."
     },
     "status.OAuthServerError": {
-        "message": " OAuth 2.0 Authentifizierungsserver meldet: ##replace.1##"
+        "message": " OAuth-2.0-Authentifizierungsserver meldet: ##replace.1##"
     },
     "status.aborted": {
         "message": "Nicht synchronisiert"
@@ -273,7 +273,7 @@
         "message": "Konto ist deaktiviert, Synchronisation ist ausgeschaltet."
     },
     "status.foldererror": {
-        "message": "Bei mindestens einer Resource trat ein Synchronisationsfehler auf. Bitte prüfen sie das Ereignisprotokoll für weitere Details."
+        "message": "Bei mindestens einer Ressource trat ein Synchronisationsfehler auf. Bitte prüfen Sie das Ereignisprotokoll für weitere Details!"
     },
     "status.modified": {
         "message": "Lokale Änderungen"
@@ -282,10 +282,10 @@
         "message": "Verbindung zum Server fehlgeschlagen (##replace.1##)."
     },
     "status.no-folders-found-on-server": {
-        "message": "Auf dem Server wurden keine Resourcen gefunden."
+        "message": "Auf dem Server wurden keine Ressourcen gefunden."
     },
     "status.notargets": {
-        "message": "Synchronisation abgebrochen da die Elemente zum Synchronisieren nicht erstellt werden konnten."
+        "message": "Synchronisation abgebrochen, da die Elemente zum Synchronisieren nicht erstellt werden konnten."
     },
     "status.notsyncronized": {
         "message": "Konto muss synchronisiert werden."
@@ -354,6 +354,6 @@
         "message": "Synchronisiere alle TbSync Konten"
     },
     "toolbar.tooltiptext": {
-        "message": "Gleiche alle TbSync Konten mit den Servern ab"
+        "message": "Gleiche alle TbSync-Konten mit den Servern ab"
     }
 }
