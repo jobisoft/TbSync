@@ -16,12 +16,6 @@ var { AddonManager } = ChromeUtils.import("resource://gre/modules/AddonManager.j
 var { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
 var { MailServices } = ChromeUtils.import("resource:///modules/MailServices.jsm");
 var { OverlayManager } = ChromeUtils.import("chrome://tbsync/content/OverlayManager.jsm");
-var { XPCOMUtils } = ChromeUtils.importESModule("resource://gre/modules/XPCOMUtils.sys.mjs");
-
-XPCOMUtils.defineLazyGlobalGetters(this, [
-  "IOUtils",
-  "PathUtils",
-]);
 
 var TbSync = {
 
