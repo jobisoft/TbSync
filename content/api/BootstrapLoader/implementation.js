@@ -2,7 +2,7 @@
  * This file is provided by the addon-developer-support repository at
  * https://github.com/thundernest/addon-developer-support
  *
- * Version: 1.20
+ * Version: 1.21
  *
  * Author: John Bieling (john@thunderbird.net)
  *
@@ -457,6 +457,7 @@ var BootstrapLoader_102 = class extends ExtensionCommon.ExtensionAPI {
             managerWindow.document.removeEventListener("ViewChanged", this);
             managerWindow.document.removeEventListener("update", this);
             managerWindow.document.removeEventListener("view-loaded", this);
+            managerWindow[this.uniqueRandomID].hasAddonManagerEventListeners = false;
 
             let cards = this.getCards(managerWindow);
             if (getThunderbirdVersion().major < 88) {
@@ -844,6 +845,7 @@ var BootstrapLoader_115 = class extends ExtensionCommon.ExtensionAPI {
             managerWindow.document.removeEventListener("ViewChanged", this);
             managerWindow.document.removeEventListener("update", this);
             managerWindow.document.removeEventListener("view-loaded", this);
+            managerWindow[this.uniqueRandomID].hasAddonManagerEventListeners = false;
 
             let cards = this.getCards(managerWindow);
             if (getThunderbirdVersion().major < 88) {
