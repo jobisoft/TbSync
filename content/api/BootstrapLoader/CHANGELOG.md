@@ -1,3 +1,14 @@
+Version: 1.20
+-------------
+- hard fork BootstrapLoader v1.19 implementation and continue to serve it for
+  Thunderbird 111 and older
+- BootstrapLoader v1.20 has removed a lot of unnecessary code used for backward
+  compatibility
+
+Version: 1.19
+-------------
+- fix race condition which could prevent the AOM tab to be monkey patched correctly
+
 Version: 1.18
 -------------
 - be precise on which revision the wrench symbol should be displayed, instead of
