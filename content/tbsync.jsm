@@ -12,11 +12,16 @@ var EXPORTED_SYMBOLS = ["TbSync"];
 
 var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 var { FileUtils } = ChromeUtils.import("resource://gre/modules/FileUtils.jsm");
-var { OS }  =ChromeUtils.import("resource://gre/modules/osfile.jsm");
 var { AddonManager } = ChromeUtils.import("resource://gre/modules/AddonManager.jsm");
 var { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
 var { MailServices } = ChromeUtils.import("resource:///modules/MailServices.jsm");
 var { OverlayManager } = ChromeUtils.import("chrome://tbsync/content/OverlayManager.jsm");
+var { XPCOMUtils } = ChromeUtils.importESModule("resource://gre/modules/XPCOMUtils.sys.mjs");
+
+XPCOMUtils.defineLazyGlobalGetters(this, [
+  "IOUtils",
+  "PathUtils",
+]);
 
 var TbSync = {
 
@@ -53,7 +58,7 @@ var TbSync = {
     this.dump("TbSync init","Start (" + this.addon.version.toString() + ")");
 
     //print information about Thunderbird version and OS
-    this.dump(Services.appinfo.name, Services.appinfo.version + " on " + OS.Constants.Sys.Name);
+    this.dump(Services.appinfo.name, Services.appinfo.version + " on " + Services.appinfo.OS);
 
     // register modules to be used by TbSync
     this.modules.push({name: "db", state: 0});

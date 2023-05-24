@@ -10,7 +10,7 @@
  
 var io = {
 
-  storageDirectory : OS.Path.join(OS.Constants.Path.profileDir, "TbSync"),
+  storageDirectory : PathUtils.join(PathUtils.profileDir, "TbSync"),
 
   load: async function () {
   },
@@ -19,7 +19,7 @@ var io = {
   },
 
   getAbsolutePath: function(filename) {
-    return OS.Path.join(this.storageDirectory, filename);
+    return PathUtils.join(this.storageDirectory, filename);
   },
   
   initFile: function (filename) {

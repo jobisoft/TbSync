@@ -9,7 +9,6 @@
  "use strict";
 
 var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
-var { OS }  =ChromeUtils.import("resource://gre/modules/osfile.jsm");
 var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncAccountSettings = {
@@ -104,7 +103,7 @@ var tbSyncAccountSettings = {
     document.getElementById('tbsync.accountsettings.frame').hidden = false;	    
     tbSyncAccountSettings.updateFolderList();      
 
-    if (OS.Constants.Sys.Name == "Darwin") { //we might need to find a way to detect MacOS like styling, other themes move the header bar into the tabpanel as well
+    if (Services.appinfo.OS == "Darwin") { //we might need to find a way to detect MacOS like styling, other themes move the header bar into the tabpanel as well
       document.getElementById('manager.tabpanels').style["padding-top"] = "3ex";
     }
   },

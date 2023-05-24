@@ -41,12 +41,11 @@ var db = {
       this.files[f].write = new DeferredTask(() => this.writeAsync(f), 6000);
       
       try {
-        let data = await OS.File.read(TbSync.io.getAbsolutePath(this.files[f].name));
-        this[f] = JSON.parse(TbSync.decoder.decode(data));
+        this[f] = await IOUtils.readJSON(TbSync.io.getAbsolutePath(this.files[f].name));
         this.files[f].found = true;
       } catch (e) {
         //if there is no file, there is no file...
-        this[f] = JSON.parse(this.files[f].default);                
+        this[f] = JSON.parse(this.files[f].default);
         this.files[f].found = false;
         Components.utils.reportError(e);
       }
@@ -66,8 +65,7 @@ var db = {
     // try to migrate old accounts file from TB60
     if (!this.files["accounts"].found) {
       try {
-        let data = await OS.File.read(TbSync.io.getAbsolutePath("accounts.json"));
-        let accounts = JSON.parse(TbSync.decoder.decode(data));
+        let accounts = await IOUtils.readJSON(TbSync.io.getAbsolutePath("accounts.json"));
         for (let d of Object.values(accounts.data)) {
           console.log("Migrating: " + JSON.stringify(d));
           
@@ -141,10 +139,7 @@ var db = {
     }
     
     let filepath = TbSync.io.getAbsolutePath(this.files[f].name);
-    let json = TbSync.encoder.encode(JSON.stringify(this[f]));
-    
-    await OS.File.makeDir(TbSync.io.storageDirectory);
-    await OS.File.writeAtomic(filepath, json, {tmpPath: filepath + ".tmp"});
+    await IOUtils.writeJSON(filepath, this[f]);
   },
 
 
