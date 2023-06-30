@@ -2,7 +2,7 @@
  * This file is provided by the addon-developer-support repository at
  * https://github.com/thundernest/addon-developer-support
  *
- * Version: 1.21
+ * Version 1.22
  *
  * Author: John Bieling (john@thunderbird.net)
  *
@@ -15,7 +15,8 @@
 var { ExtensionCommon } = ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 var { ExtensionSupport } = ChromeUtils.import("resource:///modules/ExtensionSupport.jsm");
 var { AddonManager } = ChromeUtils.import("resource://gre/modules/AddonManager.jsm");
-var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+var Services = globalThis.Services || 
+  ChromeUtils.import("resource://gre/modules/Services.jsm").Services;
 
 function getThunderbirdVersion() {
   let parts = Services.appinfo.version.split(".");
