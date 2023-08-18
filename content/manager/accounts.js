@@ -370,9 +370,9 @@ var tbSyncAccounts = {
           
           //add icon (use "install provider" icon, if provider not installed)
           let itemType = document.createXULElement("image");
-          itemType.setAttribute("width", "16");
-          itemType.setAttribute("height", "16");
-          itemType.setAttribute("style", "margin: 0px 0px 0px 5px;");
+          //itemType.setAttribute("width", "16");
+          //itemType.setAttribute("height", "16");
+          itemType.setAttribute("style", "margin: 0px 0px 0px 5px; width:16px; height:16px");
           newListItem.appendChild(itemType);
 
           //add account name
@@ -382,9 +382,9 @@ var tbSyncAccounts = {
 
           //add account status
           let itemStatus = document.createXULElement("image");
-          itemStatus.setAttribute("width", "16");
-          itemStatus.setAttribute("height", "16");
-          itemStatus.setAttribute("style", "margin: 0px 5px;");
+          //itemStatus.setAttribute("width", "16");
+          //itemStatus.setAttribute("height", "16");
+          itemStatus.setAttribute("style", "margin: 0px 5px; width:16px; height:16px");
           newListItem.appendChild(itemStatus);
           
           accountsList.appendChild(newListItem);

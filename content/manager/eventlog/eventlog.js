@@ -69,7 +69,8 @@ var tbSyncEventLog = {
     
     //left column
     let leftColumn = document.createXULElement("vbox");
-    leftColumn.setAttribute("width", "24");
+    //leftColumn.setAttribute("width", "24");
+    leftColumn.setAttribute("style", "width: 24px;");
 
     let image = document.createXULElement("image");
     let src = entry.type.endsWith("_rerun") ? "sync" : entry.type;
