@@ -355,5 +355,11 @@
     },
     "toolbar.tooltiptext": {
         "message": "最新の変更を同期"
+    },
+    "password.ok": {
+        "message": "OK"
+    },
+    "password.cancel": {
+        "message": "Cancel"
     }
 }
