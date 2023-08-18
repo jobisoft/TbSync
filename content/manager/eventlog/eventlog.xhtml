@@ -2,8 +2,6 @@
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
 
 <window
-    width="600"
-    height="400"
     title="__TBSYNCMSG_eventlog.title__"
     onload="tbSyncEventLog.onload();"
     onunload="tbSyncEventLog.onunload();"
@@ -13,9 +11,9 @@
     <script type="text/javascript" src="chrome://tbsync/content/scripts/locales.js" /> 
 
     <vbox flex="1">
-        <richlistbox id="tbsync.eventlog" style="height:360px" seltype="single" disabled="true"/>
-        <hbox>
-            <div flex="1"></div>
+        <richlistbox id="tbsync.eventlog" style="padding:5px; height:360px" seltype="single" disabled="true"/>
+        <hbox style="padding: 5px">
+            <vbox flex="1"></vbox>
             <button id="tbsync.eventlog.clear" label="__TBSYNCMSG_eventlog.clear__" />
             <button id="tbsync.eventlog.close" label="__TBSYNCMSG_eventlog.close__" />
         </hbox>

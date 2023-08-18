@@ -23,19 +23,21 @@ var tbSyncPassword = {
     this.userfield.value = data.username;
     this.userfield.disabled = data.usernameLocked;
 
-    document.addEventListener("dialogaccept",  tbSyncPassword.doOK.bind(this));
     window.addEventListener("unload", tbSyncPassword.doCANCEL.bind(this));
     document.getElementById("tbsync.password").focus();
+    document.getElementById("tbsync.password.ok").addEventListener("click", tbSyncPassword.doOK.bind(this));
+    document.getElementById("tbsync.password.cancel").addEventListener("click", () => window.close());
   },
 
-  doOK: function (event) {        
+  doOK: function (event) {
     if (!this.resolved) {
       this.resolved = true
       this.resolve({username: this.userfield.value, password: this.passfield.value});
+      window.close();
     }
   },
   
-  doCANCEL: function (event) {        
+  doCANCEL: function (event) {
     if (!this.resolved) {
       this.resolved = true
       this.resolve(false);
