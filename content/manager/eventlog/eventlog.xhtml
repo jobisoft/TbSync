@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
 
-<dialog
+<window
     width="600"
     height="400"
     title="__TBSYNCMSG_eventlog.title__"
-    buttons="cancel, extra1"
     onload="tbSyncEventLog.onload();"
     onunload="tbSyncEventLog.onunload();"
     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" >
@@ -14,6 +13,11 @@
     <script type="text/javascript" src="chrome://tbsync/content/scripts/locales.js" /> 
 
     <vbox flex="1">
-        <richlistbox id="tbsync.eventlog" flex="1" seltype="single" disabled="true"/>
+        <richlistbox id="tbsync.eventlog" style="height:360px" seltype="single" disabled="true"/>
+        <hbox>
+            <div flex="1"></div>
+            <button id="tbsync.eventlog.clear" label="__TBSYNCMSG_eventlog.clear__" />
+            <button id="tbsync.eventlog.close" label="__TBSYNCMSG_eventlog.close__" />
+        </hbox>
     </vbox>
-</dialog>
+</window>

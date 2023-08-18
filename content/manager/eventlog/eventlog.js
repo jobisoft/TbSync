@@ -25,12 +25,10 @@ var tbSyncEventLog = {
       let item = tbSyncEventLog.addLogEntry(events[i]);
       eventlog.appendChild(item);
     }
-
     eventlog.hidden = false;
     eventlog.ensureIndexIsVisible(eventlog.getRowCount()-1);
-    document.documentElement.getButton("extra1").onclick = tbSyncEventLog.onclear;
-    document.documentElement.getButton("extra1").label = TbSync.getString("eventlog.clear");
-    document.documentElement.getButton("cancel").label = TbSync.getString("eventlog.close");
+    document.getElementById("tbsync.eventlog.clear").addEventListener("click", tbSyncEventLog.onclear);
+    document.getElementById("tbsync.eventlog.close").addEventListener("click", () => window.close());
   },
 
   onclear: function () {
