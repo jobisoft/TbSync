@@ -355,5 +355,11 @@
     },
     "toolbar.tooltiptext": {
         "message": "Synchronize latest changes"
+    },
+    "password.ok": {
+        "message": "OK"
+    },
+    "password.cancel": {
+        "message": "Avbryt"
     }
 }

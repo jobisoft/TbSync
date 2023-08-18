@@ -355,5 +355,11 @@
     },
     "toolbar.tooltiptext": {
         "message": "Синхронизировать последние изменения"
+    },
+    "password.ok": {
+        "message": "ОК"
+    },
+    "password.cancel": {
+        "message": "Отмена"
     }
 }

@@ -355,5 +355,11 @@
     },
     "toolbar.tooltiptext": {
         "message": "Synchronizovat poslední změny"
+    },
+    "password.ok": {
+        "message": "OK"
+    },
+    "password.cancel": {
+        "message": "Zrušit"
     }
 }

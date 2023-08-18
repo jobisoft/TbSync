@@ -355,5 +355,11 @@
     },
     "toolbar.tooltiptext": {
         "message": "Синхронизирай информацията от всички TbSync регистрации със сървърите"
+    },
+    "password.ok": {
+        "message": "ОК"
+    },
+    "password.cancel": {
+        "message": "Отказ"
     }
 }

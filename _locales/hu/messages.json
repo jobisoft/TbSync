@@ -355,5 +355,11 @@
     },
     "toolbar.tooltiptext": {
         "message": "A legújabb változtatások szinkronizálása"
+    },
+    "password.ok": {
+        "message": "Rendben"
+    },
+    "password.cancel": {
+        "message": "Mégse"
     }
 }

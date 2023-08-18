@@ -355,5 +355,11 @@
     },
     "toolbar.tooltiptext": {
         "message": "Gleiche alle TbSync-Konten mit den Servern ab"
+    },
+    "password.ok": {
+        "message": "OK"
+    },
+    "password.cancel": {
+        "message": "Abbrechen"
     }
 }
