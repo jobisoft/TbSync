@@ -387,7 +387,7 @@ var lightning = {
       if (pretagChangelogWithByServerEntry) {
         tbItem.changelogStatus = "added_by_server";
       }
-      return await this._calendar.adoptItem(tbItem._item);
+      return await this._calendar.addItem(tbItem._item);
     }
     
     async modifyItem(tbNewItem, tbOldItem, pretagChangelogWithByServerEntry = true) {
