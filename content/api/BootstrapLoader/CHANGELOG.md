@@ -1,3 +1,7 @@
+Version: 1.22
+-------------
+- adjusted to Thunderbird Supernova (Services is now in globalThis)
+
 Version: 1.21
 -------------
 - Explicitly set hasAddonManagerEventListeners flag to false on uninstall
