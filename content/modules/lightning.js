@@ -254,8 +254,8 @@ var lightning = {
       this._tbCalendar = TbCalendar;
       this._item = item;
       
-      this._isTodo = (item instanceof Ci.calITodo);
-      this._isEvent = (item instanceof Ci.calIEvent);
+      this._isTodo = item.isTodo ? item.isTodo() : (item instanceof Ci.calITodo);
+      this._isEvent = item.isEvent ? item.isEvent() :  (item instanceof Ci.calIEvent);
     }
     
     get tbCalendar() {
