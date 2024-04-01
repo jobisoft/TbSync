@@ -357,9 +357,10 @@
         "message": "A legújabb változtatások szinkronizálása"
     },
     "password.ok": {
-        "message": "OK"
+
+        "message": "Rendben"
     },
     "password.cancel": {
-        "message": "Cancel"
+        "message": "Mégse"
     }
 }

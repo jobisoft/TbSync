@@ -357,9 +357,9 @@
         "message": "Sincronizar os últimos cambios"
     },
     "password.ok": {
-        "message": "OK"
+        "message": "Aceptar"
     },
     "password.cancel": {
-        "message": "Cancel"
+        "message": "Cancelar"
     }
 }

@@ -10,7 +10,9 @@
 
 var EXPORTED_SYMBOLS = ["TbSync"];
 
-var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+var Services = globalThis.Services || ChromeUtils.import(
+  "resource://gre/modules/Services.jsm"
+).Services;
 var { FileUtils } = ChromeUtils.import("resource://gre/modules/FileUtils.jsm");
 var { AddonManager } = ChromeUtils.import("resource://gre/modules/AddonManager.jsm");
 var { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");

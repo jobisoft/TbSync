@@ -236,7 +236,8 @@ manager.FolderList = class {
     if (itemACL) itemHGroup1.appendChild(itemACL);
 
     let itemVGroup1 = document.createXULElement("vbox");
-    itemVGroup1.setAttribute("width", "93");
+    //itemVGroup1.setAttribute("width", "93");
+    itemVGroup1.setAttribute("style", "width: 93px");
     itemVGroup1.appendChild(itemHGroup1);
 
     //group2
@@ -246,8 +247,8 @@ manager.FolderList = class {
     itemHGroup2.appendChild(itemLabel);
 
     let itemVGroup2 = document.createXULElement("vbox");
-    itemVGroup2.setAttribute("width", "150");
-    itemVGroup2.setAttribute("style", "padding: 3px");
+    //itemVGroup2.setAttribute("width", "150");
+    itemVGroup2.setAttribute("style", "padding: 3px; width: 150px");
     itemVGroup2.appendChild(itemHGroup2);
 
     //group3
@@ -256,8 +257,8 @@ manager.FolderList = class {
     itemHGroup3.appendChild(itemStatus);
 
     let itemVGroup3 = document.createXULElement("vbox");
-    itemVGroup3.setAttribute("width", "250");
-    itemVGroup3.setAttribute("style", "padding: 3px");
+    //itemVGroup3.setAttribute("width", "250");
+    itemVGroup3.setAttribute("style", "padding: 3px; width: 250px");
     itemVGroup3.appendChild(itemHGroup3);
 
     //final row

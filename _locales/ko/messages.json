@@ -357,9 +357,9 @@
         "message": "Synchronize latest changes"
     },
     "password.ok": {
-        "message": "OK"
+        "message": "확인"
     },
     "password.cancel": {
-        "message": "Cancel"
+        "message": "취소"
     }
 }

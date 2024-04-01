@@ -39,11 +39,11 @@
                     <label class="header" style="margin-left:0; margin-bottom:1ex;" value="__TBSYNCMSG_manager.tabs.status.general__" />
                     <checkbox id="tbsync.accountsettings.enabled" oncommand="tbSyncAccountSettings.toggleEnableState(this);" label="__TBSYNCMSG_manager.tabs.status.enableThisAccount__"  />
 
-                    <vbox class="showIfEnabled">
+                    <vbox class="showIfEnabled" style="height:100px; overflow-x: hidden; overflow-y:hidden">
                         <hbox flex="1">
                             <vbox flex="1">
                                 <label class="header" style="margin-left:0; margin-bottom:1ex; margin-top:2ex;" value="__TBSYNCMSG_manager.status__" />
-                                <description flex="1" id="syncstate"></description>
+                                <description id="syncstate"></description>
                             </vbox>
                             <vbox flex="0">
                                 <label class="header" style="margin-left:0; margin-bottom:1ex; margin-top:1ex; visibility: hidden" value="nix" />
@@ -58,8 +58,7 @@
                             <description>__TBSYNCMSG_manager.tabs.status.resources.intro__</description>
                             <richlistbox 
                               id="tbsync.accountsettings.folderlist"
-                              flex="1"
-                              style="margin: 0 1px 1px 1ex;padding:0;"
+                              style="margin: 0 1px 1px 1ex;padding:0; height:225px; overflow-x: hidden;"
                               context="tbsync.accountsettings.FolderListContextMenu"
                               seltype="single">
                                 <listheader id="tbsync.accountsettings.folderlist.header" style="border-bottom: 1px solid lightgrey;">

@@ -8,7 +8,9 @@
  
  "use strict";
 
-var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+var Services = globalThis.Services || ChromeUtils.import(
+  "resource://gre/modules/Services.jsm"
+).Services;
 var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
 
 var tbSyncEventLog = {
@@ -25,12 +27,10 @@ var tbSyncEventLog = {
       let item = tbSyncEventLog.addLogEntry(events[i]);
       eventlog.appendChild(item);
     }
-
     eventlog.hidden = false;
     eventlog.ensureIndexIsVisible(eventlog.getRowCount()-1);
-    document.documentElement.getButton("extra1").onclick = tbSyncEventLog.onclear;
-    document.documentElement.getButton("extra1").label = TbSync.getString("eventlog.clear");
-    document.documentElement.getButton("cancel").label = TbSync.getString("eventlog.close");
+    document.getElementById("tbsync.eventlog.clear").addEventListener("click", tbSyncEventLog.onclear);
+    document.getElementById("tbsync.eventlog.close").addEventListener("click", () => window.close());
   },
 
   onclear: function () {
@@ -71,7 +71,8 @@ var tbSyncEventLog = {
     
     //left column
     let leftColumn = document.createXULElement("vbox");
-    leftColumn.setAttribute("width", "24");
+    //leftColumn.setAttribute("width", "24");
+    leftColumn.setAttribute("style", "width: 24px;");
 
     let image = document.createXULElement("image");
     let src = entry.type.endsWith("_rerun") ? "sync" : entry.type;

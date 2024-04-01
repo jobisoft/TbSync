@@ -11,7 +11,9 @@
 var EXPORTED_SYMBOLS = ["OverlayManager"];
 
 var { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
-var { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+var Services = globalThis.Services || ChromeUtils.import(
+  "resource://gre/modules/Services.jsm"
+).Services;
 
 function OverlayManager(extension, options = {}) {
   this.registeredOverlays = {};
