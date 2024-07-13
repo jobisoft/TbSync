@@ -6,8 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
  
- "use strict";
- 
+"use strict";
+
+ChromeUtils.defineESModuleGetters(this, {
+  MailServices: "resource:///modules/MailServices.sys.mjs",
+});
+
 var manager = {
 
   prefWindowObj: null,

@@ -6,7 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
  
- "use strict";
+"use strict";
+
+var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
 
 /**
  *
@@ -402,7 +404,7 @@ var FolderData = class {
 
       switch (this.getFolderProperty("status").split(".")[0]) { //the status may have a sub-decleration
         case "modified":
-          //trigger periodic sync (TbSync.syncTimer, tbsync.jsm)
+          //trigger periodic sync (TbSync.syncTimer, tbsync.sys.mjs)
           if (!this.isSyncing()) {
             this.accountData.setAccountProperty("lastsynctime", 0);
           }

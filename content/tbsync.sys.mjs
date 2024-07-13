@@ -6,20 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
  
- "use strict";
+"use strict";
 
-var EXPORTED_SYMBOLS = ["TbSync"];
-
-var Services = globalThis.Services || ChromeUtils.import(
-  "resource://gre/modules/Services.jsm"
-).Services;
-var { FileUtils } = ChromeUtils.import("resource://gre/modules/FileUtils.jsm");
-var { AddonManager } = ChromeUtils.import("resource://gre/modules/AddonManager.jsm");
-var { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
-var { MailServices } = ChromeUtils.import("resource:///modules/MailServices.jsm");
-var { OverlayManager } = ChromeUtils.import("chrome://tbsync/content/OverlayManager.jsm");
-
-var TbSync = {
+export var TbSync = {
 
   enabled: false,
   shutdown: false,

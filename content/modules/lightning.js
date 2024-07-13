@@ -6,16 +6,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
  
- "use strict";
-
- var { XPCOMUtils } = ChromeUtils.import("resource://gre/modules/XPCOMUtils.jsm");
+"use strict";
  
- XPCOMUtils.defineLazyModuleGetters(this, {
-  CalAlarm: "resource:///modules/CalAlarm.jsm",
-  CalAttachment: "resource:///modules/CalAttachment.jsm",
-  CalAttendee: "resource:///modules/CalAttendee.jsm",
-  CalEvent: "resource:///modules/CalEvent.jsm",
-  CalTodo: "resource:///modules/CalTodo.jsm",
+ChromeUtils.defineESModuleGetters(this, {
+  CalAlarm: "resource:///modules/CalAlarm.sys.mjs",
+  CalAttachment: "resource:///modules/CalAttachment.sys.mjs",
+  CalAttendee: "resource:///modules/CalAttendee.sys.mjs",
+  CalEvent: "resource:///modules/CalEvent.sys.mjs",
+  CalTodo: "resource:///modules/CalTodo.sys.mjs",
 }); 
   
 var lightning = {
@@ -25,8 +23,8 @@ var lightning = {
    
   load: async function () {
     try {
-      TbSync.lightning.cal = ChromeUtils.import("resource:///modules/calendar/calUtils.jsm").cal;
-      TbSync.lightning.ICAL = ChromeUtils.import("resource:///modules/calendar/Ical.jsm").ICAL;
+      TbSync.lightning.cal = ChromeUtils.importESModule("resource:///modules/calendar/calUtils.sys.mjs").cal;
+      TbSync.lightning.ICAL = ChromeUtils.importESModule("resource:///modules/calendar/Ical.sys.mjs").ICAL;
       let manager = TbSync.lightning.cal.manager;
       manager.addCalendarObserver(this.calendarObserver);
       manager.addObserver(this.calendarManagerObserver);

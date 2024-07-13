@@ -6,8 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
  
- "use strict";
- 
+"use strict";
+
+ChromeUtils.defineESModuleGetters(this, {
+  FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
+});
+
 var io = {
 
   storageDirectory : PathUtils.join(PathUtils.profileDir, "TbSync"),
@@ -23,7 +27,7 @@ var io = {
   },
   
   initFile: function (filename) {
-    let file = FileUtils.getFile("ProfD", ["TbSync",filename]);
+    let file = new FileUtils.File(PathUtils.join(PathUtils.profileDir, "TbSync", filename));
     //create a stream to write to that file
     let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
     foStream.init(file, 0x02 | 0x08 | 0x20, parseInt("0666", 8), 0); // write, create, truncate
@@ -31,7 +35,7 @@ var io = {
   },
 
   appendToFile: function (filename, data) {
-    let file = FileUtils.getFile("ProfD", ["TbSync",filename]);
+    let file = new FileUtils.File(PathUtils.join(PathUtils.profileDir, "TbSync", filename));
     //create a strem to write to that file
     let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
     foStream.init(file, 0x02 | 0x08 | 0x10, parseInt("0666", 8), 0); // write, create, append

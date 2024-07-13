@@ -6,15 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
  
- "use strict";
+"use strict";
 
-
- var { XPCOMUtils } = ChromeUtils.import(
-  "resource://gre/modules/XPCOMUtils.jsm"
-);
-
-XPCOMUtils.defineLazyModuleGetters(this, {
-  AddrBookCard: "resource:///modules/AddrBookCard.jsm"
+ChromeUtils.defineESModuleGetters(this, {
+  AddrBookCard: "resource:///modules/AddrBookCard.sys.mjs",
+  FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
+  MailServices: "resource:///modules/MailServices.sys.mjs",
 });
 
 var addressbook = {
@@ -477,36 +474,26 @@ var addressbook = {
     }
        
     addPhoto(photo, data, extension = "jpg", url = "") {	
-      let dest = [];
       let card = this._card;
       let bookUID = this.abDirectory.UID;
 
-      // TbSync storage must be set as last
       let book64 = btoa(bookUID);
       let photo64 = btoa(photo);	    
       let photoName64 = book64 + "_" + photo64 + "." + extension;
       
-      dest.push(["Photos", photoName64]);
-      // I no longer see a reason for this
-      // dest.push(["TbSync","Photos", book64, photo64]);
-      
-      let filePath = "";
-      for (let i=0; i < dest.length; i++) {
-        let file = FileUtils.getFile("ProfD",  dest[i]);
-
-        let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
-        foStream.init(file, 0x02 | 0x08 | 0x20, 0x180, 0); // write, create, truncate
-        let binary = "";
-        try {
-          binary = atob(data.split(" ").join(""));
-        } catch (e) {
-          console.log("Failed to decode base64 string:", data);
-        }
-        foStream.write(binary, binary.length);
-        foStream.close();
-
-        filePath = 'file:///' + file.path.replace(/\\/g, '\/').replace(/^\s*\/?/, '').replace(/\ /g, '%20');
+      let file = new FileUtils.File(PathUtils.join(PathUtils.profileDir, "Photos", photoName64));
+      let foStream = Components.classes["@mozilla.org/network/file-output-stream;1"].createInstance(Components.interfaces.nsIFileOutputStream);
+      foStream.init(file, 0x02 | 0x08 | 0x20, 0x180, 0); // write, create, truncate
+      let binary = "";
+      try {
+        binary = atob(data.split(" ").join(""));
+      } catch (e) {
+        console.log("Failed to decode base64 string:", data);
       }
+      foStream.write(binary, binary.length);
+      foStream.close();
+
+      let filePath = 'file:///' + file.path.replace(/\\/g, '\/').replace(/^\s*\/?/, '').replace(/\ /g, '%20');
       card.setProperty("PhotoName", photoName64);
       card.setProperty("PhotoType", url ? "web" : "file");
       card.setProperty("PhotoURI", url ? url : filePath);
@@ -520,7 +507,7 @@ var addressbook = {
 
       if (photo) {
         try {
-          let file = FileUtils.getFile("ProfD", ["Photos", photo]);
+          let file = new FileUtils.File(PathUtils.join(PathUtils.profileDir, "Photos", photo));
 
           let fiStream = Components.classes["@mozilla.org/network/file-input-stream;1"].createInstance(Components.interfaces.nsIFileInputStream);
           fiStream.init(file, -1, -1, false);

@@ -6,9 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
  
-var Services = globalThis.Services || ChromeUtils.import(
-  "resource://gre/modules/Services.jsm"
-).Services;
+
 
 function startup(data, reason) {
   // possible reasons: APP_STARTUP, ADDON_ENABLE, ADDON_INSTALL, ADDON_UPGRADE, or ADDON_DOWNGRADE.
@@ -38,12 +36,12 @@ function shutdown(data, reason) {
   // Stop listening for any new windows to open.
   Services.wm.removeListener(WindowListener);
 
-  var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+  var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
   TbSync.enabled = false;
   TbSync.unload().then(function() {
-    Cu.unload("chrome://tbsync/content/tbsync.jsm");
-    Cu.unload("chrome://tbsync/content/HttpRequest.jsm");
-    Cu.unload("chrome://tbsync/content/OverlayManager.jsm");
+    Cu.unload("chrome://tbsync/content/tbsync.sys.mjs");
+    Cu.unload("chrome://tbsync/content/HttpRequest.sys.mjs");
+    Cu.unload("chrome://tbsync/content/OverlayManager.sys.mjs");
     // HACK WARNING:
     //  - the Addon Manager does not properly clear all addon related caches on update;
     //  - in order to fully update images and locales, their caches need clearing here
@@ -66,7 +64,7 @@ var WindowListener = {
     // Check if the opened window is the one we want to modify.
     if (window.document.documentElement.getAttribute("windowtype") === "mail:3pane") {
       // the main window has loaded, continue with init
-      var { TbSync } = ChromeUtils.import("chrome://tbsync/content/tbsync.jsm");
+      var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
       if (!TbSync.enabled) TbSync.load(window, addon, extension);
     }
   },

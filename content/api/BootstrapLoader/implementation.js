@@ -12,11 +12,9 @@
  */
 
 // Get various parts of the WebExtension framework that we need.
-var { ExtensionCommon } = ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
-var { ExtensionSupport } = ChromeUtils.import("resource:///modules/ExtensionSupport.jsm");
-var { AddonManager } = ChromeUtils.import("resource://gre/modules/AddonManager.jsm");
-var Services = globalThis.Services || 
-  ChromeUtils.import("resource://gre/modules/Services.jsm").Services;
+var { ExtensionCommon } = ChromeUtils.importESModule("resource://gre/modules/ExtensionCommon.sys.mjs");
+var { ExtensionSupport } = ChromeUtils.importESModule("resource:///modules/ExtensionSupport.sys.mjs");
+var { AddonManager } = ChromeUtils.importESModule("resource://gre/modules/AddonManager.sys.mjs");
 
 function getThunderbirdVersion() {
   let parts = Services.appinfo.version.split(".");
@@ -52,13 +50,13 @@ function getMessenger(context) {
   for (let api of apis) {
     switch (api) {
       case "storage":
-        XPCOMUtils.defineLazyGetter(messenger, "storage", () =>
+        ChromeUtils.defineLazyGetter(messenger, "storage", () =>
           getStorage()
         );
         break;
 
       default:
-        XPCOMUtils.defineLazyGetter(messenger, api, () =>
+        ChromeUtils.defineLazyGetter(messenger, api, () =>
           context.apiCan.findAPIPath(api)
         );
     }
