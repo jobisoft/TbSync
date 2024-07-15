@@ -6,15 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
  
-"use strict";
-
-var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
-
-ChromeUtils.defineESModuleGetters(this, {
-  AddonManager: "resource:///modules/AddonManager.sys.mjs",
-  MailServices: "resource:///modules/MailServices.sys.mjs",
-});
-
+ "use strict";
+ 
 var providers = {
 
   //list of default providers (available in add menu, even if not installed)
@@ -22,6 +15,9 @@ var providers = {
     "google" : {
       name: "Google's People API", 
       homepageUrl: "https://addons.thunderbird.net/addon/google-4-tbsync/"},
+    "dav" : {
+      name: "CalDAV & CardDAV", 
+      homepageUrl: "https://addons.thunderbird.net/addon/dav-4-tbsync/"},
     "eas" : {
       name: "Exchange ActiveSync", 
       homepageUrl: "https://addons.thunderbird.net/addon/eas-4-tbsync/"},

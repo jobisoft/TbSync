@@ -6,12 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
  
-"use strict";
-
-ChromeUtils.defineESModuleGetters(this, {
-  OverlayManager: "chrome://tbsync/content/OverlayManager.sys.mjs",
-});
-
+ "use strict";
 var messenger = {
 
   overlayManager : null,

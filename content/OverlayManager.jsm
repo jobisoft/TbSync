@@ -6,11 +6,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
  
-"use strict";
+ "use strict";
 
-var { NetUtil } = ChromeUtils.importESModule("resource://gre/modules/NetUtil.sys.mjs");
+var EXPORTED_SYMBOLS = ["OverlayManager"];
 
-export function OverlayManager(extension, options = {}) {
+var { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
+var Services = globalThis.Services || ChromeUtils.import(
+  "resource://gre/modules/Services.jsm"
+).Services;
+
+function OverlayManager(extension, options = {}) {
   this.registeredOverlays = {};
   this.overlays =  {};
   this.stylesheets = {};

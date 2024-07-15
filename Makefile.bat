@@ -13,7 +13,7 @@ REM Copy sources to doc repository
 REM rd /s /q ..\Provider-4-TbSync\docs\sources 
 REM mkdir ..\Provider-4-TbSync\docs\sources 
 
-REM copy content\OverlayManager.sys.mjs ..\Provider-4-TbSync\docs\sources\
+REM copy content\OverlayManager.jsm ..\Provider-4-TbSync\docs\sources\
 
 REM Xcopy /E /I content\passwordPrompt ..\Provider-4-TbSync\docs\sources\passwordPrompt\
 REM Xcopy /E /I content\modules ..\Provider-4-TbSync\docs\sources\modules\

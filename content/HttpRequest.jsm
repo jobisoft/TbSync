@@ -26,13 +26,19 @@
  * 
  */
  
-"use strict";
+ "use strict";
  
+var EXPORTED_SYMBOLS = ["HttpRequest"];
+
 var bug669675 = [];
 var containers = [];
 var sandboxes = {};
 
-export var HttpRequest = class {
+var Services = globalThis.Services || ChromeUtils.import(
+  "resource://gre/modules/Services.jsm"
+).Services;
+
+var HttpRequest = class {
     constructor() {
         // a private object to store xhr related properties
         this._xhr = {};
