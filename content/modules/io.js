@@ -7,7 +7,7 @@
  */
  
 "use strict";
-
+ 
 ChromeUtils.defineESModuleGetters(this, {
   FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
 });

@@ -8,9 +8,7 @@
  
 "use strict";
 
-ChromeUtils.defineESModuleGetters(this, {
-  OverlayManager: "chrome://tbsync/content/OverlayManager.sys.mjs",
-});
+var { OverlayManager } = ChromeUtils.import("chrome://tbsync/content/OverlayManager.jsm");
 
 var messenger = {
 

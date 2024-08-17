@@ -12,9 +12,8 @@
  */
 
 // Get various parts of the WebExtension framework that we need.
-var { ExtensionCommon } = ChromeUtils.importESModule("resource://gre/modules/ExtensionCommon.sys.mjs");
-var { ExtensionSupport } = ChromeUtils.importESModule("resource:///modules/ExtensionSupport.sys.mjs");
-var { AddonManager } = ChromeUtils.importESModule("resource://gre/modules/AddonManager.sys.mjs");
+var { ExtensionSupport } = ChromeUtils.import("resource:///modules/ExtensionSupport.jsm");
+var { AddonManager } = ChromeUtils.import("resource://gre/modules/AddonManager.jsm");
 
 function getThunderbirdVersion() {
   let parts = Services.appinfo.version.split(".");

@@ -8,9 +8,7 @@
  
 "use strict";
 
-ChromeUtils.defineESModuleGetters(this, {
-  MailServices: "resource:///modules/MailServices.sys.mjs",
-});
+var { MailServices } = ChromeUtils.import("resource:///modules/MailServices.jsm");
 
 var manager = {
 

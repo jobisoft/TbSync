@@ -8,12 +8,8 @@
  
 "use strict";
 
-var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
-
-ChromeUtils.defineESModuleGetters(this, {
-  AddonManager: "resource:///modules/AddonManager.sys.mjs",
-  MailServices: "resource:///modules/MailServices.sys.mjs",
-});
+var { AddonManager } = ChromeUtils.import("resource://gre/modules/AddonManager.jsm");
+var { MailServices } = ChromeUtils.import("resource:///modules/MailServices.jsm");
 
 var providers = {
 

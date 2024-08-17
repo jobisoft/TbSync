@@ -8,7 +8,9 @@
  
 "use strict";
 
-export var TbSync = {
+var EXPORTED_SYMBOLS = ["TbSync"];
+
+var TbSync = {
 
   enabled: false,
   shutdown: false,
@@ -30,8 +32,8 @@ export var TbSync = {
   // global load
   load: async function (window, addon, extension) {
 	  //public module and IO module needs to be loaded beforehand
-    Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/public.js", this, "UTF-8");
-    Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/io.js", this, "UTF-8");
+    Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/public.js", TbSync, "UTF-8");
+    Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/io.js", TbSync, "UTF-8");
 
     //clear debug log on start
     this.io.initFile("debug.log");
@@ -61,7 +63,7 @@ export var TbSync = {
     //load modules
     for (let module of this.modules) {
       try {
-        Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/" + module.name + ".js", this, "UTF-8");
+        Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/" + module.name + ".js", TbSync, "UTF-8");
         module.state = 1;
         this.dump("Loading module <" + module.name + ">", "OK");
       } catch (e) {

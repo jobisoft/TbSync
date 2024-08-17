@@ -8,12 +8,10 @@
  
 "use strict";
 
-var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
-
 /**
  *
  */
- var StatusData = class {
+var StatusData = class {
   /**
    * A StatusData instance must be used as return value by 
    * :class:`Base.syncFolderList` and :class:`Base.syncFolder`.
@@ -404,7 +402,7 @@ var FolderData = class {
 
       switch (this.getFolderProperty("status").split(".")[0]) { //the status may have a sub-decleration
         case "modified":
-          //trigger periodic sync (TbSync.syncTimer, tbsync.sys.mjs)
+          //trigger periodic sync (TbSync.syncTimer, tbsync.jsm)
           if (!this.isSyncing()) {
             this.accountData.setAccountProperty("lastsynctime", 0);
           }

@@ -8,9 +8,11 @@
  
 "use strict";
 
-var { NetUtil } = ChromeUtils.importESModule("resource://gre/modules/NetUtil.sys.mjs");
+var EXPORTED_SYMBOLS = ["OverlayManager"];
 
-export function OverlayManager(extension, options = {}) {
+var { NetUtil } = ChromeUtils.import("resource://gre/modules/NetUtil.jsm");
+
+function OverlayManager(extension, options = {}) {
   this.registeredOverlays = {};
   this.overlays =  {};
   this.stylesheets = {};

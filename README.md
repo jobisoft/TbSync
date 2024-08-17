@@ -1,40 +1,6 @@
 # TbSync
 
-1. [Introduction](https://github.com/jobisoft/TbSync#introduction)
-2. [Where is this going?](https://github.com/jobisoft/TbSync#where-is-this-going)
-3. [External data sources](https://github.com/jobisoft/TbSync#external-data-sources)
-4. [Icon sources and attributions](https://github.com/jobisoft/TbSync#icon-sources-and-attributions)
-
-## Introduction
-
-[TbSync](https://addons.thunderbird.net/addon/tbsync/) is a central user interface to manage cloud accounts and to synchronize their contact, task and calendar information with [Thunderbird](https://www.thunderbird.net/). Its main objective is to simplify the setup process for such accounts. The following providers (protocols) are currently supported:
-* CalDAV & CardDAV, via [DAV-4-TbSync](https://github.com/jobisoft/DAV-4-TbSync) 
-[[compatibility list (DAV)](https://github.com/jobisoft/DAV-4-TbSync/wiki/Compatibility-list-(DAV))]
-* Exchange ActiveSync (EAS v2.5 & v14.0), via [EAS-4-TbSync](https://github.com/jobisoft/EAS-4-TbSync) 
-[[compatibility list (EAS)](https://github.com/jobisoft/EAS-4-TbSync/wiki/Compatibility-list-(EAS))]
-
-Further details can be found in the [wiki](https://github.com/jobisoft/TbSync/wiki) of the TbSync project and in the [how-to-get-started guide](https://github.com/jobisoft/TbSync/wiki/How-to-get-started).
-
-If you like TbSync and want to support its development, please consider a donation.
-
-[![](https://www.paypalobjects.com/en_US/DK/i/btn/btn_donateCC_LG.gif)](https://www.paypal.me/johnbieling)
-
-
-## Want to add or fix a localization?
-To help translating this project, please visit [crowdin.com](https://crowdin.com/profile/jobisoft), where the localizations are managed. If you want to add a new language, just contact me and I will set it up.
-
-Here are some general information regarding translations:
-
-* [Localization content best practices](https://developer.mozilla.org/en-US/docs/Mozilla/Localization/Localization_content_best_practices)
-* [Summary table of quotation marks per language](https://en.wikipedia.org/wiki/Quotation_mark#Summary_table)
-* [Transvision](https://transvision.mozfr.org/) provides translations for various languages
-* by Thunderbird supported [locale codes](https://searchfox.org/comm-central/source/mail/locales/all-locales)
-
-
-## Where is this going?
-
-I want to adapt Thunderbirds WebExtension APIs to simplify the addition of additional address book and calendar providers. I plan to keep TbSync as a central UI.
-
+[TbSync](https://addons.thunderbird.net/addon/tbsync/) was a central user interface to manage cloud accounts and to synchronize their contact, task and calendar information with [Thunderbird](https://www.thunderbird.net/). Its main objective was to simplify the setup process for such accounts. Thunderbird is working on a new account-hub UI, which will make TbSync obsolete.
 
 ## Icon sources and attributions
 
