@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
  */
- 
+
 "use strict";
 
 var passwordManager = {
@@ -32,14 +32,14 @@ var passwordManager = {
     }
   },
 
-  updateLoginInfo: function(origin, realm, oldUser, newUser, newPassword) {
+  updateLoginInfo: async function(origin, realm, oldUser, newUser, newPassword) {
     let nsLoginInfo = new Components.Constructor("@mozilla.org/login-manager/loginInfo;1", Components.interfaces.nsILoginInfo, "init");
     
     this.removeLoginInfos(origin, realm, [oldUser, newUser]);
     
     let newLoginInfo = new nsLoginInfo(origin, null, realm, newUser, newPassword, "", "");
     try {
-      Services.logins.addLogin(newLoginInfo);
+      await Services.logins.addLoginAsync(newLoginInfo);
     } catch (e) {
       TbSync.dump("Error adding loginInfo", e);
     }
