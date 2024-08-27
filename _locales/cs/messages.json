@@ -305,6 +305,9 @@
     "status.syncing": {
         "message": "Probíhá synchronizace"
     },
+    "status.451": {
+        "message": "Server issued redirect, retry in 5 seconds."
+    },
     "supportwizard.footer": {
         "message": "Z informací zde uvedených bude v dalším kroku vygenerován e-mail, který můžete následně upravit (například přidání screenshotů). Zasláním e-mailu bude teprve zaslána chybová zpráva."
     },
