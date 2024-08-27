@@ -306,7 +306,7 @@
         "message": "Synchronisation en cours"
     },
     "status.451": {
-        "message": "Server issued redirect, retry in 5 seconds."
+        "message": "Le serveur a renvoyé une redirection, nouvel essai dans 5 secondes."
     },
     "supportwizard.footer": {
         "message": "Un courriel sera généré à partir des informations fournies ici. Vous aurez la possibilité de le modifier par la suite (par exemple, pour y ajouter des captures d'écrans). Ce n'est que lorsque vous aurez envoyé l'e-mail que le rapport d'erreur nous sera envoyé."
