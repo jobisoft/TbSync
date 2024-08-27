@@ -121,7 +121,10 @@ var core = {
           overallStatusData = listStatusData;
           accountRerun = (listStatusData.type == TbSync.StatusData.ACCOUNT_RERUN)
           TbSync.eventlog.add(listStatusData.type, syncData.eventLogInfo, listStatusData.message, listStatusData.details);
+          await new Promise(r => TbSync.window.setTimeout(r, 5000));
           continue; //jumps to the while condition check
+        } else {
+          overallStatusData = new TbSync.StatusData();
         }
         
         // Removes all leftover cached folders and sets all other folders to a well defined cached = "0"

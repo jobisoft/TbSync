@@ -305,6 +305,9 @@
     "status.syncing": {
         "message": "Synchronizing"
     },
+    "status.451": {
+        "message": "Server issued redirect, retry in 5 seconds."
+    },
     "supportwizard.footer": {
         "message": "From the information given here, an e-mail will be generated in the next step, which you can subsequently edit (for example, adding screenshots or similar). Only by actually sending that e-mail, the error report will be sent."
     },

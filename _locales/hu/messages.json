@@ -308,6 +308,9 @@
     "supportwizard.footer": {
         "message": "Az itt megadott információból e-mail készül, amelyet aztán szerkeszthet (például képernyőképeket adhat hozzá). Csak akkor lesz elküldve hibajelentés, ha tényleg elküldi azt az e-mailt."
     },
+    "status.451": {
+        "message": "Server issued redirect, retry in 5 seconds."
+    },
     "supportwizard.label.description": {
         "message": "Hiba részletes leírása:"
     },

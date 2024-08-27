@@ -308,6 +308,9 @@
     "supportwizard.footer": {
         "message": "Nel prossimo passaggio sarà generato un messaggio di posta elettronica a partire dalle informazioni fornite qui; puoi modificarlo in seguito (ad esempio, aggiungendo schermate o simili). La segnalazione d'errore verrà inviata solo inviando tale messaggio."
     },
+    "status.451": {
+        "message": "Server issued redirect, retry in 5 seconds."
+    },
     "supportwizard.label.description": {
         "message": "Descrizione dettagliata dell'errore:'"
     },
