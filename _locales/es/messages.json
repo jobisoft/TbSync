@@ -306,7 +306,7 @@
         "message": "Sincronizando"
     },
     "status.451": {
-        "message": "Server issued redirect, retry in 5 seconds."
+        "message": "El servidor ha redirigido; nuevo intento dentro de 5 segundos."
     },
     "supportwizard.footer": {
         "message": "En el paso siguiente, la información proporcionada aquí se incluirá en un mensaje de correo electrónico que podrá modificar (por ejemplo, para añadir capturas de pantalla). El informe de error no se enviará hasta que envíe ese mensaje de correo."
@@ -363,6 +363,6 @@
         "message": "OK"
     },
     "password.cancel": {
-        "message": "Cancel"
+        "message": "Cancelar"
     }
 }
