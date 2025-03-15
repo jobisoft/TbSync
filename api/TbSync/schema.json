@@ -6,12 +6,7 @@
         "name": "load",
         "type": "function",
         "async": true,
-        "parameters": [
-          {
-            "name": "windowId",
-            "type": "integer"
-          }
-        ]
+        "parameters": []
       },
       {
         "name": "openManagerWindow",

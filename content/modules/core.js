@@ -7,7 +7,20 @@
  */
  
 "use strict";
-var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
+
+var { setTimeout } = ChromeUtils.importESModule(
+  "resource://gre/modules/Timer.sys.mjs"
+);
+var { ExtensionParent } = ChromeUtils.importESModule(
+  "resource://gre/modules/ExtensionParent.sys.mjs"
+);
+
+var tbsyncExtension = ExtensionParent.GlobalManager.getExtension(
+  "tbsync@jobisoft.de"
+);
+var { TbSync } = ChromeUtils.importESModule(
+  `chrome://tbsync/content/tbsync.sys.mjs?${tbsyncExtension.manifest.version}`
+);
 
 var core = {
 
@@ -122,7 +135,7 @@ var core = {
           overallStatusData = listStatusData;
           accountRerun = (listStatusData.type == TbSync.StatusData.ACCOUNT_RERUN)
           TbSync.eventlog.add(listStatusData.type, syncData.eventLogInfo, listStatusData.message, listStatusData.details);
-          await new Promise(r => TbSync.window.setTimeout(r, 5000));
+          await new Promise(r => setTimeout(r, 5000));
           continue; //jumps to the while condition check
         } else {
           overallStatusData = new TbSync.StatusData();

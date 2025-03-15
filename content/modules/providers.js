@@ -8,9 +8,22 @@
  
 "use strict";
 
-var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
-var { AddonManager } = ChromeUtils.importESModule("resource://gre/modules/AddonManager.sys.mjs");
-var { MailServices } = ChromeUtils.importESModule("resource:///modules/MailServices.sys.mjs");
+var { AddonManager } = ChromeUtils.importESModule(
+  "resource://gre/modules/AddonManager.sys.mjs"
+);
+var { ExtensionParent } = ChromeUtils.importESModule(
+  "resource://gre/modules/ExtensionParent.sys.mjs"
+);
+var { MailServices } = ChromeUtils.importESModule(
+  "resource:///modules/MailServices.sys.mjs"
+);
+
+var tbsyncExtension = ExtensionParent.GlobalManager.getExtension(
+  "tbsync@jobisoft.de"
+);
+var { TbSync } = ChromeUtils.importESModule(
+  `chrome://tbsync/content/tbsync.sys.mjs?${tbsyncExtension.manifest.version}`
+);
 
 var providers = {
 

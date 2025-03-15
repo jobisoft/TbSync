@@ -8,7 +8,16 @@
  
 "use strict";
 
-var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
+var { ExtensionParent } = ChromeUtils.importESModule(
+  "resource://gre/modules/ExtensionParent.sys.mjs"
+);
+
+var tbsyncExtension = ExtensionParent.GlobalManager.getExtension(
+  "tbsync@jobisoft.de"
+);
+var { TbSync } = ChromeUtils.importESModule(
+  `chrome://tbsync/content/tbsync.sys.mjs?${tbsyncExtension.manifest.version}`
+);
 
 var tools = {
 
@@ -20,9 +29,10 @@ var tools = {
 
   // async sleep function using Promise to postpone actions to keep UI responsive
   sleep : function (_delay, useRequestIdleCallback = false) {
-    let useIdleCallback = false;
+    const useIdleCallback = false;
+    const window = Services.wm.getMostRecentWindow("mail:3pane");
     let delay = 5;//_delay;
-    if (TbSync.window.requestIdleCallback && useRequestIdleCallback) {
+    if (window.requestIdleCallback && useRequestIdleCallback) {
       useIdleCallback = true;
       delay= 2;
     }
@@ -32,12 +42,12 @@ var tools = {
       let event = {
         notify: function(timer) {
           if (useIdleCallback) {
-            TbSync.window.requestIdleCallback(resolve);                        
+            window.requestIdleCallback(resolve);
           } else {
             resolve();
           }
         }
-      }            
+      }
       timer.initWithCallback(event, delay, Components.interfaces.nsITimer.TYPE_ONE_SHOT);
     });
   },

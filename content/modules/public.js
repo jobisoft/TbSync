@@ -8,6 +8,17 @@
  
 "use strict";
 
+var { ExtensionParent } = ChromeUtils.importESModule(
+  "resource://gre/modules/ExtensionParent.sys.mjs"
+);
+
+var tbsyncExtension = ExtensionParent.GlobalManager.getExtension(
+  "tbsync@jobisoft.de"
+);
+var { TbSync } = ChromeUtils.importESModule(
+  `chrome://tbsync/content/tbsync.sys.mjs?${tbsyncExtension.manifest.version}`
+);
+
 /**
  *
  */
@@ -60,8 +71,6 @@ var StatusData = class {
   static get FOLDER_RERUN() {return "folder_rerun"}; 
 }
 
-
-
 /**
  * ProgressData to manage a ``done`` and a ``todo`` counter. 
  *
@@ -71,8 +80,6 @@ var StatusData = class {
  * ``eval.`` or ``prepare.``. See :class:`SyncData.setSyncState`.
  *
  */
-
-var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
 
 var ProgressData = class {
   /**

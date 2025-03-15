@@ -9,9 +9,20 @@
 // Using a closure to not leak anything but the API to the outside world.
 (function (exports) {
 
-  var { AddonManager } = ChromeUtils.importESModule("resource://gre/modules/AddonManager.sys.mjs");
-  var { TbSync: TbSyncModule } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
-
+  var { AddonManager } = ChromeUtils.importESModule(
+    "resource://gre/modules/AddonManager.sys.mjs"
+  );
+  var { ExtensionParent } = ChromeUtils.importESModule(
+    "resource://gre/modules/ExtensionParent.sys.mjs"
+  );
+  
+  var tbsyncExtension = ExtensionParent.GlobalManager.getExtension(
+    "tbsync@jobisoft.de"
+  );
+  var { TbSync: TbSyncModule } = ChromeUtils.importESModule(
+    `chrome://tbsync/content/tbsync.sys.mjs?${tbsyncExtension.manifest.version}`
+  );
+  
   let defaults = Services.prefs.getDefaultBranch("extensions.tbsync.");
   defaults.setBoolPref("debug.testoptions", false);
   defaults.setBoolPref("log.toconsole", false);
@@ -21,12 +32,10 @@
     getAPI(context) {
       return {
         TbSync: {
-          async load(windowId) {
-            let { window } = context.extension.windowManager.get(windowId);
-            let { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
-            if (!TbSync.enabled) {
+          async load() {
+            if (!TbSyncModule.enabled) {
               let addon = await AddonManager.getAddonByID(context.extension.id);
-              TbSync.load(window, addon, context.extension);
+              TbSyncModule.load(addon, context.extension);
             }
           },
           openManagerWindow() {
@@ -40,6 +49,8 @@
       if (isAppShutdown) {
         return; // the application gets unloaded anyway
       }
+      TbSyncModule.enabled = false;
+      TbSyncModule.unload();
     }
   };
   exports.TbSync = TbSync;

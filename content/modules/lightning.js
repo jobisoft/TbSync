@@ -8,7 +8,16 @@
  
 "use strict";
 
-var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
+var { ExtensionParent } = ChromeUtils.importESModule(
+  "resource://gre/modules/ExtensionParent.sys.mjs"
+);
+
+var tbsyncExtension = ExtensionParent.GlobalManager.getExtension(
+  "tbsync@jobisoft.de"
+);
+var { TbSync } = ChromeUtils.importESModule(
+  `chrome://tbsync/content/tbsync.sys.mjs?${tbsyncExtension.manifest.version}`
+);
 
 ChromeUtils.defineESModuleGetters(this, {  
   CalAlarm: "resource:///modules/CalAlarm.sys.mjs",
@@ -41,14 +50,6 @@ var lightning = {
     let manager = TbSync.lightning.cal.manager;
     manager.removeCalendarObserver(this.calendarObserver);
     manager.removeObserver(this.calendarManagerObserver);
-
-    //remove listeners on global sync buttons
-    if (TbSync.window.document.getElementById("calendar-synchronize-button")) {
-      TbSync.window.document.getElementById("calendar-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.observer.sync', null);}, false);
-    }
-    if (TbSync.window.document.getElementById("task-synchronize-button")) {
-      TbSync.window.document.getElementById("task-synchronize-button").removeEventListener("click", function(event){Services.obs.notifyObservers(null, 'tbsync.observer.sync', null);}, false);
-    }
   },
 
 

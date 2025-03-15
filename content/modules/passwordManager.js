@@ -8,7 +8,16 @@
 
 "use strict";
 
-var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
+var { ExtensionParent } = ChromeUtils.importESModule(
+  "resource://gre/modules/ExtensionParent.sys.mjs"
+);
+
+var tbsyncExtension = ExtensionParent.GlobalManager.getExtension(
+  "tbsync@jobisoft.de"
+);
+var { TbSync } = ChromeUtils.importESModule(
+  `chrome://tbsync/content/tbsync.sys.mjs?${tbsyncExtension.manifest.version}`
+);
 
 var passwordManager = {
 
@@ -68,10 +77,11 @@ var passwordManager = {
   */
   asyncPasswordPrompt: async function(data, reference) {
     if (data.windowID) {
-      let url = "chrome://tbsync/content/passwordPrompt/passwordPrompt.xhtml";
-  
+      const url = "chrome://tbsync/content/passwordPrompt/passwordPrompt.xhtml";
+      const window = Services.wm.getMostRecentWindow("mail:3pane");
+
       return await new Promise(function(resolve, reject) {
-       reference[data.windowID] = TbSync.window.openDialog(url, "TbSyncPasswordPrompt:" + data.windowID, "centerscreen,chrome,resizable=no", data, resolve);
+       reference[data.windowID] = window.openDialog(url, "TbSyncPasswordPrompt:" + data.windowID, "centerscreen,chrome,resizable=no", data, resolve);
       });
     }
     

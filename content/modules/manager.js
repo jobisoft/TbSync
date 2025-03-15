@@ -8,8 +8,19 @@
  
 "use strict";
 
-var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
-var { MailServices } = ChromeUtils.importESModule("resource:///modules/MailServices.sys.mjs");
+var { ExtensionParent } = ChromeUtils.importESModule(
+  "resource://gre/modules/ExtensionParent.sys.mjs"
+);
+var { MailServices } = ChromeUtils.importESModule(
+  "resource:///modules/MailServices.sys.mjs"
+);
+
+var tbsyncExtension = ExtensionParent.GlobalManager.getExtension(
+  "tbsync@jobisoft.de"
+);
+var { TbSync } = ChromeUtils.importESModule(
+  `chrome://tbsync/content/tbsync.sys.mjs?${tbsyncExtension.manifest.version}`
+);
 
 var manager = {
 
@@ -31,7 +42,8 @@ var manager = {
     if (TbSync.enabled) {
       // check, if a window is already open and just put it in focus
       if (this.prefWindowObj === null) {
-        this.prefWindowObj = TbSync.window.open("chrome://tbsync/content/manager/accountManager.xhtml", "TbSyncAccountManagerWindow", "chrome,centerscreen");
+        const window = Services.wm.getMostRecentWindow("mail:3pane");
+        this.prefWindowObj = window.open("chrome://tbsync/content/manager/accountManager.xhtml", "TbSyncAccountManagerWindow", "chrome,centerscreen");
       }
       this.prefWindowObj.focus();
     } else {
@@ -41,24 +53,25 @@ var manager = {
 
   popupNotEnabled: function () {
     TbSync.dump("Oops", "Trying to open account manager, but init sequence not yet finished");
-    let msg = TbSync.getString("OopsMessage") + "\n\n";
-    let v = Services.appinfo.platformVersion; 
+    const msg = TbSync.getString("OopsMessage") + "\n\n";
+    const window = Services.wm.getMostRecentWindow("mail:3pane");
     if (TbSync.prefs.getIntPref("log.userdatalevel") == 0) {
-      if (TbSync.window.confirm(msg + TbSync.getString("UnableToTraceError"))) {
+      if (window.confirm(msg + TbSync.getString("UnableToTraceError"))) {
         TbSync.prefs.setIntPref("log.userdatalevel", 1);
-        TbSync.window.alert(TbSync.getString("RestartThunderbirdAndTryAgain"));
+        window.alert(TbSync.getString("RestartThunderbirdAndTryAgain"));
       }
     } else {
-      if (TbSync.window.confirm(msg + TbSync.getString("HelpFixStartupError"))) {
+      if (window.confirm(msg + TbSync.getString("HelpFixStartupError"))) {
         this.createBugReport("john.bieling@gmx.de", msg, "");
       }
     }
   },
   
   openTBtab: function (url) {
-    let tabmail = TbSync.window.document.getElementById("tabmail");
-    if (TbSync.window && tabmail) {
-      TbSync.window.focus();
+    const window = Services.wm.getMostRecentWindow("mail:3pane");
+    const tabmail = window.document.getElementById("tabmail");
+    if (window && tabmail) {
+      window.focus();
       return tabmail.openTab("contentTab", {
         url
       });
@@ -116,7 +129,8 @@ var manager = {
   viewDebugLog: function() {
 
     if (this.debugLogWindow && this.debugLogWindow.tabNode) {
-      let tabmail = TbSync.window.document.getElementById("tabmail");
+      const window = Services.wm.getMostRecentWindow("mail:3pane");
+      const tabmail = window.document.getElementById("tabmail");
       try {
         tabmail.closeTab(this.debugLogWindow);
       } catch (e) {

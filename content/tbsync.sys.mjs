@@ -13,7 +13,6 @@ export var TbSync = {
   enabled: false,
   shutdown: false,
   
-  window: null,
   addon: null,
   version: 0,
   debugMode: false,
@@ -28,7 +27,7 @@ export var TbSync = {
   extension : null,
   
   // global load
-  load: async function (window, addon, extension) {
+  load: async function (addon, extension) {
 	  //public module and IO module needs to be loaded beforehand
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/public.js", TbSync, "UTF-8");
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/io.js", TbSync, "UTF-8");
@@ -36,7 +35,6 @@ export var TbSync = {
     //clear debug log on start
     this.io.initFile("debug.log");
 
-    this.window = window;
     this.addon = addon;
     this.addon.contributorsURL = "https://github.com/jobisoft/TbSync/blob/master/CONTRIBUTORS.md";
     this.extension = extension;
