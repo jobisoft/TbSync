@@ -28,7 +28,9 @@ export var TbSync = {
   
   // global load
   load: async function (addon, extension) {
-	  //public module and IO module needs to be loaded beforehand
+    console.log(`Loading TbSync v${extension.manifest.version}`);
+
+    //public module and IO module needs to be loaded beforehand
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/public.js", TbSync, "UTF-8");
     Services.scriptloader.loadSubScript("chrome://tbsync/content/modules/io.js", TbSync, "UTF-8");
 
