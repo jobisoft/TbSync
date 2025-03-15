@@ -27,17 +27,15 @@ var manager = {
 
 
 
-  openManagerWindow: function(event) {
-    if (!event.button) { //catches zero or undefined
-      if (TbSync.enabled) {
-        // check, if a window is already open and just put it in focus
-        if (this.prefWindowObj === null) {
-          this.prefWindowObj = TbSync.window.open("chrome://tbsync/content/manager/accountManager.xhtml", "TbSyncAccountManagerWindow", "chrome,centerscreen");
-        }
-        this.prefWindowObj.focus();
-      } else {
-        //this.popupNotEnabled();
+  openManagerWindow: function() {
+    if (TbSync.enabled) {
+      // check, if a window is already open and just put it in focus
+      if (this.prefWindowObj === null) {
+        this.prefWindowObj = TbSync.window.open("chrome://tbsync/content/manager/accountManager.xhtml", "TbSyncAccountManagerWindow", "chrome,centerscreen");
       }
+      this.prefWindowObj.focus();
+    } else {
+      //this.popupNotEnabled();
     }
   },
 

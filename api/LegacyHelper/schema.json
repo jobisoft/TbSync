@@ -1,0 +1,42 @@
+[
+  {
+    "namespace": "LegacyHelper",
+    "functions": [
+      {
+        "name": "registerGlobalUrls",
+        "type": "function",
+        "async": true,
+        "description": "Register folders which should be available as legacy chrome:// urls or resource:// urls",
+        "parameters": [
+          {
+            "name": "data",
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "Array of manifest url definitions (content, locale or resource)"
+          }
+        ]
+      },
+      {
+        "name": "openDialog",
+        "type": "function",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "name of the new dialog"
+          },
+          {
+            "name": "path",
+            "type": "string",
+            "description": "path of the dialog to be opened"
+          }
+        ]
+      }
+    ]
+  }
+]

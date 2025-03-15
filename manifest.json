@@ -30,15 +30,24 @@
     ]
   }, 
   "background": {
+    "type": "module",
     "scripts": ["background.js"]
   },
   "experiment_apis": {
-    "BootstrapLoader": {
-      "schema": "content/api/BootstrapLoader/schema.json",
+    "LegacyHelper": {
+      "schema": "api/LegacyHelper/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
-        "paths": [["BootstrapLoader"]],
-        "script": "content/api/BootstrapLoader/implementation.js"
+        "paths": [["LegacyHelper"]],
+        "script": "api/LegacyHelper/implementation.js"
+      }
+    },
+    "TbSync": {
+      "schema": "api/TbSync/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "paths": [["TbSync"]],
+        "script": "api/TbSync/implementation.js"
       }
     }
   }

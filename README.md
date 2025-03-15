@@ -1,6 +1,6 @@
 # TbSync
 
-[TbSync](https://addons.thunderbird.net/addon/tbsync/) was a central user interface to manage cloud accounts and to synchronize their contact, task and calendar information with [Thunderbird](https://www.thunderbird.net/). Its main objective was to simplify the setup process for such accounts. Thunderbird is working on a new account-hub UI, which will make TbSync obsolete.
+[TbSync](https://addons.thunderbird.net/addon/tbsync/) is a central user interface to manage cloud accounts and to synchronize their contact, task and calendar information with [Thunderbird](https://www.thunderbird.net/). Its main objective is to simplify the setup process for such accounts. Thunderbird is working on a new account-hub UI, which will make TbSync obsolete.
 
 ## Icon sources and attributions
 

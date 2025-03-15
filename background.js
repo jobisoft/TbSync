@@ -1,16 +1,20 @@
-function handleUpdateAvailable(details) {
-  console.log("Update available for TbSync");
+await browser.LegacyHelper.registerGlobalUrls([
+  ["content", "tbsync", "content/"],
+]);
+
+// Overlay all already open normal windows.
+let windows = await browser.windows.getAll({ windowTypes: ["normal"] })
+for (let window of windows) {
+    await browser.TbSync.load(window.id);
 }
 
-async function main() {
-  // just by registering this listener, updates will not install until next restart
-  //messenger.runtime.onUpdateAvailable.addListener(handleUpdateAvailable);
+// Overlay any new normal window being opened.
+browser.windows.onCreated.addListener(async window => {
+  if (window.type == "normal") {
+    await browser.TbSync.load(window.id);
+  }
+});
 
-  await messenger.BootstrapLoader.registerChromeUrl([ ["content", "tbsync", "content/"] ]);
-  await messenger.BootstrapLoader.registerOptionsPage("chrome://tbsync/content/manager/addonoptions.xhtml");
-  await messenger.BootstrapLoader.registerBootstrapScript("chrome://tbsync/content/scripts/bootstrap.js");  
-}
-
-main();
-
-messenger.browserAction.onClicked.addListener(tab => { messenger.BootstrapLoader.openOptionsDialog(tab.windowId); });
+messenger.browserAction.onClicked.addListener(tab => {
+  browser.TbSync.openManagerWindow();
+});

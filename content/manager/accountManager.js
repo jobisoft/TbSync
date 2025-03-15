@@ -12,14 +12,6 @@ var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.
 
 var tbSyncAccountManager = {
   
-  onloadoptions: function () {
-    window.close();
-  },    
-  
-  onunloadoptions: function () {
-    TbSync.manager.openManagerWindow(0);
-  },
-  
   onload: function () {
     TbSync.AccountManagerTabs = ["accounts.xhtml", "catman.xhtml", "supporter.xhtml", "help.xhtml"];
     tbSyncAccountManager.selectTab(0);
