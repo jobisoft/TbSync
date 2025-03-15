@@ -29,8 +29,8 @@ var tools = {
 
   // async sleep function using Promise to postpone actions to keep UI responsive
   sleep : function (_delay, useRequestIdleCallback = false) {
-    const useIdleCallback = false;
     const window = Services.wm.getMostRecentWindow("mail:3pane");
+    let useIdleCallback = false;
     let delay = 5;//_delay;
     if (window.requestIdleCallback && useRequestIdleCallback) {
       useIdleCallback = true;
