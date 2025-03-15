@@ -8,6 +8,7 @@
  
 "use strict";
 
+var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
 var { DeferredTask } = ChromeUtils.importESModule("resource://gre/modules/DeferredTask.sys.mjs");
 
 var db = {

@@ -71,6 +71,9 @@ var StatusData = class {
  * ``eval.`` or ``prepare.``. See :class:`SyncData.setSyncState`.
  *
  */
+
+var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
+
 var ProgressData = class {
   /**
    *
@@ -118,8 +121,6 @@ var ProgressData = class {
      return this._done;
    }
 }
-
-
 
 /**
  * ProviderData
@@ -402,7 +403,7 @@ var FolderData = class {
 
       switch (this.getFolderProperty("status").split(".")[0]) { //the status may have a sub-decleration
         case "modified":
-          //trigger periodic sync (TbSync.syncTimer, tbsync.jsm)
+          //trigger periodic sync (TbSync.syncTimer, tbsync.sys.mjs)
           if (!this.isSyncing()) {
             this.accountData.setAccountProperty("lastsynctime", 0);
           }

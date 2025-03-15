@@ -8,7 +8,8 @@
  
 "use strict";
 
-var { MailServices } = ChromeUtils.import("resource:///modules/MailServices.jsm");
+var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
+var { MailServices } = ChromeUtils.importESModule("resource:///modules/MailServices.sys.mjs");
 
 var manager = {
 

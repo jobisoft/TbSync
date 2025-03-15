@@ -8,7 +8,8 @@
  
 "use strict";
 
-var { OverlayManager } = ChromeUtils.import("chrome://tbsync/content/OverlayManager.jsm");
+var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
+var { OverlayManager } = ChromeUtils.importESModule("chrome://tbsync/content/OverlayManager.sys.mjs");
 
 var messenger = {
 

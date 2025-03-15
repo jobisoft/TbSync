@@ -8,9 +8,7 @@
  
 "use strict";
 
-var EXPORTED_SYMBOLS = ["TbSync"];
-
-var TbSync = {
+export var TbSync = {
 
   enabled: false,
   shutdown: false,

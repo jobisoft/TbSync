@@ -7,7 +7,9 @@
  */
  
 "use strict";
- 
+
+var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
+
 var tools = {
 
   load: async function () {

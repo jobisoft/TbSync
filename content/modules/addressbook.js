@@ -8,8 +8,9 @@
 
 "use strict";
 
-var { MailServices } = ChromeUtils.import("resource:///modules/MailServices.jsm");
-var { AddrBookCard } = ChromeUtils.import("resource:///modules/AddrBookCard.jsm");
+var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
+var { MailServices } = ChromeUtils.importESModule("resource:///modules/MailServices.sys.mjs");
+var { AddrBookCard } = ChromeUtils.importESModule("resource:///modules/AddrBookCard.sys.mjs");
 
 ChromeUtils.defineESModuleGetters(this, {
   FileUtils: "resource://gre/modules/FileUtils.sys.mjs",

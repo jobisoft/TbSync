@@ -8,6 +8,8 @@
 
 "use strict";
 
+var { TbSync } = ChromeUtils.importESModule("chrome://tbsync/content/tbsync.sys.mjs");
+
 var passwordManager = {
 
   load: async function () {
