@@ -306,7 +306,7 @@
         "message": "Synchronizuję"
     },
     "status.451": {
-        "message": "Server issued redirect, retry in 5 seconds."
+        "message": "Serwer wydał przekierowanie, ponów próbę za 5 sekund."
     },
     "supportwizard.footer": {
         "message": "Z podanych tutaj informacji w następnym kroku zostanie wygenerowany e-mail, który możesz następnie edytować (na przykład dodając zrzuty ekranu lub podobne). Tylko poprzez faktyczne wysłanie tej wiadomości zostanie wysłany raport o błędzie."
