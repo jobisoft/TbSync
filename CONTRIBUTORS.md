@@ -6,6 +6,7 @@
 * Jan Dagefoerde
 * Nam Ldmpub
 * Fonic
+* OOChaotic
 
 ## Translators
 * John Bieling (de, en-US)
