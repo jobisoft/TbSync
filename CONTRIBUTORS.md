@@ -6,6 +6,7 @@
 * Jan Dagefoerde
 * Nam Ldmpub
 * Fonic
+* Kabe2007
 
 ## Translators
 * John Bieling (de, en-US)
