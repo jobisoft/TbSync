@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>TbSync</title>
+  <style>
+    body {
+      font: message-box;
+      margin: 24px;
+      max-width: 42rem;
+      line-height: 1.45;
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      margin: 0 0 0.75rem;
+    }
+
+    p {
+      margin: 0.75rem 0;
+    }
+
+    button {
+      margin-top: 0.5rem;
+      min-width: 12rem;
+      min-height: 2rem;
+    }
+
+    .muted {
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <h1>TbSync Account Manager</h1>
+  <p id="status">Opening the TbSync account manager...</p>
+  <button id="open-again" type="button">Open Account Manager</button>
+  <p class="muted">
+    If the manager window does not appear automatically, use the button above.
+  </p>
+  <script type="module" src="open-manager.js"></script>
+</body>
+</html>

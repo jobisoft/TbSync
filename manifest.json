@@ -8,7 +8,7 @@
   },
   "manifest_version": 2,
   "name": "TbSync",
-  "version": "4.16.1",
+  "version": "4.16.2",
   "author": "John Bieling",
   "homepage_url": "https://github.com/jobisoft/TbSync",
   "default_locale": "en-US",
@@ -32,6 +32,11 @@
   "background": {
     "type": "module",
     "scripts": ["background.js"]
+  },
+  "options_ui": {
+    "page": "options/open-manager.html",
+    "open_in_tab": true,
+    "browser_style": true
   },
   "experiment_apis": {
     "LegacyHelper": {
