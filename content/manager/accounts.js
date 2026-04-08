@@ -491,13 +491,21 @@ var tbSyncAccounts = {
   
   addAccount: function (provider) {
     try {
-      TbSync.providers.loadedProviders[provider].createAccountWindow = window.openDialog(
+      let parentWindow = TbSync.manager.prefWindowObj || window;
+      TbSync.providers.loadedProviders[provider].createAccountWindow = Services.ww.openWindow(
+        parentWindow,
         TbSync.providers[provider].Base.getCreateAccountWindowUrl(),
         "TbSyncNewAccountWindow",
-        "chrome,dialog=no,centerscreen,resizable=no"
+        "chrome,dialog=no,centerscreen,resizable=no",
+        null
       );
+      TbSync.providers.loadedProviders[provider].createAccountWindow.addEventListener("load", function () {
+        TbSync.providers.loadedProviders[provider].createAccountWindow.focus();
+      }, { once: true });
       TbSync.providers.loadedProviders[provider].createAccountWindow.addEventListener("unload", function () {
-        TbSync.manager.prefWindowObj.focus();
+        if (TbSync.manager.prefWindowObj) {
+          TbSync.manager.prefWindowObj.focus();
+        }
       });
     } catch (error) {
       Components.utils.reportError(error);
