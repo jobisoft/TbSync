@@ -433,7 +433,7 @@ var tbSyncAccounts = {
       newItem.setAttribute("id", "addMenuEntry_" + provider);
       newItem.setAttribute("value",  provider);
       newItem.setAttribute("class", "menuitem-iconic");
-      newItem.addEventListener("click", function () {tbSyncAccounts.addAccountAction(provider)}, false);
+      newItem.addEventListener("command", function () { tbSyncAccounts.addAccountAction(provider); }, false);
       newItem.setAttribute("hidden", true);
       entry = window.document.getElementById("accountActionsAddAccount").appendChild(newItem);
     }
@@ -490,8 +490,19 @@ var tbSyncAccounts = {
   },
   
   addAccount: function (provider) {
-    TbSync.providers.loadedProviders[provider].createAccountWindow = window.openDialog(TbSync.providers[provider].Base.getCreateAccountWindowUrl(), "TbSyncNewAccountWindow", "centerscreen,resizable=no");
-    TbSync.providers.loadedProviders[provider].createAccountWindow.addEventListener("unload", function () { TbSync.manager.prefWindowObj.focus(); });
+    try {
+      TbSync.providers.loadedProviders[provider].createAccountWindow = window.openDialog(
+        TbSync.providers[provider].Base.getCreateAccountWindowUrl(),
+        "TbSyncNewAccountWindow",
+        "chrome,dialog=no,centerscreen,resizable=no"
+      );
+      TbSync.providers.loadedProviders[provider].createAccountWindow.addEventListener("unload", function () {
+        TbSync.manager.prefWindowObj.focus();
+      });
+    } catch (error) {
+      Components.utils.reportError(error);
+      window.alert("TbSync could not open the account setup window. Please check the Error Console for details.");
+    }
   },
 
   installProvider: function (provider) {
