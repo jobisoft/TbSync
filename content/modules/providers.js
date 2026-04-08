@@ -34,7 +34,7 @@ var providers = {
       homepageUrl: "https://addons.thunderbird.net/addon/google-4-tbsync/"},
     "eas" : {
       name: "Exchange ActiveSync", 
-      homepageUrl: "https://addons.thunderbird.net/addon/eas-4-tbsync/"},
+      homepageUrl: "https://github.com/hstack-tilia/EAS-4-TbSync"},
   },
   
   loadedProviders: null,    
