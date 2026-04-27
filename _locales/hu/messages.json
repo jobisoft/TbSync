@@ -1,368 +1,266 @@
 {
-    "HelpFixStartupError": {
-        "message": "A hiba javításához hibakeresési naplót küldhet a TbSync fejlesztőjének. Előkészíti most azt az e-mailt?"
-    },
-    "NoDebugLog": {
-        "message": "Nem található hasznos hibaelhárító üzenet. Engedélyezze a hibakeresési módot, indítsa újra a Thunderbirdöt és ismételje meg a hibás viselkedést előidéző lépéseket."
-    },
-    "OopsMessage": {
-        "message": "Hoppá! A TbSync nem tudott elindulni."
-    },
-    "RestartThunderbirdAndTryAgain": {
-        "message": "A TbSync hibakeresési napló engedélyezett, indítsa újra a Thunderbirdöt, és próbálja újra megnyitni a TbSyncet."
-    },
-    "UnableToTraceError": {
-        "message": "Nem lehet nyomon követni ezt a hibát, mert a hibakeresési napló jelenleg nincs engedélyezve. Szeretné engedélyezni a hibakeresési naplót, hogy segítsen javítani a hibát?"
-    },
-    "accountacctions.delete": {
-        "message": "A(z) „##accountname##” fiók törlése"
-    },
-    "accountacctions.disable": {
-        "message": "A(z) „##accountname##” fiók letiltása"
-    },
-    "accountacctions.enable": {
-        "message": "A(z) „##accountname##” fiók engedélyezése és újrakapcsolódás a kiszolgálóhoz"
-    },
-    "accountacctions.sync": {
-        "message": "A(z) „##accountname##” fiók szinkronizálása"
-    },
-    "addressbook.searchall": {
-        "message": "Keresése az összes névjegyzékben"
-    },
-    "addressbook.searchgal": {
-        "message": "Keresés ebben a névjegyzékben és a globális könyvtárban (##replace.1##)"
-    },
-    "addressbook.searchthis": {
-        "message": "Keresés ebben a címjegyzékben"
-    },
-    "eventlog.clear": {
-        "message": "Törlés"
-    },
-    "eventlog.close": {
-        "message": "Bezárás"
-    },
-    "eventlog.title": {
-        "message": "Eseménynapló"
-    },
-    "extensionDescription": {
-        "message": "A TbSync egy központi felhasználói felület a felhőfiókok kezeléséhez, és a névjegyek, feladatok és naptáradatok Thunderbirddel történő szinkronizásához."
-    },
-    "google.translate.code": {
-        "message": "hu"
-    },
-    "helplink.security": {
-        "message": "https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F"
-    },
-    "info.error": {
-        "message": "Hiba"
-    },
-    "info.idle": {
-        "message": "Tétlen"
-    },
-    "installProvider.header": {
-        "message": "A(z) „##replace.1##” TbSync szolgáltató még nincs telepítve."
-    },
-    "manager.AccountActions": {
-        "message": "Fiókműveletek"
-    },
-    "manager.AddAccount": {
-        "message": "Új fiók hozzáadása"
-    },
-    "manager.DeleteAccount": {
-        "message": "Fiók törlése"
-    },
-    "manager.DisableAccount": {
-        "message": "Fiók letiltása"
-    },
-    "manager.EnableAccount": {
-        "message": "Fiók engedélyezése és újrakapcsolódás a kiszolgálóhoz"
-    },
-    "manager.RetryConnectAccount": {
-        "message": "Próbáljon újrakapcsolódni a kiszolgálóhoz"
-    },
-    "manager.ShowEventLog": {
-        "message": "Eseménynapló megnyitása"
-    },
-    "manager.SyncAll": {
-        "message": "Az összes engedélyezett fiók szinkronizálása"
-    },
-    "manager.SynchronizeAccount": {
-        "message": "Fiók szinkronizálása"
-    },
-    "manager.accounts": {
-        "message": "Fiókok"
-    },
-    "manager.accountsettings": {
-        "message": "Fiókbeállítások"
-    },
-    "manager.catman.text": {
-        "message": "A TbSync szinkronizálja a névjegykategóriákat is, amelyek hatékonyan helyettesítik a nem szinkronizálható névjegylistákat. A Thunderbird névjegyzékben való használathoz telepítheti a Kategóriakezelő kiegészítőt. Lehetővé teszi az átfedő kategóriákon alapuló névjegycsoportok kezelését, és egy sor más kategóriával kapcsolatos funkciót. Ez megtalálható a hivatalos Thunderbird-kiegészítők weboldalon:"
-    },
-    "manager.community": {
-        "message": "Közösség"
-    },
-    "manager.connecting": {
-        "message": "Kapcsolódás a kiszolgálóhoz"
-    },
-    "manager.help": {
-        "message": "Súgó"
-    },
-    "manager.help.createbugreport": {
-        "message": "Hibajelentés létrehozása"
-    },
-    "manager.help.createbugreportinfo": {
-        "message": "Hogy a TbSync csak a hibajelentéshez releváns adatokat gyűjtse be, indítsa újra a Thunderbirdöt, majd ismételje meg a pontos lépéseket a hiba reprodukálásához. Ezután itt létrehozhatja a hibajelentését."
-    },
-    "manager.help.debuglevel.0": {
-        "message": "Tiltva"
-    },
-    "manager.help.debuglevel.1": {
-        "message": "Engedélyezve: Csak a hibák naplózása"
-    },
-    "manager.help.debuglevel.2": {
-        "message": "Engedélyezve: Az összes küldött és fogadott adat naplózása"
-    },
-    "manager.help.debuglevel.3": {
-        "message": "Engedélyezve: Az összes adat és néhány belső hibakeresési érték naplózása"
-    },
-    "manager.help.debugmode": {
-        "message": "Hibakeresési mód:"
-    },
-    "manager.help.fixit": {
-        "message": "Segíthet a javításban egy hibajelentés küldésével. Ehhez a hibakeresési mód bekapcsolása szükséges."
-    },
-    "manager.help.foundabug": {
-        "message": "Hibát talált?"
-    },
-    "manager.help.needhelp": {
-        "message": "Segítségre van szüksége?"
-    },
-    "manager.help.viewdebuglog": {
-        "message": "Hibakeresési napló megtekintése"
-    },
-    "manager.help.wiki": {
-        "message": "Nyissa meg a TbSync projekt wiki oldalait, amely további információkat, útmutatókat és részletes beállítási leírásokat biztosít."
-    },
-    "manager.installprovider.link": {
-        "message": "Kattintson a következő hivatkozásra a hiányzó szinkronizációs szolgáltatók információs oldalának megnyitásához. Ott további információkat talál a szolgáltatóról, és lehetősége van a telepítésre:"
-    },
-    "manager.installprovider.warning": {
-        "message": "Ez az szinkronizálási szolgáltató nem a hivatalos Thunderbird-kiegészítőtárban található, így a Thunderbird stábja nem ellenőrizte. A szolgáltató rossz dolgokat tehet a rendszerével. A saját felelősségére használja."
-    },
-    "manager.lockedsettings.description": {
-        "message": "A szinkronizálási hibák elkerülése érdekében egyes beállítások nem szerkeszthetők, amíg a fiók engedélyezett."
-    },
-    "manager.missingprovider": {
-        "message": "Ehhez a fiókhoz a(z) ##provider## szinkronizálási szolgáltató szükséges, amely jelenleg nincs telepítve."
-    },
-    "manager.noaccounts": {
-        "message": "Még nincsenek fiókok megadva."
-    },
-    "manager.provider": {
-        "message": "Szolgáltató telepítése"
-    },
-    "manager.provider4tbsync": {
-        "message": "Szolgáltató a TbSynchez"
-    },
-    "manager.resource": {
-        "message": "Erőforrás"
-    },
-    "manager.shorttitle": {
-        "message": "Fiókkezelő"
-    },
-    "manager.status": {
-        "message": "Állapot"
-    },
-    "manager.supporter.contributors": {
-        "message": "Közreműködők és fordítók"
-    },
-    "manager.supporter.details": {
-        "message": "Részletek"
-    },
-    "manager.supporter.sponsors": {
-        "message": "A tesztfiókok támogatói"
-    },
-    "manager.tabs.status": {
-        "message": "Szinkronizálás állapota"
-    },
-    "manager.tabs.status.autotime": {
-        "message": "Időszakos szinkronizálás (perc)"
-    },
-    "manager.tabs.status.enableThisAccount": {
-        "message": "Fiók engedélyezése és szinkronizálása"
-    },
-    "manager.tabs.status.general": {
-        "message": "Általános"
-    },
-    "manager.tabs.status.never": {
-        "message": "A 0 beállítása letiltja az időszakos szinkronizálása. A leküldéses szinkronizáció még nincs megvalósítva."
-    },
-    "manager.tabs.status.resources": {
-        "message": "Elérhető erőforrások"
-    },
-    "manager.tabs.status.resources.intro": {
-        "message": "Válasszon, hogy mely erőforrásokat kell szinkronizálni a Thunderbirddel."
-    },
-    "manager.tabs.status.sync": {
-        "message": "Szinkronizálás most"
-    },
-    "manager.tabs.status.tryagain": {
-        "message": "Próbáljon újrakapcsolódni a kiszolgálóhoz"
-    },
-    "manager.title": {
-        "message": "TbSync fiókkezelő"
-    },
-    "manager.tryagain": {
-        "message": "Próbáljon újrakapcsolódni a kiszolgálóhoz"
-    },
-    "menu.settingslabel": {
-        "message": "Szinkronizálási beállítások (TbSync)"
-    },
-    "password.account": {
-        "message": "Fiók:"
-    },
-    "password.description": {
-        "message": "Frissítse a következő TbSync-fiók hitelesítő adatait:"
-    },
-    "password.password": {
-        "message": "Jelszó:"
-    },
-    "password.title": {
-        "message": "TbSync hitelesítési kérés"
-    },
-    "password.user": {
-        "message": "Felhasználó:"
-    },
-    "popup.opensettings": {
-        "message": "TbSync fiókkezelő megnyitása"
-    },
-    "prompt.DeleteAccount": {
-        "message": "Biztos, hogy törölni szeretné a(z) ##accountName## fiókot?"
-    },
-    "prompt.Disable": {
-        "message": "Biztos, hogy letiltja ezt a fiókot? Minden helyi módosítás, amely még nincs szinkronizálva, elvész."
-    },
-    "prompt.Erase": {
-        "message": "Biztos, hogy eltávolítja ezt az ismeretlen szolgáltatói fiókot a fiókok közül?"
-    },
-    "prompt.Unsubscribe": {
-        "message": "Biztos, hogy le szeretne iratkozni erről az elemről? Minden helyi módosítás, amely még nincs szinkronizálva, elvész."
-    },
-    "status.JavaScriptError": {
-        "message": "JavaScript hiba! További részletekért nézze meg az eseménynaplót."
-    },
-    "status.OAuthAbortError": {
-        "message": "Az OAuth 2.0 hitelesítési folyamatot a felhasználó megszakította."
-    },
-    "status.OAuthHttpError": {
-        "message": "Az OAuth 2.0 hitelesítési folyamat sikertelen (HTTP hibakód: ##replace.1##)."
-    },
-    "status.OAuthNetworkError": {
-        "message": "Nem sikerült csatlakozni az OAuth 2.0 hitelesítési kiszolgálóhoz."
-    },
-    "status.OAuthServerError": {
-        "message": " Az OAuth 2.0 hitelesítési kiszolgáló válasza: ##replace.1##"
-    },
-    "status.aborted": {
-        "message": "Nincs szinkronizálva"
-    },
-    "status.apiError": {
-        "message": "API megvalósítási hiba"
-    },
-    "status.disabled": {
-        "message": "A fiók nem engedélyezett, a szinkronizálás tiltott."
-    },
-    "status.foldererror": {
-        "message": "Legalább egy erőforrás szinkronizálási hibát észlelt. További részletekért nézze meg az eseménynaplót."
-    },
-    "status.modified": {
-        "message": "Helyi módosítások"
-    },
-    "status.network": {
-        "message": "Nem sikerült kapcsolódni a kiszolgálóhoz (##replace.1##)."
-    },
-    "status.no-folders-found-on-server": {
-        "message": "A kiszolgálón nem található erőforrás."
-    },
-    "status.notargets": {
-        "message": "A szinkronizálás abbahagyása, mert a szinkronizálási célokat nem lehetett létrehozni."
-    },
-    "status.notsyncronized": {
-        "message": "A fiókot szinkronizálni kell, legalább egy nincs szinkronizálva."
-    },
-    "status.pending": {
-        "message": "Várakozás a szinkronizálásra"
-    },
-    "status.security": {
-        "message": "A biztonságos kapcsolat létrehozása nem sikerült. Önaláírt vagy más, nem megbízható tanúsítványt importált a Thunderbirdbe? (##replace.1##)"
-    },
-    "status.skipped": {
-        "message": "Még nem támogatott, kihagyva"
-    },
-    "status.success": {
-        "message": "OK"
-    },
-    "status.syncing": {
-        "message": "Szinkronizálás"
-    },
-    "status.451": {
-        "message": "Server issued redirect, retry in 5 seconds."
-    },
-    "supportwizard.footer": {
-        "message": "Az itt megadott információból e-mail készül, amelyet aztán szerkeszthet (például képernyőképeket adhat hozzá). Csak akkor lesz elküldve hibajelentés, ha tényleg elküldi azt az e-mailt."
-    },
-    "supportwizard.label.description": {
-        "message": "Hiba részletes leírása:"
-    },
-    "supportwizard.label.faultycomponent": {
-        "message": "A TbSync-összetevő, ahol hiba történt:"
-    },
-    "supportwizard.label.selectcomponent": {
-        "message": "Összetevő kiválasztása…"
-    },
-    "supportwizard.label.summary": {
-        "message": "A hiba rövid összefoglalása:"
-    },
-    "supportwizard.pagetitle": {
-        "message": "Információgyűjtés a hibajelentés feldolgozásához."
-    },
-    "supportwizard.provider": {
-        "message": "Szolgáltató: ##replace.1##"
-    },
-    "supportwizard.title": {
-        "message": "Hibajelentés létrehozása"
-    },
-    "syncstate.accountdone": {
-        "message": "Fiók kész"
-    },
-    "syncstate.done": {
-        "message": "A következő elem előkészítése szinkronizálásra"
-    },
-    "syncstate.oauthprompt": {
-        "message": "OAuth 2.0 hitelesítés"
-    },
-    "syncstate.passwordprompt": {
-        "message": "Hitelesítő adatok kérése"
-    },
-    "syncstate.preparing": {
-        "message": "A következő elem előkészítése szinkronizálásra"
-    },
-    "syncstate.syncing": {
-        "message": "Szinkronizálás előkészítése"
-    },
-    "target.orphaned": {
-        "message": "Leválasztva"
-    },
-    "toolbar.label": {
-        "message": "Az összes TbSync-fiók szinkronizálása"
-    },
-    "toolbar.tooltiptext": {
-        "message": "A legújabb változtatások szinkronizálása"
-    },
-    "password.ok": {
-        "message": "OK"
-    },
-    "password.cancel": {
-        "message": "Cancel"
+  "extensionName": {
+    "message": "TbSync"
+  },
+  "extensionDescription": {
+    "message": "Central user interface to manage synchronization of contacts, calendars and tasks with external accounts, through provider add-ons."
+  },
+  "manager.title": {
+    "message": "TbSync Account Manager"
+  },
+  "manager.tab.accounts": {
+    "message": "TbSync Accounts"
+  },
+  "manager.tab.categoryManager": {
+    "message": "Category Manager"
+  },
+  "manager.categoryManager.text": {
+    "message": "TbSync also syncs contact categories, which are a powerful replacement for the non-synchronizable contact lists. To be able to use them in the Thunderbird address book you can install the Category Manager add-on. It allows to manage overlapping category based contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla add-on repository:"
+  },
+  "manager.tab.help": {
+    "message": "Help"
+  },
+  "manager.help.wiki": {
+    "message": "Nyissa meg a TbSync projekt wiki oldalait, amely további információkat, útmutatókat és részletes beállítási leírásokat biztosít."
+  },
+  "manager.eventLog.intro": {
+    "message": "Bug reports include the contents of this log. For a more useful report, raise the verbosity level, clear the log, and reproduce the problem before clicking the report button."
+  },
+  "manager.eventLog.bugReport.button": {
+    "message": "Create Bug Report"
+  },
+  "bugReport.title": {
+    "message": "Create Bug Report"
+  },
+  "bugReport.component": {
+    "message": "Component"
+  },
+  "bugReport.summary": {
+    "message": "Summary"
+  },
+  "bugReport.description": {
+    "message": "Description"
+  },
+  "bugReport.send": {
+    "message": "Send"
+  },
+  "bugReport.cancel": {
+    "message": "Cancel"
+  },
+  "bugReport.error.summaryRequired": {
+    "message": "Please enter a summary."
+  },
+  "manager.tab.eventLog": {
+    "message": "Event Log"
+  },
+  "manager.eventLog.clear": {
+    "message": "Clear"
+  },
+  "manager.eventLog.empty": {
+    "message": "No events yet."
+  },
+  "manager.eventLog.verbosity": {
+    "message": "Verbosity level for event collection:"
+  },
+  "manager.eventLog.verbosity.errors": {
+    "message": "Errors only"
+  },
+  "manager.eventLog.verbosity.warnings": {
+    "message": "Errors and warnings"
+  },
+  "manager.eventLog.verbosity.debug": {
+    "message": "Errors, warnings and debug info"
+  },
+  "manager.eventLog.col.time": {
+    "message": "Time"
+  },
+  "manager.eventLog.col.level": {
+    "message": "Level"
+  },
+  "manager.eventLog.col.source": {
+    "message": "Source"
+  },
+  "manager.eventLog.col.account": {
+    "message": "Account"
+  },
+  "manager.eventLog.col.message": {
+    "message": "Message"
+  },
+  "manager.accounts.heading": {
+    "message": "Configured Accounts"
+  },
+  "manager.accounts.col.status": {
+    "message": "Status"
+  },
+  "manager.providers.heading": {
+    "message": "Available providers"
+  },
+  "manager.addAccount": {
+    "message": "Add account"
+  },
+  "manager.noAccounts": {
+    "message": "No accounts configured"
+  },
+  "manager.noProviders": {
+    "message": "No provider add-ons installed."
+  },
+  "manager.provider.install": {
+    "message": "Install from addons.thunderbird.net"
+  },
+  "manager.provider.focusSetup": {
+    "message": "Bring the setup window to the front"
+  },
+  "provider.state.active": {
+    "message": "Ready"
+  },
+  "provider.state.stale": {
+    "message": "Reconnecting…"
+  },
+  "provider.state.uninstalled": {
+    "message": "Not installed"
+  },
+  "account.status.success": {
+    "message": "OK"
+  },
+  "account.status.syncing": {
+    "message": "Synchronizing…"
+  },
+  "account.status.notsyncronized": {
+    "message": "Not synchronized"
+  },
+  "account.status.needs-sync": {
+    "message": "Account needs to be synchronized, at least one item is out of sync"
+  },
+  "account.status.upgrading": {
+    "message": "Provider is performing one-time upgrade work on this account…"
+  },
+  "account.status.disabled": {
+    "message": "Disconnected"
+  },
+  "account.status.provider-unavailable": {
+    "message": "Provider unavailable"
+  },
+  "account.status.needs-reauth": {
+    "message": "Authentication failed"
+  },
+  "account.status.error": {
+    "message": "Error"
+  },
+  "account.status.warning": {
+    "message": "Warning"
+  },
+  "account.status.aborted": {
+    "message": "Synchronization aborted"
+  },
+  "folder.status.pending": {
+    "message": "Waiting to be synchronized"
+  },
+  "folder.status.busy": {
+    "message": "Working…"
+  },
+  "folder.status.modified": {
+    "message": "Local modifications"
+  },
+  "error.E:AUTH": {
+    "message": "Authentication failed"
+  },
+  "syncstate.sync": {
+    "message": "Synchronizing…"
+  },
+  "syncstate.prepare": {
+    "message": "Preparing…"
+  },
+  "syncstate.send": {
+    "message": "Sending request…"
+  },
+  "syncstate.eval": {
+    "message": "Processing response…"
+  },
+  "manager.detail.general": {
+    "message": "General"
+  },
+  "manager.detail.status": {
+    "message": "Status"
+  },
+  "manager.detail.provider": {
+    "message": "Provider:"
+  },
+  "manager.detail.lastSync": {
+    "message": "Last sync:"
+  },
+  "manager.resources.heading": {
+    "message": "Available Resources"
+  },
+  "manager.resources.description": {
+    "message": "Select which of the found resources should be synchronized with Thunderbird."
+  },
+  "manager.account.connect": {
+    "message": "Connect"
+  },
+  "manager.account.disconnect": {
+    "message": "Disconnect"
+  },
+  "manager.account.signInAgain": {
+    "message": "Sign in again"
+  },
+  "manager.account.settings": {
+    "message": "Settings"
+  },
+  "manager.account.remove": {
+    "message": "Remove"
+  },
+  "manager.account.sync": {
+    "message": "Synchronize Now"
+  },
+  "manager.account.autosync": {
+    "message": "Auto-sync every"
+  },
+  "manager.account.autosync.minutes": {
+    "message": "min"
+  },
+  "manager.account.autosync.tooltip": {
+    "message": "0 disables automatic sync for this account."
+  },
+  "manager.error.title": {
+    "message": "Error"
+  },
+  "manager.error.dismiss": {
+    "message": "OK"
+  },
+  "manager.remove.confirmTitle": {
+    "message": "Remove account"
+  },
+  "manager.remove.confirmBody": {
+    "message": "Remove account “$NAME$”? The Thunderbird address book for this account will also be deleted.",
+    "placeholders": {
+      "NAME": {
+        "content": "$1",
+        "example": "john@gmail.com"
+      }
     }
+  },
+  "manager.remove.cancelLabel": {
+    "message": "Cancel"
+  },
+  "manager.resources.empty": {
+    "message": "No resources yet."
+  },
+  "manager.resources.col.name": {
+    "message": "Name"
+  },
+  "folder.readOnly": {
+    "message": "Read-only"
+  },
+  "folder.readWrite": {
+    "message": "Read/write"
+  },
+  "folderType.contacts": {
+    "message": "Contacts"
+  },
+  "folderType.calendars": {
+    "message": "Calendar"
+  },
+  "folderType.tasks": {
+    "message": "Tasks"
+  }
 }
