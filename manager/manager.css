@@ -1,0 +1,654 @@
+:root {
+  --bg-page: #f6f6f7;
+  --bg-card: #fff;
+  --bg-subtle: #fafafb;
+  --bg-input-disabled: #f4f4f6;
+
+  --border-strong: #555;
+  --border: #e1e1e3;
+  --border-dialog: #d0d0d4;
+  --border-subtle: #ececee;
+  --border-row: #f0f0f0;
+  --border-input: #ccc;
+
+  --text-primary: #222;
+  --text-secondary: #555;
+  --text-tertiary: #666;
+  --text-muted: #888;
+  --text-disabled: #999;
+  --text-body-soft: #444;
+
+  --accent: #2a7fd4;
+  --accent-hover: #1a6fc4;
+  --accent-alt: #1a6fe0;
+  --accent-soft: #eaf3fc;
+
+  --row-selected: #d7e7fa;
+  --row-hover: #ececee;
+  --tab-hover: #e0e8f6;
+  --tab-active: #c1d2ee;
+
+  --btn-secondary-bg: #e5e5e7;
+  --btn-secondary-hover: #d5d5d7;
+  --btn-danger-bg: #c43b3b;
+  --btn-danger-hover: #a92b2b;
+
+  --status-error: #a92b2b;
+  --status-warning: #8a6d1c;
+
+  --dialog-backdrop: rgba(0, 0, 0, 0.35);
+  --dialog-shadow: rgba(0, 0, 0, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-page: #1e1f21;
+    --bg-card: #2b2d30;
+    --bg-subtle: #26282b;
+    --bg-input-disabled: #2a2c2f;
+
+    --border-strong: #4a4d52;
+    --border: #3a3c40;
+    --border-dialog: #4a4d52;
+    --border-subtle: #34363a;
+    --border-row: #34363a;
+    --border-input: #4a4d52;
+
+    --text-primary: #e8e9eb;
+    --text-secondary: #b3b5ba;
+    --text-tertiary: #9498a0;
+    --text-muted: #7f8188;
+    --text-disabled: #6e7075;
+    --text-body-soft: #c7c9cd;
+
+    --accent: #5fa6e8;
+    --accent-hover: #7ab5ec;
+    --accent-alt: #6ea9e8;
+    --accent-soft: #1f3144;
+
+    --row-selected: #2a3e5a;
+    --row-hover: #35383d;
+    --tab-hover: #35475e;
+    --tab-active: #4a6891;
+
+    --btn-secondary-bg: #3a3c40;
+    --btn-secondary-hover: #4a4d52;
+    --btn-danger-bg: #a13535;
+    --btn-danger-hover: #7e2828;
+
+    --status-error: #f18585;
+    --status-warning: #e6c76c;
+
+    --dialog-backdrop: rgba(0, 0, 0, 0.55);
+    --dialog-shadow: rgba(0, 0, 0, 0.6);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--bg-page);
+}
+
+/* Whole page scrolls; no internal scroll containers. Width capped at 900px
+   so the manager reads as a centred column on wider tabs. */
+body {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 24px;
+  gap: 28px;
+  max-width: 1000px;
+  min-width: 700px;
+  margin: 0 auto;
+}
+
+/* Tab bar: dark outer border, tabs lighter than the panel. Icon centered
+   above the label; equal width. */
+.tab-bar {
+  display: flex;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card);
+  padding: 0;
+}
+.tab-button {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 24px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  text-align: center;
+  white-space: nowrap;
+}
+.tab-button:not(.active):not(:disabled):hover { background: var(--tab-hover); }
+.tab-button.active,
+.tab-button.active:hover { background: var(--tab-active); }
+.tab-button img,
+.tab-button .icon-placeholder {
+  width: 32px;
+  height: 32px;
+}
+
+/* Only the active panel is visible. Panels size to content; the whole page
+   scrolls. */
+.tab-panel[hidden] { display: none; }
+.tab-panel { display: flex; flex-direction: column; gap: 12px; }
+.panel-placeholder {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.tab-panel > p,
+.tab-panel > h3 { line-height: 1.5; }
+.tab-panel > p  { margin: 0 0 10px; }
+.tab-panel > h3 { margin: 0 0 10px; font-size: 16px; font-weight: 600; }
+.tab-panel > :first-child { margin-top: 8px; }
+.tab-panel .link-row { padding-left: 1em; }
+.tab-panel a { color: var(--accent); cursor: pointer; }
+.tab-panel a:hover { text-decoration: underline; }
+
+.layout { display: flex; gap: 20px; align-items: flex-start; }
+
+.sidebar {
+  width: 260px;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Sidebar tables - shared chrome for the accounts + providers lists.
+   Three columns: provider icon, name/title, trailing icon. */
+.sidebar-list-wrap {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-card);
+  overflow: hidden;
+}
+/* Only the accounts list reserves vertical space so the "No accounts
+   configured" empty state has presence; the provider list sizes to content. */
+.sidebar-list-wrap:has(> #account-list) {
+  min-height: 125px;
+}
+.sidebar-list {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.sidebar-list thead th {
+  text-align: left;
+  padding: 6px 8px;
+  font-size: 11px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.sidebar-list th.col-status,
+.sidebar-list td.col-status { text-align: right; }
+.sidebar-list th.col-provider-icon,
+.sidebar-list td.col-provider-icon { width: 24px; padding-right: 0; }
+.sidebar-list td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-row);
+  cursor: pointer;
+}
+.sidebar-list tbody tr:last-child td { border-bottom: none; }
+.sidebar-list tbody tr:hover td { background: var(--row-hover); }
+.sidebar-list tbody tr.selected td { background: var(--row-selected); }
+.sidebar-list tbody tr.disabled td.col-account-name { color: var(--text-disabled); font-style: italic; }
+.sidebar-list td.col-provider-icon img {
+  width: 16px;
+  height: 16px;
+  image-rendering: crisp-edges;
+  display: block;
+}
+.sidebar-list tr.empty td {
+  color: var(--text-muted);
+  font-style: italic;
+  cursor: default;
+  text-align: center;
+  padding: 12px 8px;
+}
+.sidebar-list tr.empty:hover td { background: transparent; }
+
+/* Provider list specifics: secondary line under the provider name, and
+   non-addable rows (uninstalled / setup already in flight) dim the plus
+   icon and stop acting like a button. */
+.provider-list tr.addable { cursor: pointer; }
+.provider-list tr.installable { cursor: pointer; }
+.provider-list tr.installable:hover td { background: var(--row-hover); }
+.provider-list tr.not-addable td { cursor: default; }
+.provider-list tr.not-addable:hover td { background: transparent; }
+.provider-list tr.not-addable .add-account-icon { opacity: .3; }
+/* Active providers in not-addable state mean "setup in flight". The row
+   stays dimmed, but the click brings the existing popup to the front. */
+.provider-list tr.not-addable.active td { cursor: pointer; }
+.provider-list tr.not-addable.active:hover td { background: var(--row-hover); }
+.provider-list tr.uninstalled td.col-account-name .name { color: var(--text-disabled); font-style: italic; }
+.provider-list .sub { font-size: 11px; color: var(--text-tertiary); }
+.provider-list .add-account-icon {
+  width: 16px;
+  height: 16px;
+  image-rendering: crisp-edges;
+  vertical-align: middle;
+}
+.provider-list .provider-install-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--accent-alt);
+  vertical-align: middle;
+}
+
+/* Status-column icon - legacy TbSync's 16px pixmaps (tick, warning, etc.).
+   Tooltip on the element carries the localised label for hover + screen
+   readers. */
+.status-icon {
+  width: 16px;
+  height: 16px;
+  image-rendering: crisp-edges;
+  vertical-align: middle;
+  display: inline-block;
+}
+/* Legacy TbSync cycled through 4 PNG frames driven by status-update traffic.
+   We use one frame + a CSS rotation - same visual, no state-update dependency. */
+.status-icon.syncing {
+  animation: tbsync-rotate 1.2s linear infinite;
+}
+@keyframes tbsync-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.detail {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 20px 24px;
+}
+
+.placeholder { color: var(--text-muted); font-style: italic; }
+
+.detail-section {
+  margin-bottom: 48px;
+}
+.detail-section:last-child {
+  margin-bottom: 0;
+}
+
+/* All section headers (General / Status / Available Resources) - small
+   uppercase tag matching the sidebar list headings. */
+.detail-section > h2 {
+  margin: 0 0 8px;
+  font-size: 11px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+/* Content inside each section is indented under the header. Use margin
+   (not padding) so bordered children - like the resources table wrapper -
+   are shifted right wholesale, border included. */
+.detail-section > *:not(h2) {
+  margin-left: 12px;
+}
+
+.status-text { font-size: 13px; }
+.status-text.error   { color: var(--status-error); }
+.status-text.warning { color: var(--status-warning); }
+
+.card-description { margin: 0 0 10px; color: var(--text-secondary); font-size: 12px; }
+
+.detail-row {
+  display: flex;
+  gap: 2em;
+  align-items: center;
+  margin: 6px 0;
+}
+
+.detail-row label { color: var(--text-secondary); }
+
+/* General section: info on the left, action buttons aligned to the right
+   edge and vertically centered against the stacked info rows. */
+.detail-general {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+/* Two-column grid so the values under "Provider:" / "Last sync:" align
+   vertically regardless of label width. `display: contents` on each row
+   flattens the label/value pair into the grid. */
+.detail-general-info {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 2em;
+  row-gap: 6px;
+  align-items: center;
+}
+.detail-general-info .detail-row {
+  display: contents;
+}
+.detail-general-actions,
+.detail-status-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Status section: text on the left, primary action button stacked on
+   the right edge - mirrors the General section's two-cell layout. */
+.detail-status {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.detail-status-info {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Resources table - same card chrome as the sidebar accounts/providers
+   lists (outer border + radius + header strip), but without their
+   row-level interactions (clickable rows, hover background). */
+.folder-table-wrap {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-card);
+  overflow: hidden;
+}
+.folder-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.folder-table thead th {
+  text-align: left;
+  padding: 6px 8px;
+  font-size: 11px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.folder-table td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-row);
+  vertical-align: top;
+  line-height: 1.4;
+}
+.folder-table tbody tr:last-child td { border-bottom: none; }
+
+/* Keep the helper columns as narrow as possible; status absorbs the rest. */
+.folder-table col.col-check     { width: 28px; }
+.folder-table col.col-type-icon { width: 20px; }
+.folder-table col.col-acl       { width: 20px; }
+.folder-table col.col-name      { width: 1%; white-space: nowrap; }
+.folder-table col.col-status    { width: 100%; }
+
+.folder-table td.col-check,
+.folder-table td.col-type-icon,
+.folder-table td.col-acl { padding-right: 0; }
+/* Align the three leading cells on the same y: strip UA margin off the
+   checkbox and size it to the 16px icons next to it. */
+.folder-table td.col-check input[type="checkbox"] {
+  display: block;
+  margin: 0;
+  width: 16px;
+  height: 16px;
+}
+.folder-table td.col-name { white-space: nowrap; }
+
+/* Multi-line wraps instead of ellipsis so long error messages stay readable. */
+.folder-table td.col-status {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.folder-table tr.unselected td.col-name,
+.folder-table tr.unselected td.col-status {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.folder-type-icon,
+.folder-acl-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  image-rendering: crisp-edges;
+  display: block;
+}
+
+/* Folder-row inline message - coloured text shown in the Status cell when
+   folder.error / folder.warning is set. No background. */
+.folder-message {
+  font-size: 12px;
+}
+.folder-message.error   { color: var(--status-error); }
+.folder-message.warning { color: var(--status-warning); }
+
+.resources-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 18px;
+}
+
+.resources-footer .autosync-label { color: var(--text-secondary); }
+.resources-footer #autosync-minutes {
+  width: 48px;
+  padding: 4px 6px;
+  border: 1px solid var(--border-input);
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: right;
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+.resources-footer #autosync-minutes:disabled { background: var(--bg-input-disabled); color: var(--text-muted); }
+.resources-footer .autosync-unit { color: var(--text-secondary); margin-right: 10px; }
+
+button {
+  padding: 5px 12px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+button:not(:disabled):hover { background: var(--accent-hover); }
+button.secondary { background: var(--btn-secondary-bg); color: var(--text-primary); }
+button.secondary:not(:disabled):hover { background: var(--btn-secondary-hover); }
+button.danger { background: var(--btn-danger-bg); }
+button.danger:not(:disabled):hover { background: var(--btn-danger-hover); }
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: var(--bg-card);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 5px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.btn-ghost:not(:disabled):hover { background: var(--accent-soft); }
+
+/* Event log (inside the event-log tab). Grows to content; page scrolls. */
+.event-log {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.event-log-header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-subtle);
+}
+.event-log-header .actions { display: flex; align-items: center; gap: 12px; }
+.event-log-header label { font-size: 12px; color: var(--text-secondary); }
+#event-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+}
+#event-log-table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-page);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  padding: 6px 10px;
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+#event-log-table tbody td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border-row);
+  vertical-align: top;
+}
+#event-log-table th.time, #event-log-table td.time { width: 140px; white-space: nowrap; color: var(--text-tertiary); }
+#event-log-table th.sev,  #event-log-table td.sev  { width: 90px; }
+#event-log-table th.src, #event-log-table td.src { width: 140px; color: var(--text-secondary); }
+#event-log-table th.acct, #event-log-table td.acct { width: 160px; color: var(--text-secondary); }
+#event-log-table tr.error   td.sev { color: var(--status-error); font-weight: 600; }
+#event-log-table tr.warning td.sev { color: var(--status-warning); font-weight: 600; }
+#event-log-table tr.debug   td.sev { color: var(--text-muted); }
+#event-log-table .details {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+  margin-top: 2px;
+}
+.event-log-empty {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  display: none;
+}
+.event-log-empty.visible { display: block; }
+
+/* Confirmation dialog backing the destructive-action prompt. */
+.confirm-dialog {
+  border: 1px solid var(--border-dialog);
+  border-radius: 8px;
+  padding: 0;
+  width: 360px;
+  max-width: 90vw;
+  box-shadow: 0 10px 30px var(--dialog-shadow);
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+.confirm-dialog::backdrop { background: var(--dialog-backdrop); }
+.confirm-dialog form { margin: 0; }
+.confirm-dialog h3 {
+  margin: 0;
+  padding: 16px 20px 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.confirm-dialog p {
+  margin: 0;
+  padding: 0 20px 20px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-body-soft);
+}
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-subtle);
+  border-radius: 0 0 8px 8px;
+}
+
+/* Variant-driven button visibility - error popovers show only the OK button,
+   confirm popovers hide it. */
+/* Variant-driven button visibility - each variant hides the buttons it
+   doesn't use. Confirm: cancel+confirm; Error: ok; Bug report: cancel+send. */
+.confirm-dialog[data-variant="confirm"] #confirm-dialog-ok,
+.confirm-dialog[data-variant="confirm"] #confirm-dialog-send { display: none; }
+.confirm-dialog[data-variant="error"] #confirm-dialog-cancel,
+.confirm-dialog[data-variant="error"] #confirm-dialog-confirm,
+.confirm-dialog[data-variant="error"] #confirm-dialog-send { display: none; }
+.confirm-dialog[data-variant="bugreport"] #confirm-dialog-ok,
+.confirm-dialog[data-variant="bugreport"] #confirm-dialog-confirm { display: none; }
+
+/* Bug-report fields are only visible in the bug-report variant. The plain
+   `<p>` body slot above them is hidden in that variant. */
+.confirm-dialog .bug-report-fields { display: none; padding: 0 20px 8px; }
+.confirm-dialog[data-variant="bugreport"] .bug-report-fields { display: block; }
+.confirm-dialog[data-variant="bugreport"] #confirm-dialog-body { display: none; }
+.confirm-dialog[data-variant="bugreport"] { width: 460px; }
+.bug-report-fields .form-row { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.bug-report-fields label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-secondary);
+}
+.bug-report-fields select,
+.bug-report-fields input[type="text"],
+.bug-report-fields textarea {
+  padding: 5px 8px;
+  border: 1px solid var(--border-input);
+  border-radius: 4px;
+  font: inherit;
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+.bug-report-fields textarea { resize: vertical; }
+
+/* Event log tab - verbosity dropdown next to the Clear button. */
+.event-log-verbosity { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+.event-log-verbosity select {
+  padding: 3px 6px;
+  border: 1px solid var(--border-input);
+  border-radius: 4px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font: inherit;
+}

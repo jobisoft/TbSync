@@ -1,368 +1,266 @@
 {
-    "HelpFixStartupError": {
-        "message": "Abyste usnadnili opravení chyby, můžete vývojáři doplňku TbSync odeslat ladící informace. Chcete nyní připravit email?"
-    },
-    "NoDebugLog": {
-        "message": "Nebyly nalezeny žádné užitečné ladící zprávy. Prosím, aktivujte režim ladění, restartujte Thunderbird a zopakujte kroky, které vedly k této chybě."
-    },
-    "OopsMessage": {
-        "message": "Jejda! TbSync se nepodařilo spustit!"
-    },
-    "RestartThunderbirdAndTryAgain": {
-        "message": "Ukládání ladících informací TbSync bylo povoleno. Prosím, restartujte Thunderbird a zkuste znovu otevřít TbSync."
-    },
-    "UnableToTraceError": {
-        "message": "Není možné vysledovat tuto chybu, protože není povoleno ukládání ladících informací. Chcete ho nyní povolit?"
-    },
-    "accountacctions.delete": {
-        "message": "Smazat účet “##accountname##”"
-    },
-    "accountacctions.disable": {
-        "message": "Zakázat účet “##accountname##”"
-    },
-    "accountacctions.enable": {
-        "message": "Povolit účet “##accountname##” a pokusit se připojit k serveru"
-    },
-    "accountacctions.sync": {
-        "message": "Synchronizovat účet “##accountname##”"
-    },
-    "addressbook.searchall": {
-        "message": "Prohledat všechny adresáře"
-    },
-    "addressbook.searchgal": {
-        "message": "Prohledat tento adresář a globální adresář (##replace.1##)"
-    },
-    "addressbook.searchthis": {
-        "message": "Prohledat tento adresář"
-    },
-    "eventlog.clear": {
-        "message": "Vyprázdnit"
-    },
-    "eventlog.close": {
-        "message": "Zavřít"
-    },
-    "eventlog.title": {
-        "message": "Protokol událostí"
-    },
-    "extensionDescription": {
-        "message": "TbSync je společné rozhraní pro správu cloudových účtů a synchronizaci jejich kontaktů, úkolů a kalendářů s Thunderbirdem."
-    },
-    "google.translate.code": {
-        "message": "cs"
-    },
-    "helplink.security": {
-        "message": "https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F"
-    },
-    "info.error": {
-        "message": "Chyba"
-    },
-    "info.idle": {
-        "message": "Nečinný"
-    },
-    "installProvider.header": {
-        "message": "Modul poskytovatele “##replace.1##” pro TbSync není nainstalován."
-    },
-    "manager.AccountActions": {
-        "message": "Akce s účty"
-    },
-    "manager.AddAccount": {
-        "message": "Přidat nový účet"
-    },
-    "manager.DeleteAccount": {
-        "message": "Odstranit účet"
-    },
-    "manager.DisableAccount": {
-        "message": "Deaktivovat Účet"
-    },
-    "manager.EnableAccount": {
-        "message": "Povolit účet a pokusit se připojit k serveru"
-    },
-    "manager.RetryConnectAccount": {
-        "message": "Zkusit znovu připojit k serveru"
-    },
-    "manager.ShowEventLog": {
-        "message": "Otevřít log"
-    },
-    "manager.SyncAll": {
-        "message": "Synchronizovat povolené účty"
-    },
-    "manager.SynchronizeAccount": {
-        "message": "Synchronizovat účet"
-    },
-    "manager.accounts": {
-        "message": "Účty"
-    },
-    "manager.accountsettings": {
-        "message": "Nastavení účtu"
-    },
-    "manager.catman.text": {
-        "message": "TbSync také synchronizuje kategorie kontaktů, které jsou užitečnou náhradou za seznamy kontaktů. Chcete-li je používat v adresáři Thunderbird, můžete nainstalovat doplněk Správce kategorií. Umožňuje spravovat překrývající se skupiny kontaktů s kategoriemi a poskytuje spoustu dalších funkcí souvisejících s kategoriemi. Doplněk je v oficiálním úložišti doplňků Mozilla:"
-    },
-    "manager.community": {
-        "message": "Komunita"
-    },
-    "manager.connecting": {
-        "message": "Připojuji se na server"
-    },
-    "manager.help": {
-        "message": "Nápověda"
-    },
-    "manager.help.createbugreport": {
-        "message": "Vytvořit hlášení o chybě"
-    },
-    "manager.help.createbugreportinfo": {
-        "message": "Aby TbSync shromažďoval pouze data o ladění, která jsou relevantní pro Vaší zprávu o chybě, prosím restartujte Thunderbird a pak opakujte přesně kroky, které reprodukují chybové chování. Pak zde můžete vytvořit hlášení o chybě."
-    },
-    "manager.help.debuglevel.0": {
-        "message": "Zakázán"
-    },
-    "manager.help.debuglevel.1": {
-        "message": "Povoleno: pouze chyby"
-    },
-    "manager.help.debuglevel.2": {
-        "message": "Povoleno: Záznam všech odeslaných a přijatých dat"
-    },
-    "manager.help.debuglevel.3": {
-        "message": "Povoleno: Záznam všech dat a některých interních hodnot ladění"
-    },
-    "manager.help.debugmode": {
-        "message": "Režim ladění:"
-    },
-    "manager.help.fixit": {
-        "message": "Můžete pomoci ji opravit zasláním hlášení o chybě. K tomu je potřeba aktivace režimu ladění."
-    },
-    "manager.help.foundabug": {
-        "message": "Našli jste chybu?"
-    },
-    "manager.help.needhelp": {
-        "message": "Potřebujete pomoc?"
-    },
-    "manager.help.viewdebuglog": {
-        "message": "Zobrazit debug log"
-    },
-    "manager.help.wiki": {
-        "message": "Otevřete wiki stránky projektu TbSync, kde najdete další informace, návody a detailní popisy konfigurace."
-    },
-    "manager.installprovider.link": {
-        "message": "Klikněte na následující odkaz pro otevření stránky chybějícího poskytovatele synchronizace. Zde naleznete další informace o poskytovateli a budete mít možnost jej nainstalovat:"
-    },
-    "manager.installprovider.warning": {
-        "message": "Tento poskytovatel synchronizace není hostován v oficiálním úložišti doplňků Thunderbird, a proto nebyl zkontrolován zaměstnanci Thunderbirdu. Poskytovatel by mohl dělat špatné věci ve vašem systému. Použijte na vlastní riziko."
-    },
-    "manager.lockedsettings.description": {
-        "message": "Aby se zabránilo chybám synchronizace, některá nastavení nelze upravit u aktivního účtu."
-    },
-    "manager.missingprovider": {
-        "message": "Tento účet vyžaduje synchronizačního poskytovatele ##provider##, který momentálně není nainstalován."
-    },
-    "manager.noaccounts": {
-        "message": "Zatím nejsou definovány žádné účty."
-    },
-    "manager.provider": {
-        "message": "Instalovat poskytovatele"
-    },
-    "manager.provider4tbsync": {
-        "message": "Poskytovatel pro TbSync"
-    },
-    "manager.resource": {
-        "message": "Zdroj"
-    },
-    "manager.shorttitle": {
-        "message": "Správce účtů"
-    },
-    "manager.status": {
-        "message": "Stav"
-    },
-    "manager.supporter.contributors": {
-        "message": "Přispěvatelé a překladatelé"
-    },
-    "manager.supporter.details": {
-        "message": "Podrobnosti"
-    },
-    "manager.supporter.sponsors": {
-        "message": "Sponzoři testovacích účtů"
-    },
-    "manager.tabs.status": {
-        "message": "Stav synchronizace"
-    },
-    "manager.tabs.status.autotime": {
-        "message": "Periodická synchronizace (v minutách)"
-    },
-    "manager.tabs.status.enableThisAccount": {
-        "message": "Povolit a synchronizovat účet"
-    },
-    "manager.tabs.status.general": {
-        "message": "Obecné"
-    },
-    "manager.tabs.status.never": {
-        "message": "Hodnota 0 zakáže periodické synchronizace. Push synchronizace zatím není implementována."
-    },
-    "manager.tabs.status.resources": {
-        "message": "Dostupné zdroje"
-    },
-    "manager.tabs.status.resources.intro": {
-        "message": "Vyberte, které z nalezených skupin by měly být synchronizovány s Thunderbirdem."
-    },
-    "manager.tabs.status.sync": {
-        "message": "Synchronizovat"
-    },
-    "manager.tabs.status.tryagain": {
-        "message": "Zkusit znovu připojit k serveru"
-    },
-    "manager.title": {
-        "message": "Správce účtů TbSync"
-    },
-    "manager.tryagain": {
-        "message": "Zkusit znovu připojit k serveru"
-    },
-    "menu.settingslabel": {
-        "message": "Nastavení synchronizace (TbSync)"
-    },
-    "password.account": {
-        "message": "Účet:"
-    },
-    "password.description": {
-        "message": "Prosím aktualizujte přihlašovací údaje pro následující účet TbSync:"
-    },
-    "password.password": {
-        "message": "Heslo:"
-    },
-    "password.title": {
-        "message": "TbSync žádost o pověření"
-    },
-    "password.user": {
-        "message": "Uživatel:"
-    },
-    "popup.opensettings": {
-        "message": "Správce účtů TbSync"
-    },
-    "prompt.DeleteAccount": {
-        "message": "Opravdu chcete smazat účet ##accountName##?"
-    },
-    "prompt.Disable": {
-        "message": "Opravdu chcete zakázat tento účet? Všechny místní změny, které ještě nebyly synchronizovány, budou ztraceny!"
-    },
-    "prompt.Erase": {
-        "message": "Opravdu chcete odstranit tento neznámý účet ze seznamu účtů?"
-    },
-    "prompt.Unsubscribe": {
-        "message": "Opravdu chcete zrušit synchronizaci této položky? Všechny místní změny, které ještě nebyly synchronizovány, budou ztraceny!"
-    },
-    "status.JavaScriptError": {
-        "message": "Chyba Javascriptu! Pro více informací zkontrolujte protokol událostí."
-    },
-    "status.OAuthAbortError": {
-        "message": "Proces ověřování OAuth 2.0 byl zrušen uživatelem."
-    },
-    "status.OAuthHttpError": {
-        "message": "Proces ověřování OAuth 2.0 selhal (HTTP chyba ##replace.1##)."
-    },
-    "status.OAuthNetworkError": {
-        "message": "Nelze se připojit k ověřovacímu serveru OAuth 2.0."
-    },
-    "status.OAuthServerError": {
-        "message": " Ověřovací server OAuth 2.0 hlásí: ##replace.1##"
-    },
-    "status.aborted": {
-        "message": "Nesynchronizováno"
-    },
-    "status.apiError": {
-        "message": "Chyba implementace API"
-    },
-    "status.disabled": {
-        "message": "Účet není povolen, synchronizace je zakázána."
-    },
-    "status.foldererror": {
-        "message": "Nejméně u jednoho zdroje se vyskytla chyba synchronizace. Pro více informací zkontrolujte protokol událostí."
-    },
-    "status.modified": {
-        "message": "Místní změny"
-    },
-    "status.network": {
-        "message": "Nelze se připojit k serveru (##replace.1##)."
-    },
-    "status.no-folders-found-on-server": {
-        "message": "Na serveru nebyly nalezeny žádné zdroje pro synchronizaci."
-    },
-    "status.notargets": {
-        "message": "Synchronizace byla přerušena, protože nebylo možné vytvořit cíle pro synchronizaci."
-    },
-    "status.notsyncronized": {
-        "message": "Účet musí být synchronizován, alespoň jedna položka není synchronizována."
-    },
-    "status.pending": {
-        "message": "Čeká se na synchronizaci"
-    },
-    "status.security": {
-        "message": "Nelze navázat zabezpečené spojení. Používáte samopodepsaný nebo jinak nedůvěryhodný certifikát, aniž byste jej importovali do Thunderbirdu? (##replace.1##)"
-    },
-    "status.skipped": {
-        "message": "Ještě není podporováno, přeskočeno"
-    },
-    "status.success": {
-        "message": "OK"
-    },
-    "status.syncing": {
-        "message": "Probíhá synchronizace"
-    },
-    "status.451": {
-        "message": "Server issued redirect, retry in 5 seconds."
-    },
-    "supportwizard.footer": {
-        "message": "Z informací zde uvedených bude v dalším kroku vygenerován e-mail, který můžete následně upravit (například přidání screenshotů). Zasláním e-mailu bude teprve zaslána chybová zpráva."
-    },
-    "supportwizard.label.description": {
-        "message": "Podrobný popis chyby:"
-    },
-    "supportwizard.label.faultycomponent": {
-        "message": "Komponenta TbSync, kde jste zaznamenali chybu:"
-    },
-    "supportwizard.label.selectcomponent": {
-        "message": "Vyberte komponentu…"
-    },
-    "supportwizard.label.summary": {
-        "message": "Krátké shrnutí chyby:"
-    },
-    "supportwizard.pagetitle": {
-        "message": "Shromažďování všech informací pro efektivní zpracování hlášení o chybě."
-    },
-    "supportwizard.provider": {
-        "message": "Modul poskytovatele: ##replace.1##"
-    },
-    "supportwizard.title": {
-        "message": "Vytvořit hlášení o chybě"
-    },
-    "syncstate.accountdone": {
-        "message": "Synchronizace účtu dokončena"
-    },
-    "syncstate.done": {
-        "message": "Příprava další položky na synchronizaci"
-    },
-    "syncstate.oauthprompt": {
-        "message": "Ověření OAuth 2.0"
-    },
-    "syncstate.passwordprompt": {
-        "message": "Jsou vyžadovány přihlašovací údaje"
-    },
-    "syncstate.preparing": {
-        "message": "Příprava další položky na synchronizaci"
-    },
-    "syncstate.syncing": {
-        "message": "Inicializuji synchronizaci"
-    },
-    "target.orphaned": {
-        "message": "Odpojeno"
-    },
-    "toolbar.label": {
-        "message": "Synchronizovat všechny TbSync účty"
-    },
-    "toolbar.tooltiptext": {
-        "message": "Synchronizovat poslední změny"
-    },
-    "password.ok": {
-        "message": "OK"
-    },
-    "password.cancel": {
-        "message": "Zrušit"
+  "extensionName": {
+    "message": "TbSync"
+  },
+  "extensionDescription": {
+    "message": "Centrální uživatelské rozhraní pro správu synchronizace kontaktů, kalendářů a úkolů s externími účty prostřednictvím doplňků poskytovatelů."
+  },
+  "manager.title": {
+    "message": "Správce účtů TbSync"
+  },
+  "manager.tab.accounts": {
+    "message": "Účty TbSync"
+  },
+  "manager.tab.categoryManager": {
+    "message": "Správce kategorií"
+  },
+  "manager.categoryManager.text": {
+    "message": "TbSync rovněž synchronizuje kategorie kontaktů, které jsou výkonnou náhradou nesynchronizovatelných seznamů kontaktů. Abyste je mohli používat v adresáři Thunderbirdu, můžete nainstalovat doplněk Category Manager. Umožňuje spravovat překrývající se skupiny kontaktů založené na kategoriích a nabízí řadu dalších funkcí souvisejících s kategoriemi. Najdete ho v oficiálním repozitáři doplňků Mozilly:"
+  },
+  "manager.tab.help": {
+    "message": "Nápověda"
+  },
+  "manager.help.wiki": {
+    "message": "Otevřete wiki stránky projektu TbSync - najdete tam další informace, návody a podrobné popisy konfigurace."
+  },
+  "manager.eventLog.intro": {
+    "message": "Hlášení chyb obsahují obsah tohoto protokolu. Pro užitečnější hlášení zvyšte úroveň podrobnosti, vyčistěte protokol a zopakujte problém před kliknutím na tlačítko hlášení."
+  },
+  "manager.eventLog.bugReport.button": {
+    "message": "Vytvořit hlášení chyby"
+  },
+  "bugReport.title": {
+    "message": "Vytvořit hlášení chyby"
+  },
+  "bugReport.component": {
+    "message": "Komponenta"
+  },
+  "bugReport.summary": {
+    "message": "Souhrn"
+  },
+  "bugReport.description": {
+    "message": "Popis"
+  },
+  "bugReport.send": {
+    "message": "Odeslat"
+  },
+  "bugReport.cancel": {
+    "message": "Zrušit"
+  },
+  "bugReport.error.summaryRequired": {
+    "message": "Zadejte prosím souhrn."
+  },
+  "manager.tab.eventLog": {
+    "message": "Protokol událostí"
+  },
+  "manager.eventLog.clear": {
+    "message": "Vyčistit"
+  },
+  "manager.eventLog.empty": {
+    "message": "Zatím žádné události."
+  },
+  "manager.eventLog.verbosity": {
+    "message": "Úroveň podrobnosti pro sběr událostí:"
+  },
+  "manager.eventLog.verbosity.errors": {
+    "message": "Pouze chyby"
+  },
+  "manager.eventLog.verbosity.warnings": {
+    "message": "Chyby a varování"
+  },
+  "manager.eventLog.verbosity.debug": {
+    "message": "Chyby, varování a ladicí informace"
+  },
+  "manager.eventLog.col.time": {
+    "message": "Čas"
+  },
+  "manager.eventLog.col.level": {
+    "message": "Úroveň"
+  },
+  "manager.eventLog.col.source": {
+    "message": "Zdroj"
+  },
+  "manager.eventLog.col.account": {
+    "message": "Účet"
+  },
+  "manager.eventLog.col.message": {
+    "message": "Zpráva"
+  },
+  "manager.accounts.heading": {
+    "message": "Nakonfigurované účty"
+  },
+  "manager.accounts.col.status": {
+    "message": "Stav"
+  },
+  "manager.providers.heading": {
+    "message": "Dostupní poskytovatelé"
+  },
+  "manager.addAccount": {
+    "message": "Přidat účet"
+  },
+  "manager.noAccounts": {
+    "message": "Žádné nakonfigurované účty"
+  },
+  "manager.noProviders": {
+    "message": "Žádné doplňky poskytovatelů nejsou nainstalovány."
+  },
+  "manager.provider.install": {
+    "message": "Nainstalovat z addons.thunderbird.net"
+  },
+  "manager.provider.focusSetup": {
+    "message": "Přenést okno nastavení do popředí"
+  },
+  "provider.state.active": {
+    "message": "Připraven"
+  },
+  "provider.state.stale": {
+    "message": "Opětovné připojení…"
+  },
+  "provider.state.uninstalled": {
+    "message": "Nenainstalováno"
+  },
+  "account.status.success": {
+    "message": "OK"
+  },
+  "account.status.syncing": {
+    "message": "Synchronizuje se…"
+  },
+  "account.status.notsyncronized": {
+    "message": "Nesynchronizováno"
+  },
+  "account.status.disabled": {
+    "message": "Odpojeno"
+  },
+  "account.status.provider-unavailable": {
+    "message": "Poskytovatel není dostupný"
+  },
+  "account.status.needs-reauth": {
+    "message": "Ověření selhalo"
+  },
+  "account.status.error": {
+    "message": "Chyba"
+  },
+  "account.status.warning": {
+    "message": "Varování"
+  },
+  "account.status.aborted": {
+    "message": "Synchronizace přerušena"
+  },
+  "folder.status.pending": {
+    "message": "Čeká na synchronizaci"
+  },
+  "folder.status.busy": {
+    "message": "Pracuje se…"
+  },
+  "folder.status.modified": {
+    "message": "Místní změny"
+  },
+  "error.E:AUTH": {
+    "message": "Ověření selhalo"
+  },
+  "syncstate.sync": {
+    "message": "Synchronizuje se…"
+  },
+  "syncstate.prepare": {
+    "message": "Připravuje se…"
+  },
+  "syncstate.send": {
+    "message": "Odesílá se požadavek…"
+  },
+  "syncstate.eval": {
+    "message": "Zpracovává se odpověď…"
+  },
+  "manager.detail.general": {
+    "message": "Obecné"
+  },
+  "manager.detail.status": {
+    "message": "Stav"
+  },
+  "manager.detail.provider": {
+    "message": "Poskytovatel:"
+  },
+  "manager.detail.lastSync": {
+    "message": "Poslední synchronizace:"
+  },
+  "manager.resources.heading": {
+    "message": "Dostupné zdroje"
+  },
+  "manager.resources.description": {
+    "message": "Vyberte, které z nalezených zdrojů se mají synchronizovat s Thunderbirdem."
+  },
+  "manager.account.connect": {
+    "message": "Připojit"
+  },
+  "manager.account.disconnect": {
+    "message": "Odpojit"
+  },
+  "manager.account.signInAgain": {
+    "message": "Přihlásit se znovu"
+  },
+  "manager.account.settings": {
+    "message": "Nastavení"
+  },
+  "manager.account.remove": {
+    "message": "Odstranit"
+  },
+  "manager.account.sync": {
+    "message": "Synchronizovat nyní"
+  },
+  "manager.account.autosync": {
+    "message": "Automaticky synchronizovat každých"
+  },
+  "manager.account.autosync.minutes": {
+    "message": "min"
+  },
+  "manager.account.autosync.tooltip": {
+    "message": "0 vypne automatickou synchronizaci pro tento účet."
+  },
+  "manager.error.title": {
+    "message": "Chyba"
+  },
+  "manager.error.dismiss": {
+    "message": "OK"
+  },
+  "manager.remove.confirmTitle": {
+    "message": "Odstranit účet"
+  },
+  "manager.remove.confirmBody": {
+    "message": "Odstranit účet „$NAME$“? Adresář Thunderbirdu pro tento účet bude rovněž smazán.",
+    "placeholders": {
+      "NAME": {
+        "content": "$1",
+        "example": "john@gmail.com"
+      }
     }
+  },
+  "manager.remove.cancelLabel": {
+    "message": "Zrušit"
+  },
+  "manager.resources.empty": {
+    "message": "Zatím žádné zdroje."
+  },
+  "manager.resources.col.name": {
+    "message": "Název"
+  },
+  "folder.readOnly": {
+    "message": "Pouze pro čtení"
+  },
+  "folder.readWrite": {
+    "message": "Čtení/zápis"
+  },
+  "folderType.contacts": {
+    "message": "Kontakty"
+  },
+  "folderType.calendars": {
+    "message": "Kalendář"
+  },
+  "folderType.tasks": {
+    "message": "Úkoly"
+  },
+  "account.status.needs-sync": {
+    "message": "Účet je třeba synchronizovat, alespoň jedna položka není synchronizována"
+  },
+  "account.status.upgrading": {
+    "message": "Poskytovatel provádí jednorázovou aktualizaci tohoto účtu…"
+  }
 }

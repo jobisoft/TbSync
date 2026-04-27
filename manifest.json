@@ -1,53 +1,65 @@
 {
-  "applications": {
+  "manifest_version": 2,
+  "browser_specific_settings": {
     "gecko": {
       "id": "tbsync@jobisoft.de",
-      "strict_min_version": "136.0",
-      "strict_max_version": "140.*"
+      "strict_min_version": "140.0",
+      "strict_max_version": "150.0"
     }
   },
-  "manifest_version": 2,
-  "name": "TbSync",
-  "version": "4.16",
+  "name": "__MSG_extensionName__",
+  "version": "5.0",
   "author": "John Bieling",
   "homepage_url": "https://github.com/jobisoft/TbSync",
   "default_locale": "en-US",
   "description": "__MSG_extensionDescription__",
   "icons": {
-    "32": "content/skin/tbsync.png"
+    "32": "icons/tbsync-32.png",
+    "64": "icons/tbsync-64.png"
   },
   "browser_action": {
     "default_title": "TbSync",
-    "default_label": "",
     "default_icon": {
-      "32": "content/skin/tbsync.png"
+      "32": "icons/tbsync-32.png"
     },
     "allowed_spaces": [
       "mail",
-      "calendar",
       "addressbook",
+      "calendar",
       "tasks"
     ]
-  }, 
+  },
+  "permissions": [
+    "storage",
+    "alarms",
+    "management",
+    "addressBooks",
+    "menus",
+    "menus.overrideContext",
+    "notifications",
+    "compose"
+  ],
   "background": {
     "type": "module",
-    "scripts": ["background.js"]
+    "scripts": [
+      "background.mjs"
+    ]
   },
   "experiment_apis": {
-    "LegacyHelper": {
-      "schema": "api/LegacyHelper/schema.json",
+    "LegacyPrefs": {
+      "schema": "experiments/LegacyPrefs/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
-        "paths": [["LegacyHelper"]],
-        "script": "api/LegacyHelper/implementation.js"
+        "paths": [["LegacyPrefs"]],
+        "script": "experiments/LegacyPrefs/implementation.js"
       }
     },
-    "TbSync": {
-      "schema": "api/TbSync/schema.json",
+    "ProfileFiles": {
+      "schema": "experiments/ProfileFiles/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
-        "paths": [["TbSync"]],
-        "script": "api/TbSync/implementation.js"
+        "paths": [["ProfileFiles"]],
+        "script": "experiments/ProfileFiles/implementation.js"
       }
     }
   }

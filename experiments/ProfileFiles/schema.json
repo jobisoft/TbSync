@@ -1,0 +1,33 @@
+[
+  {
+    "namespace": "ProfileFiles",
+    "functions": [
+      {
+        "name": "exists",
+        "type": "function",
+        "async": true,
+        "description": "Check whether a file exists at the given path, relative to the Thunderbird profile directory.",
+        "parameters": [
+          {
+            "name": "relativePath",
+            "type": "string",
+            "description": "Path relative to the profile directory (e.g. 'TbSync/accounts68.json')."
+          }
+        ]
+      },
+      {
+        "name": "readJSON",
+        "type": "function",
+        "async": true,
+        "description": "Read and parse a UTF-8 JSON file at the given path, relative to the Thunderbird profile directory. Returns null if the file is missing or unparseable.",
+        "parameters": [
+          {
+            "name": "relativePath",
+            "type": "string",
+            "description": "Path relative to the profile directory."
+          }
+        ]
+      }
+    ]
+  }
+]

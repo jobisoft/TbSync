@@ -1,368 +1,266 @@
 {
-    "HelpFixStartupError": {
-        "message": "Per contribuire a correggere quest'errore potresti inviare un log di debug allo sviluppatore di TbSync. Preparare tale messaggio di posta elettronica ora?"
-    },
-    "NoDebugLog": {
-        "message": "Non è stato possibile trovare alcun messaggio di debug utile. Attiva la modalità di debug, riavvia Thunderbird e ripeti tutti i passaggi richiesti per scatenare il comportamento errato."
-    },
-    "OopsMessage": {
-        "message": "Oops! TbSync non è stato in grado di avviarsi!"
-    },
-    "RestartThunderbirdAndTryAgain": {
-        "message": "Il log di debug di TbSync è stato abilitato, riavviare Thunderbird e riprovare ad aprire TbSync."
-    },
-    "UnableToTraceError": {
-        "message": "Non è possibile localizzare quest'errore perché i log di debug non sono attualmente abilitati. Abilitare ora il log di debug per contribuire a correggere quest'errore?"
-    },
-    "accountacctions.delete": {
-        "message": "Elimina l'account '##accountname##'"
-    },
-    "accountacctions.disable": {
-        "message": "Disabilita l'account '##accountname##'"
-    },
-    "accountacctions.enable": {
-        "message": "Abilita l'account '##accountname##' e tenta la connessione al server"
-    },
-    "accountacctions.sync": {
-        "message": "Sincronizza l'account '##accountname##'"
-    },
-    "addressbook.searchall": {
-        "message": "Cerca in tutte le rubriche"
-    },
-    "addressbook.searchgal": {
-        "message": "Cerca in questa rubrica e nella directory globale (##replace.1##)"
-    },
-    "addressbook.searchthis": {
-        "message": "Cerca in questa rubrica"
-    },
-    "eventlog.clear": {
-        "message": "Svuota"
-    },
-    "eventlog.close": {
-        "message": "Chiudi"
-    },
-    "eventlog.title": {
-        "message": "Registro eventi"
-    },
-    "extensionDescription": {
-        "message": "TbSync è un'interfaccia utente che consente di gestire in modo centralizzato account cloud e di sincronizzare i loro contatti, attività e calendari con Thunderbird."
-    },
-    "google.translate.code": {
-        "message": "it"
-    },
-    "helplink.security": {
-        "message": "https://github.com/jobisoft/TbSync/wiki/How-to-use-TbSync-with-self-signed-or-otherwise-untrusted-certificates%3F"
-    },
-    "info.error": {
-        "message": "Errore"
-    },
-    "info.idle": {
-        "message": "Inattivo"
-    },
-    "installProvider.header": {
-        "message": "Il provider '##replace.1##' per TbSync non è ancora installato."
-    },
-    "manager.AccountActions": {
-        "message": "Azioni account"
-    },
-    "manager.AddAccount": {
-        "message": "Aggiungi nuovo account"
-    },
-    "manager.DeleteAccount": {
-        "message": "Elimina account"
-    },
-    "manager.DisableAccount": {
-        "message": "Disabilita account"
-    },
-    "manager.EnableAccount": {
-        "message": "Abilita account e testa la connessione al server"
-    },
-    "manager.RetryConnectAccount": {
-        "message": "Riprova a collegarti al server"
-    },
-    "manager.ShowEventLog": {
-        "message": "Mostra registro eventi"
-    },
-    "manager.SyncAll": {
-        "message": "Sincronizza tutti gli account abilitati"
-    },
-    "manager.SynchronizeAccount": {
-        "message": "Sincronizza account"
-    },
-    "manager.accounts": {
-        "message": "Account"
-    },
-    "manager.accountsettings": {
-        "message": "Impostazioni account"
-    },
-    "manager.catman.text": {
-        "message": "TbSync sincronizza anche le categorie dei contatti, che sono un potente sostituto degli elenchi contatti (non sincronizzabili). Per poterle utilizzare nella Rubrica di Thunderbird è possibile installare il componente aggiuntivo Category Manager, che consente di gestire gruppi di contatti basati su categorie (anche sovrapposte) e che fornisce altre funzionalità legate alle categorie. Lo si può trovare nel repository ufficiale Mozilla dei componenti aggiuntivi:"
-    },
-    "manager.community": {
-        "message": "Comunità"
-    },
-    "manager.connecting": {
-        "message": "Connessione al server in corso"
-    },
-    "manager.help": {
-        "message": "Aiuto"
-    },
-    "manager.help.createbugreport": {
-        "message": "Crea segnalazione d'errore"
-    },
-    "manager.help.createbugreportinfo": {
-        "message": "Per far sì che TbSync raccolga solo i messaggi di debug significativi per la segnalazione d'errore, riavvia Thunderbird e ripeti esattamente i passaggi necessari per riprodurre il comportamento errato. In seguito puoi creare qui la segnalazione d'errore."
-    },
-    "manager.help.debuglevel.0": {
-        "message": "Disabilitata"
-    },
-    "manager.help.debuglevel.1": {
-        "message": "Abilitata: registra solo gli errori"
-    },
-    "manager.help.debuglevel.2": {
-        "message": "Abilitata: registra tutti i dati inviati e ricevuti"
-    },
-    "manager.help.debuglevel.3": {
-        "message": "Abilitata: registra tutti i dati e alcuni valori interni di debug"
-    },
-    "manager.help.debugmode": {
-        "message": "Modalità debug:"
-    },
-    "manager.help.fixit": {
-        "message": "Puoi contribuire a correggerlo inviando una segnalazione d'errore. Quest'operazione richiede di attivare la modalità di debug."
-    },
-    "manager.help.foundabug": {
-        "message": "Hai trovato un bug?"
-    },
-    "manager.help.needhelp": {
-        "message": "Serve aiuto?"
-    },
-    "manager.help.viewdebuglog": {
-        "message": "Visualizza log di debug"
-    },
-    "manager.help.wiki": {
-        "message": "Apri le pagine del wiki del progetto TbSync; queste forniscono informazioni aggiuntive, guide e descrizioni dettagliate sulla configurazione."
-    },
-    "manager.installprovider.link": {
-        "message": "Clicca sul collegamento seguente per aprire la pagina informativa del provider di sincronizzazione mancante. In essa sarà possibile trovare ulteriori informazioni sul provider e si avrà la possibilità di installarlo:"
-    },
-    "manager.installprovider.warning": {
-        "message": "Questo provider di sincronizzazione non è ospitato nel repository ufficiale componenti aggiuntivi di Thunderbird e quindi non è stato esaminato dallo staff di Thunderbird. Il provider potrebbe eseguire azioni malevole sul proprio sistema. Lo si utilizzi a proprio rischio."
-    },
-    "manager.lockedsettings.description": {
-        "message": "Per prevenire errori di sincronizzazione, alcune impostazioni non possono essere modificate quando l'account è abilitato."
-    },
-    "manager.missingprovider": {
-        "message": "Il provider di sincronizzazione a cui è associato quest'account (##provider##) non è installato."
-    },
-    "manager.noaccounts": {
-        "message": "Non sono stati definiti ancora account."
-    },
-    "manager.provider": {
-        "message": "Installa provider"
-    },
-    "manager.provider4tbsync": {
-        "message": "Provider per TbSync"
-    },
-    "manager.resource": {
-        "message": "Cartella"
-    },
-    "manager.shorttitle": {
-        "message": "Gestore account"
-    },
-    "manager.status": {
-        "message": "Stato"
-    },
-    "manager.supporter.contributors": {
-        "message": "Collaboratori e traduttori"
-    },
-    "manager.supporter.details": {
-        "message": "Dettagli"
-    },
-    "manager.supporter.sponsors": {
-        "message": "Sponsor per account di test"
-    },
-    "manager.tabs.status": {
-        "message": "Stato sincronizzazione"
-    },
-    "manager.tabs.status.autotime": {
-        "message": "Sincronizza periodicamente ogni (minuti)"
-    },
-    "manager.tabs.status.enableThisAccount": {
-        "message": "Abilita e sincronizza quest'account"
-    },
-    "manager.tabs.status.general": {
-        "message": "Generale"
-    },
-    "manager.tabs.status.never": {
-        "message": "Se l'impostazione è a 0, la sincronizzazione periodica è disabilitata. La sincronizzazione push non è ancora stata implementata."
-    },
-    "manager.tabs.status.resources": {
-        "message": "Risorse disponibili"
-    },
-    "manager.tabs.status.resources.intro": {
-        "message": "Selezionare le risorse fra quelle trovate che devono essere sincronizzate con Thunderbird."
-    },
-    "manager.tabs.status.sync": {
-        "message": "Sincronizza ora"
-    },
-    "manager.tabs.status.tryagain": {
-        "message": "Riprova a collegarti al server"
-    },
-    "manager.title": {
-        "message": "Gestore account TbSync"
-    },
-    "manager.tryagain": {
-        "message": "Riprova a collegarti al server"
-    },
-    "menu.settingslabel": {
-        "message": "Impostazioni sincronizzazione (TbSync)"
-    },
-    "password.account": {
-        "message": "Account:"
-    },
-    "password.description": {
-        "message": "Aggiorna le credenziali per il seguente account TbSync:"
-    },
-    "password.password": {
-        "message": "Password:"
-    },
-    "password.title": {
-        "message": "Richiesta credenziali TbSync"
-    },
-    "password.user": {
-        "message": "Utente:"
-    },
-    "popup.opensettings": {
-        "message": "Apri il Gestore account TbSync"
-    },
-    "prompt.DeleteAccount": {
-        "message": "Eliminare l'account ##accountName##?"
-    },
-    "prompt.Disable": {
-        "message": "Disabilitare quest'account? Tutte le modifiche locali non ancora sincronizzate andranno perse!"
-    },
-    "prompt.Erase": {
-        "message": "Rimuovere quest'account di un provider sconosciuto dall'elenco degli account?"
-    },
-    "prompt.Unsubscribe": {
-        "message": "Annullare la sottoscrizione a questo elemento? Tutte le modifiche locali non ancora sincronizzate andranno perse!"
-    },
-    "status.JavaScriptError": {
-        "message": "Errore Javascript! Si prega di controllare il registro eventi per maggiori dettagli."
-    },
-    "status.OAuthAbortError": {
-        "message": "Processo di autenticazione OAuth 2.0 interrotto dall'utente."
-    },
-    "status.OAuthHttpError": {
-        "message": "Processo di autenticazione OAuth 2.0 non riuscito (errore HTTP ##replace.1##)."
-    },
-    "status.OAuthNetworkError": {
-        "message": "Impossibile connettersi al server di autenticazione OAuth 2.0."
-    },
-    "status.OAuthServerError": {
-        "message": " Il server di autenticazione OAuth 2.0 ha restituito: ##replace.1##"
-    },
-    "status.aborted": {
-        "message": "Non sincronizzato"
-    },
-    "status.apiError": {
-        "message": "Errore di implementazione dell'API"
-    },
-    "status.disabled": {
-        "message": "L'account non è abilitato, la sincronizzazione è disabilitata."
-    },
-    "status.foldererror": {
-        "message": "Almeno una risorsa ha riscontrato un errore di sincronizzazione. Si prega di controllare il registro eventi per maggiori dettagli."
-    },
-    "status.modified": {
-        "message": "Modifiche locali presenti"
-    },
-    "status.network": {
-        "message": "Impossibile collegarsi al server (##replace.1##)."
-    },
-    "status.no-folders-found-on-server": {
-        "message": "Impossibile trovare risorse sul server."
-    },
-    "status.notargets": {
-        "message": "Interruzione sincronizzazione in corso: non è possibile creare le destinazioni sincronizzazione."
-    },
-    "status.notsyncronized": {
-        "message": "L'account deve essere sincronizzato, almeno un elemento non è sincronizzato."
-    },
-    "status.pending": {
-        "message": "In attesa di sincronizzazione"
-    },
-    "status.security": {
-        "message": "Impossibile stabilire una connessione sicura. Si sta utilizzando un certificato autofirmato o non affidabile senza averlo importato in Thunderbird? (##replace.1##)"
-    },
-    "status.skipped": {
-        "message": "Non ancora supportato, omesso"
-    },
-    "status.success": {
-        "message": "OK"
-    },
-    "status.syncing": {
-        "message": "Sincronizzazione in corso"
-    },
-    "supportwizard.footer": {
-        "message": "Nel prossimo passaggio sarà generato un messaggio di posta elettronica a partire dalle informazioni fornite qui; puoi modificarlo in seguito (ad esempio, aggiungendo schermate o simili). La segnalazione d'errore verrà inviata solo inviando tale messaggio."
-    },
-    "status.451": {
-        "message": "Server issued redirect, retry in 5 seconds."
-    },
-    "supportwizard.label.description": {
-        "message": "Descrizione dettagliata dell'errore:'"
-    },
-    "supportwizard.label.faultycomponent": {
-        "message": "Componente di TbSync dove hai osservato l'errore:"
-    },
-    "supportwizard.label.selectcomponent": {
-        "message": "Seleziona componente..."
-    },
-    "supportwizard.label.summary": {
-        "message": "Breve riassunto dell'errore:'"
-    },
-    "supportwizard.pagetitle": {
-        "message": "Raccolta di tutte le informazioni necessarie per gestire efficacemente la segnalazione d'errore."
-    },
-    "supportwizard.provider": {
-        "message": "Provider: ##replace.1##"
-    },
-    "supportwizard.title": {
-        "message": "Crea segnalazione d'errore"
-    },
-    "syncstate.accountdone": {
-        "message": "Sincronizzazione account completata"
-    },
-    "syncstate.done": {
-        "message": "Preparazione prossimo elemento per la sincronizzazione in corso"
-    },
-    "syncstate.oauthprompt": {
-        "message": "Autenticazione OAuth 2.0"
-    },
-    "syncstate.passwordprompt": {
-        "message": "Richiesta di inserire le credenziali"
-    },
-    "syncstate.preparing": {
-        "message": "Preparazione prossimo elemento per la sincronizzazione in corso"
-    },
-    "syncstate.syncing": {
-        "message": "Inizializzazione sincronizzazione in corso"
-    },
-    "target.orphaned": {
-        "message": "Connessione disconnessa"
-    },
-    "toolbar.label": {
-        "message": "Sincronizza tutti gli account TbSync"
-    },
-    "toolbar.tooltiptext": {
-        "message": "Sincronizza le ultime modifiche"
-    },
-    "password.ok": {
-        "message": "OK"
-    },
-    "password.cancel": {
-        "message": "Annulla"
+  "extensionName": {
+    "message": "TbSync"
+  },
+  "extensionDescription": {
+    "message": "Interfaccia utente centralizzata per gestire la sincronizzazione di contatti, calendari e attività con account esterni tramite componenti aggiuntivi provider."
+  },
+  "manager.title": {
+    "message": "Gestore account TbSync"
+  },
+  "manager.tab.accounts": {
+    "message": "Account TbSync"
+  },
+  "manager.tab.categoryManager": {
+    "message": "Gestore categorie"
+  },
+  "manager.categoryManager.text": {
+    "message": "TbSync sincronizza anche le categorie dei contatti, che rappresentano una valida alternativa alle liste di contatti non sincronizzabili. Per usarle nella rubrica di Thunderbird è possibile installare il componente Category Manager. Permette di gestire gruppi di contatti basati su categorie sovrapposte e offre molte altre funzionalità correlate. È disponibile nel repository ufficiale dei componenti aggiuntivi di Mozilla:"
+  },
+  "manager.tab.help": {
+    "message": "Aiuto"
+  },
+  "manager.help.wiki": {
+    "message": "Apri le pagine wiki del progetto TbSync: forniscono informazioni aggiuntive, guide e descrizioni dettagliate della configurazione."
+  },
+  "manager.eventLog.intro": {
+    "message": "Le segnalazioni di errore includono il contenuto di questo registro. Per una segnalazione più utile, aumenta il livello di dettaglio, svuota il registro e riproduci il problema prima di fare clic sul pulsante di segnalazione."
+  },
+  "manager.eventLog.bugReport.button": {
+    "message": "Crea segnalazione di errore"
+  },
+  "bugReport.title": {
+    "message": "Crea segnalazione di errore"
+  },
+  "bugReport.component": {
+    "message": "Componente"
+  },
+  "bugReport.summary": {
+    "message": "Riepilogo"
+  },
+  "bugReport.description": {
+    "message": "Descrizione"
+  },
+  "bugReport.send": {
+    "message": "Invia"
+  },
+  "bugReport.cancel": {
+    "message": "Annulla"
+  },
+  "bugReport.error.summaryRequired": {
+    "message": "Inserisci un riepilogo."
+  },
+  "manager.tab.eventLog": {
+    "message": "Registro eventi"
+  },
+  "manager.eventLog.clear": {
+    "message": "Svuota"
+  },
+  "manager.eventLog.empty": {
+    "message": "Nessun evento al momento."
+  },
+  "manager.eventLog.verbosity": {
+    "message": "Livello di dettaglio per la raccolta degli eventi:"
+  },
+  "manager.eventLog.verbosity.errors": {
+    "message": "Solo errori"
+  },
+  "manager.eventLog.verbosity.warnings": {
+    "message": "Errori e avvisi"
+  },
+  "manager.eventLog.verbosity.debug": {
+    "message": "Errori, avvisi e informazioni di debug"
+  },
+  "manager.eventLog.col.time": {
+    "message": "Ora"
+  },
+  "manager.eventLog.col.level": {
+    "message": "Livello"
+  },
+  "manager.eventLog.col.source": {
+    "message": "Origine"
+  },
+  "manager.eventLog.col.account": {
+    "message": "Account"
+  },
+  "manager.eventLog.col.message": {
+    "message": "Messaggio"
+  },
+  "manager.accounts.heading": {
+    "message": "Account configurati"
+  },
+  "manager.accounts.col.status": {
+    "message": "Stato"
+  },
+  "manager.providers.heading": {
+    "message": "Provider disponibili"
+  },
+  "manager.addAccount": {
+    "message": "Aggiungi account"
+  },
+  "manager.noAccounts": {
+    "message": "Nessun account configurato"
+  },
+  "manager.noProviders": {
+    "message": "Nessun componente provider installato."
+  },
+  "manager.provider.install": {
+    "message": "Installa da addons.thunderbird.net"
+  },
+  "manager.provider.focusSetup": {
+    "message": "Porta la finestra di configurazione in primo piano"
+  },
+  "provider.state.active": {
+    "message": "Pronto"
+  },
+  "provider.state.stale": {
+    "message": "Riconnessione in corso…"
+  },
+  "provider.state.uninstalled": {
+    "message": "Non installato"
+  },
+  "account.status.success": {
+    "message": "OK"
+  },
+  "account.status.syncing": {
+    "message": "Sincronizzazione in corso…"
+  },
+  "account.status.notsyncronized": {
+    "message": "Non sincronizzato"
+  },
+  "account.status.disabled": {
+    "message": "Disconnesso"
+  },
+  "account.status.provider-unavailable": {
+    "message": "Provider non disponibile"
+  },
+  "account.status.needs-reauth": {
+    "message": "Autenticazione non riuscita"
+  },
+  "account.status.error": {
+    "message": "Errore"
+  },
+  "account.status.warning": {
+    "message": "Avviso"
+  },
+  "account.status.aborted": {
+    "message": "Sincronizzazione interrotta"
+  },
+  "folder.status.pending": {
+    "message": "In attesa di sincronizzazione"
+  },
+  "folder.status.busy": {
+    "message": "Elaborazione…"
+  },
+  "folder.status.modified": {
+    "message": "Modifiche locali"
+  },
+  "error.E:AUTH": {
+    "message": "Autenticazione non riuscita"
+  },
+  "syncstate.sync": {
+    "message": "Sincronizzazione in corso…"
+  },
+  "syncstate.prepare": {
+    "message": "Preparazione…"
+  },
+  "syncstate.send": {
+    "message": "Invio della richiesta…"
+  },
+  "syncstate.eval": {
+    "message": "Elaborazione della risposta…"
+  },
+  "manager.detail.general": {
+    "message": "Generale"
+  },
+  "manager.detail.status": {
+    "message": "Stato"
+  },
+  "manager.detail.provider": {
+    "message": "Provider:"
+  },
+  "manager.detail.lastSync": {
+    "message": "Ultima sincronizzazione:"
+  },
+  "manager.resources.heading": {
+    "message": "Risorse disponibili"
+  },
+  "manager.resources.description": {
+    "message": "Seleziona quali delle risorse trovate devono essere sincronizzate con Thunderbird."
+  },
+  "manager.account.connect": {
+    "message": "Connetti"
+  },
+  "manager.account.disconnect": {
+    "message": "Disconnetti"
+  },
+  "manager.account.signInAgain": {
+    "message": "Accedi di nuovo"
+  },
+  "manager.account.settings": {
+    "message": "Impostazioni"
+  },
+  "manager.account.remove": {
+    "message": "Rimuovi"
+  },
+  "manager.account.sync": {
+    "message": "Sincronizza ora"
+  },
+  "manager.account.autosync": {
+    "message": "Sincronizza automaticamente ogni"
+  },
+  "manager.account.autosync.minutes": {
+    "message": "min"
+  },
+  "manager.account.autosync.tooltip": {
+    "message": "0 disabilita la sincronizzazione automatica per questo account."
+  },
+  "manager.error.title": {
+    "message": "Errore"
+  },
+  "manager.error.dismiss": {
+    "message": "OK"
+  },
+  "manager.remove.confirmTitle": {
+    "message": "Rimuovi account"
+  },
+  "manager.remove.confirmBody": {
+    "message": "Rimuovere l'account “$NAME$”? Verrà eliminata anche la rubrica di Thunderbird associata.",
+    "placeholders": {
+      "NAME": {
+        "content": "$1",
+        "example": "john@gmail.com"
+      }
     }
+  },
+  "manager.remove.cancelLabel": {
+    "message": "Annulla"
+  },
+  "manager.resources.empty": {
+    "message": "Nessuna risorsa al momento."
+  },
+  "manager.resources.col.name": {
+    "message": "Nome"
+  },
+  "folder.readOnly": {
+    "message": "Sola lettura"
+  },
+  "folder.readWrite": {
+    "message": "Lettura/scrittura"
+  },
+  "folderType.contacts": {
+    "message": "Contatti"
+  },
+  "folderType.calendars": {
+    "message": "Calendario"
+  },
+  "folderType.tasks": {
+    "message": "Attività"
+  },
+  "account.status.needs-sync": {
+    "message": "L'account deve essere sincronizzato, almeno un elemento non è sincronizzato"
+  },
+  "account.status.upgrading": {
+    "message": "Il provider sta eseguendo un'operazione di aggiornamento una tantum su questo account…"
+  }
 }

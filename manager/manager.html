@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title data-i18n-content="manager.title"></title>
+    <link rel="icon" href="../icons/tbsync-32.png" />
+    <link rel="stylesheet" href="manager.css" />
+    <script type="module" src="manager.mjs"></script>
+  </head>
+  <body>
+    <nav class="tab-bar">
+      <button class="tab-button active" data-tab="accounts" type="button">
+        <img src="../icons/tab-accounts-32.png" alt="" />
+        <span data-i18n-content="manager.tab.accounts"></span>
+      </button>
+      <button class="tab-button" data-tab="categoryManager" type="button">
+        <img src="../icons/tab-categories-32.png" alt="" />
+        <span data-i18n-content="manager.tab.categoryManager"></span>
+      </button>
+      <button class="tab-button" data-tab="eventLog" type="button">
+        <img src="../icons/tab-eventlog.svg" alt="" />
+        <span data-i18n-content="manager.tab.eventLog"></span>
+      </button>
+      <button class="tab-button" data-tab="help" type="button">
+        <img src="../icons/tab-help-32.png" alt="" />
+        <span data-i18n-content="manager.tab.help"></span>
+      </button>
+    </nav>
+
+    <div class="tab-panel" data-panel="accounts">
+      <main class="layout">
+        <aside class="sidebar">
+          <div class="sidebar-list-wrap">
+            <table id="account-list" class="sidebar-list">
+              <thead>
+                <tr>
+                  <th class="col-account-name" colspan="2" data-i18n-content="manager.accounts.heading"></th>
+                  <th class="col-status" data-i18n-content="manager.accounts.col.status"></th>
+                </tr>
+              </thead>
+              <tbody id="account-list-body"></tbody>
+            </table>
+          </div>
+          <div class="sidebar-list-wrap">
+            <table id="provider-list" class="sidebar-list provider-list">
+              <thead>
+                <tr>
+                  <th class="col-account-name" colspan="2" data-i18n-content="manager.providers.heading"></th>
+                  <th class="col-status"></th>
+                </tr>
+              </thead>
+              <tbody id="provider-list-body"></tbody>
+            </table>
+          </div>
+        </aside>
+
+        <section class="detail" id="account-detail"></section>
+      </main>
+    </div>
+
+    <div class="tab-panel" data-panel="categoryManager" hidden>
+      <p data-i18n-content="manager.categoryManager.text"></p>
+      <p class="link-row">
+        <a href="https://addons.thunderbird.net/addon/categorymanager/" data-link-target="thunderbird"
+           >https://addons.thunderbird.net/addon/categorymanager/</a>
+      </p>
+    </div>
+
+    <div class="tab-panel" data-panel="eventLog" hidden>
+      <p data-i18n-content="manager.eventLog.intro"></p>
+      <div class="event-log">
+        <header class="event-log-header">
+          <div class="actions">
+            <label class="event-log-verbosity">
+              <span data-i18n-content="manager.eventLog.verbosity"></span>
+              <select id="event-log-verbosity">
+                <option value="1" data-i18n-content="manager.eventLog.verbosity.errors"></option>
+                <option value="2" data-i18n-content="manager.eventLog.verbosity.warnings"></option>
+                <option value="3" data-i18n-content="manager.eventLog.verbosity.debug"></option>
+              </select>
+            </label>
+            <button id="event-log-clear" class="btn-ghost" type="button" data-i18n-content="manager.eventLog.clear"></button>
+            <button id="btn-bug-report" type="button" data-i18n-content="manager.eventLog.bugReport.button"></button>
+          </div>
+        </header>
+        <div class="event-log-body">
+          <table id="event-log-table">
+            <thead>
+              <tr>
+                <th class="time" data-i18n-content="manager.eventLog.col.time"></th>
+                <th class="sev" data-i18n-content="manager.eventLog.col.level"></th>
+                <th class="src" data-i18n-content="manager.eventLog.col.source"></th>
+                <th class="acct" data-i18n-content="manager.eventLog.col.account"></th>
+                <th class="msg" data-i18n-content="manager.eventLog.col.message"></th>
+              </tr>
+            </thead>
+            <tbody id="event-log-rows"></tbody>
+          </table>
+          <div id="event-log-empty" class="event-log-empty" data-i18n-content="manager.eventLog.empty"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" data-panel="help" hidden>
+      <p data-i18n-content="manager.help.wiki"></p>
+      <p class="link-row">
+        <a href="https://github.com/jobisoft/TbSync/wiki" data-link-target="browser"
+           >https://github.com/jobisoft/TbSync/wiki</a>
+      </p>
+    </div>
+
+    <template id="tpl-empty-row">
+      <tr class="empty"><td></td></tr>
+    </template>
+
+    <template id="tpl-account-row">
+      <tr>
+        <td class="col-provider-icon"></td>
+        <td class="col-account-name"></td>
+        <td class="col-status"></td>
+      </tr>
+    </template>
+
+    <template id="tpl-provider-row">
+      <tr>
+        <td class="col-provider-icon"></td>
+        <td class="col-account-name">
+          <div class="name"></div>
+          <div class="sub"></div>
+        </td>
+        <td class="col-status"></td>
+      </tr>
+    </template>
+
+    <template id="tpl-install-icon">
+      <svg class="provider-install-icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M8 2v7m-3-3 3 3 3-3M3 13h10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </template>
+
+    <template id="tpl-add-icon">
+      <img class="add-account-icon" src="../icons/add-16.png" alt="" aria-hidden="true" />
+    </template>
+
+    <template id="tpl-detail">
+      <section class="detail-section">
+        <h2 data-i18n-content="manager.detail.general"></h2>
+        <div class="detail-general">
+          <div class="detail-general-info">
+            <div class="detail-row">
+              <label data-i18n-content="manager.detail.provider"></label>
+              <div class="val-provider"></div>
+            </div>
+            <div class="detail-row">
+              <label data-i18n-content="manager.detail.lastSync"></label>
+              <div class="val-last-sync"></div>
+            </div>
+          </div>
+          <div class="detail-general-actions">
+            <button id="btn-remove" class="danger" data-i18n-content="manager.account.remove"></button>
+            <button id="btn-settings" class="secondary" data-i18n-content="manager.account.settings"></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="detail-section">
+        <h2 data-i18n-content="manager.detail.status"></h2>
+        <div class="detail-status">
+          <div class="detail-status-info">
+            <div class="status-text"></div>
+          </div>
+          <div class="detail-status-actions">
+            <button id="btn-primary"></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="detail-section resources-section" hidden>
+        <h2 data-i18n-content="manager.resources.heading"></h2>
+        <p class="card-description" data-i18n-content="manager.resources.description"></p>
+        <div class="folder-table-wrap" hidden>
+          <table class="folder-table">
+            <colgroup>
+              <col class="col-check" />
+              <col class="col-type-icon" />
+              <col class="col-acl" />
+              <col class="col-name" />
+              <col class="col-status" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th class="col-name" colspan="4" data-i18n-content="manager.resources.col.name"></th>
+                <th class="col-status" data-i18n-content="manager.accounts.col.status"></th>
+              </tr>
+            </thead>
+            <tbody class="folder-rows"></tbody>
+          </table>
+        </div>
+        <div class="resources-footer" hidden>
+          <label for="autosync-minutes" class="autosync-label" data-i18n-content="manager.account.autosync"></label>
+          <input id="autosync-minutes" type="number" min="0" step="1" />
+          <span class="autosync-unit" data-i18n-content="manager.account.autosync.minutes"></span>
+          <button id="btn-sync" data-i18n-content="manager.account.sync"></button>
+        </div>
+      </section>
+    </template>
+
+    <template id="tpl-folder-row">
+      <tr>
+        <td class="col-check"><input type="checkbox" /></td>
+        <td class="col-type-icon"></td>
+        <td class="col-acl"></td>
+        <td class="col-name"></td>
+        <td class="col-status"></td>
+      </tr>
+    </template>
+
+    <template id="tpl-event-log-row">
+      <tr>
+        <td class="time"></td>
+        <td class="sev"></td>
+        <td class="src"></td>
+        <td class="acct"></td>
+        <td class="msg">
+          <span class="msg-text"></span>
+          <div class="details" hidden></div>
+        </td>
+      </tr>
+    </template>
+
+    <dialog id="confirm-dialog" class="confirm-dialog" data-variant="confirm">
+      <form method="dialog">
+        <h3 id="confirm-dialog-title"></h3>
+        <p id="confirm-dialog-body"></p>
+        <div class="bug-report-fields">
+          <div class="form-row">
+            <label for="bug-report-component" data-i18n-content="bugReport.component"></label>
+            <select id="bug-report-component"></select>
+          </div>
+          <div class="form-row">
+            <label for="bug-report-summary" data-i18n-content="bugReport.summary"></label>
+            <input id="bug-report-summary" type="text" />
+          </div>
+          <div class="form-row">
+            <label for="bug-report-description" data-i18n-content="bugReport.description"></label>
+            <textarea id="bug-report-description" rows="6"></textarea>
+          </div>
+        </div>
+        <div class="confirm-dialog-actions">
+          <button value="cancel" class="secondary" id="confirm-dialog-cancel"></button>
+          <button value="confirm" class="danger" id="confirm-dialog-confirm"></button>
+          <button value="ok" id="confirm-dialog-ok"></button>
+          <button value="send" id="confirm-dialog-send"></button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>
