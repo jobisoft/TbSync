@@ -68,8 +68,11 @@
   "manager.eventLog.verbosity.warnings": {
     "message": "Błędy i ostrzeżenia"
   },
+  "manager.eventLog.verbosity.info": {
+    "message": "Errors, warnings and info messages"
+  },
   "manager.eventLog.verbosity.debug": {
-    "message": "Errors, warnings and debug info"
+    "message": "Errors, warnings, info messages and debug logs"
   },
   "manager.eventLog.col.time": {
     "message": "Czas"
