@@ -3,235 +3,235 @@
     "message": "TbSync"
   },
   "extensionDescription": {
-    "message": "Central user interface to manage synchronization of contacts, calendars and tasks with external accounts, through provider add-ons."
+    "message": "Központi felhasználói felület a névjegyek, a naptárak és a feladatok külső fiókokkal történő szinkronizálásához. Ezt szolgáltatókiegészítők segítségével valósítja meg."
   },
   "manager.title": {
-    "message": "TbSync Account Manager"
+    "message": "TbSync fiókkezelő"
   },
   "manager.tab.accounts": {
-    "message": "TbSync Accounts"
+    "message": "TbSync-fiókok"
   },
   "manager.tab.categoryManager": {
-    "message": "Category Manager"
+    "message": "Kategóriakezelő"
   },
   "manager.categoryManager.text": {
-    "message": "TbSync also syncs contact categories, which are a powerful replacement for the non-synchronizable contact lists. To be able to use them in the Thunderbird address book you can install the Category Manager add-on. It allows to manage overlapping category based contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla add-on repository:"
+    "message": "A TbSync szinkronizálja a névjegykategóriákat is, amelyek hatékonyan helyettesítik a nem szinkronizálható névjegylistákat. A Thunderbird-névjegyzékben való használathoz telepítheti a Kategóriakezelő kiegészítőt. Lehetővé teszi az átfedő kategóriákon alapuló névjegycsoportok kezelését, és egy sor más kategóriákkal kapcsolatos funkciót. Ez megtalálható a hivatalos Thunderbird-kiegészítők weboldalon:"
   },
   "manager.tab.help": {
-    "message": "Help"
+    "message": "Súgó"
   },
   "manager.help.wiki": {
     "message": "Nyissa meg a TbSync projekt wiki oldalait, amely további információkat, útmutatókat és részletes beállítási leírásokat biztosít."
   },
   "manager.eventLog.intro": {
-    "message": "Bug reports include the contents of this log. For a more useful report, raise the verbosity level, clear the log, and reproduce the problem before clicking the report button."
+    "message": "A hibajelentések ezt a naplófájlt is tartalmazzák. A hasznosabb jelentés érdekében növelje a részletességi szintet, törölje a naplót, és reprodukálja a problémát, mielőtt a jelentés gombra kattint."
   },
   "manager.eventLog.bugReport.button": {
-    "message": "Create Bug Report"
+    "message": "Hibajelentés létrehozása"
   },
   "bugReport.title": {
-    "message": "Create Bug Report"
+    "message": "Hibajelentés létrehozása"
   },
   "bugReport.component": {
-    "message": "Component"
+    "message": "Összetevő"
   },
   "bugReport.summary": {
-    "message": "Summary"
+    "message": "Összefoglaló"
   },
   "bugReport.description": {
-    "message": "Description"
+    "message": "Leírás"
   },
   "bugReport.send": {
-    "message": "Send"
+    "message": "Küldés"
   },
   "bugReport.cancel": {
-    "message": "Cancel"
+    "message": "Mégse"
   },
   "bugReport.error.summaryRequired": {
-    "message": "Please enter a summary."
+    "message": "Adjon meg egy összefoglalót."
   },
   "manager.tab.eventLog": {
-    "message": "Event Log"
+    "message": "Eseménynapló"
   },
   "manager.eventLog.clear": {
-    "message": "Clear"
+    "message": "Törlés"
   },
   "manager.eventLog.empty": {
-    "message": "No events yet."
+    "message": "Még nincsenek események."
   },
   "manager.eventLog.verbosity": {
-    "message": "Verbosity level for event collection:"
+    "message": "Az eseménygyűjtés részletességi szintje:"
   },
   "manager.eventLog.verbosity.errors": {
-    "message": "Errors only"
+    "message": "Csak hibák"
   },
   "manager.eventLog.verbosity.warnings": {
-    "message": "Errors and warnings"
+    "message": "Hibák és figyelmeztetések"
   },
   "manager.eventLog.verbosity.debug": {
-    "message": "Errors, warnings and debug info"
+    "message": "Hibák, figyelmeztetések és hibakeresési információk"
   },
   "manager.eventLog.col.time": {
-    "message": "Time"
+    "message": "Idő"
   },
   "manager.eventLog.col.level": {
-    "message": "Level"
+    "message": "Szint"
   },
   "manager.eventLog.col.source": {
-    "message": "Source"
+    "message": "Forrás"
   },
   "manager.eventLog.col.account": {
-    "message": "Account"
+    "message": "Fiók"
   },
   "manager.eventLog.col.message": {
-    "message": "Message"
+    "message": "Üzenet"
   },
   "manager.accounts.heading": {
-    "message": "Configured Accounts"
+    "message": "Beállított fiókok"
   },
   "manager.accounts.col.status": {
-    "message": "Status"
+    "message": "Állapot"
   },
   "manager.providers.heading": {
-    "message": "Available providers"
+    "message": "Elérhető szolgáltatók"
   },
   "manager.addAccount": {
-    "message": "Add account"
+    "message": "Fiók hozzáadása"
   },
   "manager.noAccounts": {
-    "message": "No accounts configured"
+    "message": "Nincs fiók beállítva"
   },
   "manager.noProviders": {
-    "message": "No provider add-ons installed."
+    "message": "Nincs szolgáltatókiegészítő telepítve."
   },
   "manager.provider.install": {
-    "message": "Install from addons.thunderbird.net"
+    "message": "Telepítés az addons.thunderbird.net webhelyről"
   },
   "manager.provider.focusSetup": {
-    "message": "Bring the setup window to the front"
+    "message": "Beállítási ablak előre hozása"
   },
   "provider.state.active": {
-    "message": "Ready"
+    "message": "Kész"
   },
   "provider.state.stale": {
-    "message": "Reconnecting…"
+    "message": "Újracsatlakozás…"
   },
   "provider.state.uninstalled": {
-    "message": "Not installed"
+    "message": "Nincs telepítve"
   },
   "account.status.success": {
     "message": "OK"
   },
   "account.status.syncing": {
-    "message": "Synchronizing…"
+    "message": "Szinkronizálás…"
   },
   "account.status.notsyncronized": {
-    "message": "Not synchronized"
+    "message": "Nincs szinkronizálva"
   },
   "account.status.needs-sync": {
-    "message": "Account needs to be synchronized, at least one item is out of sync"
+    "message": "A fiókot szinkronizálni kell, legalább egy elem nincs szinkronizálva"
   },
   "account.status.upgrading": {
-    "message": "Provider is performing one-time upgrade work on this account…"
+    "message": "A szolgáltató egyszeri frissítési munkát végez a fiókon…"
   },
   "account.status.disabled": {
-    "message": "Disconnected"
+    "message": "Leválasztva"
   },
   "account.status.provider-unavailable": {
-    "message": "Provider unavailable"
+    "message": "A szolgáltató nem érhető el"
   },
   "account.status.needs-reauth": {
-    "message": "Authentication failed"
+    "message": "Sikertelen hitelesítés"
   },
   "account.status.error": {
-    "message": "Error"
+    "message": "Hiba"
   },
   "account.status.warning": {
-    "message": "Warning"
+    "message": "Figyelmeztetés"
   },
   "account.status.aborted": {
-    "message": "Synchronization aborted"
+    "message": "Szinkronizálás megszakítva"
   },
   "folder.status.pending": {
-    "message": "Waiting to be synchronized"
+    "message": "Várakozás a szinkronizálásra"
   },
   "folder.status.busy": {
-    "message": "Working…"
+    "message": "Dolgozik…"
   },
   "folder.status.modified": {
-    "message": "Local modifications"
+    "message": "Helyi módosítások"
   },
   "error.E:AUTH": {
-    "message": "Authentication failed"
+    "message": "Sikertelen hitelesítés"
   },
   "syncstate.sync": {
-    "message": "Synchronizing…"
+    "message": "Szinkronizálás…"
   },
   "syncstate.prepare": {
-    "message": "Preparing…"
+    "message": "Előkészítés…"
   },
   "syncstate.send": {
-    "message": "Sending request…"
+    "message": "Kérés küldése…"
   },
   "syncstate.eval": {
-    "message": "Processing response…"
+    "message": "Válasz feldolgozása…"
   },
   "manager.detail.general": {
-    "message": "General"
+    "message": "Általános"
   },
   "manager.detail.status": {
-    "message": "Status"
+    "message": "Állapot"
   },
   "manager.detail.provider": {
-    "message": "Provider:"
+    "message": "Szolgáltató:"
   },
   "manager.detail.lastSync": {
-    "message": "Last sync:"
+    "message": "Utolsó szinkronizálás:"
   },
   "manager.resources.heading": {
-    "message": "Available Resources"
+    "message": "Elérhető erőforrások"
   },
   "manager.resources.description": {
-    "message": "Select which of the found resources should be synchronized with Thunderbird."
+    "message": "Válasszon, hogy mely erőforrásokat kell szinkronizálni a Thunderbirddel."
   },
   "manager.account.connect": {
-    "message": "Connect"
+    "message": "Kapcsolódás"
   },
   "manager.account.disconnect": {
-    "message": "Disconnect"
+    "message": "Kapcsolat bontása"
   },
   "manager.account.signInAgain": {
-    "message": "Sign in again"
+    "message": "Bejelentkezés újra"
   },
   "manager.account.settings": {
-    "message": "Settings"
+    "message": "Beállítások"
   },
   "manager.account.remove": {
-    "message": "Remove"
+    "message": "Eltávolítás"
   },
   "manager.account.sync": {
-    "message": "Synchronize Now"
+    "message": "Szinkronizálás most"
   },
   "manager.account.autosync": {
-    "message": "Auto-sync every"
+    "message": "Automatikus szinkronizálás"
   },
   "manager.account.autosync.minutes": {
-    "message": "min"
+    "message": "percenként"
   },
   "manager.account.autosync.tooltip": {
-    "message": "0 disables automatic sync for this account."
+    "message": "A 0 letiltja a fiók automatikus szinkronizálását."
   },
   "manager.error.title": {
-    "message": "Error"
+    "message": "Hiba"
   },
   "manager.error.dismiss": {
     "message": "OK"
   },
   "manager.remove.confirmTitle": {
-    "message": "Remove account"
+    "message": "Fiók eltávolítása"
   },
   "manager.remove.confirmBody": {
-    "message": "Remove account “$NAME$”? The Thunderbird address book for this account will also be deleted.",
+    "message": "Eltávolítja a fiókot: „$NAME$”? A fiókhoz tartozó Thunderbird-címjegyzék is törölve lesz.",
     "placeholders": {
       "NAME": {
         "content": "$1",
@@ -240,27 +240,27 @@
     }
   },
   "manager.remove.cancelLabel": {
-    "message": "Cancel"
+    "message": "Mégse"
   },
   "manager.resources.empty": {
-    "message": "No resources yet."
+    "message": "Még nincsenek erőforrások."
   },
   "manager.resources.col.name": {
-    "message": "Name"
+    "message": "Név"
   },
   "folder.readOnly": {
-    "message": "Read-only"
+    "message": "Írásvédett"
   },
   "folder.readWrite": {
-    "message": "Read/write"
+    "message": "Írható"
   },
   "folderType.contacts": {
-    "message": "Contacts"
+    "message": "Névjegyek"
   },
   "folderType.calendars": {
-    "message": "Calendar"
+    "message": "Naptár"
   },
   "folderType.tasks": {
-    "message": "Tasks"
+    "message": "Feladatok"
   }
 }
