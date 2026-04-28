@@ -18,7 +18,7 @@
     "message": "TbSync also syncs contact categories, which are a powerful replacement for the non-synchronizable contact lists. To be able to use them in the Thunderbird address book you can install the Category Manager add-on. It allows to manage overlapping category based contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla add-on repository:"
   },
   "manager.tab.help": {
-    "message": "Help"
+    "message": "Pomoc"
   },
   "manager.help.wiki": {
     "message": "Otwórz strony wiki projektu TbSync, zawierają one dodatkowe informacje, przewodniki i szczegółowe opisy konfiguracji."
@@ -36,58 +36,58 @@
     "message": "Component"
   },
   "bugReport.summary": {
-    "message": "Summary"
+    "message": "Podsumowanie"
   },
   "bugReport.description": {
-    "message": "Description"
+    "message": "Opis"
   },
   "bugReport.send": {
     "message": "Send"
   },
   "bugReport.cancel": {
-    "message": "Cancel"
+    "message": "Anuluj"
   },
   "bugReport.error.summaryRequired": {
     "message": "Please enter a summary."
   },
   "manager.tab.eventLog": {
-    "message": "Event Log"
+    "message": "Dziennik Zdarzeń"
   },
   "manager.eventLog.clear": {
     "message": "Clear"
   },
   "manager.eventLog.empty": {
-    "message": "No events yet."
+    "message": "Nie ma jeszcze zdarzeń."
   },
   "manager.eventLog.verbosity": {
     "message": "Verbosity level for event collection:"
   },
   "manager.eventLog.verbosity.errors": {
-    "message": "Errors only"
+    "message": "Tylko błędy"
   },
   "manager.eventLog.verbosity.warnings": {
-    "message": "Errors and warnings"
+    "message": "Błędy i ostrzeżenia"
   },
   "manager.eventLog.verbosity.debug": {
     "message": "Errors, warnings and debug info"
   },
   "manager.eventLog.col.time": {
-    "message": "Time"
+    "message": "Czas"
   },
   "manager.eventLog.col.level": {
     "message": "Level"
   },
   "manager.eventLog.col.source": {
-    "message": "Source"
+    "message": "Źródło"
   },
   "manager.eventLog.col.account": {
-    "message": "Account"
+    "message": "Konto"
   },
   "manager.eventLog.col.message": {
     "message": "Message"
   },
   "manager.accounts.heading": {
-    "message": "Configured Accounts"
+    "message": "Skonfigurowane Konta"
   },
   "manager.accounts.col.status": {
     "message": "Status"
@@ -195,22 +195,22 @@
     "message": "Select which of the found resources should be synchronized with Thunderbird."
   },
   "manager.account.connect": {
-    "message": "Connect"
+    "message": "Połącz"
   },
   "manager.account.disconnect": {
-    "message": "Disconnect"
+    "message": "Rozłącz"
   },
   "manager.account.signInAgain": {
     "message": "Sign in again"
   },
   "manager.account.settings": {
-    "message": "Settings"
+    "message": "Ustawienia"
   },
   "manager.account.remove": {
-    "message": "Remove"
+    "message": "Usuń"
   },
   "manager.account.sync": {
-    "message": "Synchronize Now"
+    "message": "Synchronizuj Teraz"
   },
   "manager.account.autosync": {
     "message": "Auto-sync every"
@@ -228,7 +228,7 @@
     "message": "OK"
   },
   "manager.remove.confirmTitle": {
-    "message": "Remove account"
+    "message": "Usuń konto"
   },
   "manager.remove.confirmBody": {
     "message": "Remove account “$NAME$”? The Thunderbird address book for this account will also be deleted.",
@@ -240,7 +240,7 @@
     }
   },
   "manager.remove.cancelLabel": {
-    "message": "Cancel"
+    "message": "Anuluj"
   },
   "manager.resources.empty": {
     "message": "No resources yet."
@@ -249,18 +249,18 @@
     "message": "Name"
   },
   "folder.readOnly": {
-    "message": "Read-only"
+    "message": "Tylko do odczytu"
   },
   "folder.readWrite": {
-    "message": "Read/write"
+    "message": "Odczyt/Zapis"
   },
   "folderType.contacts": {
-    "message": "Contacts"
+    "message": "Kontakty"
   },
   "folderType.calendars": {
-    "message": "Calendar"
+    "message": "Kalendarz"
   },
   "folderType.tasks": {
-    "message": "Tasks"
+    "message": "Zadania"
   }
 }
