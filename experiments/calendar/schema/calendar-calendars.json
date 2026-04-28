@@ -1,0 +1,241 @@
+[
+  {
+    "namespace": "calendar.calendars",
+    "types": [
+      {
+        "id": "Calendar",
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "cacheId": { "type": "string", "optional": true },
+          "type": { "type": "string" },
+          "name": { "type": "string" },
+          "url": { "type": "string" },
+          "readOnly": { "type": "boolean" },
+          "enabled": { "type": "boolean" },
+          "visible": { "type": "boolean" },
+          "showReminders": { "type": "boolean" },
+          "color": { "type": "string", "optional": true },
+          "capabilities": { "$ref": "CalendarCapabilities", "optional": true }
+        }
+      },
+      {
+        "id": "CalendarChangeProps",
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "url": { "type": "string" },
+          "readOnly": { "type": "boolean" },
+          "enabled": { "type": "boolean" },
+          "visible": { "type": "boolean" },
+          "showReminders": { "type": "boolean" },
+          "color": { "type": "string", "optional": true }
+        }
+      },
+      {
+        "id": "CalendarCapabilities",
+        "type": "object",
+        "properties": {
+          "timezones": {
+            "type": "object",
+            "optional": true,
+            "properties": {
+              "floating": { "type": "boolean", "optional": true },
+              "UTC": { "type": "boolean", "optional": true }
+            }
+          },
+          "organizer": { "type": "string", "optional": true },
+          "organizerName": { "type": "string", "optional": true },
+          "attachments": { "type": "boolean", "optional": true },
+          "priority": { "type": "boolean", "optional": true },
+          "privacy": {
+            "optional": true,
+            "choices": [
+              { "type": "boolean" },
+              { "type": "array", "items": { "type": "string" } }
+            ]
+          },
+          "categories": {
+            "type": "object",
+            "optional": true,
+            "properties": {
+              "count": { "type": "integer", "minimum": -1, "optional": true }
+            }
+          },
+          "alarms": {
+            "type": "object",
+            "optional": true,
+            "properties": {
+              "count": { "type": "integer", "minimum": -1, "optional": true },
+              "actions": { "type": "array", "items": { "type": "string" }, "optional": true }
+            }
+          },
+          "tasks": { "type": "boolean", "optional": true, "default": true },
+          "events": { "type": "boolean", "optional": true, "default": true },
+          "removeModes": {
+            "type": "array",
+            "optional": true,
+            "default": ["unsubscribe"],
+            "items": {
+              "type": "string",
+              "enum": ["unsubscribe", "delete"]
+            }
+          },
+          "requiresNetwork": { "type": "boolean", "optional": true },
+          "minimumRefreshInterval": { "type": "integer", "minimum": -1, "optional": true },
+          "mutable": { "type": "boolean", "optional": true, "default": true },
+          "scheduling": {
+            "type": "string",
+            "optional": true,
+            "default": "client",
+            "enum": ["client", "server", "none"]
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "query",
+        "async": true,
+        "type": "function",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "queryInfo",
+            "properties": {
+              "type": { "type": "string", "optional": true },
+              "url": { 
+                "choices": [
+                  {"type": "string"},
+                  {"type": "array", "items": {"type": "string"}}
+                ],
+                "optional": true
+              },
+              "name": { "type": "string", "optional": true },
+              "color": { "type": "string", "optional": true },
+              "readOnly": { "type": "boolean", "optional": true },
+              "visible": { "type": "boolean", "optional": true },
+              "enabled": { "type": "boolean", "optional": true }
+            }
+          }
+        ]
+      },
+      {
+        "name": "get",
+        "async": true,
+        "type": "function",
+        "parameters": [
+          { "type": "string", "name": "id" }
+         ]
+       },
+      {
+        "name": "create",
+        "async": true,
+        "type": "function",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "createProperties",
+            "properties": {
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "url": { "type": "string" },
+              "readOnly": { "type": "boolean", "optional": true },
+              "enabled": { "type": "boolean", "optional": true },
+              "visible": { "type": "boolean", "optional": true },
+              "showReminders": { "type": "boolean", "optional": true },
+              "color": { "type": "string", "optional": true },
+              "capabilities": {
+                "type": "object",
+                "optional": true,
+                "additionalProperties": true,
+                "description": "This is normally CalendarCapabilities, but we don't want to inherit default values here"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "update",
+        "async": true,
+        "type": "function",
+        "parameters": [
+          { "type": "string", "name": "id" },
+          {
+            "type": "object",
+            "name": "updateProperties",
+            "properties": {
+              "name": { "type": "string", "optional": true },
+              "url": { "type": "string", "optional": true },
+              "readOnly": { "type": "boolean", "optional": true },
+              "enabled": { "type": "boolean", "optional": true },
+              "color": { "type": "string", "optional": true },
+              "lastError": { "type": "string", "optional": true },
+              "capabilities": {
+                "type": "object",
+                "optional": true,
+                "additionalProperties": true,
+                "description": "This is normally CalendarCapabilities, but we don't want to inherit default values here"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "remove",
+        "async": true,
+        "type": "function",
+        "parameters": [
+          { "type": "string", "name": "id" }
+        ]
+      },
+      {
+        "name": "clear",
+        "async": true,
+        "type": "function",
+        "parameters": [
+          { "type": "string", "name": "id" }
+        ]
+      },
+      {
+        "name": "synchronize",
+        "async": true,
+        "type": "function",
+        "parameters": [
+          {
+            "optional": true,
+            "name": "ids",
+            "choices": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "string" } }
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onCreated",
+        "type": "function",
+        "parameters": [
+          { "name": "calendar", "$ref": "Calendar" }
+        ]
+      },
+      {
+        "name": "onUpdated",
+        "type": "function",
+        "parameters": [
+          { "name": "calendar", "$ref": "Calendar" },
+          { "name": "changeInfo", "$ref": "CalendarChangeProps" }
+        ]
+      },
+      {
+        "name": "onRemoved",
+        "type": "function",
+        "parameters": [
+          { "name": "id", "type": "string" }
+        ]
+      }
+    ]
+  }
+]

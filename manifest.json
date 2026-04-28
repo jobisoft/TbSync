@@ -4,7 +4,7 @@
     "gecko": {
       "id": "tbsync@jobisoft.de",
       "strict_min_version": "140.0",
-      "strict_max_version": "150.0"
+      "strict_max_version": "140.*"
     }
   },
   "name": "__MSG_extensionName__",
@@ -60,6 +60,44 @@
         "scopes": ["addon_parent"],
         "paths": [["ProfileFiles"]],
         "script": "experiments/ProfileFiles/implementation.js"
+      }
+    },
+    "calendar_provider": {
+      "schema": "experiments/calendar/schema/calendar-provider.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "experiments/calendar/parent/ext-calendar-provider.js",
+        "events": ["startup"],
+        "paths": [["calendar", "provider"]]
+      }
+    },
+    "calendar_calendars": {
+      "schema": "experiments/calendar/schema/calendar-calendars.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "experiments/calendar/parent/ext-calendar-calendars.js",
+        "paths": [["calendar", "calendars"]]
+      }
+    },
+    "calendar_items": {
+      "schema": "experiments/calendar/schema/calendar-items.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "experiments/calendar/parent/ext-calendar-items.js",
+        "paths": [["calendar", "items"]]
+      }
+    },
+    "calendar_timezones": {
+      "schema": "experiments/calendar/schema/calendar-timezones.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "experiments/calendar/parent/ext-calendar-timezones.js",
+        "paths": [["calendar", "timezones"]]
+      },
+      "child": {
+        "scopes": ["addon_child"],
+        "script": "experiments/calendar/child/ext-calendar-timezones.js",
+        "paths": [["calendar", "timezones"]]
       }
     }
   }

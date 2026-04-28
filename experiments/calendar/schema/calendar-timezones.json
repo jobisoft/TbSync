@@ -1,0 +1,50 @@
+
+[
+  {
+    "namespace": "calendar.timezones",
+    "properties": {
+      "currentZone": {
+        "description": "The current timezone id",
+        "type": "string"
+      },
+      "timezoneIds": {
+        "description": "The current timezone id",
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    "functions": [
+      {
+        "name": "getDefinition",
+        "type": "function",
+        "description": "Retrieve the vtimezone definition of a timezone with the specified id",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "tzid",
+            "description": "The timezone id to retrieve defintiion for"
+          },
+          {
+            "$ref": "calendar.items.CalendarItemFormats",
+            "name":"returnFormat",
+            "optional": true,
+            "default": "ical",
+            "description": "The return format of the definition"
+          }
+        ],
+        "returns": {
+          "type": "string"
+        }
+      }
+    ],
+    "events": [
+      {
+        "name": "onUpdated",
+        "type": "function",
+        "parameters": [
+          { "name": "tzid", "type": "string" }
+        ]
+      }
+    ]
+  }
+]

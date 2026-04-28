@@ -215,9 +215,10 @@ router.setProviderRpcHandler(PROVIDER_CMD.CHANGELOG_MARK_SERVER_WRITE, async (pr
   if (!acc || acc.provider !== providerId) {
     throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
   }
-  if (kind !== "contact" && kind !== "list" && kind !== "list-by-name") {
+  const allowedKinds = ["contact", "list", "list-by-name", "event", "task", "calendar-item"];
+  if (!allowedKinds.includes(kind)) {
     throw withCode(
-      new Error(`changelogMarkServerWrite: kind must be "contact" | "list" | "list-by-name" (got ${JSON.stringify(kind)})`),
+      new Error(`changelogMarkServerWrite: kind must be one of ${allowedKinds.join(" | ")} (got ${JSON.stringify(kind)})`),
       ERR.UNKNOWN_COMMAND,
     );
   }

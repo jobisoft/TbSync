@@ -176,6 +176,17 @@ export class TbSyncProviderImplementation {
    *                         name on the next `mailingLists.onCreated`
    *                         and upgrades it in place to
    *                         `kind: "list", itemId: <real id>`.
+   *    - `"event"`        : itemId = TB calendar item id; suppresses
+   *                         `messenger.calendar.items.*` events whose
+   *                         `item.type === "event"`.
+   *    - `"task"`         : itemId = TB calendar item id; suppresses
+   *                         `messenger.calendar.items.*` events whose
+   *                         `item.type === "task"`.
+   *    - `"calendar-item"`: itemId = TB calendar item id; reserved for
+   *                         the `onRemoved` path where the item type
+   *                         is no longer available. The watcher resolves
+   *                         this against any matching `(parentId, itemId)`
+   *                         row regardless of kind.
    *  Must be awaited BEFORE the actual TB API call so the tag is
    *  durable before the event fires. */
   changelogMarkServerWrite(args) { return this.#sendCmd(PROVIDER_CMD.CHANGELOG_MARK_SERVER_WRITE, args); }

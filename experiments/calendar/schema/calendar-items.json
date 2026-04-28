@@ -1,0 +1,227 @@
+[
+  {
+    "namespace": "calendar.items",
+    "types": [
+      {
+        "id": "CalendarItem",
+        "type": "object",
+        "description": "TODO split event/task. Add more jscalendar props. Use format: 'date'.",
+        "properties": {
+          "id": { "type": "string" },
+          "calendarId": { "type": "string" },
+          "type": { "type": "string", "enum": ["event", "task"] },
+          "instance": { "type": "string", "optional": true },
+          "format": { "$ref": "CalendarItemFormats", "optional": true },
+          "item": { "$ref": "RawCalendarItem" },
+          "metadata": { "type": "object", "additionalProperties": { "type": "any" }, "optional": true }
+        }
+      },
+      {
+        "id": "RawCalendarItem",
+        "type": "any"
+      },
+      {
+        "id": "CalendarItemFormats",
+        "type": "string",
+        "enum": ["ical", "jcal"]
+      },
+      {
+        "id": "ReturnFormat",
+        "choices": [
+          { "$ref": "CalendarItemFormats" },
+          { "type": "array", "items": { "$ref": "CalendarItemFormats" } }
+        ]
+      },
+      {
+        "id": "CalendarItemAlarm",
+        "type": "object",
+        "description": "TODO needs real structure",
+        "properties": {
+          "itemId": { "type": "string" },
+          "action": { "type": "string" },
+          "date": { "type": "string" },
+          "offset": { "type": "string" },
+          "related": { "type": "string", "enum": ["absolute", "start", "end"] }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "get",
+        "async": true,
+        "type": "function",
+        "parameters": [
+          { "type": "string", "name": "calendarId" },
+          { "type": "string", "name": "id" },
+          {
+            "type": "object",
+            "name": "getOptions",
+            "optional": true,
+            "properties": {
+              "returnFormat": { "$ref": "ReturnFormat", "optional": true }
+            }
+          }
+         ]
+      },
+      {
+        "name": "query",
+        "async": true,
+        "type": "function",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "queryOptions",
+            "properties": {
+              "returnFormat": { "$ref": "ReturnFormat", "optional": true },
+              "id": { "type": "string", "optional": true },
+              "calendarId": {
+                "choices": [
+                  { "type": "string" },
+                  { "type": "array", "items": { "type": "string" } }
+                ],
+                "optional": true
+              },
+              "type": { "type": "string", "enum": ["event", "task"], "optional": true },
+              "rangeStart": { "type": "string", "optional": true },
+              "rangeEnd": { "type": "string", "optional": true },
+              "expand": { "type": "boolean", "optional": true }
+            }
+          }
+        ]
+      },
+      {
+        "name": "create",
+        "async": true,
+        "type": "function",
+        "parameters": [
+          { "type": "string", "name": "calendarId" },
+          {
+            "name": "createProperties",
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "optional": true },
+              "type": { "type": "string", "enum": ["event", "task"] },
+              "format": { "$ref": "CalendarItemFormats", "optional": true },
+              "item": { "$ref": "RawCalendarItem" },
+              "returnFormat": { "$ref": "ReturnFormat", "optional": true },
+              "metadata": { "type": "object", "properties": {}, "additionalProperties": { "type": "any" }, "optional": true }
+            }
+          }
+        ]
+      },
+      {
+        "name": "update",
+        "async": true,
+        "type": "function",
+        "parameters": [
+          { "type": "string", "name": "calendarId" },
+          { "type": "string", "name": "id" },
+          {
+            "name": "updateProperties",
+            "type": "object",
+            "properties": {
+              "format": { "$ref": "CalendarItemFormats", "optional": true },
+              "item": { "$ref": "RawCalendarItem" },
+              "returnFormat": { "$ref": "ReturnFormat", "optional": true },
+              "metadata": { "type": "object", "additionalProperties": { "type": "any" }, "optional": true }
+            }
+          }
+        ]
+      },
+      {
+        "name": "move",
+        "async": true,
+        "type": "function",
+        "parameters": [
+          { "type": "string", "name": "fromCalendarId" },
+          { "type": "string", "name": "id" },
+          { "type": "string", "name": "toCalendarId" }
+        ]
+      },
+      {
+        "name": "remove",
+        "async": true,
+        "type": "function",
+        "parameters": [
+          { "type": "string", "name": "calendarId" },
+          { "type": "string", "name": "id" }
+        ]
+      },
+      {
+        "name": "getCurrent",
+        "async": true,
+        "type": "function",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "getOptions",
+            "optional": true,
+            "properties": {
+              "returnFormat": { "$ref": "ReturnFormat", "optional": true }
+            }
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onCreated",
+        "type": "function",
+        "parameters": [
+          { "name": "item", "$ref": "CalendarItem" }
+        ],
+        "extraParameters": [
+          {
+            "type": "object",
+            "optional": true,
+            "properties": {
+              "returnFormat": { "$ref": "ReturnFormat", "optional": true }
+            }
+          }
+        ]
+      },
+      {
+        "name": "onUpdated",
+        "type": "function",
+        "parameters": [
+          { "name": "item", "$ref": "CalendarItem" },
+          { "name": "changeInfo", "type": "object", "properties": {}, "description": "TODO needs properties" }
+        ],
+        "extraParameters": [
+          {
+            "type": "object",
+            "optional": true,
+            "properties": {
+              "returnFormat": { "$ref": "ReturnFormat", "optional": true }
+            }
+          }
+        ]
+      },
+      {
+        "name": "onRemoved",
+        "type": "function",
+        "parameters": [
+          { "type": "string", "name": "calendarId" },
+          { "type": "string", "name": "id" }
+        ]
+      },
+      {
+        "name": "onAlarm",
+        "type": "function",
+        "parameters": [
+          { "name": "item", "$ref": "CalendarItem" },
+          { "name": "alarm", "$ref": "CalendarItemAlarm" }
+        ],
+        "extraParameters": [
+          {
+            "type": "object",
+            "optional": true,
+            "properties": {
+              "returnFormat": { "$ref": "ReturnFormat", "optional": true }
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

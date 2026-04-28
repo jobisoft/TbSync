@@ -57,6 +57,22 @@ export async function init() {
     handle("list", "deleted", { parentId, id })
   );
 
+  // Calendar / task event observers. The experiment fires onCreated /
+  // onUpdated with the full CalendarItem; we only need (id, calendarId,
+  // type) so we skip the returnFormat option and drop the payload.
+  // onRemoved gives us only `(calendarId, itemId)` - the item type is
+  // already gone, so we tag with a generic kind and resolve to the real
+  // kind from an existing changelog entry inside `handle`.
+  messenger.calendar.items.onCreated.addListener(item =>
+    handle(kindForCalendarItem(item), "created", { parentId: item.calendarId, id: item.id })
+  );
+  messenger.calendar.items.onUpdated.addListener(item =>
+    handle(kindForCalendarItem(item), "updated", { parentId: item.calendarId, id: item.id })
+  );
+  messenger.calendar.items.onRemoved.addListener((calendarId, itemId) =>
+    handle("calendar-item", "deleted", { parentId: calendarId, id: itemId })
+  );
+
   // Keep `folder.targetName` in sync with the user's local TB address-book
   // label - the manager's resource-list cell shows targetName for
   // successfully-synced folders. Only watched books are mirrored.
@@ -97,6 +113,10 @@ async function handleBookRename(node) {
   }
 }
 
+function kindForCalendarItem(item) {
+  return item?.type === "task" ? "task" : "event";
+}
+
 async function handle(kind, op, node) {
   const parentId = node?.parentId;
   const itemId = node?.id;
@@ -110,25 +130,51 @@ async function handle(kind, op, node) {
   // pre-tag's itemId is the name until onCreated tells us the real id).
   const name = (kind === "list" && op === "created") ? (node?.name ?? null) : null;
 
-  // Track whether applyEvent actually mutated the changelog (it returns
-  // the same array reference when a pre-tag freeze keeps the event from
-  // being logged as user-initiated). The broadcast only fires on real
-  // user-driven changes, so provider-side sync traffic doesn't cause UI
-  // re-render churn.
-  let mutated = false;
+  // Broadcast only when the user-facing changelog content actually
+  // changed. With DROP_SERVER_TAGS_ON_CONSUME on, every suppressed event
+  // still returns a different array reference (with the consumed
+  // *_by_server tag removed), so a reference comparison would fire a
+  // folders-changed broadcast on every server write - thousands of UI
+  // re-renders during a bulk pull and a locked manager.
+  let userFacingChanged = false;
   try {
     await folders.mutateChangelog(owner.accountId, owner.folderId, entries => {
-      const next = applyEvent(entries, { kind, parentId, itemId, name, op, now: Date.now() });
-      mutated = next !== entries;
+      // calendar.items.onRemoved doesn't tell us if the deleted item was
+      // an event or a task. Resolve to the actual kind from any existing
+      // entry (provider pre-tags use "event" / "task") so the freeze key
+      // matches; default to "event" if no prior entry exists.
+      let resolvedKind = kind;
+      if (kind === "calendar-item") {
+        const prior = entries.find(e => e.parentId === parentId && e.itemId === itemId);
+        resolvedKind = prior?.kind === "task" ? "task" : "event";
+      }
+      const next = applyEvent(entries, {
+        kind: resolvedKind, parentId, itemId, name, op, now: Date.now()
+      });
+      userFacingChanged = userFacingDiffers(entries, next);
       return next;
     });
   } catch (err) {
     console.warn(`[tbsync] changelog-watcher ${kind}.${op} failed:`, err?.message ?? err);
     return;
   }
-  if (mutated) {
+  if (userFacingChanged) {
     ui.broadcast({ type: "folders-changed", accountId: owner.accountId });
   }
+}
+
+function userFacingDiffers(before, after) {
+  if (before === after) return false;
+  const a = before.filter(e => !isServerTag(e.status));
+  const b = after.filter(e => !isServerTag(e.status));
+  if (a.length !== b.length) return true;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].parentId !== b[i].parentId) return true;
+    if (a[i].itemId   !== b[i].itemId)   return true;
+    if (a[i].kind     !== b[i].kind)     return true;
+    if (a[i].status   !== b[i].status)   return true;
+  }
+  return false;
 }
 
 /**
