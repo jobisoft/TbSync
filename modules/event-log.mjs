@@ -15,11 +15,11 @@ import { serialize } from "./storage-queue.mjs";
  * and the UI row coloring in the Event Log tab.
  */
 
-export const LEVELS = Object.freeze(["error", "warning", "debug"]);
+export const LEVELS = Object.freeze(["error", "warning", "info", "debug"]);
 
 /** Threshold index for each level. Appended entry is kept iff
  *  LEVEL_INDEX[entry.level] < settings.logLevel. */
-const LEVEL_INDEX = Object.freeze({ error: 1, warning: 2, debug: 3 });
+const LEVEL_INDEX = Object.freeze({ error: 0, warning: 1, info: 2, debug: 3 });
 
 function assertValidLevel(level) {
   if (!LEVELS.includes(level)) {

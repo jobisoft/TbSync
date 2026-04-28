@@ -68,8 +68,11 @@
   "manager.eventLog.verbosity.warnings": {
     "message": "Fel och varningar"
   },
+  "manager.eventLog.verbosity.info": {
+    "message": "Fel, varningar och informationsmeddelanden"
+  },
   "manager.eventLog.verbosity.debug": {
-    "message": "Fel, varningar och felsökningsinformation"
+    "message": "Fel, varningar, informationsmeddelanden och felsökningsloggar"
   },
   "manager.eventLog.col.time": {
     "message": "Tid"

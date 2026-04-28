@@ -68,8 +68,11 @@
   "manager.eventLog.verbosity.warnings": {
     "message": "Erori și avertismente"
   },
+  "manager.eventLog.verbosity.info": {
+    "message": "Erori, avertismente și mesaje informative"
+  },
   "manager.eventLog.verbosity.debug": {
-    "message": "Erori, avertismente și informații de depanare"
+    "message": "Erori, avertismente, mesaje informative și jurnale de depanare"
   },
   "manager.eventLog.col.time": {
     "message": "Oră"

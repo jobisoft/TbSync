@@ -68,8 +68,11 @@
   "manager.eventLog.verbosity.warnings": {
     "message": "Hibák és figyelmeztetések"
   },
+  "manager.eventLog.verbosity.info": {
+    "message": "Hibák, figyelmeztetések és tájékoztató üzenetek"
+  },
   "manager.eventLog.verbosity.debug": {
-    "message": "Hibák, figyelmeztetések és hibakeresési információk"
+    "message": "Hibák, figyelmeztetések, tájékoztató üzenetek és hibakeresési naplók"
   },
   "manager.eventLog.col.time": {
     "message": "Idő"

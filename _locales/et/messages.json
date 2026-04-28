@@ -68,8 +68,11 @@
   "manager.eventLog.verbosity.warnings": {
     "message": "Vead ja hoiatused"
   },
+  "manager.eventLog.verbosity.info": {
+    "message": "Vead, hoiatused ja teabesõnumid"
+  },
   "manager.eventLog.verbosity.debug": {
-    "message": "Vead, hoiatused ja silumisteave"
+    "message": "Vead, hoiatused, teabesõnumid ja silumislogid"
   },
   "manager.eventLog.col.time": {
     "message": "Aeg"

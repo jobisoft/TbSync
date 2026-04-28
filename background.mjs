@@ -23,11 +23,6 @@ export const CORE_MAINTAINER_EMAIL = "john.bieling@gmx.de";
 // ── Startup ────────────────────────────────────────────────────────────────
 
 async function ensureSchema() {
-  // Pull legacy data forward before any other host work touches storage.
-  // No-op when there's nothing to migrate or local storage already
-  // contains an accounts entry (idempotent across boots).
-  await runLegacyMigration();
-
   const rv = await browser.storage.local.get({
     [KEYS.SCHEMA_VERSION]: 0,
     [KEYS.SETTINGS]: null,
@@ -42,6 +37,8 @@ async function ensureSchema() {
       browser.storage.local.set({ [KEYS.SETTINGS]: DEFAULT_SETTINGS })
     );
   }
+
+  await runLegacyMigration();
 }
 
 const MANAGER_TAB_KEY = "managerTabId";
@@ -322,8 +319,8 @@ ui.setManagerRpcHandler("getCoreMaintainerEmail", async () => CORE_MAINTAINER_EM
 
 ui.setManagerRpcHandler("setLogLevel", async ({ level }) => {
   const n = Number(level);
-  if (!Number.isInteger(n) || n < 1 || n > 3) {
-    throw new Error(`setLogLevel: level must be 1, 2, or 3 (got ${JSON.stringify(level)})`);
+  if (!Number.isInteger(n) || n < 0 || n > 3) {
+    throw new Error(`setLogLevel: level must be 0, 1, 2, or 3 (got ${JSON.stringify(level)})`);
   }
   await serialize(async () => {
     const rv = await browser.storage.local.get({ [KEYS.SETTINGS]: DEFAULT_SETTINGS });

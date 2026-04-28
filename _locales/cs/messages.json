@@ -68,8 +68,11 @@
   "manager.eventLog.verbosity.warnings": {
     "message": "Chyby a varování"
   },
+  "manager.eventLog.verbosity.info": {
+    "message": "Chyby, varování a informační zprávy"
+  },
   "manager.eventLog.verbosity.debug": {
-    "message": "Chyby, varování a ladicí informace"
+    "message": "Chyby, varování, informační zprávy a ladicí záznamy"
   },
   "manager.eventLog.col.time": {
     "message": "Čas"

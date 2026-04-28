@@ -68,8 +68,11 @@
   "manager.eventLog.verbosity.warnings": {
     "message": "오류 및 경고"
   },
+  "manager.eventLog.verbosity.info": {
+    "message": "오류, 경고 및 정보 메시지"
+  },
   "manager.eventLog.verbosity.debug": {
-    "message": "오류, 경고 및 디버그 정보"
+    "message": "오류, 경고, 정보 메시지 및 디버그 로그"
   },
   "manager.eventLog.col.time": {
     "message": "시각"

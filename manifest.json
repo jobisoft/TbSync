@@ -22,12 +22,7 @@
     "default_icon": {
       "32": "icons/tbsync-32.png"
     },
-    "allowed_spaces": [
-      "mail",
-      "addressbook",
-      "calendar",
-      "tasks"
-    ]
+    "allowed_spaces": []
   },
   "permissions": [
     "storage",

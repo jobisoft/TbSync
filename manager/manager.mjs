@@ -78,7 +78,7 @@ const state = {
   // configsOpen for the "Sign in again" button.
   reauthsOpen: new Set(),
   eventLog: [],
-  settings: { logLevel: 1 },
+  settings: { logLevel: 0 },
   // Host-derived transient sets, snapshotted per getState call.
   transient: {
     syncingAccounts: new Set(),
@@ -1162,7 +1162,7 @@ document.getElementById("event-log-verbosity").addEventListener("change", e => {
 function syncVerbositySelect() {
   const select = document.getElementById("event-log-verbosity");
   if (!select) return;
-  const current = String(state.settings?.logLevel ?? 1);
+  const current = String(state.settings?.logLevel ?? 0);
   if (select.value !== current) select.value = current;
 }
 

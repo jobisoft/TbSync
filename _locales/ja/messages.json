@@ -68,8 +68,11 @@
   "manager.eventLog.verbosity.warnings": {
     "message": "エラーと警告"
   },
+  "manager.eventLog.verbosity.info": {
+    "message": "エラー、警告、情報メッセージ"
+  },
   "manager.eventLog.verbosity.debug": {
-    "message": "エラー、警告、デバッグ情報"
+    "message": "エラー、警告、情報メッセージ、デバッグログ"
   },
   "manager.eventLog.col.time": {
     "message": "時刻"

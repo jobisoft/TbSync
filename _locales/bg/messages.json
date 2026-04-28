@@ -68,8 +68,11 @@
   "manager.eventLog.verbosity.warnings": {
     "message": "Грешки и предупреждения"
   },
+  "manager.eventLog.verbosity.info": {
+    "message": "Грешки, предупреждения и информационни съобщения"
+  },
   "manager.eventLog.verbosity.debug": {
-    "message": "Грешки, предупреждения и информация за отстраняване на грешки"
+    "message": "Грешки, предупреждения, информационни съобщения и записи за отстраняване на грешки"
   },
   "manager.eventLog.col.time": {
     "message": "Час"
