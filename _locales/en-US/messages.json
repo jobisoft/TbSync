@@ -265,5 +265,17 @@
   },
   "folderType.tasks": {
     "message": "Tasks"
+  },
+  "actionButton.title.ok": {
+    "message": "TbSync"
+  },
+  "actionButton.title.syncing": {
+    "message": "TbSync — Syncing…"
+  },
+  "actionButton.title.error": {
+    "message": "TbSync — Sync error"
+  },
+  "actionButton.title.localChanges": {
+    "message": "TbSync — Local changes pending"
   }
 }

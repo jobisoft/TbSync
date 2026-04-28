@@ -20,8 +20,10 @@
   "browser_action": {
     "default_title": "TbSync",
     "default_icon": {
-      "32": "icons/tbsync-32.png"
+      "32": "icons/tbsync-32.png",
+      "64": "icons/tbsync-64.png"
     },
+    "default_label": "",
     "allowed_spaces": []
   },
   "permissions": [
@@ -40,6 +42,10 @@
       "background.mjs"
     ]
   },
+  "options_ui": {
+    "page": "manager/manager.html",
+    "open_in_tab": true
+  },  
   "experiment_apis": {
     "LegacyPrefs": {
       "schema": "experiments/LegacyPrefs/schema.json",

@@ -9,6 +9,7 @@ import * as eventLog from "./modules/event-log.mjs";
 import * as registry from "./modules/registry.mjs";
 import * as router from "./modules/router.mjs";
 import * as ui from "./modules/messaging-ui.mjs";
+import * as actionBadge from "./modules/action-badge.mjs";
 import * as changelogWatcher from "./modules/changelog-watcher.mjs";
 import { busyAccounts, busyFolders, upgradeAccounts, snapshot as transientSnapshot } from "./modules/transient.mjs";
 import { syncAccount } from "./modules/sync-coordinator.mjs";
@@ -585,6 +586,8 @@ browser.alarms.onAlarm.addListener(alarm => {
 
 await ensureSchema();
 ui.init();
+actionBadge.init();
+await actionBadge.refresh();
 await changelogWatcher.init();
 const reg = registry.init({
   openPortToProvider: router.openPortToProvider,

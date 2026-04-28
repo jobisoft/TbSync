@@ -265,5 +265,17 @@
   },
   "account.status.upgrading": {
     "message": "Pakkuja teeb sellele kontole ühekordseid uuendustöid…"
+  },
+  "actionButton.title.ok": {
+    "message": "TbSync"
+  },
+  "actionButton.title.syncing": {
+    "message": "TbSync — Sünkroonimine…"
+  },
+  "actionButton.title.error": {
+    "message": "TbSync — Sünkroonimisviga"
+  },
+  "actionButton.title.localChanges": {
+    "message": "TbSync — Kohalikud muudatused ootel"
   }
 }

@@ -265,5 +265,17 @@
   },
   "account.status.upgrading": {
     "message": "Furnizorul efectuează o actualizare unică pentru acest cont…"
+  },
+  "actionButton.title.ok": {
+    "message": "TbSync"
+  },
+  "actionButton.title.syncing": {
+    "message": "TbSync — Sincronizare…"
+  },
+  "actionButton.title.error": {
+    "message": "TbSync — Eroare de sincronizare"
+  },
+  "actionButton.title.localChanges": {
+    "message": "TbSync — Modificări locale în așteptare"
   }
 }

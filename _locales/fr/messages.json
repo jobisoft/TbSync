@@ -265,5 +265,17 @@
   },
   "account.status.upgrading": {
     "message": "Le fournisseur effectue une mise à niveau ponctuelle sur ce compte…"
+  },
+  "actionButton.title.ok": {
+    "message": "TbSync"
+  },
+  "actionButton.title.syncing": {
+    "message": "TbSync — Synchronisation…"
+  },
+  "actionButton.title.error": {
+    "message": "TbSync — Erreur de synchronisation"
+  },
+  "actionButton.title.localChanges": {
+    "message": "TbSync — Modifications locales en attente"
   }
 }

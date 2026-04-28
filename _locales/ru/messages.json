@@ -265,5 +265,17 @@
   },
   "account.status.upgrading": {
     "message": "Провайдер выполняет одноразовое обновление этой учётной записи…"
+  },
+  "actionButton.title.ok": {
+    "message": "TbSync"
+  },
+  "actionButton.title.syncing": {
+    "message": "TbSync — Синхронизация…"
+  },
+  "actionButton.title.error": {
+    "message": "TbSync — Ошибка синхронизации"
+  },
+  "actionButton.title.localChanges": {
+    "message": "TbSync — Ожидающие локальные изменения"
   }
 }

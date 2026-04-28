@@ -265,5 +265,17 @@
   },
   "account.status.upgrading": {
     "message": "Poskytovatel provádí jednorázovou aktualizaci tohoto účtu…"
+  },
+  "actionButton.title.ok": {
+    "message": "TbSync"
+  },
+  "actionButton.title.syncing": {
+    "message": "TbSync — Synchronizace…"
+  },
+  "actionButton.title.error": {
+    "message": "TbSync — Chyba synchronizace"
+  },
+  "actionButton.title.localChanges": {
+    "message": "TbSync — Čekající místní změny"
   }
 }

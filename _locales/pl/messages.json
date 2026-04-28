@@ -265,5 +265,17 @@
   },
   "account.status.upgrading": {
     "message": "Dostawca wykonuje jednorazową aktualizację tego konta…"
+  },
+  "actionButton.title.ok": {
+    "message": "TbSync"
+  },
+  "actionButton.title.syncing": {
+    "message": "TbSync — Synchronizacja…"
+  },
+  "actionButton.title.error": {
+    "message": "TbSync — Błąd synchronizacji"
+  },
+  "actionButton.title.localChanges": {
+    "message": "TbSync — Oczekujące zmiany lokalne"
   }
 }

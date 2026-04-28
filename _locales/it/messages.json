@@ -265,5 +265,17 @@
   },
   "account.status.upgrading": {
     "message": "Il provider sta eseguendo un'operazione di aggiornamento una tantum su questo account…"
+  },
+  "actionButton.title.ok": {
+    "message": "TbSync"
+  },
+  "actionButton.title.syncing": {
+    "message": "TbSync — Sincronizzazione…"
+  },
+  "actionButton.title.error": {
+    "message": "TbSync — Errore di sincronizzazione"
+  },
+  "actionButton.title.localChanges": {
+    "message": "TbSync — Modifiche locali in sospeso"
   }
 }

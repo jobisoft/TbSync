@@ -265,5 +265,17 @@
   },
   "account.status.upgrading": {
     "message": "O provedor está executando uma atualização única nesta conta…"
+  },
+  "actionButton.title.ok": {
+    "message": "TbSync"
+  },
+  "actionButton.title.syncing": {
+    "message": "TbSync — Sincronizando…"
+  },
+  "actionButton.title.error": {
+    "message": "TbSync — Erro de sincronização"
+  },
+  "actionButton.title.localChanges": {
+    "message": "TbSync — Alterações locais pendentes"
   }
 }

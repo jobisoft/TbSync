@@ -265,5 +265,17 @@
   },
   "account.status.upgrading": {
     "message": "Доставчикът извършва еднократна актуализация на този профил…"
+  },
+  "actionButton.title.ok": {
+    "message": "TbSync"
+  },
+  "actionButton.title.syncing": {
+    "message": "TbSync — Синхронизиране…"
+  },
+  "actionButton.title.error": {
+    "message": "TbSync — Грешка при синхронизация"
+  },
+  "actionButton.title.localChanges": {
+    "message": "TbSync — Чакащи локални промени"
   }
 }

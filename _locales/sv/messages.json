@@ -265,5 +265,17 @@
   },
   "account.status.upgrading": {
     "message": "Leverantören utför en engångsuppgradering av detta konto…"
+  },
+  "actionButton.title.ok": {
+    "message": "TbSync"
+  },
+  "actionButton.title.syncing": {
+    "message": "TbSync — Synkroniserar…"
+  },
+  "actionButton.title.error": {
+    "message": "TbSync — Synkroniseringsfel"
+  },
+  "actionButton.title.localChanges": {
+    "message": "TbSync — Lokala ändringar väntar"
   }
 }

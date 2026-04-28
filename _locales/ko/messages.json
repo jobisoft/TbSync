@@ -265,5 +265,17 @@
   },
   "account.status.upgrading": {
     "message": "공급자가 이 계정에 대해 일회성 업그레이드 작업을 수행하는 중입니다…"
+  },
+  "actionButton.title.ok": {
+    "message": "TbSync"
+  },
+  "actionButton.title.syncing": {
+    "message": "TbSync — 동기화 중…"
+  },
+  "actionButton.title.error": {
+    "message": "TbSync — 동기화 오류"
+  },
+  "actionButton.title.localChanges": {
+    "message": "TbSync — 대기 중인 로컬 변경 사항"
   }
 }
