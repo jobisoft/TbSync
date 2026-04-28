@@ -6,10 +6,10 @@
     "message": "Central user interface to manage synchronization of contacts, calendars and tasks with external accounts, through provider add-ons."
   },
   "manager.title": {
-    "message": "TbSync Account Manager"
+    "message": "Menedżer konta TbSync"
   },
   "manager.tab.accounts": {
-    "message": "TbSync Accounts"
+    "message": "Konta TbSync"
   },
   "manager.tab.categoryManager": {
     "message": "Category Manager"
@@ -27,10 +27,10 @@
     "message": "Bug reports include the contents of this log. For a more useful report, raise the verbosity level, clear the log, and reproduce the problem before clicking the report button."
   },
   "manager.eventLog.bugReport.button": {
-    "message": "Create Bug Report"
+    "message": "Utwórz raport o błędzie"
   },
   "bugReport.title": {
-    "message": "Create Bug Report"
+    "message": "Utwórz raport o błędzie"
   },
   "bugReport.component": {
     "message": "Component"
@@ -42,13 +42,13 @@
     "message": "Opis"
   },
   "bugReport.send": {
-    "message": "Send"
+    "message": "Wyślij"
   },
   "bugReport.cancel": {
     "message": "Anuluj"
   },
   "bugReport.error.summaryRequired": {
-    "message": "Please enter a summary."
+    "message": "Wprowadź podsumowanie."
   },
   "manager.tab.eventLog": {
     "message": "Dziennik Zdarzeń"
@@ -84,7 +84,7 @@
     "message": "Konto"
   },
   "manager.eventLog.col.message": {
-    "message": "Message"
+    "message": "Wiadomość"
   },
   "manager.accounts.heading": {
     "message": "Skonfigurowane Konta"
@@ -96,37 +96,37 @@
     "message": "Available providers"
   },
   "manager.addAccount": {
-    "message": "Add account"
+    "message": "Dodaj konto"
   },
   "manager.noAccounts": {
-    "message": "No accounts configured"
+    "message": "Brak skonfigurowanych kont"
   },
   "manager.noProviders": {
     "message": "No provider add-ons installed."
   },
   "manager.provider.install": {
-    "message": "Install from addons.thunderbird.net"
+    "message": "Zainstaluj z addons.thunderbird.net"
   },
   "manager.provider.focusSetup": {
     "message": "Bring the setup window to the front"
   },
   "provider.state.active": {
-    "message": "Ready"
+    "message": "Gotowy"
   },
   "provider.state.stale": {
     "message": "Reconnecting…"
   },
   "provider.state.uninstalled": {
-    "message": "Not installed"
+    "message": "Nie zainstalowano"
   },
   "account.status.success": {
     "message": "OK"
   },
   "account.status.syncing": {
-    "message": "Synchronizing…"
+    "message": "Synchronizuję…"
   },
   "account.status.notsyncronized": {
-    "message": "Not synchronized"
+    "message": "Nie zsynchronizowane"
   },
   "account.status.needs-sync": {
     "message": "Account needs to be synchronized, at least one item is out of sync"
@@ -141,16 +141,16 @@
     "message": "Provider unavailable"
   },
   "account.status.needs-reauth": {
-    "message": "Authentication failed"
+    "message": "Błąd uwierzytelnienia"
   },
   "account.status.error": {
-    "message": "Error"
+    "message": "Błąd"
   },
   "account.status.warning": {
-    "message": "Warning"
+    "message": "Ostrzeżenie"
   },
   "account.status.aborted": {
-    "message": "Synchronization aborted"
+    "message": "Synchronizacja przerwana"
   },
   "folder.status.pending": {
     "message": "Waiting to be synchronized"
@@ -162,19 +162,19 @@
     "message": "Local modifications"
   },
   "error.E:AUTH": {
-    "message": "Authentication failed"
+    "message": "Błąd uwierzytelnienia"
   },
   "syncstate.sync": {
-    "message": "Synchronizing…"
+    "message": "Synchronizuję…"
   },
   "syncstate.prepare": {
-    "message": "Preparing…"
+    "message": "Przygotowywanie…"
   },
   "syncstate.send": {
-    "message": "Sending request…"
+    "message": "Wysyłanie żądania…"
   },
   "syncstate.eval": {
-    "message": "Processing response…"
+    "message": "Przetwarzanie odpowiedzi…"
   },
   "manager.detail.general": {
     "message": "General"
@@ -183,13 +183,13 @@
     "message": "Status"
   },
   "manager.detail.provider": {
-    "message": "Provider:"
+    "message": "Dostawca:"
   },
   "manager.detail.lastSync": {
-    "message": "Last sync:"
+    "message": "Ostatnia synchronizacja:"
   },
   "manager.resources.heading": {
-    "message": "Available Resources"
+    "message": "Dostępne Zasoby"
   },
   "manager.resources.description": {
     "message": "Select which of the found resources should be synchronized with Thunderbird."
@@ -222,7 +222,7 @@
     "message": "0 disables automatic sync for this account."
   },
   "manager.error.title": {
-    "message": "Error"
+    "message": "Błąd"
   },
   "manager.error.dismiss": {
     "message": "OK"
