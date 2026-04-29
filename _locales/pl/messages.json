@@ -265,5 +265,26 @@
   },
   "folderType.tasks": {
     "message": "Zadania"
+  },
+  "actionButton.title.ok": {
+    "message": "TbSync"
+  },
+  "actionButton.title.syncing": {
+    "message": "TbSync — Syncing…"
+  },
+  "actionButton.title.error": {
+    "message": "TbSync — Sync error"
+  },
+  "actionButton.title.localChanges": {
+    "message": "TbSync — Local changes pending"
+  },
+  "options.intro": {
+    "message": "TbSync's account settings live in the TbSync Manager. Click the button below to open it."
+  },
+  "options.openManager": {
+    "message": "Open TbSync Manager"
+  },
+  "manager.menu.showEventLog": {
+    "message": "Show event log"
   }
 }
