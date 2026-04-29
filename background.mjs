@@ -25,10 +25,22 @@ import { syncAccount } from "./modules/sync-coordinator.mjs";
 import { runIfNeeded as runLegacyMigration } from "./modules/legacy-migration-runner.mjs";
 import { serialize } from "./modules/storage-queue.mjs";
 
+// Since we are no longer an Experiment, we could be installed in Firefox, exit
+// early in that case.
+const browserInfo = await browser.runtime.getBrowserInfo();
+if (browserInfo.name !== "Thunderbird") {
+  browser.browserAction.onClicked.addListener(() => {
+    browser.runtime.openOptionsPage();
+  });
+  throw new Error(
+    `TbSync is only supported on Thunderbird and cannot be used with other apps or browsers, for example Firefox.`,
+  );
+}
+
 // Where "TbSync Manager" bug reports are sent. Provider-authored reports go
 // to the provider's own `maintainerEmail` (carried on ProviderMeta from the
 // announce handshake).
-export const CORE_MAINTAINER_EMAIL = "john.bieling@gmx.de";
+const CORE_MAINTAINER_EMAIL = "john.bieling@gmx.de";
 
 // ── Startup ────────────────────────────────────────────────────────────────
 

@@ -1,4 +1,11 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  const browserInfo = await browser.runtime.getBrowserInfo();
+  if (browserInfo.name !== "Thunderbird") {
+    document.getElementById("compatibility").style.display = "block";
+    return;
+  }
+
+  document.getElementById("body").style.display = "block";
   document.getElementById("intro").textContent =
     browser.i18n.getMessage("options.intro");
   const btn = document.getElementById("open-manager");
@@ -6,4 +13,5 @@ document.addEventListener("DOMContentLoaded", () => {
   btn.addEventListener("click", () => {
     browser.runtime.sendMessage({ kind: "open-manager" });
   });
+
 });
