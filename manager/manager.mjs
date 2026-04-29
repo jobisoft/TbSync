@@ -1202,6 +1202,7 @@ async function createBugReport() {
     await messenger.compose.beginNew({
       to: recipient ? [recipient] : [],
       subject: `TbSync ${hostVersion} bug report: ${form.summary}`,
+      isPlainText: true,
       body,
       attachments: [{ file }],
     });
