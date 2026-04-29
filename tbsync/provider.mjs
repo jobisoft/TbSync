@@ -148,6 +148,8 @@ export class TbSyncProviderImplementation {
       }
       return reply;
     } catch {
+      // Host unreachable during retry. Silenced because announce-with-retry
+      // can fire up to ANNOUNCE_MAX_ATTEMPTS times in a row.
       return null;
     }
   }
@@ -159,8 +161,9 @@ export class TbSyncProviderImplementation {
         type: DISCOVERY.UNANNOUNCE,
         providerId: browser.runtime.id,
       });
-    } catch {
-      /* host already gone */
+    } catch (err) {
+      // Host already gone — common at uninstall.
+      console.debug(`${this.#logPrefix} unannounce send failed:`, err);
     }
   }
 
@@ -384,8 +387,11 @@ export class TbSyncProviderImplementation {
       if (windowId == null) continue;
       try {
         await browser.windows.update(windowId, { focused: true });
-      } catch {
-        /* window already closed */
+      } catch (err) {
+        console.debug(
+          `${this.#logPrefix} focus setup popup ${windowId} failed:`,
+          err,
+        );
       }
     }
     return null;
@@ -424,8 +430,11 @@ export class TbSyncProviderImplementation {
     if (windowId == null) return null;
     try {
       await browser.windows.update(windowId, { focused: true });
-    } catch {
-      /* window already closed */
+    } catch (err) {
+      console.debug(
+        `${this.#logPrefix} focus config popup ${windowId} failed:`,
+        err,
+      );
     }
     return null;
   }
@@ -441,8 +450,11 @@ export class TbSyncProviderImplementation {
     if (windowId == null) return null;
     try {
       await browser.windows.update(windowId, { focused: true });
-    } catch {
-      /* window already closed */
+    } catch (err) {
+      console.debug(
+        `${this.#logPrefix} focus reauth popup ${windowId} failed:`,
+        err,
+      );
     }
     return null;
   }
@@ -466,8 +478,11 @@ export class TbSyncProviderImplementation {
       if (this.#port) {
         try {
           this.#port.disconnect();
-        } catch {
-          /* ignore */
+        } catch (err) {
+          console.debug(
+            `${this.#logPrefix} prior port.disconnect failed:`,
+            err,
+          );
         }
       }
       this.#port = incoming;
@@ -510,7 +525,12 @@ export class TbSyncProviderImplementation {
     browser.runtime.onMessageExternal.addListener((msg, sender) => {
       if (sender?.id !== TBSYNC_ID) return;
       if (msg?.type !== DISCOVERY.PROBE) return;
-      this.announce().catch(() => {});
+      this.announce().catch((err) =>
+        console.debug(
+          `${this.#logPrefix} announce on host probe failed:`,
+          err,
+        ),
+      );
       return Promise.resolve({ ok: true, providerId: browser.runtime.id });
     });
   }
@@ -642,8 +662,12 @@ export class TbSyncProviderImplementation {
     if (!this.#port) return;
     try {
       this.#port.postMessage({ type, payload });
-    } catch {
-      /* port races with disconnect; drop silently */
+    } catch (err) {
+      // Port races with disconnect; expected during shutdown.
+      console.debug(
+        `${this.#logPrefix} #notify(${type}) postMessage failed:`,
+        err,
+      );
     }
   }
 

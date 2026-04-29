@@ -90,7 +90,8 @@ async function openManagerTab() {
     try {
       await focusManagerTab();
       return;
-    } catch {
+    } catch (err) {
+      console.debug("[tbsync] focusManagerTab failed; clearing stale id:", err);
       await clearManagerTabId();
     }
   }
@@ -106,10 +107,13 @@ async function focusManagerTab() {
     if (tab?.windowId != null) {
       await browser.windows
         .update(tab.windowId, { focused: true })
-        .catch(() => {});
+        .catch((err) =>
+          console.debug("[tbsync] windows.update(focus) failed:", err),
+        );
     }
-  } catch {
+  } catch (err) {
     // Tab is gone; let onRemoved clear the id on its own.
+    console.debug("[tbsync] tabs.update(active) failed; tab is gone:", err);
   }
 }
 
@@ -487,7 +491,9 @@ ui.setManagerRpcHandler("focusSetupPopup", async ({ providerId }) => {
   if (!router.isProviderConnected(providerId)) return null;
   await router
     .sendCmd(providerId, HOST_CMD.FOCUS_SETUP_POPUP, {})
-    .catch(() => {});
+    .catch((err) =>
+      console.debug(`[tbsync] focusSetupPopup → ${providerId} failed:`, err),
+    );
   return null;
 });
 
@@ -500,7 +506,9 @@ ui.setManagerRpcHandler("focusConfigPopup", async ({ accountId }) => {
   if (!router.isProviderConnected(acc.provider)) return null;
   await router
     .sendCmd(acc.provider, HOST_CMD.FOCUS_CONFIG_POPUP, { accountId })
-    .catch(() => {});
+    .catch((err) =>
+      console.debug(`[tbsync] focusConfigPopup → ${acc.provider} failed:`, err),
+    );
   return null;
 });
 
@@ -513,7 +521,9 @@ ui.setManagerRpcHandler("focusReauthPopup", async ({ accountId }) => {
   if (!router.isProviderConnected(acc.provider)) return null;
   await router
     .sendCmd(acc.provider, HOST_CMD.FOCUS_REAUTH_POPUP, { accountId })
-    .catch(() => {});
+    .catch((err) =>
+      console.debug(`[tbsync] focusReauthPopup → ${acc.provider} failed:`, err),
+    );
   return null;
 });
 

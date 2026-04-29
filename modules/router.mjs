@@ -71,8 +71,11 @@ export function closePortToProvider(providerId) {
     ports.delete(providerId);
     try {
       port.disconnect();
-    } catch {
-      /* ignore */
+    } catch (err) {
+      console.debug(
+        `[tbsync] port.disconnect(${providerId}) failed:`,
+        err?.message ?? err,
+      );
     }
   }
   rejectPending(providerId, ERR.PORT_CLOSED, "Provider disconnected");
@@ -243,9 +246,9 @@ function handleDisconnect(providerId, port) {
         message: `Could not mark provider ${providerId} stale after disconnect`,
         details: err?.message ?? null,
       })
-      .catch(() => {
-        /* event-log write failed; nothing left to do */
-      });
+      .catch((err) =>
+        console.debug("[tbsync] event-log append failed:", err),
+      );
   });
   ui.broadcast({ type: "providers-changed" });
 }
@@ -280,7 +283,11 @@ function scheduleBackoffProbe(providerId) {
           });
       });
       ui.broadcast({ type: "providers-changed" });
-    } catch {
+    } catch (err) {
+      console.debug(
+        `[tbsync] backoff reconnect to ${providerId} failed; rescheduling:`,
+        err,
+      );
       scheduleBackoffProbe(providerId);
     }
   }, delay);

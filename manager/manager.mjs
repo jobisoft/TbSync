@@ -90,7 +90,10 @@ const state = {
 
 const { rpc } = createManagerClient({
   onEvent: handleEvent,
-  onReconnect: () => refreshState().catch(() => {}),
+  onReconnect: () =>
+    refreshState().catch((err) =>
+      console.debug("[tbsync] manager: refreshState on reconnect failed:", err),
+    ),
 });
 
 // ── Event dispatch from background ────────────────────────────────────────
@@ -529,7 +532,9 @@ function renderDetail() {
   btnPrimary.disabled = !primaryEnabled;
   btnPrimary.addEventListener("click", () => {
     if (primaryAction === "reauth" && state.reauthsOpen.has(acc.accountId)) {
-      rpc("focusReauthPopup", { accountId: acc.accountId }).catch(() => {});
+      rpc("focusReauthPopup", { accountId: acc.accountId }).catch((err) =>
+        console.debug("[tbsync] manager: focusReauthPopup failed:", err),
+      );
       return;
     }
     if (primaryAction === "connect") {
@@ -557,7 +562,9 @@ function renderDetail() {
   btnSettings.disabled = !actions.canEditSettings;
   btnSettings.addEventListener("click", () => {
     if (state.configsOpen.has(acc.accountId)) {
-      rpc("focusConfigPopup", { accountId: acc.accountId }).catch(() => {});
+      rpc("focusConfigPopup", { accountId: acc.accountId }).catch((err) =>
+        console.debug("[tbsync] manager: focusConfigPopup failed:", err),
+      );
       return;
     }
     state.configsOpen.add(acc.accountId);
@@ -1106,7 +1113,11 @@ async function versionForComponent(componentId) {
   try {
     const info = await browser.management.get(componentId);
     return info?.version ?? "";
-  } catch {
+  } catch (err) {
+    console.debug(
+      `[tbsync] manager: management.get(${componentId}) failed:`,
+      err,
+    );
     return "";
   }
 }
@@ -1330,7 +1341,9 @@ document.getElementById("provider-list").addEventListener("click", (e) => {
   if (row.classList.contains("addable")) {
     launchSetup(providerId);
   } else {
-    rpc("focusSetupPopup", { providerId }).catch(() => {});
+    rpc("focusSetupPopup", { providerId }).catch((err) =>
+      console.debug("[tbsync] manager: focusSetupPopup failed:", err),
+    );
   }
 });
 

@@ -41,7 +41,11 @@ export function broadcast(event) {
   for (const port of managerPorts) {
     try {
       port.postMessage({ kind: "event", event });
-    } catch {
+    } catch (err) {
+      console.debug(
+        "[tbsync] dropping disconnected manager port:",
+        err?.message ?? err,
+      );
       managerPorts.delete(port);
     }
   }
