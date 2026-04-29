@@ -17,28 +17,29 @@ var { cal } = ChromeUtils.importESModule(
 );
 
 this.calendar_timezones = class extends ExtensionAPI {
-  getAPI(_context) {
+  getAPI(context) {
     return {
       calendar: {
         timezones: {
           get timezoneIds() {
-            return cal.timezoneService.timezoneIds;
+            return Cu.cloneInto([...cal.timezoneService.timezoneIds], context.cloneScope);
           },
           get currentZone() {
-            cal.timezoneService.wrappedJSObject._updateDefaultTimezone();
-            return cal.timezoneService.defaultTimezone?.tzid;
+            return cal.timezoneService.defaultTimezone?.tzid ?? "";
           },
           getDefinition(tzid, returnFormat) {
             const timezoneDatabase = Cc[
               "@mozilla.org/calendar/timezone-database;1"
             ].getService(Ci.calITimezoneDatabase);
-            let zoneInfo = timezoneDatabase.getTimezoneDefinition(tzid);
+            const zoneInfo = timezoneDatabase.getTimezoneDefinition(tzid);
 
             if (returnFormat == "jcal") {
-              zoneInfo = ICAL.parse(zoneInfo);
+              return Cu.cloneInto(ICAL.parse(zoneInfo), context.cloneScope);
+            } else if (returnFormat == "ical") {
+              return zoneInfo;
             }
 
-            return zoneInfo;
+            throw new ExtensionError(`Invalid return format: ${returnFormat}`);
           },
         },
       },
