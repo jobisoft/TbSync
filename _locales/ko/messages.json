@@ -286,5 +286,35 @@
   },
   "manager.menu.showEventLog": {
     "message": "이벤트 로그 표시"
+  },
+  "error.E:NETWORK": {
+    "message": "서버에 연결할 수 없습니다"
+  },
+  "error.E:TIMEOUT": {
+    "message": "작업 시간이 초과되었습니다"
+  },
+  "error.E:CANCELLED": {
+    "message": "작업이 취소되었습니다"
+  },
+  "error.E:PROVIDER_UNAVAILABLE": {
+    "message": "공급자 확장 프로그램을 사용할 수 없습니다"
+  },
+  "error.E:PROTOCOL_VERSION": {
+    "message": "공급자 프로토콜 버전이 일치하지 않습니다"
+  },
+  "error.E:UNKNOWN_ACCOUNT": {
+    "message": "알 수 없는 계정"
+  },
+  "error.E:UNKNOWN_FOLDER": {
+    "message": "알 수 없는 폴더"
+  },
+  "error.E:UNKNOWN_COMMAND": {
+    "message": "지원되지 않는 명령"
+  },
+  "error.E:PORT_CLOSED": {
+    "message": "공급자와의 연결이 끊겼습니다"
+  },
+  "error.E:QUOTA": {
+    "message": "저장 공간 할당량 초과"
   }
 }

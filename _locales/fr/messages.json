@@ -286,5 +286,35 @@
   },
   "manager.menu.showEventLog": {
     "message": "Afficher le journal des événements"
+  },
+  "error.E:NETWORK": {
+    "message": "Impossible d'atteindre le serveur"
+  },
+  "error.E:TIMEOUT": {
+    "message": "Délai d'attente dépassé"
+  },
+  "error.E:CANCELLED": {
+    "message": "Opération annulée"
+  },
+  "error.E:PROVIDER_UNAVAILABLE": {
+    "message": "L'extension du fournisseur n'est pas disponible"
+  },
+  "error.E:PROTOCOL_VERSION": {
+    "message": "Version du protocole du fournisseur incompatible"
+  },
+  "error.E:UNKNOWN_ACCOUNT": {
+    "message": "Compte inconnu"
+  },
+  "error.E:UNKNOWN_FOLDER": {
+    "message": "Dossier inconnu"
+  },
+  "error.E:UNKNOWN_COMMAND": {
+    "message": "Commande non prise en charge"
+  },
+  "error.E:PORT_CLOSED": {
+    "message": "Déconnecté du fournisseur"
+  },
+  "error.E:QUOTA": {
+    "message": "Quota de stockage dépassé"
   }
 }

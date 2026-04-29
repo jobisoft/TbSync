@@ -286,5 +286,35 @@
   },
   "manager.menu.showEventLog": {
     "message": "Exibir registro de eventos"
+  },
+  "error.E:NETWORK": {
+    "message": "Não foi possível conectar ao servidor"
+  },
+  "error.E:TIMEOUT": {
+    "message": "A operação expirou"
+  },
+  "error.E:CANCELLED": {
+    "message": "Operação cancelada"
+  },
+  "error.E:PROVIDER_UNAVAILABLE": {
+    "message": "A extensão do provedor está indisponível"
+  },
+  "error.E:PROTOCOL_VERSION": {
+    "message": "Versão de protocolo do provedor incompatível"
+  },
+  "error.E:UNKNOWN_ACCOUNT": {
+    "message": "Conta desconhecida"
+  },
+  "error.E:UNKNOWN_FOLDER": {
+    "message": "Pasta desconhecida"
+  },
+  "error.E:UNKNOWN_COMMAND": {
+    "message": "Comando não suportado"
+  },
+  "error.E:PORT_CLOSED": {
+    "message": "Desconectado do provedor"
+  },
+  "error.E:QUOTA": {
+    "message": "Cota de armazenamento excedida"
   }
 }

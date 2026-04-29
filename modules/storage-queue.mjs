@@ -1,5 +1,6 @@
 /**
- * Shared write-queue for browser.storage.local mutations.
+ * Shared write-queue for extension-storage mutations (storage.local
+ * and storage.session alike - the queue is storage-agnostic).
  *
  * Every read-modify-write site in the host funnels through `serialize`
  * so concurrent triggers (every installed provider racing into the

@@ -286,5 +286,35 @@
   },
   "manager.menu.showEventLog": {
     "message": "Visa händelseloggen"
+  },
+  "error.E:NETWORK": {
+    "message": "Det gick inte att nå servern"
+  },
+  "error.E:TIMEOUT": {
+    "message": "Tidsgränsen överskreds"
+  },
+  "error.E:CANCELLED": {
+    "message": "Åtgärden avbröts"
+  },
+  "error.E:PROVIDER_UNAVAILABLE": {
+    "message": "Leverantörstillägget är inte tillgängligt"
+  },
+  "error.E:PROTOCOL_VERSION": {
+    "message": "Leverantörens protokollversion stämmer inte"
+  },
+  "error.E:UNKNOWN_ACCOUNT": {
+    "message": "Okänt konto"
+  },
+  "error.E:UNKNOWN_FOLDER": {
+    "message": "Okänd mapp"
+  },
+  "error.E:UNKNOWN_COMMAND": {
+    "message": "Kommandot stöds inte"
+  },
+  "error.E:PORT_CLOSED": {
+    "message": "Frånkopplad från leverantören"
+  },
+  "error.E:QUOTA": {
+    "message": "Lagringskvoten är förbrukad"
   }
 }

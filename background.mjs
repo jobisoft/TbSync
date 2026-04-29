@@ -589,7 +589,7 @@ ui.init();
 actionBadge.init();
 await actionBadge.refresh();
 await changelogWatcher.init();
-const reg = registry.init({
+registry.init({
   openPortToProvider: router.openPortToProvider,
   closePortToProvider: router.closePortToProvider,
 });
@@ -603,8 +603,5 @@ browser.runtime.onMessage.addListener(msg => {
     openManagerTab().catch(err => console.warn("[tbsync] could not open manager:", err));
   }
 });
-
-// Nudge previously-known providers into announcing themselves.
-reg.reprobe().catch(err => console.warn("[tbsync] reprobe failed:", err));
 
 await browser.alarms.create(AUTOSYNC_ALARM, { periodInMinutes: AUTOSYNC_TICK_MINUTES });

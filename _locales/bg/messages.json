@@ -286,5 +286,35 @@
   },
   "manager.menu.showEventLog": {
     "message": "Покажи дневника на събитията"
+  },
+  "error.E:NETWORK": {
+    "message": "Не може да се достигне до сървъра"
+  },
+  "error.E:TIMEOUT": {
+    "message": "Времето за операцията изтече"
+  },
+  "error.E:CANCELLED": {
+    "message": "Операцията е отменена"
+  },
+  "error.E:PROVIDER_UNAVAILABLE": {
+    "message": "Разширението на доставчика не е налично"
+  },
+  "error.E:PROTOCOL_VERSION": {
+    "message": "Несъвместима версия на протокола на доставчика"
+  },
+  "error.E:UNKNOWN_ACCOUNT": {
+    "message": "Непознат профил"
+  },
+  "error.E:UNKNOWN_FOLDER": {
+    "message": "Непозната папка"
+  },
+  "error.E:UNKNOWN_COMMAND": {
+    "message": "Неподдържана команда"
+  },
+  "error.E:PORT_CLOSED": {
+    "message": "Връзката с доставчика е прекъсната"
+  },
+  "error.E:QUOTA": {
+    "message": "Превишена квота за съхранение"
   }
 }

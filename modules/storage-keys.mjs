@@ -1,6 +1,10 @@
 /**
- * Single source of truth for every top-level `browser.storage.local` key used
+ * Single source of truth for every top-level extension-storage key used
  * by tbsync-new. Keeping these in one place prevents stringly-typed drift.
+ *
+ * Every key is backed by `browser.storage.local` except `PROVIDERS`,
+ * which is session-scoped: ProviderMeta is rebuilt from announces each
+ * browser session and must not survive across sessions.
  */
 
 export const KEYS = {

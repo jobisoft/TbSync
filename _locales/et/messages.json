@@ -286,5 +286,35 @@
   },
   "manager.menu.showEventLog": {
     "message": "Näita sündmuste logi"
+  },
+  "error.E:NETWORK": {
+    "message": "Serveriga ei õnnestunud ühendust luua"
+  },
+  "error.E:TIMEOUT": {
+    "message": "Toiming aegus"
+  },
+  "error.E:CANCELLED": {
+    "message": "Toiming tühistatud"
+  },
+  "error.E:PROVIDER_UNAVAILABLE": {
+    "message": "Pakkuja laiendus pole saadaval"
+  },
+  "error.E:PROTOCOL_VERSION": {
+    "message": "Pakkuja protokolli versioon ei sobi"
+  },
+  "error.E:UNKNOWN_ACCOUNT": {
+    "message": "Tundmatu konto"
+  },
+  "error.E:UNKNOWN_FOLDER": {
+    "message": "Tundmatu kaust"
+  },
+  "error.E:UNKNOWN_COMMAND": {
+    "message": "Toetamata käsk"
+  },
+  "error.E:PORT_CLOSED": {
+    "message": "Ühendus pakkujaga katkestatud"
+  },
+  "error.E:QUOTA": {
+    "message": "Salvestuskvoot ületatud"
   }
 }

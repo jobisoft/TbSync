@@ -1,4 +1,4 @@
-import { ERR, HOST_CMD } from "../tbsync/protocol.mjs";
+import { ERR, HOST_CMD, PREDEFINED_ERROR_CODES } from "../tbsync/protocol.mjs";
 import { STATUS_TYPES } from "../tbsync/status.mjs";
 import * as accounts from "./accounts.mjs";
 import * as folders from "./folders.mjs";
@@ -174,9 +174,18 @@ async function syncFolderOnce(acc, folder) {
     // the whole account. We leave folder.status at "pending" here and let
     // syncAccount's finally downgrade it to "aborted".
     if (err?.code === ERR.AUTH) throw err;
+    // Prefer the host-localizable code when the host actually has a
+    // translation for it; otherwise fall back to the provider's free-text
+    // message (which the manager renders verbatim) so the user sees
+    // something readable instead of a raw "E:HTTP" / "E:PROVIDER_FOO"
+    // identifier the host doesn't know how to localize.
+    const code = err?.code;
+    const errorText = (code && PREDEFINED_ERROR_CODES.has(code))
+      ? code
+      : (err?.message ?? code ?? "Sync failed");
     await folders.update(acc.accountId, folder.folderId, {
       status: "error",
-      error: err.code ?? err.message ?? "Sync failed",
+      error: errorText,
     });
     await eventLog.append({
       accountId: acc.accountId,

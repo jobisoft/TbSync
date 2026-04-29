@@ -286,5 +286,35 @@
   },
   "manager.menu.showEventLog": {
     "message": "Ereignisprotokoll anzeigen"
+  },
+  "error.E:NETWORK": {
+    "message": "Server nicht erreichbar"
+  },
+  "error.E:TIMEOUT": {
+    "message": "Zeitüberschreitung der Anfrage"
+  },
+  "error.E:CANCELLED": {
+    "message": "Vorgang abgebrochen"
+  },
+  "error.E:PROVIDER_UNAVAILABLE": {
+    "message": "Anbietererweiterung ist nicht verfügbar"
+  },
+  "error.E:PROTOCOL_VERSION": {
+    "message": "Protokollversion des Anbieters passt nicht"
+  },
+  "error.E:UNKNOWN_ACCOUNT": {
+    "message": "Unbekanntes Konto"
+  },
+  "error.E:UNKNOWN_FOLDER": {
+    "message": "Unbekannter Ordner"
+  },
+  "error.E:UNKNOWN_COMMAND": {
+    "message": "Nicht unterstützter Befehl"
+  },
+  "error.E:PORT_CLOSED": {
+    "message": "Verbindung zum Anbieter getrennt"
+  },
+  "error.E:QUOTA": {
+    "message": "Speicherkontingent überschritten"
   }
 }

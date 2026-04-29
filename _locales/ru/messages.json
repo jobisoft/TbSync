@@ -286,5 +286,35 @@
   },
   "manager.menu.showEventLog": {
     "message": "Показать журнал событий"
+  },
+  "error.E:NETWORK": {
+    "message": "Не удалось связаться с сервером"
+  },
+  "error.E:TIMEOUT": {
+    "message": "Время операции истекло"
+  },
+  "error.E:CANCELLED": {
+    "message": "Операция отменена"
+  },
+  "error.E:PROVIDER_UNAVAILABLE": {
+    "message": "Расширение провайдера недоступно"
+  },
+  "error.E:PROTOCOL_VERSION": {
+    "message": "Несовпадение версии протокола провайдера"
+  },
+  "error.E:UNKNOWN_ACCOUNT": {
+    "message": "Неизвестная учётная запись"
+  },
+  "error.E:UNKNOWN_FOLDER": {
+    "message": "Неизвестная папка"
+  },
+  "error.E:UNKNOWN_COMMAND": {
+    "message": "Неподдерживаемая команда"
+  },
+  "error.E:PORT_CLOSED": {
+    "message": "Соединение с провайдером прервано"
+  },
+  "error.E:QUOTA": {
+    "message": "Превышена квота хранилища"
   }
 }

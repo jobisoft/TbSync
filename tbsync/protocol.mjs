@@ -218,19 +218,31 @@ export const SYNCSTATE_BASE_KEYS = new Set([
  * of them as-is in a `warning` / `error` field and the UI will render the
  * localised label.
  *
- *   error.E:AUTH              - "Authentication failed" (refresh token
- *                                revoked or credentials wrong). The host
- *                                stamps this on the *account* record when
- *                                a sync throws with `code: ERR.AUTH`; the
- *                                manager reads it to swap in the
- *                                Sign-in-again button.
+ * Each code in this list lives in the shared `ERR` enum below — provider-
+ * specific codes belong in the provider's own `_locales/`, not here.
+ *
+ *   error.E:AUTH                  - Authentication failed. Special-cased
+ *                                    on the account: stamps the record
+ *                                    when a sync throws with `code:
+ *                                    ERR.AUTH`, and the manager swaps in
+ *                                    the Sign-in-again button.
+ *   error.E:NETWORK               - Could not reach the server.
+ *   error.E:TIMEOUT               - Operation timed out.
+ *   error.E:CANCELLED             - Operation cancelled.
+ *   error.E:PROVIDER_UNAVAILABLE  - Provider extension is not available.
+ *   error.E:PROTOCOL_VERSION      - Provider protocol version mismatch.
+ *   error.E:UNKNOWN_ACCOUNT       - Unknown account.
+ *   error.E:UNKNOWN_FOLDER        - Unknown folder.
+ *   error.E:UNKNOWN_COMMAND       - Unsupported command.
+ *   error.E:PORT_CLOSED           - Disconnected from the provider.
+ *   error.E:QUOTA                 - Storage quota exceeded.
  *
  * No warning codes are predefined yet. Providers may return any free-text
  * warning via the `warning(...)` StatusData helper; the UI renders it
  * verbatim until the host adds a key.
  *
  * As providers emerge with shared failure modes, we add more entries here
- * (e.g. `error.E:NETWORK`, `error.E:QUOTA`) - additive, no wire change.
+ * - additive, no wire change.
  *
  * ## Authoring
  * The host owns these fields. Providers signal status through the RPC
@@ -264,7 +276,19 @@ export const ERR = {
   TIMEOUT: "E:TIMEOUT",
 };
 
-export const PREDEFINED_ERROR_CODES = new Set([ERR.AUTH]);
+export const PREDEFINED_ERROR_CODES = new Set([
+  ERR.AUTH,
+  ERR.NETWORK,
+  ERR.CANCELLED,
+  ERR.QUOTA,
+  ERR.TIMEOUT,
+  ERR.PORT_CLOSED,
+  ERR.PROTOCOL_VERSION,
+  ERR.PROVIDER_UNAVAILABLE,
+  ERR.UNKNOWN_ACCOUNT,
+  ERR.UNKNOWN_FOLDER,
+  ERR.UNKNOWN_COMMAND,
+]);
 export const PREDEFINED_WARNING_CODES = new Set();
 
 /**

@@ -10,10 +10,14 @@ import { upgradeAccounts } from "./transient.mjs";
  * Responsibilities:
  *   - accept `tbsync-provider-announce` over runtime.onMessageExternal
  *   - validate protocol version
- *   - persist ProviderMeta
+ *   - record ProviderMeta in session-scoped storage
  *   - ask the router to open a port to the newly-announced provider
  *   - react to management.onDisabled / onUninstalled
- *   - re-probe known providers on startup
+ *
+ * The ProviderMeta store is session-scoped, so each browser session
+ * starts with an empty registry and rebuilds it from announces. There
+ * is therefore no startup-side reconciliation - missing providers are
+ * simply absent from the store until they announce themselves.
  */
 
 const listeners = new Set();
@@ -100,13 +104,11 @@ export function init({ openPortToProvider, closePortToProvider }) {
     const providerId = await providerIdFromExtensionId(addon.id);
     if (providerId) await handleUnannounce(providerId, closePortToProvider);
   });
-
-  return { reprobe: () => reprobeKnownProviders({ openPortToProvider }) };
 }
 
 async function handleUnannounce(providerId, closePortToProvider) {
   closePortToProvider(providerId);
-  await providers.setState(providerId, "uninstalled");
+  await providers.remove(providerId);
   // Release any upgrade lock the provider was holding - without this, an
   // extension that crashes mid-upgrade would leave its accounts stuck in
   // the "upgrading" state across restarts of the host.
@@ -120,37 +122,6 @@ async function handleUnannounce(providerId, closePortToProvider) {
   emit({ type: "provider-inactive", providerId });
   ui.broadcast({ type: "providers-changed" });
   ui.broadcast({ type: "accounts-changed" });
-}
-
-/**
- * On startup, nudge previously-seen providers to re-announce. We don't rely
- * solely on this because a provider's background may announce first.
- */
-async function reprobeKnownProviders({ openPortToProvider }) {
-  const known = await providers.list();
-  await Promise.all(known.map(async meta => {
-    if (!meta.extensionId) return;
-    try {
-      const reply = await browser.runtime.sendMessage(meta.extensionId, {
-        type: DISCOVERY.PROBE,
-        protocolVersion: PROTOCOL_VERSION,
-      });
-      if (reply?.ok) {
-        await providers.upsert(meta.providerId, {
-          providerName: reply.providerName ?? meta.providerName,
-          icons: reply.icons ?? meta.icons,
-          capabilities: reply.capabilities ?? meta.capabilities,
-          state: "active",
-        });
-        await openPortToProvider(meta.providerId, meta.extensionId).catch(() => { });
-      } else {
-        await providers.remove(meta.providerId);
-      }
-    } catch {
-      await providers.remove(meta.providerId);
-    }
-  }));
-  ui.broadcast({ type: "providers-changed" });
 }
 
 /** Reverse-lookup a providerId (shortName) by the extension id we
