@@ -101,6 +101,17 @@ export async function init() {
     }
   });
 
+  // If the user deletes the local TB resource (address book or calendar)
+  // that a folder is bound to, deselect the folder and clear its target -
+  // the row stays so the user can re-enable it via the manager later, but
+  // sync stops attempting to write to a non-existent target.
+  messenger.addressBooks.onDeleted.addListener((id) =>
+    handleTargetRemoved(id),
+  );
+  messenger.calendar.calendars.onRemoved.addListener((id) =>
+    handleTargetRemoved(id),
+  );
+
   await rebuildRegistry();
 
   // Folder rows change → rebuild the registry so newly-bound books start
@@ -138,6 +149,29 @@ async function handleTargetRename(targetID, name) {
     ui.broadcast({ type: "folders-changed", accountId: owner.accountId });
   } catch (err) {
     console.warn("[tbsync] target-rename update failed:", err?.message ?? err);
+  }
+}
+
+async function handleTargetRemoved(targetID) {
+  if (!targetID) return;
+  const owner = registry.get(targetID);
+  if (!owner) return; // target not watched
+  const row = await folders.get(owner.accountId, owner.folderId);
+  if (!row) return;
+  if (row.targetID == null && !row.selected) return; // already cleared
+  try {
+    await folders.update(owner.accountId, owner.folderId, {
+      targetID: null,
+      targetName: null,
+      selected: false,
+    });
+    registry.delete(targetID);
+    ui.broadcast({ type: "folders-changed", accountId: owner.accountId });
+  } catch (err) {
+    console.warn(
+      "[tbsync] target-removed update failed:",
+      err?.message ?? err,
+    );
   }
 }
 

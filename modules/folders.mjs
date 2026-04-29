@@ -59,18 +59,52 @@ export async function get(accountId, folderId) {
 
 export function replaceAccountFolders(accountId, incoming) {
   return serialize(async () => {
+    // Read both stores up front. The cache lives on the account record (in
+    // storage.local under KEYS.ACCOUNTS) so insert + consume below need to
+    // mutate it alongside the folders blob. Both writes happen in this one
+    // serialize() block to keep them atomic relative to other host writes.
     const state = await read();
+    const accountsRv = await browser.storage.local.get({
+      [KEYS.ACCOUNTS]: { sequence: 0, data: {} },
+    });
+    const accountsState = accountsRv[KEYS.ACCOUNTS];
+    const accountRecord = accountsState.data[accountId];
+    const cache =
+      accountRecord && typeof accountRecord.deletedFolderCache === "object"
+        ? accountRecord.deletedFolderCache
+        : null;
+
     const previous = state[accountId] ?? {};
     const next = {};
+    const restored = [];
+    let cacheDirty = false;
+
     incoming.forEach((descriptor, index) => {
       const prior = previous[descriptor.folderId];
+      // Consume the cache for genuinely new folders (no `prior`) whose
+      // folderId matches a server-deleted entry. Restoring the cached
+      // property bag overrides the seed values for those fields and
+      // removes the entry so it isn't re-applied next time.
+      const cached =
+        !prior && cache && cache[descriptor.folderId]
+          ? cache[descriptor.folderId]
+          : null;
+      if (cached) {
+        delete cache[descriptor.folderId];
+        cacheDirty = true;
+        restored.push(descriptor.folderId);
+      }
       next[descriptor.folderId] = {
         folderId: descriptor.folderId,
         accountId,
         targetType: descriptor.targetType,
         displayName:
           descriptor.displayName ?? prior?.displayName ?? descriptor.folderId,
-        selected: prior?.selected ?? descriptor.selected ?? false,
+        selected:
+          prior?.selected ??
+          (cached && "selected" in cached ? cached.selected : undefined) ??
+          descriptor.selected ??
+          false,
         readOnly: descriptor.readOnly ?? prior?.readOnly ?? false,
         hidden: !!descriptor.hidden,
         // Universal sync-status fields - host-authored from the SYNC_FOLDER
@@ -87,10 +121,12 @@ export function replaceAccountFolders(accountId, incoming) {
           "targetID" in descriptor
             ? descriptor.targetID
             : (prior?.targetID ?? null),
+        // targetName: prefer prior, then cached restoration, then descriptor.
         targetName:
           "targetName" in descriptor
             ? descriptor.targetName
-            : (prior?.targetName ?? null),
+            : (prior?.targetName ??
+              (cached && "targetName" in cached ? cached.targetName : null)),
         // Host-owned per-folder change queue. Authored by the address-book
         // observer (changelog-watcher.mjs); consumed by the provider at sync
         // time. Entry shape: `{ parentId, itemId, timestamp, status }`.
@@ -102,9 +138,30 @@ export function replaceAccountFolders(accountId, incoming) {
         custom: descriptor.custom ?? prior?.custom ?? {},
       };
     });
+
+    // Insert: every previously-existing folder that isn't in `incoming`
+    // was deleted by the server. Cache the user's customisations so they
+    // survive a server-side delete-recreate cycle.
+    for (const [folderId, prior] of Object.entries(previous)) {
+      if (next[folderId]) continue;
+      if (!prior?.selected) continue;
+      if (!cache) continue;
+      const bag = { selected: true };
+      if (typeof prior.targetName === "string" && prior.targetName !== "") {
+        bag.targetName = prior.targetName;
+      }
+      cache[folderId] = bag;
+      cacheDirty = true;
+    }
+
     state[accountId] = next;
     await write(state);
-    return Object.values(next);
+    if (cacheDirty && accountRecord) {
+      accountRecord.deletedFolderCache = cache;
+      accountsState.data[accountId] = accountRecord;
+      await browser.storage.local.set({ [KEYS.ACCOUNTS]: accountsState });
+    }
+    return { folders: Object.values(next), restored };
   });
 }
 
@@ -114,6 +171,23 @@ export function update(accountId, folderId, patch) {
     if (!state[accountId]?.[folderId]) return null;
     state[accountId][folderId] = { ...state[accountId][folderId], ...patch };
     await write(state);
+    // A folder transitioning to selected: false is by definition a user-
+    // driven action (manager deselect or watcher-detected local-resource
+    // delete). Wipe any matching cache entry inline within this serialize
+    // block - calling accounts.wipeCacheEntry from here would deadlock the
+    // shared serialize queue (we already hold it). The same atomicity
+    // guarantee holds because both stores are mutated under the same lock.
+    if (patch && patch.selected === false) {
+      const accountsRv = await browser.storage.local.get({
+        [KEYS.ACCOUNTS]: { sequence: 0, data: {} },
+      });
+      const accountsState = accountsRv[KEYS.ACCOUNTS];
+      const acc = accountsState.data[accountId];
+      if (acc?.deletedFolderCache?.[folderId]) {
+        delete acc.deletedFolderCache[folderId];
+        await browser.storage.local.set({ [KEYS.ACCOUNTS]: accountsState });
+      }
+    }
     return state[accountId][folderId];
   });
 }

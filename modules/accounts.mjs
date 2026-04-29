@@ -67,6 +67,14 @@ export function create({
       // Opaque provider-owned blob. The host never interprets this; provider
       // patches via PROVIDER_CMD.UPDATE_ACCOUNT with shallow-merge semantics.
       custom,
+      // Per-folder customisation cache, keyed by folderId. Populated when
+      // a server-side <Delete> removes a folder that was actively in use
+      // (selected: true with a custom targetName, etc.); consumed when the
+      // same folderId reappears in a server-side <Add>. See
+      // folders.replaceAccountFolders for insert/consume; folders.update
+      // for the deselect-side wipe; this module's update for the
+      // account-disable wipe. Persists in storage.local.
+      deletedFolderCache: {},
     };
     state.data[accountId] = record;
     await write(state);
@@ -78,9 +86,31 @@ export function update(accountId, patch) {
   return serialize(async () => {
     const state = await read();
     if (!state.data[accountId]) return null;
-    state.data[accountId] = { ...state.data[accountId], ...patch };
+    const merged = { ...state.data[accountId], ...patch };
+    // Disabling an account drops every cached folder customisation - the
+    // user has signalled "I'm done with this account for now", which we
+    // treat as discarding the folder-restore expectations along with it.
+    if (patch && patch.enabled === false) {
+      merged.deletedFolderCache = {};
+    }
+    state.data[accountId] = merged;
     await write(state);
     return state.data[accountId];
+  });
+}
+
+/** Drop a single entry from `account.deletedFolderCache`. Called from
+ *  `folders.update` when a row's `selected` flips to false (user deselect
+ *  via manager OR local-resource-delete via the watcher). No-op when the
+ *  account or the entry is missing. */
+export function wipeCacheEntry(accountId, folderId) {
+  return serialize(async () => {
+    const state = await read();
+    const acc = state.data[accountId];
+    if (!acc?.deletedFolderCache?.[folderId]) return false;
+    delete acc.deletedFolderCache[folderId];
+    await write(state);
+    return true;
   });
 }
 
