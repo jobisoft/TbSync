@@ -277,5 +277,14 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync — Kohalikud muudatused ootel"
+  },
+  "options.intro": {
+    "message": "TbSynci kontoseaded asuvad TbSynci halduris. Selle avamiseks klõpsa allolevat nuppu."
+  },
+  "options.openManager": {
+    "message": "Ava TbSynci haldur"
+  },
+  "manager.menu.showEventLog": {
+    "message": "Näita sündmuste logi"
   }
 }

@@ -277,5 +277,14 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync — Čekající místní změny"
+  },
+  "options.intro": {
+    "message": "Nastavení účtů TbSync najdete ve Správci TbSync. Klepněte na tlačítko níže pro jeho otevření."
+  },
+  "options.openManager": {
+    "message": "Otevřít Správce TbSync"
+  },
+  "manager.menu.showEventLog": {
+    "message": "Zobrazit protokol událostí"
   }
 }

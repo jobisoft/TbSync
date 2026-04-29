@@ -277,5 +277,14 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync — Modifiche locali in sospeso"
+  },
+  "options.intro": {
+    "message": "Le impostazioni degli account di TbSync si trovano nel Gestore di TbSync. Fai clic sul pulsante qui sotto per aprirlo."
+  },
+  "options.openManager": {
+    "message": "Apri il Gestore di TbSync"
+  },
+  "manager.menu.showEventLog": {
+    "message": "Mostra il registro eventi"
   }
 }

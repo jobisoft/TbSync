@@ -277,5 +277,14 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync — Cambios locales pendientes"
+  },
+  "options.intro": {
+    "message": "Los ajustes de cuenta de TbSync se encuentran en el Administrador de TbSync. Pulse el botón de abajo para abrirlo."
+  },
+  "options.openManager": {
+    "message": "Abrir el Administrador de TbSync"
+  },
+  "manager.menu.showEventLog": {
+    "message": "Mostrar el registro de eventos"
   }
 }

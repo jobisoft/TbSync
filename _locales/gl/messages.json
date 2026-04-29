@@ -277,5 +277,14 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync — Cambios locais pendentes"
+  },
+  "options.intro": {
+    "message": "A configuración das contas de TbSync atópase no Xestor de TbSync. Preme o botón de abaixo para abrilo."
+  },
+  "options.openManager": {
+    "message": "Abrir o Xestor de TbSync"
+  },
+  "manager.menu.showEventLog": {
+    "message": "Mostrar o rexistro de eventos"
   }
 }

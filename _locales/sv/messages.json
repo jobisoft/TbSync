@@ -277,5 +277,14 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync — Lokala ändringar väntar"
+  },
+  "options.intro": {
+    "message": "TbSyncs kontoinställningar finns i TbSync-hanteraren. Klicka på knappen nedan för att öppna den."
+  },
+  "options.openManager": {
+    "message": "Öppna TbSync-hanteraren"
+  },
+  "manager.menu.showEventLog": {
+    "message": "Visa händelseloggen"
   }
 }

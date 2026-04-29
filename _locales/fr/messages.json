@@ -277,5 +277,14 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync — Modifications locales en attente"
+  },
+  "options.intro": {
+    "message": "Les paramètres des comptes TbSync se trouvent dans le Gestionnaire TbSync. Cliquez sur le bouton ci-dessous pour l'ouvrir."
+  },
+  "options.openManager": {
+    "message": "Ouvrir le Gestionnaire TbSync"
+  },
+  "manager.menu.showEventLog": {
+    "message": "Afficher le journal des événements"
   }
 }

@@ -1226,9 +1226,10 @@ document.getElementById("provider-list").addEventListener("click", e => {
 // `onShown` only updates the sync item's enabled state and the toggle item's
 // title - no create/remove churn per right-click.
 const MENU_IDS = {
-  sync:    "tbsync-account-sync",
-  toggle:  "tbsync-account-toggle",
-  delete:  "tbsync-account-delete",
+  sync:     "tbsync-account-sync",
+  toggle:   "tbsync-account-toggle",
+  delete:   "tbsync-account-delete",
+  eventLog: "tbsync-show-event-log",
 };
 
 {
@@ -1242,38 +1243,68 @@ const MENU_IDS = {
     title: i18n("manager.account.connect", "Connect") });
   browser.menus.create({ ...common, id: MENU_IDS.delete,
     title: i18n("manager.account.remove", "Remove") });
+  browser.menus.create({ ...common, id: MENU_IDS.eventLog,
+    title: i18n("manager.menu.showEventLog", "Show event log") });
 }
 
-// Suppress the browser default context menu on account rows so our items
-// become the only menu. `overrideContext` must be called synchronously from
-// the `contextmenu` handler (the menu service reads the flag before paint).
-document.getElementById("account-list-body").addEventListener("contextmenu", ev => {
-  const row = ev.target.closest("tr[data-account-id]");
-  if (!row) return;
+// On the accounts tab we suppress the browser default menu so our items are
+// the only ones shown — both for row clicks (account actions) and off-row
+// clicks (event-log shortcut). Other tabs fall through to the default menu.
+// `overrideContext` must be called synchronously from `contextmenu`.
+document.querySelector('[data-panel="accounts"]').addEventListener("contextmenu", () => {
   browser.menus.overrideContext({ showDefaults: false });
 });
 
 browser.menus.onShown.addListener(info => {
-  const el = info.targetElementId
-    ? browser.menus.getTargetElement(info.targetElementId)?.closest?.("tr[data-account-id]")
+  const targetEl = info.targetElementId
+    ? browser.menus.getTargetElement(info.targetElementId)
     : null;
-  const acc = el && state.accounts.find(a => a.accountId === el.dataset.accountId);
-  if (!acc) return;   // Not a row - nothing to update; menu will not paint here.
+  const inAccountsPanel = !!targetEl?.closest?.('[data-panel="accounts"]');
 
-  // Same source of truth as the detail-pane buttons.
+  if (!inAccountsPanel) {
+    // Other tabs: keep our items out of the default menu.
+    browser.menus.update(MENU_IDS.sync,     { visible: false });
+    browser.menus.update(MENU_IDS.toggle,   { visible: false });
+    browser.menus.update(MENU_IDS.delete,   { visible: false });
+    browser.menus.update(MENU_IDS.eventLog, { visible: false });
+    browser.menus.refresh();
+    return;
+  }
+
+  const row = targetEl.closest("tr[data-account-id]");
+  const acc = row && state.accounts.find(a => a.accountId === row.dataset.accountId);
+
+  if (!acc) {
+    // Accounts tab, off-row: only the event-log shortcut.
+    browser.menus.update(MENU_IDS.sync,     { visible: false });
+    browser.menus.update(MENU_IDS.toggle,   { visible: false });
+    browser.menus.update(MENU_IDS.delete,   { visible: false });
+    browser.menus.update(MENU_IDS.eventLog, { visible: true });
+    browser.menus.refresh();
+    return;
+  }
+
+  // Accounts tab, on a row: the three account actions.
   const actions = accountActions(acc);
-  browser.menus.update(MENU_IDS.sync, { enabled: actions.canSync });
+  browser.menus.update(MENU_IDS.sync, { visible: true, enabled: actions.canSync });
   browser.menus.update(MENU_IDS.toggle, {
+    visible: true,
     enabled: acc.enabled ? actions.canDisconnect : actions.canConnect,
     title: acc.enabled
       ? (i18n("manager.account.disconnect", "Disconnect"))
       : (i18n("manager.account.connect", "Connect")),
   });
-  browser.menus.update(MENU_IDS.delete, { enabled: actions.canRemove });
+  browser.menus.update(MENU_IDS.delete,   { visible: true, enabled: actions.canRemove });
+  browser.menus.update(MENU_IDS.eventLog, { visible: true });
   browser.menus.refresh();
 });
 
 browser.menus.onClicked.addListener(info => {
+  if (info.menuItemId === MENU_IDS.eventLog) {
+    selectTab("eventLog");
+    return;
+  }
+
   const el = info.targetElementId
     ? browser.menus.getTargetElement(info.targetElementId)?.closest?.("tr[data-account-id]")
     : null;

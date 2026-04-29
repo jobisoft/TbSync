@@ -277,5 +277,14 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync — Oczekujące zmiany lokalne"
+  },
+  "options.intro": {
+    "message": "Ustawienia kont TbSync znajdują się w Menedżerze TbSync. Kliknij poniższy przycisk, aby go otworzyć."
+  },
+  "options.openManager": {
+    "message": "Otwórz Menedżer TbSync"
+  },
+  "manager.menu.showEventLog": {
+    "message": "Pokaż dziennik zdarzeń"
   }
 }

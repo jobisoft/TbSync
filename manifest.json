@@ -43,8 +43,8 @@
     ]
   },
   "options_ui": {
-    "page": "manager/manager.html",
-    "open_in_tab": true
+    "page": "options/options.html",
+    "open_in_tab": false
   },  
   "experiment_apis": {
     "LegacyPrefs": {

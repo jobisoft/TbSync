@@ -277,5 +277,14 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync — Modificări locale în așteptare"
+  },
+  "options.intro": {
+    "message": "Setările conturilor TbSync se află în Managerul TbSync. Apăsați butonul de mai jos pentru a-l deschide."
+  },
+  "options.openManager": {
+    "message": "Deschide Managerul TbSync"
+  },
+  "manager.menu.showEventLog": {
+    "message": "Afișează jurnalul de evenimente"
   }
 }

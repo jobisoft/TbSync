@@ -598,6 +598,12 @@ browser.browserAction.onClicked.addListener(() => {
   openManagerTab().catch(err => console.warn("[tbsync] could not open manager:", err));
 });
 
+browser.runtime.onMessage.addListener(msg => {
+  if (msg?.kind === "open-manager") {
+    openManagerTab().catch(err => console.warn("[tbsync] could not open manager:", err));
+  }
+});
+
 // Nudge previously-known providers into announcing themselves.
 reg.reprobe().catch(err => console.warn("[tbsync] reprobe failed:", err));
 

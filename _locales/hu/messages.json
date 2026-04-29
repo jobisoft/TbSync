@@ -277,5 +277,14 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync — Függő helyi változások"
+  },
+  "options.intro": {
+    "message": "A TbSync fiókbeállításai a TbSync kezelőben találhatók. Kattintson az alábbi gombra a megnyitásához."
+  },
+  "options.openManager": {
+    "message": "TbSync kezelő megnyitása"
+  },
+  "manager.menu.showEventLog": {
+    "message": "Eseménynapló megjelenítése"
   }
 }

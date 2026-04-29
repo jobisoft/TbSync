@@ -277,5 +277,14 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync — Ожидающие локальные изменения"
+  },
+  "options.intro": {
+    "message": "Настройки учётных записей TbSync находятся в Менеджере TbSync. Нажмите кнопку ниже, чтобы открыть его."
+  },
+  "options.openManager": {
+    "message": "Открыть Менеджер TbSync"
+  },
+  "manager.menu.showEventLog": {
+    "message": "Показать журнал событий"
   }
 }

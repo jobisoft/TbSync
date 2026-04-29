@@ -277,5 +277,14 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync — ローカルの変更が保留中"
+  },
+  "options.intro": {
+    "message": "TbSync のアカウント設定は TbSync マネージャーにあります。下のボタンをクリックして開いてください。"
+  },
+  "options.openManager": {
+    "message": "TbSync マネージャーを開く"
+  },
+  "manager.menu.showEventLog": {
+    "message": "イベントログを表示"
   }
 }

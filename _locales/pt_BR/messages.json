@@ -277,5 +277,14 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync — Alterações locais pendentes"
+  },
+  "options.intro": {
+    "message": "As configurações de conta do TbSync ficam no Gerenciador do TbSync. Clique no botão abaixo para abri-lo."
+  },
+  "options.openManager": {
+    "message": "Abrir o Gerenciador do TbSync"
+  },
+  "manager.menu.showEventLog": {
+    "message": "Exibir registro de eventos"
   }
 }
