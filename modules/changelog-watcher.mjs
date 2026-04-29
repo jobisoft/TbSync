@@ -88,11 +88,18 @@ export async function init() {
   );
 
   // Keep `folder.targetName` in sync with the user's local TB address-book
-  // label - the manager's resource-list cell shows targetName for
-  // successfully-synced folders. Only watched books are mirrored.
+  // or calendar label - the manager's resource-list cell shows targetName
+  // for successfully-synced folders. Only watched targets are mirrored.
   messenger.addressBooks.onUpdated.addListener((node) =>
-    handleBookRename(node),
+    handleTargetRename(node?.id, node?.name),
   );
+  messenger.calendar.calendars.onUpdated.addListener((calendar, changes) => {
+    // Fires for every property change; the rename signal is `name` in the
+    // changes payload. Cheaper than re-checking on every event.
+    if (changes && "name" in changes) {
+      handleTargetRename(calendar?.id, changes.name);
+    }
+  });
 
   await rebuildRegistry();
 
@@ -118,19 +125,19 @@ export async function rebuildRegistry() {
   }
 }
 
-async function handleBookRename(node) {
-  if (!node?.id) return;
-  const owner = registry.get(node.id);
-  if (!owner) return; // book not watched
+async function handleTargetRename(targetID, name) {
+  if (!targetID) return;
+  const owner = registry.get(targetID);
+  if (!owner) return; // target not watched
   const row = await folders.get(owner.accountId, owner.folderId);
-  if (!row || row.targetName === node.name) return; // nothing actually changed
+  if (!row || row.targetName === name) return; // nothing actually changed
   try {
     await folders.update(owner.accountId, owner.folderId, {
-      targetName: node.name,
+      targetName: name,
     });
     ui.broadcast({ type: "folders-changed", accountId: owner.accountId });
   } catch (err) {
-    console.warn("[tbsync] book-rename update failed:", err?.message ?? err);
+    console.warn("[tbsync] target-rename update failed:", err?.message ?? err);
   }
 }
 
