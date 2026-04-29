@@ -69,10 +69,10 @@
     "message": "Hibák és figyelmeztetések"
   },
   "manager.eventLog.verbosity.info": {
-    "message": "Errors, warnings and info messages"
+    "message": "Hibák, figyelmeztetések és információs üzenetek"
   },
   "manager.eventLog.verbosity.debug": {
-    "message": "Errors, warnings, info messages and debug logs"
+    "message": "Hibák, figyelmeztetések, információs és hibakeresési üzenetek"
   },
   "manager.eventLog.col.time": {
     "message": "Idő"
@@ -303,18 +303,18 @@
     "message": "Provider protocol version mismatch"
   },
   "error.E:UNKNOWN_ACCOUNT": {
-    "message": "Unknown account"
+    "message": "Ismeretlen fiók"
   },
   "error.E:UNKNOWN_FOLDER": {
-    "message": "Unknown folder"
+    "message": "Ismeretlen mappa"
   },
   "error.E:UNKNOWN_COMMAND": {
-    "message": "Unsupported command"
+    "message": "Nem támogatott parancs"
   },
   "error.E:PORT_CLOSED": {
-    "message": "Disconnected from the provider"
+    "message": "Kapcsolat bontva a szolgáltatóval"
   },
   "error.E:QUOTA": {
-    "message": "Storage quota exceeded"
+    "message": "Tárhelykvóta túllépve"
   }
 }
