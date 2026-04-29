@@ -270,13 +270,13 @@
     "message": "TbSync"
   },
   "actionButton.title.syncing": {
-    "message": "TbSync — Synchronisierung…"
+    "message": "TbSync - Synchronisierung…"
   },
   "actionButton.title.error": {
-    "message": "TbSync — Synchronisationsfehler"
+    "message": "TbSync - Synchronisationsfehler"
   },
   "actionButton.title.localChanges": {
-    "message": "TbSync — Ausstehende lokale Änderungen"
+    "message": "TbSync - Ausstehende lokale Änderungen"
   },
   "options.intro": {
     "message": "Die Konto-Einstellungen von TbSync befinden sich im TbSync-Manager. Klicken Sie auf die Schaltfläche unten, um ihn zu öffnen."

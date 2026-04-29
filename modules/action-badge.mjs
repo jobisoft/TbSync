@@ -19,10 +19,25 @@ import * as ui from "./messaging-ui.mjs";
 import { syncingAccounts } from "./transient.mjs";
 
 const BADGES = {
-  syncing:         { text: "⟳", bg: "#1976d2", fg: "#ffffff", titleKey: "actionButton.title.syncing" },
-  error:           { text: "!",      bg: "#d32f2f", fg: "#ffffff", titleKey: "actionButton.title.error" },
-  "local-changes": { text: "✻", bg: "#fbc02d", fg: "#000000", titleKey: "actionButton.title.localChanges" },
-  ok:              { text: "",       bg: null,      fg: null,      titleKey: "actionButton.title.ok" },
+  syncing: {
+    text: "⟳",
+    bg: "#1976d2",
+    fg: "#ffffff",
+    titleKey: "actionButton.title.syncing",
+  },
+  error: {
+    text: "!",
+    bg: "#d32f2f",
+    fg: "#ffffff",
+    titleKey: "actionButton.title.error",
+  },
+  "local-changes": {
+    text: "✻",
+    bg: "#fbc02d",
+    fg: "#000000",
+    titleKey: "actionButton.title.localChanges",
+  },
+  ok: { text: "", bg: null, fg: null, titleKey: "actionButton.title.ok" },
 };
 
 let running = false;
@@ -32,11 +47,11 @@ async function computeState() {
   if (syncingAccounts.size > 0) return "syncing";
 
   const list = await accounts.list();
-  const enabled = list.filter(a => a.enabled);
-  if (enabled.some(a => a.error)) return "error";
+  const enabled = list.filter((a) => a.enabled);
+  if (enabled.some((a) => a.error)) return "error";
 
   const needs = await folders.needsSyncMap();
-  if (enabled.some(a => needs[a.accountId])) return "local-changes";
+  if (enabled.some((a) => needs[a.accountId])) return "local-changes";
 
   return "ok";
 }
@@ -44,13 +59,20 @@ async function computeState() {
 async function applyBadge(state) {
   const spec = BADGES[state] ?? BADGES.ok;
   await browser.browserAction.setBadgeText({ text: spec.text });
-  if (spec.bg) await browser.browserAction.setBadgeBackgroundColor({ color: spec.bg });
-  if (spec.fg) await browser.browserAction.setBadgeTextColor({ color: spec.fg });
-  await browser.browserAction.setTitle({ title: browser.i18n.getMessage(spec.titleKey) });
+  if (spec.bg)
+    await browser.browserAction.setBadgeBackgroundColor({ color: spec.bg });
+  if (spec.fg)
+    await browser.browserAction.setBadgeTextColor({ color: spec.fg });
+  await browser.browserAction.setTitle({
+    title: browser.i18n.getMessage(spec.titleKey),
+  });
 }
 
 export async function refresh() {
-  if (running) { pending = true; return; }
+  if (running) {
+    pending = true;
+    return;
+  }
   running = true;
   try {
     do {
@@ -66,8 +88,11 @@ export async function refresh() {
 }
 
 export function init() {
-  ui.onInternalEvent(event => {
-    if (event?.type === "accounts-changed" || event?.type === "folders-changed") {
+  ui.onInternalEvent((event) => {
+    if (
+      event?.type === "accounts-changed" ||
+      event?.type === "folders-changed"
+    ) {
       refresh();
     }
   });

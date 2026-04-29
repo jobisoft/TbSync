@@ -270,13 +270,13 @@
     "message": "TbSync"
   },
   "actionButton.title.syncing": {
-    "message": "TbSync — Sincronizando…"
+    "message": "TbSync - Sincronizando…"
   },
   "actionButton.title.error": {
-    "message": "TbSync — Erro de sincronización"
+    "message": "TbSync - Erro de sincronización"
   },
   "actionButton.title.localChanges": {
-    "message": "TbSync — Cambios locais pendentes"
+    "message": "TbSync - Cambios locais pendentes"
   },
   "options.intro": {
     "message": "A configuración das contas de TbSync atópase no Xestor de TbSync. Preme o botón de abaixo para abrilo."

@@ -270,13 +270,13 @@
     "message": "TbSync"
   },
   "actionButton.title.syncing": {
-    "message": "TbSync — 동기화 중…"
+    "message": "TbSync - 동기화 중…"
   },
   "actionButton.title.error": {
-    "message": "TbSync — 동기화 오류"
+    "message": "TbSync - 동기화 오류"
   },
   "actionButton.title.localChanges": {
-    "message": "TbSync — 대기 중인 로컬 변경 사항"
+    "message": "TbSync - 대기 중인 로컬 변경 사항"
   },
   "options.intro": {
     "message": "TbSync 계정 설정은 TbSync 관리자에 있습니다. 아래 버튼을 클릭하여 여세요."

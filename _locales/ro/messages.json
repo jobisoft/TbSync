@@ -270,13 +270,13 @@
     "message": "TbSync"
   },
   "actionButton.title.syncing": {
-    "message": "TbSync — Sincronizare…"
+    "message": "TbSync - Sincronizare…"
   },
   "actionButton.title.error": {
-    "message": "TbSync — Eroare de sincronizare"
+    "message": "TbSync - Eroare de sincronizare"
   },
   "actionButton.title.localChanges": {
-    "message": "TbSync — Modificări locale în așteptare"
+    "message": "TbSync - Modificări locale în așteptare"
   },
   "options.intro": {
     "message": "Setările conturilor TbSync se află în Managerul TbSync. Apăsați butonul de mai jos pentru a-l deschide."

@@ -1,6 +1,10 @@
 import {
-  DEFAULT_RPC_TIMEOUT_MS, ERR, NO_TIMEOUT_CMDS,
-  PORT_NAME, PROVIDER_NOTIFY, withCode,
+  DEFAULT_RPC_TIMEOUT_MS,
+  ERR,
+  NO_TIMEOUT_CMDS,
+  PORT_NAME,
+  PROVIDER_NOTIFY,
+  withCode,
 } from "../tbsync/protocol.mjs";
 import * as providers from "./providers.mjs";
 import * as ui from "./messaging-ui.mjs";
@@ -23,11 +27,11 @@ const genRequestId = () => `tbsync-request-${crypto.randomUUID()}`;
  * next announce or after probe failures accumulate.
  */
 
-const ports = new Map();         // providerId(shortName) -> Port
-const extensionIds = new Map();  // providerId(shortName) -> extensionId (for runtime.connect on (re)connect)
-const pending = new Map();       // requestId -> { resolve, reject, timer }
-const backoff = new Map();       // providerId -> { attempts, timerId }
-const rpcHandlers = new Map();   // cmd -> async (providerId, args) => result
+const ports = new Map(); // providerId(shortName) -> Port
+const extensionIds = new Map(); // providerId(shortName) -> extensionId (for runtime.connect on (re)connect)
+const pending = new Map(); // requestId -> { resolve, reject, timer }
+const backoff = new Map(); // providerId -> { attempts, timerId }
+const rpcHandlers = new Map(); // cmd -> async (providerId, args) => result
 
 /** Coalescing state for noisy notifications (per account+folder). */
 const coalesceMap = new Map(); // key -> { timer, latest }
@@ -43,7 +47,8 @@ export function isProviderConnected(providerId) {
 
 export async function openPortToProvider(providerId, extensionId) {
   if (ports.has(providerId)) return;
-  if (!extensionId) throw new Error(`openPortToProvider(${providerId}) requires extensionId`);
+  if (!extensionId)
+    throw new Error(`openPortToProvider(${providerId}) requires extensionId`);
   extensionIds.set(providerId, extensionId);
 
   let port;
@@ -56,7 +61,7 @@ export async function openPortToProvider(providerId, extensionId) {
   ports.set(providerId, port);
   backoff.delete(providerId);
 
-  port.onMessage.addListener(msg => handleIncoming(providerId, msg));
+  port.onMessage.addListener((msg) => handleIncoming(providerId, msg));
   port.onDisconnect.addListener(() => handleDisconnect(providerId, port));
 }
 
@@ -64,7 +69,11 @@ export function closePortToProvider(providerId) {
   const port = ports.get(providerId);
   if (port) {
     ports.delete(providerId);
-    try { port.disconnect(); } catch { /* ignore */ }
+    try {
+      port.disconnect();
+    } catch {
+      /* ignore */
+    }
   }
   rejectPending(providerId, ERR.PORT_CLOSED, "Provider disconnected");
   const bo = backoff.get(providerId);
@@ -84,7 +93,9 @@ export function closePortToProvider(providerId) {
 export function sendCmd(providerId, cmd, args = {}) {
   const port = ports.get(providerId);
   if (!port) {
-    return Promise.reject(withCode(new Error("Provider not connected"), ERR.PORT_CLOSED));
+    return Promise.reject(
+      withCode(new Error("Provider not connected"), ERR.PORT_CLOSED),
+    );
   }
 
   const requestId = genRequestId();
@@ -119,7 +130,14 @@ function handleIncoming(providerId, msg) {
     pending.delete(msg.requestId);
     if (entry.timer) clearTimeout(entry.timer);
     if (msg.ok) entry.resolve(msg.result);
-    else entry.reject(withCode(new Error(msg.error ?? "provider error"), msg.errorCode ?? ERR.UNKNOWN_COMMAND, msg.errorDetails ?? null));
+    else
+      entry.reject(
+        withCode(
+          new Error(msg.error ?? "provider error"),
+          msg.errorCode ?? ERR.UNKNOWN_COMMAND,
+          msg.errorDetails ?? null,
+        ),
+      );
     return;
   }
 
@@ -141,9 +159,17 @@ async function handleProviderRpc(providerId, msg) {
   if (!port) return;
   const fn = rpcHandlers.get(msg.cmd);
   try {
-    if (!fn) throw withCode(new Error(`Unknown command: ${msg.cmd}`), ERR.UNKNOWN_COMMAND);
+    if (!fn)
+      throw withCode(
+        new Error(`Unknown command: ${msg.cmd}`),
+        ERR.UNKNOWN_COMMAND,
+      );
     const result = await fn(providerId, msg.args ?? {});
-    port.postMessage({ requestId: msg.requestId, ok: true, result: result ?? null });
+    port.postMessage({
+      requestId: msg.requestId,
+      ok: true,
+      result: result ?? null,
+    });
   } catch (err) {
     port.postMessage({
       requestId: msg.requestId,
@@ -170,11 +196,17 @@ function handleNotification(providerId, type, payload) {
       // Validation lives inside event-log.append - a bogus `level` from a
       // misbehaving provider is rejected here (logged, dropped) instead of
       // polluting the UI.
-      eventLog.append({ ...payload, providerId }).then(entry => {
-        if (entry) ui.broadcast({ type, providerId, payload: entry });
-      }).catch(err => {
-        console.warn(`[tbsync] REPORT_EVENT_LOG from ${providerId} rejected:`, err.message);
-      });
+      eventLog
+        .append({ ...payload, providerId })
+        .then((entry) => {
+          if (entry) ui.broadcast({ type, providerId, payload: entry });
+        })
+        .catch((err) => {
+          console.warn(
+            `[tbsync] REPORT_EVENT_LOG from ${providerId} rejected:`,
+            err.message,
+          );
+        });
       break;
     }
     default:
@@ -204,12 +236,16 @@ function handleDisconnect(providerId, port) {
   ports.delete(providerId);
   rejectPending(providerId, ERR.PORT_CLOSED, "Provider disconnected");
   scheduleBackoffProbe(providerId);
-  providers.setState(providerId, "stale").catch(err => {
-    eventLog.append({
-      level: "warning",
-      message: `Could not mark provider ${providerId} stale after disconnect`,
-      details: err?.message ?? null,
-    }).catch(() => { /* event-log write failed; nothing left to do */ });
+  providers.setState(providerId, "stale").catch((err) => {
+    eventLog
+      .append({
+        level: "warning",
+        message: `Could not mark provider ${providerId} stale after disconnect`,
+        details: err?.message ?? null,
+      })
+      .catch(() => {
+        /* event-log write failed; nothing left to do */
+      });
   });
   ui.broadcast({ type: "providers-changed" });
 }
@@ -232,12 +268,16 @@ function scheduleBackoffProbe(providerId) {
       const extId = extensionIds.get(providerId);
       if (!extId) return;
       await openPortToProvider(providerId, extId);
-      await providers.setState(providerId, "active").catch(err => {
-        eventLog.append({
-          level: "warning",
-          message: `Could not mark provider ${providerId} active after reconnect`,
-          details: err?.message ?? null,
-        }).catch(() => { /* event-log write failed; nothing left to do */ });
+      await providers.setState(providerId, "active").catch((err) => {
+        eventLog
+          .append({
+            level: "warning",
+            message: `Could not mark provider ${providerId} active after reconnect`,
+            details: err?.message ?? null,
+          })
+          .catch(() => {
+            /* event-log write failed; nothing left to do */
+          });
       });
       ui.broadcast({ type: "providers-changed" });
     } catch {
@@ -246,4 +286,3 @@ function scheduleBackoffProbe(providerId) {
   }, delay);
   backoff.set(providerId, prior);
 }
-

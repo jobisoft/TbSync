@@ -22,20 +22,28 @@ export function onInternalEvent(fn) {
 }
 
 export function init() {
-  browser.runtime.onConnect.addListener(port => {
+  browser.runtime.onConnect.addListener((port) => {
     if (port.name !== MANAGER_PORT_NAME) return;
     managerPorts.add(port);
     port.onDisconnect.addListener(() => managerPorts.delete(port));
-    port.onMessage.addListener(msg => handleManagerRpc(port, msg));
+    port.onMessage.addListener((msg) => handleManagerRpc(port, msg));
   });
 }
 
 export function broadcast(event) {
   for (const fn of internalListeners) {
-    try { fn(event); } catch (err) { console.warn("[tbsync] internal listener failed:", err); }
+    try {
+      fn(event);
+    } catch (err) {
+      console.warn("[tbsync] internal listener failed:", err);
+    }
   }
   for (const port of managerPorts) {
-    try { port.postMessage({ kind: "event", event }); } catch { managerPorts.delete(port); }
+    try {
+      port.postMessage({ kind: "event", event });
+    } catch {
+      managerPorts.delete(port);
+    }
   }
 }
 
@@ -49,7 +57,12 @@ async function handleManagerRpc(port, msg) {
   try {
     if (!fn) throw new Error(`unknown manager rpc: ${msg.cmd}`);
     const result = await fn(msg.args ?? {});
-    port.postMessage({ kind: "rpc-response", requestId: msg.requestId, ok: true, result: result ?? null });
+    port.postMessage({
+      kind: "rpc-response",
+      requestId: msg.requestId,
+      ok: true,
+      result: result ?? null,
+    });
   } catch (err) {
     port.postMessage({
       kind: "rpc-response",

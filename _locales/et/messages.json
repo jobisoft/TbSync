@@ -270,13 +270,13 @@
     "message": "TbSync"
   },
   "actionButton.title.syncing": {
-    "message": "TbSync — Sünkroonimine…"
+    "message": "TbSync - Sünkroonimine…"
   },
   "actionButton.title.error": {
-    "message": "TbSync — Sünkroonimisviga"
+    "message": "TbSync - Sünkroonimisviga"
   },
   "actionButton.title.localChanges": {
-    "message": "TbSync — Kohalikud muudatused ootel"
+    "message": "TbSync - Kohalikud muudatused ootel"
   },
   "options.intro": {
     "message": "TbSynci kontoseaded asuvad TbSynci halduris. Selle avamiseks klõpsa allolevat nuppu."

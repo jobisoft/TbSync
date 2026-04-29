@@ -23,12 +23,16 @@ const LEVEL_INDEX = Object.freeze({ error: 0, warning: 1, info: 2, debug: 3 });
 
 function assertValidLevel(level) {
   if (!LEVELS.includes(level)) {
-    throw new Error(`event-log: level must be one of ${LEVELS.join("|")} (got ${JSON.stringify(level)})`);
+    throw new Error(
+      `event-log: level must be one of ${LEVELS.join("|")} (got ${JSON.stringify(level)})`,
+    );
   }
 }
 
 async function currentLogLevel() {
-  const rv = await browser.storage.local.get({ [KEYS.SETTINGS]: DEFAULT_SETTINGS });
+  const rv = await browser.storage.local.get({
+    [KEYS.SETTINGS]: DEFAULT_SETTINGS,
+  });
   return rv[KEYS.SETTINGS]?.logLevel ?? DEFAULT_SETTINGS.logLevel;
 }
 
@@ -58,7 +62,5 @@ export async function list() {
 }
 
 export function clear() {
-  return serialize(() =>
-    browser.storage.session.set({ [KEYS.EVENT_LOG]: [] })
-  );
+  return serialize(() => browser.storage.session.set({ [KEYS.EVENT_LOG]: [] }));
 }

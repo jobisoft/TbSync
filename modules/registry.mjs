@@ -42,7 +42,8 @@ export function onChange(fn) {
 export function init({ openPortToProvider, closePortToProvider }) {
   browser.runtime.onMessageExternal.addListener(async (msg, sender) => {
     if (!msg || typeof msg !== "object") return undefined;
-    if (msg.type !== DISCOVERY.ANNOUNCE && msg.type !== DISCOVERY.UNANNOUNCE) return undefined;
+    if (msg.type !== DISCOVERY.ANNOUNCE && msg.type !== DISCOVERY.UNANNOUNCE)
+      return undefined;
     if (!sender?.id) return undefined;
 
     const extensionId = sender.id;
@@ -81,8 +82,11 @@ export function init({ openPortToProvider, closePortToProvider }) {
       state: "active",
     });
 
-    await openPortToProvider(providerId, extensionId).catch(err => {
-      console.warn(`[tbsync] could not open port to ${providerId} (${extensionId}):`, err);
+    await openPortToProvider(providerId, extensionId).catch((err) => {
+      console.warn(
+        `[tbsync] could not open port to ${providerId} (${extensionId}):`,
+        err,
+      );
     });
 
     emit({ type: "provider-active", providerId, meta });
@@ -96,11 +100,11 @@ export function init({ openPortToProvider, closePortToProvider }) {
     };
   });
 
-  browser.management.onDisabled.addListener(async addon => {
+  browser.management.onDisabled.addListener(async (addon) => {
     const providerId = await providerIdFromExtensionId(addon.id);
     if (providerId) await handleUnannounce(providerId, closePortToProvider);
   });
-  browser.management.onUninstalled.addListener(async addon => {
+  browser.management.onUninstalled.addListener(async (addon) => {
     const providerId = await providerIdFromExtensionId(addon.id);
     if (providerId) await handleUnannounce(providerId, closePortToProvider);
   });

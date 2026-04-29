@@ -9,7 +9,9 @@ import { serialize } from "./storage-queue.mjs";
  */
 
 async function read() {
-  const rv = await browser.storage.local.get({ [KEYS.ACCOUNTS]: { sequence: 0, data: {} } });
+  const rv = await browser.storage.local.get({
+    [KEYS.ACCOUNTS]: { sequence: 0, data: {} },
+  });
   return rv[KEYS.ACCOUNTS];
 }
 
@@ -29,7 +31,7 @@ export async function get(accountId) {
 
 export async function byProvider(providerId) {
   const state = await read();
-  return Object.values(state.data).filter(a => a.provider === providerId);
+  return Object.values(state.data).filter((a) => a.provider === providerId);
 }
 
 export function create({

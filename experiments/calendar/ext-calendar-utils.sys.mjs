@@ -6,14 +6,26 @@
  * WARNING: This file usually doesn't live reload, you need to restart Thunderbird after editing
  */
 
-var { ExtensionUtils: { ExtensionError, promiseEvent } } = ChromeUtils.importESModule("resource://gre/modules/ExtensionUtils.sys.mjs");
+var {
+  ExtensionUtils: { ExtensionError, promiseEvent },
+} = ChromeUtils.importESModule("resource://gre/modules/ExtensionUtils.sys.mjs");
 
-var { cal } = ChromeUtils.importESModule("resource:///modules/calendar/calUtils.sys.mjs");
-var { CalEvent } = ChromeUtils.importESModule("resource:///modules/CalEvent.sys.mjs");
-var { CalTodo } = ChromeUtils.importESModule("resource:///modules/CalTodo.sys.mjs");
-var { ExtensionParent } = ChromeUtils.importESModule("resource://gre/modules/ExtensionParent.sys.mjs");
+var { cal } = ChromeUtils.importESModule(
+  "resource:///modules/calendar/calUtils.sys.mjs",
+);
+var { CalEvent } = ChromeUtils.importESModule(
+  "resource:///modules/CalEvent.sys.mjs",
+);
+var { CalTodo } = ChromeUtils.importESModule(
+  "resource:///modules/CalTodo.sys.mjs",
+);
+var { ExtensionParent } = ChromeUtils.importESModule(
+  "resource://gre/modules/ExtensionParent.sys.mjs",
+);
 
-var { default: ICAL } = ChromeUtils.importESModule("resource:///modules/calendar/Ical.sys.mjs");
+var { default: ICAL } = ChromeUtils.importESModule(
+  "resource:///modules/calendar/Ical.sys.mjs",
+);
 
 export function isOwnCalendar(calendar, extension) {
   return calendar.superCalendar.type == "ext-" + extension.id;
@@ -33,7 +45,10 @@ export function getResolvedCalendarById(extension, id) {
   let calendar;
   if (id.endsWith("#cache")) {
     const cached = cal.manager.getCalendarById(id.substring(0, id.length - 6));
-    calendar = cached && isOwnCalendar(cached, extension) && cached.wrappedJSObject.mCachedCalendar;
+    calendar =
+      cached &&
+      isOwnCalendar(cached, extension) &&
+      cached.wrappedJSObject.mCachedCalendar;
   } else {
     calendar = cal.manager.getCalendarById(id);
   }
@@ -122,11 +137,15 @@ function parseJcalData(jcalComp) {
     }
 
     if (!parent) {
-      throw new ExtensionError("TODO need to retrieve a parent item from storage");
+      throw new ExtensionError(
+        "TODO need to retrieve a parent item from storage",
+      );
     }
 
     if (exceptions.length && !parent.recurrenceInfo) {
-      throw new ExtensionError("Exceptions were supplied to a non-recurring item");
+      throw new ExtensionError(
+        "Exceptions were supplied to a non-recurring item",
+      );
     }
 
     for (const exception of exceptions) {
@@ -138,7 +157,9 @@ function parseJcalData(jcalComp) {
     }
     return parent;
   }
-  throw new ExtensionError("Don't know how to handle component type " + jcalComp.name);
+  throw new ExtensionError(
+    "Don't know how to handle component type " + jcalComp.name,
+  );
 }
 
 export function propsToItem(props) {
@@ -175,15 +196,22 @@ export function convertItem(item, options, extension) {
   } else if (item.isTodo()) {
     props.type = "task";
   } else {
-    throw new ExtensionError(`Encountered unknown item type for ${item.calendar.id}/${item.id}`);
+    throw new ExtensionError(
+      `Encountered unknown item type for ${item.calendar.id}/${item.id}`,
+    );
   }
 
   props.id = item.id;
   props.calendarId = item.calendar.superCalendar.id;
 
-  const recId = item.recurrenceId?.getInTimezone(cal.timezoneService.UTC)?.icalString;
+  const recId = item.recurrenceId?.getInTimezone(
+    cal.timezoneService.UTC,
+  )?.icalString;
   if (recId) {
-    const jcalId = ICAL.design.icalendar.value[recId.length == 8 ? "date" : "date-time"].fromICAL(recId);
+    const jcalId =
+      ICAL.design.icalendar.value[
+        recId.length == 8 ? "date" : "date-time"
+      ].fromICAL(recId);
     props.instance = jcalId;
   }
 
@@ -201,9 +229,9 @@ export function convertItem(item, options, extension) {
   if (options?.returnFormat) {
     props.format = options.returnFormat;
 
-    const serializer = Cc["@mozilla.org/calendar/ics-serializer;1"].createInstance(
-      Ci.calIIcsSerializer
-    );
+    const serializer = Cc[
+      "@mozilla.org/calendar/ics-serializer;1"
+    ].createInstance(Ci.calIIcsSerializer);
     serializer.addItems([item]);
     const icalString = serializer.serializeToString();
 
@@ -216,7 +244,9 @@ export function convertItem(item, options, extension) {
         props.item = ICAL.parse(icalString);
         break;
       default:
-        throw new ExtensionError("Invalid format specified: " + options.returnFormat);
+        throw new ExtensionError(
+          "Invalid format specified: " + options.returnFormat,
+        );
     }
   }
 
@@ -248,28 +278,39 @@ export function convertAlarm(item, alarm) {
  * @returns {calIObserver}
  */
 export function createCalendarObserver(methods = {}) {
-  return Object.assign({
-    QueryInterface: ChromeUtils.generateQI(["calIObserver"]),
-    onStartBatch() {},
-    onEndBatch() {},
-    onLoad() {},
-    onAddItem() {},
-    onModifyItem() {},
-    onDeleteItem() {},
-    onError() {},
-    onPropertyChanged() {},
-    onPropertyDeleting() {},
-  }, methods);
+  return Object.assign(
+    {
+      QueryInterface: ChromeUtils.generateQI(["calIObserver"]),
+      onStartBatch() {},
+      onEndBatch() {},
+      onLoad() {},
+      onAddItem() {},
+      onModifyItem() {},
+      onDeleteItem() {},
+      onError() {},
+      onPropertyChanged() {},
+      onPropertyDeleting() {},
+    },
+    methods,
+  );
 }
 
-export async function setupE10sBrowser(extension, browser, parent, initOptions={}) {
+export async function setupE10sBrowser(
+  extension,
+  browser,
+  parent,
+  initOptions = {},
+) {
   browser.setAttribute("type", "content");
   browser.setAttribute("disableglobalhistory", "true");
   browser.setAttribute("messagemanagergroup", "webext-browsers");
   browser.setAttribute("class", "webextension-popup-browser");
   browser.setAttribute("webextension-view-type", "subview");
 
-  browser.setAttribute("initialBrowsingContextGroupId", extension.policy.browsingContextGroupId);
+  browser.setAttribute(
+    "initialBrowsingContextGroupId",
+    extension.policy.browsingContextGroupId,
+  );
   if (extension.remote) {
     browser.setAttribute("remote", "true");
     browser.setAttribute("remoteType", extension.remoteType);
@@ -305,15 +346,18 @@ export async function setupE10sBrowser(extension, browser, parent, initOptions={
     mm.loadFrameScript(
       "chrome://extensions/content/ext-browser-content.js",
       false,
-      true
+      true,
     );
-    const options = Object.assign({
-      allowScriptsToClose: true,
-      blockParser: false,
-      maxWidth: 800,
-      maxHeight: 600,
-      stylesheets: sheets
-    }, initOptions);
+    const options = Object.assign(
+      {
+        allowScriptsToClose: true,
+        blockParser: false,
+        maxWidth: 800,
+        maxHeight: 600,
+        stylesheets: sheets,
+      },
+      initOptions,
+    );
     mm.sendAsyncMessage("Extension:InitBrowser", options);
   };
   browser.addEventListener("DidChangeBrowserRemoteness", initBrowser);

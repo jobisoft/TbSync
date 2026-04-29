@@ -2,10 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-var { ExtensionCommon: { ExtensionAPI, EventManager } } = ChromeUtils.importESModule("resource://gre/modules/ExtensionCommon.sys.mjs");
-var { ExtensionUtils: { ExtensionError } } = ChromeUtils.importESModule("resource://gre/modules/ExtensionUtils.sys.mjs");
+var {
+  ExtensionCommon: { ExtensionAPI, EventManager },
+} = ChromeUtils.importESModule(
+  "resource://gre/modules/ExtensionCommon.sys.mjs",
+);
+var {
+  ExtensionUtils: { ExtensionError },
+} = ChromeUtils.importESModule("resource://gre/modules/ExtensionUtils.sys.mjs");
 
-var { cal } = ChromeUtils.importESModule("resource:///modules/calendar/calUtils.sys.mjs");
+var { cal } = ChromeUtils.importESModule(
+  "resource:///modules/calendar/calUtils.sys.mjs",
+);
 
 this.calendar_calendars = class extends ExtensionAPI {
   getAPI(context) {
@@ -19,7 +27,7 @@ this.calendar_calendars = class extends ExtensionAPI {
       isOwnCalendar,
       convertCalendar,
     } = ChromeUtils.importESModule(
-      `resource://${root}/experiments/calendar/ext-calendar-utils.sys.mjs?${query}`
+      `resource://${root}/experiments/calendar/ext-calendar-utils.sys.mjs?${query}`,
     );
 
     return {
@@ -38,7 +46,7 @@ this.calendar_calendars = class extends ExtensionAPI {
             }
 
             return calendars
-              .filter(calendar => {
+              .filter((calendar) => {
                 let matches = true;
 
                 if (type && calendar.type != type) {
@@ -58,11 +66,18 @@ this.calendar_calendars = class extends ExtensionAPI {
                   matches = false;
                 }
 
-                if (enabled != null && calendar.getProperty("disabled") == enabled) {
+                if (
+                  enabled != null &&
+                  calendar.getProperty("disabled") == enabled
+                ) {
                   matches = false;
                 }
 
-                if (visible != null & calendar.getProperty("calendar-main-in-composite") != visible) {
+                if (
+                  (visible != null) &
+                  (calendar.getProperty("calendar-main-in-composite") !=
+                    visible)
+                ) {
                   matches = false;
                 }
 
@@ -72,13 +87,19 @@ this.calendar_calendars = class extends ExtensionAPI {
 
                 return matches;
               })
-              .map(calendar => convertCalendar(context.extension, calendar));
+              .map((calendar) => convertCalendar(context.extension, calendar));
           },
           async get(id) {
             if (id.endsWith("#cache")) {
-              const calendar = unwrapCalendar(cal.manager.getCalendarById(id.substring(0, id.length - 6)));
-              const own = calendar.offlineStorage && isOwnCalendar(calendar, context.extension);
-              return own ? convertCalendar(context.extension, calendar.offlineStorage) : null;
+              const calendar = unwrapCalendar(
+                cal.manager.getCalendarById(id.substring(0, id.length - 6)),
+              );
+              const own =
+                calendar.offlineStorage &&
+                isOwnCalendar(calendar, context.extension);
+              return own
+                ? convertCalendar(context.extension, calendar.offlineStorage)
+                : null;
             }
             const calendar = cal.manager.getCalendarById(id);
             return convertCalendar(context.extension, calendar);
@@ -86,10 +107,12 @@ this.calendar_calendars = class extends ExtensionAPI {
           async create(createProperties) {
             let calendar = cal.manager.createCalendar(
               createProperties.type,
-              Services.io.newURI(createProperties.url)
+              Services.io.newURI(createProperties.url),
             );
             if (!calendar) {
-              throw new ExtensionError(`Calendar type ${createProperties.type} is unknown`);
+              throw new ExtensionError(
+                `Calendar type ${createProperties.type} is unknown`,
+              );
             }
 
             calendar.name = createProperties.name;
@@ -104,17 +127,28 @@ this.calendar_calendars = class extends ExtensionAPI {
               calendar.setProperty("disabled", !createProperties.enabled);
             }
             if (createProperties.visible != null) {
-              calendar.setProperty("calendar-main-in-composite", createProperties.visible);
+              calendar.setProperty(
+                "calendar-main-in-composite",
+                createProperties.visible,
+              );
             }
             if (createProperties.showReminders != null) {
-              calendar.setProperty("suppressAlarms", !createProperties.showReminders);
+              calendar.setProperty(
+                "suppressAlarms",
+                !createProperties.showReminders,
+              );
             }
             if (createProperties.capabilities != null) {
               if (!isOwnCalendar(calendar, context.extension)) {
-                throw new ExtensionError("Cannot set capabilities on foreign calendar types");
+                throw new ExtensionError(
+                  "Cannot set capabilities on foreign calendar types",
+                );
               }
 
-              calendar.setProperty("overrideCapabilities", JSON.stringify(createProperties.capabilities));
+              calendar.setProperty(
+                "overrideCapabilities",
+                JSON.stringify(createProperties.capabilities),
+              );
             }
 
             cal.manager.registerCalendar(calendar);
@@ -128,11 +162,21 @@ this.calendar_calendars = class extends ExtensionAPI {
               throw new ExtensionError(`Invalid calendar id: ${id}`);
             }
 
-            if (updateProperties.capabilities && !isOwnCalendar(calendar, context.extension)) {
-              throw new ExtensionError("Cannot update capabilities for foreign calendars");
+            if (
+              updateProperties.capabilities &&
+              !isOwnCalendar(calendar, context.extension)
+            ) {
+              throw new ExtensionError(
+                "Cannot update capabilities for foreign calendars",
+              );
             }
-            if (updateProperties.url && !isOwnCalendar(calendar, context.extension)) {
-              throw new ExtensionError("Cannot update url for foreign calendars");
+            if (
+              updateProperties.url &&
+              !isOwnCalendar(calendar, context.extension)
+            ) {
+              throw new ExtensionError(
+                "Cannot update url for foreign calendars",
+              );
             }
 
             if (updateProperties.url) {
@@ -144,11 +188,17 @@ this.calendar_calendars = class extends ExtensionAPI {
             }
 
             if (updateProperties.visible != null) {
-              calendar.setProperty("calendar-main-in-composite", updateProperties.visible);
+              calendar.setProperty(
+                "calendar-main-in-composite",
+                updateProperties.visible,
+              );
             }
 
             if (updateProperties.showReminders != null) {
-              calendar.setProperty("suppressAlarms", !updateProperties.showReminders);
+              calendar.setProperty(
+                "suppressAlarms",
+                !updateProperties.showReminders,
+              );
             }
 
             for (const prop of ["readOnly", "name", "color"]) {
@@ -159,14 +209,19 @@ this.calendar_calendars = class extends ExtensionAPI {
 
             if (updateProperties.capabilities) {
               // TODO validate capability names
-              const unwrappedCalendar = calendar.wrappedJSObject.mUncachedCalendar.wrappedJSObject;
+              const unwrappedCalendar =
+                calendar.wrappedJSObject.mUncachedCalendar.wrappedJSObject;
               let overrideCapabilities;
               try {
-                overrideCapabilities = JSON.parse(calendar.getProperty("overrideCapabilities")) || {};
-              } catch(e) {
+                overrideCapabilities =
+                  JSON.parse(calendar.getProperty("overrideCapabilities")) ||
+                  {};
+              } catch (e) {
                 overrideCapabilities = {};
               }
-              for (const [key, value] of Object.entries(updateProperties.capabilities)) {
+              for (const [key, value] of Object.entries(
+                updateProperties.capabilities,
+              )) {
                 if (value === null) {
                   continue;
                 }
@@ -174,7 +229,10 @@ this.calendar_calendars = class extends ExtensionAPI {
                 overrideCapabilities[key] = value;
               }
 
-              calendar.setProperty("overrideCapabilities", JSON.stringify(overrideCapabilities));
+              calendar.setProperty(
+                "overrideCapabilities",
+                JSON.stringify(overrideCapabilities),
+              );
             }
 
             if (updateProperties.lastError !== undefined) {
@@ -183,7 +241,10 @@ this.calendar_calendars = class extends ExtensionAPI {
                 calendar.setProperty("lastErrorMessage", "");
               } else {
                 calendar.setProperty("currentStatus", Cr.NS_ERROR_FAILURE);
-                calendar.setProperty("lastErrorMessage", updateProperties.lastError);
+                calendar.setProperty(
+                  "lastErrorMessage",
+                  updateProperties.lastError,
+                );
               }
             }
           },
@@ -200,8 +261,13 @@ this.calendar_calendars = class extends ExtensionAPI {
               throw new ExtensionError("Cannot clear non-cached calendar");
             }
 
-            const offlineStorage = getResolvedCalendarById(context.extension, id);
-            const calendar = cal.manager.getCalendarById(id.substring(0, id.length - 6));
+            const offlineStorage = getResolvedCalendarById(
+              context.extension,
+              id,
+            );
+            const calendar = cal.manager.getCalendarById(
+              id.substring(0, id.length - 6),
+            );
 
             if (!isOwnCalendar(calendar, context.extension)) {
               throw new ExtensionError("Cannot clear foreign calendar");
@@ -255,9 +321,11 @@ this.calendar_calendars = class extends ExtensionAPI {
           onCreated: new EventManager({
             context,
             name: "calendar.calendars.onCreated",
-            register: fire => {
+            register: (fire) => {
               const observer = {
-                QueryInterface: ChromeUtils.generateQI(["calICalendarManagerObserver"]),
+                QueryInterface: ChromeUtils.generateQI([
+                  "calICalendarManagerObserver",
+                ]),
                 onCalendarRegistered(calendar) {
                   fire.sync(convertCalendar(context.extension, calendar));
                 },
@@ -275,10 +343,13 @@ this.calendar_calendars = class extends ExtensionAPI {
           onUpdated: new EventManager({
             context,
             name: "calendar.calendars.onUpdated",
-            register: fire => {
+            register: (fire) => {
               const observer = createCalendarObserver({
                 onPropertyChanged(calendar, name, value, _oldValue) {
-                  const converted = convertCalendar(context.extension, calendar);
+                  const converted = convertCalendar(
+                    context.extension,
+                    calendar,
+                  );
                   switch (name) {
                     case "name":
                     case "color":
@@ -311,9 +382,11 @@ this.calendar_calendars = class extends ExtensionAPI {
           onRemoved: new EventManager({
             context,
             name: "calendar.calendars.onRemoved",
-            register: fire => {
+            register: (fire) => {
               const observer = {
-                QueryInterface: ChromeUtils.generateQI(["calICalendarManagerObserver"]),
+                QueryInterface: ChromeUtils.generateQI([
+                  "calICalendarManagerObserver",
+                ]),
                 onCalendarRegistered() {},
                 onCalendarUnregistering(calendar) {
                   fire.sync(calendar.id);

@@ -270,13 +270,13 @@
     "message": "TbSync"
   },
   "actionButton.title.syncing": {
-    "message": "TbSync — 同期中…"
+    "message": "TbSync - 同期中…"
   },
   "actionButton.title.error": {
-    "message": "TbSync — 同期エラー"
+    "message": "TbSync - 同期エラー"
   },
   "actionButton.title.localChanges": {
-    "message": "TbSync — ローカルの変更が保留中"
+    "message": "TbSync - ローカルの変更が保留中"
   },
   "options.intro": {
     "message": "TbSync のアカウント設定は TbSync マネージャーにあります。下のボタンをクリックして開いてください。"

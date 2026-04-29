@@ -21,7 +21,7 @@
     "message": "Hjälp"
   },
   "manager.help.wiki": {
-    "message": "Öppna TbSync-projektets wiki-sidor – där finns ytterligare information, guider och utförliga konfigurationsbeskrivningar."
+    "message": "Öppna TbSync-projektets wiki-sidor - där finns ytterligare information, guider och utförliga konfigurationsbeskrivningar."
   },
   "manager.eventLog.intro": {
     "message": "Felrapporter inkluderar innehållet i denna logg. För en mer användbar rapport: höj utförlighetsnivån, töm loggen och återskapa problemet innan du klickar på rapportknappen."
@@ -270,13 +270,13 @@
     "message": "TbSync"
   },
   "actionButton.title.syncing": {
-    "message": "TbSync — Synkroniserar…"
+    "message": "TbSync - Synkroniserar…"
   },
   "actionButton.title.error": {
-    "message": "TbSync — Synkroniseringsfel"
+    "message": "TbSync - Synkroniseringsfel"
   },
   "actionButton.title.localChanges": {
-    "message": "TbSync — Lokala ändringar väntar"
+    "message": "TbSync - Lokala ändringar väntar"
   },
   "options.intro": {
     "message": "TbSyncs kontoinställningar finns i TbSync-hanteraren. Klicka på knappen nedan för att öppna den."

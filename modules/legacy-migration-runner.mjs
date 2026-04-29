@@ -31,33 +31,42 @@ export async function runIfNeeded() {
   // check on the directory; subsequent reads are gated on per-file
   // existence so missing optional files (folders / changelog) don't
   // throw.
-  if (!await browser.ProfileFiles.exists(LEGACY_DIR)) return;
-  if (!await browser.ProfileFiles.exists(`${LEGACY_DIR}/accounts68.json`)) return;
+  if (!(await browser.ProfileFiles.exists(LEGACY_DIR))) return;
+  if (!(await browser.ProfileFiles.exists(`${LEGACY_DIR}/accounts68.json`)))
+    return;
 
   let result;
   try {
-    const accounts68 = await browser.ProfileFiles.readJSON(`${LEGACY_DIR}/accounts68.json`);
-    const folders68 = (await browser.ProfileFiles.exists(`${LEGACY_DIR}/folders68.json`))
+    const accounts68 = await browser.ProfileFiles.readJSON(
+      `${LEGACY_DIR}/accounts68.json`,
+    );
+    const folders68 = (await browser.ProfileFiles.exists(
+      `${LEGACY_DIR}/folders68.json`,
+    ))
       ? await browser.ProfileFiles.readJSON(`${LEGACY_DIR}/folders68.json`)
       : {};
-    const changelog68 = (await browser.ProfileFiles.exists(`${LEGACY_DIR}/changelog68.json`))
+    const changelog68 = (await browser.ProfileFiles.exists(
+      `${LEGACY_DIR}/changelog68.json`,
+    ))
       ? await browser.ProfileFiles.readJSON(`${LEGACY_DIR}/changelog68.json`)
       : [];
 
     const acc = await migrateAccounts(accounts68);
     const fld = await migrateFolders(folders68);
     const chg = await migrateChangelog(changelog68);
-    const prf = await migratePref([{
-      keys: {
-        "extensions.tbsync.log.userdatalevel": "logLevel",
+    const prf = await migratePref([
+      {
+        keys: {
+          "extensions.tbsync.log.userdatalevel": "logLevel",
+        },
+        validate: (v) => typeof v === "number" && Number.isFinite(v),
+        transform: (v) => {
+          // Legacy: 0 = off, 1 = errors, 2 = full, 3 = extra.
+          // New   : 0 = errors, 1 = warnings, 2 = info, 3 = debug.
+          return Math.max(0, Math.min(3, Math.trunc(v) || 0));
+        },
       },
-      validate: (v) => typeof v === "number" && Number.isFinite(v),
-      transform: (v) => {
-        // Legacy: 0 = off, 1 = errors, 2 = full, 3 = extra.
-        // New   : 0 = errors, 1 = warnings, 2 = info, 3 = debug.
-        return Math.max(0, Math.min(3, Math.trunc(v) || 0));
-      },
-    }]);
+    ]);
 
     result = { acc, fld, chg, prf };
   } catch (err) {
@@ -70,7 +79,7 @@ export async function runIfNeeded() {
   }
 
   await eventLog.append({
-    level: "info",  // surfaces in the manager so the user sees it
+    level: "info", // surfaces in the manager so the user sees it
     message:
       `Migrated ${result.acc.count} account(s) and ${result.fld.count} folder(s) from legacy TbSync. ` +
       `Changelog: ${result.chg.matched} matched, ${result.chg.unmatched} dropped. ` +
@@ -116,7 +125,6 @@ const TARGET_TYPE_TRANSLATION = {
   calendar: "calendars",
 };
 
-
 // ── migrateAccounts ──────────────────────────────────────────────────────
 
 /**
@@ -155,7 +163,7 @@ async function migrateAccounts(legacyAccounts68) {
 
   const sequence = Math.max(maxId, 0);
   await serialize(() =>
-    browser.storage.local.set({ [KEYS.ACCOUNTS]: { sequence, data } })
+    browser.storage.local.set({ [KEYS.ACCOUNTS]: { sequence, data } }),
   );
   return { count: Object.keys(data).length, sequence };
 }
@@ -182,7 +190,8 @@ async function migrateFolders(legacyFolders68) {
       }
 
       const legacyTargetType = String(legacyRow.targetType ?? "");
-      const targetType = TARGET_TYPE_TRANSLATION[legacyTargetType] ?? legacyTargetType;
+      const targetType =
+        TARGET_TYPE_TRANSLATION[legacyTargetType] ?? legacyTargetType;
 
       newBucket[folderId] = {
         folderId,
@@ -213,9 +222,7 @@ async function migrateFolders(legacyFolders68) {
     if (Object.keys(newBucket).length) out[accountId] = newBucket;
   }
 
-  await serialize(() =>
-    browser.storage.local.set({ [KEYS.FOLDERS]: out })
-  );
+  await serialize(() => browser.storage.local.set({ [KEYS.FOLDERS]: out }));
   return { count };
 }
 
@@ -244,7 +251,10 @@ function migrateChangelog(legacyChangelog68) {
     let unmatched = 0;
 
     outer: for (const entry of entries) {
-      if (!entry?.parentId) { unmatched++; continue; }
+      if (!entry?.parentId) {
+        unmatched++;
+        continue;
+      }
       for (const bucket of Object.values(folders)) {
         for (const folder of Object.values(bucket)) {
           const target = folder?.targetID;

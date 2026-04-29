@@ -4,11 +4,11 @@
  *
  * Version 1.12
  * - added createPref(), proposed by Axel Grude
- * 
+ *
  * Version 1.11
  * - adjusted to TB128 (no longer loading Services and ExtensionCommon)
  * - use ChromeUtils.importESModule()
- * 
+ *
  * Version 1.10
  * - adjusted to Thunderbird 115 (Services is now in globalThis)
  *
@@ -48,20 +48,19 @@
 "use strict";
 
 var { ExtensionUtils } = ChromeUtils.importESModule(
-  "resource://gre/modules/ExtensionUtils.sys.mjs"
+  "resource://gre/modules/ExtensionUtils.sys.mjs",
 );
 var { ExtensionError } = ExtensionUtils;
 
 var LegacyPrefs = class extends ExtensionCommon.ExtensionAPI {
   getAPI(context) {
-
     class LegacyPrefsManager {
       constructor() {
         this.observedBranches = new Map();
         this.QueryInterface = ChromeUtils.generateQI([
           "nsIObserver",
           "nsISupportsWeakReference",
-        ])
+        ]);
       }
 
       addObservedBranch(branch, fire) {
@@ -78,11 +77,11 @@ var LegacyPrefs = class extends ExtensionCommon.ExtensionAPI {
 
       async observe(aSubject, aTopic, aData) {
         if (aTopic == "nsPref:changed") {
-          let branch = [...this.observedBranches.keys()]
-            .reduce(
-              (p, c) => aData.startsWith(c) && (!p || c.length > p.length) ? c : p,
-              null
-            );
+          let branch = [...this.observedBranches.keys()].reduce(
+            (p, c) =>
+              aData.startsWith(c) && (!p || c.length > p.length) ? c : p,
+            null,
+          );
           if (branch) {
             let name = aData.substr(branch.length);
             let value = await this.getLegacyPref(aData);
@@ -92,11 +91,7 @@ var LegacyPrefs = class extends ExtensionCommon.ExtensionAPI {
         }
       }
 
-      async getLegacyPref(
-        aName,
-        aFallback = null,
-        userPrefOnly = true
-      ) {
+      async getLegacyPref(aName, aFallback = null, userPrefOnly = true) {
         let prefType = Services.prefs.getPrefType(aName);
         if (prefType == Services.prefs.PREF_INVALID) {
           return aFallback;
@@ -119,7 +114,7 @@ var LegacyPrefs = class extends ExtensionCommon.ExtensionAPI {
 
             default:
               console.error(
-                `Legacy preference <${aName}> has an unknown type of <${prefType}>.`
+                `Legacy preference <${aName}> has an unknown type of <${prefType}>.`,
               );
           }
         }
@@ -136,7 +131,9 @@ var LegacyPrefs = class extends ExtensionCommon.ExtensionAPI {
           name: "LegacyPrefs.onChanged",
           register: (fire, branch) => {
             if (legacyPrefsManager.hasObservedBranch(branch)) {
-              throw new ExtensionError(`Cannot add more than one listener for branch "${branch}".`)
+              throw new ExtensionError(
+                `Cannot add more than one listener for branch "${branch}".`,
+              );
             }
             legacyPrefsManager.addObservedBranch(branch, fire.sync);
             Services.prefs
@@ -159,7 +156,11 @@ var LegacyPrefs = class extends ExtensionCommon.ExtensionAPI {
         // returns the default value, if no user defined value exists,
         // and returns the fallback value, if the preference does not exist
         getPref: async function (aName, aFallback = null) {
-          return await legacyPrefsManager.getLegacyPref(aName, aFallback, false);
+          return await legacyPrefsManager.getLegacyPref(
+            aName,
+            aFallback,
+            false,
+          );
         },
 
         clearUserPref: function (aName) {
@@ -169,21 +170,21 @@ var LegacyPrefs = class extends ExtensionCommon.ExtensionAPI {
         // creates a new pref
         createPref: async function (aName, aValue) {
           if (typeof aValue == "string") {
-              Services.prefs.setStringPref(aName, aValue);
-              return "string";
+            Services.prefs.setStringPref(aName, aValue);
+            return "string";
           }
 
           if (typeof aValue == "boolean") {
-              Services.prefs.setBoolPref(aName, aValue);
-              return "boolean";
+            Services.prefs.setBoolPref(aName, aValue);
+            return "boolean";
           }
 
           if (typeof aValue == "number" && Number.isSafeInteger(aValue)) {
-              Services.prefs.setIntPref(aName, aValue);
-              return "integer";
+            Services.prefs.setIntPref(aName, aValue);
+            return "integer";
           }
           console.error(
-            `The provided value <${aValue}> for the new legacy preference <${aName}> is none of STRING, BOOLEAN or INTEGER.`
+            `The provided value <${aValue}> for the new legacy preference <${aName}> is none of STRING, BOOLEAN or INTEGER.`,
           );
           return false;
         },
@@ -193,7 +194,7 @@ var LegacyPrefs = class extends ExtensionCommon.ExtensionAPI {
           let prefType = Services.prefs.getPrefType(aName);
           if (prefType == Services.prefs.PREF_INVALID) {
             console.error(
-              `Unknown legacy preference <${aName}>, forgot to declare a default?.`
+              `Unknown legacy preference <${aName}>, forgot to declare a default?.`,
             );
             return false;
           }
@@ -216,7 +217,7 @@ var LegacyPrefs = class extends ExtensionCommon.ExtensionAPI {
 
             default:
               console.error(
-                `Legacy preference <${aName}> has an unknown type of <${prefType}>.`
+                `Legacy preference <${aName}> has an unknown type of <${prefType}>.`,
               );
           }
           return false;

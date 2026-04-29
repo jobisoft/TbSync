@@ -270,13 +270,13 @@
     "message": "TbSync"
   },
   "actionButton.title.syncing": {
-    "message": "TbSync — Sincronizando…"
+    "message": "TbSync - Sincronizando…"
   },
   "actionButton.title.error": {
-    "message": "TbSync — Erro de sincronização"
+    "message": "TbSync - Erro de sincronização"
   },
   "actionButton.title.localChanges": {
-    "message": "TbSync — Alterações locais pendentes"
+    "message": "TbSync - Alterações locais pendentes"
   },
   "options.intro": {
     "message": "As configurações de conta do TbSync ficam no Gerenciador do TbSync. Clique no botão abaixo para abri-lo."

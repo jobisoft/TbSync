@@ -20,7 +20,7 @@ export async function syncAllAccounts() {
   const all = await accounts.list();
   for (const acc of all) {
     if (!acc.enabled) continue;
-    await syncAccount(acc.accountId).catch(err => {
+    await syncAccount(acc.accountId).catch((err) => {
       console.warn(`[tbsync] syncAccount(${acc.accountId}) failed:`, err);
     });
   }
@@ -32,7 +32,8 @@ export async function syncAccount(accountId, { syncList = true } = {}) {
   if (!acc || !acc.enabled) return;
   if (!router.isProviderConnected(acc.provider)) {
     await eventLog.append({
-      accountId, folderId: null,
+      accountId,
+      folderId: null,
       level: "warning",
       message: "Provider not available - sync skipped.",
     });
@@ -45,26 +46,35 @@ export async function syncAccount(accountId, { syncList = true } = {}) {
 
   let authFailed = false;
   try {
-    const statusData = await router.sendCmd(acc.provider, HOST_CMD.SYNC_ACCOUNT, {
-      accountId,
-      syncJob: "sync",
-      syncList,
-      syncFolders: null,
-    });
+    const statusData = await router.sendCmd(
+      acc.provider,
+      HOST_CMD.SYNC_ACCOUNT,
+      {
+        accountId,
+        syncJob: "sync",
+        syncList,
+        syncFolders: null,
+      },
+    );
     if (statusData.type === STATUS_TYPES.ERROR) {
       await logAccountOutcome(accountId, statusData, "error");
       return;
     }
 
-    const folderDescriptors = await router.sendCmd(acc.provider, HOST_CMD.GET_SORTED_FOLDERS, { accountId });
+    const folderDescriptors = await router.sendCmd(
+      acc.provider,
+      HOST_CMD.GET_SORTED_FOLDERS,
+      { accountId },
+    );
     if (Array.isArray(folderDescriptors) && folderDescriptors.length) {
       await folders.replaceAccountFolders(accountId, folderDescriptors);
     }
 
     // Folders being toggled right now skip this pass - the provider may be
     // mid-book-delete on deselect.
-    const toSync = (await folders.listForAccount(accountId))
-      .filter(f => f.selected && !busyFolders.has(f.folderId));
+    const toSync = (await folders.listForAccount(accountId)).filter(
+      (f) => f.selected && !busyFolders.has(f.folderId),
+    );
     for (const folder of toSync) {
       await syncFolderOnce(acc, folder);
     }
@@ -74,7 +84,8 @@ export async function syncAccount(accountId, { syncList = true } = {}) {
       await disableAccountForReauth(acc, err);
     } else {
       await eventLog.append({
-        accountId, folderId: null,
+        accountId,
+        folderId: null,
         level: "error",
         message: `Sync failed: ${err.message}`,
         details: err.details ?? null,
@@ -95,7 +106,10 @@ export async function syncAccount(accountId, { syncList = true } = {}) {
     if (!authFailed) {
       // disableAccountForReauth already wrote the account record with
       // error: ERR.AUTH; don't overwrite it here.
-      await accounts.update(accountId, { lastSyncTime: Date.now(), error: null });
+      await accounts.update(accountId, {
+        lastSyncTime: Date.now(),
+        error: null,
+      });
     }
     ui.broadcast({ type: "accounts-changed", accountId });
   }
@@ -107,14 +121,17 @@ export async function syncAccount(accountId, { syncList = true } = {}) {
  *  shows the "Sign in again" button. */
 async function disableAccountForReauth(acc, err) {
   const accountId = acc.accountId;
-  await router.sendCmd(acc.provider, HOST_CMD.ACCOUNT_DISABLED, { accountId }).catch(rpcErr => {
-    return eventLog.append({
-      accountId,
-      level: "warning",
-      message: "Provider refused ACCOUNT_DISABLED during reauth (it may already be gone)",
-      details: rpcErr?.message ?? null,
+  await router
+    .sendCmd(acc.provider, HOST_CMD.ACCOUNT_DISABLED, { accountId })
+    .catch((rpcErr) => {
+      return eventLog.append({
+        accountId,
+        level: "warning",
+        message:
+          "Provider refused ACCOUNT_DISABLED during reauth (it may already be gone)",
+        details: rpcErr?.message ?? null,
+      });
     });
-  });
   await folders.clearAccount(accountId);
   await accounts.update(accountId, {
     enabled: false,
@@ -122,9 +139,11 @@ async function disableAccountForReauth(acc, err) {
     error: ERR.AUTH,
   });
   await eventLog.append({
-    accountId, folderId: null,
+    accountId,
+    folderId: null,
     level: "error",
-    message: "The provider refused the refresh token - account disabled, sign in again to resume.",
+    message:
+      "The provider refused the refresh token - account disabled, sign in again to resume.",
     details: err?.message ?? null,
   });
   ui.broadcast({ type: "folders-changed", accountId });
@@ -180,9 +199,10 @@ async function syncFolderOnce(acc, folder) {
     // something readable instead of a raw "E:HTTP" / "E:PROVIDER_FOO"
     // identifier the host doesn't know how to localize.
     const code = err?.code;
-    const errorText = (code && PREDEFINED_ERROR_CODES.has(code))
-      ? code
-      : (err?.message ?? code ?? "Sync failed");
+    const errorText =
+      code && PREDEFINED_ERROR_CODES.has(code)
+        ? code
+        : (err?.message ?? code ?? "Sync failed");
     await folders.update(acc.accountId, folder.folderId, {
       status: "error",
       error: errorText,
@@ -199,17 +219,22 @@ async function syncFolderOnce(acc, folder) {
 
 function statusFromResult(type) {
   switch (type) {
-    case STATUS_TYPES.SUCCESS: return "success";
-    case STATUS_TYPES.WARNING: return "warning";
-    case STATUS_TYPES.ERROR:   return "error";
-    default:                   return "error";
+    case STATUS_TYPES.SUCCESS:
+      return "success";
+    case STATUS_TYPES.WARNING:
+      return "warning";
+    case STATUS_TYPES.ERROR:
+      return "error";
+    default:
+      return "error";
   }
 }
 
 async function logAccountOutcome(accountId, statusData, level) {
   if (statusData?.message) {
     await eventLog.append({
-      accountId, folderId: null,
+      accountId,
+      folderId: null,
       level,
       message: statusData.message,
       details: statusData.details ?? null,

@@ -2,11 +2,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-var { ExtensionCommon: { ExtensionAPI } } = ChromeUtils.importESModule("resource://gre/modules/ExtensionCommon.sys.mjs");
+var {
+  ExtensionCommon: { ExtensionAPI },
+} = ChromeUtils.importESModule(
+  "resource://gre/modules/ExtensionCommon.sys.mjs",
+);
 
-var { default: ICAL } = ChromeUtils.importESModule("resource:///modules/calendar/Ical.sys.mjs");
+var { default: ICAL } = ChromeUtils.importESModule(
+  "resource:///modules/calendar/Ical.sys.mjs",
+);
 
-var { cal } = ChromeUtils.importESModule("resource:///modules/calendar/calUtils.sys.mjs");
+var { cal } = ChromeUtils.importESModule(
+  "resource:///modules/calendar/calUtils.sys.mjs",
+);
 
 this.calendar_timezones = class extends ExtensionAPI {
   getAPI(_context) {
@@ -21,9 +29,9 @@ this.calendar_timezones = class extends ExtensionAPI {
             return cal.timezoneService.defaultTimezone?.tzid;
           },
           getDefinition(tzid, returnFormat) {
-            const timezoneDatabase = Cc["@mozilla.org/calendar/timezone-database;1"].getService(
-              Ci.calITimezoneDatabase
-            );
+            const timezoneDatabase = Cc[
+              "@mozilla.org/calendar/timezone-database;1"
+            ].getService(Ci.calITimezoneDatabase);
             let zoneInfo = timezoneDatabase.getTimezoneDefinition(tzid);
 
             if (returnFormat == "jcal") {
@@ -32,8 +40,8 @@ this.calendar_timezones = class extends ExtensionAPI {
 
             return zoneInfo;
           },
-        }
-      }
+        },
+      },
     };
   }
 };

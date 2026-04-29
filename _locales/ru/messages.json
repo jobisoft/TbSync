@@ -270,13 +270,13 @@
     "message": "TbSync"
   },
   "actionButton.title.syncing": {
-    "message": "TbSync — Синхронизация…"
+    "message": "TbSync - Синхронизация…"
   },
   "actionButton.title.error": {
-    "message": "TbSync — Ошибка синхронизации"
+    "message": "TbSync - Ошибка синхронизации"
   },
   "actionButton.title.localChanges": {
-    "message": "TbSync — Ожидающие локальные изменения"
+    "message": "TbSync - Ожидающие локальные изменения"
   },
   "options.intro": {
     "message": "Настройки учётных записей TbSync находятся в Менеджере TbSync. Нажмите кнопку ниже, чтобы открыть его."

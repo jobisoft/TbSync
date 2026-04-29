@@ -24,7 +24,9 @@ async function write(state) {
 export async function listForAccount(accountId) {
   const state = await read();
   const bucket = state[accountId] ?? {};
-  return Object.values(bucket).sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0));
+  return Object.values(bucket).sort(
+    (a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0),
+  );
 }
 
 /** `{ [accountId]: true }` for every account that has at least one
@@ -38,10 +40,13 @@ export async function needsSyncMap() {
   const state = await read();
   const out = {};
   for (const [accountId, bucket] of Object.entries(state)) {
-    out[accountId] = Object.values(bucket).some(f =>
-      f.selected
-      && Array.isArray(f.changelog)
-      && f.changelog.some(e => typeof e?.status === "string" && e.status.endsWith("_by_user"))
+    out[accountId] = Object.values(bucket).some(
+      (f) =>
+        f.selected &&
+        Array.isArray(f.changelog) &&
+        f.changelog.some(
+          (e) => typeof e?.status === "string" && e.status.endsWith("_by_user"),
+        ),
     );
   }
   return out;
@@ -63,7 +68,8 @@ export function replaceAccountFolders(accountId, incoming) {
         folderId: descriptor.folderId,
         accountId,
         targetType: descriptor.targetType,
-        displayName: descriptor.displayName ?? prior?.displayName ?? descriptor.folderId,
+        displayName:
+          descriptor.displayName ?? prior?.displayName ?? descriptor.folderId,
         selected: prior?.selected ?? descriptor.selected ?? false,
         readOnly: descriptor.readOnly ?? prior?.readOnly ?? false,
         hidden: !!descriptor.hidden,
@@ -77,8 +83,14 @@ export function replaceAccountFolders(accountId, incoming) {
         orderIndex: index,
         // Universal top-level fields identifying the local sync target. Null
         // until the first sync binds the row to a Thunderbird artifact.
-        targetID:   "targetID"   in descriptor ? descriptor.targetID   : (prior?.targetID   ?? null),
-        targetName: "targetName" in descriptor ? descriptor.targetName : (prior?.targetName ?? null),
+        targetID:
+          "targetID" in descriptor
+            ? descriptor.targetID
+            : (prior?.targetID ?? null),
+        targetName:
+          "targetName" in descriptor
+            ? descriptor.targetName
+            : (prior?.targetName ?? null),
         // Host-owned per-folder change queue. Authored by the address-book
         // observer (changelog-watcher.mjs); consumed by the provider at sync
         // time. Entry shape: `{ parentId, itemId, timestamp, status }`.
@@ -153,9 +165,15 @@ export function mutateChangelog(accountId, folderId, updater) {
  *      creates where the TB id isn't known pre-call; the watcher
  *      matches by name on the next `mailingLists.onCreated` and
  *      upgrades the row to `kind: "list", itemId: <real id>`. */
-export async function markServerWrite(accountId, folderId, { parentId, itemId, status, kind }) {
-  return mutateChangelog(accountId, folderId, entries => {
-    const without = entries.filter(e => !(e.parentId === parentId && e.itemId === itemId));
+export async function markServerWrite(
+  accountId,
+  folderId,
+  { parentId, itemId, status, kind },
+) {
+  return mutateChangelog(accountId, folderId, (entries) => {
+    const without = entries.filter(
+      (e) => !(e.parentId === parentId && e.itemId === itemId),
+    );
     without.push({ kind, parentId, itemId, timestamp: Date.now(), status });
     return without;
   });
@@ -163,9 +181,13 @@ export async function markServerWrite(accountId, folderId, { parentId, itemId, s
 
 /** Remove the entry matching `(parentId, itemId)`, regardless of status.
  *  Used by provider after successfully pushing a user-entry to the server. */
-export async function removeChangelogEntry(accountId, folderId, { parentId, itemId }) {
-  return mutateChangelog(accountId, folderId, entries =>
-    entries.filter(e => !(e.parentId === parentId && e.itemId === itemId))
+export async function removeChangelogEntry(
+  accountId,
+  folderId,
+  { parentId, itemId },
+) {
+  return mutateChangelog(accountId, folderId, (entries) =>
+    entries.filter((e) => !(e.parentId === parentId && e.itemId === itemId)),
   );
 }
 
@@ -178,7 +200,11 @@ export async function listWatchedTargets() {
   for (const [accountId, bucket] of Object.entries(state)) {
     for (const folder of Object.values(bucket)) {
       if (folder?.targetID) {
-        out.push({ accountId, folderId: folder.folderId, targetID: folder.targetID });
+        out.push({
+          accountId,
+          folderId: folder.folderId,
+          targetID: folder.targetID,
+        });
       }
     }
   }

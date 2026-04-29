@@ -21,13 +21,16 @@
 const PORT_NAME = "tbsync-manager";
 const RECONNECT_DELAY_MS = 500;
 
-export function createManagerClient({ onEvent = () => {}, onReconnect = null } = {}) {
+export function createManagerClient({
+  onEvent = () => {},
+  onReconnect = null,
+} = {}) {
   let port = null;
   const pending = new Map();
 
   function connect() {
     port = browser.runtime.connect({ name: PORT_NAME });
-    port.onMessage.addListener(msg => {
+    port.onMessage.addListener((msg) => {
       if (msg.kind === "rpc-response" && msg.requestId) {
         const entry = pending.get(msg.requestId);
         if (!entry) return;

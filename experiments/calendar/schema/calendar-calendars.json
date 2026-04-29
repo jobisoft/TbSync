@@ -67,7 +67,11 @@
             "optional": true,
             "properties": {
               "count": { "type": "integer", "minimum": -1, "optional": true },
-              "actions": { "type": "array", "items": { "type": "string" }, "optional": true }
+              "actions": {
+                "type": "array",
+                "items": { "type": "string" },
+                "optional": true
+              }
             }
           },
           "tasks": { "type": "boolean", "optional": true, "default": true },
@@ -82,7 +86,11 @@
             }
           },
           "requiresNetwork": { "type": "boolean", "optional": true },
-          "minimumRefreshInterval": { "type": "integer", "minimum": -1, "optional": true },
+          "minimumRefreshInterval": {
+            "type": "integer",
+            "minimum": -1,
+            "optional": true
+          },
           "mutable": { "type": "boolean", "optional": true, "default": true },
           "scheduling": {
             "type": "string",
@@ -104,10 +112,10 @@
             "name": "queryInfo",
             "properties": {
               "type": { "type": "string", "optional": true },
-              "url": { 
+              "url": {
                 "choices": [
-                  {"type": "string"},
-                  {"type": "array", "items": {"type": "string"}}
+                  { "type": "string" },
+                  { "type": "array", "items": { "type": "string" } }
                 ],
                 "optional": true
               },
@@ -124,10 +132,8 @@
         "name": "get",
         "async": true,
         "type": "function",
-        "parameters": [
-          { "type": "string", "name": "id" }
-         ]
-       },
+        "parameters": [{ "type": "string", "name": "id" }]
+      },
       {
         "name": "create",
         "async": true,
@@ -185,17 +191,13 @@
         "name": "remove",
         "async": true,
         "type": "function",
-        "parameters": [
-          { "type": "string", "name": "id" }
-        ]
+        "parameters": [{ "type": "string", "name": "id" }]
       },
       {
         "name": "clear",
         "async": true,
         "type": "function",
-        "parameters": [
-          { "type": "string", "name": "id" }
-        ]
+        "parameters": [{ "type": "string", "name": "id" }]
       },
       {
         "name": "synchronize",
@@ -217,9 +219,7 @@
       {
         "name": "onCreated",
         "type": "function",
-        "parameters": [
-          { "name": "calendar", "$ref": "Calendar" }
-        ]
+        "parameters": [{ "name": "calendar", "$ref": "Calendar" }]
       },
       {
         "name": "onUpdated",
@@ -232,9 +232,7 @@
       {
         "name": "onRemoved",
         "type": "function",
-        "parameters": [
-          { "name": "id", "type": "string" }
-        ]
+        "parameters": [{ "name": "id", "type": "string" }]
       }
     ]
   }

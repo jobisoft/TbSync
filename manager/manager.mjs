@@ -59,8 +59,8 @@ function makeImg({ src, alt = "", title, className }) {
 // Per-folder transient cache populated by REPORT_SYNC_STATE and
 // REPORT_PROGRESS. Cleared on folders-changed for the owning account.
 // See SYNCSTATE_BASE_KEYS doc in protocol.mjs for the rendering contract.
-const folderSyncCache = new Map();   // folderId -> {syncState, label, itemsDone, itemsTotal, startedAt}
-const countdownTimers = new Map();   // folderId -> interval handle
+const folderSyncCache = new Map(); // folderId -> {syncState, label, itemsDone, itemsTotal, startedAt}
+const countdownTimers = new Map(); // folderId -> interval handle
 
 const state = {
   accounts: [],
@@ -90,7 +90,7 @@ const state = {
 
 const { rpc } = createManagerClient({
   onEvent: handleEvent,
-  onReconnect: () => refreshState().catch(() => { }),
+  onReconnect: () => refreshState().catch(() => {}),
 });
 
 // ── Event dispatch from background ────────────────────────────────────────
@@ -139,13 +139,16 @@ async function refreshState() {
   state.eventLog = s.eventLog ?? [];
   state.settings = s.settings ?? state.settings;
   state.transient.syncingAccounts = new Set(s.transient?.syncingAccounts ?? []);
-  state.transient.busyAccounts    = new Set(s.transient?.busyAccounts ?? []);
-  state.transient.busyFolders     = new Set(s.transient?.busyFolders ?? []);
+  state.transient.busyAccounts = new Set(s.transient?.busyAccounts ?? []);
+  state.transient.busyFolders = new Set(s.transient?.busyFolders ?? []);
   state.transient.upgradeAccounts = new Set(s.transient?.upgradeAccounts ?? []);
   syncVerbositySelect();
 
   // Invariant: exactly one account is selected whenever any exist.
-  if (state.selectedAccountId && !state.accounts.some(a => a.accountId === state.selectedAccountId)) {
+  if (
+    state.selectedAccountId &&
+    !state.accounts.some((a) => a.accountId === state.selectedAccountId)
+  ) {
     state.selectedAccountId = null;
   }
   if (!state.selectedAccountId && state.accounts.length) {
@@ -174,9 +177,11 @@ async function refreshFolders(accountId) {
  *  locale, else free-text verbatim. */
 function messageText(msg) {
   if (!msg) return "";
-  return browser.i18n.getMessage("error." + msg)
-      || browser.i18n.getMessage("warning." + msg)
-      || msg;
+  return (
+    browser.i18n.getMessage("error." + msg) ||
+    browser.i18n.getMessage("warning." + msg) ||
+    msg
+  );
 }
 
 /** True iff the folder's changelog has any user-authored entries waiting
@@ -184,10 +189,11 @@ function messageText(msg) {
 function hasPendingUserEntries(folder) {
   const log = folder?.changelog;
   if (!Array.isArray(log) || log.length === 0) return false;
-  return log.some(e =>
-    e.status === "added_by_user" ||
-    e.status === "modified_by_user" ||
-    e.status === "deleted_by_user"
+  return log.some(
+    (e) =>
+      e.status === "added_by_user" ||
+      e.status === "modified_by_user" ||
+      e.status === "deleted_by_user",
   );
 }
 
@@ -209,7 +215,10 @@ function fillFolderCellStatus(cell, f, isBusy) {
   // While a sync is in flight, skip the "Local modifications" shortcut so
   // the provider's live syncState text isn't masked by a stale pre-sync
   // read of the changelog (the provider is actively draining it).
-  if (!state.transient.syncingAccounts.has(f.accountId) && hasPendingUserEntries(f)) {
+  if (
+    !state.transient.syncingAccounts.has(f.accountId) &&
+    hasPendingUserEntries(f)
+  ) {
     cell.textContent = i18n("folder.status.modified", "Local modifications");
     return;
   }
@@ -221,8 +230,8 @@ function fillFolderCellStatus(cell, f, isBusy) {
       // progress as they arrive); otherwise the folder is queued but
       // idle → "Waiting to be synchronized".
       cell.textContent = state.transient.syncingAccounts.has(f.accountId)
-        ? (i18n("account.status.syncing", "Synchronizing…"))
-        : (i18n("folder.status.pending", "Waiting to be synchronized"));
+        ? i18n("account.status.syncing", "Synchronizing…")
+        : i18n("folder.status.pending", "Waiting to be synchronized");
       return;
     case "success":
       cell.textContent = f.targetName ?? f.displayName ?? "";
@@ -267,9 +276,10 @@ function fillFolderCellStatus(cell, f, isBusy) {
  *      warning / lastSyncTime.
  */
 function effectiveAccountState(acc) {
-  const provider = state.providers.find(p => p.providerId === acc.provider);
+  const provider = state.providers.find((p) => p.providerId === acc.provider);
   const providerActive = provider?.state === "active";
-  if (!providerActive) return { status: "provider-unavailable", interactive: false };
+  if (!providerActive)
+    return { status: "provider-unavailable", interactive: false };
   // Provider has declared this account locked for one-time upgrade work.
   // Highest priority because no other action can run while it's set.
   if (state.transient.upgradeAccounts.has(acc.accountId))
@@ -291,16 +301,28 @@ function effectiveAccountState(acc) {
 // carries the condition (acc.error/warning empty).
 function statusSlot(acc, eff) {
   const labelStates = new Set([
-    "syncing", "busy", "provider-unavailable", "disabled",
-    "success", "notsyncronized", "needs-sync", "upgrading",
+    "syncing",
+    "busy",
+    "provider-unavailable",
+    "disabled",
+    "success",
+    "notsyncronized",
+    "needs-sync",
+    "upgrading",
   ]);
   if (labelStates.has(eff.status)) {
-    return { severity: null, text: i18n(`account.status.${eff.status}`, eff.status) };
+    return {
+      severity: null,
+      text: i18n(`account.status.${eff.status}`, eff.status),
+    };
   }
   if (acc.error) {
     return { severity: "error", text: messageText(acc.error) };
   }
-  return { severity: null, text: i18n(`account.status.${eff.status}`, eff.status) };
+  return {
+    severity: null,
+    text: i18n(`account.status.${eff.status}`, eff.status),
+  };
 }
 
 /**
@@ -314,7 +336,7 @@ function statusSlot(acc, eff) {
  * require an active provider port.
  */
 function accountActions(acc) {
-  const provider = state.providers.find(p => p.providerId === acc.provider);
+  const provider = state.providers.find((p) => p.providerId === acc.provider);
   const providerActive = provider?.state === "active";
   const upgrading = state.transient.upgradeAccounts.has(acc.accountId);
   const syncing = state.transient.syncingAccounts.has(acc.accountId);
@@ -346,16 +368,16 @@ function accountActions(acc) {
 
 function deriveAccountResultStatus(acc) {
   const folderList = state.folders.get(acc.accountId) ?? [];
-  const selected = folderList.filter(f => f.selected);
-  if (acc.error || selected.some(f => f.error))   return "error";
-  if (selected.some(f => f.warning)) return "warning";
+  const selected = folderList.filter((f) => f.selected);
+  if (acc.error || selected.some((f) => f.error)) return "error";
+  if (selected.some((f) => f.warning)) return "warning";
   // Local edits made since the last sync - at least one folder carries
   // a `_by_user` changelog entry waiting to be pushed. Computed
   // host-side and surfaced via `acc.needsSync` so the sidebar shows the
   // right icon for every account, not just the selected one.
   if (acc.needsSync) return "needs-sync";
   if (selected.length === 0) return "notsyncronized";
-  if (selected.some(f => !f.lastSyncTime)) return "notsyncronized";
+  if (selected.some((f) => !f.lastSyncTime)) return "notsyncronized";
   return "success";
 }
 
@@ -370,18 +392,21 @@ function emptyRow(colSpan, text) {
 function renderSidebar() {
   const accBody = document.getElementById("account-list-body");
   if (!state.accounts.length) {
-    accBody.replaceChildren(emptyRow(3,
-      i18n("manager.noAccounts", "No accounts yet.")));
+    accBody.replaceChildren(
+      emptyRow(3, i18n("manager.noAccounts", "No accounts yet.")),
+    );
   } else {
-    const rows = state.accounts.map(a => {
+    const rows = state.accounts.map((a) => {
       const eff = effectiveAccountState(a);
       const row = cloneTpl("tpl-account-row");
       row.dataset.accountId = a.accountId;
-      if (a.accountId === state.selectedAccountId) row.classList.add("selected");
+      if (a.accountId === state.selectedAccountId)
+        row.classList.add("selected");
       if (!a.enabled) row.classList.add("disabled");
 
-      row.querySelector(".col-provider-icon").appendChild(
-        makeImg({ src: providerIconUrl(a.provider) }));
+      row
+        .querySelector(".col-provider-icon")
+        .appendChild(makeImg({ src: providerIconUrl(a.provider) }));
       row.querySelector(".col-account-name").textContent = a.accountName;
       row.querySelector(".col-status").appendChild(statusIconEl(eff.status));
       return row;
@@ -392,12 +417,15 @@ function renderSidebar() {
 
   const provBody = document.getElementById("provider-list-body");
   if (!state.providers.length) {
-    provBody.replaceChildren(emptyRow(3, browser.i18n.getMessage("manager.noProviders")));
+    provBody.replaceChildren(
+      emptyRow(3, browser.i18n.getMessage("manager.noProviders")),
+    );
   } else {
-    const rows = state.providers.map(p => {
-      const canAdd = !state.setupsInFlight.has(p.providerId)
-        && p.state === "active"
-        && (p.capabilities?.folderTypes?.length);
+    const rows = state.providers.map((p) => {
+      const canAdd =
+        !state.setupsInFlight.has(p.providerId) &&
+        p.state === "active" &&
+        p.capabilities?.folderTypes?.length;
       // Installable means the provider isn't installed yet, not "addable
       // is unavailable for any reason" - otherwise an active provider's
       // plus icon would morph into the install arrow while setup is in
@@ -406,27 +434,41 @@ function renderSidebar() {
       const stateLabel = i18n(`provider.state.${p.state}`, p.state);
 
       const row = cloneTpl("tpl-provider-row");
-      row.classList.add(p.state, canAdd ? "addable" : canInstall ? "installable" : "not-addable");
+      row.classList.add(
+        p.state,
+        canAdd ? "addable" : canInstall ? "installable" : "not-addable",
+      );
       // Active providers always carry data-provider-id so the click
       // handler can route - addable ones launch a new setup, not-addable
       // ones (set-up-in-flight) ask the provider to focus its popup.
       // Inactive providers only get the id when they're installable.
-      if (canAdd || canInstall || p.state === "active") row.dataset.providerId = p.providerId;
+      if (canAdd || canInstall || p.state === "active")
+        row.dataset.providerId = p.providerId;
       if (canInstall) row.dataset.installUrl = p.installUrl;
       row.title = canAdd
-        ? (i18n("manager.addAccount", "Add account"))
+        ? i18n("manager.addAccount", "Add account")
         : canInstall
-          ? (i18n("manager.provider.install", "Install from addons.thunderbird.net"))
+          ? i18n(
+              "manager.provider.install",
+              "Install from addons.thunderbird.net",
+            )
           : p.state === "active"
-            ? (i18n("manager.provider.focusSetup", "Bring the setup window to the front"))
+            ? i18n(
+                "manager.provider.focusSetup",
+                "Bring the setup window to the front",
+              )
             : "";
 
-      row.querySelector(".col-provider-icon").appendChild(
-        makeImg({ src: providerIconUrl(p.providerId) }));
+      row
+        .querySelector(".col-provider-icon")
+        .appendChild(makeImg({ src: providerIconUrl(p.providerId) }));
       row.querySelector(".name").textContent = p.providerName;
       row.querySelector(".sub").textContent = stateLabel;
-      row.querySelector(".col-status").appendChild(
-        canInstall ? cloneTpl("tpl-install-icon") : cloneTpl("tpl-add-icon"));
+      row
+        .querySelector(".col-status")
+        .appendChild(
+          canInstall ? cloneTpl("tpl-install-icon") : cloneTpl("tpl-add-icon"),
+        );
       return row;
     });
     provBody.replaceChildren(...rows);
@@ -436,7 +478,9 @@ function renderSidebar() {
 
 function renderDetail() {
   const host = document.getElementById("account-detail");
-  const acc = state.accounts.find(a => a.accountId === state.selectedAccountId);
+  const acc = state.accounts.find(
+    (a) => a.accountId === state.selectedAccountId,
+  );
   if (!acc) {
     host.hidden = true;
     host.replaceChildren();
@@ -475,8 +519,9 @@ function renderDetail() {
   localizeSubtree(frag);
 
   frag.querySelector(".val-provider").textContent = providerLabel(acc.provider);
-  frag.querySelector(".val-last-sync").textContent =
-    acc.lastSyncTime ? new Date(acc.lastSyncTime).toLocaleString() : "-";
+  frag.querySelector(".val-last-sync").textContent = acc.lastSyncTime
+    ? new Date(acc.lastSyncTime).toLocaleString()
+    : "-";
 
   const btnPrimary = frag.querySelector("#btn-primary");
   btnPrimary.textContent = primaryLabel;
@@ -484,15 +529,21 @@ function renderDetail() {
   btnPrimary.disabled = !primaryEnabled;
   btnPrimary.addEventListener("click", () => {
     if (primaryAction === "reauth" && state.reauthsOpen.has(acc.accountId)) {
-      rpc("focusReauthPopup", { accountId: acc.accountId }).catch(() => { });
+      rpc("focusReauthPopup", { accountId: acc.accountId }).catch(() => {});
       return;
     }
     if (primaryAction === "connect") {
       markBusyLocally();
-      rpc("setAccountEnabled", { accountId: acc.accountId, enabled: true }).catch(showError);
+      rpc("setAccountEnabled", {
+        accountId: acc.accountId,
+        enabled: true,
+      }).catch(showError);
     } else if (primaryAction === "disconnect") {
       markBusyLocally();
-      rpc("setAccountEnabled", { accountId: acc.accountId, enabled: false }).catch(showError);
+      rpc("setAccountEnabled", {
+        accountId: acc.accountId,
+        enabled: false,
+      }).catch(showError);
     } else if (primaryAction === "reauth") {
       state.reauthsOpen.add(acc.accountId);
       markBusyLocally();
@@ -506,7 +557,7 @@ function renderDetail() {
   btnSettings.disabled = !actions.canEditSettings;
   btnSettings.addEventListener("click", () => {
     if (state.configsOpen.has(acc.accountId)) {
-      rpc("focusConfigPopup", { accountId: acc.accountId }).catch(() => { });
+      rpc("focusConfigPopup", { accountId: acc.accountId }).catch(() => {});
       return;
     }
     state.configsOpen.add(acc.accountId);
@@ -534,7 +585,7 @@ function renderDetail() {
     // hiding the table.
     frag.querySelector(".folder-table-wrap").hidden = false;
     const tbody = frag.querySelector(".folder-rows");
-    const visibleFolders = folderList.filter(f => !f.hidden);
+    const visibleFolders = folderList.filter((f) => !f.hidden);
     if (visibleFolders.length) {
       for (const f of visibleFolders) {
         const isBusy = state.transient.busyFolders.has(f.folderId);
@@ -563,7 +614,9 @@ function renderDetail() {
         tbody.appendChild(row);
       }
     } else {
-      tbody.appendChild(emptyRow(5, i18n("manager.resources.empty", "No resources yet.")));
+      tbody.appendChild(
+        emptyRow(5, i18n("manager.resources.empty", "No resources yet.")),
+      );
     }
 
     // Footer (auto-sync interval + Sync button) is always shown for
@@ -574,12 +627,17 @@ function renderDetail() {
 
     const autosync = frag.querySelector("#autosync-minutes");
     autosync.value = String(acc.autoSyncIntervalMinutes ?? 0);
-    autosync.title = i18n("manager.account.autosync.tooltip", "0 disables auto-sync");
+    autosync.title = i18n(
+      "manager.account.autosync.tooltip",
+      "0 disables auto-sync",
+    );
     autosync.disabled = !actions.canChangeAutosync;
-    autosync.addEventListener("change", e => {
+    autosync.addEventListener("change", (e) => {
       const minutes = Math.max(0, parseInt(e.currentTarget.value, 10) || 0);
       e.currentTarget.value = String(minutes);
-      rpc("setAutoSyncInterval", { accountId: acc.accountId, minutes }).catch(showError);
+      rpc("setAutoSyncInterval", { accountId: acc.accountId, minutes }).catch(
+        showError,
+      );
     });
 
     const btnSync = frag.querySelector("#btn-sync");
@@ -629,7 +687,10 @@ function syncStateCellText(entry, provider) {
   if (prefix === "send" && timeoutMs) {
     const elapsed = Date.now() - (entry.startedAt ?? Date.now());
     if (elapsed > 2000) {
-      const remainingSec = Math.max(0, Math.round((timeoutMs - elapsed) / 1000));
+      const remainingSec = Math.max(
+        0,
+        Math.round((timeoutMs - elapsed) / 1000),
+      );
       text += ` (${remainingSec}s)`;
     }
   }
@@ -637,14 +698,20 @@ function syncStateCellText(entry, provider) {
 }
 
 function paintFolderSyncCell(folderId, entry) {
-  const row = document.querySelector(`[data-folder-id="${folderId}"]`)?.closest("tr");
+  const row = document
+    .querySelector(`[data-folder-id="${folderId}"]`)
+    ?.closest("tr");
   // Target the status cell by class rather than positional index so the
   // folder-row column layout can change without silently painting into
   // the wrong cell.
   const cell = row?.querySelector("td.col-status");
   if (!cell) return;
-  const acc = state.accounts.find(a => a.accountId === state.selectedAccountId);
-  const provider = acc ? state.providers.find(p => p.providerId === acc.provider) : null;
+  const acc = state.accounts.find(
+    (a) => a.accountId === state.selectedAccountId,
+  );
+  const provider = acc
+    ? state.providers.find((p) => p.providerId === acc.provider)
+    : null;
   cell.textContent = syncStateCellText(entry, provider);
 }
 
@@ -680,8 +747,10 @@ function updateInlineSyncState({ type, accountId, folderId, payload }) {
     stopCountdownTimer(folderId);
     return;
   }
-  const acc = state.accounts.find(a => a.accountId === accountId);
-  const provider = acc ? state.providers.find(p => p.providerId === acc.provider) : null;
+  const acc = state.accounts.find((a) => a.accountId === accountId);
+  const provider = acc
+    ? state.providers.find((p) => p.providerId === acc.provider)
+    : null;
 
   const prior = folderSyncCache.get(folderId) ?? {};
   const entry = { ...prior };
@@ -720,7 +789,7 @@ function updateInlineSyncState({ type, accountId, folderId, payload }) {
  *  falls back to the derived folder cell (based on error, warning and
  *  lastSyncTime). */
 function clearFolderSyncCacheForAccount(accountId) {
-  const folderIds = (state.folders.get(accountId) ?? []).map(f => f.folderId);
+  const folderIds = (state.folders.get(accountId) ?? []).map((f) => f.folderId);
   for (const id of folderIds) {
     folderSyncCache.delete(id);
     stopCountdownTimer(id);
@@ -749,16 +818,21 @@ function appendEventLogEntry(entry) {
   const body = document.getElementById("event-log-rows");
   if (body) {
     body.prepend(eventLogRow(entry));
-    while (body.rows.length > EVENT_LOG_MAX) body.deleteRow(body.rows.length - 1);
+    while (body.rows.length > EVENT_LOG_MAX)
+      body.deleteRow(body.rows.length - 1);
   }
   updateEventLogEmptyState();
 }
 
 function eventLogRow(entry) {
-  const acc = entry.accountId ? state.accounts.find(a => a.accountId === entry.accountId) : null;
+  const acc = entry.accountId
+    ? state.accounts.find((a) => a.accountId === entry.accountId)
+    : null;
   const row = cloneTpl("tpl-event-log-row");
   row.className = entry.level;
-  row.querySelector(".time").textContent = new Date(entry.timestamp ?? Date.now()).toLocaleString();
+  row.querySelector(".time").textContent = new Date(
+    entry.timestamp ?? Date.now(),
+  ).toLocaleString();
   row.querySelector(".sev").textContent = entry.level;
   // Source = entry's filer. Provider-emitted entries carry `providerId`;
   // host-emitted entries (e.g. router warnings) don't, so they read as
@@ -766,7 +840,8 @@ function eventLogRow(entry) {
   row.querySelector(".src").textContent = entry.providerId
     ? providerLabel(entry.providerId)
     : "TbSync Manager";
-  row.querySelector(".acct").textContent = acc?.accountName ?? (entry.accountId ?? "");
+  row.querySelector(".acct").textContent =
+    acc?.accountName ?? entry.accountId ?? "";
   row.querySelector(".msg-text").textContent = entry.message ?? "";
   if (entry.details) {
     const details = row.querySelector(".details");
@@ -793,14 +868,19 @@ function selectAccount(accountId) {
 }
 
 function providerLabel(providerId) {
-  return state.providers.find(p => p.providerId === providerId)?.providerName ?? providerId;
+  return (
+    state.providers.find((p) => p.providerId === providerId)?.providerName ??
+    providerId
+  );
 }
 
 function providerIconUrl(providerId) {
-  const hit = state.providers.find(p => p.providerId === providerId);
-  return hit?.icons?.["16"]
-    ?? hit?.icons?.["32"]
-    ?? browser.runtime.getURL("icons/provider16.png");
+  const hit = state.providers.find((p) => p.providerId === providerId);
+  return (
+    hit?.icons?.["16"] ??
+    hit?.icons?.["32"] ??
+    browser.runtime.getURL("icons/provider16.png")
+  );
 }
 
 // Status → icon filename. Matches the legacy TbSync mapping:
@@ -849,7 +929,7 @@ function folderTypeIconEl(targetType) {
 // `readOnly`; there's no user-facing toggle in tbsync-new's protocol).
 function aclIconEl(folder) {
   const file = folder.readOnly ? "acl-ro16.png" : "acl-rw16.png";
-  const key  = folder.readOnly ? "folder.readOnly" : "folder.readWrite";
+  const key = folder.readOnly ? "folder.readOnly" : "folder.readWrite";
   const label = i18n(key, folder.readOnly ? "Read-only" : "Read/write");
   return makeImg({
     src: browser.runtime.getURL(`icons/${file}`),
@@ -869,7 +949,7 @@ const modalQueue = [];
 let modalBusy = false;
 
 function enqueueModal(opts) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     modalQueue.push({ opts, resolve });
     drainModalQueue();
   });
@@ -887,13 +967,16 @@ function drainModalQueue() {
   document.getElementById("confirm-dialog-title").textContent = opts.title;
   document.getElementById("confirm-dialog-body").textContent = opts.body ?? "";
   if (opts.variant === "confirm") {
-    document.getElementById("confirm-dialog-confirm").textContent = opts.confirmLabel;
-    document.getElementById("confirm-dialog-cancel").textContent = opts.cancelLabel;
+    document.getElementById("confirm-dialog-confirm").textContent =
+      opts.confirmLabel;
+    document.getElementById("confirm-dialog-cancel").textContent =
+      opts.cancelLabel;
   } else if (opts.variant === "error") {
     document.getElementById("confirm-dialog-ok").textContent = opts.okLabel;
   } else if (opts.variant === "bugreport") {
     document.getElementById("confirm-dialog-send").textContent = opts.sendLabel;
-    document.getElementById("confirm-dialog-cancel").textContent = opts.cancelLabel;
+    document.getElementById("confirm-dialog-cancel").textContent =
+      opts.cancelLabel;
     opts.onOpen?.(dlg);
   }
   // Escape / backdrop → close event with returnValue === "".
@@ -914,8 +997,13 @@ function drainModalQueue() {
  * Resolves `true` on confirm, `false` on cancel / Escape / backdrop.
  */
 function confirmDialog({ title, body, confirmLabel, cancelLabel }) {
-  return enqueueModal({ variant: "confirm", title, body, confirmLabel, cancelLabel })
-    .then(v => v === "confirm");
+  return enqueueModal({
+    variant: "confirm",
+    title,
+    body,
+    confirmLabel,
+    cancelLabel,
+  }).then((v) => v === "confirm");
 }
 
 /** Error popover - single OK button. Resolves when dismissed. */
@@ -926,8 +1014,8 @@ function errorDialog({ title, body, okLabel }) {
 function showError(err) {
   console.error(err);
   errorDialog({
-    title:   i18n("manager.error.title", "Error"),
-    body:    err?.message ?? String(err),
+    title: i18n("manager.error.title", "Error"),
+    body: err?.message ?? String(err),
     okLabel: i18n("manager.error.dismiss", "OK"),
   });
 }
@@ -958,8 +1046,13 @@ function populateBugReportComponents() {
   }
 
   // Preselect the provider of the selected account when possible.
-  const selectedAcc = state.accounts.find(a => a.accountId === state.selectedAccountId);
-  if (selectedAcc?.provider && select.querySelector(`option[value="${CSS.escape(selectedAcc.provider)}"]`)) {
+  const selectedAcc = state.accounts.find(
+    (a) => a.accountId === state.selectedAccountId,
+  );
+  if (
+    selectedAcc?.provider &&
+    select.querySelector(`option[value="${CSS.escape(selectedAcc.provider)}"]`)
+  ) {
     select.value = selectedAcc.provider;
   } else {
     select.value = CORE_COMPONENT_ID;
@@ -979,14 +1072,19 @@ function bugReportDialog() {
       document.getElementById("bug-report-summary").value = "";
       document.getElementById("bug-report-description").value = "";
       // Defer focus to post-showModal paint so the field is actually focusable.
-      setTimeout(() => document.getElementById("bug-report-summary").focus(), 0);
+      setTimeout(
+        () => document.getElementById("bug-report-summary").focus(),
+        0,
+      );
     },
-  }).then(returnValue => {
+  }).then((returnValue) => {
     if (returnValue !== "send") return null;
     return {
       component: document.getElementById("bug-report-component").value,
       summary: document.getElementById("bug-report-summary").value.trim(),
-      description: document.getElementById("bug-report-description").value.trim(),
+      description: document
+        .getElementById("bug-report-description")
+        .value.trim(),
     };
   });
 }
@@ -994,13 +1092,17 @@ function bugReportDialog() {
 /** Look up the maintainer address for a component. Core has a constant
  *  address shipped with the host; providers carry their own. */
 function recipientForComponent(componentId) {
-  if (componentId === CORE_COMPONENT_ID) return null;   // handled by caller (host constant)
-  return state.providers.find(p => p.providerId === componentId)?.maintainerEmail ?? null;
+  if (componentId === CORE_COMPONENT_ID) return null; // handled by caller (host constant)
+  return (
+    state.providers.find((p) => p.providerId === componentId)
+      ?.maintainerEmail ?? null
+  );
 }
 
 /** Resolve the component's version string for the report header. */
 async function versionForComponent(componentId) {
-  if (componentId === CORE_COMPONENT_ID) return browser.runtime.getManifest().version;
+  if (componentId === CORE_COMPONENT_ID)
+    return browser.runtime.getManifest().version;
   try {
     const info = await browser.management.get(componentId);
     return info?.version ?? "";
@@ -1016,9 +1118,8 @@ async function buildReportBody({ componentId, description }) {
   const tb = await browser.runtime.getBrowserInfo();
   const plat = await browser.runtime.getPlatformInfo();
   const componentVersion = await versionForComponent(componentId);
-  const componentLabel = componentId === CORE_COMPONENT_ID
-    ? "TbSync Manager"
-    : componentId;
+  const componentLabel =
+    componentId === CORE_COMPONENT_ID ? "TbSync Manager" : componentId;
 
   return [
     `TbSync ${host}`,
@@ -1035,22 +1136,24 @@ async function buildReportBody({ componentId, description }) {
 /** Render the session-scoped event log as plain text for the attachment.
  *  One entry per line, chronological (oldest first). */
 function renderEventLogAttachment() {
-  const lines = state.eventLog.map(e => {
+  const lines = state.eventLog.map((e) => {
     const ts = new Date(e.timestamp ?? Date.now()).toISOString();
     const bits = [ts, `[${e.level}]`];
     // Source matches the UI's Source column: provider name, or "TbSync
     // Manager" for host-filed entries.
     const src = e.providerId
-      ? (state.providers.find(p => p.providerId === e.providerId)?.providerName ?? e.providerId)
+      ? (state.providers.find((p) => p.providerId === e.providerId)
+          ?.providerName ?? e.providerId)
       : "TbSync Manager";
     bits.push(`{${src}}`);
     if (e.accountId) {
-      const acc = state.accounts.find(a => a.accountId === e.accountId);
+      const acc = state.accounts.find((a) => a.accountId === e.accountId);
       bits.push(`(${acc?.accountName ?? e.accountId})`);
     }
     bits.push(e.message ?? "");
     let line = bits.join(" ");
-    if (e.details) line += `\n    ${String(e.details).replace(/\n/g, "\n    ")}`;
+    if (e.details)
+      line += `\n    ${String(e.details).replace(/\n/g, "\n    ")}`;
     return line;
   });
   return lines.join("\n") + "\n";
@@ -1061,21 +1164,28 @@ async function createBugReport() {
   if (!form) return;
   if (!form.summary) {
     // Summary is required for a meaningful subject; re-surface an error.
-    showError(new Error(i18n("bugReport.error.summaryRequired", "Please enter a summary.")));
+    showError(
+      new Error(
+        i18n("bugReport.error.summaryRequired", "Please enter a summary."),
+      ),
+    );
     return;
   }
 
   const hostVersion = browser.runtime.getManifest().version;
-  const recipient = form.component === CORE_COMPONENT_ID
-    ? await rpc("getCoreMaintainerEmail")
-    : recipientForComponent(form.component);
+  const recipient =
+    form.component === CORE_COMPONENT_ID
+      ? await rpc("getCoreMaintainerEmail")
+      : recipientForComponent(form.component);
 
   const body = await buildReportBody({
     componentId: form.component,
     description: form.description,
   });
   const logText = renderEventLogAttachment();
-  const file = new File([logText], "tbsync-eventlog.txt", { type: "text/plain" });
+  const file = new File([logText], "tbsync-eventlog.txt", {
+    type: "text/plain",
+  });
 
   try {
     await messenger.compose.beginNew({
@@ -1090,13 +1200,15 @@ async function createBugReport() {
 }
 
 async function confirmAndDeleteAccount(accountId, onConfirmed) {
-  const acc = state.accounts.find(a => a.accountId === accountId);
+  const acc = state.accounts.find((a) => a.accountId === accountId);
   if (!acc) return;
   const ok = await confirmDialog({
     title: i18n("manager.remove.confirmTitle", "Remove account"),
-    body: i18n("manager.remove.confirmBody",
+    body: i18n(
+      "manager.remove.confirmBody",
       `Remove account “${acc.accountName}”? The Thunderbird address book for this account will also be deleted.`,
-      acc.accountName),
+      acc.accountName,
+    ),
     confirmLabel: i18n("manager.account.remove", "Remove"),
     cancelLabel: i18n("manager.remove.cancelLabel", "Cancel"),
   });
@@ -1135,7 +1247,7 @@ async function launchSetup(providerId) {
 localizeDocument();
 
 // Tab switching - one listener on the tab bar.
-document.querySelector(".tab-bar").addEventListener("click", e => {
+document.querySelector(".tab-bar").addEventListener("click", (e) => {
   const btn = e.target.closest(".tab-button");
   if (!btn) return;
   selectTab(btn.dataset.tab);
@@ -1154,10 +1266,12 @@ document.getElementById("event-log-clear").addEventListener("click", () => {
   rpc("clearEventLog").catch(showError);
 });
 
-document.getElementById("event-log-verbosity").addEventListener("change", e => {
-  const level = Number(e.currentTarget.value);
-  rpc("setLogLevel", { level }).catch(showError);
-});
+document
+  .getElementById("event-log-verbosity")
+  .addEventListener("change", (e) => {
+    const level = Number(e.currentTarget.value);
+    rpc("setLogLevel", { level }).catch(showError);
+  });
 
 function syncVerbositySelect() {
   const select = document.getElementById("event-log-verbosity");
@@ -1182,7 +1296,7 @@ async function openThunderbirdTab(url) {
 
 // Routed external links: data-link-target="thunderbird" opens a Thunderbird
 // content tab; data-link-target="browser" opens the system default browser.
-document.body.addEventListener("click", e => {
+document.body.addEventListener("click", (e) => {
   const a = e.target.closest("a[data-link-target]");
   if (!a) return;
   e.preventDefault();
@@ -1196,12 +1310,12 @@ document.body.addEventListener("click", e => {
 
 // Delegated sidebar clicks - one listener per list, independent of how many
 // times the contents are re-rendered.
-document.getElementById("account-list").addEventListener("click", e => {
+document.getElementById("account-list").addEventListener("click", (e) => {
   const row = e.target.closest("tr[data-account-id]");
   if (!row) return;
   selectAccount(row.dataset.accountId);
 });
-document.getElementById("provider-list").addEventListener("click", e => {
+document.getElementById("provider-list").addEventListener("click", (e) => {
   const row = e.target.closest("tr[data-provider-id]");
   if (!row) return;
   const { providerId, installUrl } = row.dataset;
@@ -1216,7 +1330,7 @@ document.getElementById("provider-list").addEventListener("click", e => {
   if (row.classList.contains("addable")) {
     launchSetup(providerId);
   } else {
-    rpc("focusSetupPopup", { providerId }).catch(() => { });
+    rpc("focusSetupPopup", { providerId }).catch(() => {});
   }
 });
 
@@ -1226,9 +1340,9 @@ document.getElementById("provider-list").addEventListener("click", e => {
 // `onShown` only updates the sync item's enabled state and the toggle item's
 // title - no create/remove churn per right-click.
 const MENU_IDS = {
-  sync:     "tbsync-account-sync",
-  toggle:   "tbsync-account-toggle",
-  delete:   "tbsync-account-delete",
+  sync: "tbsync-account-sync",
+  toggle: "tbsync-account-toggle",
+  delete: "tbsync-account-delete",
   eventLog: "tbsync-show-event-log",
 };
 
@@ -1237,25 +1351,39 @@ const MENU_IDS = {
     contexts: ["all"],
     documentUrlPatterns: [browser.runtime.getURL("manager/manager.html")],
   };
-  browser.menus.create({ ...common, id: MENU_IDS.sync,
-    title: i18n("manager.account.sync", "Synchronize Now") });
-  browser.menus.create({ ...common, id: MENU_IDS.toggle,
-    title: i18n("manager.account.connect", "Connect") });
-  browser.menus.create({ ...common, id: MENU_IDS.delete,
-    title: i18n("manager.account.remove", "Remove") });
-  browser.menus.create({ ...common, id: MENU_IDS.eventLog,
-    title: i18n("manager.menu.showEventLog", "Show event log") });
+  browser.menus.create({
+    ...common,
+    id: MENU_IDS.sync,
+    title: i18n("manager.account.sync", "Synchronize Now"),
+  });
+  browser.menus.create({
+    ...common,
+    id: MENU_IDS.toggle,
+    title: i18n("manager.account.connect", "Connect"),
+  });
+  browser.menus.create({
+    ...common,
+    id: MENU_IDS.delete,
+    title: i18n("manager.account.remove", "Remove"),
+  });
+  browser.menus.create({
+    ...common,
+    id: MENU_IDS.eventLog,
+    title: i18n("manager.menu.showEventLog", "Show event log"),
+  });
 }
 
 // On the accounts tab we suppress the browser default menu so our items are
-// the only ones shown — both for row clicks (account actions) and off-row
+// the only ones shown - both for row clicks (account actions) and off-row
 // clicks (event-log shortcut). Other tabs fall through to the default menu.
 // `overrideContext` must be called synchronously from `contextmenu`.
-document.querySelector('[data-panel="accounts"]').addEventListener("contextmenu", () => {
-  browser.menus.overrideContext({ showDefaults: false });
-});
+document
+  .querySelector('[data-panel="accounts"]')
+  .addEventListener("contextmenu", () => {
+    browser.menus.overrideContext({ showDefaults: false });
+  });
 
-browser.menus.onShown.addListener(info => {
+browser.menus.onShown.addListener((info) => {
   const targetEl = info.targetElementId
     ? browser.menus.getTargetElement(info.targetElementId)
     : null;
@@ -1263,22 +1391,23 @@ browser.menus.onShown.addListener(info => {
 
   if (!inAccountsPanel) {
     // Other tabs: keep our items out of the default menu.
-    browser.menus.update(MENU_IDS.sync,     { visible: false });
-    browser.menus.update(MENU_IDS.toggle,   { visible: false });
-    browser.menus.update(MENU_IDS.delete,   { visible: false });
+    browser.menus.update(MENU_IDS.sync, { visible: false });
+    browser.menus.update(MENU_IDS.toggle, { visible: false });
+    browser.menus.update(MENU_IDS.delete, { visible: false });
     browser.menus.update(MENU_IDS.eventLog, { visible: false });
     browser.menus.refresh();
     return;
   }
 
   const row = targetEl.closest("tr[data-account-id]");
-  const acc = row && state.accounts.find(a => a.accountId === row.dataset.accountId);
+  const acc =
+    row && state.accounts.find((a) => a.accountId === row.dataset.accountId);
 
   if (!acc) {
     // Accounts tab, off-row: only the event-log shortcut.
-    browser.menus.update(MENU_IDS.sync,     { visible: false });
-    browser.menus.update(MENU_IDS.toggle,   { visible: false });
-    browser.menus.update(MENU_IDS.delete,   { visible: false });
+    browser.menus.update(MENU_IDS.sync, { visible: false });
+    browser.menus.update(MENU_IDS.toggle, { visible: false });
+    browser.menus.update(MENU_IDS.delete, { visible: false });
     browser.menus.update(MENU_IDS.eventLog, { visible: true });
     browser.menus.refresh();
     return;
@@ -1286,31 +1415,39 @@ browser.menus.onShown.addListener(info => {
 
   // Accounts tab, on a row: the three account actions.
   const actions = accountActions(acc);
-  browser.menus.update(MENU_IDS.sync, { visible: true, enabled: actions.canSync });
+  browser.menus.update(MENU_IDS.sync, {
+    visible: true,
+    enabled: actions.canSync,
+  });
   browser.menus.update(MENU_IDS.toggle, {
     visible: true,
     enabled: acc.enabled ? actions.canDisconnect : actions.canConnect,
     title: acc.enabled
-      ? (i18n("manager.account.disconnect", "Disconnect"))
-      : (i18n("manager.account.connect", "Connect")),
+      ? i18n("manager.account.disconnect", "Disconnect")
+      : i18n("manager.account.connect", "Connect"),
   });
-  browser.menus.update(MENU_IDS.delete,   { visible: true, enabled: actions.canRemove });
+  browser.menus.update(MENU_IDS.delete, {
+    visible: true,
+    enabled: actions.canRemove,
+  });
   browser.menus.update(MENU_IDS.eventLog, { visible: true });
   browser.menus.refresh();
 });
 
-browser.menus.onClicked.addListener(info => {
+browser.menus.onClicked.addListener((info) => {
   if (info.menuItemId === MENU_IDS.eventLog) {
     selectTab("eventLog");
     return;
   }
 
   const el = info.targetElementId
-    ? browser.menus.getTargetElement(info.targetElementId)?.closest?.("tr[data-account-id]")
+    ? browser.menus
+        .getTargetElement(info.targetElementId)
+        ?.closest?.("tr[data-account-id]")
     : null;
   if (!el) return;
   const accountId = el.dataset.accountId;
-  const acc = state.accounts.find(a => a.accountId === accountId);
+  const acc = state.accounts.find((a) => a.accountId === accountId);
   if (!acc) return;
   const markBusy = () => {
     state.transient.busyAccounts.add(accountId);
@@ -1324,7 +1461,9 @@ browser.menus.onClicked.addListener(info => {
       break;
     case MENU_IDS.toggle:
       markBusy();
-      rpc("setAccountEnabled", { accountId, enabled: !acc.enabled }).catch(showError);
+      rpc("setAccountEnabled", { accountId, enabled: !acc.enabled }).catch(
+        showError,
+      );
       break;
     case MENU_IDS.delete:
       confirmAndDeleteAccount(accountId, markBusy);

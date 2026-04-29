@@ -270,13 +270,13 @@
     "message": "TbSync"
   },
   "actionButton.title.syncing": {
-    "message": "TbSync — Синхронизиране…"
+    "message": "TbSync - Синхронизиране…"
   },
   "actionButton.title.error": {
-    "message": "TbSync — Грешка при синхронизация"
+    "message": "TbSync - Грешка при синхронизация"
   },
   "actionButton.title.localChanges": {
-    "message": "TbSync — Чакащи локални промени"
+    "message": "TbSync - Чакащи локални промени"
   },
   "options.intro": {
     "message": "Настройките на профилите на TbSync се намират в управлението на TbSync. Натиснете бутона по-долу, за да го отворите."

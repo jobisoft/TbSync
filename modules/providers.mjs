@@ -27,7 +27,12 @@ export function upsert(providerId, patch) {
   return serialize(async () => {
     const state = await read();
     const prior = state[providerId] ?? {};
-    state[providerId] = { ...prior, ...patch, providerId, lastSeen: Date.now() };
+    state[providerId] = {
+      ...prior,
+      ...patch,
+      providerId,
+      lastSeen: Date.now(),
+    };
     await browser.storage.session.set({ [KEYS.PROVIDERS]: state });
     return state[providerId];
   });

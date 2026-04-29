@@ -270,13 +270,13 @@
     "message": "TbSync"
   },
   "actionButton.title.syncing": {
-    "message": "TbSync — Synchronizace…"
+    "message": "TbSync - Synchronizace…"
   },
   "actionButton.title.error": {
-    "message": "TbSync — Chyba synchronizace"
+    "message": "TbSync - Chyba synchronizace"
   },
   "actionButton.title.localChanges": {
-    "message": "TbSync — Čekající místní změny"
+    "message": "TbSync - Čekající místní změny"
   },
   "options.intro": {
     "message": "Nastavení účtů TbSync najdete ve Správci TbSync. Klepněte na tlačítko níže pro jeho otevření."

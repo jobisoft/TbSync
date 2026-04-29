@@ -188,9 +188,7 @@ export const PROVIDER_NOTIFY = {
  * contacts sync), emit the bare base state and omit `label`. The host
  * translates.
  */
-export const SYNCSTATE_BASE_KEYS = new Set([
-  "sync", "prepare", "send", "eval",
-]);
+export const SYNCSTATE_BASE_KEYS = new Set(["sync", "prepare", "send", "eval"]);
 
 /**
  * Warning / error messages on accounts + folders - the provider's channel
@@ -218,7 +216,7 @@ export const SYNCSTATE_BASE_KEYS = new Set([
  * of them as-is in a `warning` / `error` field and the UI will render the
  * localised label.
  *
- * Each code in this list lives in the shared `ERR` enum below — provider-
+ * Each code in this list lives in the shared `ERR` enum below - provider-
  * specific codes belong in the provider's own `_locales/`, not here.
  *
  *   error.E:AUTH                  - Authentication failed. Special-cased

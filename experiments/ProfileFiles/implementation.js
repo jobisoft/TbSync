@@ -18,9 +18,10 @@
 "use strict";
 
 (function (exports) {
-
   function profileFilePath(relativePath) {
-    const profileDir = Components.classes["@mozilla.org/file/directory_service;1"]
+    const profileDir = Components.classes[
+      "@mozilla.org/file/directory_service;1"
+    ]
       .getService(Components.interfaces.nsIProperties)
       .get("ProfD", Components.interfaces.nsIFile);
     const file = profileDir.clone();

@@ -38,14 +38,12 @@
   ],
   "background": {
     "type": "module",
-    "scripts": [
-      "background.mjs"
-    ]
+    "scripts": ["background.mjs"]
   },
   "options_ui": {
     "page": "options/options.html",
     "open_in_tab": false
-  },  
+  },
   "experiment_apis": {
     "LegacyPrefs": {
       "schema": "experiments/LegacyPrefs/schema.json",

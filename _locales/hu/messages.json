@@ -270,13 +270,13 @@
     "message": "TbSync"
   },
   "actionButton.title.syncing": {
-    "message": "TbSync — Szinkronizálás…"
+    "message": "TbSync - Szinkronizálás…"
   },
   "actionButton.title.error": {
-    "message": "TbSync — Szinkronizálási hiba"
+    "message": "TbSync - Szinkronizálási hiba"
   },
   "actionButton.title.localChanges": {
-    "message": "TbSync — Függő helyi változások"
+    "message": "TbSync - Függő helyi változások"
   },
   "options.intro": {
     "message": "A TbSync fiókbeállításai a TbSync kezelőben találhatók. Kattintson az alábbi gombra a megnyitásához."
