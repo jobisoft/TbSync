@@ -246,11 +246,33 @@ router.setProviderRpcHandler(
     if (!Array.isArray(descriptors)) {
       throw new Error("folders must be an array");
     }
-    await folders.replaceAccountFolders(accountId, descriptors);
+    const result = await folders.replaceAccountFolders(accountId, descriptors);
     ui.broadcast({ type: "folders-changed", accountId });
+    // Server removed these folders. The row is already gone (replaceAccount
+    // Folders just wrote storage), so the watcher's onRemoved listener will
+    // no-op when our deletes fire below. Cache populate already happened
+    // for any selected rows; deleting the local target now does not affect
+    // the cache. We skip awaiting individual deletes - they're best-effort.
+    for (const t of result.removedTargets) {
+      deleteLocalTargetBestEffort(t).catch((err) =>
+        console.debug(
+          `[tbsync] delete local target ${t.targetID} failed:`,
+          err?.message ?? err,
+        ),
+      );
+    }
     return null;
   },
 );
+
+async function deleteLocalTargetBestEffort({ targetID, targetType }) {
+  if (!targetID) return;
+  if (targetType === "calendars" || targetType === "tasks") {
+    await messenger.calendar.calendars.remove(targetID);
+  } else if (targetType === "contacts") {
+    await messenger.addressBooks.delete(targetID);
+  }
+}
 
 // Provider reads - scoped to the caller's providerId. The provider is the
 // one that needs to pull account/folder rows on demand (its handlers receive

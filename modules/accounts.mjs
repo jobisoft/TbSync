@@ -70,10 +70,12 @@ export function create({
       // Per-folder customisation cache, keyed by folderId. Populated when
       // a server-side <Delete> removes a folder that was actively in use
       // (selected: true with a custom targetName, etc.); consumed when the
-      // same folderId reappears in a server-side <Add>. See
-      // folders.replaceAccountFolders for insert/consume; folders.update
-      // for the deselect-side wipe; this module's update for the
-      // account-disable wipe. Persists in storage.local.
+      // same folderId reappears in a server-side <Add>. Cleared en bloc
+      // on account disable (see this module's `update`) and on account
+      // delete (cascade). User-driven deselects and local-resource
+      // deletes do NOT clear individual entries - the cache survives
+      // until the server re-adds the folder or the account is dropped.
+      // Persists in storage.local under KEYS.ACCOUNTS.
       deletedFolderCache: {},
     };
     state.data[accountId] = record;
@@ -99,20 +101,6 @@ export function update(accountId, patch) {
   });
 }
 
-/** Drop a single entry from `account.deletedFolderCache`. Called from
- *  `folders.update` when a row's `selected` flips to false (user deselect
- *  via manager OR local-resource-delete via the watcher). No-op when the
- *  account or the entry is missing. */
-export function wipeCacheEntry(accountId, folderId) {
-  return serialize(async () => {
-    const state = await read();
-    const acc = state.data[accountId];
-    if (!acc?.deletedFolderCache?.[folderId]) return false;
-    delete acc.deletedFolderCache[folderId];
-    await write(state);
-    return true;
-  });
-}
 
 export function remove(accountId) {
   return serialize(async () => {

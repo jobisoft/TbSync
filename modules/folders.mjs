@@ -139,11 +139,25 @@ export function replaceAccountFolders(accountId, incoming) {
       };
     });
 
-    // Insert: every previously-existing folder that isn't in `incoming`
-    // was deleted by the server. Cache the user's customisations so they
-    // survive a server-side delete-recreate cycle.
+    // Server-side removals: every previously-existing folder that isn't in
+    // `incoming`. Two consequences:
+    //   1. If the row was selected, cache the user's customisations so they
+    //      survive a server-side delete-recreate cycle.
+    //   2. Surface the removed targets to the caller so the bound local
+    //      Thunderbird resource (book / calendar) can be deleted. Caller
+    //      MUST do that *after* this function returns - the watcher's
+    //      onDeleted/onRemoved listener checks for row existence and
+    //      will exit early because the row is already gone.
+    const removedTargets = [];
     for (const [folderId, prior] of Object.entries(previous)) {
       if (next[folderId]) continue;
+      if (prior?.targetID) {
+        removedTargets.push({
+          folderId,
+          targetID: prior.targetID,
+          targetType: prior.targetType ?? null,
+        });
+      }
       if (!prior?.selected) continue;
       if (!cache) continue;
       const bag = { selected: true };
@@ -161,7 +175,7 @@ export function replaceAccountFolders(accountId, incoming) {
       accountsState.data[accountId] = accountRecord;
       await browser.storage.local.set({ [KEYS.ACCOUNTS]: accountsState });
     }
-    return { folders: Object.values(next), restored };
+    return { folders: Object.values(next), restored, removedTargets };
   });
 }
 
@@ -171,23 +185,6 @@ export function update(accountId, folderId, patch) {
     if (!state[accountId]?.[folderId]) return null;
     state[accountId][folderId] = { ...state[accountId][folderId], ...patch };
     await write(state);
-    // A folder transitioning to selected: false is by definition a user-
-    // driven action (manager deselect or watcher-detected local-resource
-    // delete). Wipe any matching cache entry inline within this serialize
-    // block - calling accounts.wipeCacheEntry from here would deadlock the
-    // shared serialize queue (we already hold it). The same atomicity
-    // guarantee holds because both stores are mutated under the same lock.
-    if (patch && patch.selected === false) {
-      const accountsRv = await browser.storage.local.get({
-        [KEYS.ACCOUNTS]: { sequence: 0, data: {} },
-      });
-      const accountsState = accountsRv[KEYS.ACCOUNTS];
-      const acc = accountsState.data[accountId];
-      if (acc?.deletedFolderCache?.[folderId]) {
-        delete acc.deletedFolderCache[folderId];
-        await browser.storage.local.set({ [KEYS.ACCOUNTS]: accountsState });
-      }
-    }
     return state[accountId][folderId];
   });
 }
