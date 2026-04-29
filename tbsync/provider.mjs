@@ -26,7 +26,7 @@ import {
 // Subclass-facing surface. Subclass code imports only from this file;
 // protocol.mjs and status.mjs stay as mirror-synced contract files.
 export { ERR, withCode } from "./protocol.mjs";
-export { ok, warning, error } from "./status.mjs";
+export { ok, warning, error, accountRerun } from "./status.mjs";
 
 /** Extension id of the TbSync host. */
 export const TBSYNC_ID = "tbsync@jobisoft.de";

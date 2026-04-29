@@ -16,6 +16,13 @@ import { syncingAccounts, busyFolders } from "./transient.mjs";
  *  "in progress" state lives in the shared `syncingAccounts` set the
  *  manager reads via getState. */
 
+// Legacy parity (TbSync4 core.js:90, 138): a per-folder Sync command that
+// returns Status 12 ("folder hierarchy out of date") triggers an account-
+// level rerun (re-FolderSync + re-iterate folders). Capped so a server
+// stuck in a hierarchy-changed state doesn't spin forever.
+const MAX_ACCOUNT_RERUNS = 2;
+const RERUN_BACKOFF_MS = 5_000;
+
 export async function syncAllAccounts() {
   const all = await accounts.list();
   for (const acc of all) {
@@ -46,38 +53,64 @@ export async function syncAccount(accountId, { syncList = true } = {}) {
 
   let authFailed = false;
   try {
-    const statusData = await router.sendCmd(
-      acc.provider,
-      HOST_CMD.SYNC_ACCOUNT,
-      {
-        accountId,
-        syncJob: "sync",
-        syncList,
-        syncFolders: null,
-      },
-    );
-    if (statusData.type === STATUS_TYPES.ERROR) {
-      await logAccountOutcome(accountId, statusData, "error");
-      return;
-    }
+    let accountRuns = 0;
+    let accountRerunRequested;
+    do {
+      accountRerunRequested = false;
+      if (accountRuns > MAX_ACCOUNT_RERUNS) {
+        // Match legacy "resync-loop" bail-out (TbSync4 core.js:114-117).
+        await eventLog.append({
+          accountId,
+          folderId: null,
+          level: "error",
+          message:
+            "Resync loop detected - giving up after repeated ACCOUNT_RERUN",
+        });
+        break;
+      }
+      if (accountRuns > 0) {
+        // Match legacy 5 s cool-down between rerun iterations.
+        await new Promise((r) => setTimeout(r, RERUN_BACKOFF_MS));
+      }
+      accountRuns++;
 
-    const folderDescriptors = await router.sendCmd(
-      acc.provider,
-      HOST_CMD.GET_SORTED_FOLDERS,
-      { accountId },
-    );
-    if (Array.isArray(folderDescriptors) && folderDescriptors.length) {
-      await folders.replaceAccountFolders(accountId, folderDescriptors);
-    }
+      const statusData = await router.sendCmd(
+        acc.provider,
+        HOST_CMD.SYNC_ACCOUNT,
+        {
+          accountId,
+          syncJob: "sync",
+          syncList,
+          syncFolders: null,
+        },
+      );
+      if (statusData.type === STATUS_TYPES.ERROR) {
+        await logAccountOutcome(accountId, statusData, "error");
+        return;
+      }
 
-    // Folders being toggled right now skip this pass - the provider may be
-    // mid-book-delete on deselect.
-    const toSync = (await folders.listForAccount(accountId)).filter(
-      (f) => f.selected && !busyFolders.has(f.folderId),
-    );
-    for (const folder of toSync) {
-      await syncFolderOnce(acc, folder);
-    }
+      const folderDescriptors = await router.sendCmd(
+        acc.provider,
+        HOST_CMD.GET_SORTED_FOLDERS,
+        { accountId },
+      );
+      if (Array.isArray(folderDescriptors) && folderDescriptors.length) {
+        await folders.replaceAccountFolders(accountId, folderDescriptors);
+      }
+
+      // Folders being toggled right now skip this pass - the provider may
+      // be mid-book-delete on deselect.
+      const toSync = (await folders.listForAccount(accountId)).filter(
+        (f) => f.selected && !busyFolders.has(f.folderId),
+      );
+      for (const folder of toSync) {
+        const outcome = await syncFolderOnce(acc, folder);
+        if (outcome?.type === STATUS_TYPES.ACCOUNT_RERUN) {
+          accountRerunRequested = true;
+          break;
+        }
+      }
+    } while (accountRerunRequested);
   } catch (err) {
     if (err?.code === ERR.AUTH) {
       authFailed = true;
@@ -168,6 +201,23 @@ async function syncFolderOnce(acc, folder) {
       folderId: folder.folderId,
       syncJob: "sync",
     });
+    if (result.type === STATUS_TYPES.ACCOUNT_RERUN) {
+      // The folder didn't actually finish syncing - the provider stopped
+      // because the FolderSync state went stale (Status 12). Leave
+      // folder.status at "pending"; the outer syncAccount loop will rerun
+      // FolderSync and re-enter syncFolderOnce, which will repaint pending
+      // and produce a real outcome.
+      if (result.message) {
+        await eventLog.append({
+          accountId: acc.accountId,
+          folderId: folder.folderId,
+          level: "warning",
+          message: result.message,
+          details: result.details ?? null,
+        });
+      }
+      return result;
+    }
     const status = statusFromResult(result.type);
     const patch = { status };
     if (result.type === STATUS_TYPES.SUCCESS) {
@@ -188,6 +238,7 @@ async function syncFolderOnce(acc, folder) {
         details: result.details ?? null,
       });
     }
+    return result;
   } catch (err) {
     // Auth errors are account-wide - bubble up so syncAccount can disable
     // the whole account. We leave folder.status at "pending" here and let
