@@ -3,106 +3,106 @@
     "message": "TbSync"
   },
   "extensionDescription": {
-    "message": "Central user interface to manage synchronization of contacts, calendars and tasks with external accounts, through provider add-ons."
+    "message": "Interfaz central para gestionar la sincronización de contactos, calendarios y tareas con cuentas externas por medio de complementos."
   },
   "manager.title": {
-    "message": "TbSync Account Manager"
+    "message": "Administrador de cuentas TbSync"
   },
   "manager.tab.accounts": {
-    "message": "TbSync Accounts"
+    "message": "Cuentas TbSync"
   },
   "manager.tab.categoryManager": {
-    "message": "Category Manager"
+    "message": "Administrador de categorías"
   },
   "manager.categoryManager.text": {
-    "message": "TbSync also syncs contact categories, which are a powerful replacement for the non-synchronizable contact lists. To be able to use them in the Thunderbird address book you can install the Category Manager add-on. It allows to manage overlapping category based contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla add-on repository:"
+    "message": "TbSync también sincroniza categorías de contactos, un sustituto eficaz de las listas de contactos, que no son sincronizables. Para usar las categorías en la libreta de direcciones de Thunderbird, puede instalar el complemento Category Manager. Permite gestionar grupos de contactos con categorías superpuestas y ofrece diversas funciones relacionadas con las categorías. Está disponible en el repositorio oficial de complementos de Mozilla:"
   },
   "manager.tab.help": {
-    "message": "Help"
+    "message": "Ayuda"
   },
   "manager.help.wiki": {
     "message": "Visite el wiki del proyecto TbSync, que proporciona más información, guías y descripciones detalladas de la configuración."
   },
   "manager.eventLog.intro": {
-    "message": "Bug reports include the contents of this log. For a more useful report, raise the verbosity level, clear the log, and reproduce the problem before clicking the report button."
+    "message": "Los informes de errores incluyen el contenido de este registro. Para que el informe resulte más útil, conviene aumentar el nivel de detalle, vaciar el registro y reproducir el problema justo antes de hacer clic en el botón para informar."
   },
   "manager.eventLog.bugReport.button": {
-    "message": "Create Bug Report"
+    "message": "Crear informe de error"
   },
   "bugReport.title": {
-    "message": "Create Bug Report"
+    "message": "Crear informe de error"
   },
   "bugReport.component": {
-    "message": "Component"
+    "message": "Componente"
   },
   "bugReport.summary": {
-    "message": "Summary"
+    "message": "Resumen"
   },
   "bugReport.description": {
-    "message": "Description"
+    "message": "Descripción"
   },
   "bugReport.send": {
-    "message": "Send"
+    "message": "Enviar"
   },
   "bugReport.cancel": {
-    "message": "Cancel"
+    "message": "Cancelar"
   },
   "bugReport.error.summaryRequired": {
-    "message": "Please enter a summary."
+    "message": "Escriba un resumen, por favor."
   },
   "manager.tab.eventLog": {
-    "message": "Event Log"
+    "message": "Registro de eventos"
   },
   "manager.eventLog.clear": {
-    "message": "Clear"
+    "message": "Vaciar"
   },
   "manager.eventLog.empty": {
-    "message": "No events yet."
+    "message": "Aún no hay eventos."
   },
   "manager.eventLog.verbosity": {
-    "message": "Verbosity level for event collection:"
+    "message": "Nivel de detalle para la recopilación de eventos:"
   },
   "manager.eventLog.verbosity.errors": {
-    "message": "Errors only"
+    "message": "Solo errores"
   },
   "manager.eventLog.verbosity.warnings": {
-    "message": "Errors and warnings"
+    "message": "Errores y advertencias"
   },
   "manager.eventLog.verbosity.info": {
-    "message": "Errors, warnings and info messages"
+    "message": "Errores, advertencias y mensajes de información"
   },
   "manager.eventLog.verbosity.debug": {
-    "message": "Errors, warnings, info messages and debug logs"
+    "message": "Errores, advertencias, mensajes de información y registros de depuración"
   },
   "manager.eventLog.col.time": {
-    "message": "Time"
+    "message": "Hora"
   },
   "manager.eventLog.col.level": {
-    "message": "Level"
+    "message": "Nivel"
   },
   "manager.eventLog.col.source": {
-    "message": "Source"
+    "message": "Origen"
   },
   "manager.eventLog.col.account": {
-    "message": "Account"
+    "message": "Cuenta"
   },
   "manager.eventLog.col.message": {
-    "message": "Message"
+    "message": "Mensaje"
   },
   "manager.accounts.heading": {
-    "message": "Configured Accounts"
+    "message": "Cuentas configuradas"
   },
   "manager.accounts.col.status": {
-    "message": "Status"
+    "message": "Estado"
   },
   "manager.providers.heading": {
-    "message": "Available providers"
+    "message": "Proveedores disponibles"
   },
   "manager.addAccount": {
-    "message": "Add account"
+    "message": "Añadir cuenta"
   },
   "manager.noAccounts": {
-    "message": "No accounts configured"
+    "message": "No se ha configurado ninguna cuenta"
   },
   "manager.noProviders": {
     "message": "No provider add-ons installed."
@@ -183,7 +183,7 @@
     "message": "General"
   },
   "manager.detail.status": {
-    "message": "Status"
+    "message": "Estado"
   },
   "manager.detail.provider": {
     "message": "Provider:"
@@ -243,7 +243,7 @@
     }
   },
   "manager.remove.cancelLabel": {
-    "message": "Cancel"
+    "message": "Cancelar"
   },
   "manager.resources.empty": {
     "message": "No resources yet."
