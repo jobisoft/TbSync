@@ -270,13 +270,13 @@
     "message": "TbSync"
   },
   "actionButton.title.syncing": {
-    "message": "TbSync — Syncing…"
+    "message": "TbSync - Syncing…"
   },
   "actionButton.title.error": {
-    "message": "TbSync — Sync error"
+    "message": "TbSync - Sync error"
   },
   "actionButton.title.localChanges": {
-    "message": "TbSync — Local changes pending"
+    "message": "TbSync - Local changes pending"
   },
   "options.intro": {
     "message": "TbSync's account settings live in the TbSync Manager. Click the button below to open it."
@@ -286,5 +286,35 @@
   },
   "manager.menu.showEventLog": {
     "message": "Show event log"
+  },
+  "error.E:NETWORK": {
+    "message": "Could not reach the server"
+  },
+  "error.E:TIMEOUT": {
+    "message": "Operation timed out"
+  },
+  "error.E:CANCELLED": {
+    "message": "Operation cancelled"
+  },
+  "error.E:PROVIDER_UNAVAILABLE": {
+    "message": "Provider extension is not available"
+  },
+  "error.E:PROTOCOL_VERSION": {
+    "message": "Provider protocol version mismatch"
+  },
+  "error.E:UNKNOWN_ACCOUNT": {
+    "message": "Unknown account"
+  },
+  "error.E:UNKNOWN_FOLDER": {
+    "message": "Unknown folder"
+  },
+  "error.E:UNKNOWN_COMMAND": {
+    "message": "Unsupported command"
+  },
+  "error.E:PORT_CLOSED": {
+    "message": "Disconnected from the provider"
+  },
+  "error.E:QUOTA": {
+    "message": "Storage quota exceeded"
   }
 }
