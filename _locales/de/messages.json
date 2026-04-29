@@ -264,7 +264,7 @@
     "message": "Konto muss synchronisiert werden, mindestens ein Element ist nicht synchron"
   },
   "account.status.upgrading": {
-    "message": "Anbieter führt einmalige Aktualisierungsarbeiten an diesem Konto durch…"
+    "message": "Anbieter führt einmalige Arbeiten an diesem Konto durch…"
   },
   "actionButton.title.ok": {
     "message": "TbSync"

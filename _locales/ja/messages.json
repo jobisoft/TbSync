@@ -264,7 +264,7 @@
     "message": "アカウントの同期が必要です。少なくとも 1 つの項目が同期されていません"
   },
   "account.status.upgrading": {
-    "message": "プロバイダーがこのアカウントで一度限りの更新作業を実行しています…"
+    "message": "プロバイダーがこのアカウントで一度限りの作業を実行しています…"
   },
   "actionButton.title.ok": {
     "message": "TbSync"

@@ -264,7 +264,7 @@
     "message": "Kontot behöver synkroniseras, minst ett objekt är osynkroniserat"
   },
   "account.status.upgrading": {
-    "message": "Leverantören utför en engångsuppgradering av detta konto…"
+    "message": "Leverantören utför ett engångsarbete på detta konto…"
   },
   "actionButton.title.ok": {
     "message": "TbSync"

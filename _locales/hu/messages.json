@@ -264,7 +264,7 @@
     "message": "A fiókot szinkronizálni kell, legalább egy elem nincs szinkronban"
   },
   "account.status.upgrading": {
-    "message": "A szolgáltató egyszeri frissítést hajt végre ezen a fiókon…"
+    "message": "A szolgáltató egyszeri műveletet hajt végre ezen a fiókon…"
   },
   "actionButton.title.ok": {
     "message": "TbSync"

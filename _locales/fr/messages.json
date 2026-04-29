@@ -264,7 +264,7 @@
     "message": "Le compte doit être synchronisé, au moins un élément est désynchronisé"
   },
   "account.status.upgrading": {
-    "message": "Le fournisseur effectue une mise à niveau ponctuelle sur ce compte…"
+    "message": "Le fournisseur effectue une opération ponctuelle sur ce compte…"
   },
   "actionButton.title.ok": {
     "message": "TbSync"

@@ -264,7 +264,7 @@
     "message": "Účet je třeba synchronizovat, alespoň jedna položka není synchronizována"
   },
   "account.status.upgrading": {
-    "message": "Poskytovatel provádí jednorázovou aktualizaci tohoto účtu…"
+    "message": "Poskytovatel provádí jednorázovou operaci na tomto účtu…"
   },
   "actionButton.title.ok": {
     "message": "TbSync"

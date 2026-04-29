@@ -135,7 +135,7 @@
     "message": "Account needs to be synchronized, at least one item is out of sync"
   },
   "account.status.upgrading": {
-    "message": "Provider is performing one-time upgrade work on this account…"
+    "message": "Provider is performing one-time work on this account…"
   },
   "account.status.disabled": {
     "message": "Disconnected"

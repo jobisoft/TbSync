@@ -264,7 +264,7 @@
     "message": "계정을 동기화해야 합니다. 적어도 하나의 항목이 동기화되지 않았습니다"
   },
   "account.status.upgrading": {
-    "message": "공급자가 이 계정에 대해 일회성 업그레이드 작업을 수행하는 중입니다…"
+    "message": "공급자가 이 계정에 대해 일회성 작업을 수행하는 중입니다…"
   },
   "actionButton.title.ok": {
     "message": "TbSync"

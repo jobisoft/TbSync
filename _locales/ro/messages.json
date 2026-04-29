@@ -264,7 +264,7 @@
     "message": "Contul trebuie sincronizat, cel puțin un element este desincronizat"
   },
   "account.status.upgrading": {
-    "message": "Furnizorul efectuează o actualizare unică pentru acest cont…"
+    "message": "Furnizorul efectuează o operațiune unică pentru acest cont…"
   },
   "actionButton.title.ok": {
     "message": "TbSync"

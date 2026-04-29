@@ -264,7 +264,7 @@
     "message": "L'account deve essere sincronizzato, almeno un elemento non è sincronizzato"
   },
   "account.status.upgrading": {
-    "message": "Il provider sta eseguendo un'operazione di aggiornamento una tantum su questo account…"
+    "message": "Il provider sta eseguendo un'operazione una tantum su questo account…"
   },
   "actionButton.title.ok": {
     "message": "TbSync"

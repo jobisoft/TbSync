@@ -264,7 +264,7 @@
     "message": "Kontot tuleb sünkroonida, vähemalt üks element ei ole sünkroonis"
   },
   "account.status.upgrading": {
-    "message": "Pakkuja teeb sellele kontole ühekordseid uuendustöid…"
+    "message": "Pakkuja teeb sellele kontole ühekordset tööd…"
   },
   "actionButton.title.ok": {
     "message": "TbSync"

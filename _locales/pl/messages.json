@@ -264,7 +264,7 @@
     "message": "Konto wymaga synchronizacji, co najmniej jeden element nie jest zsynchronizowany"
   },
   "account.status.upgrading": {
-    "message": "Dostawca wykonuje jednorazową aktualizację tego konta…"
+    "message": "Dostawca wykonuje jednorazową operację dla tego konta…"
   },
   "actionButton.title.ok": {
     "message": "TbSync"

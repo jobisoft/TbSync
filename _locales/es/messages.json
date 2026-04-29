@@ -264,7 +264,7 @@
     "message": "La cuenta debe sincronizarse, al menos un elemento está desincronizado"
   },
   "account.status.upgrading": {
-    "message": "El proveedor está realizando una actualización única en esta cuenta…"
+    "message": "El proveedor está realizando una operación única en esta cuenta…"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
