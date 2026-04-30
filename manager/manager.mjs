@@ -1397,7 +1397,7 @@ async function createBugReport() {
       to: recipient ? [recipient] : [],
       subject: `TbSync ${hostVersion} bug report: ${form.summary}`,
       isPlainText: true,
-      body,
+      plainTextBody: body,
       attachments: [{ file }],
     });
   } catch (err) {

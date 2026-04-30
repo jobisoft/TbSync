@@ -356,6 +356,22 @@ router.setProviderRpcHandler(
 );
 
 router.setProviderRpcHandler(
+  PROVIDER_CMD.CHANGELOG_MOVE_TO_TAIL,
+  async (providerId, args) => {
+    const { accountId, folderId, items } = args ?? {};
+    const acc = await accounts.get(accountId);
+    if (!acc || acc.provider !== providerId) {
+      throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
+    }
+    if (!Array.isArray(items)) {
+      throw new Error("changelogMoveToTail: items must be an array");
+    }
+    await folders.moveChangelogEntriesToTail(accountId, folderId, items);
+    return null;
+  },
+);
+
+router.setProviderRpcHandler(
   PROVIDER_CMD.SET_PROVIDER_UPGRADE_LOCK,
   async (providerId, args) => {
     const locked = !!args?.locked;

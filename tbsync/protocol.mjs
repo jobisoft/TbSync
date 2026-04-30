@@ -129,8 +129,14 @@ export const PROVIDER_CMD = {
   // tag `*_by_server` entries before their own sync writes so the observer
   // skips the resulting TB events (all events within a 1500 ms window), and clear
   // `*_by_user` entries after successfully pushing them to the server.
+  // CHANGELOG_MOVE_TO_TAIL re-orders specific entries to the end of the
+  // queue without changing their content; used by providers after a push
+  // partially failed so the next sync attempts the items that have not
+  // failed first (avoids replaying the same batch-shrink dance every
+  // sync against a stuck-bad item at the head).
   CHANGELOG_MARK_SERVER_WRITE: "changelogMarkServerWrite",
   CHANGELOG_REMOVE: "changelogRemove",
+  CHANGELOG_MOVE_TO_TAIL: "changelogMoveToTail",
   // Provider-scoped upgrade lock. While locked, the host treats every
   // account belonging to the provider as "upgrading" - refuses every
   // user-initiated RPC and skips autosync ticks. Used by the provider's

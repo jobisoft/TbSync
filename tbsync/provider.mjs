@@ -226,6 +226,13 @@ export class TbSyncProviderImplementation {
   changelogRemove(args) {
     return this.#sendCmd(PROVIDER_CMD.CHANGELOG_REMOVE, args);
   }
+  /** Move the supplied changelog entries to the tail of the queue
+   *  (preserving content + timestamps). Used after a partial-push
+   *  failure so the next sync attempts non-failing items first.
+   *  args: `{accountId, folderId, items: [{parentId, itemId}, …]}`. */
+  changelogMoveToTail(args) {
+    return this.#sendCmd(PROVIDER_CMD.CHANGELOG_MOVE_TO_TAIL, args);
+  }
 
   /** Provider-scoped upgrade lock. While `locked: true`, the host
    *  refuses every user-initiated RPC against any account belonging to

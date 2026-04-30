@@ -272,6 +272,32 @@ export async function removeChangelogEntry(
   );
 }
 
+/** Move entries matching any `(parentId, itemId)` in `items` to the tail
+ *  of the changelog, preserving their original timestamps and status.
+ *  Used by providers after a push partially failed so the next sync
+ *  attempts the un-failed items first (the failing ones land back at the
+ *  head only after the rest of the queue has been drained).
+ *
+ *  Items not present in the changelog are silently ignored. If no items
+ *  match, the changelog is left untouched (no storage write). */
+export async function moveChangelogEntriesToTail(accountId, folderId, items) {
+  if (!Array.isArray(items) || items.length === 0) return null;
+  const matchSet = new Set(
+    items.map((i) => `${i.parentId}|${i.itemId}`),
+  );
+  return mutateChangelog(accountId, folderId, (entries) => {
+    const stay = [];
+    const move = [];
+    for (const e of entries) {
+      const k = `${e.parentId}|${e.itemId}`;
+      if (matchSet.has(k)) move.push(e);
+      else stay.push(e);
+    }
+    if (move.length === 0) return entries;
+    return [...stay, ...move];
+  });
+}
+
 /** All folder rows that currently have a non-null `targetID`. The watcher
  *  uses this at startup + on every folders-changed broadcast to rebuild
  *  its `bookId → {accountId, folderId}` registry. */
