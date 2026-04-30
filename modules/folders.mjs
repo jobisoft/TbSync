@@ -106,6 +106,13 @@ export function replaceAccountFolders(accountId, incoming) {
           descriptor.selected ??
           false,
         readOnly: descriptor.readOnly ?? prior?.readOnly ?? false,
+        // User override toggled via the manager's ACL icon. Preserved
+        // across pushes (the provider's PUSH_FOLDER_LIST does not write
+        // it) and restored from the deletedFolderCache so a server-side
+        // recreate doesn't lose the user's preference.
+        downloadOnly:
+          prior?.downloadOnly ??
+          (cached && "downloadOnly" in cached ? cached.downloadOnly : false),
         hidden: !!descriptor.hidden,
         // Universal sync-status fields - host-authored from the SYNC_FOLDER
         // RPC outcome and from setFolderSelected. Preserved across
@@ -163,6 +170,9 @@ export function replaceAccountFolders(accountId, incoming) {
       const bag = { selected: true };
       if (typeof prior.targetName === "string" && prior.targetName !== "") {
         bag.targetName = prior.targetName;
+      }
+      if (prior.downloadOnly === true) {
+        bag.downloadOnly = true;
       }
       cache[folderId] = bag;
       cacheDirty = true;

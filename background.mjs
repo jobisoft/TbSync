@@ -685,6 +685,30 @@ ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
 });
 
 ui.setManagerRpcHandler(
+  "setFolderDownloadOnly",
+  async ({ accountId, folderId, downloadOnly }) => {
+    // User toggled the manager's ACL icon. The server-announced `readOnly`
+    // flag (provider-authored) cannot be flipped here - that's the server's
+    // ACL. `downloadOnly` is a pure user preference layered on top, only
+    // meaningful when `readOnly` is false.
+    const acc = await accounts.get(accountId);
+    if (!acc) throw new Error("unknown account");
+    assertNotUpgrading(accountId);
+    const folder = await folders.get(accountId, folderId);
+    if (!folder) throw new Error("unknown folder");
+    if (folder.readOnly) {
+      throw new Error("Folder is read-only on the server");
+    }
+    if (busyFolders.has(folderId)) {
+      throw withCode(new Error("Folder is busy"), "E:BUSY");
+    }
+    await folders.update(accountId, folderId, { downloadOnly: !!downloadOnly });
+    ui.broadcast({ type: "folders-changed", accountId });
+    return null;
+  },
+);
+
+ui.setManagerRpcHandler(
   "setFolderSelected",
   async ({ accountId, folderId, selected }) => {
     const acc = await accounts.get(accountId);

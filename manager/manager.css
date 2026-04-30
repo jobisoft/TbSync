@@ -399,21 +399,27 @@ body {
   text-align: left;
   padding: 6px 8px;
   border-bottom: 1px solid var(--border-row);
-  vertical-align: top;
+  vertical-align: middle;
   line-height: 1.4;
+}
+/* Multi-line warnings/errors should hang from the top of the cell so they
+   align with the first line of the (single-line) name to their left,
+   instead of pushing the whole row's mid-axis down. */
+.folder-table td.col-status {
+  vertical-align: top;
 }
 .folder-table tbody tr:last-child td { border-bottom: none; }
 
 /* Keep the helper columns as narrow as possible; status absorbs the rest. */
 .folder-table col.col-check     { width: 28px; }
 .folder-table col.col-type-icon { width: 20px; }
-.folder-table col.col-acl       { width: 20px; }
+.folder-table col.col-acl       { width: 60px; }
 .folder-table col.col-name      { width: 1%; white-space: nowrap; }
 .folder-table col.col-status    { width: 100%; }
 
 .folder-table td.col-check,
-.folder-table td.col-type-icon,
-.folder-table td.col-acl { padding-right: 0; }
+.folder-table td.col-type-icon { padding-right: 0; }
+.folder-table td.col-acl { padding-right: 6px; }
 /* Align the three leading cells on the same y: strip UA margin off the
    checkbox and size it to the 16px icons next to it. */
 .folder-table td.col-check input[type="checkbox"] {
@@ -443,6 +449,123 @@ body {
   flex-shrink: 0;
   image-rendering: crisp-edges;
   display: block;
+}
+
+/* Per-folder ACL chooser. Closed state is a compact icon+chevron button
+   (or a static icon when the server enforces read-only). The popup is a
+   custom <ul role="listbox"> with two icon+text rows. */
+
+/* Static icon shown when the server enforces read-only - no menu. */
+.folder-acl-icon-static {
+  cursor: default;
+}
+
+/* Wrapper sets up a positioning context for the absolute popup. */
+.folder-acl-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.folder-acl-trigger {
+  appearance: none;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  background-color: transparent;
+  /* Visible 1px border always - the trigger reads as a control even at
+     rest. Hover/open deepen the border and tint the fill. */
+  border: 1px solid var(--border-row, #ccc);
+  border-radius: 3px;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 22px;
+  box-sizing: border-box;
+}
+.folder-acl-trigger:hover:not(:disabled),
+.folder-acl-trigger[aria-expanded="true"] {
+  border-color: var(--text-secondary, #888);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+.folder-acl-trigger:hover:not(:disabled) .folder-acl-trigger-sep,
+.folder-acl-trigger[aria-expanded="true"] .folder-acl-trigger-sep {
+  background-color: var(--text-secondary, #888);
+}
+.folder-acl-trigger:focus-visible {
+  outline: 1px solid var(--focus-ring, currentColor);
+  outline-offset: 1px;
+}
+.folder-acl-trigger:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.folder-acl-trigger-icon {
+  width: 16px;
+  height: 16px;
+  margin: 0 6px 0 4px;
+  flex-shrink: 0;
+  image-rendering: crisp-edges;
+}
+.folder-acl-trigger-sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 2px 0;
+  background-color: var(--border-row, #ccc);
+  flex-shrink: 0;
+}
+.folder-acl-trigger-chevron {
+  width: 8px;
+  height: 5px;
+  margin: 0 5px;
+  fill: var(--text-secondary, #666);
+  flex-shrink: 0;
+}
+
+/* Popup is positioned at viewport coordinates computed at open-time from
+   the trigger's bounding rect. `position: fixed` escapes the table's
+   overflow clipping so rows near the bottom of the list still render the
+   full menu. Width is content-driven so the legacy long-form labels stay
+   on one line. */
+.folder-acl-popup {
+  position: fixed;
+  z-index: 10000;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  background-color: var(--bg-popup, var(--bg-input, #fff));
+  border: 1px solid var(--border-row, #ccc);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-width: max-content;
+  white-space: nowrap;
+}
+.folder-acl-popup[hidden] {
+  display: none;
+}
+.folder-acl-popup li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.folder-acl-popup li:hover,
+.folder-acl-popup li:focus-visible {
+  background-color: var(--row-hover, rgba(0, 0, 0, 0.06));
+}
+.folder-acl-popup li.selected {
+  font-weight: 600;
+}
+.folder-acl-option-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  image-rendering: crisp-edges;
 }
 
 /* Folder-row inline message - coloured text shown in the Status cell when

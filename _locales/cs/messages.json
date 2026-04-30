@@ -245,11 +245,14 @@
   "manager.resources.col.name": {
     "message": "Název"
   },
-  "folder.readOnly": {
-    "message": "Pouze pro čtení"
+  "folder.acl.serverReadOnly": {
+    "message": "Přístup na server pouze pro čtení (vynuceno serverem)"
   },
-  "folder.readWrite": {
-    "message": "Čtení/zápis"
+  "folder.acl.option.readWrite": {
+    "message": "Přístup na server pro čtení i zápis"
+  },
+  "folder.acl.option.downloadOnly": {
+    "message": "Přistup na server pouze pro čtení (odstranit místní změny)"
   },
   "folderType.contacts": {
     "message": "Kontakty"

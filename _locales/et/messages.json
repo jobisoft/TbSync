@@ -245,11 +245,14 @@
   "manager.resources.col.name": {
     "message": "Nimi"
   },
-  "folder.readOnly": {
-    "message": "Kirjutuskaitstud"
+  "folder.acl.serverReadOnly": {
+    "message": "Read-only server access (server-enforced)"
   },
-  "folder.readWrite": {
-    "message": "Lugemine/kirjutamine"
+  "folder.acl.option.readWrite": {
+    "message": "Read from and write to server"
+  },
+  "folder.acl.option.downloadOnly": {
+    "message": "Read-only server access (revert local changes)"
   },
   "folderType.contacts": {
     "message": "Kontaktid"

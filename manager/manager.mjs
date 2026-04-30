@@ -614,7 +614,18 @@ function renderDetail() {
 
         const typeIcon = folderTypeIconEl(f.targetType);
         if (typeIcon) row.querySelector(".col-type-icon").appendChild(typeIcon);
-        row.querySelector(".col-acl").appendChild(aclIconEl(f));
+        row.querySelector(".col-acl").appendChild(
+          aclSelectEl(f, {
+            disabled: folderLock,
+            onChange: (downloadOnly) => {
+              rpc("setFolderDownloadOnly", {
+                accountId: acc.accountId,
+                folderId: f.folderId,
+                downloadOnly,
+              }).catch(showError);
+            },
+          }),
+        );
         row.querySelector(".col-name").textContent = f.displayName;
         fillFolderCellStatus(row.querySelector(".col-status"), f, isBusy);
 
@@ -932,18 +943,201 @@ function folderTypeIconEl(targetType) {
   });
 }
 
-// Read-only / read-write indicator per folder - static (provider authors
-// `readOnly`; there's no user-facing toggle in tbsync-new's protocol).
-function aclIconEl(folder) {
-  const file = folder.readOnly ? "acl-ro16.png" : "acl-rw16.png";
-  const key = folder.readOnly ? "folder.readOnly" : "folder.readWrite";
-  const label = i18n(key, folder.readOnly ? "Read-only" : "Read/write");
-  return makeImg({
-    src: browser.runtime.getURL(`icons/${file}`),
-    alt: label,
-    title: label,
-    className: "folder-acl-icon",
+// Read-only / read-write selector per folder.
+//
+// Two flags decide the rendered state:
+//   - `folder.readOnly`     - server-announced ACL, immutable for the user.
+//   - `folder.downloadOnly` - user override; only meaningful when readOnly
+//                              is false.
+//
+// Closed state:
+//   - server-RO: a static <img> of the read-only icon (tooltip explains).
+//   - otherwise: a small <button> showing the active-state icon + chevron.
+//
+// Open state (button only): a popup <ul role="listbox"> with two
+// <li role="option"> rows, each "icon + text". Strings ported verbatim
+// from legacy TbSync (acl.readonly / acl.readwrite). Click outside or
+// Escape closes the popup.
+function aclSelectEl(folder, { onChange, disabled = false } = {}) {
+  const labelRW = i18n(
+    "folder.acl.option.readWrite",
+    "Read from and write to server",
+  );
+  const labelRO = i18n(
+    "folder.acl.option.downloadOnly",
+    "Read-only server access (revert local changes)",
+  );
+
+  // Server-imposed RO: render as a static icon. No menu, no choice.
+  if (folder.readOnly) {
+    const tip = i18n(
+      "folder.acl.serverReadOnly",
+      "Read-only server access (server-enforced)",
+    );
+    return makeImg({
+      src: browser.runtime.getURL("icons/acl-ro16.png"),
+      alt: tip,
+      title: tip,
+      className: "folder-acl-icon folder-acl-icon-static",
+    });
+  }
+
+  const wrap = document.createElement("div");
+  wrap.className = "folder-acl-dropdown";
+
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "folder-acl-trigger";
+  trigger.dataset.state = folder.downloadOnly ? "ro" : "rw";
+  trigger.disabled = !!disabled;
+  trigger.title = folder.downloadOnly ? labelRO : labelRW;
+  trigger.setAttribute("aria-haspopup", "listbox");
+  trigger.setAttribute("aria-expanded", "false");
+  trigger.setAttribute(
+    "aria-label",
+    folder.downloadOnly ? labelRO : labelRW,
+  );
+  // DOM children (not background-image) so no UA hover/active style can
+  // drop the icon, and so flexbox can vertically centre the bits cleanly.
+  const triggerIcon = document.createElement("img");
+  triggerIcon.className = "folder-acl-trigger-icon";
+  triggerIcon.alt = "";
+  triggerIcon.src = browser.runtime.getURL(
+    folder.downloadOnly ? "icons/acl-ro16.png" : "icons/acl-rw16.png",
+  );
+  const triggerSep = document.createElement("span");
+  triggerSep.className = "folder-acl-trigger-sep";
+  triggerSep.setAttribute("aria-hidden", "true");
+  const triggerChevron = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "svg",
+  );
+  triggerChevron.setAttribute("viewBox", "0 0 8 5");
+  triggerChevron.setAttribute("class", "folder-acl-trigger-chevron");
+  triggerChevron.setAttribute("aria-hidden", "true");
+  const chevronPath = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "path",
+  );
+  chevronPath.setAttribute("d", "M0 0h8L4 5z");
+  triggerChevron.appendChild(chevronPath);
+  trigger.append(triggerIcon, triggerSep, triggerChevron);
+
+  const popup = document.createElement("ul");
+  popup.className = "folder-acl-popup";
+  popup.setAttribute("role", "listbox");
+  popup.hidden = true;
+
+  const options = [
+    { value: "rw", label: labelRW, icon: "icons/acl-rw16.png" },
+    { value: "ro", label: labelRO, icon: "icons/acl-ro16.png" },
+  ];
+  for (const opt of options) {
+    const li = document.createElement("li");
+    li.setAttribute("role", "option");
+    li.dataset.value = opt.value;
+    const isSelected =
+      (opt.value === "ro") === !!folder.downloadOnly;
+    li.setAttribute("aria-selected", String(isSelected));
+    if (isSelected) li.classList.add("selected");
+
+    const img = document.createElement("img");
+    img.src = browser.runtime.getURL(opt.icon);
+    img.alt = "";
+    img.className = "folder-acl-option-icon";
+    const span = document.createElement("span");
+    span.textContent = opt.label;
+    li.append(img, span);
+
+    li.addEventListener("click", () => {
+      closePopup();
+      const next = opt.value === "ro";
+      trigger.dataset.state = next ? "ro" : "rw";
+      trigger.title = next ? labelRO : labelRW;
+      trigger.setAttribute("aria-label", next ? labelRO : labelRW);
+      triggerIcon.src = browser.runtime.getURL(
+        next ? "icons/acl-ro16.png" : "icons/acl-rw16.png",
+      );
+      if (onChange) onChange(next);
+    });
+    popup.appendChild(li);
+  }
+
+  function positionPopup() {
+    // `position: fixed`: coordinates are viewport-space. Pin the popup
+    // just below the trigger by default; flip above when there isn't
+    // enough room below. Reveal a measurable layout box first by
+    // un-hiding so getBoundingClientRect() reports real dimensions.
+    const r = trigger.getBoundingClientRect();
+    popup.style.visibility = "hidden";
+    popup.hidden = false;
+    const popH = popup.offsetHeight;
+    const viewportH = window.innerHeight;
+    const spaceBelow = viewportH - r.bottom;
+    const top =
+      spaceBelow < popH + 4 && r.top > popH + 4
+        ? r.top - popH - 2
+        : r.bottom + 2;
+    popup.style.top = top + "px";
+    popup.style.left = r.left + "px";
+    popup.style.visibility = "";
+  }
+  function openPopup() {
+    closeAllAclDropdowns();
+    positionPopup();
+    trigger.setAttribute("aria-expanded", "true");
+    // Defer attaching the dismiss listeners until after the click that
+    // opened us has finished bubbling, otherwise they fire immediately.
+    setTimeout(() => {
+      document.addEventListener("click", outsideClick, true);
+      document.addEventListener("keydown", escClose, true);
+      // Capture-phase scroll so we catch any scroll container, not just
+      // the window. We close rather than reposition - simpler, and the
+      // popup is short-lived enough that drift-on-scroll is rare.
+      document.addEventListener("scroll", scrollClose, true);
+      window.addEventListener("resize", scrollClose);
+    }, 0);
+  }
+  function closePopup() {
+    popup.hidden = true;
+    trigger.setAttribute("aria-expanded", "false");
+    document.removeEventListener("click", outsideClick, true);
+    document.removeEventListener("keydown", escClose, true);
+    document.removeEventListener("scroll", scrollClose, true);
+    window.removeEventListener("resize", scrollClose);
+  }
+  function outsideClick(e) {
+    // The popup is now a fixed-positioned sibling of the trigger but
+    // still a DOM descendant of `wrap`, so wrap.contains() still works.
+    if (!wrap.contains(e.target)) closePopup();
+  }
+  function escClose(e) {
+    if (e.key === "Escape") {
+      closePopup();
+      trigger.focus();
+    }
+  }
+  function scrollClose() {
+    closePopup();
+  }
+  // Expose close for the global "close any other dropdown" handler.
+  wrap._closeAclPopup = closePopup;
+
+  trigger.addEventListener("click", () => {
+    if (popup.hidden) openPopup();
+    else closePopup();
   });
+
+  wrap.append(trigger, popup);
+  return wrap;
+}
+
+/** Close every other open ACL dropdown in the document. Used to enforce
+ *  single-popup-at-a-time when a new trigger fires. */
+function closeAllAclDropdowns() {
+  for (const el of document.querySelectorAll(".folder-acl-dropdown")) {
+    if (typeof el._closeAclPopup === "function") el._closeAclPopup();
+  }
 }
 
 // ── Modal popover queue ──────────────────────────────────────────────────

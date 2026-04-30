@@ -245,11 +245,14 @@
   "manager.resources.col.name": {
     "message": "Név"
   },
-  "folder.readOnly": {
-    "message": "Csak olvasható"
+  "folder.acl.serverReadOnly": {
+    "message": "Csak olvasható hozzáférés (kiszolgáló által kényszerítve)"
   },
-  "folder.readWrite": {
-    "message": "Olvasás/írás"
+  "folder.acl.option.readWrite": {
+    "message": "Olvasás és írás a kiszolgálón"
+  },
+  "folder.acl.option.downloadOnly": {
+    "message": "Csak olvasható hozzáférés (helyi változások visszavonása)"
   },
   "folderType.contacts": {
     "message": "Névjegyek"

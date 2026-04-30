@@ -245,11 +245,14 @@
   "manager.resources.col.name": {
     "message": "Name"
   },
-  "folder.readOnly": {
-    "message": "Nur lesen"
+  "folder.acl.serverReadOnly": {
+    "message": "Serverzugriff nur lesend (vom Server vorgegeben)"
   },
-  "folder.readWrite": {
-    "message": "Lesen/Schreiben"
+  "folder.acl.option.readWrite": {
+    "message": "Serverzugriff lesend und schreibend"
+  },
+  "folder.acl.option.downloadOnly": {
+    "message": "Serverzugriff nur lesend (verwerfe lokale Änderungen)"
   },
   "folderType.contacts": {
     "message": "Kontakte"

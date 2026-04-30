@@ -56,9 +56,14 @@ export const HOST_CMD = {
  *   error, lastSyncTime, autoSyncIntervalMinutes, noAutosyncUntil, custom
  *
  * Folder universal fields:
- *   folderId, accountId, targetType, displayName, selected, readOnly, hidden,
- *   status, warning, error, lastSyncTime, orderIndex, targetID, targetName,
- *   changelog, custom
+ *   folderId, accountId, targetType, displayName, selected, readOnly,
+ *   downloadOnly, hidden, status, warning, error, lastSyncTime, orderIndex,
+ *   targetID, targetName, changelog, custom
+ *
+ * `readOnly` is server-announced (provider-authored from the server's ACL).
+ * `downloadOnly` is the user override surfaced as the manager's ACL toggle;
+ * it is only meaningful when `readOnly` is false. The effective read-only
+ * state for sync gating and the manager icon is `readOnly || downloadOnly`.
  *
  * `hidden` is provider-authored on every push. Rows with `hidden: true`
  * are kept in storage but excluded from the manager UI's folder list.
@@ -94,16 +99,20 @@ export const HOST_CMD = {
  *
  * UPDATE_FOLDER { accountId, folderId, patch }
  *   → patches top-level writable fields (`displayName`, `targetType`,
- *   `readOnly`, `targetID`, `targetName`) and shallow-merges `patch.custom`
- *   like UPDATE_ACCOUNT. `warning` / `error` / `lastSyncTime` / `status`
- *   are host-authored from the sync RPC outcome - see "Authoring" below.
+ *   `readOnly`, `downloadOnly`, `targetID`, `targetName`) and shallow-merges
+ *   `patch.custom` like UPDATE_ACCOUNT. `warning` / `error` / `lastSyncTime`
+ *   / `status` are host-authored from the sync RPC outcome - see "Authoring"
+ *   below. `downloadOnly` is also writable via the host's
+ *   `setFolderDownloadOnly` manager RPC; providers don't normally set it
+ *   themselves.
  *
  * PUSH_FOLDER_LIST { accountId, folders: [descriptor…] }
- *   → replaces the account's folder list. `selected`, `lastSyncTime`,
- *   `targetID`, `targetName`, and `custom` are preserved from prior rows
- *   when the descriptor omits them, so the provider can re-push folder
- *   lists freely without wiping locally-bound state. `hidden` is taken
- *   straight from the descriptor (default `false` if omitted).
+ *   → replaces the account's folder list. `selected`, `downloadOnly`,
+ *   `lastSyncTime`, `targetID`, `targetName`, and `custom` are preserved
+ *   from prior rows when the descriptor omits them, so the provider can
+ *   re-push folder lists freely without wiping locally-bound state.
+ *   `hidden` is taken straight from the descriptor (default `false` if
+ *   omitted).
  */
 export const PROVIDER_CMD = {
   REGISTER_ACCOUNT: "registerAccount",
