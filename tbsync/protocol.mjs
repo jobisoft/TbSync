@@ -149,7 +149,7 @@ export const PROVIDER_CMD = {
  *
  *  REPORT_EVENT_LOG { level, message, accountId?, folderId?, details? }
  *    Appends an entry to the host's session-scoped event log. `level` is
- *    REQUIRED and MUST be one of "error" | "warning" | "debug"; the host
+ *    REQUIRED and MUST be one of "error" | "warning" | "info" | "debug"; the host
  *    rejects payloads without a valid level. The host applies its own
  *    capture gate from `settings.logLevel` before persisting.
  */
