@@ -316,5 +316,11 @@
   },
   "error.E:QUOTA": {
     "message": "Lagringskvoten är förbrukad"
+  },
+  "error.E:FOLDER_SYNC_FAILED": {
+    "message": "Synkronisering misslyckades för en eller flera mappar"
+  },
+  "manager.resources.col.syncStatus": {
+    "message": "Synkroniseringsstatus"
   }
 }

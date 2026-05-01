@@ -316,5 +316,11 @@
   },
   "error.E:QUOTA": {
     "message": "Salvestuskvoot ületatud"
+  },
+  "error.E:FOLDER_SYNC_FAILED": {
+    "message": "Sünkroonimine ebaõnnestus ühe või mitme kausta puhul"
+  },
+  "manager.resources.col.syncStatus": {
+    "message": "Sünkroonimise olek"
   }
 }

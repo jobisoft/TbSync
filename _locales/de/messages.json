@@ -316,5 +316,11 @@
   },
   "error.E:QUOTA": {
     "message": "Speicherkontingent überschritten"
+  },
+  "error.E:FOLDER_SYNC_FAILED": {
+    "message": "Synchronisation für einen oder mehrere Ordner fehlgeschlagen"
+  },
+  "manager.resources.col.syncStatus": {
+    "message": "Synchronisationsstatus"
   }
 }

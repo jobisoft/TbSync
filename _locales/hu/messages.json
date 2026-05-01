@@ -316,5 +316,11 @@
   },
   "error.E:QUOTA": {
     "message": "A tárhelykvóta elérve"
+  },
+  "error.E:FOLDER_SYNC_FAILED": {
+    "message": "A szinkronizálás sikertelen egy vagy több mappa esetében"
+  },
+  "manager.resources.col.syncStatus": {
+    "message": "Szinkronizálási állapot"
   }
 }

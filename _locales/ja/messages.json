@@ -316,5 +316,11 @@
   },
   "error.E:QUOTA": {
     "message": "ストレージのクォータを超過しました"
+  },
+  "error.E:FOLDER_SYNC_FAILED": {
+    "message": "1 つ以上のフォルダーで同期に失敗しました"
+  },
+  "manager.resources.col.syncStatus": {
+    "message": "同期ステータス"
   }
 }

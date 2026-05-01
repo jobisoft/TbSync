@@ -316,5 +316,11 @@
   },
   "error.E:QUOTA": {
     "message": "Quota de stockage dépassé"
+  },
+  "error.E:FOLDER_SYNC_FAILED": {
+    "message": "Échec de la synchronisation pour un ou plusieurs dossiers"
+  },
+  "manager.resources.col.syncStatus": {
+    "message": "État de la synchronisation"
   }
 }

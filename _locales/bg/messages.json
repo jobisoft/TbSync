@@ -316,5 +316,11 @@
   },
   "error.E:QUOTA": {
     "message": "Превишена квота за съхранение"
+  },
+  "error.E:FOLDER_SYNC_FAILED": {
+    "message": "Синхронизирането е неуспешно за една или повече папки"
+  },
+  "manager.resources.col.syncStatus": {
+    "message": "Състояние на синхронизацията"
   }
 }

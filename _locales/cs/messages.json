@@ -316,5 +316,11 @@
   },
   "error.E:QUOTA": {
     "message": "Úložná kvóta překročena"
+  },
+  "error.E:FOLDER_SYNC_FAILED": {
+    "message": "Synchronizace selhala u jedné nebo více složek"
+  },
+  "manager.resources.col.syncStatus": {
+    "message": "Stav synchronizace"
   }
 }
