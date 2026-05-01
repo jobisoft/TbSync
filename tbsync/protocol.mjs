@@ -53,7 +53,15 @@ export const HOST_CMD = {
  *
  * Account universal fields (host-authored or host-interpreted):
  *   accountId, accountName, provider, enabled,
- *   error, lastSyncTime, autoSyncIntervalMinutes, noAutosyncUntil, custom
+ *   error, lastSyncTime, autoSyncIntervalMinutes, noAutosyncUntil, icon, custom
+ *
+ * `icon` is an optional per-account icon override: a size-keyed map of
+ * absolute URLs, e.g. `{ "16": "moz-extension://…/icons/foo16.png",
+ * "32": "…" }`. When null/absent, the manager's account row falls back
+ * to the provider's announced icon set. Provider-authored at register
+ * time (REGISTER_ACCOUNT.icon) and patchable via UPDATE_ACCOUNT. The
+ * provider list (separate from the account list) always uses the
+ * provider's announced icons; this field affects the account row only.
  *
  * Folder universal fields:
  *   folderId, accountId, targetType, displayName, selected, readOnly,
@@ -80,22 +88,24 @@ export const HOST_CMD = {
  *
  * ## RPC semantics
  *
- * REGISTER_ACCOUNT { accountName, custom?, initialFolders? }
+ * REGISTER_ACCOUNT { accountName, icon?, custom?, initialFolders? }
  *   → creates a host account row in the disabled state. `custom` seeds
- *   the opaque blob atomically. `initialFolders` descriptors can carry
- *   `targetID`, `targetName`, `custom` on a per-folder basis. The user
- *   clicks Connect in the manager when ready; that fires ACCOUNT_ENABLED
- *   and is the provider's first chance to talk to the server (folder
- *   discovery, version negotiation, etc.).
+ *   the opaque blob atomically. `icon` seeds the per-account icon
+ *   override (see "Account universal fields" above). `initialFolders`
+ *   descriptors can carry `targetID`, `targetName`, `custom` on a
+ *   per-folder basis. The user clicks Connect in the manager when ready;
+ *   that fires ACCOUNT_ENABLED and is the provider's first chance to
+ *   talk to the server (folder discovery, version negotiation, etc.).
  *
  * UPDATE_ACCOUNT { accountId, patch }
- *   → patches top-level writable fields (`accountName`, `noAutosyncUntil`)
- *   and shallow-merges `patch.custom` into the existing `custom` blob.
- *   Drop a `custom` key by patching it to `null` - there is no explicit
- *   delete op. Other top-level fields are host-authored. Set
- *   `noAutosyncUntil` to a future epoch-ms timestamp to suppress autosync
- *   ticks (e.g. after a soft failure / rate limit); manual sync from the
- *   manager bypasses the gate.
+ *   → patches top-level writable fields (`accountName`, `noAutosyncUntil`,
+ *   `icon`) and shallow-merges `patch.custom` into the existing `custom`
+ *   blob. Drop a `custom` key by patching it to `null` - there is no
+ *   explicit delete op; same convention applies to `icon` (patch null to
+ *   clear and fall back to the provider icon). Other top-level fields
+ *   are host-authored. Set `noAutosyncUntil` to a future epoch-ms
+ *   timestamp to suppress autosync ticks (e.g. after a soft failure /
+ *   rate limit); manual sync from the manager bypasses the gate.
  *
  * UPDATE_FOLDER { accountId, folderId, patch }
  *   → patches top-level writable fields (`displayName`, `targetType`,

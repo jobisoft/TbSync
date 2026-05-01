@@ -38,6 +38,7 @@ export function create({
   provider,
   accountName,
   autoSyncIntervalMinutes = 0,
+  icon = null,
   custom = {},
 }) {
   return serialize(async () => {
@@ -64,6 +65,9 @@ export function create({
       // via UPDATE_ACCOUNT after a soft failure (rate limit, transient
       // server issue) so subsequent autosync ticks don't hammer the server.
       noAutosyncUntil: 0,
+      // Optional per-account icon override; null means fall back to the
+      // provider's announced icons. Size-keyed map of absolute URLs.
+      icon,
       // Opaque provider-owned blob. The host never interprets this; provider
       // patches via PROVIDER_CMD.UPDATE_ACCOUNT with shallow-merge semantics.
       custom,

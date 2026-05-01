@@ -449,7 +449,7 @@ function renderSidebar() {
 
       row
         .querySelector(".col-provider-icon")
-        .appendChild(makeImg({ src: providerIconUrl(a.provider) }));
+        .appendChild(makeImg({ src: accountIconUrl(a) }));
       row.querySelector(".col-account-name").textContent = a.accountName;
       row.querySelector(".col-status").appendChild(statusIconEl(eff.status));
       return row;
@@ -943,6 +943,18 @@ function providerIconUrl(providerId) {
     hit?.icons?.["32"] ??
     browser.runtime.getURL("icons/provider16.png")
   );
+}
+
+/** Icon URL for an account row. Prefers the per-account icon override
+ *  (provider-authored at register time, persisted as `account.icon`)
+ *  over the provider-wide announced icons. Falls through to
+ *  `providerIconUrl` when the account has no override. */
+function accountIconUrl(account) {
+  const icon = account?.icon;
+  if (icon && typeof icon === "object") {
+    return icon["16"] ?? icon["32"] ?? Object.values(icon)[0];
+  }
+  return providerIconUrl(account.provider);
 }
 
 // Status → icon filename. Matches the legacy TbSync mapping:

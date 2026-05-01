@@ -45,6 +45,19 @@ if (browserInfo.name !== "Thunderbird") {
 // announce handshake).
 const CORE_MAINTAINER_EMAIL = "john.bieling@gmx.de";
 
+/** Validate the per-account icon override shape. Accepts a size-keyed
+ *  map of string URLs (`{ "16": "moz-extension://…", … }`) or null/missing
+ *  meaning "no override". Anything else collapses to null so a malformed
+ *  payload from a provider can't poison the persisted account record. */
+function validIconOrNull(icon) {
+  if (!icon || typeof icon !== "object") return null;
+  const out = {};
+  for (const [size, url] of Object.entries(icon)) {
+    if (typeof url === "string" && url) out[size] = url;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
 // ── Startup ────────────────────────────────────────────────────────────────
 
 async function ensureSchema() {
@@ -146,7 +159,7 @@ async function withBusyAccount(accountId, fn) {
 router.setProviderRpcHandler(
   PROVIDER_CMD.REGISTER_ACCOUNT,
   async (providerId, args) => {
-    const { accountName, custom } = args ?? {};
+    const { accountName, custom, icon } = args ?? {};
     if (!accountName) {
       throw withCode(
         new Error("registerAccount requires accountName"),
@@ -156,6 +169,7 @@ router.setProviderRpcHandler(
     const record = await accounts.create({
       provider: providerId,
       accountName,
+      icon: validIconOrNull(icon),
       custom: custom && typeof custom === "object" ? custom : {},
     });
     if (Array.isArray(args.initialFolders) && args.initialFolders.length) {
@@ -177,13 +191,22 @@ router.setProviderRpcHandler(
     if (!acc || acc.provider !== providerId) {
       throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
     }
-    // Provider-writable top-level fields: display-name corrections and the
-    // autosync backoff timestamp. `error` and `lastSyncTime` are host-authored
-    // (sync-coordinator stamps them).
-    const allowed = ["accountName", "noAutosyncUntil"];
+    // Provider-writable top-level fields: display-name corrections, the
+    // autosync backoff timestamp, and the per-account icon override.
+    // `error` and `lastSyncTime` are host-authored (sync-coordinator
+    // stamps them).
+    const allowed = ["accountName", "noAutosyncUntil", "icon"];
     const clean = {};
-    for (const key of allowed)
-      if (key in (patch ?? {})) clean[key] = patch[key];
+    for (const key of allowed) {
+      if (!(key in (patch ?? {}))) continue;
+      if (key === "icon") {
+        // Patch null clears the override; otherwise it must be a
+        // size-keyed map.
+        clean.icon = patch.icon === null ? null : validIconOrNull(patch.icon);
+      } else {
+        clean[key] = patch[key];
+      }
+    }
     // `custom` is the opaque provider-owned blob - shallow-merged so a patch
     // like `{custom: {readOnlyMode: true}}` leaves sibling keys untouched.
     if (

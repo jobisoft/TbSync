@@ -357,7 +357,7 @@ export class TbSyncProviderImplementation {
       height: this.#setupHeight,
     });
 
-    const { accountName, initialFolders, custom } = await new Promise(
+    const { accountName, icon, initialFolders, custom } = await new Promise(
       (resolve, reject) => {
         this.#pendingSetups.set(setupToken, {
           resolve,
@@ -368,10 +368,12 @@ export class TbSyncProviderImplementation {
     );
 
     // `custom` - if present - seeds the new account's opaque provider blob
-    // atomically with the host row creation. See protocol.mjs PROVIDER_CMD.
+    // atomically with the host row creation. `icon` - if present - seeds
+    // the per-account icon override. See protocol.mjs PROVIDER_CMD.
     const { accountId } = await this.registerAccount({
       setupToken,
       accountName,
+      icon,
       initialFolders,
       custom,
     });
@@ -707,12 +709,13 @@ export class TbSyncProviderImplementation {
    *  `runtime.sendMessage` is not delivered back to the calling frame
    *  and the `tbsync-setup-completed` round-trip would otherwise be
    *  needed. Returns true if a pending setup was matched. */
-  completeSetup({ setupToken, accountName, initialFolders, custom }) {
+  completeSetup({ setupToken, accountName, icon, initialFolders, custom }) {
     const entry = this.#pendingSetups.get(setupToken);
     if (!entry) return false;
     this.#pendingSetups.delete(setupToken);
     entry.resolve({
       accountName,
+      icon: icon ?? null,
       initialFolders: initialFolders ?? [],
       custom: custom ?? {},
     });
