@@ -1,7 +1,4 @@
 {
-  "extensionName": {
-    "message": "TbSync"
-  },
   "extensionDescription": {
     "message": "공급자 부가기능을 통해 외부 계정의 연락처, 일정 및 작업 동기화를 통합 관리하는 사용자 인터페이스입니다."
   },

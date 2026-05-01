@@ -7,7 +7,7 @@
       "strict_max_version": "151.*"
     }
   },
-  "name": "__MSG_extensionName__",
+  "name": "TbSync Manager",
   "version": "5.0.2",
   "author": "John Bieling",
   "homepage_url": "https://github.com/jobisoft/TbSync",

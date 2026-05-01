@@ -1,7 +1,4 @@
 {
-  "extensionName": {
-    "message": "TbSync"
-  },
   "extensionDescription": {
     "message": "Interface central para gerenciar a sincronização de contatos, calendários e tarefas com contas externas por meio de complementos provedores."
   },

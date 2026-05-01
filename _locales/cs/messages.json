@@ -1,7 +1,4 @@
 {
-  "extensionName": {
-    "message": "TbSync"
-  },
   "extensionDescription": {
     "message": "Centrální uživatelské rozhraní pro správu synchronizace kontaktů, kalendářů a úkolů s externími účty prostřednictvím doplňků poskytovatelů."
   },

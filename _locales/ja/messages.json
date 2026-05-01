@@ -1,7 +1,4 @@
 {
-  "extensionName": {
-    "message": "TbSync"
-  },
   "extensionDescription": {
     "message": "プロバイダーアドオンを介して、外部アカウントとの連絡先・カレンダー・タスクの同期を一元管理するユーザーインターフェースです。"
   },

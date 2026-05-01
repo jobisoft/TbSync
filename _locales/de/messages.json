@@ -1,7 +1,4 @@
 {
-  "extensionName": {
-    "message": "TbSync"
-  },
   "extensionDescription": {
     "message": "Zentrale Benutzeroberfläche zur Verwaltung der Synchronisation von Kontakten, Kalendern und Aufgaben mit externen Konten über Provider-Add-ons."
   },

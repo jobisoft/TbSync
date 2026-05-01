@@ -1,7 +1,4 @@
 {
-  "extensionName": {
-    "message": "TbSync"
-  },
   "extensionDescription": {
     "message": "Keskne kasutajaliides väliste kontode kontaktide, kalendrite ja ülesannete sünkroonimise haldamiseks teenusepakkujate lisamoodulite kaudu."
   },

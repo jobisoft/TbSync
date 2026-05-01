@@ -1,7 +1,4 @@
 {
-  "extensionName": {
-    "message": "TbSync"
-  },
   "extensionDescription": {
     "message": "Centralt användargränssnitt för att hantera synkronisering av kontakter, kalendrar och uppgifter med externa konton via leverantörstillägg."
   },
