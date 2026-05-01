@@ -402,23 +402,70 @@ body {
   vertical-align: middle;
   line-height: 1.4;
 }
-/* Multi-line warnings/errors should hang from the top of the cell so they
-   align with the first line of the (single-line) name to their left,
-   instead of pushing the whole row's mid-axis down. */
-.folder-table td.col-status {
-  vertical-align: top;
+/* Each folder occupies its own <tbody class="folder-group"> with a
+   main row (always, the resource-name row), an optional sync-progress
+   row (only while the account is syncing), and an optional message
+   row (only when a warning/error has free-text content). Internal
+   borders between rows of one folder are suppressed so the rows read
+   as a single visual unit; the inter-folder separator is the bottom
+   border of each tbody's last row. */
+.folder-table tbody.folder-group > tr:not(:last-child) > td {
+  border-bottom: none;
 }
-.folder-table tbody tr:last-child td { border-bottom: none; }
+.folder-table tr.folder-sync > td {
+  border-top: none;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.folder-table tr.folder-sync > td.col-sync-status {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+.folder-table tr.folder-message > td {
+  border-top: none;
+  vertical-align: top;
+  padding-top: 0;
+  padding-bottom: 8px;
+}
+.folder-table tr.folder-message > td.col-message {
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.4;
+}
+.folder-table tbody.folder-group:last-child > tr:last-child > td {
+  border-bottom: none;
+}
+.folder-table tbody.folder-group:hover > tr > td {
+  background: var(--row-hover);
+}
 
 /* Keep the helper columns as narrow as possible; status absorbs the rest. */
-.folder-table col.col-check     { width: 28px; }
-.folder-table col.col-type-icon { width: 20px; }
-.folder-table col.col-acl       { width: 60px; }
-.folder-table col.col-name      { width: 1%; white-space: nowrap; }
-.folder-table col.col-status    { width: 100%; }
+.folder-table col.col-check       { width: 28px; }
+.folder-table col.col-type-icon   { width: 20px; }
+.folder-table col.col-acl         { width: 60px; }
+.folder-table col.col-name        { width: 1%; white-space: nowrap; }
+.folder-table col.col-status-icon { width: 20px; }
+.folder-table col.col-status      { width: 100%; }
 
 .folder-table td.col-check,
-.folder-table td.col-type-icon { padding-right: 0; }
+.folder-table td.col-type-icon,
+.folder-table td.col-status-icon { padding-right: 0; }
+/* Reserve a 16x16 box in empty status-icon cells so the column width
+   stays identical whether or not an icon is rendered: empty cells get
+   the placeholder, cells with an icon don't. Without this, an empty
+   cell collapses to padding-only and the column wobbles between
+   renders. */
+.folder-table td.col-status-icon:empty::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
 .folder-table td.col-acl { padding-right: 6px; }
 /* Align the three leading cells on the same y: strip UA margin off the
    checkbox and size it to the 16px icons next to it. */
@@ -430,14 +477,23 @@ body {
 }
 .folder-table td.col-name { white-space: nowrap; }
 
-/* Multi-line wraps instead of ellipsis so long error messages stay readable. */
-.folder-table td.col-status {
-  white-space: normal;
-  word-break: break-word;
+/* Main-row status carries single-line content (resource name or short
+   label); long error/warning text lives on the message row. Truncate
+   with ellipsis so a runaway provider label can't push the column
+   wider than its allotted share. `max-width: 0` is the table-cell
+   idiom that lets the colgroup width drive the cell instead of the
+   text content. */
+.folder-table tr.folder-main > td.col-status {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
 }
 
-.folder-table tr.unselected td.col-name,
-.folder-table tr.unselected td.col-status {
+.folder-table tbody.folder-group.unselected > tr > td.col-name,
+.folder-table tbody.folder-group.unselected > tr > td.col-status,
+.folder-table tbody.folder-group.unselected > tr > td.col-sync-status,
+.folder-table tbody.folder-group.unselected > tr > td.col-message {
   color: var(--text-muted);
   font-style: italic;
 }
@@ -575,6 +631,8 @@ body {
 }
 .folder-message.error   { color: var(--status-error); }
 .folder-message.warning { color: var(--status-warning); }
+.folder-message.aborted { color: var(--status-warning); }
+.folder-message.info    { color: var(--text-secondary); }
 
 .resources-footer {
   display: flex;

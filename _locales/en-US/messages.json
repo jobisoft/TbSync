@@ -143,20 +143,11 @@
   "account.status.needs-reauth": {
     "message": "Authentication failed"
   },
-  "account.status.error": {
-    "message": "Error"
-  },
-  "account.status.warning": {
-    "message": "Warning"
-  },
   "account.status.aborted": {
     "message": "Synchronization aborted"
   },
   "folder.status.pending": {
     "message": "Waiting to be synchronized"
-  },
-  "folder.status.busy": {
-    "message": "Working…"
   },
   "folder.status.modified": {
     "message": "Local modifications"
@@ -250,6 +241,9 @@
   },
   "manager.resources.col.name": {
     "message": "Name"
+  },
+  "manager.resources.col.syncStatus": {
+    "message": "Synchronization Status"
   },
   "folder.acl.serverReadOnly": {
     "message": "Read-only server access (server-enforced)"

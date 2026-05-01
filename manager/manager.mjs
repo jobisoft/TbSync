@@ -141,10 +141,26 @@ async function refreshState() {
   state.providers = s.providers;
   state.eventLog = s.eventLog ?? [];
   state.settings = s.settings ?? state.settings;
+  const prevSyncing = state.transient.syncingAccounts;
   state.transient.syncingAccounts = new Set(s.transient?.syncingAccounts ?? []);
   state.transient.busyAccounts = new Set(s.transient?.busyAccounts ?? []);
   state.transient.busyFolders = new Set(s.transient?.busyFolders ?? []);
   state.transient.upgradeAccounts = new Set(s.transient?.upgradeAccounts ?? []);
+
+  // Wipe stale per-folder sync cache when an account toggles in or out of
+  // syncing. On entry: clear leftovers from the previous run that
+  // `folders-changed` may not have caught. On exit: clear any trailing
+  // notifications that arrived between the last folders-changed wipe and
+  // the account leaving syncingAccounts. With this guarantee the cache
+  // only ever holds entries from the current run, and `isCurrentlySyncing`
+  // can derive directly from it without a parallel marker map.
+  for (const accId of prevSyncing) {
+    if (!state.transient.syncingAccounts.has(accId))
+      clearFolderSyncCacheForAccount(accId);
+  }
+  for (const accId of state.transient.syncingAccounts) {
+    if (!prevSyncing.has(accId)) clearFolderSyncCacheForAccount(accId);
+  }
   syncVerbositySelect();
 
   // Invariant: exactly one account is selected whenever any exist.
@@ -200,72 +216,96 @@ function hasPendingUserEntries(folder) {
   );
 }
 
-/** Fill the Status cell for one folder row. Plain text - no pills.
- *  - success shows the bound local target's name.
- *  - pending/aborted/null use legacy-style localised strings.
- *  - warning/error use the provider-supplied message, coloured via a
- *    folder-message span.
- *  - local modifications waiting to push take precedence over terminal
- *    states (legacy-faithful - the user's action is the most actionable
- *    signal to surface). */
-function fillFolderCellStatus(cell, f, isBusy) {
-  cell.replaceChildren();
-  if (isBusy) {
-    cell.textContent = i18n("folder.status.busy", "Working…");
-    return;
-  }
-  if (!f.selected) return;
-  // While a sync is in flight, skip the "Local modifications" shortcut so
-  // the provider's live syncState text isn't masked by a stale pre-sync
-  // read of the changelog (the provider is actively draining it).
+/** Derive the account-level status name (one of the keys in
+ *  `STATUS_ICON_FILE`) appropriate for this folder, so the per-folder
+ *  status icon can reuse `statusIconEl` and look identical to the
+ *  account-row icon. The `"syncing"` value triggers `.syncing` →
+ *  the rotation keyframe in manager.css. Returns null when the cell
+ *  should stay empty (deselected, or a never-synced folder). Mirrors
+ *  the priority of `row1StatusText` so icon and text agree on every
+ *  render. */
+function folderResultStatus(f) {
+  if (isCurrentlySyncing(f)) return "syncing";
+  if (!f.selected) return null;
   if (
     !state.transient.syncingAccounts.has(f.accountId) &&
     hasPendingUserEntries(f)
   ) {
-    cell.textContent = i18n("folder.status.modified", "Local modifications");
-    return;
+    return "needs-sync";
   }
   switch (f.status) {
     case "pending":
-      // Legacy distinguished two sub-states: if the owning account is
-      // actively syncing right now, show "Synchronizing…" (provider
-      // notifications will replace this with live sync-state text and
-      // progress as they arrive); otherwise the folder is queued but
-      // idle → "Waiting to be synchronized".
-      cell.textContent = state.transient.syncingAccounts.has(f.accountId)
-        ? i18n("account.status.syncing", "Synchronizing…")
-        : i18n("folder.status.pending", "Waiting to be synchronized");
-      return;
+      return state.transient.syncingAccounts.has(f.accountId)
+        ? null
+        : "notsyncronized";
     case "success":
-      cell.textContent = f.targetName ?? f.displayName ?? "";
-      return;
+      return "success";
     case "warning":
-      if (f.warning) {
-        const span = document.createElement("span");
-        span.className = "folder-message warning";
-        span.textContent = messageText(f.warning);
-        cell.appendChild(span);
-      } else {
-        cell.textContent = i18n("account.status.warning", "Warning");
-      }
-      return;
+      return "warning";
     case "error":
-      if (f.error) {
-        const span = document.createElement("span");
-        span.className = "folder-message error";
-        span.textContent = messageText(f.error);
-        cell.appendChild(span);
-      } else {
-        cell.textContent = i18n("account.status.error", "Error");
-      }
-      return;
+      return "error";
     case "aborted":
-      cell.textContent = i18n("account.status.aborted", "Aborted");
-      return;
+      return "notsyncronized";
     default:
-      // null / unset → never synced → empty cell.
-      return;
+      return null;
   }
+}
+
+/** Text for the main folder row's `col-status` cell. The row is the
+ *  steady-state identity for this folder: the user-visible name of the
+ *  bound local resource. Until the first sync binds a target,
+ *  "Waiting to be synchronized" stands in for the absent name. */
+function row1StatusText(f) {
+  if (!f.selected) return "";
+  return f.targetName ?? i18n("folder.status.pending", "Waiting to be synchronized");
+}
+
+/** True when notifications are currently arriving for this folder.
+ *  Derived directly from `folderSyncCache`: an entry with `syncState`
+ *  set means `updateInlineSyncState` recorded a notification for this
+ *  folder during the *current* sync run (the cache is wiped on every
+ *  syncingAccounts toggle, both directions). No parallel marker map. */
+function isCurrentlySyncing(f) {
+  if (!state.transient.syncingAccounts.has(f.accountId)) return false;
+  return !!folderSyncCache.get(f.folderId)?.syncState;
+}
+
+/** Live progress text for the sync row. Only called when
+ *  `isCurrentlySyncing(f)` is true, so the cache entry is guaranteed
+ *  to exist with `syncState` set. */
+function syncRowText(f) {
+  const acc = state.accounts.find((a) => a.accountId === f.accountId);
+  const provider = acc
+    ? state.providers.find((p) => p.providerId === acc.provider)
+    : null;
+  return syncStateCellText(folderSyncCache.get(f.folderId), provider);
+}
+
+/** Up to two stacked entries for the message row: an informational
+ *  "Local modifications" line that's present whenever the changelog
+ *  carries user-authored entries (cleared automatically when the
+ *  changelog drains), and the highest-priority post-sync outcome
+ *  (error / warning / aborted) when applicable. Returns an empty
+ *  array when no message row should render. */
+function row2Messages(f) {
+  const out = [];
+  if (hasPendingUserEntries(f)) {
+    out.push({
+      text: i18n("folder.status.modified", "Local modifications"),
+      severity: "info",
+    });
+  }
+  if (f.status === "error" && f.error) {
+    out.push({ text: messageText(f.error), severity: "error" });
+  } else if (f.status === "warning" && f.warning) {
+    out.push({ text: messageText(f.warning), severity: "warning" });
+  } else if (f.status === "aborted") {
+    out.push({
+      text: i18n("account.status.aborted", "Synchronization aborted"),
+      severity: "aborted",
+    });
+  }
+  return out;
 }
 
 /**
@@ -591,14 +631,15 @@ function renderDetail() {
     // an empty resource list shows a single placeholder row instead of
     // hiding the table.
     frag.querySelector(".folder-table-wrap").hidden = false;
-    const tbody = frag.querySelector(".folder-rows");
+    const table = frag.querySelector(".folder-table");
     const visibleFolders = folderList.filter((f) => !f.hidden);
     if (visibleFolders.length) {
       for (const f of visibleFolders) {
         const isBusy = state.transient.busyFolders.has(f.folderId);
         const folderLock = isBusy || !actions.canEditFolders;
-        const row = cloneTpl("tpl-folder-row");
-        if (!f.selected) row.classList.add("unselected");
+        const tbody = cloneTpl("tpl-folder-group");
+        if (!f.selected) tbody.classList.add("unselected");
+        const row = tbody.querySelector("tr.folder-main");
 
         const cb = row.querySelector("input[type=checkbox]");
         cb.dataset.folderId = f.folderId;
@@ -627,14 +668,38 @@ function renderDetail() {
           }),
         );
         row.querySelector(".col-name").textContent = f.displayName;
-        fillFolderCellStatus(row.querySelector(".col-status"), f, isBusy);
+        const iconStatus = folderResultStatus(f);
+        if (iconStatus) {
+          row.querySelector(".col-status-icon").appendChild(statusIconEl(iconStatus));
+        }
+        row.querySelector(".col-status").textContent = row1StatusText(f);
 
-        tbody.appendChild(row);
+        if (isCurrentlySyncing(f)) {
+          const syncRow = cloneTpl("tpl-folder-sync-row");
+          syncRow.querySelector(".col-sync-status").textContent = syncRowText(f);
+          tbody.appendChild(syncRow);
+        }
+
+        const messages = row2Messages(f);
+        if (messages.length) {
+          const msgRow = cloneTpl("tpl-folder-message-row");
+          const cell = msgRow.querySelector(".col-message");
+          for (const m of messages) {
+            const line = document.createElement("div");
+            line.className = `folder-message ${m.severity}`;
+            line.textContent = m.text;
+            cell.appendChild(line);
+          }
+          tbody.appendChild(msgRow);
+        }
+
+        table.appendChild(tbody);
       }
     } else {
-      tbody.appendChild(
-        emptyRow(5, i18n("manager.resources.empty", "No resources yet.")),
-      );
+      const emptyTbody = cloneTpl("tpl-folder-empty");
+      emptyTbody.querySelector("td").textContent =
+        i18n("manager.resources.empty", "No resources yet.");
+      table.appendChild(emptyTbody);
     }
 
     // Footer (auto-sync interval + Sync button) is always shown for
@@ -715,24 +780,6 @@ function syncStateCellText(entry, provider) {
   return text;
 }
 
-function paintFolderSyncCell(folderId, entry) {
-  const row = document
-    .querySelector(`[data-folder-id="${folderId}"]`)
-    ?.closest("tr");
-  // Target the status cell by class rather than positional index so the
-  // folder-row column layout can change without silently painting into
-  // the wrong cell.
-  const cell = row?.querySelector("td.col-status");
-  if (!cell) return;
-  const acc = state.accounts.find(
-    (a) => a.accountId === state.selectedAccountId,
-  );
-  const provider = acc
-    ? state.providers.find((p) => p.providerId === acc.provider)
-    : null;
-  cell.textContent = syncStateCellText(entry, provider);
-}
-
 function stopCountdownTimer(folderId) {
   const handle = countdownTimers.get(folderId);
   if (handle !== undefined) {
@@ -750,7 +797,7 @@ function ensureCountdownTimer(folderId, provider) {
       stopCountdownTimer(folderId);
       return;
     }
-    paintFolderSyncCell(folderId, entry);
+    renderDetail();
   }, 1000);
   countdownTimers.set(folderId, handle);
 }
@@ -787,11 +834,8 @@ function updateInlineSyncState({ type, accountId, folderId, payload }) {
 
   folderSyncCache.set(folderId, entry);
 
-  // Only paint once we have a syncState - REPORT_PROGRESS can arrive before
-  // the first REPORT_SYNC_STATE, in which case we just store the counts and
-  // wait for the state label to show up.
   if (accountId === state.selectedAccountId && entry.syncState) {
-    paintFolderSyncCell(folderId, entry);
+    renderDetail();
   }
 
   const prefix = entry.syncState?.split(".")[0];

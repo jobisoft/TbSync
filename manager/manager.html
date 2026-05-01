@@ -183,6 +183,7 @@
           <table class="folder-table">
             <colgroup>
               <col class="col-check" />
+              <col class="col-status-icon" />
               <col class="col-type-icon" />
               <col class="col-acl" />
               <col class="col-name" />
@@ -190,11 +191,14 @@
             </colgroup>
             <thead>
               <tr>
-                <th class="col-name" colspan="4" data-i18n-content="manager.resources.col.name"></th>
-                <th class="col-status" data-i18n-content="manager.accounts.col.status"></th>
+                <th class="col-check"></th>
+                <th class="col-status-icon"></th>
+                <th class="col-type-icon"></th>
+                <th class="col-acl"></th>
+                <th class="col-name" data-i18n-content="manager.resources.col.name"></th>
+                <th class="col-status" data-i18n-content="manager.resources.col.syncStatus"></th>
               </tr>
             </thead>
-            <tbody class="folder-rows"></tbody>
           </table>
         </div>
         <div class="resources-footer" hidden>
@@ -206,14 +210,45 @@
       </section>
     </template>
 
-    <template id="tpl-folder-row">
-      <tr>
-        <td class="col-check"><input type="checkbox" /></td>
+    <template id="tpl-folder-group">
+      <tbody class="folder-group">
+        <tr class="folder-main">
+          <td class="col-check"><input type="checkbox" /></td>
+          <td class="col-status-icon"></td>
+          <td class="col-type-icon"></td>
+          <td class="col-acl"></td>
+          <td class="col-name"></td>
+          <td class="col-status"></td>
+        </tr>
+      </tbody>
+    </template>
+
+    <template id="tpl-folder-sync-row">
+      <tr class="folder-sync">
+        <td class="col-check"></td>
+        <td class="col-status-icon"></td>
         <td class="col-type-icon"></td>
         <td class="col-acl"></td>
         <td class="col-name"></td>
-        <td class="col-status"></td>
+        <td class="col-sync-status"></td>
       </tr>
+    </template>
+
+    <template id="tpl-folder-message-row">
+      <tr class="folder-message">
+        <td class="col-check"></td>
+        <td class="col-status-icon"></td>
+        <td class="col-type-icon"></td>
+        <td class="col-acl"></td>
+        <td class="col-name"></td>
+        <td class="col-message"></td>
+      </tr>
+    </template>
+
+    <template id="tpl-folder-empty">
+      <tbody>
+        <tr class="empty"><td colspan="6"></td></tr>
+      </tbody>
     </template>
 
     <template id="tpl-event-log-row">
