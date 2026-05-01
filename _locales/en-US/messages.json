@@ -164,6 +164,9 @@
   "error.E:AUTH": {
     "message": "Authentication failed"
   },
+  "error.E:FOLDER_SYNC_FAILED": {
+    "message": "Sync failed for one or more folders"
+  },
   "syncstate.sync": {
     "message": "Synchronizing…"
   },

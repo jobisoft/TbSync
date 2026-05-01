@@ -23,6 +23,29 @@ import { syncingAccounts, busyFolders } from "./transient.mjs";
 const MAX_ACCOUNT_RERUNS = 2;
 const RERUN_BACKOFF_MS = 5_000;
 
+/** Re-aggregate `account.error` from per-folder errors. Called from
+ *  the syncAccount finally block (so the toolbar badge reflects sync
+ *  outcomes the moment a sync ends) and from `setFolderSelected` (so
+ *  deselecting the only failing folder drops the badge immediately
+ *  rather than waiting for the next sync).
+ *
+ *  Filtering to `f.selected` mirrors the manager's account-row
+ *  severity computation at manager.mjs:375 so badge and manager rows
+ *  stay consistent. The auth-failed path is preserved verbatim —
+ *  `disableAccountForReauth` stamps `error: ERR.AUTH` and disables
+ *  the account; we don't overwrite that. */
+export async function recomputeAccountError(accountId) {
+  const acc = await accounts.get(accountId);
+  if (!acc) return;
+  if (acc.error === ERR.AUTH) return;
+  const folderRows = await folders.listForAccount(accountId);
+  const hasError = folderRows.some((f) => f.selected && f.error);
+  const next = hasError ? "E:FOLDER_SYNC_FAILED" : null;
+  if (acc.error === next) return; // dedupe to avoid noisy broadcasts
+  await accounts.update(accountId, { error: next });
+  ui.broadcast({ type: "accounts-changed", accountId });
+}
+
 export async function syncAllAccounts() {
   const all = await accounts.list();
   for (const acc of all) {
@@ -139,10 +162,12 @@ export async function syncAccount(accountId, { syncList = true } = {}) {
     if (!authFailed) {
       // disableAccountForReauth already wrote the account record with
       // error: ERR.AUTH; don't overwrite it here.
-      await accounts.update(accountId, {
-        lastSyncTime: Date.now(),
-        error: null,
-      });
+      await accounts.update(accountId, { lastSyncTime: Date.now() });
+      // Aggregate per-folder errors into account.error so the toolbar
+      // badge and the manager's account-row status cell reflect any
+      // folder-level failures from this sync. The helper preserves
+      // ERR.AUTH and dedupes when the value is unchanged.
+      await recomputeAccountError(accountId);
     }
     ui.broadcast({ type: "accounts-changed", accountId });
   }

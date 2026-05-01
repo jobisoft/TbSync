@@ -21,7 +21,10 @@ import {
   upgradeAccounts,
   snapshot as transientSnapshot,
 } from "./modules/transient.mjs";
-import { syncAccount } from "./modules/sync-coordinator.mjs";
+import {
+  syncAccount,
+  recomputeAccountError,
+} from "./modules/sync-coordinator.mjs";
 import { runIfNeeded as runLegacyMigration } from "./modules/legacy-migration-runner.mjs";
 import { serialize } from "./modules/storage-queue.mjs";
 
@@ -761,6 +764,12 @@ ui.setManagerRpcHandler(
             changelog: [],
           };
       await folders.update(accountId, folderId, patch);
+      // Recompute account.error: deselecting a failing folder should
+      // immediately drop the toolbar badge and the manager's
+      // account-row aggregated error, not wait for the next sync.
+      // Re-enabling a folder is a no-op here (folder.error is null on
+      // enable) but kept symmetric.
+      await recomputeAccountError(accountId);
     } catch (err) {
       await eventLog.append({
         accountId,
