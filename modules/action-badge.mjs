@@ -4,7 +4,11 @@
  * Four states, evaluated in priority order (first match wins):
  *   1. syncing       - any account is currently being driven by the sync
  *                      coordinator (transient.syncingAccounts).
- *   2. error         - some enabled account has account.error set.
+ *   2. error         - some enabled account has account.error set, OR
+ *                      its provider isn't currently active (uninstalled,
+ *                      disabled, not yet announced) - both render in the
+ *                      manager as a non-syncable account the user has to
+ *                      act on.
  *   3. local-changes - some enabled account has at least one selected folder
  *                      whose changelog carries _by_user entries.
  *   4. ok            - none of the above; the badge is cleared.
@@ -15,6 +19,7 @@
 
 import * as accounts from "./accounts.mjs";
 import * as folders from "./folders.mjs";
+import * as providers from "./providers.mjs";
 import * as ui from "./messaging-ui.mjs";
 import { syncingAccounts } from "./transient.mjs";
 
@@ -33,8 +38,8 @@ const BADGES = {
   },
   "local-changes": {
     text: "✻",
-    bg: "#fbc02d",
-    fg: "#000000",
+    bg: "#2a7fd4",
+    fg: "#ffffff",
     titleKey: "actionButton.title.localChanges",
   },
   ok: { text: "", bg: null, fg: null, titleKey: "actionButton.title.ok" },
@@ -48,7 +53,14 @@ async function computeState() {
 
   const list = await accounts.list();
   const enabled = list.filter((a) => a.enabled);
-  if (enabled.some((a) => a.error)) return "error";
+  const activeProviderIds = new Set(
+    (await providers.list())
+      .filter((p) => p.state === "active")
+      .map((p) => p.providerId),
+  );
+  if (enabled.some((a) => a.error || !activeProviderIds.has(a.provider))) {
+    return "error";
+  }
 
   const needs = await folders.needsSyncMap();
   if (enabled.some((a) => needs[a.accountId])) return "local-changes";
@@ -91,7 +103,8 @@ export function init() {
   ui.onInternalEvent((event) => {
     if (
       event?.type === "accounts-changed" ||
-      event?.type === "folders-changed"
+      event?.type === "folders-changed" ||
+      event?.type === "providers-changed"
     ) {
       refresh();
     }
