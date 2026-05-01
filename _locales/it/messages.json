@@ -1,7 +1,4 @@
 {
-  "extensionName": {
-    "message": "TbSync"
-  },
   "extensionDescription": {
     "message": "Central user interface to manage synchronization of contacts, calendars and tasks with external accounts, through provider add-ons."
   },
@@ -135,7 +132,7 @@
     "message": "Account needs to be synchronized, at least one item is out of sync"
   },
   "account.status.upgrading": {
-    "message": "Provider is performing one-time upgrade work on this account…"
+    "message": "Provider is performing one-time work on this account…"
   },
   "account.status.disabled": {
     "message": "Disconnected"
@@ -146,26 +143,20 @@
   "account.status.needs-reauth": {
     "message": "Authentication failed"
   },
-  "account.status.error": {
-    "message": "Error"
-  },
-  "account.status.warning": {
-    "message": "Warning"
-  },
   "account.status.aborted": {
     "message": "Synchronization aborted"
   },
   "folder.status.pending": {
     "message": "Waiting to be synchronized"
   },
-  "folder.status.busy": {
-    "message": "Working…"
-  },
   "folder.status.modified": {
     "message": "Local modifications"
   },
   "error.E:AUTH": {
     "message": "Authentication failed"
+  },
+  "error.E:FOLDER_SYNC_FAILED": {
+    "message": "Sync failed for one or more folders"
   },
   "syncstate.sync": {
     "message": "Synchronizing…"
@@ -251,11 +242,17 @@
   "manager.resources.col.name": {
     "message": "Name"
   },
-  "folder.readOnly": {
-    "message": "Read-only"
+  "manager.resources.col.syncStatus": {
+    "message": "Synchronization Status"
   },
-  "folder.readWrite": {
-    "message": "Read/write"
+  "folder.acl.serverReadOnly": {
+    "message": "Read-only server access (server-enforced)"
+  },
+  "folder.acl.option.readWrite": {
+    "message": "Read from and write to server"
+  },
+  "folder.acl.option.downloadOnly": {
+    "message": "Read-only server access (revert local changes)"
   },
   "folderType.contacts": {
     "message": "Contacts"
