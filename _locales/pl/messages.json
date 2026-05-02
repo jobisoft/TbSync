@@ -51,7 +51,7 @@
     "message": "Dziennik Zdarzeń"
   },
   "manager.eventLog.clear": {
-    "message": "Clear"
+    "message": "Wyczyść"
   },
   "manager.eventLog.empty": {
     "message": "Nie ma jeszcze zdarzeń."
@@ -66,16 +66,16 @@
     "message": "Błędy i ostrzeżenia"
   },
   "manager.eventLog.verbosity.info": {
-    "message": "Errors, warnings and info messages"
+    "message": "Błędy, ostrzeżenia i wiadomości informacyjne"
   },
   "manager.eventLog.verbosity.debug": {
-    "message": "Errors, warnings, info messages and debug logs"
+    "message": "Błędy, ostrzeżenia, wiadomości informacyjne i dzienniki debugowania"
   },
   "manager.eventLog.col.time": {
     "message": "Czas"
   },
   "manager.eventLog.col.level": {
-    "message": "Level"
+    "message": "Poziom"
   },
   "manager.eventLog.col.source": {
     "message": "Źródło"
@@ -93,7 +93,7 @@
     "message": "Status"
   },
   "manager.providers.heading": {
-    "message": "Available providers"
+    "message": "Dostępni usługodawcy"
   },
   "manager.addAccount": {
     "message": "Dodaj konto"
@@ -114,7 +114,7 @@
     "message": "Gotowy"
   },
   "provider.state.stale": {
-    "message": "Reconnecting…"
+    "message": "Ponowne łączenie…"
   },
   "provider.state.uninstalled": {
     "message": "Nie zainstalowano"
@@ -129,13 +129,13 @@
     "message": "Nie zsynchronizowane"
   },
   "account.status.needs-sync": {
-    "message": "Account needs to be synchronized, at least one item is out of sync"
+    "message": "Konto musi zostać zsynchronizowane, co najmniej jeden element nie jest zsynchronizowany"
   },
   "account.status.upgrading": {
     "message": "Provider is performing one-time work on this account…"
   },
   "account.status.disabled": {
-    "message": "Disconnected"
+    "message": "Rozłączony"
   },
   "account.status.provider-unavailable": {
     "message": "Provider unavailable"
@@ -147,7 +147,7 @@
     "message": "Synchronizacja przerwana"
   },
   "folder.status.pending": {
-    "message": "Waiting to be synchronized"
+    "message": "Oczekiwanie na synchronizację"
   },
   "folder.status.modified": {
     "message": "Local modifications"
@@ -171,7 +171,7 @@
     "message": "Przetwarzanie odpowiedzi…"
   },
   "manager.detail.general": {
-    "message": "General"
+    "message": "Ogólne"
   },
   "manager.detail.status": {
     "message": "Status"
@@ -213,7 +213,7 @@
     "message": "min"
   },
   "manager.account.autosync.tooltip": {
-    "message": "0 disables automatic sync for this account."
+    "message": "0 wyłącza automatyczną synchronizację dla tego konta."
   },
   "manager.error.title": {
     "message": "Błąd"
@@ -243,7 +243,7 @@
     "message": "Name"
   },
   "manager.resources.col.syncStatus": {
-    "message": "Synchronization Status"
+    "message": "Status synchronizacji"
   },
   "folder.acl.serverReadOnly": {
     "message": "Read-only server access (server-enforced)"
@@ -300,13 +300,13 @@
     "message": "Provider protocol version mismatch"
   },
   "error.E:UNKNOWN_ACCOUNT": {
-    "message": "Unknown account"
+    "message": "Nieznane konto"
   },
   "error.E:UNKNOWN_FOLDER": {
-    "message": "Unknown folder"
+    "message": "Nieznany folder"
   },
   "error.E:UNKNOWN_COMMAND": {
-    "message": "Unsupported command"
+    "message": "Nieobsługiwane polecenie"
   },
   "error.E:PORT_CLOSED": {
     "message": "Disconnected from the provider"
