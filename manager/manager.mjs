@@ -12,6 +12,25 @@ import { createManagerClient } from "../modules/manager-client.mjs";
 import { EVENT_LOG_MAX } from "../modules/storage-keys.mjs";
 import { localizeDocument } from "../vendor/i18n/i18n.mjs";
 
+// Self-publish our tab id to session storage so the background can find
+// us. Crucial for the session-restore case: browser.storage.session is
+// wiped at restart, but Thunderbird may restore the manager tab on its
+// own. The restored manager.mjs runs here, re-publishes the id, and a
+// later click on the action button focuses this tab instead of opening
+// a duplicate. The manager is the sole writer of this key; the
+// background only reads it.
+browser.tabs
+  .getCurrent()
+  .then((tab) => {
+    if (tab?.id != null) {
+      return browser.storage.session.set({ managerTabId: tab.id });
+    }
+    return null;
+  })
+  .catch((err) =>
+    console.debug("[tbsync] manager: publishing tab id failed:", err),
+  );
+
 // ── i18n helper ───────────────────────────────────────────────────────────
 
 /** Look up a localized message, falling back to the inline default if the

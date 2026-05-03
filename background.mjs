@@ -83,41 +83,27 @@ async function ensureSchema() {
 
 const MANAGER_TAB_KEY = "managerTabId";
 
+/** Read the manager tab id published by manager.mjs. The manager is the
+ *  sole writer of this key (via tabs.getCurrent at boot); the background
+ *  only reads. browser.storage.session is wiped at restart, so the
+ *  restored manager re-publishes its id when its module first runs. */
 async function getManagerTabId() {
   const rv = await browser.storage.session.get({ [MANAGER_TAB_KEY]: null });
   return rv[MANAGER_TAB_KEY];
 }
 
-async function setManagerTabId(id) {
-  await browser.storage.session.set({ [MANAGER_TAB_KEY]: id });
-}
-
-async function clearManagerTabId() {
-  await browser.storage.session.remove(MANAGER_TAB_KEY);
-}
-
-browser.tabs.onRemoved.addListener(async (tabId) => {
-  if (tabId === (await getManagerTabId())) await clearManagerTabId();
-});
-
 async function openManagerTab() {
-  const existing = await getManagerTabId();
-  if (existing != null) {
-    try {
-      await focusManagerTab();
-      return;
-    } catch (err) {
-      console.debug("[tbsync] focusManagerTab failed; clearing stale id:", err);
-      await clearManagerTabId();
-    }
-  }
-  const tab = await browser.tabs.create({ url: "manager/manager.html" });
-  await setManagerTabId(tab.id);
+  if (await focusManagerTab()) return;
+  await browser.tabs.create({ url: "manager/manager.html" });
 }
 
+/** Focus the manager tab if its id is in the cache and the tab still
+ *  exists. Returns true on success, false otherwise (caller's signal to
+ *  open a fresh tab). A stale id self-corrects: the next manager.mjs
+ *  load overwrites the cache. */
 async function focusManagerTab() {
   const id = await getManagerTabId();
-  if (id == null) return;
+  if (id == null) return false;
   try {
     const tab = await browser.tabs.update(id, { active: true });
     if (tab?.windowId != null) {
@@ -127,9 +113,10 @@ async function focusManagerTab() {
           console.debug("[tbsync] windows.update(focus) failed:", err),
         );
     }
+    return true;
   } catch (err) {
-    // Tab is gone; let onRemoved clear the id on its own.
     console.debug("[tbsync] tabs.update(active) failed; tab is gone:", err);
+    return false;
   }
 }
 
