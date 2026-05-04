@@ -1,6 +1,6 @@
 {
   "extensionDescription": {
-    "message": "Central user interface to manage synchronization of contacts, calendars and tasks with external accounts, through provider add-ons."
+    "message": "Centralny interfejs użytkownika służący do zarządzania synchronizacją kontaktów, kalendarzy i zadań z kontami zewnętrznymi za pośrednictwem dodatków dostawców."
   },
   "manager.title": {
     "message": "Menedżer konta TbSync"
@@ -12,7 +12,7 @@
     "message": "Category Manager"
   },
   "manager.categoryManager.text": {
-    "message": "TbSync also syncs contact categories, which are a powerful replacement for the non-synchronizable contact lists. To be able to use them in the Thunderbird address book you can install the Category Manager add-on. It allows to manage overlapping category based contact groups and provides a bunch of other category-related features. It can be found in the official Mozilla add-on repository:"
+    "message": "TbSync synchronizuje również kategorie kontaktów, które stanowią doskonałą alternatywę dla list kontaktów, których nie da się zsynchronizować. Aby móc korzystać z nich w książce adresowej Thunderbirda, należy zainstalować dodatek Category Manager. Umożliwia on zarządzanie nakładającymi się grupami kontaktów opartymi na kategoriach oraz oferuje szereg innych funkcji związanych z kategoriami. Dodatek ten można znaleźć w oficjalnym repozytorium dodatków Mozilli:"
   },
   "manager.tab.help": {
     "message": "Pomoc"
@@ -21,7 +21,7 @@
     "message": "Otwórz strony wiki projektu TbSync, zawierają one dodatkowe informacje, przewodniki i szczegółowe opisy konfiguracji."
   },
   "manager.eventLog.intro": {
-    "message": "Bug reports include the contents of this log. For a more useful report, raise the verbosity level, clear the log, and reproduce the problem before clicking the report button."
+    "message": "Raporty o błędach zawierają zawartość tego logu. Dla bardziej użytecznego raportu podnieś poziom szczegółowości, wyczyść wpis i powtórz problem przed kliknięciem przycisku zgłoszenia."
   },
   "manager.eventLog.bugReport.button": {
     "message": "Utwórz raport o błędzie"
@@ -57,7 +57,7 @@
     "message": "Nie ma jeszcze zdarzeń."
   },
   "manager.eventLog.verbosity": {
-    "message": "Verbosity level for event collection:"
+    "message": "Poziom szczegółowości gromadzenia zdarzeń:"
   },
   "manager.eventLog.verbosity.errors": {
     "message": "Tylko błędy"
@@ -102,13 +102,13 @@
     "message": "Brak skonfigurowanych kont"
   },
   "manager.noProviders": {
-    "message": "No provider add-ons installed."
+    "message": "Nie zainstalowano żadnych dodatków dostawców."
   },
   "manager.provider.install": {
     "message": "Zainstaluj z addons.thunderbird.net"
   },
   "manager.provider.focusSetup": {
-    "message": "Bring the setup window to the front"
+    "message": "Przenieś okno konfiguracji na pierwszy plan"
   },
   "provider.state.active": {
     "message": "Gotowy"
@@ -132,13 +132,13 @@
     "message": "Konto musi zostać zsynchronizowane, co najmniej jeden element nie jest zsynchronizowany"
   },
   "account.status.upgrading": {
-    "message": "Provider is performing one-time work on this account…"
+    "message": "Dostawca wykonuje jednorazowe działanie na tym koncie…"
   },
   "account.status.disabled": {
     "message": "Rozłączony"
   },
   "account.status.provider-unavailable": {
-    "message": "Provider unavailable"
+    "message": "Dostawca niedostępny"
   },
   "account.status.needs-reauth": {
     "message": "Błąd uwierzytelnienia"
@@ -156,7 +156,7 @@
     "message": "Błąd uwierzytelnienia"
   },
   "error.E:FOLDER_SYNC_FAILED": {
-    "message": "Sync failed for one or more folders"
+    "message": "Synchronizacja nie powiodła się dla jednego lub więcej folderów"
   },
   "syncstate.sync": {
     "message": "Synchronizuję…"
@@ -195,7 +195,7 @@
     "message": "Rozłącz"
   },
   "manager.account.signInAgain": {
-    "message": "Sign in again"
+    "message": "Zaloguj się ponownie"
   },
   "manager.account.settings": {
     "message": "Ustawienia"
@@ -207,7 +207,7 @@
     "message": "Synchronizuj Teraz"
   },
   "manager.account.autosync": {
-    "message": "Auto-sync every"
+    "message": "Automatyczna synchronizacja co"
   },
   "manager.account.autosync.minutes": {
     "message": "min"
@@ -240,19 +240,19 @@
     "message": "No resources yet."
   },
   "manager.resources.col.name": {
-    "message": "Name"
+    "message": "Nazwa"
   },
   "manager.resources.col.syncStatus": {
     "message": "Status synchronizacji"
   },
   "folder.acl.serverReadOnly": {
-    "message": "Read-only server access (server-enforced)"
+    "message": "Dostęp do serwera tylko do odczytu (wymuszone przez serwer)"
   },
   "folder.acl.option.readWrite": {
-    "message": "Read from and write to server"
+    "message": "Odczyt i zapis na serwerze"
   },
   "folder.acl.option.downloadOnly": {
-    "message": "Read-only server access (revert local changes)"
+    "message": "Dostęp do serwera tylko do odczytu (cofnij lokalne zmiany)"
   },
   "folderType.contacts": {
     "message": "Kontakty"
@@ -276,7 +276,7 @@
     "message": "TbSync - oczekujące zmiany lokalne"
   },
   "options.intro": {
-    "message": "TbSync's account settings live in the TbSync Manager. Click the button below to open it."
+    "message": "Ustawienia konta TbSync znajdują się w Menedżerze TbSync. Kliknij poniższy przycisk, aby go otworzyć."
   },
   "options.openManager": {
     "message": "Otwórz menedżera TbSync"
@@ -285,19 +285,19 @@
     "message": "Pokaż dziennik zdarzeń"
   },
   "error.E:NETWORK": {
-    "message": "Could not reach the server"
+    "message": "Nie można połączyć z serwerem"
   },
   "error.E:TIMEOUT": {
-    "message": "Operation timed out"
+    "message": "Upłynął limit czasu operacji"
   },
   "error.E:CANCELLED": {
     "message": "Operacja anulowana"
   },
   "error.E:PROVIDER_UNAVAILABLE": {
-    "message": "Provider extension is not available"
+    "message": "Dodatek dostawcy nie jest dostępny"
   },
   "error.E:PROTOCOL_VERSION": {
-    "message": "Provider protocol version mismatch"
+    "message": "Niezgodność wersji protokołu dostawcy"
   },
   "error.E:UNKNOWN_ACCOUNT": {
     "message": "Nieznane konto"
@@ -309,7 +309,7 @@
     "message": "Nieobsługiwane polecenie"
   },
   "error.E:PORT_CLOSED": {
-    "message": "Disconnected from the provider"
+    "message": "Odłączony od dostawcy"
   },
   "error.E:QUOTA": {
     "message": "Storage quota exceeded"
