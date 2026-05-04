@@ -30,7 +30,7 @@
     "message": "Utwórz raport o błędzie"
   },
   "bugReport.component": {
-    "message": "Component"
+    "message": "Składnik"
   },
   "bugReport.summary": {
     "message": "Podsumowanie"
@@ -150,7 +150,7 @@
     "message": "Oczekiwanie na synchronizację"
   },
   "folder.status.modified": {
-    "message": "Local modifications"
+    "message": "Lokalne modyfikacje"
   },
   "error.E:AUTH": {
     "message": "Błąd uwierzytelnienia"
@@ -186,7 +186,7 @@
     "message": "Dostępne Zasoby"
   },
   "manager.resources.description": {
-    "message": "Select which of the found resources should be synchronized with Thunderbird."
+    "message": "Wybierz, które ze znalezionych zasobów mają zostać zsynchronizowane z Thunderbirdem."
   },
   "manager.account.connect": {
     "message": "Połącz"
@@ -225,7 +225,7 @@
     "message": "Usuń konto"
   },
   "manager.remove.confirmBody": {
-    "message": "Remove account “$NAME$”? The Thunderbird address book for this account will also be deleted.",
+    "message": "Czy usunąć konto „$NAME$”? Usunięta zostanie również książka adresowa programu Thunderbird dla tego konta.",
     "placeholders": {
       "NAME": {
         "content": "$1",
@@ -237,7 +237,7 @@
     "message": "Anuluj"
   },
   "manager.resources.empty": {
-    "message": "No resources yet."
+    "message": "Na razie brak zasobów."
   },
   "manager.resources.col.name": {
     "message": "Nazwa"
@@ -312,6 +312,6 @@
     "message": "Odłączony od dostawcy"
   },
   "error.E:QUOTA": {
-    "message": "Storage quota exceeded"
+    "message": "Przekroczono limit miejsca"
   }
 }
