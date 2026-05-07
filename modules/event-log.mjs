@@ -46,7 +46,14 @@ export function append(entry) {
     if (LEVEL_INDEX[entry.level] > threshold) return null;
     const rv = await browser.storage.session.get({ [KEYS.EVENT_LOG]: [] });
     const log = rv[KEYS.EVENT_LOG];
-    const stamped = { ...entry, timestamp: entry.timestamp ?? Date.now() };
+    // Per-process monotonic seq so the manager UI can diff `storage.onChanged`
+    // payloads without timestamp-collision risk. storage.session clears on
+    // restart so seq resets to 0 each session, which the UI handles.
+    const stamped = {
+      ...entry,
+      timestamp: entry.timestamp ?? Date.now(),
+      seq: log.length ? log[log.length - 1].seq + 1 : 0,
+    };
     log.push(stamped);
     if (log.length > EVENT_LOG_MAX) {
       log.splice(0, log.length - EVENT_LOG_MAX);

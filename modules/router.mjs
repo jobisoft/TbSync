@@ -195,21 +195,17 @@ function handleNotification(providerId, type, payload) {
       break;
     }
     case PROVIDER_NOTIFY.REPORT_EVENT_LOG: {
-      // Persist through the capture gate; only broadcast what made it in.
+      // Persist through the capture gate. The manager UI listens to
+      // browser.storage.onChanged for the event-log key and picks up new
+      // entries by their per-entry seq, so no broadcast is needed here.
       // Validation lives inside event-log.append - a bogus `level` from a
-      // misbehaving provider is rejected here (logged, dropped) instead of
-      // polluting the UI.
-      eventLog
-        .append({ ...payload, providerId })
-        .then((entry) => {
-          if (entry) ui.broadcast({ type, providerId, payload: entry });
-        })
-        .catch((err) => {
-          console.warn(
-            `[tbsync] REPORT_EVENT_LOG from ${providerId} rejected:`,
-            err.message,
-          );
-        });
+      // misbehaving provider is rejected here (logged, dropped).
+      eventLog.append({ ...payload, providerId }).catch((err) => {
+        console.warn(
+          `[tbsync] REPORT_EVENT_LOG from ${providerId} rejected:`,
+          err.message,
+        );
+      });
       break;
     }
     default:

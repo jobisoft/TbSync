@@ -9,7 +9,7 @@
 import { PROVIDER_NOTIFY, SYNCSTATE_BASE_KEYS } from "../tbsync/protocol.mjs";
 import { FOLDER_TYPES } from "../modules/folder-types.mjs";
 import { createManagerClient } from "../modules/manager-client.mjs";
-import { EVENT_LOG_MAX } from "../modules/storage-keys.mjs";
+import { EVENT_LOG_MAX, KEYS } from "../modules/storage-keys.mjs";
 import { localizeDocument } from "../vendor/i18n/i18n.mjs";
 
 // Self-publish our tab id to session storage so the background can find
@@ -97,6 +97,9 @@ const state = {
   // configsOpen for the "Sign in again" button.
   reauthsOpen: new Set(),
   eventLog: [],
+  // Highest seq we've already rendered. Driven by browser.storage.onChanged
+  // so the UI picks up host-internal appends without a parallel broadcast.
+  lastSeenSeq: -1,
   settings: { logLevel: 0 },
   // Host-derived transient sets, snapshotted per getState call.
   transient: {
@@ -137,20 +140,35 @@ function handleEvent(event) {
     case PROVIDER_NOTIFY.REPORT_PROGRESS:
       updateInlineSyncState(event);
       break;
-    case PROVIDER_NOTIFY.REPORT_EVENT_LOG:
-      // Router already persisted + stamped the entry before broadcasting;
-      // just mirror it into the UI's in-memory buffer.
-      appendEventLogEntry(event.payload);
-      break;
-    case "event-log-cleared":
-      state.eventLog = [];
-      renderEventLog();
-      break;
     case "settings-changed":
       refreshState();
       break;
   }
 }
+
+// Drive event-log refresh from storage instead of a parallel broadcast bus.
+// Every appender (host or via router) eventually writes through
+// `eventLog.append`, so observing the storage key catches all of them
+// uniformly. Diffing by seq makes the update incremental and
+// collision-free.
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area !== "session") return;
+  const change = changes[KEYS.EVENT_LOG];
+  if (!change) return;
+  const next = change.newValue ?? [];
+  if (next.length === 0) {
+    state.eventLog = [];
+    state.lastSeenSeq = -1;
+    renderEventLog();
+    return;
+  }
+  for (const entry of next) {
+    if (typeof entry?.seq !== "number") continue;
+    if (entry.seq <= state.lastSeenSeq) continue;
+    appendEventLogEntry(entry);
+    state.lastSeenSeq = entry.seq;
+  }
+});
 
 // ── Data loaders ──────────────────────────────────────────────────────────
 
@@ -159,6 +177,9 @@ async function refreshState() {
   state.accounts = s.accounts;
   state.providers = s.providers;
   state.eventLog = s.eventLog ?? [];
+  state.lastSeenSeq = state.eventLog.length
+    ? state.eventLog[state.eventLog.length - 1].seq
+    : -1;
   state.settings = s.settings ?? state.settings;
   const prevSyncing = state.transient.syncingAccounts;
   state.transient.syncingAccounts = new Set(s.transient?.syncingAccounts ?? []);

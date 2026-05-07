@@ -462,7 +462,6 @@ ui.setManagerRpcHandler("getFolders", async ({ accountId }) => ({
 
 ui.setManagerRpcHandler("clearEventLog", async () => {
   await eventLog.clear();
-  ui.broadcast({ type: "event-log-cleared" });
   return null;
 });
 
