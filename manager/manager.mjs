@@ -955,23 +955,47 @@ function providerLabel(providerId) {
   );
 }
 
+/** Derive the `moz-extension://UUID/` prefix from any of the provider's
+ *  announced absolute icon URLs. Returns null if no usable URL exists. */
+function providerUrlPrefix(provider) {
+  for (const url of Object.values(provider?.icons ?? {})) {
+    try {
+      return `${new URL(url).origin}/`;
+    } catch {}
+  }
+  return null;
+}
+
 function providerIconUrl(providerId) {
   const hit = state.providers.find((p) => p.providerId === providerId);
+  if (!hit || hit.state !== "active") {
+    return browser.runtime.getURL("icons/provider16.png");
+  }
   return (
-    hit?.icons?.["16"] ??
-    hit?.icons?.["32"] ??
+    hit.icons?.["16"] ??
+    hit.icons?.["32"] ??
     browser.runtime.getURL("icons/provider16.png")
   );
 }
 
-/** Icon URL for an account row. Prefers the per-account icon override
- *  (provider-authored at register time, persisted as `account.icon`)
- *  over the provider-wide announced icons. Falls through to
- *  `providerIconUrl` when the account has no override. */
+/** Icon URL for an account row. Resolves the per-account icon override
+ *  (`account.icon`, a size-keyed map of relative paths) against the
+ *  provider's announced URL prefix; falls through to `providerIconUrl`
+ *  when there is no override or the prefix can't be derived. Inactive /
+ *  uninstalled providers always render the bundled default. */
 function accountIconUrl(account) {
-  const icon = account?.icon;
-  if (icon && typeof icon === "object") {
-    return icon["16"] ?? icon["32"] ?? Object.values(icon)[0];
+  const provider = state.providers.find(
+    (p) => p.providerId === account.provider,
+  );
+  if (!provider || provider.state !== "active") {
+    return browser.runtime.getURL("icons/provider16.png");
+  }
+  const override = account?.icon;
+  if (override && typeof override === "object") {
+    const rel =
+      override["16"] ?? override["32"] ?? Object.values(override)[0];
+    const prefix = providerUrlPrefix(provider);
+    if (prefix && rel) return new URL(rel, prefix).href;
   }
   return providerIconUrl(account.provider);
 }

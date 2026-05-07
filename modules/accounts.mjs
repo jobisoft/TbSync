@@ -8,11 +8,30 @@ import { serialize } from "./storage-queue.mjs";
  *   { sequence: number, data: { [accountId: string]: AccountRecord } }
  */
 
+/** Strip a `moz-extension://UUID/` prefix from each entry of an
+ *  `account.icon` map. Defensive: some accounts created before
+ *  `account.icon` moved to relative paths still carry absolute URLs in
+ *  storage, and the UUID may have rotated since. We don't rewrite the
+ *  stored record - just hand callers a clean copy on every read. */
+function stripMozPrefix(icon) {
+  if (!icon || typeof icon !== "object") return icon ?? null;
+  const out = {};
+  for (const [size, p] of Object.entries(icon)) {
+    if (typeof p !== "string" || !p) continue;
+    out[size] = p.replace(/^moz-extension:\/\/[^/]+\//i, "");
+  }
+  return out;
+}
+
 async function read() {
   const rv = await browser.storage.local.get({
     [KEYS.ACCOUNTS]: { sequence: 0, data: {} },
   });
-  return rv[KEYS.ACCOUNTS];
+  const state = rv[KEYS.ACCOUNTS];
+  for (const acc of Object.values(state.data)) {
+    if (acc.icon) acc.icon = stripMozPrefix(acc.icon);
+  }
+  return state;
 }
 
 async function write(state) {
@@ -66,7 +85,10 @@ export function create({
       // server issue) so subsequent autosync ticks don't hammer the server.
       noAutosyncUntil: 0,
       // Optional per-account icon override; null means fall back to the
-      // provider's announced icons. Size-keyed map of absolute URLs.
+      // provider's announced icons. Size-keyed map of relative paths
+      // (e.g. `{ "16": "icons/foo16.png", … }`) within the provider
+      // extension. The manager resolves them against the provider's
+      // announced URL prefix at render time.
       icon,
       // Opaque provider-owned blob. The host never interprets this; provider
       // patches via PROVIDER_CMD.UPDATE_ACCOUNT with shallow-merge semantics.

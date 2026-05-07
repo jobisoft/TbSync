@@ -46,14 +46,28 @@ if (browserInfo.name !== "Thunderbird") {
 const CORE_MAINTAINER_EMAIL = "john.bieling@gmx.de";
 
 /** Validate the per-account icon override shape. Accepts a size-keyed
- *  map of string URLs (`{ "16": "moz-extension://…", … }`) or null/missing
- *  meaning "no override". Anything else collapses to null so a malformed
- *  payload from a provider can't poison the persisted account record. */
+ *  map of **relative** paths within the provider extension
+ *  (`{ "16": "icons/foo16.png", … }`) or null/missing meaning "no
+ *  override". Throws on absolute URLs - they'd bake the provider's
+ *  unstable `moz-extension://UUID` prefix into persistent storage. */
 function validIconOrNull(icon) {
-  if (!icon || typeof icon !== "object") return null;
+  if (icon == null) return null;
+  if (typeof icon !== "object") {
+    throw withCode(
+      new Error("icon must be a size-keyed object or null"),
+      ERR.UNKNOWN_COMMAND,
+    );
+  }
   const out = {};
-  for (const [size, url] of Object.entries(icon)) {
-    if (typeof url === "string" && url) out[size] = url;
+  for (const [size, path] of Object.entries(icon)) {
+    if (typeof path !== "string" || !path) continue;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(path)) {
+      throw withCode(
+        new Error(`icon[${size}] must be a relative path, got: ${path}`),
+        ERR.UNKNOWN_COMMAND,
+      );
+    }
+    out[size] = path;
   }
   return Object.keys(out).length ? out : null;
 }

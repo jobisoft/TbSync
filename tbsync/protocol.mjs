@@ -56,12 +56,17 @@ export const HOST_CMD = {
  *   error, lastSyncTime, autoSyncIntervalMinutes, noAutosyncUntil, icon, custom
  *
  * `icon` is an optional per-account icon override: a size-keyed map of
- * absolute URLs, e.g. `{ "16": "moz-extension://…/icons/foo16.png",
- * "32": "…" }`. When null/absent, the manager's account row falls back
- * to the provider's announced icon set. Provider-authored at register
- * time (REGISTER_ACCOUNT.icon) and patchable via UPDATE_ACCOUNT. The
- * provider list (separate from the account list) always uses the
- * provider's announced icons; this field affects the account row only.
+ * **relative** paths within the provider extension, e.g.
+ * `{ "16": "icons/foo16.png", "32": "icons/foo32.png" }`. The host
+ * resolves them at render time against the provider's announced URL
+ * prefix; absolute URLs are rejected at the wire boundary so nothing
+ * `moz-extension://…` ever lands in persistent storage (the UUID is
+ * not stable across profile copies / reinstalls). When null/absent,
+ * the manager's account row falls back to the provider's announced
+ * icon set. Provider-authored at register time (REGISTER_ACCOUNT.icon)
+ * and patchable via UPDATE_ACCOUNT. The provider list (separate from
+ * the account list) always uses the provider's announced icons; this
+ * field affects the account row only.
  *
  * Folder universal fields:
  *   folderId, accountId, targetType, displayName, selected, readOnly,
