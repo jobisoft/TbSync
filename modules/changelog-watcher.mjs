@@ -1,5 +1,6 @@
 import * as folders from "./folders.mjs";
 import * as ui from "./messaging-ui.mjs";
+import * as vcardHash from "./vcard-hash.mjs";
 
 /**
  * Host-owned observer for Thunderbird address-book events. Writes
@@ -179,12 +180,77 @@ function kindForCalendarItem(item) {
   return item?.type === "task" ? "task" : "event";
 }
 
+async function readVCard(itemId) {
+  let card;
+  try {
+    card = await messenger.contacts.get(itemId);
+  } catch (err) {
+    console.warn(
+      "[tbsync] changelog-watcher contacts.get failed:",
+      itemId,
+      err?.message ?? err,
+    );
+    return null;
+  }
+  // MV2: vCard is exposed under `properties`, never as a top-level field.
+  const vcard = card?.properties?.vCard;
+  return typeof vcard === "string" && vcard ? vcard : null;
+}
+
+/**
+ * Read the card and verify its carried hash. Returns the vCard alongside
+ * the verify result so the caller can hand it on to `stampContact` and
+ * skip a redundant read on the real-edit path. A read failure surfaces
+ * as `vcard: null` — callers treat that as "not a ghost" so a transient
+ * API hiccup doesn't suppress a real edit.
+ */
+async function verifyContact(itemId) {
+  const vcard = await readVCard(itemId);
+  if (!vcard) return { vcard: null, stamped: false, valid: false };
+  const result = await vcardHash.verify(vcard);
+  return { vcard, ...result };
+}
+
+/**
+ * Stamp (or re-stamp) X-TBSYNC-HASH on the card. Pass `prefetched` to
+ * skip a redundant read when the caller already has the current vCard.
+ * Skips the write when the carried hash already matches the recompute -
+ * that's what stops the re-entrant onUpdated triggered by our own
+ * update from looping.
+ */
+async function stampContact(itemId, prefetched) {
+  const vcard = prefetched ?? (await readVCard(itemId));
+  if (!vcard) return;
+  const result = await vcardHash.verify(vcard);
+  if (result.stamped && result.valid) return;
+  const hash = await vcardHash.computeHash(vcard);
+  const stamped = vcardHash.stamp(vcard, hash);
+  try {
+    await messenger.contacts.update(itemId, { vCard: stamped });
+  } catch (err) {
+    console.warn(
+      "[tbsync] changelog-watcher hash stamp failed:",
+      err?.message ?? err,
+    );
+  }
+}
+
 async function handle(kind, op, node) {
   const parentId = node?.parentId;
   const itemId = node?.id;
   if (!parentId || !itemId) return;
   const owner = registry.get(parentId);
   if (!owner) return; // book not watched
+
+  // Suppress contact updates whose vCard bytes (minus the marker) are
+  // unchanged - TB's usage-tracking bumps fire onUpdated but don't
+  // mutate the content we care about.
+  let preVcard = null;
+  if (kind === "contact" && op === "updated") {
+    const v = await verifyContact(itemId);
+    if (v.stamped && v.valid) return;
+    preVcard = v.vcard;
+  }
 
   // List-create events also carry a name, which the watcher needs to find
   // a `kind: "list-by-name"` pre-tag the provider stamped before calling
@@ -237,6 +303,13 @@ async function handle(kind, op, node) {
   }
   if (userFacingChanged) {
     ui.broadcast({ type: "folders-changed", accountId: owner.accountId });
+  }
+
+  // Stamp (or re-stamp) X-TBSYNC-HASH on the card after the changelog
+  // mutation. The re-entrant onUpdated this triggers passes
+  // verifyContact above and is suppressed cleanly.
+  if (kind === "contact" && (op === "created" || op === "updated")) {
+    await stampContact(itemId, preVcard);
   }
 }
 
