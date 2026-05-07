@@ -322,12 +322,17 @@ function syncRowText(f) {
 }
 
 /** Up to two stacked entries for the message row: an informational
- *  "Local modifications" line that's present whenever the changelog
- *  carries user-authored entries (cleared automatically when the
- *  changelog drains), and the highest-priority post-sync outcome
- *  (error / warning / aborted) when applicable. Returns an empty
- *  array when no message row should render. */
+ *  "Local modifications" line when the changelog carries user-authored
+ *  entries, and the highest-priority post-sync outcome (error /
+ *  warning / aborted) when applicable. Returns an empty array while
+ *  the account is mid-sync (the sync-progress sub-row owns the cell)
+ *  or when there's nothing to show. */
 function row2Messages(f) {
+  // While the account is mid-run the sync-progress sub-row owns the cell -
+  // any prior message is either stale (about to be replaced by a fresh
+  // outcome) or an indicator the user can't act on yet. Same per-account
+  // guard `folderResultStatus` uses to suppress the needs-sync icon.
+  if (state.transient.syncingAccounts.has(f.accountId)) return [];
   const out = [];
   if (hasPendingUserEntries(f)) {
     out.push({
