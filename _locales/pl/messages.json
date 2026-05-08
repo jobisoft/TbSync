@@ -278,6 +278,9 @@
   "actionButton.title.localChanges": {
     "message": "TbSync - Oczekujące zmiany lokalne"
   },
+  "actionMenu.syncNow": {
+    "message": "Synchronizuj teraz"
+  },
   "options.intro": {
     "message": "Ustawienia kont TbSync znajdują się w Menedżerze TbSync. Kliknij poniższy przycisk, aby go otworzyć."
   },

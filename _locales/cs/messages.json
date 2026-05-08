@@ -278,6 +278,9 @@
   "actionButton.title.localChanges": {
     "message": "TbSync - Čekající místní změny"
   },
+  "actionMenu.syncNow": {
+    "message": "Synchronizovat nyní"
+  },
   "options.intro": {
     "message": "Nastavení účtů TbSync najdete ve Správci TbSync. Klepněte na tlačítko níže pro jeho otevření."
   },

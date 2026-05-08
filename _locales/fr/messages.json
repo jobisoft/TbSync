@@ -278,6 +278,9 @@
   "actionButton.title.localChanges": {
     "message": "TbSync - Modifications locales en attente"
   },
+  "actionMenu.syncNow": {
+    "message": "Synchroniser maintenant"
+  },
   "options.intro": {
     "message": "Les paramètres des comptes TbSync se trouvent dans le Gestionnaire TbSync. Cliquez sur le bouton ci-dessous pour l'ouvrir."
   },

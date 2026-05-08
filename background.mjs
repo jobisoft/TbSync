@@ -14,6 +14,7 @@ import * as registry from "./modules/registry.mjs";
 import * as router from "./modules/router.mjs";
 import * as ui from "./modules/messaging-ui.mjs";
 import * as actionBadge from "./modules/action-badge.mjs";
+import * as actionMenu from "./modules/action-menu.mjs";
 import * as changelogWatcher from "./modules/changelog-watcher.mjs";
 import {
   busyAccounts,
@@ -838,6 +839,7 @@ ui.init();
 actionBadge.init();
 await actionBadge.refresh();
 await changelogWatcher.init();
+await actionMenu.init();
 registry.init({
   openPortToProvider: router.openPortToProvider,
   closePortToProvider: router.closePortToProvider,

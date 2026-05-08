@@ -7,6 +7,10 @@
  */
 
 import { PROVIDER_NOTIFY, SYNCSTATE_BASE_KEYS } from "../tbsync/protocol.mjs";
+import {
+  accountIconUrl,
+  providerIconUrl,
+} from "../modules/account-icons.mjs";
 import { FOLDER_TYPES } from "../modules/folder-types.mjs";
 import { createManagerClient } from "../modules/manager-client.mjs";
 import { EVENT_LOG_MAX, KEYS } from "../modules/storage-keys.mjs";
@@ -494,7 +498,7 @@ function renderSidebar() {
 
       row
         .querySelector(".col-provider-icon")
-        .appendChild(makeImg({ src: accountIconUrl(a) }));
+        .appendChild(makeImg({ src: accountIconUrl(a, state.providers) }));
       row.querySelector(".col-account-name").textContent = a.accountName;
       row.querySelector(".col-status").appendChild(statusIconEl(eff.status));
       return row;
@@ -549,7 +553,7 @@ function renderSidebar() {
 
       row
         .querySelector(".col-provider-icon")
-        .appendChild(makeImg({ src: providerIconUrl(p.providerId) }));
+        .appendChild(makeImg({ src: providerIconUrl(p.providerId, state.providers) }));
       row.querySelector(".name").textContent = p.providerName;
       row.querySelector(".sub").textContent = stateLabel;
       row
@@ -990,50 +994,6 @@ function providerLabel(providerId) {
   );
 }
 
-/** Derive the `moz-extension://UUID/` prefix from any of the provider's
- *  announced absolute icon URLs. Returns null if no usable URL exists. */
-function providerUrlPrefix(provider) {
-  for (const url of Object.values(provider?.icons ?? {})) {
-    try {
-      return `${new URL(url).origin}/`;
-    } catch {}
-  }
-  return null;
-}
-
-function providerIconUrl(providerId) {
-  const hit = state.providers.find((p) => p.providerId === providerId);
-  if (!hit || hit.state !== "active") {
-    return browser.runtime.getURL("icons/provider16.png");
-  }
-  return (
-    hit.icons?.["16"] ??
-    hit.icons?.["32"] ??
-    browser.runtime.getURL("icons/provider16.png")
-  );
-}
-
-/** Icon URL for an account row. Resolves the per-account icon override
- *  (`account.icon`, a size-keyed map of relative paths) against the
- *  provider's announced URL prefix; falls through to `providerIconUrl`
- *  when there is no override or the prefix can't be derived. Inactive /
- *  uninstalled providers always render the bundled default. */
-function accountIconUrl(account) {
-  const provider = state.providers.find(
-    (p) => p.providerId === account.provider,
-  );
-  if (!provider || provider.state !== "active") {
-    return browser.runtime.getURL("icons/provider16.png");
-  }
-  const override = account?.icon;
-  if (override && typeof override === "object") {
-    const rel =
-      override["16"] ?? override["32"] ?? Object.values(override)[0];
-    const prefix = providerUrlPrefix(provider);
-    if (prefix && rel) return new URL(rel, prefix).href;
-  }
-  return providerIconUrl(account.provider);
-}
 
 // Status → icon filename. Matches the legacy TbSync mapping:
 // success → tick, disabled → disabled, warning → warning, notsyncronized

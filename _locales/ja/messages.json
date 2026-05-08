@@ -278,6 +278,9 @@
   "actionButton.title.localChanges": {
     "message": "TbSync - ローカルの変更が保留中"
   },
+  "actionMenu.syncNow": {
+    "message": "今すぐ同期"
+  },
   "options.intro": {
     "message": "TbSync のアカウント設定は TbSync マネージャーにあります。下のボタンをクリックして開いてください。"
   },

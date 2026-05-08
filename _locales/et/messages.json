@@ -278,6 +278,9 @@
   "actionButton.title.localChanges": {
     "message": "TbSync - Kohalikud muudatused ootel"
   },
+  "actionMenu.syncNow": {
+    "message": "Sünkroni nüüd"
+  },
   "options.intro": {
     "message": "TbSynci kontoseaded asuvad TbSynci halduris. Selle avamiseks klõpsa allolevat nuppu."
   },

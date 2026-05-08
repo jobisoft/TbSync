@@ -278,6 +278,9 @@
   "actionButton.title.localChanges": {
     "message": "TbSync - 대기 중인 로컬 변경 사항"
   },
+  "actionMenu.syncNow": {
+    "message": "지금 동기화"
+  },
   "options.intro": {
     "message": "TbSync 계정 설정은 TbSync 관리자에 있습니다. 아래 버튼을 클릭하여 여세요."
   },

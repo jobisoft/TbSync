@@ -278,6 +278,9 @@
   "actionButton.title.localChanges": {
     "message": "TbSync - Ожидающие локальные изменения"
   },
+  "actionMenu.syncNow": {
+    "message": "Синхронизировать сейчас"
+  },
   "options.intro": {
     "message": "Настройки учётных записей TbSync находятся в Менеджере TbSync. Нажмите кнопку ниже, чтобы открыть его."
   },

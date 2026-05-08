@@ -278,6 +278,9 @@
   "actionButton.title.localChanges": {
     "message": "TbSync - Alterações locais pendentes"
   },
+  "actionMenu.syncNow": {
+    "message": "Sincronizar agora"
+  },
   "options.intro": {
     "message": "As configurações de conta do TbSync ficam no Gerenciador do TbSync. Clique no botão abaixo para abri-lo."
   },
