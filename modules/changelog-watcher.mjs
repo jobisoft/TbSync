@@ -164,6 +164,7 @@ async function handleTargetRemoved(targetID) {
       targetID: null,
       targetName: null,
       selected: false,
+      contactHashes: {},
     });
     registry.delete(targetID);
     ui.broadcast({ type: "folders-changed", accountId: owner.accountId });
@@ -179,12 +180,85 @@ function kindForCalendarItem(item) {
   return item?.type === "task" ? "task" : "event";
 }
 
+async function computeHash(vcard) {
+  const bytes = new TextEncoder().encode(vcard);
+  const digest = await crypto.subtle.digest("SHA-1", bytes);
+  return [...new Uint8Array(digest)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/** Decide whether a contact create/update event is a TB ghost (same
+ *  vCard bytes as last seen) or a real change. Reads the vCard,
+ *  computes SHA-1, compares against `folder.contactHashes[itemId]`,
+ *  and records the new hash on first sight or on mismatch.
+ *
+ *  Returns `"suppress"` if the event should be dropped, `"proceed"`
+ *  otherwise. Failure modes (no vCard available, storage error)
+ *  fail open to `"proceed"` so the legacy state machine still runs. */
+async function ghostGate(owner, op, itemId) {
+  let vcard;
+  try {
+    const node = await messenger.contacts.get(itemId);
+    vcard = node.properties.vCard;
+  } catch (err) {
+    console.warn("[tbsync] contact-hash read failed:", err?.message ?? err);
+    return "proceed";
+  }
+  if (typeof vcard !== "string" || vcard.length === 0) return "proceed";
+
+  const newHash = await computeHash(vcard);
+
+  if (op === "updated") {
+    const folder = await folders.get(owner.accountId, owner.folderId);
+    const prior = folder?.contactHashes?.[itemId] ?? null;
+    if (prior !== null && prior === newHash) return "suppress";
+  }
+
+  await folders
+    .mutateContactHashes(owner.accountId, owner.folderId, (m) =>
+      m[itemId] === newHash ? m : { ...m, [itemId]: newHash },
+    )
+    .catch((err) =>
+      console.warn(
+        "[tbsync] contact-hash store failed:",
+        err?.message ?? err,
+      ),
+    );
+  return "proceed";
+}
+
 async function handle(kind, op, node) {
   const parentId = node?.parentId;
   const itemId = node?.id;
   if (!parentId || !itemId) return;
   const owner = registry.get(parentId);
   if (!owner) return; // book not watched
+
+  // Contact-only ghost gate. TB fires onUpdated for usage-tracking
+  // (PopularityIndex, address-picker recency); those don't change the
+  // vCard bytes, so a hash compare suppresses them before they touch
+  // the changelog. Created/updated also (re)record the hash so the
+  // next ghost has a baseline; deleted prunes the entry.
+  if (kind === "contact") {
+    if (op === "deleted") {
+      folders
+        .mutateContactHashes(owner.accountId, owner.folderId, (m) => {
+          if (!(itemId in m)) return m;
+          const { [itemId]: _drop, ...rest } = m;
+          return rest;
+        })
+        .catch((err) =>
+          console.warn(
+            "[tbsync] contact-hash remove failed:",
+            err?.message ?? err,
+          ),
+        );
+    } else if (op === "created" || op === "updated") {
+      const decision = await ghostGate(owner, op, itemId);
+      if (decision === "suppress") return;
+    }
+  }
 
   // List-create events also carry a name, which the watcher needs to find
   // a `kind: "list-by-name"` pre-tag the provider stamped before calling

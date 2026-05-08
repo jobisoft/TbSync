@@ -140,6 +140,11 @@ export function replaceAccountFolders(accountId, incoming) {
         // Preserved across folder-list pushes so a re-push doesn't wipe
         // pending entries.
         changelog: prior?.changelog ?? [],
+        // Host-owned contact-content hashes used by the watcher to suppress
+        // TB ghost onUpdated events (PopularityIndex, address-picker
+        // recency markers). Map shape: `{ [contactId]: sha1Hex }`.
+        // Preserved across folder-list pushes.
+        contactHashes: prior?.contactHashes ?? {},
         // Opaque provider-owned blob. Preserved across pushes so a full
         // folder re-push doesn't wipe provider-local per-folder state.
         custom: descriptor.custom ?? prior?.custom ?? {},
@@ -295,6 +300,27 @@ export async function moveChangelogEntriesToTail(accountId, folderId, items) {
     }
     if (move.length === 0) return entries;
     return [...stay, ...move];
+  });
+}
+
+/** Generic read-modify-write helper for `folder.contactHashes`. Same
+ *  pattern as `mutateChangelog` above. Returning the same reference
+ *  short-circuits the write. */
+export function mutateContactHashes(accountId, folderId, updater) {
+  return serialize(async () => {
+    const state = await read();
+    const folder = state[accountId]?.[folderId];
+    if (!folder) return null;
+    const before =
+      folder.contactHashes && typeof folder.contactHashes === "object"
+        ? folder.contactHashes
+        : {};
+    const after = updater(before) ?? before;
+    if (after === before) return before;
+    folder.contactHashes = after;
+    state[accountId][folderId] = folder;
+    await write(state);
+    return after;
   });
 }
 
