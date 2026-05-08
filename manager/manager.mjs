@@ -931,6 +931,15 @@ function appendEventLogEntry(entry) {
   updateEventLogEmptyState();
 }
 
+function formatDetails(details) {
+  if (typeof details === "string") return details;
+  try {
+    return JSON.stringify(details, null, 2);
+  } catch {
+    return String(details);
+  }
+}
+
 function eventLogRow(entry) {
   const acc = entry.accountId
     ? state.accounts.find((a) => a.accountId === entry.accountId)
@@ -952,7 +961,7 @@ function eventLogRow(entry) {
   row.querySelector(".msg-text").textContent = entry.message ?? "";
   if (entry.details) {
     const details = row.querySelector(".details");
-    details.textContent = entry.details;
+    details.textContent = formatDetails(entry.details);
     details.hidden = false;
   }
   return row;
@@ -1483,7 +1492,7 @@ function renderEventLogAttachment() {
     bits.push(e.message ?? "");
     let line = bits.join(" ");
     if (e.details)
-      line += `\n    ${String(e.details).replace(/\n/g, "\n    ")}`;
+      line += `\n    ${formatDetails(e.details).replace(/\n/g, "\n    ")}`;
     return line;
   });
   return lines.join("\n") + "\n";
