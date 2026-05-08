@@ -1,0 +1,46 @@
+{
+  "addons": {
+    "tbsync@jobisoft.de": {
+      "updates": [
+        {
+          "version": "5.0.10",
+          "update_info_url": "https://github.com/jobisoft/tbsync/releases",
+          "update_link": "https://github.com/jobisoft/EAS-4-TbSync/releases/download/v5.0.10/tbsync_5_0_10.xpi",
+          "applications": {
+            "gecko": {
+              "strict_min_version": "140.0"
+            }
+          }
+        }
+      ]
+    },
+    "google-4-tbsync@marcozanon.com": {
+      "updates": [
+        {
+          "version": "1.0.5",
+          "update_info_url": "https://github.com/jobisoft/tbsync/releases",
+          "update_link": "https://github.com/jobisoft/EAS-4-TbSync/releases/download/v5.0.10/google4tbsync_1_0_5.xpi",
+          "applications": {
+            "gecko": {
+              "strict_min_version": "140.0"
+            }
+          }
+        }
+      ]
+    },
+    "eas4tbsync@jobisoft.de": {
+      "updates": [
+        {
+          "version": "5.0.10",
+          "update_info_url": "https://github.com/jobisoft/tbsync/releases",
+          "update_link": "https://github.com/jobisoft/EAS-4-TbSync/releases/download/v5.0.10/eas4tbsync_5_0_10.xpi",
+          "applications": {
+            "gecko": {
+              "strict_min_version": "140.0"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
