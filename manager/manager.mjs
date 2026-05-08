@@ -221,7 +221,14 @@ async function refreshState() {
   renderSidebar();
   renderDetail();
   renderEventLog();
-  if (state.selectedAccountId) refreshFolders(state.selectedAccountId);
+  // Fetch folders for every account, not just the selected one, so the
+  // sidebar's status icon (computed by `deriveAccountResultStatus` from
+  // per-folder state) is correct for every row. Without this, accounts
+  // whose folders haven't been pulled yet fall through to
+  // `selected.length === 0` → "notsyncronized" and render the info
+  // icon. Calls run in parallel; each one re-renders the sidebar as
+  // its data arrives.
+  for (const a of state.accounts) refreshFolders(a.accountId);
 }
 
 async function refreshFolders(accountId) {
