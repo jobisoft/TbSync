@@ -146,6 +146,9 @@
   "account.status.aborted": {
     "message": "Synchronization aborted"
   },
+  "account.status.error": {
+    "message": "Error"
+  },
   "folder.status.pending": {
     "message": "Waiting to be synchronized"
   },
@@ -274,6 +277,9 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync - Local changes pending"
+  },
+  "actionMenu.syncNow": {
+    "message": "Sync now"
   },
   "options.intro": {
     "message": "TbSync's account settings live in the TbSync Manager. Click the button below to open it."
