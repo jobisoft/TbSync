@@ -146,6 +146,9 @@
   "account.status.aborted": {
     "message": "Synchronizacja przerwana"
   },
+  "account.status.error": {
+    "message": "Błąd"
+  },
   "folder.status.pending": {
     "message": "Oczekiwanie na synchronizację"
   },
@@ -274,6 +277,9 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync - oczekujące zmiany lokalne"
+  },
+  "actionMenu.syncNow": {
+    "message": "Sync now"
   },
   "options.intro": {
     "message": "Ustawienia konta TbSync znajdują się w Menedżerze TbSync. Kliknij poniższy przycisk, aby go otworzyć."
