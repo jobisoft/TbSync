@@ -146,6 +146,9 @@
   "account.status.aborted": {
     "message": "Szinkronizálás megszakítva"
   },
+  "account.status.error": {
+    "message": "Hiba"
+  },
   "folder.status.pending": {
     "message": "Várakozás a szinkronizálásra"
   },
@@ -274,6 +277,9 @@
   },
   "actionButton.title.localChanges": {
     "message": "TbSync - Local changes pending"
+  },
+  "actionMenu.syncNow": {
+    "message": "Sync now"
   },
   "options.intro": {
     "message": "TbSync's account settings live in the TbSync Manager. Click the button below to open it."
