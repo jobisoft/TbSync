@@ -152,6 +152,15 @@ export const PROVIDER_CMD = {
   CHANGELOG_MARK_SERVER_WRITE: "changelogMarkServerWrite",
   CHANGELOG_REMOVE: "changelogRemove",
   CHANGELOG_MOVE_TO_TAIL: "changelogMoveToTail",
+  // Provider-driven `_by_user` row append. Used by providers that own
+  // their local resource and observe user edits directly (e.g. EAS
+  // calendar via the ext-type provider event surface). The host applies
+  // the same state-machine transitions the changelog watcher uses for
+  // its own observed events (add+del cancels, etc.).
+  // Args: { accountId, folderId, parentId, itemId, kind, op }
+  //   op: "created" | "updated" | "deleted"
+  //   kind: "event" | "task" | "contact" | "list"
+  CHANGELOG_APPEND_USER_ENTRY: "changelogAppendUserEntry",
   // Provider-scoped upgrade lock. While locked, the host treats every
   // account belonging to the provider as "upgrading" - refuses every
   // user-initiated RPC and skips autosync ticks. Used by the provider's

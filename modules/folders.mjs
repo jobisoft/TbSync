@@ -241,6 +241,76 @@ export function mutateChangelog(accountId, folderId, updater) {
   });
 }
 
+/** State-machine transition for a user-initiated event. Mirrors the
+ *  watcher's `applyUserTransition` (changelog-watcher.mjs). Used here
+ *  so providers that observe user edits directly (e.g. EAS calendar
+ *  via `provider.onItem*`) can append `_by_user` rows without
+ *  duplicating the add+del-cancels / late-create-after-modify rules. */
+function applyUserTransition(
+  entries,
+  { kind, parentId, itemId, op, now, priorStatus },
+) {
+  const next = entries.filter(
+    (e) => !(e.parentId === parentId && e.itemId === itemId),
+  );
+  const nextStatus = decideUserStatus(op, priorStatus);
+  if (nextStatus === "skip") return entries;
+  if (nextStatus === "drop") return next;
+  next.push({ kind, parentId, itemId, timestamp: now, status: nextStatus });
+  return next;
+}
+
+function decideUserStatus(op, prior) {
+  switch (op) {
+    case "created":
+      switch (prior) {
+        case "added_by_user":    return "skip";
+        case "modified_by_user": return "added_by_user";
+        case "deleted_by_user":  return "modified_by_user";
+        default:                 return "added_by_user";
+      }
+    case "updated":
+      switch (prior) {
+        case "added_by_user":    return "skip";
+        case "modified_by_user": return "skip";
+        case "deleted_by_user":  return "modified_by_user";
+        default:                 return "modified_by_user";
+      }
+    case "deleted":
+      switch (prior) {
+        case "added_by_user":    return "drop";
+        case "deleted_by_user":  return "skip";
+        default:                 return "deleted_by_user";
+      }
+    default:
+      return "skip";
+  }
+}
+
+/** Provider-driven user-event append. Runs the same state machine the
+ *  watcher applies for its own observed events, so add+del cancels and
+ *  the other transitions are honored consistently regardless of which
+ *  side observed the event. */
+export async function appendUserEntry(
+  accountId,
+  folderId,
+  { parentId, itemId, kind, op },
+) {
+  return mutateChangelog(accountId, folderId, (entries) => {
+    const exact = entries.find(
+      (e) => e.parentId === parentId && e.itemId === itemId && e.kind === kind,
+    );
+    return applyUserTransition(entries, {
+      kind,
+      parentId,
+      itemId,
+      op,
+      now: Date.now(),
+      priorStatus: exact?.status ?? null,
+    });
+  });
+}
+
 /** Replace any existing entry for `(parentId, itemId)` with a server-side
  *  pre-tag. Used by PROVIDER_CMD.CHANGELOG_MARK_SERVER_WRITE to freeze the
  *  next observer event for that item as self-inflicted. `kind` is one of

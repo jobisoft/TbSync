@@ -264,28 +264,29 @@ router.setProviderRpcHandler(
     }
     const result = await folders.replaceAccountFolders(accountId, descriptors);
     ui.broadcast({ type: "folders-changed", accountId });
-    // Server removed these folders. The row is already gone (replaceAccount
-    // Folders just wrote storage), so the watcher's onRemoved listener will
-    // no-op when our deletes fire below. Cache populate already happened
-    // for any selected rows; deleting the local target now does not affect
-    // the cache. We skip awaiting individual deletes - they're best-effort.
+    // Server removed these folders. For contacts the host deletes the
+    // local address book directly (core API, no experiment needed).
+    // For calendars / tasks the host has no `messenger.calendar.*`
+    // surface (provider owns the calendars now), so the host returns
+    // the list to the provider in this RPC's response and the provider
+    // cleans up via its own `calendar-store.deleteCalendar`.
     for (const t of result.removedTargets) {
-      deleteLocalTargetBestEffort(t).catch((err) =>
-        console.debug(
-          `[tbsync] delete local target ${t.targetID} failed:`,
-          err?.message ?? err,
-        ),
-      );
+      if (t.targetType === "contacts") {
+        deleteLocalContactBookBestEffort(t).catch((err) =>
+          console.debug(
+            `[tbsync] delete local target ${t.targetID} failed:`,
+            err?.message ?? err,
+          ),
+        );
+      }
     }
-    return null;
+    return { removedTargets: result.removedTargets };
   },
 );
 
-async function deleteLocalTargetBestEffort({ targetID, targetType }) {
+async function deleteLocalContactBookBestEffort({ targetID, targetType }) {
   if (!targetID) return;
-  if (targetType === "calendars" || targetType === "tasks") {
-    await messenger.calendar.calendars.remove(targetID);
-  } else if (targetType === "contacts") {
+  if (targetType === "contacts") {
     await messenger.addressBooks.delete(targetID);
   }
 }
@@ -383,6 +384,49 @@ router.setProviderRpcHandler(
       throw new Error("changelogMoveToTail: items must be an array");
     }
     await folders.moveChangelogEntriesToTail(accountId, folderId, items);
+    return null;
+  },
+);
+
+router.setProviderRpcHandler(
+  PROVIDER_CMD.CHANGELOG_APPEND_USER_ENTRY,
+  async (providerId, args) => {
+    const { accountId, folderId, parentId, itemId, kind, op } = args ?? {};
+    const acc = await accounts.get(accountId);
+    if (!acc || acc.provider !== providerId) {
+      throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
+    }
+    const allowedKinds = ["contact", "list", "event", "task"];
+    if (!allowedKinds.includes(kind)) {
+      throw withCode(
+        new Error(
+          `changelogAppendUserEntry: kind must be one of ${allowedKinds.join(" | ")} (got ${JSON.stringify(kind)})`,
+        ),
+        ERR.UNKNOWN_COMMAND,
+      );
+    }
+    const allowedOps = ["created", "updated", "deleted"];
+    if (!allowedOps.includes(op)) {
+      throw withCode(
+        new Error(
+          `changelogAppendUserEntry: op must be one of ${allowedOps.join(" | ")} (got ${JSON.stringify(op)})`,
+        ),
+        ERR.UNKNOWN_COMMAND,
+      );
+    }
+    if (typeof itemId !== "string" || itemId.length === 0) {
+      throw withCode(
+        new Error("changelogAppendUserEntry: itemId must be a non-empty string"),
+        ERR.UNKNOWN_COMMAND,
+      );
+    }
+    await folders.appendUserEntry(accountId, folderId, {
+      parentId,
+      itemId,
+      kind,
+      op,
+    });
+    ui.broadcast({ type: "folders-changed", accountId });
     return null;
   },
 );

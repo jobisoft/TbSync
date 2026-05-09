@@ -65,50 +65,25 @@ export async function init() {
     handle("list", "deleted", { parentId, id }),
   );
 
-  // Calendar / task event observers. The experiment fires onCreated /
-  // onUpdated with the full CalendarItem; we only need (id, calendarId,
-  // type) so we skip the returnFormat option and drop the payload.
-  // onRemoved gives us only `(calendarId, itemId)` - the item type is
-  // already gone, so we tag with a generic kind and resolve to the real
-  // kind from an existing changelog entry inside `handle`.
-  messenger.calendar.items.onCreated.addListener((item) =>
-    handle(kindForCalendarItem(item), "created", {
-      parentId: item.calendarId,
-      id: item.id,
-    }),
-  );
-  messenger.calendar.items.onUpdated.addListener((item) =>
-    handle(kindForCalendarItem(item), "updated", {
-      parentId: item.calendarId,
-      id: item.id,
-    }),
-  );
-  messenger.calendar.items.onRemoved.addListener((calendarId, itemId) =>
-    handle("calendar-item", "deleted", { parentId: calendarId, id: itemId }),
-  );
+  // Calendar items are no longer observed at the host level — providers
+  // that own calendars (via `messenger.calendar.provider.*`) feed the
+  // changelog directly through the `changelogAppendUserEntry` RPC.
+  // Calendar lifecycle (rename / removal) is similarly the provider's
+  // responsibility now: with the host's calendar experiment removed,
+  // there is no `messenger.calendar.*` API surface in this scope.
 
   // Keep `folder.targetName` in sync with the user's local TB address-book
-  // or calendar label - the manager's resource-list cell shows targetName
-  // for successfully-synced folders. Only watched targets are mirrored.
+  // label - the manager's resource-list cell shows targetName for
+  // successfully-synced folders. Only watched targets are mirrored.
   messenger.addressBooks.onUpdated.addListener((node) =>
     handleTargetRename(node?.id, node?.name),
   );
-  messenger.calendar.calendars.onUpdated.addListener((calendar, changes) => {
-    // Fires for every property change; the rename signal is `name` in the
-    // changes payload. Cheaper than re-checking on every event.
-    if (changes && "name" in changes) {
-      handleTargetRename(calendar?.id, changes.name);
-    }
-  });
 
-  // If the user deletes the local TB resource (address book or calendar)
-  // that a folder is bound to, deselect the folder and clear its target -
-  // the row stays so the user can re-enable it via the manager later, but
+  // If the user deletes the local TB address book that a folder is
+  // bound to, deselect the folder and clear its target - the row
+  // stays so the user can re-enable it via the manager later, but
   // sync stops attempting to write to a non-existent target.
   messenger.addressBooks.onDeleted.addListener((id) =>
-    handleTargetRemoved(id),
-  );
-  messenger.calendar.calendars.onRemoved.addListener((id) =>
     handleTargetRemoved(id),
   );
 
@@ -174,10 +149,6 @@ async function handleTargetRemoved(targetID) {
       err?.message ?? err,
     );
   }
-}
-
-function kindForCalendarItem(item) {
-  return item?.type === "task" ? "task" : "event";
 }
 
 async function computeHash(vcard) {
@@ -279,19 +250,8 @@ async function handle(kind, op, node) {
       owner.accountId,
       owner.folderId,
       (entries) => {
-        // calendar.items.onRemoved doesn't tell us if the deleted item was
-        // an event or a task. Resolve to the actual kind from any existing
-        // entry (provider pre-tags use "event" / "task") so the freeze key
-        // matches; default to "event" if no prior entry exists.
-        let resolvedKind = kind;
-        if (kind === "calendar-item") {
-          const prior = entries.find(
-            (e) => e.parentId === parentId && e.itemId === itemId,
-          );
-          resolvedKind = prior?.kind === "task" ? "task" : "event";
-        }
         const next = applyEvent(entries, {
-          kind: resolvedKind,
+          kind,
           parentId,
           itemId,
           name,
