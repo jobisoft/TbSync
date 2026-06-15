@@ -10,10 +10,12 @@
 export const KNOWN_PROVIDERS = {
   google: {
     providerName: "Google's People API",
+    extensionId: "google-4-tbsync@jobisoft.de",
     installUrl: "https://addons.thunderbird.net/addon/google-4-tbsync/",
   },
   eas: {
     providerName: "Exchange ActiveSync",
+    extensionId: "eas4tbsync@jobisoft.de",
     installUrl: "https://addons.thunderbird.net/addon/eas-4-tbsync/",
   },
 };

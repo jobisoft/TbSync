@@ -3,6 +3,7 @@ import * as providers from "./providers.mjs";
 import * as accounts from "./accounts.mjs";
 import * as ui from "./messaging-ui.mjs";
 import { upgradeAccounts } from "./transient.mjs";
+import { KNOWN_PROVIDERS } from "./known-providers.mjs";
 
 /**
  * Provider discovery and lifecycle.
@@ -108,6 +109,20 @@ export function init({ openPortToProvider, closePortToProvider }) {
     const providerId = await providerIdFromExtensionId(addon.id);
     if (providerId) await handleUnannounce(providerId, closePortToProvider);
   });
+  browser.management.onInstalled.addListener((addon) => {
+    maybeProbeKnownProvider(addon).catch((err) =>
+      console.debug("[tbsync] provider probe after install failed:", err),
+    );
+  });
+  browser.management.onEnabled.addListener((addon) => {
+    maybeProbeKnownProvider(addon).catch((err) =>
+      console.debug("[tbsync] provider probe after enable failed:", err),
+    );
+  });
+
+  probeInstalledKnownProviders().catch((err) =>
+    console.debug("[tbsync] startup provider probe failed:", err),
+  );
 }
 
 async function handleUnannounce(providerId, closePortToProvider) {
@@ -136,4 +151,23 @@ async function providerIdFromExtensionId(extensionId) {
     if (meta.extensionId === extensionId) return meta.providerId;
   }
   return null;
+}
+
+async function probeInstalledKnownProviders() {
+  const installed = await browser.management.getAll();
+  for (const addon of installed) {
+    await maybeProbeKnownProvider(addon);
+  }
+}
+
+async function maybeProbeKnownProvider(addon) {
+  const known = Object.values(KNOWN_PROVIDERS).find(
+    (entry) => entry.extensionId === addon?.id,
+  );
+  if (!known || !addon.enabled) return;
+  try {
+    await browser.runtime.sendMessage(addon.id, { type: DISCOVERY.PROBE });
+  } catch (err) {
+    console.debug(`[tbsync] provider probe to ${addon.id} failed:`, err);
+  }
 }
