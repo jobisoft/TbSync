@@ -9,7 +9,7 @@
     }
   },
   "name": "TbSync Manager",
-  "version": "5.0.10",
+  "version": "5.0.12",
   "author": "John Bieling",
   "homepage_url": "https://github.com/jobisoft/TbSync",
   "default_locale": "en-US",
@@ -35,7 +35,7 @@
     "menus",
     "menus.overrideContext",
     "notifications",
-    "compose"
+    "downloads"
   ],
   "background": {
     "type": "module",

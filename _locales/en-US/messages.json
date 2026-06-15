@@ -21,10 +21,13 @@
     "message": "Open the wiki pages of the TbSync project, they provide additional information, guides and detailed configuration descriptions."
   },
   "manager.eventLog.intro": {
-    "message": "Bug reports include the contents of this log. For a more useful report, raise the verbosity level, clear the log, and reproduce the problem before clicking the report button."
+    "message": "For a useful diagnostic export, raise the verbosity level, clear the log, reproduce the problem, then export the log."
   },
   "manager.eventLog.bugReport.button": {
     "message": "Create Bug Report"
+  },
+  "manager.eventLog.export.button": {
+    "message": "Export Log"
   },
   "bugReport.title": {
     "message": "Create Bug Report"

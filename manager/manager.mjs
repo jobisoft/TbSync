@@ -12,6 +12,7 @@ import {
   providerIconUrl,
 } from "../modules/account-icons.mjs";
 import { FOLDER_TYPES } from "../modules/folder-types.mjs";
+import { KNOWN_PROVIDERS } from "../modules/known-providers.mjs";
 import { createManagerClient } from "../modules/manager-client.mjs";
 import { EVENT_LOG_MAX, KEYS } from "../modules/storage-keys.mjs";
 import { localizeDocument } from "../vendor/i18n/i18n.mjs";
@@ -1506,6 +1507,166 @@ async function createBugReport() {
   }
 }
 
+async function exportEventLog() {
+  const report = await buildDiagnosticExport();
+  const json = JSON.stringify(report, null, 2) + "\n";
+  const filename = `tbsync-log-${new Date()
+    .toISOString()
+    .replace(/[:.]/g, "-")}.json`;
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  try {
+    if (browser.downloads?.download) {
+      await browser.downloads.download({ url, filename, saveAs: true });
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  }
+}
+
+async function buildDiagnosticExport() {
+  const [tb, plat, providers, folderSnapshot] = await Promise.all([
+    browser.runtime.getBrowserInfo(),
+    browser.runtime.getPlatformInfo(),
+    providerDiagnostics(),
+    foldersForExport(),
+  ]);
+  return {
+    format: "tbsync-diagnostic-log",
+    formatVersion: 1,
+    generatedAt: new Date().toISOString(),
+    host: {
+      id: browser.runtime.id,
+      name: browser.runtime.getManifest().name,
+      version: browser.runtime.getManifest().version,
+    },
+    thunderbird: {
+      name: tb.name,
+      version: tb.version,
+      buildID: tb.buildID,
+      vendor: tb.vendor,
+    },
+    platform: {
+      os: plat.os,
+      arch: plat.arch,
+    },
+    settings: state.settings,
+    selectedAccountId: state.selectedAccountId,
+    providers,
+    accounts: state.accounts.map(sanitizeAccountForExport),
+    folders: folderSnapshot,
+    eventLog: state.eventLog.map(sanitizeEventLogEntryForExport),
+    eventLogText: renderEventLogAttachment(),
+  };
+}
+
+async function providerDiagnostics() {
+  return Promise.all(
+    state.providers.map(async (p) => {
+      const extensionId =
+        p.extensionId ?? KNOWN_PROVIDERS[p.providerId]?.extensionId ?? "";
+      let installedVersion = "";
+      try {
+        installedVersion =
+          p.state === "uninstalled" || !extensionId
+            ? ""
+            : (await browser.management.get(extensionId))?.version ?? "";
+      } catch {
+        installedVersion = "";
+      }
+      return {
+        providerId: p.providerId,
+        extensionId,
+        providerName: p.providerName ?? "",
+        state: p.state,
+        installedVersion,
+        apiVersion: p.apiVersion ?? "",
+        capabilities: p.capabilities ?? {},
+        installUrl: p.installUrl ?? "",
+      };
+    }),
+  );
+}
+
+async function foldersForExport() {
+  const entries = await Promise.all(
+    state.accounts.map(async (account) => {
+      try {
+        const rv = await rpc("getFolders", { accountId: account.accountId });
+        return [
+          account.accountId,
+          (rv.folders ?? []).map(sanitizeFolderForExport),
+        ];
+      } catch (err) {
+        return [
+          account.accountId,
+          {
+            error: err?.message ?? String(err),
+            cached: (state.folders.get(account.accountId) ?? []).map(
+              sanitizeFolderForExport,
+            ),
+          },
+        ];
+      }
+    }),
+  );
+  return Object.fromEntries(entries);
+}
+
+function sanitizeAccountForExport(account) {
+  return {
+    ...account,
+    custom: sanitizeObjectForExport(account.custom ?? {}),
+    deletedFolderCache: summarizeDeletedFolderCache(account.deletedFolderCache),
+  };
+}
+
+function sanitizeFolderForExport(folder) {
+  const custom = sanitizeObjectForExport(folder.custom ?? {});
+  if (Array.isArray(folder.custom?.indexMap)) {
+    custom.indexMap = {
+      count: folder.custom.indexMap.length,
+      sample: folder.custom.indexMap.slice(0, 20),
+    };
+  }
+  return { ...folder, custom };
+}
+
+function sanitizeEventLogEntryForExport(entry) {
+  return sanitizeObjectForExport(entry);
+}
+
+function sanitizeObjectForExport(value, key = "") {
+  if (Array.isArray(value)) {
+    return value.map((v) => sanitizeObjectForExport(v, key));
+  }
+  if (!value || typeof value !== "object") {
+    return secretLikeKey(key) ? "[redacted]" : value;
+  }
+  const out = {};
+  for (const [k, v] of Object.entries(value)) {
+    out[k] = secretLikeKey(k) ? "[redacted]" : sanitizeObjectForExport(v, k);
+  }
+  return out;
+}
+
+function secretLikeKey(key) {
+  return /password|token|secret|authorization|credential/i.test(key);
+}
+
+function summarizeDeletedFolderCache(cache) {
+  if (!cache || typeof cache !== "object") return {};
+  return {
+    count: Object.keys(cache).length,
+    folderIds: Object.keys(cache),
+  };
+}
+
 async function confirmAndDeleteAccount(accountId, onConfirmed) {
   const acc = state.accounts.find((a) => a.accountId === accountId);
   if (!acc) return;
@@ -1587,8 +1748,8 @@ function syncVerbositySelect() {
   if (select.value !== current) select.value = current;
 }
 
-document.getElementById("btn-bug-report").addEventListener("click", () => {
-  createBugReport().catch(showError);
+document.getElementById("btn-export-log").addEventListener("click", () => {
+  exportEventLog().catch(showError);
 });
 
 // Open a URL inside Thunderbird and raise the window that holds the new tab -
