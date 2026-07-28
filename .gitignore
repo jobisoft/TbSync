@@ -2,3 +2,16 @@
 dist
 dev
 node_modules
+
+# Everything dot-prefixed, at any depth: editor and tool droppings land
+# there, and the build/lint tooling writes several multi-megabyte caches
+# (.schema-cache, .experiments-cache, .lib-*-cache) that are trivially
+# re-downloaded and must never be committed. Opt the few we do track back
+# in below - .github has to be un-ignored as a directory, or git will not
+# descend into it to find the workflows.
+.*
+!.gitattributes
+!.gitignore
+!.npmrc
+!.prettierignore
+!.github/
