@@ -1,0 +1,9 @@
+{
+  "name": "tbsync",
+  "version": "5.0.11",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node build.js --dev",
+    "version": "node build.js && git add src"
+  }
+}
