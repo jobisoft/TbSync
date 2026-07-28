@@ -626,7 +626,7 @@ ui.setManagerRpcHandler("editAccount", async ({ accountId }) => {
   return null;
 });
 
-ui.setManagerRpcHandler("signInAgain", async ({ accountId }) => {
+ui.setManagerRpcHandler("authenticateAccount", async ({ accountId }) => {
   const acc = await accounts.get(accountId);
   if (!acc) throw new Error("unknown account");
   assertNotUpgrading(accountId);

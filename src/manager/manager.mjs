@@ -602,9 +602,10 @@ function renderDetail() {
   const isNeedsReauth = acc.error === "E:AUTH";
 
   // Primary action button:
-  //   acc.error === E:AUTH  → Authenticate   (signInAgain → provider decides
-  //                                           how: a consent window, or its
-  //                                           settings for password accounts)
+  //   acc.error === E:AUTH  → Authenticate   (authenticateAccount → provider
+  //                                           decides how: a consent window,
+  //                                           or its settings for password
+  //                                           accounts)
   //   !acc.enabled          → Connect        (setAccountEnabled true)
   //   acc.enabled           → Disconnect     (setAccountEnabled false)
   // Enabled-ness for each variant comes from `actions` so the context menu
@@ -660,7 +661,7 @@ function renderDetail() {
     } else if (primaryAction === "reauth") {
       state.reauthsOpen.add(acc.accountId);
       markBusyLocally();
-      rpc("signInAgain", { accountId: acc.accountId })
+      rpc("authenticateAccount", { accountId: acc.accountId })
         .catch(showError)
         .finally(() => state.reauthsOpen.delete(acc.accountId));
     }
