@@ -3,12 +3,13 @@
     "tbsync@jobisoft.de": {
       "updates": [
         {
-          "version": "5.0.10",
-          "update_info_url": "https://github.com/jobisoft/tbsync/releases",
-          "update_link": "https://github.com/jobisoft/EAS-4-TbSync/releases/download/v5.0.10/tbsync_5_0_10.xpi",
+          "version": "5.0.11",
+          "update_info_url": "https://github.com/jobisoft/TbSync/releases/tag/v5.0.11",
+          "update_link": "https://github.com/jobisoft/TbSync/releases/download/v5.0.11/tbsync_5_0_11_beta.xpi",
           "applications": {
             "gecko": {
-              "strict_min_version": "140.0"
+              "strict_min_version": "153.0",
+              "strict_max_version": "154.*"
             }
           }
         }
@@ -17,12 +18,13 @@
     "google-4-tbsync@marcozanon.com": {
       "updates": [
         {
-          "version": "1.0.5",
-          "update_info_url": "https://github.com/jobisoft/tbsync/releases",
-          "update_link": "https://github.com/jobisoft/EAS-4-TbSync/releases/download/v5.0.10/google4tbsync_1_0_5.xpi",
+          "version": "5.0.11",
+          "update_info_url": "https://github.com/jobisoft/google-4-tbsync/releases/tag/v5.0.11",
+          "update_link": "https://github.com/jobisoft/google-4-tbsync/releases/download/v5.0.11/google-4-tbsync_5_0_11_beta.xpi",
           "applications": {
             "gecko": {
-              "strict_min_version": "140.0"
+              "strict_min_version": "153.0",
+              "strict_max_version": "154.*"
             }
           }
         }
@@ -31,12 +33,13 @@
     "eas4tbsync@jobisoft.de": {
       "updates": [
         {
-          "version": "5.0.10",
-          "update_info_url": "https://github.com/jobisoft/tbsync/releases",
-          "update_link": "https://github.com/jobisoft/EAS-4-TbSync/releases/download/v5.0.10/eas4tbsync_5_0_10.xpi",
+          "version": "5.0.11",
+          "update_info_url": "https://github.com/jobisoft/EAS-4-TbSync/releases/tag/v5.0.11",
+          "update_link": "https://github.com/jobisoft/EAS-4-TbSync/releases/download/v5.0.11/eas-4-tbsync_5_0_11_beta.xpi",
           "applications": {
             "gecko": {
-              "strict_min_version": "140.0"
+              "strict_min_version": "153.0",
+              "strict_max_version": "154.*"
             }
           }
         }
