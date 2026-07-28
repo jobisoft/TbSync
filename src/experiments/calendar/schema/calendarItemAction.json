@@ -1,0 +1,654 @@
+[
+  {
+    "namespace": "manifest",
+    "types": [
+      {
+        "$extend": "WebExtensionManifest",
+        "properties": {
+          "calendar_item_action": {
+            "type": "object",
+            "additionalProperties": { "$ref": "UnrecognizedProperty" },
+            "properties": {
+              "default_label": {
+                "type": "string",
+                "description": "The label of the calendarItemAction, defaults to its title. Can be set to an empty string to not display any label. If the containing toolbar is configured to display text only, the title will be used as fallback.",
+                "optional": true,
+                "preprocess": "localize"
+              },
+              "default_title": {
+                "type": "string",
+                "description": "The title of the calendarItemAction. This shows up in the tooltip and the label. Defaults to the add-on name.",
+                "optional": true,
+                "preprocess": "localize"
+              },
+              "default_icon": {
+                "$ref": "IconPath",
+                "description": "The icon for the itemAction.",
+                "optional": true
+              },
+              "theme_icons": {
+                "type": "array",
+                "optional": true,
+                "minItems": 1,
+                "items": { "$ref": "ThemeIcons" },
+                "description": "Specifies icons to use for dark and light themes"
+              },
+              "default_popup": {
+                "type": "string",
+                "format": "relativeUrl",
+                "optional": true,
+                "description": "The html document to be opened as a popup when the user clicks on the calendarItemAction's icon.",
+                "preprocess": "localize"
+              },
+              "browser_style": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Enable browser styles. See the `MDN documentation on browser styles <https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/user_interface/Browser_styles>`__ for more information.",
+                "default": false
+              },
+              "default_area": {
+                "description": "Currently unused.",
+                "type": "string",
+                "optional": true
+              },
+              "type": {
+                "description": "Specifies the type of the button. Default type is <var>button</var>.",
+                "type": "string",
+                "enum": ["button", "menu"],
+                "optional": true,
+                "default": "button"
+              }
+            },
+            "optional": true
+          }
+        }
+      }
+    ]
+  },
+  {
+    "namespace": "calendarItemAction",
+    "description": "Use a calendarItemAction to put an icon in the calendar event/task dialogs. In addition to its icon, a calendarItemAction can also have a tooltip, a badge, and a popup. This namespace is called calendarItemAction for compatibility with browser WebExtensions.",
+    "permissions": ["manifest:calendar_item_action"],
+    "types": [
+      {
+        "id": "ColorArray",
+        "description": "An array of four integers in the range [0,255] that make up the RGBA color. For example, opaque red is <code>[255, 0, 0, 255]</code>.",
+        "type": "array",
+        "items": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "minItems": 4,
+        "maxItems": 4
+      },
+      {
+        "id": "ImageDataType",
+        "type": "object",
+        "isInstanceOf": "ImageData",
+        "additionalProperties": { "type": "any" },
+        "postprocess": "convertImageDataToURL",
+        "description": "Pixel data for an image. Must be an ImageData object (for example, from a <code>canvas</code> element)."
+      },
+      {
+        "id": "ImageDataDictionary",
+        "type": "object",
+        "description" : "A ``{size: ImageDataType}`` dictionary representing the icon to be set. The actual :ref:`calendarItemAction.ImageDataType` to be used is chosen depending on the screen's pixel density. See the `MDN documentation on browser styles <https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/user_interface/Browser_styles>`__ for more information on this. At least one :ref:`calendarItemAction.ImageDataType` must be specified.",
+        "patternProperties": {
+          "^[1-9]\\d*$": {"$ref": "ImageDataType"}
+        }
+      },
+      {
+        "id": "OnClickData",
+        "type": "object",
+        "description": "Information sent when a browser action is clicked.",
+        "properties": {
+          "modifiers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["Shift", "Alt", "Command", "Ctrl", "MacCtrl"]
+            },
+            "description": "An array of keyboard modifiers that were held while the menu item was clicked."
+          },
+          "button": {
+            "type": "integer",
+            "optional": true,
+            "description": "An integer value of button by which menu item was clicked."
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "setTitle",
+        "type": "function",
+        "description": "Sets the title of the calendarItemAction. This shows up in the tooltip and the label. Defaults to the add-on name.",
+        "async": "callback",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "title": {
+                "choices": [
+                  {"type": "string"},
+                  {"type": "null"}
+                ],
+                "description": "The string the calendarItemAction should display as its label and when moused over."
+              },
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "When setting a value, it will be specific to the specified tab, and will automatically reset when the tab navigates. When getting, specifies the tab to get the value from; if there is no tab-specific value, the window one will be inherited."
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": -2,
+                "description": "When setting a value, it will be specific to the specified window. When getting, specifies the window to get the value from; if there is no window-specific value, the global one will be inherited."
+              }              
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getTitle",
+        "type": "function",
+        "description": "Gets the title of the calendarItemAction.",
+        "async": "callback",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "When setting a value, it will be specific to the specified tab, and will automatically reset when the tab navigates. When getting, specifies the tab to get the value from; if there is no tab-specific value, the window one will be inherited."
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": -2,
+                "description": "When setting a value, it will be specific to the specified window. When getting, specifies the window to get the value from; if there is no window-specific value, the global one will be inherited."
+              }              
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setLabel",
+        "type": "function",
+        "description": "Sets the label of the calendarItemAction, defaults to its title. Can be set to an empty string to not display any label. If the containing toolbar is configured to display text only, the title will be used as fallback.",
+        "async": "callback",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "label": {
+                "choices": [
+                  {"type": "string"},
+                  {"type": "null"}
+                ],
+                "description": "The string the calendarItemAction should use as label. Can be set to an empty string to not display any label. If the containing toolbar is configured to display text only, the title will be used as fallback."
+              },
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "When setting a value, it will be specific to the specified tab, and will automatically reset when the tab navigates. When getting, specifies the tab to get the value from; if there is no tab-specific value, the window one will be inherited."
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": -2,
+                "description": "When setting a value, it will be specific to the specified window. When getting, specifies the window to get the value from; if there is no window-specific value, the global one will be inherited."
+              }              
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getLabel",
+        "type": "function",
+        "description": "Gets the label of the calendarItemAction.",
+        "async": "callback",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "When setting a value, it will be specific to the specified tab, and will automatically reset when the tab navigates. When getting, specifies the tab to get the value from; if there is no tab-specific value, the window one will be inherited."
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": -2,
+                "description": "When setting a value, it will be specific to the specified window. When getting, specifies the window to get the value from; if there is no window-specific value, the global one will be inherited."
+              }              
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setIcon",
+        "type": "function",
+        "description": "Sets the icon for the calendarItemAction. The icon can be specified either as the path to an image file or as the pixel data from a canvas element, or as dictionary of either one of those. Either the <b>path</b> or the <b>imageData</b> property must be specified.",
+        "async": "callback",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "imageData": {
+                "choices": [
+                  { "$ref": "ImageDataType" },
+                  { "$ref": "ImageDataDictionary" }
+                ],
+                "optional": true,
+                "description": "Either an ImageDataType object defining a single icon used for all sizes or an ImageDataDictionary object defining dedicated icons for different sizes."
+              },
+              "path": {
+                "choices": [
+                  { "type": "string" },
+                  {"$ref": "IconPath" }
+                ],
+                "optional": true,
+                "description": "Either a relative image path defining a single icon used for all sizes or an IconPathDictionary object defining dedicated icons for different sizes."
+              },
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "When setting a value, it will be specific to the specified tab, and will automatically reset when the tab navigates. When getting, specifies the tab to get the value from; if there is no tab-specific value, the window one will be inherited."
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": -2,
+                "description": "When setting a value, it will be specific to the specified window. When getting, specifies the window to get the value from; if there is no window-specific value, the global one will be inherited."
+              }              
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "setPopup",
+        "type": "function",
+        "description": "Sets the html document to be opened as a popup when the user clicks on the calendarItemAction's icon.",
+        "async": "callback",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "popup": {
+                "choices": [
+                  {"type": "string"},
+                  {"type": "null"}
+                ],
+                "description": "The html file to show in a popup.  If set to the empty string (''), no popup is shown."
+              },
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "When setting a value, it will be specific to the specified tab, and will automatically reset when the tab navigates. When getting, specifies the tab to get the value from; if there is no tab-specific value, the window one will be inherited."
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": -2,
+                "description": "When setting a value, it will be specific to the specified window. When getting, specifies the window to get the value from; if there is no window-specific value, the global one will be inherited."
+              }              
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getPopup",
+        "type": "function",
+        "description": "Gets the html document set as the popup for this calendarItemAction.",
+        "async": "callback",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "When setting a value, it will be specific to the specified tab, and will automatically reset when the tab navigates. When getting, specifies the tab to get the value from; if there is no tab-specific value, the window one will be inherited."
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": -2,
+                "description": "When setting a value, it will be specific to the specified window. When getting, specifies the window to get the value from; if there is no window-specific value, the global one will be inherited."
+              }              
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setBadgeText",
+        "type": "function",
+        "description": "Sets the badge text for the calendarItemAction. The badge is displayed on top of the icon.",
+        "async": "callback",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "text": {
+                "choices": [
+                  {"type": "string"},
+                  {"type": "null"}
+                ],
+                "description": "Any number of characters can be passed, but only about four can fit in the space."
+              },
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "When setting a value, it will be specific to the specified tab, and will automatically reset when the tab navigates. When getting, specifies the tab to get the value from; if there is no tab-specific value, the window one will be inherited."
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": -2,
+                "description": "When setting a value, it will be specific to the specified window. When getting, specifies the window to get the value from; if there is no window-specific value, the global one will be inherited."
+              }              
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getBadgeText",
+        "type": "function",
+        "description": "Gets the badge text of the calendarItemAction. If no tab nor window is specified, the global badge text is returned.",
+        "async": "callback",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "When setting a value, it will be specific to the specified tab, and will automatically reset when the tab navigates. When getting, specifies the tab to get the value from; if there is no tab-specific value, the window one will be inherited."
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": -2,
+                "description": "When setting a value, it will be specific to the specified window. When getting, specifies the window to get the value from; if there is no window-specific value, the global one will be inherited."
+              }              
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "result",
+                "type": "string"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setBadgeBackgroundColor",
+        "type": "function",
+        "description": "Sets the background color for the badge.",
+        "async": "callback",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "color": {
+                "description": "An array of four integers in the range [0,255] that make up the RGBA color of the badge. For example, opaque red is <code>[255, 0, 0, 255]</code>. Can also be a string with a CSS value, with opaque red being <code>#FF0000</code> or <code>#F00</code>.",
+                "choices": [
+                  {"type": "string"},
+                  {"$ref": "ColorArray"},
+                  {"type": "null"}
+                ]
+              },
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "When setting a value, it will be specific to the specified tab, and will automatically reset when the tab navigates. When getting, specifies the tab to get the value from; if there is no tab-specific value, the window one will be inherited."
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": -2,
+                "description": "When setting a value, it will be specific to the specified window. When getting, specifies the window to get the value from; if there is no window-specific value, the global one will be inherited."
+              }              
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getBadgeBackgroundColor",
+        "type": "function",
+        "description": "Gets the background color of the calendarItemAction.",
+        "async": "callback",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "When setting a value, it will be specific to the specified tab, and will automatically reset when the tab navigates. When getting, specifies the tab to get the value from; if there is no tab-specific value, the window one will be inherited."
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": -2,
+                "description": "When setting a value, it will be specific to the specified window. When getting, specifies the window to get the value from; if there is no window-specific value, the global one will be inherited."
+              }              
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "result",
+                "$ref": "ColorArray"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "enable",
+        "type": "function",
+        "description": "Enables the calendarItemAction for a tab. By default, a calendarItemAction is enabled.",
+        "async": "callback",
+        "parameters": [
+          {
+            "type": "integer",
+            "optional": true,
+            "name": "tabId",
+            "minimum": 0,
+            "description": "The id of the tab for which you want to modify the calendarItemAction."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "disable",
+        "type": "function",
+        "description": "Disables the calendarItemAction for a tab.",
+        "async": "callback",
+        "parameters": [
+          {
+            "type": "integer",
+            "optional": true,
+            "name": "tabId",
+            "minimum": 0,
+            "description": "The id of the tab for which you want to modify the calendarItemAction."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "isEnabled",
+        "type": "function",
+        "description": "Checks whether the calendarItemAction is enabled.",
+        "async": "callback",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "When setting a value, it will be specific to the specified tab, and will automatically reset when the tab navigates. When getting, specifies the tab to get the value from; if there is no tab-specific value, the window one will be inherited."
+              },
+              "windowId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": -2,
+                "description": "When setting a value, it will be specific to the specified window. When getting, specifies the window to get the value from; if there is no window-specific value, the global one will be inherited."
+              }              
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "type": "boolean"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "openPopup",
+        "type": "function",
+        "requireUserInput": true,
+        "description": "Opens the extension popup window in the active window.",
+        "async": true,
+        "parameters": []
+      }
+    ],
+    "events": [
+      {
+        "name": "onClicked",
+        "type": "function",
+        "description": "Fired when a calendarItemAction icon is clicked.  This event will not fire if the calendarItemAction has a popup. This is a user input event handler. For asynchronous listeners some `restrictions <https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/User_actions>`__ apply.",
+        "parameters": [
+          {
+            "name": "tab",
+            "$ref": "tabs.Tab"
+          },
+          {
+            "name": "info",
+            "$ref": "OnClickData",
+            "optional": true
+          }
+        ]
+      }
+    ]
+  }
+]
+

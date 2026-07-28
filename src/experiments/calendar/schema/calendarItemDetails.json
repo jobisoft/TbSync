@@ -1,0 +1,75 @@
+[
+  {
+    "namespace": "manifest",
+    "types": [
+      {
+        "$extend": "WebExtensionManifest",
+        "properties": {
+          "calendar_item_details": {
+            "type": "object",
+            "additionalProperties": { "$ref": "UnrecognizedProperty" },
+            "properties": {
+              "default_title": {
+                "type": "string",
+                "description": "The title of the calendarItemAction. This shows up in the tooltip and the label. Defaults to the add-on name.",
+                "optional": true,
+                "preprocess": "localize"
+              },
+              "default_icon": {
+                "$ref": "IconPath",
+                "description": "The icon for the itemAction.",
+                "optional": true
+              },
+              "theme_icons": {
+                "type": "array",
+                "optional": true,
+                "minItems": 1,
+                "items": { "$ref": "ThemeIcons" },
+                "description": "Specifies icons to use for dark and light themes"
+              },
+              "default_content": {
+                "type": "string",
+                "format": "relativeUrl",
+                "optional": true,
+                "description": "The html document to be shown in the item dialog",
+                "preprocess": "localize"
+              },
+              "browser_style": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Enable browser styles. See the `MDN documentation on browser styles <https://developer.mozilla.org/docs/Mozilla/Add-ons/WebExtensions/user_interface/Browser_styles>`__ for more information.",
+                "default": false
+              },
+              "allowed_areas": {
+                "optional": true,
+                "default": "secondary",
+                "choices": [
+                  { "$ref": "CalendarItemDetailsArea" },
+                  {
+                    "type": "array",
+                    "items": { "$ref": "CalendarItemDetailsArea" }
+                  }
+                ]
+              }
+            },
+            "optional": true
+          }
+        }
+      }
+    ]
+  },
+  {
+    "namespace": "calendarItemDetails",
+    "permissions": ["manifest:calendar_item_details"],
+    "types": [
+      {
+        "id": "CalendarItemDetailsArea",
+        "description": "Describes the area(s) where the item details should be displayed",
+        "type": "string",
+        "enum": ["secondary", "inline", "summary"]
+      }
+    ],
+    "functions": [],
+    "events": []
+  }
+]

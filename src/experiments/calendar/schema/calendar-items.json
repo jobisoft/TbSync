@@ -13,11 +13,7 @@
           "instance": { "type": "string", "optional": true },
           "format": { "$ref": "CalendarItemFormats", "optional": true },
           "item": { "$ref": "RawCalendarItem" },
-          "metadata": {
-            "type": "object",
-            "additionalProperties": { "type": "any" },
-            "optional": true
-          }
+          "metadata": { "type": "object", "additionalProperties": { "type": "any" }, "optional": true }
         }
       },
       {
@@ -65,7 +61,7 @@
               "returnFormat": { "$ref": "ReturnFormat", "optional": true }
             }
           }
-        ]
+         ]
       },
       {
         "name": "query",
@@ -85,11 +81,7 @@
                 ],
                 "optional": true
               },
-              "type": {
-                "type": "string",
-                "enum": ["event", "task"],
-                "optional": true
-              },
+              "type": { "type": "string", "enum": ["event", "task"], "optional": true },
               "rangeStart": { "type": "string", "optional": true },
               "rangeEnd": { "type": "string", "optional": true },
               "expand": { "type": "boolean", "optional": true }
@@ -112,12 +104,7 @@
               "format": { "$ref": "CalendarItemFormats", "optional": true },
               "item": { "$ref": "RawCalendarItem" },
               "returnFormat": { "$ref": "ReturnFormat", "optional": true },
-              "metadata": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": { "type": "any" },
-                "optional": true
-              }
+              "metadata": { "type": "object", "properties": {}, "additionalProperties": { "type": "any" }, "optional": true }
             }
           }
         ]
@@ -136,11 +123,7 @@
               "format": { "$ref": "CalendarItemFormats", "optional": true },
               "item": { "$ref": "RawCalendarItem" },
               "returnFormat": { "$ref": "ReturnFormat", "optional": true },
-              "metadata": {
-                "type": "object",
-                "additionalProperties": { "type": "any" },
-                "optional": true
-              }
+              "metadata": { "type": "object", "additionalProperties": { "type": "any" }, "optional": true }
             }
           }
         ]
@@ -184,7 +167,9 @@
       {
         "name": "onCreated",
         "type": "function",
-        "parameters": [{ "name": "item", "$ref": "CalendarItem" }],
+        "parameters": [
+          { "name": "item", "$ref": "CalendarItem" }
+        ],
         "extraParameters": [
           {
             "type": "object",
@@ -200,12 +185,7 @@
         "type": "function",
         "parameters": [
           { "name": "item", "$ref": "CalendarItem" },
-          {
-            "name": "changeInfo",
-            "type": "object",
-            "properties": {},
-            "description": "TODO needs properties"
-          }
+          { "name": "changeInfo", "type": "object", "properties": {}, "description": "TODO needs properties" }
         ],
         "extraParameters": [
           {
