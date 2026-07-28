@@ -12,7 +12,7 @@
  *     diff -q tbsync-new/tbsync/protocol.mjs google-4-tbsync/vendor/tbsync/protocol.mjs
  */
 
-export const PROTOCOL_VERSION = "1.0";
+export const PROTOCOL_VERSION = "1.1";
 
 /** Name used for the persistent runtime.connect port. Includes major version so
  *  a breaking protocol bump leaves mismatched peers silently disconnected. */
@@ -53,7 +53,25 @@ export const HOST_CMD = {
  *
  * Account universal fields (host-authored or host-interpreted):
  *   accountId, accountName, provider, enabled,
- *   error, lastSyncTime, autoSyncIntervalMinutes, noAutosyncUntil, icon, custom
+ *   error, lastSyncTime, autoSyncIntervalMinutes, noAutosyncUntil, icon,
+ *   legacyMigrationPending, custom
+ *
+ * `legacyMigrationPending` marks a row the legacy importer produced. The
+ * importer lifts the host-owned fields out of the legacy JSON but copies
+ * every provider field into `custom` verbatim, so the row is only half
+ * converted: whatever reshaping the provider's own data needs has not
+ * happened yet. The host cannot do that reshaping - it does not know what
+ * shape any provider's `custom` should have - so it flags the row instead
+ * and refuses to service the account until the owning provider reports
+ * back via LEGACY_MIGRATION_DONE.
+ *
+ * The flag exists because the importer can run more than once. Its only
+ * guard is the absence of the host's own account storage, and the legacy
+ * JSON on disk is never consumed, so anything that clears host storage
+ * (reinstalling TbSync) makes the next boot re-import the legacy snapshot
+ * over rows a provider had already finished converting. Providers cannot
+ * detect that on their own: no provider event fires, and a provider's own
+ * install/update state says nothing about what the host just did.
  *
  * `icon` is an optional per-account icon override: a size-keyed map of
  * **relative** paths within the provider extension, e.g.
@@ -128,6 +146,18 @@ export const HOST_CMD = {
  *   re-push folder lists freely without wiping locally-bound state.
  *   `hidden` is taken straight from the descriptor (default `false` if
  *   omitted).
+ *
+ * LEGACY_MIGRATION_DONE { accountId }
+ *   → clears `legacyMigrationPending`, making the account serviceable
+ *   again. Send it once the provider has finished converting that
+ *   account's imported `custom` (and any folder state hanging off it) to
+ *   the shape the current code expects. Per-account on purpose: one
+ *   account failing to convert must not unblock the rest.
+ *
+ *   Send it only for accounts that actually converted. Leaving the flag
+ *   set is the failure path - the account stays blocked and the provider
+ *   is asked again on the next boot, which is why per-account conversion
+ *   work has to be idempotent.
  */
 export const PROVIDER_CMD = {
   REGISTER_ACCOUNT: "registerAccount",
@@ -158,6 +188,11 @@ export const PROVIDER_CMD = {
   // one-shot upgrade runner so user-visible actions don't race with
   // upgrade work. Args: { locked: boolean }.
   SET_PROVIDER_UPGRADE_LOCK: "setProviderUpgradeLock",
+  // Clears `legacyMigrationPending` for one account. Args: { accountId }.
+  // The host sets that flag on every row its legacy importer produces and
+  // treats a flagged account as unserviceable; this is the only way to
+  // clear it. See the account-field notes above.
+  LEGACY_MIGRATION_DONE: "legacyMigrationDone",
 };
 
 /** Provider → TbSync notification types (no response).

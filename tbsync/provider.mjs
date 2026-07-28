@@ -247,6 +247,21 @@ export class TbSyncProviderImplementation {
     });
   }
 
+  /** Report that this provider has finished converting the imported data
+   *  of one account, clearing its `legacyMigrationPending` flag and making
+   *  it serviceable again. Args: `{accountId}`.
+   *
+   *  Accounts carrying that flag came from the host's legacy importer with
+   *  their `custom` copied over verbatim, so they are in whatever shape the
+   *  legacy add-on left them in. Check for it whenever a port opens - the
+   *  importer runs on the host's boot and re-runs whenever host storage has
+   *  been cleared, neither of which produces an event on this side. Call
+   *  this only for accounts that converted cleanly; an account left flagged
+   *  stays blocked and comes back on the next boot. */
+  legacyMigrationDone(args) {
+    return this.#sendCmd(PROVIDER_CMD.LEGACY_MIGRATION_DONE, args);
+  }
+
   // ── Outbound: notifications ─────────────────────────────────────────────
 
   reportSyncState(payload) {

@@ -157,6 +157,13 @@ async function migrateAccounts(legacyAccounts68) {
       lastSyncTime: Number(legacyRow.lastsynctime ?? 0) || 0,
       autoSyncIntervalMinutes: Number(legacyRow.autosync ?? 0) || 0,
       noAutosyncUntil: Number(legacyRow.noAutosyncUntil ?? 0) || 0,
+      // `custom` above is the legacy row verbatim, so this account is only
+      // half converted - the provider's own data still has whatever shape
+      // the legacy add-on wrote. Flag it so the host refuses to service the
+      // account until its provider reports back via LEGACY_MIGRATION_DONE.
+      // Set unconditionally, including for providers that aren't installed
+      // right now: the flag simply waits until one turns up.
+      legacyMigrationPending: true,
       custom,
     };
   }

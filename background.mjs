@@ -394,11 +394,35 @@ router.setProviderRpcHandler(
     const accs = await accounts.byProvider(providerId);
     for (const a of accs) {
       if (locked) upgradeAccounts.add(a.accountId);
-      else upgradeAccounts.delete(a.accountId);
+      // An account still carrying `legacyMigrationPending` holds
+      // half-converted data and stays blocked no matter who releases the
+      // lock - the provider signals a successful conversion by clearing
+      // that flag, so one that survived the upgrade run is one that did
+      // not convert. It gets another attempt on the next boot.
+      else if (!a.legacyMigrationPending) upgradeAccounts.delete(a.accountId);
     }
     // One broadcast covers every affected account; manager re-renders the
     // sidebar from the snapshot returned by getState, which now reflects
     // the new upgradeAccounts set.
+    ui.broadcast({ type: "accounts-changed" });
+    return null;
+  },
+);
+
+router.setProviderRpcHandler(
+  PROVIDER_CMD.LEGACY_MIGRATION_DONE,
+  async (providerId, args) => {
+    const { accountId } = args ?? {};
+    const acc = await accounts.get(accountId);
+    if (!acc || acc.provider !== providerId) {
+      throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
+    }
+    await accounts.update(accountId, { legacyMigrationPending: false });
+    // Deliberately not touching `upgradeAccounts` here: the provider does
+    // this work while holding the upgrade lock, and releasing that lock is
+    // what unblocks the accounts that made it. A provider that clears the
+    // flag without ever locking leaves the account blocked until the next
+    // boot, when the seed below no longer sees a flag to act on.
     ui.broadcast({ type: "accounts-changed" });
     return null;
   },
@@ -835,6 +859,17 @@ browser.alarms.onAlarm.addListener((alarm) => {
 // ── Boot ───────────────────────────────────────────────────────────────────
 
 await ensureSchema();
+// Block every account the legacy importer left half-converted, before any
+// provider can announce itself. `ensureSchema` is where the import runs, so
+// rows it just produced are already readable here, and seeding the same set
+// the upgrade lock uses means the existing gates - `assertNotUpgrading`, the
+// autosync tick, the action menu, the manager's "upgrading" row - all cover
+// this case without knowing about it. Sequencing this ahead of
+// `registry.init` is what closes the window: no port can open, so no sync
+// can start against a flagged account before the flag takes effect.
+for (const acc of await accounts.list()) {
+  if (acc.legacyMigrationPending) upgradeAccounts.add(acc.accountId);
+}
 ui.init();
 actionBadge.init();
 await actionBadge.refresh();
