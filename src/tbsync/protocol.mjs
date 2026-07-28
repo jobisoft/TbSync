@@ -27,11 +27,13 @@
  *        local ones when a sync key is rejected would duplicate the whole
  *        folder on the first such recovery, so those must not pair with a
  *        1.2 host.
- *   1.3  FOCUS_CONFIG_POPUP and FOCUS_REAUTH_POPUP replaced by the single
- *        FOCUS_ACCOUNT_POPUP. They only ever differed in which internal map
- *        the provider looked in, and nothing consumed the distinction.
+ *
+ *        FOCUS_CONFIG_POPUP and FOCUS_REAUTH_POPUP also replaced by the
+ *        single FOCUS_ACCOUNT_POPUP. They only ever differed in which
+ *        internal map the provider looked in, and nothing consumed the
+ *        distinction.
  */
-export const PROTOCOL_VERSION = "1.3";
+export const PROTOCOL_VERSION = "1.2";
 
 /** Name used for the persistent runtime.connect port. Includes major version so
  *  a breaking protocol bump leaves mismatched peers silently disconnected. */
