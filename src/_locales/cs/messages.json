@@ -107,6 +107,9 @@
   "manager.provider.install": {
     "message": "Nainstalovat z addons.thunderbird.net"
   },
+  "manager.provider.installBeta": {
+    "message": "Nainstalovat beta verzi z GitHubu"
+  },
   "manager.provider.focusSetup": {
     "message": "Přenést okno nastavení do popředí"
   },

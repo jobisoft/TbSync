@@ -107,6 +107,9 @@
   "manager.provider.install": {
     "message": "Инсталиране от addons.thunderbird.net"
   },
+  "manager.provider.installBeta": {
+    "message": "Инсталиране на бета версията от GitHub"
+  },
   "manager.provider.focusSetup": {
     "message": "Извеждане на прозореца за настройка на преден план"
   },

@@ -107,6 +107,9 @@
   "manager.provider.install": {
     "message": "Instalar desde addons.thunderbird.net"
   },
+  "manager.provider.installBeta": {
+    "message": "Instalar a beta desde GitHub"
+  },
   "manager.provider.focusSetup": {
     "message": "Traer á fronte a xanela de configuración"
   },

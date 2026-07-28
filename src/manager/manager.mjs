@@ -11,6 +11,7 @@ import {
   accountIconUrl,
   providerIconUrl,
 } from "../modules/account-icons.mjs";
+import { isBetaBuild } from "../modules/channel.mjs";
 import { FOLDER_TYPES } from "../modules/folder-types.mjs";
 import { createManagerClient } from "../modules/manager-client.mjs";
 import { EVENT_LOG_MAX, KEYS } from "../modules/storage-keys.mjs";
@@ -547,10 +548,15 @@ function renderSidebar() {
       row.title = canAdd
         ? i18n("manager.addAccount", "Add account")
         : canInstall
-          ? i18n(
-              "manager.provider.install",
-              "Install from addons.thunderbird.net",
-            )
+          ? isBetaBuild()
+            ? i18n(
+                "manager.provider.installBeta",
+                "Install the beta from GitHub",
+              )
+            : i18n(
+                "manager.provider.install",
+                "Install from addons.thunderbird.net",
+              )
           : p.state === "active"
             ? i18n(
                 "manager.provider.focusSetup",

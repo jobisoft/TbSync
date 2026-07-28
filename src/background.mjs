@@ -8,7 +8,7 @@ import {
 import * as accounts from "./modules/accounts.mjs";
 import * as folders from "./modules/folders.mjs";
 import * as providers from "./modules/providers.mjs";
-import { KNOWN_PROVIDERS } from "./modules/known-providers.mjs";
+import { KNOWN_PROVIDERS, installUrlFor } from "./modules/known-providers.mjs";
 import * as eventLog from "./modules/event-log.mjs";
 import * as registry from "./modules/registry.mjs";
 import * as router from "./modules/router.mjs";
@@ -454,7 +454,8 @@ ui.setManagerRpcHandler("getState", async () => {
   const liveIds = new Set(live.map((p) => p.providerId));
   const providerList = live.map((p) => {
     const known = KNOWN_PROVIDERS[p.providerId];
-    return known?.installUrl ? { ...p, installUrl: known.installUrl } : p;
+    const installUrl = known && installUrlFor(known);
+    return installUrl ? { ...p, installUrl } : p;
   });
   for (const [providerId, known] of Object.entries(KNOWN_PROVIDERS)) {
     if (liveIds.has(providerId)) continue;
@@ -464,7 +465,7 @@ ui.setManagerRpcHandler("getState", async () => {
       state: "uninstalled",
       capabilities: {},
       icons: {},
-      installUrl: known.installUrl,
+      installUrl: installUrlFor(known),
     });
   }
   return {

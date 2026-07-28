@@ -107,6 +107,9 @@
   "manager.provider.install": {
     "message": "Installer depuis addons.thunderbird.net"
   },
+  "manager.provider.installBeta": {
+    "message": "Installer la version bêta depuis GitHub"
+  },
   "manager.provider.focusSetup": {
     "message": "Mettre la fenêtre de configuration au premier plan"
   },

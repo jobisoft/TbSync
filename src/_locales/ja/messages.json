@@ -107,6 +107,9 @@
   "manager.provider.install": {
     "message": "addons.thunderbird.net からインストール"
   },
+  "manager.provider.installBeta": {
+    "message": "GitHub からベータ版をインストール"
+  },
   "manager.provider.focusSetup": {
     "message": "設定ウィンドウを前面に表示"
   },

@@ -107,6 +107,9 @@
   "manager.provider.install": {
     "message": "Paigalda saidilt addons.thunderbird.net"
   },
+  "manager.provider.installBeta": {
+    "message": "Paigalda beetaversioon GitHubist"
+  },
   "manager.provider.focusSetup": {
     "message": "Too seadistusaken esiplaanile"
   },

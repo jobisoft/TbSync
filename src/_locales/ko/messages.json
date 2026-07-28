@@ -107,6 +107,9 @@
   "manager.provider.install": {
     "message": "addons.thunderbird.net에서 설치"
   },
+  "manager.provider.installBeta": {
+    "message": "GitHub에서 베타 버전 설치"
+  },
   "manager.provider.focusSetup": {
     "message": "설정 창을 앞으로 가져오기"
   },

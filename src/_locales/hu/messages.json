@@ -107,6 +107,9 @@
   "manager.provider.install": {
     "message": "Telepítés az addons.thunderbird.net oldalról"
   },
+  "manager.provider.installBeta": {
+    "message": "A béta telepítése a GitHubról"
+  },
   "manager.provider.focusSetup": {
     "message": "A beállítási ablak előtérbe hozása"
   },
