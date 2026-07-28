@@ -3,8 +3,8 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "tbsync@jobisoft.de",
-      "strict_min_version": "140.0",
-      "strict_max_version": "151.*"
+      "strict_min_version": "153.0",
+      "strict_max_version": "154.*"
     }
   },
   "name": "TbSync Manager",
