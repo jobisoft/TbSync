@@ -1,0 +1,8 @@
+# Vendored code: kept byte-identical to the upstream sources recorded in
+# src/VENDOR.md, so reformatting it would break that guarantee.
+src/vendor/
+src/experiments/calendar/
+
+# Build output.
+dist/
+dev/
