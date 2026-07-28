@@ -197,8 +197,8 @@
   "manager.account.disconnect": {
     "message": "Koppla från"
   },
-  "manager.account.signInAgain": {
-    "message": "Logga in igen"
+  "manager.account.authenticate": {
+    "message": "Autentisera"
   },
   "manager.account.settings": {
     "message": "Inställningar"

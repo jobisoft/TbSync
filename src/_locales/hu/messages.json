@@ -197,8 +197,8 @@
   "manager.account.disconnect": {
     "message": "Lecsatlakozás"
   },
-  "manager.account.signInAgain": {
-    "message": "Bejelentkezés újra"
+  "manager.account.authenticate": {
+    "message": "Hitelesítés"
   },
   "manager.account.settings": {
     "message": "Beállítások"

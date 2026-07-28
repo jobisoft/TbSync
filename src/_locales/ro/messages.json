@@ -197,8 +197,8 @@
   "manager.account.disconnect": {
     "message": "Deconectează"
   },
-  "manager.account.signInAgain": {
-    "message": "Autentifică-te din nou"
+  "manager.account.authenticate": {
+    "message": "Autentifică"
   },
   "manager.account.settings": {
     "message": "Setări"

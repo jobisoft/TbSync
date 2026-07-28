@@ -197,8 +197,8 @@
   "manager.account.disconnect": {
     "message": "Katkesta ühendus"
   },
-  "manager.account.signInAgain": {
-    "message": "Logi uuesti sisse"
+  "manager.account.authenticate": {
+    "message": "Autendi"
   },
   "manager.account.settings": {
     "message": "Sätted"

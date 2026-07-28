@@ -12,7 +12,23 @@
  *     diff -q TbSync/src/tbsync/protocol.mjs google-4-tbsync/src/vendor/tbsync/protocol.mjs
  */
 
-export const PROTOCOL_VERSION = "1.1";
+/**
+ * Bumped whenever host and providers must be upgraded together. The host
+ * rejects a mismatched announce outright, so a stale provider fails to
+ * connect rather than misbehaving quietly - which is the whole point when
+ * the incompatibility is behavioural rather than a change to the messages
+ * themselves.
+ *
+ *   1.1  `legacyMigrationPending` + PROVIDER_CMD.LEGACY_MIGRATION_DONE.
+ *   1.2  An E:AUTH account is no longer torn down (see the error-code notes
+ *        below). Its folders, sync keys and local resources survive, so
+ *        recovery resumes from the existing sync state instead of pulling
+ *        everything fresh. A provider that cannot re-match server items to
+ *        local ones when a sync key is rejected would duplicate the whole
+ *        folder on the first such recovery, so those must not pair with a
+ *        1.2 host.
+ */
+export const PROTOCOL_VERSION = "1.2";
 
 /** Name used for the persistent runtime.connect port. Includes major version so
  *  a breaking protocol bump leaves mismatched peers silently disconnected. */
@@ -288,7 +304,12 @@ export const SYNCSTATE_BASE_KEYS = new Set(["sync", "prepare", "send", "eval"]);
  *                                    on the account: stamps the record
  *                                    when a sync throws with `code:
  *                                    ERR.AUTH`, and the manager swaps in
- *                                    the Sign-in-again button.
+ *                                    the Authenticate button. The stamp
+ *                                    is all that happens - the account
+ *                                    stays connected and keeps its
+ *                                    folders and local resources, and
+ *                                    the host simply refuses to sync it
+ *                                    until the error is cleared.
  *   error.E:NETWORK               - Could not reach the server.
  *   error.E:TIMEOUT               - Operation timed out.
  *   error.E:CANCELLED             - Operation cancelled.
@@ -321,8 +342,9 @@ export const SYNCSTATE_BASE_KEYS = new Set(["sync", "prepare", "send", "eval"]);
  * folder with a non-null `error` (or the account's own `error`) → the
  * account pill is red. Any selected folder with a non-null `warning`
  * → yellow. `error: "E:AUTH"` on an account record is special-cased by
- * the manager: the pill reads "Authentication failed" and the card
- * switches to Sign-in-again + Remove buttons.
+ * the manager: the pill reads "Authentication failed" and the primary
+ * button becomes Authenticate. Sync is held back while it stands;
+ * connecting and disconnecting stay available.
  */
 /** Shared error codes. */
 export const ERR = {

@@ -646,16 +646,22 @@ ui.setManagerRpcHandler("signInAgain", async ({ accountId }) => {
     } catch (err) {
       caught = err;
     }
-    // Auto-reconnect on successful reauth: clear the authentication-failed
-    // error, then run the normal enable flow so the provider rebuilds its
-    // Thunderbird resources + folder list. Kept inside withBusyAccount so
-    // the UI shows a single "Working…" pill across the whole sequence.
+    // Clear the authentication-failed error so the account is serviceable
+    // again. Kept inside withBusyAccount so the UI shows a single "Working…"
+    // pill across the whole sequence.
     if (!caught && statusData?.type === STATUS_TYPES.SUCCESS) {
       await accounts.update(accountId, { error: null });
-      await router.sendCmd(acc.provider, HOST_CMD.ACCOUNT_ENABLED, {
-        accountId,
-      });
-      await accounts.update(accountId, { enabled: true });
+      // An auth failure no longer disables the account, so normally there is
+      // nothing to re-enable. Accounts stranded by the version that did
+      // disable them still need the enable flow to rebuild their Thunderbird
+      // resources and folder list, so they heal on the first authentication
+      // after an upgrade.
+      if (!acc.enabled) {
+        await router.sendCmd(acc.provider, HOST_CMD.ACCOUNT_ENABLED, {
+          accountId,
+        });
+        await accounts.update(accountId, { enabled: true });
+      }
     }
   });
   if (caught) {
@@ -668,7 +674,18 @@ ui.setManagerRpcHandler("signInAgain", async ({ accountId }) => {
     });
     return null;
   }
-  if (statusData?.type === STATUS_TYPES.SUCCESS) return null;
+  if (statusData?.type === STATUS_TYPES.SUCCESS) {
+    // Sync straight away so the user finds out whether the new credentials
+    // actually work, rather than waiting for the next autosync tick. Outside
+    // withBusyAccount because syncAccount takes its own busy state, and
+    // fire-and-forget to match the manual-sync handler. If the credentials
+    // are still wrong this re-stamps E:AUTH through the normal path and the
+    // Authenticate button comes back.
+    syncAccount(accountId).catch((err) =>
+      console.warn(`[tbsync] post-auth sync of ${accountId} failed:`, err),
+    );
+    return null;
+  }
   // Non-success StatusData: cancellations don't get logged (user's intentional
   // abort); anything else does so the Event Log has the trail without popping
   // a dialog.

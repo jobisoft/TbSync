@@ -197,8 +197,8 @@
   "manager.account.disconnect": {
     "message": "Odpojit"
   },
-  "manager.account.signInAgain": {
-    "message": "Přihlásit se znovu"
+  "manager.account.authenticate": {
+    "message": "Ověřit"
   },
   "manager.account.settings": {
     "message": "Nastavení"

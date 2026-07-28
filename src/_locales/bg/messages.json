@@ -197,8 +197,8 @@
   "manager.account.disconnect": {
     "message": "Прекъсване"
   },
-  "manager.account.signInAgain": {
-    "message": "Повторно влизане"
+  "manager.account.authenticate": {
+    "message": "Удостоверяване"
   },
   "manager.account.settings": {
     "message": "Настройки"

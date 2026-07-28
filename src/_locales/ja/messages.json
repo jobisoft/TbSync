@@ -197,8 +197,8 @@
   "manager.account.disconnect": {
     "message": "切断"
   },
-  "manager.account.signInAgain": {
-    "message": "再度サインイン"
+  "manager.account.authenticate": {
+    "message": "認証"
   },
   "manager.account.settings": {
     "message": "設定"

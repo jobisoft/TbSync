@@ -200,8 +200,8 @@
   "manager.account.disconnect": {
     "message": "Disconnect"
   },
-  "manager.account.signInAgain": {
-    "message": "Sign in again"
+  "manager.account.authenticate": {
+    "message": "Authenticate"
   },
   "manager.account.settings": {
     "message": "Settings"

@@ -197,8 +197,8 @@
   "manager.account.disconnect": {
     "message": "Déconnecter"
   },
-  "manager.account.signInAgain": {
-    "message": "Se reconnecter"
+  "manager.account.authenticate": {
+    "message": "S'authentifier"
   },
   "manager.account.settings": {
     "message": "Paramètres"

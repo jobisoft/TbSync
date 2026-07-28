@@ -197,8 +197,8 @@
   "manager.account.disconnect": {
     "message": "Rozłącz"
   },
-  "manager.account.signInAgain": {
-    "message": "Zaloguj się ponownie"
+  "manager.account.authenticate": {
+    "message": "Uwierzytelnij"
   },
   "manager.account.settings": {
     "message": "Ustawienia"

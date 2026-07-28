@@ -197,8 +197,8 @@
   "manager.account.disconnect": {
     "message": "Trennen"
   },
-  "manager.account.signInAgain": {
-    "message": "Erneut anmelden"
+  "manager.account.authenticate": {
+    "message": "Authentifizieren"
   },
   "manager.account.settings": {
     "message": "Einstellungen"

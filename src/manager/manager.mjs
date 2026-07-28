@@ -455,8 +455,12 @@ function accountActions(acc) {
   return {
     canRemove,
     canSync: baseEnabled && !!acc.enabled && !isReauth,
-    canConnect: baseEnabled && !acc.enabled && !isReauth,
-    canDisconnect: baseEnabled && !!acc.enabled && !isReauth,
+    // Connecting and disconnecting stay available while authentication is
+    // outstanding - only syncing is held back. The account is left connected
+    // now, so Disconnect is the way to put it aside without deleting it, and
+    // disabling clears the error.
+    canConnect: baseEnabled && !acc.enabled,
+    canDisconnect: baseEnabled && !!acc.enabled,
     // Re-clicks while the popup is open should focus it, even if the
     // account is currently transient-busy from the popup's own RPC.
     canReauth: providerActive && isReauth && (!transientLocked || reauthOpen),
@@ -598,14 +602,16 @@ function renderDetail() {
   const isNeedsReauth = acc.error === "E:AUTH";
 
   // Primary action button:
-  //   acc.error === E:AUTH  → Sign in again  (signInAgain → provider runs OAuth)
+  //   acc.error === E:AUTH  → Authenticate   (signInAgain → provider decides
+  //                                           how: a consent window, or its
+  //                                           settings for password accounts)
   //   !acc.enabled          → Connect        (setAccountEnabled true)
   //   acc.enabled           → Disconnect     (setAccountEnabled false)
   // Enabled-ness for each variant comes from `actions` so the context menu
   // and these buttons stay in lockstep.
   let primaryLabel, primaryAction, primaryEnabled;
   if (isNeedsReauth) {
-    primaryLabel = i18n("manager.account.signInAgain", "Sign in again");
+    primaryLabel = i18n("manager.account.authenticate", "Authenticate");
     primaryAction = "reauth";
     primaryEnabled = actions.canReauth;
   } else if (acc.enabled) {

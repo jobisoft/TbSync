@@ -32,8 +32,8 @@ const RERUN_BACKOFF_MS = 5_000;
  *  Filtering to `f.selected` mirrors the manager's account-row
  *  severity computation at manager.mjs:375 so badge and manager rows
  *  stay consistent. The auth-failed path is preserved verbatim —
- *  `disableAccountForReauth` stamps `error: ERR.AUTH` and disables
- *  the account; we don't overwrite that. */
+ *  `flagAccountForReauth` stamps `error: ERR.AUTH`; we don't overwrite
+ *  that. */
 export async function recomputeAccountError(accountId) {
   const acc = await accounts.get(accountId);
   if (!acc) return;
@@ -60,6 +60,12 @@ export async function syncAccount(accountId, { syncList = true } = {}) {
   if (syncingAccounts.has(accountId)) return;
   const acc = await accounts.get(accountId);
   if (!acc || !acc.enabled) return;
+  // An account whose credentials the server rejected stays enabled, so
+  // `enabled` alone no longer holds syncing back. Refusing here covers every
+  // caller at once; without it each autosync tick would present the same
+  // rejected credentials again, which is how servers decide to lock an
+  // account out. Cleared by authenticating, or by disabling the account.
+  if (acc.error === ERR.AUTH) return;
   if (!router.isProviderConnected(acc.provider)) {
     await eventLog.append({
       accountId,
@@ -137,7 +143,7 @@ export async function syncAccount(accountId, { syncList = true } = {}) {
   } catch (err) {
     if (err?.code === ERR.AUTH) {
       authFailed = true;
-      await disableAccountForReauth(acc, err);
+      await flagAccountForReauth(acc, err);
     } else {
       await eventLog.append({
         accountId,
@@ -160,7 +166,7 @@ export async function syncAccount(accountId, { syncList = true } = {}) {
       }
     }
     if (!authFailed) {
-      // disableAccountForReauth already wrote the account record with
+      // flagAccountForReauth already wrote the account record with
       // error: ERR.AUTH; don't overwrite it here.
       await accounts.update(accountId, { lastSyncTime: Date.now() });
       // Aggregate per-folder errors into account.error so the toolbar
@@ -173,38 +179,30 @@ export async function syncAccount(accountId, { syncList = true } = {}) {
   }
 }
 
-/** Refresh token is gone or revoked: tell the provider to tear down its
- *  Thunderbird resources, drop the folder list on the host side, and disable
- *  the account. Stamp `error: "E:AUTH"` onto the account so the manager
- *  shows the "Sign in again" button. */
-async function disableAccountForReauth(acc, err) {
+/** The server rejected our credentials. Stamp `error: "E:AUTH"` so the
+ *  manager offers the Authenticate button, and leave everything else alone.
+ *
+ *  The stamp is all that is needed to stop syncing: `syncAccount` refuses an
+ *  account carrying it, autosync skips it, and the manager greys out Sync.
+ *  Nothing is torn down - the account stays connected, its folder rows keep
+ *  their selection, target mappings and sync keys, and the Thunderbird
+ *  address books and calendars stay where they are.
+ *
+ *  Tearing down is what a user asking to disconnect means, not what an
+ *  expired password means. Doing it here cost people their local calendars
+ *  and a full re-download every time a password rotated. */
+async function flagAccountForReauth(acc, err) {
   const accountId = acc.accountId;
-  await router
-    .sendCmd(acc.provider, HOST_CMD.ACCOUNT_DISABLED, { accountId })
-    .catch((rpcErr) => {
-      return eventLog.append({
-        accountId,
-        level: "warning",
-        message:
-          "Provider refused ACCOUNT_DISABLED during reauth (it may already be gone)",
-        details: rpcErr?.message ?? null,
-      });
-    });
-  await folders.clearAccount(accountId);
-  await accounts.update(accountId, {
-    enabled: false,
-    lastSyncTime: 0,
-    error: ERR.AUTH,
-  });
+  await accounts.update(accountId, { error: ERR.AUTH });
   await eventLog.append({
     accountId,
     folderId: null,
     level: "error",
     message:
-      "The provider refused the refresh token - account disabled, sign in again to resume.",
+      "The server rejected this account's credentials - syncing is paused until you authenticate again.",
     details: err?.message ?? null,
   });
-  ui.broadcast({ type: "folders-changed", accountId });
+  ui.broadcast({ type: "accounts-changed", accountId });
 }
 
 async function syncFolderOnce(acc, folder) {

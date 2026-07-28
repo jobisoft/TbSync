@@ -197,8 +197,8 @@
   "manager.account.disconnect": {
     "message": "연결 끊기"
   },
-  "manager.account.signInAgain": {
-    "message": "다시 로그인"
+  "manager.account.authenticate": {
+    "message": "인증"
   },
   "manager.account.settings": {
     "message": "설정"

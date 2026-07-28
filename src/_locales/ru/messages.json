@@ -197,8 +197,8 @@
   "manager.account.disconnect": {
     "message": "Отключить"
   },
-  "manager.account.signInAgain": {
-    "message": "Войти снова"
+  "manager.account.authenticate": {
+    "message": "Аутентификация"
   },
   "manager.account.settings": {
     "message": "Настройки"
