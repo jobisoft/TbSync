@@ -40,14 +40,22 @@ export function onChange(fn) {
  * @param {(providerId: string) => void} deps.closePortToProvider
  */
 export function init({ openPortToProvider, closePortToProvider }) {
-  browser.runtime.onMessageExternal.addListener(async (msg, sender) => {
-    if (!msg || typeof msg !== "object") return undefined;
+  // Not async: returning a promise from a message listener claims the
+  // message and supplies its response. An async listener would therefore
+  // answer every external message, including ones from senders it just
+  // declined and any a future listener might want. The guards below bail
+  // with a bare return, and only a message we recognise gets a promise.
+  browser.runtime.onMessageExternal.addListener((msg, sender) => {
+    if (!msg || typeof msg !== "object") return;
     if (msg.type !== DISCOVERY.ANNOUNCE && msg.type !== DISCOVERY.UNANNOUNCE)
-      return undefined;
-    if (!sender?.id) return undefined;
+      return;
+    if (!sender?.id) return;
+    return handleDiscoveryMessage(msg, sender.id);
+  });
 
-    const extensionId = sender.id;
-
+  /** Announce / unannounce from an identified sender. Closes over the two
+   *  port callbacks `init` was given. */
+  async function handleDiscoveryMessage(msg, extensionId) {
     if (msg.type === DISCOVERY.UNANNOUNCE) {
       const providerId = await providerIdFromExtensionId(extensionId);
       if (providerId) await handleUnannounce(providerId, closePortToProvider);
@@ -98,7 +106,7 @@ export function init({ openPortToProvider, closePortToProvider }) {
       tbsyncVersion: browser.runtime.getManifest().version,
       accepted: true,
     };
-  });
+  }
 
   browser.management.onDisabled.addListener(async (addon) => {
     const providerId = await providerIdFromExtensionId(addon.id);
