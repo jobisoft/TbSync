@@ -27,8 +27,11 @@
  *        local ones when a sync key is rejected would duplicate the whole
  *        folder on the first such recovery, so those must not pair with a
  *        1.2 host.
+ *   1.3  FOCUS_CONFIG_POPUP and FOCUS_REAUTH_POPUP replaced by the single
+ *        FOCUS_ACCOUNT_POPUP. They only ever differed in which internal map
+ *        the provider looked in, and nothing consumed the distinction.
  */
-export const PROTOCOL_VERSION = "1.2";
+export const PROTOCOL_VERSION = "1.3";
 
 /** Name used for the persistent runtime.connect port. Includes major version so
  *  a breaking protocol bump leaves mismatched peers silently disconnected. */
@@ -49,9 +52,11 @@ export const HOST_CMD = {
   OPEN_SETUP_POPUP: "openSetupPopup",
   FOCUS_SETUP_POPUP: "focusSetupPopup",
   OPEN_CONFIG_POPUP: "openConfigPopup",
-  FOCUS_CONFIG_POPUP: "focusConfigPopup",
   REAUTHENTICATE: "reauthenticate",
-  FOCUS_REAUTH_POPUP: "focusReauthPopup",
+  // Raise whatever window the provider currently has open for this
+  // account, whichever flow opened it. Setup keeps its own command
+  // because it runs before an account exists.
+  FOCUS_ACCOUNT_POPUP: "focusAccountPopup",
   ACCOUNT_ENABLED: "accountEnabled",
   ACCOUNT_DISABLED: "accountDisabled",
   ACCOUNT_DELETED: "accountDeleted",

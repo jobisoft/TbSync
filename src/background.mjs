@@ -575,32 +575,23 @@ ui.setManagerRpcHandler("focusSetupPopup", async ({ providerId }) => {
   return null;
 });
 
-// Symmetric focus path for an open config popup. Routed to the owning
-// provider, which knows the windowId. Silent no-op when the provider is
-// disconnected or no popup is open for the account.
-ui.setManagerRpcHandler("focusConfigPopup", async ({ accountId }) => {
+// Raise whichever window the provider already has open for this account -
+// its config popup, or a consent window it drove itself. Routed to the
+// owning provider, which is the only side that knows the windowId. Silent
+// no-op when the provider is disconnected, when nothing is open, or when
+// the flow is browser-managed (e.g. Google's `launchWebAuthFlow`, where
+// the browser owns the window and never hands over its id).
+ui.setManagerRpcHandler("focusAccountPopup", async ({ accountId }) => {
   const acc = await accounts.get(accountId);
   if (!acc) return null;
   if (!router.isProviderConnected(acc.provider)) return null;
   await router
-    .sendCmd(acc.provider, HOST_CMD.FOCUS_CONFIG_POPUP, { accountId })
+    .sendCmd(acc.provider, HOST_CMD.FOCUS_ACCOUNT_POPUP, { accountId })
     .catch((err) =>
-      console.debug(`[tbsync] focusConfigPopup → ${acc.provider} failed:`, err),
-    );
-  return null;
-});
-
-// Symmetric focus path for an open reauth popup. No-op for providers
-// whose reauth flow is browser-managed (e.g. Google's
-// `launchWebAuthFlow`); future EAS reauth registers its own popup window.
-ui.setManagerRpcHandler("focusReauthPopup", async ({ accountId }) => {
-  const acc = await accounts.get(accountId);
-  if (!acc) return null;
-  if (!router.isProviderConnected(acc.provider)) return null;
-  await router
-    .sendCmd(acc.provider, HOST_CMD.FOCUS_REAUTH_POPUP, { accountId })
-    .catch((err) =>
-      console.debug(`[tbsync] focusReauthPopup → ${acc.provider} failed:`, err),
+      console.debug(
+        `[tbsync] focusAccountPopup → ${acc.provider} failed:`,
+        err,
+      ),
     );
   return null;
 });

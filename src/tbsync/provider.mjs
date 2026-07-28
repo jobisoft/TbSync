@@ -49,8 +49,11 @@ export class TbSyncProviderImplementation {
   #port = null;
   #pending = new Map(); // requestId → {resolve, reject, timer}
   #pendingSetups = new Map(); // setupToken → {resolve, reject, windowId}
-  #pendingConfigs = new Map(); // accountId → windowId
-  #pendingReauths = new Map(); // accountId → windowId
+  // accountId → Set<windowId>: every window this provider currently has
+  // open on that account's behalf, whichever flow opened it. A Set rather
+  // than a single id so a second window cannot displace the first, and so
+  // closing one cannot orphan another - removal is by windowId.
+  #pendingWindows = new Map();
   #announceInFlight = false;
   #firstConnect = false; // flips true on the first onConnectedToHost
   #onceConnectedCbs = []; // queue drained on first connect
@@ -442,61 +445,63 @@ export class TbSyncProviderImplementation {
       width: this.#configWidth,
       height: this.#configHeight,
     });
-    // Register the windowId so onFocusConfigPopup can raise this window
+    // Register the windowId so onFocusAccountPopup can raise this window
     // if the manager re-issues the click while it's still open.
-    this.#pendingConfigs.set(args.accountId, win.id);
+    this.registerAccountWindow(args.accountId, win.id);
     try {
       await waitForWindowClose(win.id);
     } finally {
-      this.#pendingConfigs.delete(args.accountId);
+      this.unregisterAccountWindow(args.accountId, win.id);
     }
     return null;
   }
 
-  /** Bring an in-flight config popup to the front. Quick no-op when
-   *  there's no popup open for `args.accountId`. */
-  async onFocusConfigPopup(args) {
-    const windowId = this.#pendingConfigs.get(args.accountId);
-    if (windowId == null) return null;
-    try {
-      await browser.windows.update(windowId, { focused: true });
-    } catch (err) {
-      console.debug(
-        `${this.#logPrefix} focus config popup ${windowId} failed:`,
-        err,
-      );
+  /** Bring whatever this provider currently has open for `args.accountId`
+   *  to the front - the config popup, or a consent window a subclass drove
+   *  itself. The manager sends this when the user clicks a button whose
+   *  window is already open, so the answer is "raise it", not "open a
+   *  second one".
+   *
+   *  Quick no-op when nothing is open, which is the normal case for
+   *  subclasses that delegate to `browser.identity.launchWebAuthFlow`
+   *  (e.g. Google): the browser owns that window and never tells us its
+   *  id, so there is nothing to raise. */
+  async onFocusAccountPopup(args) {
+    for (const windowId of this.#pendingWindows.get(args.accountId) ?? []) {
+      try {
+        await browser.windows.update(windowId, { focused: true });
+      } catch (err) {
+        console.debug(
+          `${this.#logPrefix} focus account popup ${windowId} failed:`,
+          err,
+        );
+      }
     }
     return null;
   }
 
-  /** Symmetric focus for a reauth popup. Subclasses that drive their own
-   *  consent window (e.g. EAS's nativeclient flow) register the windowId
-   *  in `registerReauthWindow` while the popup is open; this method then
-   *  brings it to the front. Subclasses that delegate reauth to
-   *  `browser.identity.launchWebAuthFlow` (e.g. Google) never register -
-   *  the call is a deliberate no-op for them. */
-  async onFocusReauthPopup(args) {
-    const windowId = this.#pendingReauths.get(args.accountId);
-    if (windowId == null) return null;
-    try {
-      await browser.windows.update(windowId, { focused: true });
-    } catch (err) {
-      console.debug(
-        `${this.#logPrefix} focus reauth popup ${windowId} failed:`,
-        err,
-      );
-    }
-    return null;
+  /** Subclass hook - track a window opened on an account's behalf so
+   *  `onFocusAccountPopup` can raise it. Always pair with
+   *  `unregisterAccountWindow` in a finally block.
+   *
+   *  `onOpenConfigPopup` does this for you; a subclass only needs to call
+   *  these when it drives its own window (e.g. EAS's nativeclient consent
+   *  flow, whose id comes back through `startAuth`'s `onWindowCreated`). */
+  registerAccountWindow(accountId, windowId) {
+    if (windowId == null) return;
+    let ids = this.#pendingWindows.get(accountId);
+    if (!ids) this.#pendingWindows.set(accountId, (ids = new Set()));
+    ids.add(windowId);
   }
 
-  /** Subclass hook - track a reauth popup window for the duration of a
-   *  custom OAuth flow so `onFocusReauthPopup` can raise it. Always pair
-   *  with `unregisterReauthWindow` in a finally block. */
-  registerReauthWindow(accountId, windowId) {
-    if (windowId != null) this.#pendingReauths.set(accountId, windowId);
-  }
-  unregisterReauthWindow(accountId) {
-    this.#pendingReauths.delete(accountId);
+  /** Removal is by windowId, never by account: two windows can be open at
+   *  once, and clearing the account would leave the survivor unreachable
+   *  from `onFocusAccountPopup`. */
+  unregisterAccountWindow(accountId, windowId) {
+    const ids = this.#pendingWindows.get(accountId);
+    if (!ids) return;
+    ids.delete(windowId);
+    if (ids.size === 0) this.#pendingWindows.delete(accountId);
   }
 
   // ── Private: port + dispatch ────────────────────────────────────────────
@@ -633,10 +638,8 @@ export class TbSyncProviderImplementation {
         return this.onFocusSetupPopup(args);
       case HOST_CMD.OPEN_CONFIG_POPUP:
         return this.onOpenConfigPopup(args);
-      case HOST_CMD.FOCUS_CONFIG_POPUP:
-        return this.onFocusConfigPopup(args);
-      case HOST_CMD.FOCUS_REAUTH_POPUP:
-        return this.onFocusReauthPopup(args);
+      case HOST_CMD.FOCUS_ACCOUNT_POPUP:
+        return this.onFocusAccountPopup(args);
       case HOST_CMD.REAUTHENTICATE:
         return this.onReauthenticate(args);
       case HOST_CMD.ACCOUNT_ENABLED:

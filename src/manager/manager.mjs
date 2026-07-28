@@ -96,10 +96,12 @@ const state = {
   // providers are allowed.
   setupsInFlight: new Set(),
   // accountIds whose config popup is open right now. Lets btn-settings
-  // route a re-click to focusConfigPopup instead of staying greyed out.
+  // route a re-click to focusAccountPopup instead of staying greyed out.
   configsOpen: new Set(),
   // accountIds whose reauth popup is open right now. Same logic as
-  // configsOpen for the "Sign in again" button.
+  // configsOpen for the Authenticate button. Kept separate even though
+  // both now send the same RPC: these gate different buttons, and one
+  // shared set would enable Settings during a re-auth.
   reauthsOpen: new Set(),
   eventLog: [],
   // Highest seq we've already rendered. Driven by browser.storage.onChanged
@@ -641,8 +643,8 @@ function renderDetail() {
   btnPrimary.disabled = !primaryEnabled;
   btnPrimary.addEventListener("click", () => {
     if (primaryAction === "reauth" && state.reauthsOpen.has(acc.accountId)) {
-      rpc("focusReauthPopup", { accountId: acc.accountId }).catch((err) =>
-        console.debug("[tbsync] manager: focusReauthPopup failed:", err),
+      rpc("focusAccountPopup", { accountId: acc.accountId }).catch((err) =>
+        console.debug("[tbsync] manager: focusAccountPopup failed:", err),
       );
       return;
     }
@@ -671,8 +673,8 @@ function renderDetail() {
   btnSettings.disabled = !actions.canEditSettings;
   btnSettings.addEventListener("click", () => {
     if (state.configsOpen.has(acc.accountId)) {
-      rpc("focusConfigPopup", { accountId: acc.accountId }).catch((err) =>
-        console.debug("[tbsync] manager: focusConfigPopup failed:", err),
+      rpc("focusAccountPopup", { accountId: acc.accountId }).catch((err) =>
+        console.debug("[tbsync] manager: focusAccountPopup failed:", err),
       );
       return;
     }
