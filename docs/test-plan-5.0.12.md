@@ -1,4 +1,4 @@
-# 5.0.12 test plan
+# v5.0.12 test plan
 
 25 commits across the three add-ons. **None of it has run against a live
 server** — everything so far is verified by harnesses against the real modules
@@ -49,8 +49,8 @@ Two things to know while testing:
 | # | Step | Expect |
 |---|---|---|
 | 1.1 | Install all three, restart | Both providers appear as *Ready* in the manager; accounts sync |
-| 1.2 | Downgrade **one** provider to 5.0.11, restart | That provider does **not** connect. The other still works. This is the lockstep gate doing its job, not a bug |
-| 1.3 | Re-install it at 5.0.12 | It reconnects |
+| 1.2 | Downgrade **one** provider to v5.0.11, restart | That provider does **not** connect. The other still works. This is the lockstep gate doing its job, not a bug |
+| 1.3 | Re-install it at v5.0.12 | It reconnects |
 
 Failing 1.2 in the other direction — an old provider that *does* connect — is
 the serious outcome, because 1.2 exists to stop a provider without the resync

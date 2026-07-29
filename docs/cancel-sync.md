@@ -5,7 +5,7 @@ up later.
 
 ## Where this came from
 
-A cross-repo audit before the 5.0.12 release. One of the mechanical sweeps
+A cross-repo audit before the v5.0.12 release. One of the mechanical sweeps
 cross-checked every `HOST_CMD` against two questions — is it dispatched by the
 provider base class, and is it ever sent by the host? Everything paired up
 except:
@@ -107,7 +107,38 @@ which point the protocol entry stops being a lie.
 Doing Layer 2 alone would be worse than either: it would abort the current
 request while the loop marched on to the next folder.
 
+## A second dead command: DISCOVERY.PROBE
+
+Found while checking whether updating the add-ons needs a Thunderbird restart.
+`DISCOVERY.PROBE` has the same shape of problem, and appears in exactly two
+places across all three repositories:
+
+- `protocol.mjs:45` — `PROBE: "tbsync-probe"`, the constant
+- `provider.mjs:562` — the provider's listener, whose comment reads *"Re-announce
+  when the host probes us (after its own restart)"*
+
+Nothing sends it. Searched for both the constant and the `"tbsync-probe"`
+literal across the host, both providers and the vendored copies.
+
+Unlike `CANCEL_SYNC` this one is **superseded rather than missing**, so there is
+nothing to fix. The case it was designed for — the host restarting and losing
+its in-memory provider registry — is covered by the host-availability flag:
+
+- `init()` calls `#primeHostAvailability()`, which does a `management.getAll()`
+  and writes `storage.session["host-available"]`.
+- `storage.session` is cleared on restart, so that write is a *change* from
+  absent to `true`, which fires the `storage.onChanged` listener installed by
+  `#watchHostAvailability` and runs `#announceWithRetry()`.
+- The same listener also covers the host being installed, updated, enabled or
+  disabled mid-session, via `management.onInstalled` / `onEnabled` /
+  `onDisabled` filtered on TbSync's id.
+
+So providers re-announce after a restart without being asked. The options are
+to delete `PROBE` and its listener, or to leave them as a documented no-op.
+Either way it is cosmetic — worth noting only so the next person who greps for
+"which commands are never sent" finds the answer already written down.
+
 ## Priority
 
 Post-release. This is a longstanding gap rather than a regression, and it does
-not block 5.0.12.
+not block v5.0.12.

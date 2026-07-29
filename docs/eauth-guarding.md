@@ -15,7 +15,7 @@ unguarded entry point is enough to cause it.
 
 ## Why the host cannot do this for you
 
-Before 5.0.12, an authentication failure disabled the account and tore down the
+Before v5.0.12, an authentication failure disabled the account and tore down the
 provider's resources, so provider code simply stopped being called. That is
 gone: an `E:AUTH` account now stays **enabled**, keeps its folders, sync keys
 and local address books and calendars, and is only held back from syncing. See
@@ -77,7 +77,7 @@ needs the guard. Concretely, in a provider that means anything registered on:
 `account.error` is on the account row the host returns from `getAccount`, so it
 is always available; there is no need for a new signal.
 
-As of 5.0.12 the EAS GAL listener is the only such path in either provider —
+As of v5.0.12 the EAS GAL listener is the only such path in either provider —
 verified by sweeping every `addListener` call. google has no live-lookup
 equivalent: its OAuth consent runs through `launchWebAuthFlow` and everything
 else is host-invoked.
