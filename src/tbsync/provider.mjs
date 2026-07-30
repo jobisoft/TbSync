@@ -36,15 +36,6 @@ const DEFAULT_SETUP_HEIGHT = 640;
 const DEFAULT_CONFIG_WIDTH = 520;
 const DEFAULT_CONFIG_HEIGHT = 580;
 
-// Host-availability retry schedule - first announce 250 ms after host flips
-// to enabled (it's still initialising its onMessageExternal listener), then
-// every 500 ms up to 10 attempts.
-const ANNOUNCE_INITIAL_DELAY_MS = 250;
-const ANNOUNCE_RETRY_DELAY_MS = 500;
-const ANNOUNCE_MAX_ATTEMPTS = 10;
-
-const HOST_AVAILABLE_KEY = "host-available";
-
 export class TbSyncProviderImplementation {
   #port = null;
   #pending = new Map(); // requestId → {resolve, reject, timer}
@@ -54,7 +45,6 @@ export class TbSyncProviderImplementation {
   // than a single id so a second window cannot displace the first, and so
   // closing one cannot orphan another - removal is by windowId.
   #pendingWindows = new Map();
-  #announceInFlight = false;
   #firstConnect = false; // flips true on the first onConnectedToHost
   #onceConnectedCbs = []; // queue drained on first connect
 
@@ -98,19 +88,25 @@ export class TbSyncProviderImplementation {
 
   // ── Entry point ─────────────────────────────────────────────────────────
 
-  /** Attach every listener. Call once, after constructing the subclass.
-   *  Calling twice double-registers. */
+  /** Attach every listener, then announce once. Call once, after constructing
+   *  the subclass. Calling twice double-registers.
+   *
+   *  The announce goes last on purpose. It may reach a host that is already
+   *  listening, in which case we are registered immediately; if it does not,
+   *  the host will broadcast HOST_READY when it comes up and we announce
+   *  again from the listener attached below. Listeners before the send is
+   *  what makes those two cases exhaustive - whichever side starts later
+   *  reaches the other - so nothing here needs a timer or a retry. Moving
+   *  the announce above #attachHostReadyListener would silently reintroduce
+   *  a startup race (TbSync#797). */
   init() {
     this.#attachPort();
-    this.#attachProbeListener();
+    this.#attachHostReadyListener();
     this.#attachSetupCompletedListener();
     this.#attachSetupCancelListener();
-    this.#watchHostAvailability();
-    this.#primeHostAvailability().catch((err) =>
-      console.warn(
-        `${this.#logPrefix} management.getAll() failed at startup:`,
-        err,
-      ),
+
+    this.announce().catch((err) =>
+      console.warn(`${this.#logPrefix} initial announce threw:`, err),
     );
   }
 
@@ -151,8 +147,9 @@ export class TbSyncProviderImplementation {
       }
       return reply;
     } catch {
-      // Host unreachable during retry. Silenced because announce-with-retry
-      // can fire up to ANNOUNCE_MAX_ATTEMPTS times in a row.
+      // No receiving end: TbSync is absent, disabled, or has not attached its
+      // discovery listener yet. Not an error - it broadcasts HOST_READY when
+      // it does, and callers decide whether the miss is worth logging.
       return null;
     }
   }
@@ -555,16 +552,19 @@ export class TbSyncProviderImplementation {
     });
   }
 
-  /** Re-announce when the host probes us (after its own restart). */
-  #attachProbeListener() {
+  /** Announce whenever the host tells us it has started listening - either
+   *  because it booted after us and our first announce was lost, or because
+   *  it was restarted, enabled or installed mid-session. This is the only
+   *  recovery path there is, and the only one there needs to be.
+   *
+   *  The ack is not read by the host; it exists so its sendMessage resolves
+   *  instead of raising "no response". */
+  #attachHostReadyListener() {
     browser.runtime.onMessageExternal.addListener((msg, sender) => {
       if (sender?.id !== TBSYNC_ID) return;
-      if (msg?.type !== DISCOVERY.PROBE) return;
+      if (msg?.type !== DISCOVERY.HOST_READY) return;
       this.announce().catch((err) =>
-        console.debug(
-          `${this.#logPrefix} announce on host probe failed:`,
-          err,
-        ),
+        console.debug(`${this.#logPrefix} announce on host-ready failed:`, err),
       );
       return Promise.resolve({ ok: true, providerId: browser.runtime.id });
     });
@@ -758,89 +758,6 @@ export class TbSyncProviderImplementation {
         }, 500);
       }
     });
-  }
-
-  // ── Private: host-availability tracking ─────────────────────────────────
-
-  /** Track host state in session storage. `management.*` events update it;
-   *  a storage.onChanged observer kicks announce-with-retry on transition
-   *  to true so every path funnels through one log site. */
-  #watchHostAvailability() {
-    browser.storage.onChanged.addListener(async (changes, areaName) => {
-      if (areaName !== "session" || !changes[HOST_AVAILABLE_KEY]) return;
-      if (changes[HOST_AVAILABLE_KEY].newValue !== true) return;
-      if (this.#announceInFlight) return;
-      this.#announceInFlight = true;
-      try {
-        await this.#announceWithRetry();
-      } finally {
-        this.#announceInFlight = false;
-      }
-    });
-
-    const onHostEvent = (info, available) => {
-      if (info.id !== TBSYNC_ID) return;
-      console.log(
-        `${this.#logPrefix} management event for host, available=${available}`,
-      );
-      this.#setHostAvailable(available).catch((err) =>
-        console.warn(`${this.#logPrefix} setHostAvailable failed:`, err),
-      );
-    };
-    browser.management.onInstalled.addListener((info) =>
-      onHostEvent(info, info.enabled),
-    );
-    browser.management.onEnabled.addListener((info) => onHostEvent(info, true));
-    browser.management.onDisabled.addListener((info) =>
-      onHostEvent(info, false),
-    );
-    browser.management.onUninstalled.addListener((info) =>
-      onHostEvent(info, false),
-    );
-  }
-
-  async #primeHostAvailability() {
-    const all = await browser.management.getAll();
-    const host = all.find((a) => a.id === TBSYNC_ID);
-    const available = !!host?.enabled;
-    console.log(
-      `${this.#logPrefix} initial host state: ${available ? "available" : "absent"}`,
-    );
-    await this.#setHostAvailable(available);
-  }
-
-  async #setHostAvailable(available) {
-    await browser.storage.session.set({ [HOST_AVAILABLE_KEY]: !!available });
-  }
-
-  async #announceWithRetry() {
-    for (let attempt = 1; attempt <= ANNOUNCE_MAX_ATTEMPTS; attempt++) {
-      await new Promise((r) =>
-        setTimeout(
-          r,
-          attempt === 1 ? ANNOUNCE_INITIAL_DELAY_MS : ANNOUNCE_RETRY_DELAY_MS,
-        ),
-      );
-      // Abort if the host flipped back off while we were waiting.
-      const rv = await browser.storage.session.get({
-        [HOST_AVAILABLE_KEY]: false,
-      });
-      if (!rv[HOST_AVAILABLE_KEY]) {
-        console.log(
-          `${this.#logPrefix} host went away during retry - stopping`,
-        );
-        return;
-      }
-      console.log(
-        `${this.#logPrefix} announcing (attempt ${attempt}/${ANNOUNCE_MAX_ATTEMPTS})`,
-      );
-      const reply = await this.announce();
-      if (reply) {
-        console.log(`${this.#logPrefix} announce accepted by host`, reply);
-        return;
-      }
-    }
-    console.warn(`${this.#logPrefix} announce failed after all retries`);
   }
 
   // ── Private: helpers ────────────────────────────────────────────────────

@@ -32,17 +32,35 @@
  *        single FOCUS_ACCOUNT_POPUP. They only ever differed in which
  *        internal map the provider looked in, and nothing consumed the
  *        distinction.
+ *
+ *   1.3  Discovery is driven by the host instead of guessed at by the
+ *        provider. A 1.3 provider announces exactly once, when it is ready,
+ *        and otherwise waits to be told the host is listening; the retry
+ *        schedule it used to fall back on is gone. Against a host that never
+ *        broadcasts HOST_READY it would therefore fail to register on every
+ *        start it lost the race for - which is why this is a version bump
+ *        and not a drop-in change. PROBE renamed to HOST_READY.
  */
-export const PROTOCOL_VERSION = "1.2";
+export const PROTOCOL_VERSION = "1.3";
 
 /** Name used for the persistent runtime.connect port. Includes major version so
  *  a breaking protocol bump leaves mismatched peers silently disconnected. */
 export const PORT_NAME = "tbsync-v1";
 
-/** Discovery message types (runtime.onMessageExternal, one-shot). */
+/** Discovery message types (runtime.onMessageExternal, one-shot).
+ *
+ *  ANNOUNCE / UNANNOUNCE travel provider → host and carry the handshake.
+ *  HOST_READY travels host → provider and carries nothing: it is a
+ *  fire-and-forget "I am listening now", sent once to every enabled
+ *  extension, and its only effect is to make a provider that is already
+ *  running announce itself. The reply is ignored.
+ *
+ *  Between them they cover both startup orders without either side timing
+ *  anything, provided each attaches its listener before it sends - see
+ *  `docs/provider-handshake.html`. */
 export const DISCOVERY = {
   ANNOUNCE: "tbsync-provider-announce",
-  PROBE: "tbsync-probe",
+  HOST_READY: "tbsync-host-ready",
   UNANNOUNCE: "tbsync-provider-unannounce",
 };
 
