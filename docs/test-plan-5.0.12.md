@@ -1,5 +1,9 @@
 # v5.0.12 test plan
 
+**Repo: all three** (TbSync, EAS-4-TbSync, google-4-tbsync) — a release plan,
+not a defect. Historical: written for v5.0.12 and not updated for the protocol
+1.3 / host-ready work that landed after it.
+
 25 commits across the three add-ons. **None of it has run against a live
 server** — everything so far is verified by harnesses against the real modules
 with stubbed I/O. This is the list of what that leaves unproven.
@@ -58,11 +62,10 @@ fix from pairing with a host that preserves local data.
 
 ---
 
-## 2. Authentication failure — the biggest behavioural change
+## 2. Authentication failure
 
-Previously an auth failure ran the same teardown as clicking Disconnect: it
-deleted every Thunderbird address book and calendar for the account, wiped the
-folder rows, and reset the folder sync key. Now it only stamps the error.
+An auth failure stamps the error and nothing else: local data, folder rows and
+sync keys all survive, and the account stays enabled.
 
 **Setup:** note the account's local calendars and address books, their colours
 and item counts, and one folder's `custom.synckey`.
@@ -89,13 +92,13 @@ access token in memory, so without a restart the sync may just succeed. Sync.
 
 | # | Expect | Why |
 |---|---|---|
-| 2.1 | Pill reads *Authentication failed*; button reads **Authenticate** | new label |
-| 2.2 | **Folder list still listed** | previously wiped |
-| 2.3 | **Local calendars and address books still present**, colours intact | previously deleted |
-| 2.4 | `custom.synckey` unchanged, not reset to `"0"` | previously reset |
-| 2.5 | Account still shows as connected/enabled | previously disabled |
-| 2.6 | **Red toolbar badge appears** | previously invisible — the badge filters to enabled accounts before checking errors |
-| 2.7 | Sync greyed; **Disconnect available** | intentional change |
+| 2.1 | Pill reads *Authentication failed*; button reads **Authenticate** | |
+| 2.2 | **Folder list still listed** | |
+| 2.3 | **Local calendars and address books still present**, colours intact | |
+| 2.4 | `custom.synckey` unchanged, not reset to `"0"` | |
+| 2.5 | Account still shows as connected/enabled | |
+| 2.6 | **Red toolbar badge appears** | the badge filters to enabled accounts before checking errors |
+| 2.7 | Sync greyed; **Disconnect available** | deliberate — Disconnect stays reachable |
 | 2.8 | Wait out an autosync interval: **no further sync attempts** in the Event Log | the `syncAccount` guard. If this fails the account can get locked out at the server |
 
 ---
@@ -110,9 +113,9 @@ account whose server advertises `Search`:
 | 3.1 | Open a compose window, type 3+ characters of a name in **To:** | No results from the GAL directory, and **no network attempts** in the Event Log |
 | 3.2 | Authenticate successfully, then type again | GAL results return **without** restarting or reconnecting |
 
-3.1 is the one that matters: this path fires on every keystroke and was the
-regression the audit caught. 3.2 proves the guard is in the callback rather
-than in listener registration — nothing re-registers it.
+3.1 is the one that matters: this path fires on every keystroke. 3.2 proves the
+guard is in the callback rather than in listener registration — nothing
+re-registers it.
 
 ---
 
@@ -149,7 +152,7 @@ The two focus commands were collapsed into one. This has never run.
 | 5.2 | Same on a password account with the Settings dialog | The Settings dialog comes to the front |
 | 5.3 | Click **Settings** on a healthy account, bury it, click **Settings** again | Raises |
 
-5.2 is the case that was broken — the button looked dead.
+5.2 is the one to watch: if the raise fails the button simply looks dead.
 
 ---
 
@@ -182,9 +185,9 @@ this is the most damaging possible outcome in the release.
 
 ## 7. Setup flow still completes
 
-Both providers' internal message listeners were rewritten so they no longer
-claim every message. The setup dialog's completion message goes to a *different*
-listener, which is what was being shadowed.
+The providers' internal message listeners must not claim every message: the
+setup dialog's completion message goes to a *different* listener, which a
+greedy one would shadow.
 
 | # | Step | Expect |
 |---|---|---|

@@ -1,0 +1,338 @@
+<h1>Provider discovery — how a provider and the host find each other</h1>
+
+<p class="lede">
+  <strong>Repo: TbSync</strong>, with the matching provider half vendored into
+  EAS-4-TbSync and google-4-tbsync. The first three panels show the protocol 1.3
+  handshake under every startup order; the last two show what happens when only
+  one side of it is installed, which is what users see mid-rollout.
+</p>
+
+<div id="panels"></div>
+
+<h2>Why no race remains</h2>
+
+<p>
+  Two rules, one on each side:
+</p>
+
+<ol>
+  <li>each side <strong>attaches its listener before it sends anything</strong>;</li>
+  <li>each side <strong>sends exactly once</strong> when it is ready — the host a
+    fire-and-forget <code>DISCOVERY.HOST_READY</code>, the provider its
+    <code>ANNOUNCE</code>.</li>
+</ol>
+
+<p>
+  That is enough. Whichever background page starts <em>later</em> sends into a
+  listener that is already attached, because the earlier one attached its
+  listener before it sent. So at least one of the two messages always lands:
+</p>
+
+<ul>
+  <li>host starts later → its host-ready reaches the provider → provider re-announces;</li>
+  <li>provider starts later → its announce reaches the host directly.</li>
+</ul>
+
+<p>
+  There is no third case. The two messages cannot both be lost, because losing
+  the announce means the host had not started, and losing the host-ready means the
+  provider had not started — and they cannot both have not-started at the moment
+  the other one sent.
+</p>
+
+<p>
+  The host-ready message carries nothing and establishes nothing. It is a
+  nudge: the real handshake is still <code>ANNOUNCE</code> →
+  <code>providers.upsert</code> → <code>openPortToProvider</code>, unchanged.
+</p>
+
+<h2>Mixed versions — and why the protocol version is 1.3</h2>
+
+<p>
+  The two halves of the handshake are useless apart, and they fail in opposite
+  directions.
+</p>
+
+<div id="panels-mixed"></div>
+
+<p>
+  The second panel is the decisive one. A 1.3 provider announces once, at
+  ~120&nbsp;ms, and has nothing to follow it; a 1.2 host does not attach its
+  listener until ~400&nbsp;ms and never broadcasts. That pairing therefore fails
+  <strong>on every start</strong>, not occasionally. Installing TbSync while the
+  provider is already running is worse again — a 1.3 provider has no
+  <code>management</code> listener to notice, so nothing connects, ever.
+</p>
+
+<p>
+  Hence <code>PROTOCOL_VERSION</code> <code>1.3</code>, even though no message
+  shape changes. <code>registry.mjs</code> answers a mismatched announce with
+  <code>{ok: false, error: "protocol-version-mismatch", …}</code>, so a skewed
+  pair fails deterministically and says why in the log rather than failing
+  silently and intermittently.
+</p>
+
+<p>
+  The cost is the first panel: a 1.2 provider already carries the listener under
+  its old name, so an unbumped 1.3 host would have driven it correctly without
+  the provider being updated at all. That is given up in exchange for refusing
+  the pairing in the second panel. Since all three add-ons are released together
+  from one <code>updates.json</code>, the skew is transient either way.
+</p>
+
+<h2>Testing it</h2>
+
+<p>
+  Enable order alone covers every case; nothing needs to be instrumented:
+</p>
+
+<ul>
+  <li>enable the provider, wait 10&nbsp;s, enable TbSync → exercises the host-ready path;</li>
+  <li>enable TbSync, wait 10&nbsp;s, enable the provider → exercises the announce path;</li>
+  <li>restart Thunderbird → exercises both starting together.</li>
+</ul>
+
+<p>
+  Each must end with an account actually syncing, not merely with the provider
+  listed.
+</p>
+
+<style>
+  :root {
+    --bg:#fff; --fg:#1b1b1d; --muted:#6b6b70; --rule:#d7d7db;
+    --host:#2b6cb0; --prov:#7a4fb5; --ok:#1f7a4d; --bad:#c0392b;
+    --spanbg:#ecedf1; --delaybg:#fdeaea; --offbg:#f2f2f4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1b1b1d; --fg:#ececed; --muted:#9b9ba1; --rule:#3a3a3f;
+      --host:#74a9dc; --prov:#b795e0; --ok:#63c295; --bad:#e8796b;
+      --spanbg:#2a2a2f; --delaybg:#3a2626; --offbg:#232327; }
+  }
+  :root[data-theme="dark"] { --bg:#1b1b1d; --fg:#ececed; --muted:#9b9ba1; --rule:#3a3a3f;
+    --host:#74a9dc; --prov:#b795e0; --ok:#63c295; --bad:#e8796b;
+    --spanbg:#2a2a2f; --delaybg:#3a2626; --offbg:#232327; }
+  :root[data-theme="light"] { --bg:#fff; --fg:#1b1b1d; --muted:#6b6b70; --rule:#d7d7db;
+    --host:#2b6cb0; --prov:#7a4fb5; --ok:#1f7a4d; --bad:#c0392b;
+    --spanbg:#ecedf1; --delaybg:#fdeaea; --offbg:#f2f2f4; }
+  body { background:var(--bg); color:var(--fg); margin:0 auto; padding:2rem 1.25rem 4rem;
+    max-width:62rem; line-height:1.55;
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif; }
+  h1 { font-size:1.6rem; margin:0 0 .5rem; }
+  h2 { font-size:1.15rem; margin:2.2rem 0 .6rem; padding-top:.9rem; border-top:1px solid var(--rule); }
+  .lede { color:var(--muted); margin:0 0 1.5rem; }
+  code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.88em; }
+  a { color:var(--host); }
+  figure { margin:0 0 1.6rem; }
+  figcaption { color:var(--muted); font-size:.9rem; margin-top:.35rem; }
+  .panel-title { font-weight:600; margin:1.8rem 0 .4rem; display:flex; align-items:baseline;
+    gap:.6rem; flex-wrap:wrap; }
+  .verdict { font-size:.8rem; font-weight:600; padding:.1rem .5rem; border-radius:999px; }
+  .verdict.bad { background:var(--delaybg); color:var(--bad); }
+  .verdict.ok  { background:var(--spanbg); color:var(--ok); }
+  .scroller { overflow-x:auto; }
+  svg { display:block; min-width:860px; }
+  .legend { display:flex; gap:1.2rem; flex-wrap:wrap; color:var(--muted); font-size:.85rem; margin:.4rem 0 0; }
+  .legend span { display:flex; align-items:center; gap:.4rem; }
+  .sw { width:1.6rem; height:0; border-top:2px solid; }
+</style>
+
+<script>
+  const PANELS = [
+    {
+      title: "Both start together (Thunderbird restart)",
+      verdict: "ok", verdictText: "connects immediately",
+      axis: { max: 1200, step: 200 },
+      lanes: [{ start: 0 }, { start: 0 }],
+      caption: "Both attach their listener before sending. Whichever sends second is heard; here " +
+        "both are. The duplicate announce is harmless — providers.upsert is idempotent.",
+      marks: [
+        { lane: 0, t: 15, label: "listener attached", kind: "ok" },
+        { lane: 1, t: 40, label: "listener attached", kind: "ok" },
+      ],
+      msgs: [
+        { t: 120, from: 1, to: 0, kind: "ok", label: "announce → upsert + open port" },
+        { t: 300, from: 0, to: 1, kind: "ok", label: "host-ready (fire-and-forget)" },
+        { t: 430, from: 1, to: 0, kind: "ok", label: "re-announce (idempotent)" },
+      ],
+    },
+    {
+      title: "Provider enabled first, TbSync 10 s later",
+      verdict: "ok", verdictText: "host-ready recovers it",
+      axis: { max: 11500, step: 2000 },
+      lanes: [{ start: 0 }, { start: 0 }],
+      hostStart: 10000,
+      caption: "The provider's single announce is lost — TbSync is not running at all, so there is " +
+        "nothing to receive it. When the host starts it attaches its listener and broadcasts; the " +
+        "provider has been listening for 10 s and answers with an announce.",
+      spans: [{ lane: 0, t0: 0, t1: 10000, label: "TbSync not running", fill: "off" }],
+      marks: [
+        { lane: 1, t: 40, label: "listener attached", kind: "ok" },
+        { lane: 0, t: 10040, label: "listener attached, then host-ready", kind: "ok" },
+      ],
+      msgs: [
+        { t: 120, from: 1, to: 0, kind: "bad", label: "announce — nobody home" },
+        { t: 10200, from: 0, to: 1, kind: "ok", label: "host-ready" },
+        { t: 10330, from: 1, to: 0, kind: "ok", label: "announce → upsert + open port" },
+      ],
+    },
+    {
+      title: "TbSync enabled first, provider 10 s later",
+      verdict: "ok", verdictText: "announce lands directly",
+      axis: { max: 11500, step: 2000 },
+      lanes: [{ start: 0 }, { start: 0 }],
+      caption: "The mirror image. The host's host-ready is lost because the provider is not running. " +
+        "When the provider starts, the host has been listening for 10 s, so its single announce " +
+        "is enough — no retry loop needed.",
+      spans: [{ lane: 1, t0: 0, t1: 10000, label: "provider not running", fill: "off" }],
+      marks: [
+        { lane: 0, t: 15, label: "listener attached, then host-ready", kind: "ok" },
+        { lane: 1, t: 10040, label: "listener attached", kind: "ok" },
+      ],
+      msgs: [
+        { t: 200, from: 0, to: 1, kind: "bad", label: "host-ready — nobody home" },
+        { t: 10140, from: 1, to: 0, kind: "ok", label: "announce → upsert + open port" },
+      ],
+    },
+    {
+      group: "mixed",
+      title: "Old provider (v5.0.12) + new host — provider enabled first, TbSync 10 s later",
+      verdict: "ok", verdictText: "the host fix alone repairs it",
+      axis: { max: 11500, step: 2000 },
+      laneSubs: ["host — new", "guest — v5.0.12, unchanged"],
+      caption: "The shipped v5.0.12 provider already carries this listener (as PROBE) — it was written " +
+        "for exactly this and never had a sender. So the old provider burns its retry budget and " +
+        "gives up, then answers the new host's broadcast anyway. Bumping the protocol version " +
+        "gives this up deliberately; see below.",
+      spans: [{ lane: 0, t0: 0, t1: 10000, label: "TbSync not running", fill: "off" }],
+      marks: [
+        { lane: 1, t: 40, label: "listener attached", kind: "ok" },
+        { lane: 1, t: 4800, label: "gives up", kind: "bad" },
+        { lane: 0, t: 10040, label: "listener attached, then host-ready", kind: "ok" },
+      ],
+      msgs: [
+        ...[250, 750, 1250, 1750, 2250, 2750, 3250, 3750, 4250, 4750].map((t, i) => ({
+          t, from: 1, to: 0, kind: "bad", label: i === 0 ? "announce ×10 — all lost" : null,
+        })),
+        { t: 10200, from: 0, to: 1, kind: "ok", label: "host-ready" },
+        { t: 10330, from: 1, to: 0, kind: "ok", label: "announce → upsert + open port" },
+      ],
+    },
+    {
+      group: "mixed",
+      title: "New provider + old host (v5.0.12) — ordinary Thunderbird restart",
+      verdict: "bad", verdictText: "fails every start",
+      axis: { max: 1200, step: 200 },
+      laneSubs: ["host — v5.0.12, unchanged", "guest — new"],
+      caption: "No artificial delay here — 398 ms is the measured, undelayed time for the old " +
+        "host to reach registry.init(). The new provider's single announce is already gone by " +
+        "then, and an old host never broadcasts, so there is no second chance. Today's retry " +
+        "loop would have covered this on its second attempt at 750 ms.",
+      marks: [
+        { lane: 1, t: 40, label: "listener attached", kind: "ok" },
+        { lane: 0, t: 398, label: "listener attached — no broadcast follows", kind: "bad" },
+      ],
+      msgs: [{ t: 120, from: 1, to: 0, kind: "bad", label: "announce — host not listening yet" }],
+    },
+  ];
+
+  const W = 940, PAD_L = 132, PAD_R = 150;
+  const LANE_Y = [96, 236], H = 300;
+  const LANES = [
+    { name: "TbSync", sub: "host", color: "var(--host)" },
+    { name: "EAS provider", sub: "guest", color: "var(--prov)" },
+  ];
+  const FILL = { span: "var(--spanbg)", delay: "var(--delaybg)", off: "var(--offbg)" };
+
+  const el = (n, a = {}, kids = []) => {
+    const e = document.createElementNS("http://www.w3.org/2000/svg", n);
+    for (const [k, v] of Object.entries(a)) e.setAttribute(k, v);
+    for (const c of [].concat(kids)) e.append(c);
+    return e;
+  };
+  const txt = (s, a) => el("text", a, [document.createTextNode(s)]);
+  const fmt = (ms) => (ms >= 1000 ? (ms / 1000).toFixed(ms % 1000 ? 1 : 0) + "s" : ms + "ms");
+
+  function drawPanel(p) {
+    const max = p.axis.max;
+    const x = (t) => PAD_L + (Math.min(t, max) / max) * (W - PAD_L - PAD_R);
+    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
+      "aria-label": `${p.title} — ${p.verdictText}` });
+
+    for (let t = 0; t <= max; t += p.axis.step) {
+      svg.append(el("line", { x1: x(t), y1: 62, x2: x(t), y2: H - 44,
+        stroke: "var(--rule)", "stroke-dasharray": "2 4" }));
+      svg.append(txt(fmt(t), { x: x(t), y: H - 26, "text-anchor": "middle",
+        fill: "var(--muted)", "font-size": 11 }));
+    }
+
+    LANES.forEach((L, i) => {
+      const y = LANE_Y[i], sub = (p.laneSubs && p.laneSubs[i]) || L.sub;
+      svg.append(el("line", { x1: PAD_L, y1: y, x2: W - PAD_R, y2: y,
+        stroke: L.color, "stroke-width": 2 }));
+      svg.append(txt(L.name, { x: PAD_L - 12, y: y - 3, "text-anchor": "end",
+        fill: L.color, "font-size": 13, "font-weight": 600 }));
+      svg.append(txt(sub, { x: PAD_L - 12, y: y + 13, "text-anchor": "end",
+        fill: "var(--muted)", "font-size": 11 }));
+    });
+
+    for (const s of p.spans || []) {
+      const y = LANE_Y[s.lane], x0 = x(s.t0), x1 = x(s.t1);
+      svg.append(el("rect", { x: x0, y: y - 15, width: Math.max(2, x1 - x0), height: 30,
+        rx: 4, fill: FILL[s.fill] }));
+      svg.append(txt(s.label, (x1 - x0 > 110)
+        ? { x: (x0 + x1) / 2, y: y + 4, "text-anchor": "middle", fill: "var(--fg)", "font-size": 10.5 }
+        : { x: x1 + 6, y: y + 4, fill: "var(--muted)", "font-size": 10.5 }));
+    }
+
+    for (const m of p.msgs || []) {
+      const y0 = LANE_Y[m.from], y1 = LANE_Y[m.to], dir = y1 > y0 ? 1 : -1, X = x(m.t);
+      const col = m.kind === "bad" ? "var(--bad)" : "var(--ok)";
+      svg.append(el("line", { x1: X, y1: y0 + 15 * dir, x2: X, y2: y1 - 15 * dir, stroke: col,
+        "stroke-width": 1.4, "stroke-dasharray": m.kind === "bad" ? "3 3" : "none" }));
+      const ty = y1 - 15 * dir;
+      svg.append(el("path", { d: `M ${X - 4} ${ty - 6 * dir} L ${X} ${ty} L ${X + 4} ${ty - 6 * dir}`,
+        fill: "none", stroke: col, "stroke-width": 1.4 }));
+      if (m.kind === "bad")
+        svg.append(txt("✕", { x: X, y: ty - 10 * dir, "text-anchor": "middle", fill: col, "font-size": 11 }));
+      if (m.label)
+        svg.append(txt(m.label, { x: X + 7, y: (y0 + y1) / 2 + 4, fill: col, "font-size": 11 }));
+    }
+
+    for (const m of p.marks || []) {
+      const y = LANE_Y[m.lane], X = x(m.t);
+      const col = m.kind === "bad" ? "var(--bad)" : m.kind === "ok" ? "var(--ok)" : "var(--muted)";
+      svg.append(el("circle", { cx: X, cy: y, r: 4.5, fill: col }));
+      svg.append(txt(`${m.label} · +${fmt(m.t)}`,
+        { x: X + 8, y: m.lane === 0 ? y - 12 : y + 22, fill: col, "font-size": 11 }));
+    }
+    return svg;
+  }
+
+  const GROUPS = {
+    main: document.getElementById("panels"),
+    mixed: document.getElementById("panels-mixed"),
+  };
+  for (const p of PANELS) {
+    const head = document.createElement("div");
+    head.className = "panel-title";
+    head.innerHTML = `<span>${p.title}</span><span class="verdict ${p.verdict}">${p.verdictText}</span>`;
+    const fig = document.createElement("figure");
+    const scr = document.createElement("div");
+    scr.className = "scroller";
+    scr.append(drawPanel(p));
+    const cap = document.createElement("figcaption");
+    cap.textContent = p.caption;
+    fig.append(scr, cap);
+    GROUPS[p.group || "main"].append(head, fig);
+  }
+  for (const container of Object.values(GROUPS)) {
+    const legend = document.createElement("div");
+    legend.className = "legend";
+    legend.innerHTML =
+      `<span><i class="sw" style="border-color:var(--ok)"></i>delivered</span>` +
+      `<span><i class="sw" style="border-color:var(--bad);border-top-style:dashed"></i>lost — no listener</span>` +
+      `<span><i class="sw" style="border-color:var(--offbg);border-top-width:10px"></i>not running</span>` +
+      `<span><i class="sw" style="border-color:var(--delaybg);border-top-width:10px"></i>artificial delay</span>`;
+    container.append(legend);
+  }
+</script>
