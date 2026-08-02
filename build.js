@@ -1,18 +1,47 @@
+/**
+ * Build script for the TbSync add-on family.
+ *
+ * **THIS FILE IS MIRRORED INTO EVERY ADD-ON.** The three copies MUST match
+ * byte-for-byte. When you change one, re-copy it to the others and confirm:
+ *     diff -q TbSync/build.js EAS-4-TbSync/build.js
+ *     diff -q TbSync/build.js google-4-tbsync/build.js
+ *
+ * Two artifacts come out of `src/`:
+ *   - the ATN xpi, which is `src/` and nothing else
+ *   - the beta xpi, which is `src/` plus the `beta/` overlay
+ *
+ * A beta-only feature therefore lives entirely in `beta/` and cannot reach
+ * ATN by accident: the ATN build has no exclude list to forget to update,
+ * because it never looks anywhere but `src/`.
+ */
+
 const fs = require("fs");
 const path = require("path");
 const zlib = require("zlib");
 
+// Root-level folder mirroring `src/`, applied on top of it for the beta and
+// dev builds. See collectOverlay for the merge rules.
+const OVERLAY_DIR = "beta";
+
 // Deep-merge `overlay` onto a clone of `base`: nested plain objects merge
-// recursively, everything else (scalars, arrays) is replaced by the overlay.
+// recursively, arrays are unioned, everything else is replaced by the overlay.
 // `base` is never mutated, and its key order is preserved (overlay-only keys
 // are appended), which keeps a merged manifest's diff clean.
+//
+// Unioning arrays is what lets `beta/manifest.json` ask for the one or two
+// extra permissions it needs by naming only those. Replacing would mean
+// restating the whole `permissions` list, and the copy would then silently
+// fall behind every time src/manifest.json gained an entry.
 function isPlainObject(v) {
   return v !== null && typeof v === "object" && !Array.isArray(v);
 }
 function deepMerge(base, overlay) {
   const out = Array.isArray(base) ? [...base] : { ...base };
   for (const [k, v] of Object.entries(overlay)) {
-    out[k] = isPlainObject(out[k]) && isPlainObject(v) ? deepMerge(out[k], v) : v;
+    if (isPlainObject(out[k]) && isPlainObject(v)) out[k] = deepMerge(out[k], v);
+    else if (Array.isArray(out[k]) && Array.isArray(v))
+      out[k] = [...out[k], ...v.filter((item) => !out[k].includes(item))];
+    else out[k] = v;
   }
   return out;
 }
@@ -66,6 +95,13 @@ function zip(sources, destFile, exclude = [], overrides = {}) {
     for (const name of fs.readdirSync(sources)) collect(path.join(sources, name), name);
   } else {
     for (const src of sources) collect(src, src);
+  }
+
+  // An override whose path was not collected has no file on disk under
+  // `sources` - it is an overlay-only addition. Give it an entry of its own;
+  // the read below takes its bytes from `overrides` and never touches `full`.
+  for (const rel of Object.keys(overrides)) {
+    if (!files.some((f) => f.rel === rel)) files.push({ full: null, rel });
   }
 
   const parts = [];
@@ -139,6 +175,61 @@ function rm(dir) {
   fs.rmSync(dir, { recursive: true, force: true });
 }
 
+/**
+ * Read the overlay folder into a map of `src/`-relative path → bytes, ready
+ * to hand to zip() as `overrides` or to write over a dev/ copy.
+ *
+ *   *.json  - deep-merged onto its src/ counterpart when there is one, so an
+ *             overlay file only has to carry what it changes: a manifest with
+ *             just name + update_url, a messages.json with just the new keys.
+ *             With no counterpart it is added whole.
+ *   others  - added as-is, and only when src/ has no such file. A silent
+ *             shadow is the one failure here that would be painful to track
+ *             down later, so it is an error rather than a replace.
+ *
+ * Returns {} when the overlay folder is absent, which is what makes this
+ * safe to mirror into an add-on that has nothing beta-only to ship.
+ */
+function collectOverlay(overlayDir, srcDir) {
+  const out = {};
+  if (!fs.existsSync(overlayDir)) return out;
+
+  function walk(dir, rel) {
+    for (const name of fs.readdirSync(dir)) {
+      // Running a Python helper from the overlay leaves one of these behind,
+      // and it would then be packaged. Nothing else here is generated, so a
+      // single name is enough of a guard.
+      if (name === "__pycache__") continue;
+      const full = path.join(dir, name);
+      const childRel = rel ? `${rel}/${name}` : name;
+      if (fs.statSync(full).isDirectory()) {
+        walk(full, childRel);
+        continue;
+      }
+      const srcPath = path.join(srcDir, childRel);
+      const shadows = fs.existsSync(srcPath);
+      if (name.endsWith(".json")) {
+        const overlay = JSON.parse(fs.readFileSync(full, "utf8"));
+        const merged = shadows
+          ? deepMerge(JSON.parse(fs.readFileSync(srcPath, "utf8")), overlay)
+          : overlay;
+        out[childRel] = Buffer.from(JSON.stringify(merged, null, 2) + "\n", "utf8");
+      } else {
+        if (shadows) {
+          throw new Error(
+            `${overlayDir}/${childRel} would replace ${srcDir}/${childRel}. ` +
+            `The overlay may add files and merge JSON, but never shadow a source file.`
+          );
+        }
+        out[childRel] = fs.readFileSync(full);
+      }
+    }
+  }
+
+  walk(overlayDir, "");
+  return out;
+}
+
 function main() {
   // `npm run dev` (node build.js --dev) runs the same preparation steps but
   // emits an unpacked add-on in dev/ instead of packaged XPIs in dist/.
@@ -158,10 +249,23 @@ function main() {
   console.log(`Cleaning output directory (${outDir}) ...`);
   rm(outDir);
 
+  const overlay = collectOverlay(OVERLAY_DIR, "src");
+  const overlayCount = Object.keys(overlay).length;
+
   if (dev) {
-    // Emit the live code unpacked, ready to load as a temporary add-on.
+    // Emit the live code unpacked, ready to load as a temporary add-on. The
+    // overlay goes on top, so what you develop against is the beta tree - a
+    // beta-only feature is otherwise impossible to run unpacked.
     console.log("Copying src to dev/ (unpacked) ...");
     fs.cpSync("src", "dev", { recursive: true });
+    if (overlayCount) {
+      console.log(`Applying ${OVERLAY_DIR}/ overlay (${overlayCount} file(s)) ...`);
+      for (const [rel, data] of Object.entries(overlay)) {
+        const dest = path.join("dev", rel);
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        fs.writeFileSync(dest, data);
+      }
+    }
     console.log("Dev build finished. Load the unpacked add-on from the 'dev' folder.");
     return;
   }
@@ -174,19 +278,19 @@ function main() {
   console.log(`Creating ATN extension file (dist/${atnName}) ...`);
   zip("src", `dist/${atnName}`);
 
-  // GitHub build (the beta release): same tree, but manifest.json deep-merged
-  // with the overlay (adds gecko.update_url for self-hosted auto-update and
-  // overrides the name so the beta is distinguishable once installed).
-  const overlayPath = "manifest_beta.json";
-  if (!fs.existsSync(overlayPath)) {
-    throw new Error(`Missing ${overlayPath}, required for the beta XPI.`);
+  // GitHub build (the beta release): src/ with the overlay applied. At minimum
+  // that is beta/manifest.json, which adds gecko.update_url for self-hosted
+  // auto-update and overrides the name so the beta is distinguishable once
+  // installed; anything else the overlay carries is beta-only by construction.
+  if (!overlay["manifest.json"]) {
+    throw new Error(`Missing ${OVERLAY_DIR}/manifest.json, required for the beta XPI.`);
   }
-  const overlay = JSON.parse(fs.readFileSync(overlayPath, "utf8"));
-  const betaManifest = deepMerge(manifest, overlay);
-  const betaManifestBuf = Buffer.from(JSON.stringify(betaManifest, null, 2) + "\n", "utf8");
   const betaName = `${name}_${xpiVersion}_beta.xpi`;
-  console.log(`Creating beta (GitHub) extension file (dist/${betaName}) ...`);
-  zip("src", `dist/${betaName}`, [], { "manifest.json": betaManifestBuf });
+  console.log(
+    `Creating beta (GitHub) extension file (dist/${betaName}), ` +
+    `${overlayCount} overlay file(s) ...`
+  );
+  zip("src", `dist/${betaName}`, [], overlay);
 
   console.log("Build finished. Output is in the 'dist' folder.");
 }

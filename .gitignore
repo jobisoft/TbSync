@@ -2,6 +2,7 @@
 dist
 dev
 node_modules
+__pycache__
 
 # Everything dot-prefixed, at any depth: editor and tool droppings land
 # there, and the build/lint tooling writes several multi-megabyte caches
