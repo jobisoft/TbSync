@@ -49,12 +49,36 @@
  *        Versions are integers from here on. The dotted form implied minor
  *        bumps that a peer could tolerate, which was never true: the host
  *        refuses any provider whose version is not exactly its own.
+ *
+ *        PORT_NAME also stopped carrying the version - see below.
  */
 export const PROTOCOL_VERSION = 2;
 
-/** Name used for the persistent runtime.connect port. Includes major version so
- *  a breaking protocol bump leaves mismatched peers silently disconnected. */
-export const PORT_NAME = "tbsync-v2";
+/** Name used for the persistent runtime.connect port.
+ *
+ *  The "v5" is the add-on generation, not the protocol version, and does not
+ *  move when PROTOCOL_VERSION does. TbSync 4 spoke to its providers by an
+ *  entirely different mechanism, so the name says which era of TbSync is
+ *  calling and nothing more.
+ *
+ *  It deliberately does *not* carry the protocol version, though it used to.
+ *  The theory was that a breaking bump should leave mismatched peers unable
+ *  to connect - but the version is agreed before any port exists: the host
+ *  refuses a mismatched ANNOUNCE and only opens a port to a provider it has
+ *  already accepted. The two names could therefore never disagree, and the
+ *  check could never fire.
+ *
+ *  Where it could only have made things worse. A name mismatch is answered
+ *  with a bare `return` in the provider's onConnectExternal listener: no
+ *  error, no log, nothing for anyone to read. The version check writes the
+ *  reason to the event log instead. Encoding the version here again would
+ *  only add a way for a future bump to produce a silent, unexplainable
+ *  disconnect by updating one constant and forgetting the other.
+ *
+ *  What actually guards this port is the sender check beside it - only
+ *  TbSync's own extension id is accepted. The name just distinguishes this
+ *  port from any other the extension may receive. */
+export const PORT_NAME = "tbsync-v5";
 
 /** Discovery message types (runtime.onMessageExternal, one-shot).
  *
