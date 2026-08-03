@@ -1,5 +1,63 @@
-<h1>Provider discovery — how a provider and the host find each other</h1>
+<link rel="stylesheet" href="docs.css">
 
+<style>
+  :root {
+    --bg:#fff; --fg:#1b1b1d; --muted:#6b6b70; --rule:#d7d7db;
+    --host:#2b6cb0; --prov:#7a4fb5; --ok:#1f7a4d; --bad:#c0392b;
+    --spanbg:#ecedf1; --delaybg:#fdeaea; --offbg:#f2f2f4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1b1b1d; --fg:#ececed; --muted:#9b9ba1; --rule:#3a3a3f;
+      --host:#74a9dc; --prov:#b795e0; --ok:#63c295; --bad:#e8796b;
+      --spanbg:#2a2a2f; --delaybg:#3a2626; --offbg:#232327; }
+  }
+  :root[data-theme="dark"] { --bg:#1b1b1d; --fg:#ececed; --muted:#9b9ba1; --rule:#3a3a3f;
+    --host:#74a9dc; --prov:#b795e0; --ok:#63c295; --bad:#e8796b;
+    --spanbg:#2a2a2f; --delaybg:#3a2626; --offbg:#232327; }
+  :root[data-theme="light"] { --bg:#fff; --fg:#1b1b1d; --muted:#6b6b70; --rule:#d7d7db;
+    --host:#2b6cb0; --prov:#7a4fb5; --ok:#1f7a4d; --bad:#c0392b;
+    --spanbg:#ecedf1; --delaybg:#fdeaea; --offbg:#f2f2f4; }
+  h1 { font-size:1.6rem; margin:0 0 .5rem; }
+  h2 { font-size:1.15rem; margin:2.2rem 0 .6rem; padding-top:.9rem; border-top:1px solid var(--rule); }
+  .lede { color:var(--muted); margin:0 0 1.5rem; }
+  code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.88em; }
+  a { color:var(--host); }
+  figure { margin:0 0 1.6rem; }
+  figcaption { color:var(--muted); font-size:.9rem; margin-top:.35rem; }
+  .panel-title { font-weight:600; margin:1.8rem 0 .4rem; display:flex; align-items:baseline;
+    gap:.6rem; flex-wrap:wrap; }
+  .verdict { font-size:.8rem; font-weight:600; padding:.1rem .5rem; border-radius:999px; }
+  .verdict.bad { background:var(--delaybg); color:var(--bad); }
+  .verdict.ok  { background:var(--spanbg); color:var(--ok); }
+  .scroller { overflow-x:auto; }
+  svg { display:block; min-width:860px; }
+  .legend { display:flex; gap:1.2rem; flex-wrap:wrap; color:var(--muted); font-size:.85rem; margin:.4rem 0 0; }
+  .legend span { display:flex; align-items:center; gap:.4rem; }
+  .sw { width:1.6rem; height:0; border-top:2px solid; }
+</style>
+
+<div class="shell">
+<nav class="sidebar">
+  <h2>Notes</h2>
+  <ul>
+    <li><a href="descriptions.html" class="here">How things work</a></li>
+    <li><a href="todos.html">Todos</a></li>
+    <li><a href="bridge.html">The bridge</a></li>
+  </ul>
+  <h2>On this page</h2>
+  <ul class="toc">
+    <li><a href="#handshake">Provider discovery</a></li>
+    <li><a href="#who-detects">Who notices an edit</a></li>
+    <li><a href="#eauth">E:AUTH guards</a></li>
+  </ul>
+</nav>
+
+<main class="content">
+
+<h1>How things work</h1>
+<p class="lede">The host and its provider contract. Anything specific to a provider lives in that provider's own notes — for Exchange ActiveSync, <a href="https://jobisoft.github.io/EAS-4-TbSync/">EAS-4-TbSync</a>.</p>
+
+<h2 id="handshake">Provider discovery</h2>
 <p class="lede">
   <strong>Repo: TbSync</strong>, with the matching provider half vendored into
   EAS-4-TbSync and google-4-tbsync. The first three panels show the protocol 1.3
@@ -9,7 +67,7 @@
 
 <div id="panels"></div>
 
-<h2>Why no race remains</h2>
+<h3>Why no race remains</h3>
 
 <p>
   Two rules, one on each side:
@@ -46,41 +104,7 @@
   <code>providers.upsert</code> → <code>openPortToProvider</code>, unchanged.
 </p>
 
-<h2>Mixed versions — and why the protocol version is 1.3</h2>
-
-<p>
-  The two halves of the handshake are useless apart, and they fail in opposite
-  directions.
-</p>
-
-<div id="panels-mixed"></div>
-
-<p>
-  The second panel is the decisive one. A 1.3 provider announces once, at
-  ~120&nbsp;ms, and has nothing to follow it; a 1.2 host does not attach its
-  listener until ~400&nbsp;ms and never broadcasts. That pairing therefore fails
-  <strong>on every start</strong>, not occasionally. Installing TbSync while the
-  provider is already running is worse again — a 1.3 provider has no
-  <code>management</code> listener to notice, so nothing connects, ever.
-</p>
-
-<p>
-  Hence <code>PROTOCOL_VERSION</code> <code>1.3</code>, even though no message
-  shape changes. <code>registry.mjs</code> answers a mismatched announce with
-  <code>{ok: false, error: "protocol-version-mismatch", …}</code>, so a skewed
-  pair fails deterministically and says why in the log rather than failing
-  silently and intermittently.
-</p>
-
-<p>
-  The cost is the first panel: a 1.2 provider already carries the listener under
-  its old name, so an unbumped 1.3 host would have driven it correctly without
-  the provider being updated at all. That is given up in exchange for refusing
-  the pairing in the second panel. Since all three add-ons are released together
-  from one <code>updates.json</code>, the skew is transient either way.
-</p>
-
-<h2>Testing it</h2>
+<h3>Testing it</h3>
 
 <p>
   Enable order alone covers every case; nothing needs to be instrumented:
@@ -97,44 +121,79 @@
   listed.
 </p>
 
-<style>
-  :root {
-    --bg:#fff; --fg:#1b1b1d; --muted:#6b6b70; --rule:#d7d7db;
-    --host:#2b6cb0; --prov:#7a4fb5; --ok:#1f7a4d; --bad:#c0392b;
-    --spanbg:#ecedf1; --delaybg:#fdeaea; --offbg:#f2f2f4;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg:#1b1b1d; --fg:#ececed; --muted:#9b9ba1; --rule:#3a3a3f;
-      --host:#74a9dc; --prov:#b795e0; --ok:#63c295; --bad:#e8796b;
-      --spanbg:#2a2a2f; --delaybg:#3a2626; --offbg:#232327; }
-  }
-  :root[data-theme="dark"] { --bg:#1b1b1d; --fg:#ececed; --muted:#9b9ba1; --rule:#3a3a3f;
-    --host:#74a9dc; --prov:#b795e0; --ok:#63c295; --bad:#e8796b;
-    --spanbg:#2a2a2f; --delaybg:#3a2626; --offbg:#232327; }
-  :root[data-theme="light"] { --bg:#fff; --fg:#1b1b1d; --muted:#6b6b70; --rule:#d7d7db;
-    --host:#2b6cb0; --prov:#7a4fb5; --ok:#1f7a4d; --bad:#c0392b;
-    --spanbg:#ecedf1; --delaybg:#fdeaea; --offbg:#f2f2f4; }
-  body { background:var(--bg); color:var(--fg); margin:0 auto; padding:2rem 1.25rem 4rem;
-    max-width:62rem; line-height:1.55;
-    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif; }
-  h1 { font-size:1.6rem; margin:0 0 .5rem; }
-  h2 { font-size:1.15rem; margin:2.2rem 0 .6rem; padding-top:.9rem; border-top:1px solid var(--rule); }
-  .lede { color:var(--muted); margin:0 0 1.5rem; }
-  code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.88em; }
-  a { color:var(--host); }
-  figure { margin:0 0 1.6rem; }
-  figcaption { color:var(--muted); font-size:.9rem; margin-top:.35rem; }
-  .panel-title { font-weight:600; margin:1.8rem 0 .4rem; display:flex; align-items:baseline;
-    gap:.6rem; flex-wrap:wrap; }
-  .verdict { font-size:.8rem; font-weight:600; padding:.1rem .5rem; border-radius:999px; }
-  .verdict.bad { background:var(--delaybg); color:var(--bad); }
-  .verdict.ok  { background:var(--spanbg); color:var(--ok); }
-  .scroller { overflow-x:auto; }
-  svg { display:block; min-width:860px; }
-  .legend { display:flex; gap:1.2rem; flex-wrap:wrap; color:var(--muted); font-size:.85rem; margin:.4rem 0 0; }
-  .legend span { display:flex; align-items:center; gap:.4rem; }
-  .sw { width:1.6rem; height:0; border-top:2px solid; }
-</style>
+<h2 id="who-detects">Who notices a user's edit</h2>
+
+<p><strong>Calendars: the provider. Contacts: the host.</strong> Not a
+compromise - the platform is asymmetric and the split follows it.</p>
+
+<p>A provider can supply its own calendar type, and Thunderbird then hands it
+every user edit directly, with the previous item attached, while the
+provider's own writes go somewhere the hooks do not see. So the provider knows
+which edits are the user's without anything having to be marked, and it can
+say <em>what</em> changed rather than only that the item did. It reports them
+with <code>CHANGELOG_RECORD_USER_EDIT</code>, into the same
+<code>folder.changelog</code> the push already reads: the host still owns that
+table, only the author of an entry changed.</p>
+
+<p>Address books have no equivalent. <code>addressBooks.provider</code>
+offers one event, <code>onSearchRequest</code>, and nothing for items. So the
+host keeps observing them, and keeps pre-tagging its own writes so its observer
+can tell them from the user's. That logic - the ghost gate for
+Thunderbird's usage-tracking updates, the contact hashes, the list-by-name
+pre-tag - is better in one place than vendored into every provider.</p>
+
+<p>Consequences worth knowing:</p>
+<ul>
+  <li>The host runs no calendar listener at all, and has no calendar API in
+    the shipped build. Rename mirroring and deselecting a folder whose
+    calendar the user deleted are the provider's work, reported with
+    <code>FOLDER_TARGET_REMOVED</code>.</li>
+  <li><code>*_by_server</code> pre-tags are never written for a
+    provider-owned target. Nothing would consume them, and they would
+    accumulate one per synced item.</li>
+  <li>The rule is the folder's <code>targetType</code>, so it holds only while
+    every provider that syncs calendars supplies its own type.</li>
+</ul>
+
+<h2 id="eauth">Anything that reaches the server needs its own E:AUTH guard</h2>
+<p><strong>Repo: every provider.</strong> The host cannot add these guards for
+you.</p>
+
+<p>When the host stamps <code>error: "E:AUTH"</code>, the server has rejected
+the account's credentials. <strong>Every provider path that reaches the network
+must decline to run</strong> until that clears — not just the sync path.
+Presenting rejected credentials repeatedly is how a server decides to lock an
+account out, and one unguarded entry point is enough.</p>
+
+<p>An <code>E:AUTH</code> account stays <strong>enabled</strong>: it keeps
+folders, sync keys, calendars and address books, and is only held back from
+syncing. What the host guards is the sync path, at one choke point in
+<code>sync-coordinator.mjs::syncAccount</code>:</p>
+
+<pre><code>if (!acc || !acc.enabled) return;
+if (acc.error === ERR.AUTH) return;</code></pre>
+
+<p>That covers all five callers of <code>syncAccount</code> and
+<strong>nothing else</strong>. A provider entry point the host does not invoke
+is invisible to it, and <code>enabled</code> is not a proxy for "safe to talk
+to the server".</p>
+
+<p>The one live example is <code>onSearchRequest</code> in EAS's
+<code>gal.mjs</code>, backing the per-account GAL address book. It fires on
+<strong>every keystroke</strong> in a compose window, outside the sync path,
+and issues an authenticated EAS <code>Search</code>. Two things about its guard
+are deliberate: it sits <strong>inside the callback</strong>, not around the
+registration, because deregistering would stop the traffic with nothing to put
+it back — an auth failure raises no account-enabled event; and it tests
+<code>=== ERR.AUTH</code> rather than "any error", because a folder-level
+failure should still answer autocomplete.</p>
+
+<p>When adding an entry point, ask: <em>can this reach the server without the
+host having called me?</em> If yes it needs the guard — anything on
+<code>addressBooks.provider.*</code>, <code>calendar.provider.*</code>, a
+<code>runtime</code> message from your own UI pages that performs network work,
+or a timer, alarm or observer you install yourself. <code>account.error</code>
+is on the row <code>getAccount</code> returns.</p>
 
 <script>
   const PANELS = [
@@ -192,46 +251,6 @@
         { t: 200, from: 0, to: 1, kind: "bad", label: "host-ready — nobody home" },
         { t: 10140, from: 1, to: 0, kind: "ok", label: "announce → upsert + open port" },
       ],
-    },
-    {
-      group: "mixed",
-      title: "Old provider (v5.0.12) + new host — provider enabled first, TbSync 10 s later",
-      verdict: "ok", verdictText: "the host fix alone repairs it",
-      axis: { max: 11500, step: 2000 },
-      laneSubs: ["host — new", "guest — v5.0.12, unchanged"],
-      caption: "The shipped v5.0.12 provider already carries this listener (as PROBE) — it was written " +
-        "for exactly this and never had a sender. So the old provider burns its retry budget and " +
-        "gives up, then answers the new host's broadcast anyway. Bumping the protocol version " +
-        "gives this up deliberately; see below.",
-      spans: [{ lane: 0, t0: 0, t1: 10000, label: "TbSync not running", fill: "off" }],
-      marks: [
-        { lane: 1, t: 40, label: "listener attached", kind: "ok" },
-        { lane: 1, t: 4800, label: "gives up", kind: "bad" },
-        { lane: 0, t: 10040, label: "listener attached, then host-ready", kind: "ok" },
-      ],
-      msgs: [
-        ...[250, 750, 1250, 1750, 2250, 2750, 3250, 3750, 4250, 4750].map((t, i) => ({
-          t, from: 1, to: 0, kind: "bad", label: i === 0 ? "announce ×10 — all lost" : null,
-        })),
-        { t: 10200, from: 0, to: 1, kind: "ok", label: "host-ready" },
-        { t: 10330, from: 1, to: 0, kind: "ok", label: "announce → upsert + open port" },
-      ],
-    },
-    {
-      group: "mixed",
-      title: "New provider + old host (v5.0.12) — ordinary Thunderbird restart",
-      verdict: "bad", verdictText: "fails every start",
-      axis: { max: 1200, step: 200 },
-      laneSubs: ["host — v5.0.12, unchanged", "guest — new"],
-      caption: "No artificial delay here — 398 ms is the measured, undelayed time for the old " +
-        "host to reach registry.init(). The new provider's single announce is already gone by " +
-        "then, and an old host never broadcasts, so there is no second chance. Today's retry " +
-        "loop would have covered this on its second attempt at 750 ms.",
-      marks: [
-        { lane: 1, t: 40, label: "listener attached", kind: "ok" },
-        { lane: 0, t: 398, label: "listener attached — no broadcast follows", kind: "bad" },
-      ],
-      msgs: [{ t: 120, from: 1, to: 0, kind: "bad", label: "announce — host not listening yet" }],
     },
   ];
 
@@ -310,7 +329,6 @@
 
   const GROUPS = {
     main: document.getElementById("panels"),
-    mixed: document.getElementById("panels-mixed"),
   };
   for (const p of PANELS) {
     const head = document.createElement("div");
@@ -336,3 +354,6 @@
     container.append(legend);
   }
 </script>
+
+</main>
+</div>

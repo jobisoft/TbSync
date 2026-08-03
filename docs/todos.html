@@ -1,0 +1,75 @@
+<link rel="stylesheet" href="docs.css">
+
+<div class="shell">
+<nav class="sidebar">
+  <h2>Notes</h2>
+  <ul>
+    <li><a href="descriptions.html">How things work</a></li>
+    <li><a href="todos.html" class="here">Todos</a></li>
+    <li><a href="bridge.html">The bridge</a></li>
+  </ul>
+  <h2>On this page</h2>
+  <ul class="toc">
+    <li><a href="#gaps">Features and gaps</a></li>
+  </ul>
+</nav>
+
+<main class="content">
+
+<h1>Todos</h1>
+<p class="lede">What is outstanding in the host. Provider-specific work lives in that provider's notes — for Exchange ActiveSync, <a href="https://jobisoft.github.io/EAS-4-TbSync/todos.html">EAS-4-TbSync</a>.</p>
+
+<h2 id="gaps">Features and gaps</h2>
+
+<h3 id="cancel-sync">CANCEL_SYNC has no sender</h3>
+<p><strong>Repo: TbSync.</strong> Priority low — a longstanding gap, not a
+regression. The command is declared in <code>protocol.mjs</code> and dispatched
+by the provider base class; both providers answer it with
+<code>return null</code>. The host never sends it, so there is no way to cancel
+a running sync.</p>
+<p>It matters because a sync in progress locks the account out of the UI
+entirely — <code>transientLocked = upgrading || syncing || busy</code> gates
+Remove along with everything else — and <code>SYNC_ACCOUNT</code> /
+<code>SYNC_FOLDER</code> are in <code>NO_TIMEOUT_CMDS</code>. A provider that is
+alive but not returning leaves the account reading "Synchronizing…" with every
+action greyed out, recoverable only by restarting Thunderbird.</p>
+<p>Cancellation was designed for: <code>#onPortMessage</code> dispatches
+<strong>without <code>await</code></strong>, so a cancel sent while a
+<code>SYNC_FOLDER</code> is outstanding would reach the provider immediately
+rather than queueing behind it. It was never wired up. Who should be able to
+cancel: the user, from the manager, and nobody else — a provider that dies
+mid-sync already causes the outstanding RPC to reject.</p>
+<p><strong>Layer 1 — host-side stop, no protocol involvement.</strong> A
+<code>cancelledAccounts</code> set in <code>transient.mjs</code>;
+<code>syncAccount</code> checks it in the per-folder loop and in the
+<code>do/while</code> rerun loop and breaks; a <code>cancelSync</code> manager
+RPC sets it; the manager's Sync button becomes Stop while syncing. The existing
+<code>finally</code> already downgrades pending folders to
+<code>"aborted"</code>. This stops at the next folder boundary rather than
+interrupting the folder in flight — a feature, since the provider is never left
+mid-write.</p>
+<p><strong>Layer 2 — give the command a real implementation.</strong> The host
+sends it; EAS holds a per-account <code>AbortController</code> and aborts the
+request in flight. <code>fetchWithTimeout</code> already threads a signal, so it
+would combine its own timeout with an external one
+(<code>AbortSignal.any</code>).</p>
+<p><strong>Layer 1 first.</strong> Layer 2 alone would be worse than either — it
+would abort the current request while the loop marched on to the next
+folder.</p>
+
+<h3>A provider that dies mid-sync locks the account</h3>
+<p><strong>Repo: TbSync.</strong> <code>SYNC_ACCOUNT</code> and
+<code>SYNC_FOLDER</code> are in <code>NO_TIMEOUT_CMDS</code> deliberately, but
+if the provider stops answering nothing rejects the pending RPC:
+<code>syncingAccounts</code> keeps the account, the manager shows a permanent
+spinner, and no further sync can start. <code>reloadProvider</code> does
+<strong>not</strong> clear it; only <code>reloadHost</code> does, because
+<code>syncingAccounts</code> is module state a reload discards.</p>
+<p>The port dropping should be enough to fail the in-flight command.
+<code>router.handleDisconnect</code> exists; whether it rejects pending
+entries, and whether the provider's <code>#rejectAllPending</code> covers the
+reverse direction, is where to start. An unrecoverable lock turns any provider
+bug into "restart Thunderbird".</p>
+
+</main>
+</div>

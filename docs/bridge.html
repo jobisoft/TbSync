@@ -1,0 +1,116 @@
+<link rel="stylesheet" href="docs.css">
+
+<div class="shell">
+<nav class="sidebar">
+  <h2>Notes</h2>
+  <ul>
+    <li><a href="descriptions.html">How things work</a></li>
+    <li><a href="todos.html">Todos</a></li>
+    <li><a href="bridge.html" class="here">The bridge</a></li>
+  </ul>
+  <h2>On this page</h2>
+  <ul class="toc">
+    <li><a href="#verbs">Verbs</a></li>
+    <li><a href="#running">Running it</a></li>
+  </ul>
+</nav>
+
+<main class="content">
+
+<h1>The bridge</h1>
+<p class="lede"><strong>Repo: TbSync</strong>, beta builds only.
+<code>beta/modules/bridge.mjs</code> plus a native messaging helper.</p>
+
+<p>Exposes TbSync's internal manager RPC table on a loopback HTTP socket, so a
+script can drive it from a shell — import a fixture, sync, read the wire log
+back, assert — without a rebuild-install-paste cycle per step.</p>
+
+<pre><code>shell --HTTP--&gt; native host --native messaging--&gt; bridge --&gt; RPC table</code></pre>
+
+<p>The bridge is only shipped in the beta xpis.</p>
+
+<h2 id="verbs">Verbs</h2>
+
+<p><code>COMMANDS</code> is the entire surface, and is both the allow-list and
+the scope declaration so the two cannot drift. <strong>Account lifecycle — add,
+delete, edit, authenticate — is not supported.</strong> That is why several
+<a href="https://jobisoft.github.io/EAS-4-TbSync/test-plan.html">test-plan</a> sections need a human.</p>
+
+<p><em>Scope</em> is what a verb may touch. <em>account</em> and <em>folder</em>
+verbs check the ids passed against the chosen target and refuse otherwise;
+<em>calendar</em> verbs take no calendar at all — the target's is supplied, so
+there is no argument left to get wrong. Unscoped verbs read configuration or
+turn a global knob. A bridge with nothing chosen answers "no" rather than
+"anything".</p>
+
+<table>
+  <tr><th>Verb</th><th>Scope</th><th>Does</th></tr>
+
+  <tr><td><code>getState</code></td><td>—</td>
+      <td>Providers and their connection state, accounts and their status. How a caller discovers what the target could be.</td></tr>
+  <tr><td><code>getBrowserInfo</code></td><td>—</td>
+      <td>Name, version and buildID of the running Thunderbird. Beats inferring it from the process list.</td></tr>
+  <tr><td><code>getFolders</code></td><td>—</td>
+      <td>The account's folder rows: selection, status, target id, sync key, changelog, and the provider's <code>custom</code> data.</td></tr>
+  <tr><td><code>setLogLevel</code></td><td>—</td>
+      <td>Event Log verbosity. <code>debug</code> entries are dropped below level 3.</td></tr>
+
+  <tr><td><code>getEventLog</code></td><td>—</td>
+      <td>Log entries, optionally only those newer than <code>sinceSeq</code>. Entries carry a per-process sequence number, so "what did this sync produce" is exact rather than guessed from timestamps. Reports <code>dropped</code> when the buffer rolled past what the caller last saw.</td></tr>
+  <tr><td><code>clearEventLog</code></td><td>—</td>
+      <td>Empty it, so the next step starts from a known point.</td></tr>
+
+  <tr><td><code>getConsole</code></td><td>—</td>
+      <td>Thunderbird's own console, which the Event Log never sees — a TypeError inside a calendar module, an iCal parse complaint, a script that failed to load. Same <code>sinceSeq</code> shape, and seeded from the platform's backlog on first use.</td></tr>
+  <tr><td><code>clearConsole</code></td><td>—</td>
+      <td>Drop what is held.</td></tr>
+
+  <tr><td><code>syncAccount</code></td><td>account</td>
+      <td>Sync, and <strong>wait for it to finish</strong> — unlike the manager's RPC of the same name, which does not await. Returns the folder rows, which is how you tell "synced cleanly" from "did nothing at all": it returns early and silently for an account that is disabled, already syncing, holding <code>E:AUTH</code>, or whose provider is not connected.</td></tr>
+  <tr><td><code>setAutoSyncInterval</code></td><td>account</td>
+      <td>Set the account's autosync interval.</td></tr>
+  <tr><td><code>setFolderSelected</code></td><td>folder</td>
+      <td>Select or deselect a folder. Deselecting drops the target and resets the folder's sync key, which is how a run starts from a known state.</td></tr>
+
+  <tr><td><code>reloadHost</code></td><td>—</td>
+      <td>Reload TbSync itself. Answers <em>before</em> reloading, and has to: the reload takes the native port with it, the helper dies with the port, and the response in flight dies with the helper. Expect the endpoint to disappear and come back — poll <code>/health</code> rather than assuming the next request lands.</td></tr>
+  <tr><td><code>reloadProvider</code></td><td>account</td>
+      <td>Ask the account's provider to reload itself. Fails if that provider is not connected.</td></tr>
+
+  <tr><td><code>calendars.rename</code></td><td>calendar</td>
+      <td>Rename the target calendar. The provider that supplies it mirrors the new name into its folder row, so this is how that path is driven from a script.</td></tr>
+  <tr><td><code>calendars.remove</code></td><td>calendar</td>
+      <td>Delete the target calendar, as the Remove button does — the API's remove unregisters it, which ends in <code>deletePrefBranch</code>. The folder row is left pointing at it, and the provider is expected to notice and clear the binding.</td></tr>
+
+  <tr><td><code>items.query</code></td><td>calendar</td>
+      <td>Items in the target calendar, as iCal. Any other query option is passed through.</td></tr>
+  <tr><td><code>items.get</code></td><td>calendar</td>
+      <td>One item by id, as iCal.</td></tr>
+  <tr><td><code>items.create</code></td><td>calendar</td>
+      <td>Create from an iCal string. <code>type</code> defaults to <code>event</code>; an <code>id</code> may be pre-specified, which is how a fixture keeps the UID it was written with.</td></tr>
+  <tr><td><code>items.update</code></td><td>calendar</td>
+      <td>Replace an item's iCal.</td></tr>
+  <tr><td><code>items.remove</code></td><td>calendar</td>
+      <td>Delete an item by id.</td></tr>
+</table>
+
+<div class="note"><strong>Never reload mid-sync.</strong>
+<code>SYNC_FOLDER</code> has no timeout and nothing rejects it when the port
+drops, so the helper dies, the response never arrives, and recovery needs
+<code>about:debugging</code>. Let <code>syncAccount</code> return first.
+
+<p>Deselect the test resource before executing a reload. Nothing can then be
+in flight, and the next run starts from a reset sync key instead of whatever
+the last one left behind.</p></div>
+
+<h2 id="running">Running it</h2>
+
+<p>Build the beta xpis with <code>npm run build</code> in each repo and install
+them as temporary installs from <code>about:debugging</code>, which is what
+makes <code>reloadHost</code> and <code>reloadProvider</code> work.</p>
+
+<p>After installing the temporary XPIs, enable the bridge in the TbSync Manager
+interface.</p>
+
+</main>
+</div>
