@@ -419,6 +419,32 @@ router.setProviderRpcHandler(
  * those removals. It is also the only side that can tell a real deletion from
  * its own extension restarting, which the platform announces the same way.
  */
+/**
+ * A provider asking for one of its folders to be synced - a user pressing
+ * Reload on a calendar it supplies, or that calendar's own refresh timer.
+ *
+ * The host still decides how: its normal account prologue runs first, only the
+ * named folder is synced, and a request arriving mid-sync is deferred rather
+ * than dropped. Resolves when that sync has finished, so the provider can
+ * report a real outcome back to whatever asked.
+ */
+router.setProviderRpcHandler(
+  PROVIDER_CMD.REQUEST_SYNC,
+  async (providerId, args) => {
+    const { parentId } = args ?? {};
+    const owner = await folders.getByTarget(parentId);
+    if (!owner) {
+      throw withCode(new Error("unknown folder"), ERR.UNKNOWN_FOLDER);
+    }
+    const acc = await accounts.get(owner.accountId);
+    if (!acc || acc.provider !== providerId) {
+      throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
+    }
+    await syncAccount(owner.accountId, { only: owner.folderId });
+    return null;
+  },
+);
+
 router.setProviderRpcHandler(
   PROVIDER_CMD.FOLDER_TARGET_REMOVED,
   async (providerId, args) => {

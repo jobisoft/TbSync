@@ -262,6 +262,7 @@ export const PROVIDER_CMD = {
   CHANGELOG_MARK_SERVER_WRITE: "changelogMarkServerWrite",
   CHANGELOG_RECORD_USER_EDIT: "changelogRecordUserEdit",
   FOLDER_TARGET_REMOVED: "folderTargetRemoved",
+  REQUEST_SYNC: "requestSync",
   CHANGELOG_REMOVE: "changelogRemove",
   CHANGELOG_MOVE_TO_TAIL: "changelogMoveToTail",
   // Provider-scoped upgrade lock. While locked, the host treats every

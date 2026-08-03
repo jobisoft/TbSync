@@ -231,6 +231,20 @@ export class TbSyncProviderImplementation {
   changelogRecordUserEdit(args) {
     return this.#sendCmd(PROVIDER_CMD.CHANGELOG_RECORD_USER_EDIT, args);
   }
+  /** Ask the host to sync one of this provider's folders, identified by the
+   *  local resource it is bound to.
+   *
+   *  For when something outside the host's schedule asks for a sync - a user
+   *  pressing Reload on a calendar the provider supplies, say. The host still
+   *  decides: it runs its normal account prologue first, syncs only that
+   *  folder, and defers the request if the account is already syncing rather
+   *  than dropping it.
+   *
+   *  Resolves when the sync it asked for has finished, so a caller answering
+   *  a platform hook can report a real outcome. */
+  requestSync(args) {
+    return this.#sendCmd(PROVIDER_CMD.REQUEST_SYNC, args);
+  }
   /** Report that the local resource behind one of this provider's folders is
    *  gone - the user deleted the calendar or address book it was bound to.
    *  The host clears the binding and deselects the folder, leaving the row so

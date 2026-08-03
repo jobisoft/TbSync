@@ -5,7 +5,11 @@ import * as folders from "./folders.mjs";
 import * as eventLog from "./event-log.mjs";
 import * as ui from "./messaging-ui.mjs";
 import * as router from "./router.mjs";
-import { syncingAccounts, busyFolders } from "./transient.mjs";
+import {
+  syncingAccounts,
+  busyFolders,
+  pendingSyncRequests,
+} from "./transient.mjs";
 
 /** Drive an account sync over the port: syncAccount, then syncFolder per
  *  selected folder. The host owns the universal sync-status fields
@@ -56,8 +60,22 @@ export async function syncAllAccounts() {
   }
 }
 
-export async function syncAccount(accountId, { syncList = true } = {}) {
-  if (syncingAccounts.has(accountId)) return;
+export async function syncAccount(
+  accountId,
+  { syncList = true, only = null } = {},
+) {
+  if (syncingAccounts.has(accountId)) {
+    // Something asked for this on purpose and we are busy. Remember it rather
+    // than dropping it - the `finally` below runs it once this sync settles.
+    // Only a scoped request survives: an unscoped one is what is already
+    // happening.
+    if (only) {
+      const pending = pendingSyncRequests.get(accountId) ?? new Set();
+      pending.add(only);
+      pendingSyncRequests.set(accountId, pending);
+    }
+    return;
+  }
   const acc = await accounts.get(accountId);
   if (!acc || !acc.enabled) return;
   // An account whose credentials the server rejected stays enabled, so
@@ -130,7 +148,10 @@ export async function syncAccount(accountId, { syncList = true } = {}) {
       // Folders being toggled right now skip this pass - the provider may
       // be mid-book-delete on deselect.
       const toSync = (await folders.listForAccount(accountId)).filter(
-        (f) => f.selected && !busyFolders.has(f.folderId),
+        (f) =>
+          f.selected &&
+          !busyFolders.has(f.folderId) &&
+          (!only || f.folderId === only),
       );
       for (const folder of toSync) {
         const outcome = await syncFolderOnce(acc, folder);
@@ -176,6 +197,25 @@ export async function syncAccount(accountId, { syncList = true } = {}) {
       await recomputeAccountError(accountId);
     }
     ui.broadcast({ type: "accounts-changed", accountId });
+  }
+
+  await drainPendingSyncRequests(accountId);
+}
+
+/** Run whatever was asked for while this account was busy.
+ *
+ *  Deliberately after the `finally`, so a deferred run starts from a settled
+ *  account: the lock is clear, residual folder statuses are resolved and the
+ *  account error recomputed. The set is taken before anything runs, so a
+ *  request arriving during the deferred sync is deferred again rather than
+ *  lost.
+ */
+async function drainPendingSyncRequests(accountId) {
+  const pending = pendingSyncRequests.get(accountId);
+  if (!pending?.size) return;
+  pendingSyncRequests.delete(accountId);
+  for (const folderId of pending) {
+    await syncAccount(accountId, { only: folderId });
   }
 }
 

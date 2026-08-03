@@ -19,6 +19,15 @@ export const busyAccounts = new Set();
  *  checkbox + rejects overlapping toggles on the same folder. */
 export const busyFolders = new Set();
 
+/** Folder syncs a provider asked for while the account was already syncing,
+ *  as `accountId -> Set<folderId>`. Drained when that sync finishes.
+ *
+ *  A request is deferred rather than dropped because something asked for it on
+ *  purpose - a user pressing Reload on a calendar, or the calendar's own
+ *  refresh timer firing. Repeats for the same folder collapse into the set, so
+ *  five impatient clicks still cost one run. */
+export const pendingSyncRequests = new Map();
+
 /** Accounts a provider has declared "upgrading" via SET_PROVIDER_UPGRADE_LOCK.
  *  While in this set, the host refuses every user-initiated RPC against
  *  the account and skips autosync ticks - the provider is treated as
@@ -34,5 +43,11 @@ export function snapshot() {
     busyAccounts: [...busyAccounts],
     busyFolders: [...busyFolders],
     upgradeAccounts: [...upgradeAccounts],
+    pendingSyncRequests: Object.fromEntries(
+      [...pendingSyncRequests].map(([accountId, folderIds]) => [
+        accountId,
+        [...folderIds],
+      ]),
+    ),
   };
 }
