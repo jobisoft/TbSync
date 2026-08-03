@@ -56,8 +56,7 @@ export const PORT_NAME = "tbsync-v1";
  *  running announce itself. The reply is ignored.
  *
  *  Between them they cover both startup orders without either side timing
- *  anything, provided each attaches its listener before it sends - see
- *  `docs/provider-handshake.html`. */
+ *  anything, provided each attaches its listener before it sends. */
 export const DISCOVERY = {
   ANNOUNCE: "tbsync-provider-announce",
   HOST_READY: "tbsync-host-ready",

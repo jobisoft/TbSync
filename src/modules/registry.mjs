@@ -24,8 +24,7 @@ import { upgradeAccounts } from "./transient.mjs";
  * That makes an announce we were not yet listening for unrecoverable, which
  * is what the host-ready broadcast is for: it hands a provider that started
  * before us a reason to announce again. Between the two, whichever side
- * starts later reaches the other, so neither has to guess at the timing -
- * see `docs/provider-handshake.html`.
+ * starts later reaches the other, so neither has to guess at the timing.
  */
 
 const listeners = new Set();
