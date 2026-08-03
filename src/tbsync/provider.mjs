@@ -225,6 +225,19 @@ export class TbSyncProviderImplementation {
   changelogMarkServerWrite(args) {
     return this.#sendCmd(PROVIDER_CMD.CHANGELOG_MARK_SERVER_WRITE, args);
   }
+  /** Record a user edit for a resource this provider supplies itself, e.g.
+   *  a calendar of its own type whose edits arrive as provider hooks rather
+   *  than through the host's observer.
+   *
+   *  `parentId` is the resource (the calendar's id); the host resolves which
+   *  folder that is. `op` is "created" | "updated" | "deleted" and is folded
+   *  into whatever is already queued for the item. `detail` is stored
+   *  verbatim and handed back on the changelog entry - for calendars it
+   *  carries the item's previous version, the one thing that cannot be
+   *  re-derived once the edit has been written. */
+  changelogRecordUserEdit(args) {
+    return this.#sendCmd(PROVIDER_CMD.CHANGELOG_RECORD_USER_EDIT, args);
+  }
   /** Remove the changelog entry for `(parentId, itemId)` regardless of
    *  status. Called after successfully pushing a `*_by_user` entry. */
   changelogRemove(args) {

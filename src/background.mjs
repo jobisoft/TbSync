@@ -345,12 +345,69 @@ router.setProviderRpcHandler(
         ERR.UNKNOWN_COMMAND,
       );
     }
+    // A pre-tag exists for exactly one purpose: to stop our own observer
+    // from logging the write we are about to make as a user edit. When the
+    // resource belongs to a provider we do not observe, there is nothing to
+    // suppress - and the tag would never be consumed either, so it would sit
+    // in the changelog forever, one per synced item.
+    if (await changelogWatcher.providerOwnsChangelog(parentId)) return null;
+
     await folders.markServerWrite(accountId, folderId, {
       parentId,
       itemId,
       status,
       kind,
     });
+    return null;
+  },
+);
+
+/**
+ * A user edit the provider was handed directly, for a resource it supplies
+ * itself. The host resolves which folder that is - the provider is given a
+ * calendar, not a folder id, and the folder table is ours.
+ *
+ * `detail` is stored verbatim and never inspected here. For calendars it is
+ * what the item looked like before the edit, which nothing on this side can
+ * reconstruct once the new version has been written.
+ */
+router.setProviderRpcHandler(
+  PROVIDER_CMD.CHANGELOG_RECORD_USER_EDIT,
+  async (providerId, args) => {
+    const { parentId, itemId, kind, op, detail } = args ?? {};
+    const allowedOps = ["created", "updated", "deleted"];
+    if (!allowedOps.includes(op)) {
+      throw withCode(
+        new Error(
+          `changelogRecordUserEdit: op must be one of ${allowedOps.join(" | ")} (got ${JSON.stringify(op)})`,
+        ),
+        ERR.UNKNOWN_COMMAND,
+      );
+    }
+    if (typeof itemId !== "string" || itemId.length === 0) {
+      throw withCode(
+        new Error(
+          `changelogRecordUserEdit: itemId must be a non-empty string (got ${JSON.stringify(itemId)})`,
+        ),
+        ERR.UNKNOWN_COMMAND,
+      );
+    }
+    const owner = await folders.getByTarget(parentId);
+    if (!owner) {
+      throw withCode(new Error("unknown folder"), ERR.UNKNOWN_FOLDER);
+    }
+    const acc = await accounts.get(owner.accountId);
+    if (!acc || acc.provider !== providerId) {
+      throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
+    }
+    const changed = await folders.recordUserEdit(
+      owner.accountId,
+      owner.folderId,
+      { parentId, itemId, kind, op, detail },
+    );
+    if (changed) {
+      ui.broadcast({ type: "folders-changed", accountId: owner.accountId });
+    }
     return null;
   },
 );

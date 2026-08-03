@@ -1,4 +1,5 @@
 import * as folders from "./folders.mjs";
+import { decideUserStatus } from "./folders.mjs";
 import * as ui from "./messaging-ui.mjs";
 
 /**
@@ -105,9 +106,7 @@ export async function init() {
   // that a folder is bound to, deselect the folder and clear its target -
   // the row stays so the user can re-enable it via the manager later, but
   // sync stops attempting to write to a non-existent target.
-  messenger.addressBooks.onDeleted.addListener((id) =>
-    handleTargetRemoved(id),
-  );
+  messenger.addressBooks.onDeleted.addListener((id) => handleTargetRemoved(id));
   messenger.calendar.calendars.onRemoved.addListener((id) =>
     handleTargetRemoved(id),
   );
@@ -132,7 +131,33 @@ export async function rebuildRegistry() {
   const watched = await folders.listWatchedTargets();
   registry.clear();
   for (const { accountId, folderId, targetID } of watched) {
+    if (await providerOwnsChangelog(targetID)) continue;
     registry.set(targetID, { accountId, folderId });
+  }
+}
+
+/**
+ * True when the target is a calendar supplied by a provider extension
+ * rather than a plain storage calendar.
+ *
+ * Such a calendar hands the provider every user edit directly, and the
+ * provider records it with `CHANGELOG_RECORD_USER_EDIT` - including what
+ * the item looked like beforehand, which this observer cannot see. Watching
+ * it as well would queue each edit twice, and would also pick up the
+ * provider's own downstream writes: those go into the calendar's cache,
+ * which still relays its item events up here, and suppressing them by hand
+ * is precisely the pre-tagging this arrangement exists to retire.
+ *
+ * Address books are unaffected - they have no provider API, so
+ * `calendars.get` returns nothing for them and they stay watched.
+ */
+export async function providerOwnsChangelog(targetID) {
+  try {
+    const calendar = await messenger.calendar.calendars.get(targetID);
+    return Boolean(calendar) && calendar.type !== "storage";
+  } catch {
+    // Not a calendar, or gone. Either way, nothing to step back from.
+    return false;
   }
 }
 
@@ -169,10 +194,7 @@ async function handleTargetRemoved(targetID) {
     registry.delete(targetID);
     ui.broadcast({ type: "folders-changed", accountId: owner.accountId });
   } catch (err) {
-    console.warn(
-      "[tbsync] target-removed update failed:",
-      err?.message ?? err,
-    );
+    console.warn("[tbsync] target-removed update failed:", err?.message ?? err);
   }
 }
 
@@ -220,10 +242,7 @@ async function ghostGate(owner, op, itemId) {
       m[itemId] === newHash ? m : { ...m, [itemId]: newHash },
     )
     .catch((err) =>
-      console.warn(
-        "[tbsync] contact-hash store failed:",
-        err?.message ?? err,
-      ),
+      console.warn("[tbsync] contact-hash store failed:", err?.message ?? err),
     );
   return "proceed";
 }
@@ -429,49 +448,6 @@ function applyUserTransition(
   if (nextStatus === "drop") return next; // remove (add+del cancels, etc.)
   next.push({ kind, parentId, itemId, timestamp: now, status: nextStatus });
   return next;
-}
-
-/**
- * Legacy state-machine transitions for contact/list events. The semantics
- * are identical for both kinds - the observer doesn't need to know which
- * it's processing.
- */
-function decideUserStatus(op, prior) {
-  switch (op) {
-    case "created":
-      switch (prior) {
-        case "added_by_user":
-          return "skip"; // late duplicate
-        case "modified_by_user":
-          return "added_by_user"; // late create after modify
-        case "deleted_by_user":
-          return "modified_by_user"; // removed and re-added
-        default:
-          return "added_by_user";
-      }
-    case "updated":
-      switch (prior) {
-        case "added_by_user":
-          return "skip"; // keep pending add
-        case "modified_by_user":
-          return "skip"; // already pending
-        case "deleted_by_user":
-          return "modified_by_user"; // race: moved out + back + edited
-        default:
-          return "modified_by_user";
-      }
-    case "deleted":
-      switch (prior) {
-        case "added_by_user":
-          return "drop"; // add + del cancels
-        case "deleted_by_user":
-          return "skip"; // double delete notification
-        default:
-          return "deleted_by_user";
-      }
-    default:
-      return "skip";
-  }
 }
 
 function isServerTag(status) {

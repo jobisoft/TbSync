@@ -241,6 +241,112 @@ export function mutateChangelog(accountId, folderId, updater) {
   });
 }
 
+/**
+ * Legacy state-machine transitions for a user-side edit. Shared by the two
+ * things that can learn about one: the host's own observer (address books,
+ * and calendars that are plain storage) and a provider reporting an edit it
+ * was handed directly (`CHANGELOG_RECORD_USER_EDIT`). One rule, so the two
+ * routes cannot drift.
+ *
+ * Returns the next status, or `"skip"` to leave the existing entry alone,
+ * or `"drop"` to remove it (an add cancelled by a delete).
+ */
+export function decideUserStatus(op, prior) {
+  switch (op) {
+    case "created":
+      switch (prior) {
+        case "added_by_user":
+          return "skip"; // late duplicate
+        case "modified_by_user":
+          return "added_by_user"; // late create after modify
+        case "deleted_by_user":
+          return "modified_by_user"; // removed and re-added
+        default:
+          return "added_by_user";
+      }
+    case "updated":
+      switch (prior) {
+        case "added_by_user":
+          return "skip"; // keep pending add
+        case "modified_by_user":
+          return "skip"; // already pending
+        case "deleted_by_user":
+          return "modified_by_user"; // race: moved out + back + edited
+        default:
+          return "modified_by_user";
+      }
+    case "deleted":
+      switch (prior) {
+        case "added_by_user":
+          return "drop"; // add + del cancels
+        case "deleted_by_user":
+          return "skip"; // double delete notification
+        default:
+          return "deleted_by_user";
+      }
+    default:
+      return "skip";
+  }
+}
+
+/**
+ * Record a user edit a provider was handed directly, folding it into
+ * whatever is already queued for that item.
+ *
+ * `detail` is opaque to the host - for calendars it carries what the item
+ * looked like *before* the edit, which is the only thing the provider
+ * cannot re-derive at push time. It is deliberately kept from the earliest
+ * edit in a run: two edits between syncs are one delta, measured against
+ * the version the server last gave us, not an intermediate it never saw.
+ */
+export async function recordUserEdit(
+  accountId,
+  folderId,
+  { parentId, itemId, kind, op, detail },
+) {
+  // Whether the queue actually moved. The caller broadcasts on this rather
+  // than on every call: a second edit of an already-queued item is a no-op
+  // here, and a bulk change would otherwise fire one folders-changed per
+  // item - the same UI thrash the observer path documents avoiding.
+  let changed = false;
+  await mutateChangelog(accountId, folderId, (entries) => {
+    const prior = entries.find(
+      (e) => e.parentId === parentId && e.itemId === itemId,
+    );
+    const nextStatus = decideUserStatus(op, prior?.status ?? null);
+
+    if (nextStatus === "skip") {
+      // The queued entry stands. Still fill in a detail it lacks, so an
+      // edit seen first by the observer and then by a provider is not left
+      // without its baseline. That is not a user-facing change, so it does
+      // not set `changed`.
+      if (!prior || prior.detail !== undefined || detail === undefined) {
+        return entries;
+      }
+      return entries.map((e) => (e === prior ? { ...e, detail } : e));
+    }
+    changed = true;
+
+    const without = entries.filter(
+      (e) => !(e.parentId === parentId && e.itemId === itemId),
+    );
+    if (nextStatus === "drop") return without;
+
+    const entry = {
+      kind,
+      parentId,
+      itemId,
+      timestamp: Date.now(),
+      status: nextStatus,
+    };
+    const keep = prior?.detail ?? detail;
+    if (keep !== undefined) entry.detail = keep;
+    without.push(entry);
+    return without;
+  });
+  return changed;
+}
+
 /** Replace any existing entry for `(parentId, itemId)` with a server-side
  *  pre-tag. Used by PROVIDER_CMD.CHANGELOG_MARK_SERVER_WRITE to freeze the
  *  next observer event for that item as self-inflicted. `kind` is one of
@@ -287,9 +393,7 @@ export async function removeChangelogEntry(
  *  match, the changelog is left untouched (no storage write). */
 export async function moveChangelogEntriesToTail(accountId, folderId, items) {
   if (!Array.isArray(items) || items.length === 0) return null;
-  const matchSet = new Set(
-    items.map((i) => `${i.parentId}|${i.itemId}`),
-  );
+  const matchSet = new Set(items.map((i) => `${i.parentId}|${i.itemId}`));
   return mutateChangelog(accountId, folderId, (entries) => {
     const stay = [];
     const move = [];
@@ -327,6 +431,22 @@ export function mutateContactHashes(accountId, folderId, updater) {
 /** All folder rows that currently have a non-null `targetID`. The watcher
  *  uses this at startup + on every folders-changed broadcast to rebuild
  *  its `bookId → {accountId, folderId}` registry. */
+/** The folder bound to `targetID`, or null. Lets a provider report against
+ *  the resource it was handed without having to carry an id mapping of its
+ *  own - the host owns that table, so it does the lookup. */
+export async function getByTarget(targetID) {
+  if (!targetID) return null;
+  const state = await read();
+  for (const [accountId, bucket] of Object.entries(state)) {
+    for (const folder of Object.values(bucket)) {
+      if (folder?.targetID === targetID) {
+        return { accountId, folderId: folder.folderId, folder };
+      }
+    }
+  }
+  return null;
+}
+
 export async function listWatchedTargets() {
   const state = await read();
   const out = [];

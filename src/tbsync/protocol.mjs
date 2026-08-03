@@ -236,6 +236,7 @@ export const PROVIDER_CMD = {
   // failed first (avoids replaying the same batch-shrink dance every
   // sync against a stuck-bad item at the head).
   CHANGELOG_MARK_SERVER_WRITE: "changelogMarkServerWrite",
+  CHANGELOG_RECORD_USER_EDIT: "changelogRecordUserEdit",
   CHANGELOG_REMOVE: "changelogRemove",
   CHANGELOG_MOVE_TO_TAIL: "changelogMoveToTail",
   // Provider-scoped upgrade lock. While locked, the host treats every
