@@ -77,6 +77,8 @@ turn a global knob. A bridge with nothing chosen answers "no" rather than
   <tr><td><code>reloadProvider</code></td><td>account</td>
       <td>Ask the account's provider to reload itself. Fails if that provider is not connected.</td></tr>
 
+  <tr><td><code>calendars.synchronize</code></td><td>calendar</td>
+      <td>Refresh the target calendar, as the Reload button does. For a provider-backed calendar it is the only way to reach <code>calendar.provider.onSync</code> from a script — the same entry point the button and the platform's refresh timer use.</td></tr>
   <tr><td><code>calendars.rename</code></td><td>calendar</td>
       <td>Rename the target calendar. The provider that supplies it mirrors the new name into its folder row, so this is how that path is driven from a script.</td></tr>
   <tr><td><code>calendars.remove</code></td><td>calendar</td>

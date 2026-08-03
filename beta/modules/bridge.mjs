@@ -221,6 +221,19 @@ const COMMANDS = {
   /** Rename the target calendar. The provider watches for this and mirrors
    *  the new name into its folder row, so it is the only way to drive that
    *  path from a script. */
+  /** Refresh the target calendar, as the Reload button in the calendar list
+   *  does.
+   *
+   *  For a provider-backed calendar this is the only way to reach
+   *  `calendar.provider.onSync` from a script: it runs
+   *  `calCachedCalendar.refresh()`, the same entry point the button and the
+   *  platform's own refresh timer use. Whether that leads anywhere depends on
+   *  the provider - EAS registers the hook but does not act on it yet. */
+  "calendars.synchronize": {
+    scope: "calendar",
+    run: (_args, { calendarId }) =>
+      messenger.calendar.calendars.synchronize([calendarId]),
+  },
   "calendars.rename": {
     scope: "calendar",
     run: ({ name }, { calendarId }) =>
