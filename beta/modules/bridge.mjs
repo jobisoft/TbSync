@@ -41,7 +41,7 @@
  * ## Scope
  *
  * The Bridge tab stores one account and one resource that the bridge may
- * touch. Every verb that changes something, or that reads calendar *data*
+ * touch. Every verb that changes something, or that reads a resource's *data*
  * rather than TbSync's own configuration, is scoped to them and refuses
  * otherwise - including when nothing has been chosen at all, so the failure
  * mode of an unconfigured bridge is "no", not "anything".
@@ -88,6 +88,11 @@ const TARGET_KEY = "tbsync-bridge-target";
  *    "calendar" the caller passes no calendar at all; the target's is
  *               supplied. A substitution rather than a check, so there is
  *               no argument left to get wrong.
+ *    "book"     the same, for the address book behind a contacts folder.
+ *
+ * The last two also require the target to be of that kind, so asking for a
+ * card in a calendar is refused here rather than by the platform complaining
+ * about an id the caller never chose.
  *
  * `run` is omitted for the commands that are just a manager RPC under
  * another name; those go through `ui.invokeRpc`.
@@ -218,22 +223,21 @@ const COMMANDS = {
     },
   },
 
-  /** Rename the target calendar. The provider watches for this and mirrors
-   *  the new name into its folder row, so it is the only way to drive that
-   *  path from a script. */
   /** Refresh the target calendar, as the Reload button in the calendar list
    *  does.
    *
    *  For a provider-backed calendar this is the only way to reach
    *  `calendar.provider.onSync` from a script: it runs
    *  `calCachedCalendar.refresh()`, the same entry point the button and the
-   *  platform's own refresh timer use. Whether that leads anywhere depends on
-   *  the provider - EAS registers the hook but does not act on it yet. */
+   *  platform's own refresh timer use. */
   "calendars.synchronize": {
     scope: "calendar",
     run: (_args, { calendarId }) =>
       messenger.calendar.calendars.synchronize([calendarId]),
   },
+  /** Rename the target calendar. The provider watches for this and mirrors
+   *  the new name into its folder row, so it is the only way to drive that
+   *  path from a script. */
   "calendars.rename": {
     scope: "calendar",
     run: ({ name }, { calendarId }) =>
@@ -285,6 +289,91 @@ const COMMANDS = {
     scope: "calendar",
     run: ({ id }, { calendarId }) =>
       messenger.calendar.items.remove(calendarId, id),
+  },
+
+  /* ── Address books ────────────────────────────────────────────────────
+   *
+   * Counterparts to the calendar verbs rather than a shared vocabulary,
+   * because the two APIs are not the same shape: `mailingLists` has
+   * addMember / listMembers / removeMember and nothing in `calendar.items`
+   * answers to those. A verb naming an operation the authorised resource
+   * cannot serve is refused by scope, with the mismatch named.
+   *
+   * These exist so the contacts half of the changelog can be driven from a
+   * script at all. It is the half with the special cases in it - the ghost
+   * gate that swallows PopularityIndex writes, `contactHashes`, and the
+   * list-by-name pre-tag - and until now it was reachable only by a person
+   * clicking in the address book.
+   *
+   * vCard is the payload throughout, as iCal is for calendar items: it is
+   * what the platform stores and what the EAS codec reads, so a fixture can
+   * be written down and compared literally.
+   */
+  "contacts.query": {
+    scope: "book",
+    run: (_args, { bookId }) => messenger.contacts.list(bookId),
+  },
+  "contacts.get": {
+    scope: "book",
+    run: ({ id }) => messenger.contacts.get(id),
+  },
+  /** `id` is optional and worth passing: it makes the created card's id
+   *  predictable, which is what lets a caller assert on the changelog entry
+   *  the create produces rather than hunting for it afterwards. */
+  "contacts.create": {
+    scope: "book",
+    run: ({ vCard, id }, { bookId }) =>
+      messenger.contacts.create(bookId, id ?? null, { vCard }),
+  },
+  "contacts.update": {
+    scope: "book",
+    run: ({ id, vCard }) => messenger.contacts.update(id, { vCard }),
+  },
+  "contacts.remove": {
+    scope: "book",
+    run: ({ id }) => messenger.contacts.delete(id),
+  },
+
+  "lists.query": {
+    scope: "book",
+    run: (_args, { bookId }) => messenger.mailingLists.list(bookId),
+  },
+  "lists.get": {
+    scope: "book",
+    run: ({ id }) => messenger.mailingLists.get(id),
+  },
+  /** A list is properties, not a vCard - the platform has no vCard
+   *  representation for one. */
+  "lists.create": {
+    scope: "book",
+    run: ({ name, nickName, description }, { bookId }) =>
+      messenger.mailingLists.create(bookId, {
+        name,
+        ...(nickName ? { nickName } : {}),
+        ...(description ? { description } : {}),
+      }),
+  },
+  "lists.update": {
+    scope: "book",
+    run: ({ id, ...properties }) =>
+      messenger.mailingLists.update(id, properties),
+  },
+  "lists.remove": {
+    scope: "book",
+    run: ({ id }) => messenger.mailingLists.delete(id),
+  },
+  "lists.addMember": {
+    scope: "book",
+    run: ({ id, contactId }) => messenger.mailingLists.addMember(id, contactId),
+  },
+  "lists.removeMember": {
+    scope: "book",
+    run: ({ id, contactId }) =>
+      messenger.mailingLists.removeMember(id, contactId),
+  },
+  "lists.listMembers": {
+    scope: "book",
+    run: ({ id }) => messenger.mailingLists.listMembers(id),
   },
 };
 
@@ -451,7 +540,7 @@ async function onNativeMessage(msg) {
   }
 
   try {
-    const scope = await applyScope(command.scope, args ?? {});
+    const scope = await applyScope(command.scope, args ?? {}, cmd);
     const result = command.run
       ? await command.run(args ?? {}, scope)
       : await ui.invokeRpc(cmd, args ?? {});
@@ -468,13 +557,21 @@ async function onNativeMessage(msg) {
   }
 }
 
+/** Which folder kinds can serve a resource-scoped command. A `tasks` folder
+ *  is bound to a calendar like an events folder is - one calendar type serves
+ *  both - so the calendar verbs work on either. */
+const SCOPE_TARGET_TYPES = {
+  calendar: ["calendars", "tasks"],
+  book: ["contacts"],
+};
+
 /** Hold a command to the account and resource chosen in the Bridge tab.
  *
  *  Throws for anything outside them, and for anything at all when no target
  *  has been chosen: an unconfigured bridge should refuse, not roam. Returns
- *  what the command needs from the target - which for calendar verbs is the
- *  calendarId they are given rather than allowed to name. */
-async function applyScope(scope, args) {
+ *  what the command needs from the target - which for the resource verbs is
+ *  the calendar or book id they are given rather than allowed to name. */
+async function applyScope(scope, args, cmd) {
   if (!scope) return {};
   const target = await readTarget();
 
@@ -511,21 +608,37 @@ async function applyScope(scope, args) {
     return { accountId: target.accountId, folderId: target.folderId };
   }
 
-  // "calendar". Read from the folder row every time rather than from the
-  // stored target: `setFolderSelected(false)` deletes the Thunderbird
-  // calendar and reselecting creates a fresh one, so any id we held would be
-  // stale the moment a clean resync ran - and a clean resync is one of the
-  // things this bridge exists to do.
+  // "calendar" or "book". Read from the folder row every time rather than
+  // from the stored target: `setFolderSelected(false)` deletes the
+  // Thunderbird resource and reselecting creates a fresh one, so any id we
+  // held would be stale the moment a clean resync ran - and a clean resync is
+  // one of the things this bridge exists to do.
+  const kind = scope === "book" ? "an address book" : "a calendar";
   const row = await folders.get(target.accountId, target.folderId);
   if (!row?.targetID) {
     throw withCode(
       new Error(
-        `resource "${target.folderName}" is not bound to a calendar yet - sync it once`,
+        `resource "${target.folderName}" is not bound to ${kind} yet - sync it once`,
       ),
       "E:NO_TARGET",
     );
   }
-  return { calendarId: row.targetID };
+  // The folder row is what says which kind it is. Without this a contacts
+  // target answered calendar verbs with its book id, and the platform then
+  // rejected an id the caller never supplied - a mismatch reported as if it
+  // were a corrupt argument.
+  if (!SCOPE_TARGET_TYPES[scope].includes(row.targetType)) {
+    throw withCode(
+      new Error(
+        `resource "${target.folderName}" is a ${row.targetType ?? "unknown"} ` +
+          `folder; ${cmd} needs ${kind}`,
+      ),
+      "E:OUT_OF_SCOPE",
+    );
+  }
+  return scope === "book"
+    ? { bookId: row.targetID }
+    : { calendarId: row.targetID };
 }
 
 function withCode(err, code) {

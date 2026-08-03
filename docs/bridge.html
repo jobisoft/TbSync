@@ -38,8 +38,11 @@ delete, edit, authenticate — is not supported.</strong> That is why several
 
 <p><em>Scope</em> is what a verb may touch. <em>account</em> and <em>folder</em>
 verbs check the ids passed against the chosen target and refuse otherwise;
-<em>calendar</em> verbs take no calendar at all — the target's is supplied, so
-there is no argument left to get wrong. Unscoped verbs read configuration or
+<em>calendar</em> and <em>book</em> verbs take no resource id at all — the
+target's is supplied, so there is no argument left to get wrong. Those two also
+require the target to be of that kind, so a <em>book</em> verb against a
+calendar folder is refused with the mismatch named, rather than reaching the
+platform as an id the caller never chose. Unscoped verbs read configuration or
 turn a global knob. A bridge with nothing chosen answers "no" rather than
 "anything".</p>
 
@@ -94,6 +97,34 @@ turn a global knob. A bridge with nothing chosen answers "no" rather than
       <td>Replace an item's iCal.</td></tr>
   <tr><td><code>items.remove</code></td><td>calendar</td>
       <td>Delete an item by id.</td></tr>
+
+  <tr><td><code>contacts.query</code></td><td>book</td>
+      <td>Cards in the target book. Each carries its vCard in <code>properties</code>.</td></tr>
+  <tr><td><code>contacts.get</code></td><td>book</td>
+      <td>One card by id.</td></tr>
+  <tr><td><code>contacts.create</code></td><td>book</td>
+      <td>Create from a <code>vCard</code> string. An <code>id</code> may be pre-specified, so the changelog entry the create produces can be asserted on rather than hunted for.</td></tr>
+  <tr><td><code>contacts.update</code></td><td>book</td>
+      <td>Replace a card's vCard. Writing back a byte-identical one should produce <strong>no</strong> changelog entry — that is the ghost gate, which exists because Thunderbird also fires <code>onUpdated</code> for PopularityIndex and address-picker recency.</td></tr>
+  <tr><td><code>contacts.remove</code></td><td>book</td>
+      <td>Delete a card by id.</td></tr>
+
+  <tr><td><code>lists.query</code></td><td>book</td>
+      <td>Mailing lists in the target book.</td></tr>
+  <tr><td><code>lists.get</code></td><td>book</td>
+      <td>One list by id.</td></tr>
+  <tr><td><code>lists.create</code></td><td>book</td>
+      <td>Create from <code>name</code>, and optionally <code>nickName</code> and <code>description</code>. A list has no vCard representation, so it is properties rather than a payload.</td></tr>
+  <tr><td><code>lists.update</code></td><td>book</td>
+      <td>Change those properties. Renaming one drives the <code>list-by-name</code> pre-tag, where a pulled list is tagged by name and upgraded to a real id on the next <code>onCreated</code>.</td></tr>
+  <tr><td><code>lists.remove</code></td><td>book</td>
+      <td>Delete a list by id.</td></tr>
+  <tr><td><code>lists.addMember</code></td><td>book</td>
+      <td>Put an existing card in a list.</td></tr>
+  <tr><td><code>lists.removeMember</code></td><td>book</td>
+      <td>Take it out again.</td></tr>
+  <tr><td><code>lists.listMembers</code></td><td>book</td>
+      <td>The cards in a list.</td></tr>
 </table>
 
 <div class="note"><strong>Never reload mid-sync.</strong>
