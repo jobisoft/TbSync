@@ -4,5 +4,16 @@
       "update_url": "https://raw.githubusercontent.com/jobisoft/tbsync/refs/heads/Main/updates.json"
     }
   },
-  "name": "TbSync Manager Beta"
+  "name": "TbSync Manager Beta",
+  "permissions": ["nativeMessaging", "downloads"],
+  "experiment_apis": {
+    "tbsyncConsole": {
+      "schema": "experiments/console/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "paths": [["tbsyncConsole"]],
+        "script": "experiments/console/implementation.js"
+      }
+    }
+  }
 }

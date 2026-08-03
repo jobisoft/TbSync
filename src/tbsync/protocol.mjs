@@ -40,12 +40,21 @@
  *        broadcasts HOST_READY it would therefore fail to register on every
  *        start it lost the race for - which is why this is a version bump
  *        and not a drop-in change. PROBE renamed to HOST_READY.
+ *
+ *   2    HOST_CMD.RELOAD: the host can ask a provider to reload itself. No
+ *        extension can reload another - runtime.reload() takes no id and
+ *        management.setEnabled() is themes-only - so this is the only shape
+ *        available, and a 1.3 provider has no handler for it.
+ *
+ *        Versions are integers from here on. The dotted form implied minor
+ *        bumps that a peer could tolerate, which was never true: the host
+ *        refuses any provider whose version is not exactly its own.
  */
-export const PROTOCOL_VERSION = "1.3";
+export const PROTOCOL_VERSION = 2;
 
 /** Name used for the persistent runtime.connect port. Includes major version so
  *  a breaking protocol bump leaves mismatched peers silently disconnected. */
-export const PORT_NAME = "tbsync-v1";
+export const PORT_NAME = "tbsync-v2";
 
 /** Discovery message types (runtime.onMessageExternal, one-shot).
  *
@@ -82,6 +91,13 @@ export const HOST_CMD = {
   FOLDER_ENABLED: "folderEnabled",
   FOLDER_DISABLED: "folderDisabled",
   GET_SORTED_FOLDERS: "getSortedFolders",
+  // Ask the provider to reload itself. Answered by the base class, not by a
+  // subclass hook - the work is identical everywhere and there is nothing a
+  // provider could usefully do differently. Only useful for a temporarily
+  // installed provider, which is the only kind whose reload re-reads its
+  // source; the base class refuses otherwise rather than restarting the same
+  // code and reporting success.
+  RELOAD: "reload",
 };
 
 /** Provider → TbSync command names (RPC).
@@ -344,6 +360,7 @@ export const SYNCSTATE_BASE_KEYS = new Set(["sync", "prepare", "send", "eval"]);
  *   error.E:UNKNOWN_COMMAND       - Unsupported command.
  *   error.E:PORT_CLOSED           - Disconnected from the provider.
  *   error.E:QUOTA                 - Storage quota exceeded.
+ *   error.E:NOT_TEMPORARY         - Reload asked of a permanent install.
  *
  * No warning codes are predefined yet. Providers may return any free-text
  * warning via the `warning(...)` StatusData helper; the UI renders it
@@ -383,6 +400,10 @@ export const ERR = {
   UNKNOWN_FOLDER: "E:UNKNOWN_FOLDER",
   UNKNOWN_COMMAND: "E:UNKNOWN_COMMAND",
   TIMEOUT: "E:TIMEOUT",
+  // Asked to reload while permanently installed. Not a malfunction - the
+  // reload would have restarted identical code and reported success, which
+  // is worse than refusing.
+  NOT_TEMPORARY: "E:NOT_TEMPORARY",
 };
 
 export const PREDEFINED_ERROR_CODES = new Set([
@@ -397,6 +418,7 @@ export const PREDEFINED_ERROR_CODES = new Set([
   ERR.UNKNOWN_ACCOUNT,
   ERR.UNKNOWN_FOLDER,
   ERR.UNKNOWN_COMMAND,
+  ERR.NOT_TEMPORARY,
 ]);
 export const PREDEFINED_WARNING_CODES = new Set();
 

@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "Punte"
+  },
+  "manager.bridge.intro": {
+    "message": "Puntea permite unui script local să controleze TbSync printr-un soclu HTTP local, pentru testare automată. Este oprită până când o activați aici și se încheie odată cu Thunderbird. Această funcție există doar în versiunea beta de pe GitHub; nu face parte din versiunea publicată pe addons.thunderbird.net."
+  },
+  "manager.bridge.status.on": {
+    "message": "Puntea funcționează"
+  },
+  "manager.bridge.status.off": {
+    "message": "Puntea este oprită"
+  },
+  "manager.bridge.enable": {
+    "message": "Activează"
+  },
+  "manager.bridge.disable": {
+    "message": "Dezactivează"
+  },
+  "manager.bridge.download": {
+    "message": "Descarcă aplicația auxiliară"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "Pentru a putea activa puntea, instalați mai întâi mica ei aplicație auxiliară: descărcați-o, rulați scriptul de instalare pe care îl conține, apoi reporniți Thunderbird."
+  },
+  "manager.bridge.target": {
+    "message": "Țintă permisă"
+  },
+  "manager.bridge.activity": {
+    "message": "Comenzi recente"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "Încă nicio comandă."
+  },
+  "manager.bridge.target.account": {
+    "message": "Cont"
+  },
+  "manager.bridge.target.resource": {
+    "message": "Resursă"
+  },
+  "manager.bridge.target.none": {
+    "message": "(niciuna)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "Descărcarea a eșuat: $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "Descarcă dezinstalatorul aplicației auxiliare"
+  },
+  "manager.bridge.endpoint": {
+    "message": "Ascultă pe $1"
+  },
+  "manager.bridge.example": {
+    "message": "Încercați dintr-un terminal:"
+  },
+  "manager.bridge.allowed": {
+    "message": "Comenzi acceptate: $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "Alegeți un cont și o resursă: fără ele, puntea refuză orice comandă care modifică ceva sau citește date din calendar."
+  },
+  "manager.bridge.stale": {
+    "message": "Aplicația auxiliară instalată este învechită. Descărcați-o din nou, rulați iar scriptul de instalare, apoi opriți și porniți puntea."
+  }
+}

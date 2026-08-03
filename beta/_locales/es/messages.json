@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "Puente"
+  },
+  "manager.bridge.intro": {
+    "message": "El puente permite que un script local controle TbSync a través de un socket HTTP local, para pruebas automatizadas. Está desactivado hasta que lo active aquí y se detiene con Thunderbird. Esta función solo existe en la versión beta de GitHub; no forma parte de la versión publicada en addons.thunderbird.net."
+  },
+  "manager.bridge.status.on": {
+    "message": "Puente en marcha"
+  },
+  "manager.bridge.status.off": {
+    "message": "Puente detenido"
+  },
+  "manager.bridge.enable": {
+    "message": "Activar"
+  },
+  "manager.bridge.disable": {
+    "message": "Desactivar"
+  },
+  "manager.bridge.download": {
+    "message": "Descargar la aplicación auxiliar"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "Para poder activar el puente, instale primero su pequeña aplicación auxiliar: descárguela, ejecute el script de instalación que contiene y reinicie Thunderbird."
+  },
+  "manager.bridge.target": {
+    "message": "Destino permitido"
+  },
+  "manager.bridge.activity": {
+    "message": "Órdenes recientes"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "Todavía no hay órdenes."
+  },
+  "manager.bridge.target.account": {
+    "message": "Cuenta"
+  },
+  "manager.bridge.target.resource": {
+    "message": "Recurso"
+  },
+  "manager.bridge.target.none": {
+    "message": "(ninguno)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "Fallo en la descarga: $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "Descargar el desinstalador de la aplicación auxiliar"
+  },
+  "manager.bridge.endpoint": {
+    "message": "Escuchando en $1"
+  },
+  "manager.bridge.example": {
+    "message": "Pruébelo desde un terminal:"
+  },
+  "manager.bridge.allowed": {
+    "message": "Órdenes aceptadas: $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "Elija una cuenta y un recurso: sin ellos, el puente rechaza toda orden que cambie algo o lea datos del calendario."
+  },
+  "manager.bridge.stale": {
+    "message": "La aplicación auxiliar instalada está desactualizada. Descárguela de nuevo, vuelva a ejecutar el script de instalación y apague y encienda el puente."
+  }
+}

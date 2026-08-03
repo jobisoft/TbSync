@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "Ponte"
+  },
+  "manager.bridge.intro": {
+    "message": "A ponte permite que un script local controle TbSync a través dun socket HTTP local, para probas automatizadas. Está apagada ata que a activa aquí e detense xunto co Thunderbird. Esta funcionalidade só existe na versión beta de GitHub; non forma parte da versión publicada en addons.thunderbird.net."
+  },
+  "manager.bridge.status.on": {
+    "message": "Ponte en marcha"
+  },
+  "manager.bridge.status.off": {
+    "message": "Ponte detida"
+  },
+  "manager.bridge.enable": {
+    "message": "Activar"
+  },
+  "manager.bridge.disable": {
+    "message": "Desactivar"
+  },
+  "manager.bridge.download": {
+    "message": "Descargar a aplicación auxiliar"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "Para poder activar a ponte, instale primeiro a súa pequena aplicación auxiliar: descárguea, execute o script de instalación que contén e reinicie o Thunderbird."
+  },
+  "manager.bridge.target": {
+    "message": "Destino permitido"
+  },
+  "manager.bridge.activity": {
+    "message": "Ordes recentes"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "Aínda non hai ordes."
+  },
+  "manager.bridge.target.account": {
+    "message": "Conta"
+  },
+  "manager.bridge.target.resource": {
+    "message": "Recurso"
+  },
+  "manager.bridge.target.none": {
+    "message": "(ningún)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "Fallou a descarga: $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "Descargar o desinstalador da aplicación auxiliar"
+  },
+  "manager.bridge.endpoint": {
+    "message": "Escoitando en $1"
+  },
+  "manager.bridge.example": {
+    "message": "Próbeo desde un terminal:"
+  },
+  "manager.bridge.allowed": {
+    "message": "Ordes aceptadas: $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "Escolla unha conta e un recurso: sen eles, a ponte rexeita calquera orde que cambie algo ou lea datos do calendario."
+  },
+  "manager.bridge.stale": {
+    "message": "A aplicación auxiliar instalada está desactualizada. Descárguea de novo, execute outra vez o script de instalación e apague e acenda a ponte."
+  }
+}

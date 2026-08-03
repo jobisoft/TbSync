@@ -1,0 +1,7 @@
+{
+  "name": "tbsync_bridge_host",
+  "description": "Loopback HTTP bridge to the TbSync Manager's internal RPC table",
+  "path": "/path/to/native-messaging-app/tbsync_bridge_host.py",
+  "type": "stdio",
+  "allowed_extensions": ["tbsync@jobisoft.de"]
+}

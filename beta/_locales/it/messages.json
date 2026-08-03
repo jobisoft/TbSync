@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "Ponte"
+  },
+  "manager.bridge.intro": {
+    "message": "Il ponte consente a uno script locale di pilotare TbSync tramite un socket HTTP locale, per test automatizzati. È disattivato finché non lo si abilita qui e termina con Thunderbird. Questa funzione esiste solo nella versione beta su GitHub; non fa parte della versione pubblicata su addons.thunderbird.net."
+  },
+  "manager.bridge.status.on": {
+    "message": "Ponte in funzione"
+  },
+  "manager.bridge.status.off": {
+    "message": "Ponte arrestato"
+  },
+  "manager.bridge.enable": {
+    "message": "Attiva"
+  },
+  "manager.bridge.disable": {
+    "message": "Disattiva"
+  },
+  "manager.bridge.download": {
+    "message": "Scarica l’applicazione ausiliaria"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "Per poter attivare il ponte, installa prima la sua piccola applicazione ausiliaria: scaricala, esegui lo script di installazione che contiene e riavvia Thunderbird."
+  },
+  "manager.bridge.target": {
+    "message": "Destinazione consentita"
+  },
+  "manager.bridge.activity": {
+    "message": "Comandi recenti"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "Ancora nessun comando."
+  },
+  "manager.bridge.target.account": {
+    "message": "Account"
+  },
+  "manager.bridge.target.resource": {
+    "message": "Risorsa"
+  },
+  "manager.bridge.target.none": {
+    "message": "(nessuna)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "Scaricamento non riuscito: $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "Scarica il disinstallatore dell’applicazione ausiliaria"
+  },
+  "manager.bridge.endpoint": {
+    "message": "In ascolto su $1"
+  },
+  "manager.bridge.example": {
+    "message": "Da provare in una shell:"
+  },
+  "manager.bridge.allowed": {
+    "message": "Comandi accettati: $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "Scegli un account e una risorsa: senza di essi il ponte rifiuta ogni comando che modifica qualcosa o legge dati del calendario."
+  },
+  "manager.bridge.stale": {
+    "message": "L’applicazione ausiliaria installata non è aggiornata. Scaricala di nuovo, riesegui lo script di installazione, poi spegni e riaccendi il ponte."
+  }
+}

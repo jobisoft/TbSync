@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "Bridge"
+  },
+  "manager.bridge.intro": {
+    "message": "The bridge lets a local script drive TbSync through a loopback HTTP socket, for automated testing. It is off until you switch it on here, and it stops when Thunderbird does. This feature exists only in the GitHub beta build; it is not part of the release published on addons.thunderbird.net."
+  },
+  "manager.bridge.status.on": {
+    "message": "Bridge running"
+  },
+  "manager.bridge.status.off": {
+    "message": "Bridge stopped"
+  },
+  "manager.bridge.enable": {
+    "message": "Enable"
+  },
+  "manager.bridge.disable": {
+    "message": "Disable"
+  },
+  "manager.bridge.download": {
+    "message": "Download helper app"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "To enable the bridge, install its small helper app first: download it, run the install script it contains, then restart Thunderbird."
+  },
+  "manager.bridge.target": {
+    "message": "Permitted target"
+  },
+  "manager.bridge.activity": {
+    "message": "Recent commands"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "No commands yet."
+  },
+  "manager.bridge.target.account": {
+    "message": "Account"
+  },
+  "manager.bridge.target.resource": {
+    "message": "Resource"
+  },
+  "manager.bridge.target.none": {
+    "message": "(none)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "Download failed: $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "Download uninstaller for helper app"
+  },
+  "manager.bridge.endpoint": {
+    "message": "Listening on $1"
+  },
+  "manager.bridge.example": {
+    "message": "Try it from a shell:"
+  },
+  "manager.bridge.allowed": {
+    "message": "Commands accepted: $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "Choose an account and a resource: without them the bridge refuses every command that changes anything or reads calendar data."
+  },
+  "manager.bridge.stale": {
+    "message": "The installed helper app is out of date. Download it again and re-run the install script, then switch the bridge off and on."
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "브리지"
+  },
+  "manager.bridge.intro": {
+    "message": "브리지를 사용하면 로컬 스크립트가 루프백 HTTP 소켓을 통해 TbSync를 제어할 수 있습니다. 자동화된 테스트를 위한 기능입니다. 여기에서 켜기 전까지는 동작하지 않으며 Thunderbird와 함께 종료됩니다. 이 기능은 GitHub 베타 빌드에만 있으며, addons.thunderbird.net에 공개된 릴리스에는 포함되지 않습니다."
+  },
+  "manager.bridge.status.on": {
+    "message": "브리지 실행 중"
+  },
+  "manager.bridge.status.off": {
+    "message": "브리지 중지됨"
+  },
+  "manager.bridge.enable": {
+    "message": "사용"
+  },
+  "manager.bridge.disable": {
+    "message": "사용 안 함"
+  },
+  "manager.bridge.download": {
+    "message": "도우미 앱 내려받기"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "브리지를 사용하려면 먼저 작은 도우미 앱을 설치하세요. 내려받은 뒤 포함된 설치 스크립트를 실행하고 Thunderbird를 다시 시작하세요."
+  },
+  "manager.bridge.target": {
+    "message": "허용된 대상"
+  },
+  "manager.bridge.activity": {
+    "message": "최근 명령"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "아직 명령이 없습니다."
+  },
+  "manager.bridge.target.account": {
+    "message": "계정"
+  },
+  "manager.bridge.target.resource": {
+    "message": "리소스"
+  },
+  "manager.bridge.target.none": {
+    "message": "(없음)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "내려받기 실패: $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "도우미 앱 제거 프로그램 내려받기"
+  },
+  "manager.bridge.endpoint": {
+    "message": "$1 에서 대기 중"
+  },
+  "manager.bridge.example": {
+    "message": "셸에서 시도해 보세요:"
+  },
+  "manager.bridge.allowed": {
+    "message": "허용되는 명령: $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "계정과 리소스를 선택하세요. 선택하지 않으면 브리지는 무언가를 변경하거나 달력 데이터를 읽는 모든 명령을 거부합니다."
+  },
+  "manager.bridge.stale": {
+    "message": "설치된 도우미 앱이 오래되었습니다. 다시 내려받아 설치 스크립트를 재실행한 뒤, 브리지를 껐다가 켜세요."
+  }
+}

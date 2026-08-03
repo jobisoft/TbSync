@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "Мост"
+  },
+  "manager.bridge.intro": {
+    "message": "Мост позволяет локальному сценарию управлять TbSync через локальный HTTP-сокет — для автоматического тестирования. Он выключен, пока вы не включите его здесь, и завершается вместе с Thunderbird. Эта возможность есть только в бета-сборке с GitHub; она не входит в выпуск, публикуемый на addons.thunderbird.net."
+  },
+  "manager.bridge.status.on": {
+    "message": "Мост работает"
+  },
+  "manager.bridge.status.off": {
+    "message": "Мост остановлен"
+  },
+  "manager.bridge.enable": {
+    "message": "Включить"
+  },
+  "manager.bridge.disable": {
+    "message": "Выключить"
+  },
+  "manager.bridge.download": {
+    "message": "Загрузить вспомогательное приложение"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "Чтобы включить мост, сначала установите его небольшое вспомогательное приложение: загрузите его, запустите содержащийся в нём сценарий установки и перезапустите Thunderbird."
+  },
+  "manager.bridge.target": {
+    "message": "Разрешённая цель"
+  },
+  "manager.bridge.activity": {
+    "message": "Недавние команды"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "Команд пока нет."
+  },
+  "manager.bridge.target.account": {
+    "message": "Учётная запись"
+  },
+  "manager.bridge.target.resource": {
+    "message": "Ресурс"
+  },
+  "manager.bridge.target.none": {
+    "message": "(нет)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "Не удалось загрузить: $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "Загрузить деинсталлятор вспомогательного приложения"
+  },
+  "manager.bridge.endpoint": {
+    "message": "Слушает на $1"
+  },
+  "manager.bridge.example": {
+    "message": "Попробуйте из командной строки:"
+  },
+  "manager.bridge.allowed": {
+    "message": "Принимаемые команды: $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "Выберите учётную запись и ресурс: без них мост отклоняет любую команду, которая что-то меняет или читает данные календаря."
+  },
+  "manager.bridge.stale": {
+    "message": "Установленное вспомогательное приложение устарело. Загрузите его заново, снова запустите сценарий установки, затем выключите и включите мост."
+  }
+}

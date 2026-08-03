@@ -1796,3 +1796,15 @@ browser.menus.onClicked.addListener((info) => {
 });
 
 refreshState();
+
+// Beta-only bridge tab. `beta/modules/bridge.mjs` reaches the beta and dev
+// trees only, so on an ATN build this import throws and the tab never
+// appears - the intended behaviour there, not a failure. It builds its own
+// markup, hence handing it the subtree localizer and the RPC client that
+// manager.html's own panels get for free.
+try {
+  const bridge = await import("../modules/bridge.mjs");
+  bridge.initManagerTab({ localizeSubtree, rpc });
+} catch (err) {
+  console.debug("[tbsync] bridge tab not present:", err?.message ?? err);
+}

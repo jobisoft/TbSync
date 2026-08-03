@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "Híd"
+  },
+  "manager.bridge.intro": {
+    "message": "A híd lehetővé teszi, hogy egy helyi parancsfájl helyi HTTP-kapcsolaton keresztül vezérelje a TbSyncet, automatizált teszteléshez. Kikapcsolt állapotban van, amíg itt be nem kapcsolja, és a Thunderbirddel együtt áll le. Ez a szolgáltatás csak a GitHub bétaváltozatában létezik; nem része az addons.thunderbird.net oldalon közzétett kiadásnak."
+  },
+  "manager.bridge.status.on": {
+    "message": "A híd fut"
+  },
+  "manager.bridge.status.off": {
+    "message": "A híd leállt"
+  },
+  "manager.bridge.enable": {
+    "message": "Bekapcsolás"
+  },
+  "manager.bridge.disable": {
+    "message": "Kikapcsolás"
+  },
+  "manager.bridge.download": {
+    "message": "Segédalkalmazás letöltése"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "A híd bekapcsolásához előbb telepítse a kis segédalkalmazását: töltse le, futtassa a benne található telepítő parancsfájlt, majd indítsa újra a Thunderbirdöt."
+  },
+  "manager.bridge.target": {
+    "message": "Engedélyezett cél"
+  },
+  "manager.bridge.activity": {
+    "message": "Legutóbbi parancsok"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "Még nincsenek parancsok."
+  },
+  "manager.bridge.target.account": {
+    "message": "Fiók"
+  },
+  "manager.bridge.target.resource": {
+    "message": "Erőforrás"
+  },
+  "manager.bridge.target.none": {
+    "message": "(nincs)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "A letöltés sikertelen: $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "A segédalkalmazás eltávolítójának letöltése"
+  },
+  "manager.bridge.endpoint": {
+    "message": "Figyel a következőn: $1"
+  },
+  "manager.bridge.example": {
+    "message": "Próbálja ki parancssorból:"
+  },
+  "manager.bridge.allowed": {
+    "message": "Elfogadott parancsok: $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "Válasszon fiókot és erőforrást: nélkülük a híd minden olyan parancsot elutasít, amely módosít valamit vagy naptáradatot olvas."
+  },
+  "manager.bridge.stale": {
+    "message": "A telepített segédalkalmazás elavult. Töltse le újra, futtassa ismét a telepítő parancsfájlt, majd kapcsolja ki és be a hidat."
+  }
+}

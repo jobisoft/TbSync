@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "Sild"
+  },
+  "manager.bridge.intro": {
+    "message": "Sild võimaldab kohalikul skriptil juhtida TbSynci kohaliku HTTP-pesa kaudu, automaatseks testimiseks. See on väljas, kuni sa selle siin sisse lülitad, ja lõpeb koos Thunderbirdiga. See võimalus on olemas ainult GitHubi beetaversioonis; see ei kuulu addons.thunderbird.net-is avaldatud väljalaskesse."
+  },
+  "manager.bridge.status.on": {
+    "message": "Sild töötab"
+  },
+  "manager.bridge.status.off": {
+    "message": "Sild peatatud"
+  },
+  "manager.bridge.enable": {
+    "message": "Luba"
+  },
+  "manager.bridge.disable": {
+    "message": "Keela"
+  },
+  "manager.bridge.download": {
+    "message": "Laadi alla abirakendus"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "Silla sisselülitamiseks paigalda kõigepealt selle väike abirakendus: laadi see alla, käivita selles sisalduv paigaldusskript ja taaskäivita Thunderbird."
+  },
+  "manager.bridge.target": {
+    "message": "Lubatud sihtmärk"
+  },
+  "manager.bridge.activity": {
+    "message": "Hiljutised käsud"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "Käske veel pole."
+  },
+  "manager.bridge.target.account": {
+    "message": "Konto"
+  },
+  "manager.bridge.target.resource": {
+    "message": "Ressurss"
+  },
+  "manager.bridge.target.none": {
+    "message": "(puudub)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "Allalaadimine nurjus: $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "Laadi alla abirakenduse eemaldaja"
+  },
+  "manager.bridge.endpoint": {
+    "message": "Kuulab aadressil $1"
+  },
+  "manager.bridge.example": {
+    "message": "Proovi käsurealt:"
+  },
+  "manager.bridge.allowed": {
+    "message": "Lubatud käsud: $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "Vali konto ja ressurss: ilma nendeta keeldub sild igast käsust, mis midagi muudab või kalendriandmeid loeb."
+  },
+  "manager.bridge.stale": {
+    "message": "Paigaldatud abirakendus on aegunud. Laadi see uuesti alla, käivita paigaldusskript uuesti ja lülita sild välja ning uuesti sisse."
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "Most"
+  },
+  "manager.bridge.intro": {
+    "message": "Most umožňuje místnímu skriptu řídit TbSync přes místní HTTP soket, pro automatizované testování. Je vypnutý, dokud jej zde nezapnete, a končí spolu s Thunderbirdem. Tato funkce existuje pouze v beta verzi na GitHubu; není součástí vydání zveřejněného na addons.thunderbird.net."
+  },
+  "manager.bridge.status.on": {
+    "message": "Most běží"
+  },
+  "manager.bridge.status.off": {
+    "message": "Most zastaven"
+  },
+  "manager.bridge.enable": {
+    "message": "Zapnout"
+  },
+  "manager.bridge.disable": {
+    "message": "Vypnout"
+  },
+  "manager.bridge.download": {
+    "message": "Stáhnout pomocnou aplikaci"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "Abyste mohli most zapnout, nainstalujte nejprve jeho malou pomocnou aplikaci: stáhněte ji, spusťte instalační skript, který obsahuje, a restartujte Thunderbird."
+  },
+  "manager.bridge.target": {
+    "message": "Povolený cíl"
+  },
+  "manager.bridge.activity": {
+    "message": "Nedávné příkazy"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "Zatím žádné příkazy."
+  },
+  "manager.bridge.target.account": {
+    "message": "Účet"
+  },
+  "manager.bridge.target.resource": {
+    "message": "Zdroj"
+  },
+  "manager.bridge.target.none": {
+    "message": "(žádný)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "Stahování selhalo: $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "Stáhnout odinstalátor pomocné aplikace"
+  },
+  "manager.bridge.endpoint": {
+    "message": "Naslouchá na $1"
+  },
+  "manager.bridge.example": {
+    "message": "Vyzkoušejte v terminálu:"
+  },
+  "manager.bridge.allowed": {
+    "message": "Přijímané příkazy: $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "Vyberte účet a zdroj: bez nich most odmítne každý příkaz, který něco mění nebo čte data kalendáře."
+  },
+  "manager.bridge.stale": {
+    "message": "Nainstalovaná pomocná aplikace je zastaralá. Stáhněte ji znovu, spusťte znovu instalační skript a poté most vypněte a zapněte."
+  }
+}

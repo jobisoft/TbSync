@@ -1,0 +1,35 @@
+[
+  {
+    "namespace": "tbsyncConsole",
+    "description": "Read Thunderbird's console. Beta builds only - this exists so the bridge can see platform errors, which never reach the add-on's own event log.",
+    "functions": [
+      {
+        "name": "getMessages",
+        "type": "function",
+        "async": true,
+        "description": "Console messages captured so far, oldest first. Seeded from the platform's own backlog the first time it is called, so messages from before the bridge started are included.",
+        "parameters": [
+          {
+            "name": "options",
+            "type": "object",
+            "optional": true,
+            "properties": {
+              "sinceSeq": {
+                "type": "integer",
+                "optional": true,
+                "description": "Return only messages with a higher seq. Omit for everything held."
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "clear",
+        "type": "function",
+        "async": true,
+        "description": "Drop everything held, so the next capture starts from a known point.",
+        "parameters": []
+      }
+    ]
+  }
+]

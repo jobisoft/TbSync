@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "Brygga"
+  },
+  "manager.bridge.intro": {
+    "message": "Bryggan låter ett lokalt skript styra TbSync via ett lokalt HTTP-uttag, för automatiserade tester. Den är avstängd tills du slår på den här, och avslutas med Thunderbird. Den här funktionen finns endast i GitHub-betaversionen; den ingår inte i utgåvan som publiceras på addons.thunderbird.net."
+  },
+  "manager.bridge.status.on": {
+    "message": "Bryggan körs"
+  },
+  "manager.bridge.status.off": {
+    "message": "Bryggan stoppad"
+  },
+  "manager.bridge.enable": {
+    "message": "Aktivera"
+  },
+  "manager.bridge.disable": {
+    "message": "Inaktivera"
+  },
+  "manager.bridge.download": {
+    "message": "Hämta hjälpprogrammet"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "För att kunna aktivera bryggan, installera först dess lilla hjälpprogram: hämta det, kör installationsskriptet som ingår och starta sedan om Thunderbird."
+  },
+  "manager.bridge.target": {
+    "message": "Tillåtet mål"
+  },
+  "manager.bridge.activity": {
+    "message": "Senaste kommandon"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "Inga kommandon ännu."
+  },
+  "manager.bridge.target.account": {
+    "message": "Konto"
+  },
+  "manager.bridge.target.resource": {
+    "message": "Resurs"
+  },
+  "manager.bridge.target.none": {
+    "message": "(ingen)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "Hämtningen misslyckades: $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "Hämta avinstalleraren för hjälpprogrammet"
+  },
+  "manager.bridge.endpoint": {
+    "message": "Lyssnar på $1"
+  },
+  "manager.bridge.example": {
+    "message": "Prova från ett skal:"
+  },
+  "manager.bridge.allowed": {
+    "message": "Kommandon som accepteras: $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "Välj ett konto och en resurs: utan dem avvisar bryggan varje kommando som ändrar något eller läser kalenderdata."
+  },
+  "manager.bridge.stale": {
+    "message": "Det installerade hjälpprogrammet är föråldrat. Hämta det igen, kör installationsskriptet på nytt och stäng sedan av och på bryggan."
+  }
+}

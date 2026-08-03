@@ -23,6 +23,10 @@ import {
   withCode,
 } from "./protocol.mjs";
 
+/** Long enough for the reply to reach the host before the background page
+ *  goes away with it. Nothing observable happens in between. */
+const RELOAD_DELAY_MS = 250;
+
 // Subclass-facing surface. Subclass code imports only from this file;
 // protocol.mjs and status.mjs stay as mirror-synced contract files.
 export { ERR, withCode } from "./protocol.mjs";
@@ -654,12 +658,49 @@ export class TbSyncProviderImplementation {
         return this.onFolderDisabled(args);
       case HOST_CMD.GET_SORTED_FOLDERS:
         return this.onGetSortedFolders(args);
+      // Answered here rather than by a subclass hook: the work is identical
+      // for every provider and there is nothing one could usefully do
+      // differently.
+      case HOST_CMD.RELOAD:
+        return this.#reloadSelf();
       default:
         throw withCode(
           new Error(`Unknown command: ${cmd}`),
           ERR.UNKNOWN_COMMAND,
         );
     }
+  }
+
+  /** Reload this add-on, so a rebuilt `dev/` tree takes effect without a
+   *  reinstall.
+   *
+   *  Only meaningful for a temporarily installed add-on: `runtime.reload()`
+   *  re-installs one from its source bundle, but merely disables and
+   *  re-enables a permanently installed one, which restarts identical code.
+   *  Refusing is better than reporting success for a reload that changed
+   *  nothing - and worse, dropped the host's port on the way.
+   *
+   *  `management.getSelf()` needs no permission (the schema gates the
+   *  management API per function, and this one declares none), and
+   *  `installType` is "development" exactly when the add-on is temporarily
+   *  installed - the same flag reload() branches on.
+   *
+   *  Resolves *before* reloading. The caller's reply is posted after this
+   *  returns, and a background page that has already torn itself down cannot
+   *  post it: the host would see E:TIMEOUT for a reload that worked. */
+  async #reloadSelf() {
+    const { installType } = await browser.management.getSelf();
+    if (installType !== "development") {
+      throw withCode(
+        new Error(
+          `reload needs a temporarily installed add-on (this one is ` +
+            `"${installType}") - a reload would restart the same code`,
+        ),
+        ERR.NOT_TEMPORARY,
+      );
+    }
+    setTimeout(() => browser.runtime.reload(), RELOAD_DELAY_MS);
+    return { reloading: true, installType };
   }
 
   #sendCmd(cmd, args = {}) {

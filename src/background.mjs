@@ -889,6 +889,17 @@ registry.init({
   closePortToProvider: router.closePortToProvider,
 });
 
+// Beta-only bridge. `beta/modules/bridge.mjs` is applied to the beta and dev
+// trees and is simply absent from an ATN build, where this import failing is
+// the normal case and means nothing is wrong. Has to follow `ui.init()`: the
+// bridge registers manager RPCs of its own.
+try {
+  const bridge = await import("./modules/bridge.mjs");
+  await bridge.initBackground();
+} catch (err) {
+  console.debug("[tbsync] bridge not present:", err?.message ?? err);
+}
+
 browser.browserAction.onClicked.addListener(() => {
   openManagerTab().catch((err) =>
     console.warn("[tbsync] could not open manager:", err),

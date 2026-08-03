@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "Passerelle"
+  },
+  "manager.bridge.intro": {
+    "message": "La passerelle permet à un script local de piloter TbSync via un socket HTTP local, pour des tests automatisés. Elle est désactivée tant que vous ne l’activez pas ici, et s’arrête avec Thunderbird. Cette fonctionnalité n’existe que dans la version bêta GitHub ; elle ne fait pas partie de la version publiée sur addons.thunderbird.net."
+  },
+  "manager.bridge.status.on": {
+    "message": "Passerelle active"
+  },
+  "manager.bridge.status.off": {
+    "message": "Passerelle arrêtée"
+  },
+  "manager.bridge.enable": {
+    "message": "Activer"
+  },
+  "manager.bridge.disable": {
+    "message": "Désactiver"
+  },
+  "manager.bridge.download": {
+    "message": "Télécharger l’application auxiliaire"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "Pour pouvoir activer la passerelle, installez d’abord sa petite application auxiliaire : téléchargez-la, exécutez le script d’installation qu’elle contient, puis redémarrez Thunderbird."
+  },
+  "manager.bridge.target": {
+    "message": "Cible autorisée"
+  },
+  "manager.bridge.activity": {
+    "message": "Commandes récentes"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "Aucune commande pour l’instant."
+  },
+  "manager.bridge.target.account": {
+    "message": "Compte"
+  },
+  "manager.bridge.target.resource": {
+    "message": "Ressource"
+  },
+  "manager.bridge.target.none": {
+    "message": "(aucune)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "Échec du téléchargement : $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "Télécharger le désinstalleur de l’application auxiliaire"
+  },
+  "manager.bridge.endpoint": {
+    "message": "À l’écoute sur $1"
+  },
+  "manager.bridge.example": {
+    "message": "À essayer dans un terminal :"
+  },
+  "manager.bridge.allowed": {
+    "message": "Commandes acceptées : $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "Choisissez un compte et une ressource : sans eux, la passerelle refuse toute commande qui modifie quelque chose ou lit des données d’agenda."
+  },
+  "manager.bridge.stale": {
+    "message": "L’application auxiliaire installée est obsolète. Téléchargez-la de nouveau, réexécutez le script d’installation, puis désactivez et réactivez la passerelle."
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "Brücke"
+  },
+  "manager.bridge.intro": {
+    "message": "Die Brücke erlaubt einem lokalen Skript, TbSync über einen lokalen HTTP-Socket zu steuern – für automatisierte Tests. Sie ist deaktiviert, bis Sie sie hier einschalten, und endet mit Thunderbird. Diese Funktion gibt es nur in der GitHub-Beta-Version; sie ist nicht Teil der auf addons.thunderbird.net veröffentlichten Version."
+  },
+  "manager.bridge.status.on": {
+    "message": "Brücke läuft"
+  },
+  "manager.bridge.status.off": {
+    "message": "Brücke gestoppt"
+  },
+  "manager.bridge.enable": {
+    "message": "Aktivieren"
+  },
+  "manager.bridge.disable": {
+    "message": "Deaktivieren"
+  },
+  "manager.bridge.download": {
+    "message": "Hilfsprogramm herunterladen"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "Um die Brücke einschalten zu können, installieren Sie zuerst ihr kleines Hilfsprogramm: herunterladen, das enthaltene Installationsskript ausführen und Thunderbird neu starten."
+  },
+  "manager.bridge.target": {
+    "message": "Zugelassenes Ziel"
+  },
+  "manager.bridge.activity": {
+    "message": "Letzte Befehle"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "Noch keine Befehle."
+  },
+  "manager.bridge.target.account": {
+    "message": "Konto"
+  },
+  "manager.bridge.target.resource": {
+    "message": "Ressource"
+  },
+  "manager.bridge.target.none": {
+    "message": "(keine)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "Herunterladen fehlgeschlagen: $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "Deinstallation des Hilfsprogramms herunterladen"
+  },
+  "manager.bridge.endpoint": {
+    "message": "Empfängt auf $1"
+  },
+  "manager.bridge.example": {
+    "message": "In einer Shell ausprobieren:"
+  },
+  "manager.bridge.allowed": {
+    "message": "Zulässige Befehle: $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "Wählen Sie ein Konto und eine Ressource aus: ohne sie verweigert die Brücke jeden Befehl, der etwas ändert oder Kalenderdaten liest."
+  },
+  "manager.bridge.stale": {
+    "message": "Das installierte Hilfsprogramm ist veraltet. Laden Sie es erneut herunter, führen Sie das Installationsskript noch einmal aus und schalten Sie die Brücke aus und wieder ein."
+  }
+}

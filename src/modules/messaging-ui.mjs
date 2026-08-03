@@ -55,6 +55,15 @@ export function setManagerRpcHandler(cmd, fn) {
   rpcHandlers.set(cmd, fn);
 }
 
+/** Call a registered manager RPC from something that is not a manager port.
+ *  Same lookup and the same errors as `handleManagerRpc`; only the way the
+ *  result travels back differs. */
+export async function invokeRpc(cmd, args = {}) {
+  const fn = rpcHandlers.get(cmd);
+  if (!fn) throw new Error(`unknown manager rpc: ${cmd}`);
+  return (await fn(args)) ?? null;
+}
+
 async function handleManagerRpc(port, msg) {
   if (!msg || msg.kind !== "rpc" || !msg.requestId) return;
   const fn = rpcHandlers.get(msg.cmd);

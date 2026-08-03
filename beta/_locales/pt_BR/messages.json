@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "Ponte"
+  },
+  "manager.bridge.intro": {
+    "message": "A ponte permite que um script local controle o TbSync por um soquete HTTP local, para testes automatizados. Fica desligada até você ativá-la aqui e para junto com o Thunderbird. Este recurso existe apenas na versão beta do GitHub; não faz parte da versão publicada em addons.thunderbird.net."
+  },
+  "manager.bridge.status.on": {
+    "message": "Ponte em execução"
+  },
+  "manager.bridge.status.off": {
+    "message": "Ponte parada"
+  },
+  "manager.bridge.enable": {
+    "message": "Ativar"
+  },
+  "manager.bridge.disable": {
+    "message": "Desativar"
+  },
+  "manager.bridge.download": {
+    "message": "Baixar o aplicativo auxiliar"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "Para poder ativar a ponte, instale primeiro seu pequeno aplicativo auxiliar: baixe-o, execute o script de instalação que ele contém e reinicie o Thunderbird."
+  },
+  "manager.bridge.target": {
+    "message": "Destino permitido"
+  },
+  "manager.bridge.activity": {
+    "message": "Comandos recentes"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "Ainda não há comandos."
+  },
+  "manager.bridge.target.account": {
+    "message": "Conta"
+  },
+  "manager.bridge.target.resource": {
+    "message": "Recurso"
+  },
+  "manager.bridge.target.none": {
+    "message": "(nenhum)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "Falha ao baixar: $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "Baixar o desinstalador do aplicativo auxiliar"
+  },
+  "manager.bridge.endpoint": {
+    "message": "Escutando em $1"
+  },
+  "manager.bridge.example": {
+    "message": "Experimente em um terminal:"
+  },
+  "manager.bridge.allowed": {
+    "message": "Comandos aceitos: $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "Escolha uma conta e um recurso: sem eles, a ponte recusa todo comando que altere algo ou leia dados da agenda."
+  },
+  "manager.bridge.stale": {
+    "message": "O aplicativo auxiliar instalado está desatualizado. Baixe-o novamente, execute o script de instalação de novo e desligue e ligue a ponte."
+  }
+}

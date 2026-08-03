@@ -1,0 +1,65 @@
+{
+  "manager.tab.bridge": {
+    "message": "Mostek"
+  },
+  "manager.bridge.intro": {
+    "message": "Mostek pozwala lokalnemu skryptowi sterować TbSync przez lokalne gniazdo HTTP, na potrzeby testów automatycznych. Jest wyłączony, dopóki go tutaj nie włączysz, i kończy się razem z Thunderbirdem. Ta funkcja istnieje wyłącznie w wersji beta z GitHuba; nie jest częścią wydania opublikowanego w addons.thunderbird.net."
+  },
+  "manager.bridge.status.on": {
+    "message": "Mostek działa"
+  },
+  "manager.bridge.status.off": {
+    "message": "Mostek zatrzymany"
+  },
+  "manager.bridge.enable": {
+    "message": "Włącz"
+  },
+  "manager.bridge.disable": {
+    "message": "Wyłącz"
+  },
+  "manager.bridge.download": {
+    "message": "Pobierz aplikację pomocniczą"
+  },
+  "manager.bridge.downloadHint": {
+    "message": "Aby móc włączyć mostek, zainstaluj najpierw jego niewielką aplikację pomocniczą: pobierz ją, uruchom zawarty w niej skrypt instalacyjny, a następnie uruchom ponownie Thunderbirda."
+  },
+  "manager.bridge.target": {
+    "message": "Dozwolony cel"
+  },
+  "manager.bridge.activity": {
+    "message": "Ostatnie polecenia"
+  },
+  "manager.bridge.activity.empty": {
+    "message": "Brak poleceń."
+  },
+  "manager.bridge.target.account": {
+    "message": "Konto"
+  },
+  "manager.bridge.target.resource": {
+    "message": "Zasób"
+  },
+  "manager.bridge.target.none": {
+    "message": "(brak)"
+  },
+  "manager.bridge.download.failed": {
+    "message": "Pobieranie nie powiodło się: $1"
+  },
+  "manager.bridge.uninstall": {
+    "message": "Pobierz deinstalator aplikacji pomocniczej"
+  },
+  "manager.bridge.endpoint": {
+    "message": "Nasłuchuje na $1"
+  },
+  "manager.bridge.example": {
+    "message": "Wypróbuj w powłoce:"
+  },
+  "manager.bridge.allowed": {
+    "message": "Akceptowane polecenia: $1"
+  },
+  "manager.bridge.target.none.hint": {
+    "message": "Wybierz konto i zasób: bez nich mostek odrzuca każde polecenie, które coś zmienia lub odczytuje dane kalendarza."
+  },
+  "manager.bridge.stale": {
+    "message": "Zainstalowana aplikacja pomocnicza jest nieaktualna. Pobierz ją ponownie, uruchom ponownie skrypt instalacyjny, a następnie wyłącz i włącz mostek."
+  }
+}
