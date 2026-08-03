@@ -138,22 +138,38 @@ async function handleTargetRename(targetID, name) {
   }
 }
 
-export async function handleTargetRemoved(targetID) {
+/** The observer's own route: it only knows targets it watches, so the
+ *  registry is both the lookup and the filter. */
+async function handleTargetRemoved(targetID) {
   if (!targetID) return;
   const owner = registry.get(targetID);
   if (!owner) return; // target not watched
-  const row = await folders.get(owner.accountId, owner.folderId);
+  await clearFolderTarget(owner.accountId, owner.folderId, targetID);
+}
+
+/** Undo a folder's binding to a local resource that no longer exists.
+ *
+ *  The row stays so the folder can be enabled again later; it just stops
+ *  pointing at something that is gone, and stops syncing until it is.
+ *
+ *  Shared with `FOLDER_TARGET_REMOVED`, which a provider calls for the
+ *  resources it supplies itself. That route resolves the folder from the
+ *  folder table rather than from the registry - the registry deliberately
+ *  does not contain provider-owned targets, so a lookup there would always
+ *  miss. */
+export async function clearFolderTarget(accountId, folderId, targetID) {
+  const row = await folders.get(accountId, folderId);
   if (!row) return;
   if (row.targetID == null && !row.selected) return; // already cleared
   try {
-    await folders.update(owner.accountId, owner.folderId, {
+    await folders.update(accountId, folderId, {
       targetID: null,
       targetName: null,
       selected: false,
       contactHashes: {},
     });
-    registry.delete(targetID);
-    ui.broadcast({ type: "folders-changed", accountId: owner.accountId });
+    if (targetID) registry.delete(targetID);
+    ui.broadcast({ type: "folders-changed", accountId });
   } catch (err) {
     console.warn("[tbsync] target-removed update failed:", err?.message ?? err);
   }

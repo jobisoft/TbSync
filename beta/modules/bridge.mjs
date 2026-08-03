@@ -218,6 +218,22 @@ const COMMANDS = {
     },
   },
 
+  /** Rename the target calendar. The provider watches for this and mirrors
+   *  the new name into its folder row, so it is the only way to drive that
+   *  path from a script. */
+  "calendars.rename": {
+    scope: "calendar",
+    run: ({ name }, { calendarId }) =>
+      messenger.calendar.calendars.update(calendarId, { name }),
+  },
+  /** Delete the target calendar, as the Remove button in the calendar list
+   *  does. The folder row is left pointing at it; the provider is expected to
+   *  notice and clear the binding. */
+  "calendars.remove": {
+    scope: "calendar",
+    run: (_args, { calendarId }) =>
+      messenger.calendar.calendars.remove(calendarId),
+  },
   "items.query": {
     scope: "calendar",
     run: (args, { calendarId }) =>

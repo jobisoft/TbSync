@@ -429,7 +429,11 @@ router.setProviderRpcHandler(
     if (!acc || acc.provider !== providerId) {
       throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
     }
-    await changelogWatcher.handleTargetRemoved(targetID);
+    await changelogWatcher.clearFolderTarget(
+      owner.accountId,
+      owner.folderId,
+      targetID,
+    );
     return null;
   },
 );
