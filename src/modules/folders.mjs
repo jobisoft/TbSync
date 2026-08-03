@@ -457,6 +457,7 @@ export async function listWatchedTargets() {
           accountId,
           folderId: folder.folderId,
           targetID: folder.targetID,
+          targetType: folder.targetType ?? null,
         });
       }
     }

@@ -209,17 +209,10 @@ export class TbSyncProviderImplementation {
    *                         name on the next `mailingLists.onCreated`
    *                         and upgrades it in place to
    *                         `kind: "list", itemId: <real id>`.
-   *    - `"event"`        : itemId = TB calendar item id; suppresses
-   *                         `messenger.calendar.items.*` events whose
-   *                         `item.type === "event"`.
-   *    - `"task"`         : itemId = TB calendar item id; suppresses
-   *                         `messenger.calendar.items.*` events whose
-   *                         `item.type === "task"`.
-   *    - `"calendar-item"`: itemId = TB calendar item id; reserved for
-   *                         the `onRemoved` path where the item type
-   *                         is no longer available. The watcher resolves
-   *                         this against any matching `(parentId, itemId)`
-   *                         row regardless of kind.
+   *    - `"event"` / `"task"` : accepted and ignored. A provider supplies
+   *                         its own calendars and reports edits to them
+   *                         itself, so the host does not observe those
+   *                         resources and has nothing to suppress.
    *  Must be awaited BEFORE the actual TB API call so the tag is
    *  durable before the event fires. */
   changelogMarkServerWrite(args) {
@@ -237,6 +230,19 @@ export class TbSyncProviderImplementation {
    *  re-derived once the edit has been written. */
   changelogRecordUserEdit(args) {
     return this.#sendCmd(PROVIDER_CMD.CHANGELOG_RECORD_USER_EDIT, args);
+  }
+  /** Report that the local resource behind one of this provider's folders is
+   *  gone - the user deleted the calendar or address book it was bound to.
+   *  The host clears the binding and deselects the folder, leaving the row so
+   *  it can be enabled again later.
+   *
+   *  Only for resources the provider supplies itself. A provider watching its
+   *  own targets must satisfy itself that the resource is really gone before
+   *  calling: the platform also announces a removal when a provider's own
+   *  extension is restarting, and reporting that would deselect the folder on
+   *  every update. */
+  folderTargetRemoved(args) {
+    return this.#sendCmd(PROVIDER_CMD.FOLDER_TARGET_REMOVED, args);
   }
   /** Remove the changelog entry for `(parentId, itemId)` regardless of
    *  status. Called after successfully pushing a `*_by_user` entry. */

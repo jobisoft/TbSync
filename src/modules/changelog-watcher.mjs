@@ -66,50 +66,18 @@ export async function init() {
     handle("list", "deleted", { parentId, id }),
   );
 
-  // Calendar / task event observers. The experiment fires onCreated /
-  // onUpdated with the full CalendarItem; we only need (id, calendarId,
-  // type) so we skip the returnFormat option and drop the payload.
-  // onRemoved gives us only `(calendarId, itemId)` - the item type is
-  // already gone, so we tag with a generic kind and resolve to the real
-  // kind from an existing changelog entry inside `handle`.
-  messenger.calendar.items.onCreated.addListener((item) =>
-    handle(kindForCalendarItem(item), "created", {
-      parentId: item.calendarId,
-      id: item.id,
-    }),
-  );
-  messenger.calendar.items.onUpdated.addListener((item) =>
-    handle(kindForCalendarItem(item), "updated", {
-      parentId: item.calendarId,
-      id: item.id,
-    }),
-  );
-  messenger.calendar.items.onRemoved.addListener((calendarId, itemId) =>
-    handle("calendar-item", "deleted", { parentId: calendarId, id: itemId }),
-  );
-
   // Keep `folder.targetName` in sync with the user's local TB address-book
   // or calendar label - the manager's resource-list cell shows targetName
   // for successfully-synced folders. Only watched targets are mirrored.
   messenger.addressBooks.onUpdated.addListener((node) =>
     handleTargetRename(node?.id, node?.name),
   );
-  messenger.calendar.calendars.onUpdated.addListener((calendar, changes) => {
-    // Fires for every property change; the rename signal is `name` in the
-    // changes payload. Cheaper than re-checking on every event.
-    if (changes && "name" in changes) {
-      handleTargetRename(calendar?.id, changes.name);
-    }
-  });
 
   // If the user deletes the local TB resource (address book or calendar)
   // that a folder is bound to, deselect the folder and clear its target -
   // the row stays so the user can re-enable it via the manager later, but
   // sync stops attempting to write to a non-existent target.
   messenger.addressBooks.onDeleted.addListener((id) => handleTargetRemoved(id));
-  messenger.calendar.calendars.onRemoved.addListener((id) =>
-    handleTargetRemoved(id),
-  );
 
   await rebuildRegistry();
 
@@ -127,37 +95,30 @@ export async function init() {
   });
 }
 
+/**
+ * True when the provider, not this observer, is the source of truth for user
+ * edits to a folder's target.
+ *
+ * Calendars: a provider supplies its own calendar type and is handed every
+ * user edit directly, with the previous item attached, so it reports them
+ * itself and its own writes never reach us. Watching as well would queue each
+ * edit twice and pick up the provider's downstream writes - which is what
+ * pre-tagging used to have to suppress.
+ *
+ * Address books have no provider API worth the name - `addressBooks.provider`
+ * offers only `onSearchRequest` - so they stay observed here, and keep both
+ * halves of the status vocabulary.
+ */
+export function providerOwnsChanges(targetType) {
+  return targetType === "calendars" || targetType === "tasks";
+}
+
 export async function rebuildRegistry() {
   const watched = await folders.listWatchedTargets();
   registry.clear();
-  for (const { accountId, folderId, targetID } of watched) {
-    if (await providerOwnsChangelog(targetID)) continue;
+  for (const { accountId, folderId, targetID, targetType } of watched) {
+    if (providerOwnsChanges(targetType)) continue;
     registry.set(targetID, { accountId, folderId });
-  }
-}
-
-/**
- * True when the target is a calendar supplied by a provider extension
- * rather than a plain storage calendar.
- *
- * Such a calendar hands the provider every user edit directly, and the
- * provider records it with `CHANGELOG_RECORD_USER_EDIT` - including what
- * the item looked like beforehand, which this observer cannot see. Watching
- * it as well would queue each edit twice, and would also pick up the
- * provider's own downstream writes: those go into the calendar's cache,
- * which still relays its item events up here, and suppressing them by hand
- * is precisely the pre-tagging this arrangement exists to retire.
- *
- * Address books are unaffected - they have no provider API, so
- * `calendars.get` returns nothing for them and they stay watched.
- */
-export async function providerOwnsChangelog(targetID) {
-  try {
-    const calendar = await messenger.calendar.calendars.get(targetID);
-    return Boolean(calendar) && calendar.type !== "storage";
-  } catch {
-    // Not a calendar, or gone. Either way, nothing to step back from.
-    return false;
   }
 }
 
@@ -177,7 +138,7 @@ async function handleTargetRename(targetID, name) {
   }
 }
 
-async function handleTargetRemoved(targetID) {
+export async function handleTargetRemoved(targetID) {
   if (!targetID) return;
   const owner = registry.get(targetID);
   if (!owner) return; // target not watched
@@ -196,10 +157,6 @@ async function handleTargetRemoved(targetID) {
   } catch (err) {
     console.warn("[tbsync] target-removed update failed:", err?.message ?? err);
   }
-}
-
-function kindForCalendarItem(item) {
-  return item?.type === "task" ? "task" : "event";
 }
 
 async function computeHash(vcard) {
@@ -298,19 +255,8 @@ async function handle(kind, op, node) {
       owner.accountId,
       owner.folderId,
       (entries) => {
-        // calendar.items.onRemoved doesn't tell us if the deleted item was
-        // an event or a task. Resolve to the actual kind from any existing
-        // entry (provider pre-tags use "event" / "task") so the freeze key
-        // matches; default to "event" if no prior entry exists.
-        let resolvedKind = kind;
-        if (kind === "calendar-item") {
-          const prior = entries.find(
-            (e) => e.parentId === parentId && e.itemId === itemId,
-          );
-          resolvedKind = prior?.kind === "task" ? "task" : "event";
-        }
         const next = applyEvent(entries, {
-          kind: resolvedKind,
+          kind,
           parentId,
           itemId,
           name,

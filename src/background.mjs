@@ -281,11 +281,14 @@ router.setProviderRpcHandler(
   },
 );
 
+/** Remove the local resource behind a folder the server no longer lists.
+ *
+ *  Address books only. A provider supplies its own calendars and deletes them
+ *  itself - it is handed the same removal list by `pushFolderList` - and the
+ *  host has no calendar API to reach them with. */
 async function deleteLocalTargetBestEffort({ targetID, targetType }) {
   if (!targetID) return;
-  if (targetType === "calendars" || targetType === "tasks") {
-    await messenger.calendar.calendars.remove(targetID);
-  } else if (targetType === "contacts") {
+  if (targetType === "contacts") {
     await messenger.addressBooks.delete(targetID);
   }
 }
@@ -321,14 +324,7 @@ router.setProviderRpcHandler(
     if (!acc || acc.provider !== providerId) {
       throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
     }
-    const allowedKinds = [
-      "contact",
-      "list",
-      "list-by-name",
-      "event",
-      "task",
-      "calendar-item",
-    ];
+    const allowedKinds = ["contact", "list", "list-by-name", "event", "task"];
     if (!allowedKinds.includes(kind)) {
       throw withCode(
         new Error(
@@ -346,11 +342,12 @@ router.setProviderRpcHandler(
       );
     }
     // A pre-tag exists for exactly one purpose: to stop our own observer
-    // from logging the write we are about to make as a user edit. When the
-    // resource belongs to a provider we do not observe, there is nothing to
+    // from logging the write we are about to make as a user edit. Where the
+    // provider owns the resource we do not observe it, so there is nothing to
     // suppress - and the tag would never be consumed either, so it would sit
     // in the changelog forever, one per synced item.
-    if (await changelogWatcher.providerOwnsChangelog(parentId)) return null;
+    const row = await folders.get(accountId, folderId);
+    if (changelogWatcher.providerOwnsChanges(row?.targetType)) return null;
 
     await folders.markServerWrite(accountId, folderId, {
       parentId,
@@ -408,6 +405,31 @@ router.setProviderRpcHandler(
     if (changed) {
       ui.broadcast({ type: "folders-changed", accountId: owner.accountId });
     }
+    return null;
+  },
+);
+
+/**
+ * The local resource behind one of this provider's folders is gone - the user
+ * deleted the calendar or address book it was bound to. Same teardown the
+ * observer performs for the resources it still watches: the row stays so the
+ * folder can be enabled again, but its binding is cleared and it stops syncing.
+ *
+ * A provider supplies its own calendars, so it is the only side that sees
+ * those removals. It is also the only side that can tell a real deletion from
+ * its own extension restarting, which the platform announces the same way.
+ */
+router.setProviderRpcHandler(
+  PROVIDER_CMD.FOLDER_TARGET_REMOVED,
+  async (providerId, args) => {
+    const { targetID } = args ?? {};
+    const owner = await folders.getByTarget(targetID);
+    if (!owner) return null;
+    const acc = await accounts.get(owner.accountId);
+    if (!acc || acc.provider !== providerId) {
+      throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
+    }
+    await changelogWatcher.handleTargetRemoved(targetID);
     return null;
   },
 );

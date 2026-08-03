@@ -5,14 +5,98 @@
     }
   },
   "name": "TbSync Manager Beta",
-  "permissions": ["nativeMessaging", "downloads"],
+  "permissions": [
+    "nativeMessaging",
+    "downloads"
+  ],
   "experiment_apis": {
     "tbsyncConsole": {
       "schema": "experiments/console/schema.json",
       "parent": {
-        "scopes": ["addon_parent"],
-        "paths": [["tbsyncConsole"]],
+        "scopes": [
+          "addon_parent"
+        ],
+        "paths": [
+          [
+            "tbsyncConsole"
+          ]
+        ],
         "script": "experiments/console/implementation.js"
+      }
+    },
+    "calendar_provider": {
+      "schema": "experiments/calendar/schema/calendar-provider.json",
+      "parent": {
+        "scopes": [
+          "addon_parent"
+        ],
+        "script": "experiments/calendar/parent/ext-calendar-provider.js",
+        "events": [
+          "startup"
+        ],
+        "paths": [
+          [
+            "calendar",
+            "provider"
+          ]
+        ]
+      }
+    },
+    "calendar_calendars": {
+      "schema": "experiments/calendar/schema/calendar-calendars.json",
+      "parent": {
+        "scopes": [
+          "addon_parent"
+        ],
+        "script": "experiments/calendar/parent/ext-calendar-calendars.js",
+        "paths": [
+          [
+            "calendar",
+            "calendars"
+          ]
+        ]
+      }
+    },
+    "calendar_items": {
+      "schema": "experiments/calendar/schema/calendar-items.json",
+      "parent": {
+        "scopes": [
+          "addon_parent"
+        ],
+        "script": "experiments/calendar/parent/ext-calendar-items.js",
+        "paths": [
+          [
+            "calendar",
+            "items"
+          ]
+        ]
+      }
+    },
+    "calendar_timezones": {
+      "schema": "experiments/calendar/schema/calendar-timezones.json",
+      "parent": {
+        "scopes": [
+          "addon_parent"
+        ],
+        "script": "experiments/calendar/parent/ext-calendar-timezones.js",
+        "paths": [
+          [
+            "calendar",
+            "timezones"
+          ]
+        ]
+      },
+      "child": {
+        "scopes": [
+          "addon_child"
+        ],
+        "script": "experiments/calendar/child/ext-calendar-timezones.js",
+        "paths": [
+          [
+            "calendar",
+            "timezones"
+          ]
+        ]
       }
     }
   }
