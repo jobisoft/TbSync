@@ -371,15 +371,37 @@ export async function markServerWrite(
   });
 }
 
-/** Remove the entry matching `(parentId, itemId)`, regardless of status.
- *  Used by provider after successfully pushing a user-entry to the server. */
+/** Remove the queued **user** edit matching `(parentId, itemId)`. Used by a
+ *  provider once it has dealt with that edit - pushed it, or established that
+ *  it can never be pushed.
+ *
+ *  A `*_by_server` row is left alone, because it is not a queued edit. It is
+ *  the note a provider writes immediately before a write of its own, telling
+ *  our observer to expect that write and not log it as the user's. Both live
+ *  in this one list and are told apart only by status, so a removal that
+ *  ignored status took whichever happened to be there - and after
+ *  `markServerWrite` that is the note, since writing one *replaces* the row it
+ *  covers. Deleting it left the observer nothing to recognise, and the
+ *  provider's own write was logged as a user edit: the item went dirty the
+ *  moment it was pushed clean.
+ *
+ *  Consuming a note is the observer's job, and consuming removes it. One whose
+ *  write never arrives is dropped as stale by the next event for that item;
+ *  until then it is inert - never pushed (only `*_by_user` is) and not shown. */
 export async function removeChangelogEntry(
   accountId,
   folderId,
   { parentId, itemId },
 ) {
   return mutateChangelog(accountId, folderId, (entries) =>
-    entries.filter((e) => !(e.parentId === parentId && e.itemId === itemId)),
+    entries.filter(
+      (e) =>
+        !(
+          e.parentId === parentId &&
+          e.itemId === itemId &&
+          String(e.status).endsWith("_by_user")
+        ),
+    ),
   );
 }
 
