@@ -206,6 +206,69 @@ const COMMANDS = {
     },
   },
 
+  /* ── Storage ──────────────────────────────────────────────────────────
+   *
+   * The add-on's whole persistent state, so a test can put the profile into
+   * a chosen starting condition and put it back afterwards. What this is
+   * for: a fresh-install state. The legacy importer only runs when
+   * `tbsync.accounts` is absent, so there is no way to exercise migration -
+   * or any first-run path - without emptying storage first.
+   *
+   * These are the most destructive verbs here by a wide margin: clearing
+   * takes every account with it, including the credentials and OAuth
+   * refresh token needed to reach the server again. That is why `clear`
+   * hands back what it removed and `restore` puts it back verbatim - the
+   * damage is meant to be undoable from a file on disk, not from memory.
+   * A test should snapshot to disk *before* clearing and restore in a
+   * `finally`.
+   *
+   * They are scopeless because storage is not per-account and a partial
+   * wipe would be a worse thing to offer: it would leave a half-state no
+   * real installation can be in, which is the opposite of what these are
+   * for. Beta-only, like everything in this file.
+   */
+  "storage.snapshot": {
+    run: () => browser.storage.local.get(null),
+  },
+  "storage.clear": {
+    async run() {
+      const all = await browser.storage.local.get(null);
+      // Everything except the bridge's own two keys. Wiping those would
+      // switch the bridge off and forget its target, so the next reload
+      // would come back with the port closed - and the caller, mid-test,
+      // would have no way left to restore what it just removed. The
+      // importer's gate is `tbsync.accounts`, which these are not, so
+      // keeping them does not affect what is being tested.
+      const keep = new Set([ENABLED_KEY, TARGET_KEY]);
+      const removed = {};
+      for (const [k, v] of Object.entries(all)) {
+        if (!keep.has(k)) removed[k] = v;
+      }
+      await browser.storage.local.remove(Object.keys(removed));
+      return { removed, kept: [...keep].filter((k) => k in all) };
+    },
+  },
+  "storage.restore": {
+    async run({ data }) {
+      if (!data || typeof data !== "object" || Array.isArray(data)) {
+        throw new Error("storage.restore needs a `data` object");
+      }
+      // The bridge's own keys are never written back. A snapshot contains
+      // them, and restoring one verbatim would let a script hand itself a
+      // different target - which is the whole scope system, undone by a
+      // verb that looks like housekeeping. They are also the two keys
+      // `clear` refuses to remove, so nothing needs them restored.
+      const skipped = [];
+      const write = {};
+      for (const [k, v] of Object.entries(data)) {
+        if (k === ENABLED_KEY || k === TARGET_KEY) skipped.push(k);
+        else write[k] = v;
+      }
+      await browser.storage.local.set(write);
+      return { keys: Object.keys(write), skipped };
+    },
+  },
+
   /** Reload the provider that owns the target account. Scoped to it, so the
    *  bridge can reload the provider it was granted and no other - the caller
    *  never names one. The provider does the same check on its own side and

@@ -77,6 +77,13 @@ turn a global knob. A bridge with nothing chosen answers "no" rather than
 
   <tr><td><code>reloadHost</code></td><td>—</td>
       <td>Reload TbSync itself. Answers <em>before</em> reloading, and has to: the reload takes the native port with it, the helper dies with the port, and the response in flight dies with the helper. Expect the endpoint to disappear and come back — poll <code>/health</code> rather than assuming the next request lands.</td></tr>
+  <tr><td><code>storage.snapshot</code></td><td>—</td>
+      <td>All of <code>storage.local</code>. Save it to a file before <code>storage.clear</code> — it is the only way back, and it contains the account credentials and OAuth refresh token.</td></tr>
+  <tr><td><code>storage.clear</code></td><td>—</td>
+      <td>Empty the add-on's persistent state, so the next reload behaves like a fresh install — the only way to exercise the legacy importer, which runs only when <code>tbsync.accounts</code> is absent. Returns what it removed. The bridge's own enabled flag and target are kept, or the reload would come back with the port closed and no way to restore.</td></tr>
+  <tr><td><code>storage.restore</code></td><td>—</td>
+      <td>Write a snapshot back. The bridge's own two keys are skipped: restoring them verbatim would let a script grant itself a different target, and <code>clear</code> never removes them anyway.</td></tr>
+
   <tr><td><code>reloadProvider</code></td><td>account</td>
       <td>Ask the account's provider to reload itself. Fails if that provider is not connected.</td></tr>
 
