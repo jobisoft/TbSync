@@ -175,6 +175,45 @@ export async function clearFolderTarget(accountId, folderId, targetID) {
   }
 }
 
+/** Drop a `*_by_server` pre-tag for this item, for an event the ghost gate
+ *  is about to discard.
+ *
+ *  Age is deliberately not checked. `applyEvent` distinguishes a fresh tag
+ *  (suppress the event) from a stale one (drop it and apply the event), but
+ *  neither applies here: nothing is being applied, so both answers are the
+ *  same - the tag has served its purpose or never will.
+ *
+ *  The trade this makes: a ghost arriving in the gap between a provider
+ *  announcing a write and making it would take the tag early, and the
+ *  provider's own write would then be logged as a user edit. That gap is the
+ *  microseconds between two consecutive statements, and the cost if it is
+ *  ever hit is one redundant push. Not clearing the tag costs a *lost user
+ *  edit* on every no-op provider write, which is common on a pull. */
+async function consumeServerTag(owner, { kind, parentId, itemId }) {
+  try {
+    await folders.mutateChangelog(
+      owner.accountId,
+      owner.folderId,
+      (entries) => {
+        const idx = entries.findIndex(
+          (e) =>
+            e.parentId === parentId &&
+            e.itemId === itemId &&
+            e.kind === kind &&
+            isServerTag(e.status),
+        );
+        if (idx < 0) return entries;
+        return [...entries.slice(0, idx), ...entries.slice(idx + 1)];
+      },
+    );
+  } catch (err) {
+    console.warn(
+      "[tbsync] consuming a server pre-tag failed:",
+      err?.message ?? err,
+    );
+  }
+}
+
 async function computeHash(vcard) {
   const bytes = new TextEncoder().encode(vcard);
   const digest = await crypto.subtle.digest("SHA-1", bytes);
@@ -248,7 +287,16 @@ async function handle(kind, op, node) {
         );
     } else if (op === "created" || op === "updated") {
       const decision = await ghostGate(owner, op, itemId);
-      if (decision === "suppress") return;
+      if (decision === "suppress") {
+        // Discarding the event must not discard someone's pre-tag with it.
+        // Returning here skips `applyEvent`, which is the only thing that
+        // consumes one - so a provider write that changed no bytes (the
+        // server echoing back what we already hold) left its tag behind,
+        // and that tag then suppressed the user's *next* edit to the item
+        // for the rest of the freeze window.
+        await consumeServerTag(owner, { kind, parentId, itemId });
+        return;
+      }
     }
   }
 
