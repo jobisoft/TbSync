@@ -40,11 +40,19 @@ delete, edit, authenticate — is not supported.</strong> That is why several
 verbs check the ids passed against the chosen target and refuse otherwise;
 <em>calendar</em> and <em>book</em> verbs take no resource id at all — the
 target's is supplied, so there is no argument left to get wrong. Those two also
-require the target to be of that kind, so a <em>book</em> verb against a
-calendar folder is refused with the mismatch named, rather than reaching the
-platform as an id the caller never chose. Unscoped verbs read configuration or
-turn a global knob. A bridge with nothing chosen answers "no" rather than
-"anything".</p>
+require the granted folder to still be of that kind, so a <em>book</em> verb
+against a calendar folder is refused with the mismatch named, rather than
+reaching the platform as an id the caller never chose. Unscoped verbs read
+configuration or turn a global knob. A bridge with nothing chosen answers "no"
+rather than "anything".</p>
+
+<p>The Bridge tab grants <strong>one resource per kind</strong> — contacts,
+events, tasks — each select offering only folders of that kind, filtered on the
+host's own <code>targetType</code>. So a contacts test and a calendar test no
+longer take turns over a single grant. A <em>calendar</em> verb acts on the
+events grant by default; pass <code>resource: "tasks"</code> to aim it at the
+tasks one. That argument chooses between <em>your</em> grants and can never
+name a resource that was not granted.</p>
 
 <table>
   <tr><th>Verb</th><th>Scope</th><th>Does</th></tr>

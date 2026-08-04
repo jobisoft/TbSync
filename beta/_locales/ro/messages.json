@@ -35,8 +35,14 @@
   "manager.bridge.target.account": {
     "message": "Cont"
   },
-  "manager.bridge.target.resource": {
-    "message": "Resursă"
+  "manager.bridge.target.contacts": {
+    "message": "Contacte"
+  },
+  "manager.bridge.target.events": {
+    "message": "Evenimente"
+  },
+  "manager.bridge.target.tasks": {
+    "message": "Sarcini"
   },
   "manager.bridge.target.none": {
     "message": "(niciuna)"

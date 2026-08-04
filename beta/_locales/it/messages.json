@@ -35,8 +35,14 @@
   "manager.bridge.target.account": {
     "message": "Account"
   },
-  "manager.bridge.target.resource": {
-    "message": "Risorsa"
+  "manager.bridge.target.contacts": {
+    "message": "Contatti"
+  },
+  "manager.bridge.target.events": {
+    "message": "Eventi"
+  },
+  "manager.bridge.target.tasks": {
+    "message": "Attività"
   },
   "manager.bridge.target.none": {
     "message": "(nessuna)"

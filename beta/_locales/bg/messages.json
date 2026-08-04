@@ -35,8 +35,14 @@
   "manager.bridge.target.account": {
     "message": "Регистрация"
   },
-  "manager.bridge.target.resource": {
-    "message": "Ресурс"
+  "manager.bridge.target.contacts": {
+    "message": "Контакти"
+  },
+  "manager.bridge.target.events": {
+    "message": "Събития"
+  },
+  "manager.bridge.target.tasks": {
+    "message": "Задачи"
   },
   "manager.bridge.target.none": {
     "message": "(няма)"

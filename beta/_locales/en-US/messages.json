@@ -35,8 +35,14 @@
   "manager.bridge.target.account": {
     "message": "Account"
   },
-  "manager.bridge.target.resource": {
-    "message": "Resource"
+  "manager.bridge.target.contacts": {
+    "message": "Contacts"
+  },
+  "manager.bridge.target.events": {
+    "message": "Events"
+  },
+  "manager.bridge.target.tasks": {
+    "message": "Tasks"
   },
   "manager.bridge.target.none": {
     "message": "(none)"

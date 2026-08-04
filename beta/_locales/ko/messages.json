@@ -35,8 +35,14 @@
   "manager.bridge.target.account": {
     "message": "계정"
   },
-  "manager.bridge.target.resource": {
-    "message": "리소스"
+  "manager.bridge.target.contacts": {
+    "message": "주소록"
+  },
+  "manager.bridge.target.events": {
+    "message": "일정"
+  },
+  "manager.bridge.target.tasks": {
+    "message": "작업"
   },
   "manager.bridge.target.none": {
     "message": "(없음)"

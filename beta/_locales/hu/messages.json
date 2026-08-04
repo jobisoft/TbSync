@@ -35,8 +35,14 @@
   "manager.bridge.target.account": {
     "message": "Fiók"
   },
-  "manager.bridge.target.resource": {
-    "message": "Erőforrás"
+  "manager.bridge.target.contacts": {
+    "message": "Névjegyek"
+  },
+  "manager.bridge.target.events": {
+    "message": "Események"
+  },
+  "manager.bridge.target.tasks": {
+    "message": "Feladatok"
   },
   "manager.bridge.target.none": {
     "message": "(nincs)"

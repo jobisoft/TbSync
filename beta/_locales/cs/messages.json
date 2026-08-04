@@ -35,8 +35,14 @@
   "manager.bridge.target.account": {
     "message": "Účet"
   },
-  "manager.bridge.target.resource": {
-    "message": "Zdroj"
+  "manager.bridge.target.contacts": {
+    "message": "Kontakty"
+  },
+  "manager.bridge.target.events": {
+    "message": "Události"
+  },
+  "manager.bridge.target.tasks": {
+    "message": "Úkoly"
   },
   "manager.bridge.target.none": {
     "message": "(žádný)"

@@ -35,8 +35,14 @@
   "manager.bridge.target.account": {
     "message": "アカウント"
   },
-  "manager.bridge.target.resource": {
-    "message": "リソース"
+  "manager.bridge.target.contacts": {
+    "message": "連絡先"
+  },
+  "manager.bridge.target.events": {
+    "message": "予定"
+  },
+  "manager.bridge.target.tasks": {
+    "message": "タスク"
   },
   "manager.bridge.target.none": {
     "message": "(なし)"

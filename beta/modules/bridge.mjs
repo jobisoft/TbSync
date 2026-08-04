@@ -40,11 +40,14 @@
  *
  * ## Scope
  *
- * The Bridge tab stores one account and one resource that the bridge may
- * touch. Every verb that changes something, or that reads a resource's *data*
- * rather than TbSync's own configuration, is scoped to them and refuses
- * otherwise - including when nothing has been chosen at all, so the failure
- * mode of an unconfigured bridge is "no", not "anything".
+ * The Bridge tab stores one account, and one resource per kind - contacts,
+ * events, tasks. One grant each rather than one grant total, because a verb
+ * needs a resource of the right kind, and a single grant meant re-picking it
+ * in the UI between a contacts test and a calendar one. Every verb that
+ * changes something, or that reads a resource's *data* rather than TbSync's
+ * own configuration, is scoped to them and refuses otherwise - including when
+ * nothing has been chosen at all, so the failure mode of an unconfigured
+ * bridge is "no", not "anything".
  *
  * `getState` and `getFolders` stay unscoped: they are how a caller discovers
  * what the target could be, and they expose configuration rather than
@@ -87,12 +90,14 @@ const TARGET_KEY = "tbsync-bridge-target";
  *    "folder"   args.accountId and args.folderId must be the target's
  *    "calendar" the caller passes no calendar at all; the target's is
  *               supplied. A substitution rather than a check, so there is
- *               no argument left to get wrong.
+ *               no argument left to get wrong. `args.resource` picks the
+ *               events grant (default) or the tasks one - which of *our*
+ *               grants to use, never an arbitrary resource.
  *    "book"     the same, for the address book behind a contacts folder.
  *
- * The last two also require the target to be of that kind, so asking for a
- * card in a calendar is refused here rather than by the platform complaining
- * about an id the caller never chose.
+ * The last two also require the granted folder to still be of that kind, so
+ * asking for a card in a calendar is refused here rather than by the platform
+ * complaining about an id the caller never chose.
  *
  * `run` is omitted for the commands that are just a manager RPC under
  * another name; those go through `ui.invokeRpc`.
@@ -316,7 +321,9 @@ const COMMANDS = {
   },
   "items.query": {
     scope: "calendar",
-    run: (args, { calendarId }) =>
+    // `resource` is stripped: it picks which granted target to act on and is
+    // meaningless to the platform, which rejects options it does not know.
+    run: ({ resource, ...args }, { calendarId }) =>
       messenger.calendar.items.query({
         ...args,
         calendarId,
@@ -500,20 +507,47 @@ async function isEnabled() {
   return !!rv[ENABLED_KEY];
 }
 
-/** The account and resource the bridge may touch, normalized so the tab can
- *  read every field without guarding. Identity only - the Thunderbird
- *  calendar the resource is bound to is looked up when it is needed, never
- *  stored: deselecting a folder destroys that calendar and reselecting makes
- *  a new one, so a stored id survives its object by minutes. */
+/** The resource kinds the bridge can be granted, keyed by the `targetType`
+ *  the host stores on a folder row. One grant per kind, because a verb needs
+ *  a resource of the *right* kind and juggling a single grant meant
+ *  re-picking it in the UI between a contacts test and a calendar one.
+ *
+ *  These are host knowledge: a provider declares `targetType` when it pushes
+ *  its folder list, and `getFolders` hands it back, so both the selects and
+ *  the scope check read the same field. */
+const RESOURCE_KINDS = ["contacts", "calendars", "tasks"];
+
+/** The account, and one resource per kind, normalized so the tab can read
+ *  every field without guarding. Identity only - the Thunderbird book or
+ *  calendar a resource is bound to is looked up when needed, never stored:
+ *  deselecting a folder destroys that object and reselecting makes a new one,
+ *  so a stored id survives it by minutes. */
 async function readTarget() {
   const rv = await browser.storage.local.get({ [TARGET_KEY]: {} });
   const t = rv[TARGET_KEY] ?? {};
+  const resources = {};
+  for (const kind of RESOURCE_KINDS) {
+    const r = t.resources?.[kind] ?? {};
+    resources[kind] = {
+      folderId: r.folderId ?? "",
+      folderName: r.folderName ?? "",
+    };
+  }
   return {
     accountId: t.accountId ?? "",
     accountName: t.accountName ?? "",
-    folderId: t.folderId ?? "",
-    folderName: t.folderName ?? "",
+    resources,
   };
+}
+
+/** Every folder the bridge has been granted, as `folderId -> kind`. */
+function grantedFolders(target) {
+  const out = new Map();
+  for (const kind of RESOURCE_KINDS) {
+    const id = target.resources[kind].folderId;
+    if (id) out.set(id, kind);
+  }
+  return out;
 }
 
 async function connect() {
@@ -620,20 +654,22 @@ async function onNativeMessage(msg) {
   }
 }
 
-/** Which folder kinds can serve a resource-scoped command. A `tasks` folder
- *  is bound to a calendar like an events folder is - one calendar type serves
- *  both - so the calendar verbs work on either. */
-const SCOPE_TARGET_TYPES = {
-  calendar: ["calendars", "tasks"],
-  book: ["contacts"],
+/** Which granted resource a scope uses, and what it is called when saying so.
+ *
+ *  A `tasks` folder binds to a calendar exactly as an events folder does - one
+ *  calendar type serves both - so the calendar verbs work on either, and which
+ *  of the two they act on is the caller's choice via `args.resource`. */
+const SCOPE_KINDS = {
+  calendar: { kinds: ["calendars", "tasks"], noun: "a calendar" },
+  book: { kinds: ["contacts"], noun: "an address book" },
 };
 
-/** Hold a command to the account and resource chosen in the Bridge tab.
+/** Hold a command to the account and resources chosen in the Bridge tab.
  *
- *  Throws for anything outside them, and for anything at all when no target
- *  has been chosen: an unconfigured bridge should refuse, not roam. Returns
- *  what the command needs from the target - which for the resource verbs is
- *  the calendar or book id they are given rather than allowed to name. */
+ *  Throws for anything outside them, and for anything at all when nothing has
+ *  been chosen: an unconfigured bridge should refuse, not roam. Returns what
+ *  the command needs from the target - which for the resource verbs is the
+ *  calendar or book id they are given rather than allowed to name. */
 async function applyScope(scope, args, cmd) {
   if (!scope) return {};
   const target = await readTarget();
@@ -655,46 +691,76 @@ async function applyScope(scope, args, cmd) {
 
   if (scope === "account") return { accountId: target.accountId };
 
-  if (!target.folderId) {
+  const granted = grantedFolders(target);
+  if (!granted.size) {
     throw withCode(
       new Error("no resource selected in the Bridge tab"),
       "E:NO_TARGET",
     );
   }
+
+  // A folder-scoped verb names its folder, and may name any of the granted
+  // ones - they are all the caller's to touch.
   if (scope === "folder") {
-    if (args.folderId && args.folderId !== target.folderId) {
+    if (!args.folderId) {
+      throw withCode(new Error(`${cmd} needs a folderId`), "E:OUT_OF_SCOPE");
+    }
+    if (!granted.has(args.folderId)) {
       throw withCode(
-        new Error(`resource ${args.folderId} is not the bridge's target`),
+        new Error(
+          `resource ${args.folderId} is not one of the bridge's targets ` +
+            `(${[...granted.keys()].join(", ")})`,
+        ),
         "E:OUT_OF_SCOPE",
       );
     }
-    return { accountId: target.accountId, folderId: target.folderId };
+    return { accountId: target.accountId, folderId: args.folderId };
   }
 
-  // "calendar" or "book". Read from the folder row every time rather than
-  // from the stored target: `setFolderSelected(false)` deletes the
-  // Thunderbird resource and reselecting creates a fresh one, so any id we
-  // held would be stale the moment a clean resync ran - and a clean resync is
-  // one of the things this bridge exists to do.
-  const kind = scope === "book" ? "an address book" : "a calendar";
-  const row = await folders.get(target.accountId, target.folderId);
+  // "calendar" or "book". Both hand the caller an id rather than accept one,
+  // so `args.resource` picks only *which grant* to use, never an arbitrary
+  // resource. Defaults to the scope's first kind, which is what makes
+  // `items.query` mean the events folder unless asked otherwise.
+  const { kinds, noun } = SCOPE_KINDS[scope];
+  const kind = args.resource ?? kinds[0];
+  if (!kinds.includes(kind)) {
+    throw withCode(
+      new Error(
+        `${cmd} takes resource ${kinds.join(" or ")} (got ${JSON.stringify(args.resource)})`,
+      ),
+      "E:OUT_OF_SCOPE",
+    );
+  }
+  const { folderId, folderName } = target.resources[kind];
+  if (!folderId) {
+    throw withCode(
+      new Error(`no ${kind} resource selected in the Bridge tab`),
+      "E:NO_TARGET",
+    );
+  }
+
+  // Read from the folder row every time rather than from the stored target:
+  // `setFolderSelected(false)` deletes the Thunderbird resource and
+  // reselecting creates a fresh one, so any id we held would be stale the
+  // moment a clean resync ran - and a clean resync is one of the things this
+  // bridge exists to do.
+  const row = await folders.get(target.accountId, folderId);
   if (!row?.targetID) {
     throw withCode(
       new Error(
-        `resource "${target.folderName}" is not bound to ${kind} yet - sync it once`,
+        `resource "${folderName}" is not bound to ${noun} yet - sync it once`,
       ),
       "E:NO_TARGET",
     );
   }
-  // The folder row is what says which kind it is. Without this a contacts
-  // target answered calendar verbs with its book id, and the platform then
-  // rejected an id the caller never supplied - a mismatch reported as if it
-  // were a corrupt argument.
-  if (!SCOPE_TARGET_TYPES[scope].includes(row.targetType)) {
+  // The row, not the select, is the authority on what a folder is: a provider
+  // can re-push its folder list with a different targetType between the grant
+  // and the call.
+  if (row.targetType !== kind) {
     throw withCode(
       new Error(
-        `resource "${target.folderName}" is a ${row.targetType ?? "unknown"} ` +
-          `folder; ${cmd} needs ${kind}`,
+        `resource "${folderName}" is a ${row.targetType ?? "unknown"} folder, ` +
+          `not ${kind}; re-pick it in the Bridge tab`,
       ),
       "E:OUT_OF_SCOPE",
     );
@@ -781,12 +847,15 @@ export function initManagerTab({ localizeSubtree, rpc }) {
     })
     .catch(() => {});
   const accountEl = $("bridge-target-account");
-  const resourceEl = $("bridge-target-resource");
+  // One select per resource kind, each offering only folders of that kind.
+  const resourceEls = new Map(
+    RESOURCE_KINDS.map((kind) => [kind, $(`bridge-target-${kind}`)]),
+  );
 
-  // Rows behind the two selects, so a stored target can carry the display
-  // names and the targetID alongside the ids without a second lookup.
+  // Rows behind the selects, so a stored target can carry the display names
+  // alongside the ids without a second lookup.
   let accountRows = [];
-  let resourceRows = [];
+  let folderRows = [];
 
   let timer = null;
   // Mirrors what the last refresh saw, so the click handler does not have to
@@ -843,12 +912,14 @@ export function initManagerTab({ localizeSubtree, rpc }) {
   }
 
   accountEl.addEventListener("change", async () => {
-    await loadResources("");
+    await loadResources({});
     saveTarget();
   });
-  resourceEl.addEventListener("change", () => saveTarget());
+  for (const select of resourceEls.values()) {
+    select.addEventListener("change", () => saveTarget());
+  }
 
-  /** Fill both selects from live state, preselecting whatever is stored.
+  /** Fill every select from live state, preselecting whatever is stored.
    *  Called when the panel appears rather than on the status poll: the
    *  account and folder lists barely change, and rebuilding a `<select>`
    *  under someone who is using it is its own kind of rude. */
@@ -868,27 +939,35 @@ export function initManagerTab({ localizeSubtree, rpc }) {
       accountRows.map((a) => ({ value: a.accountId, label: a.accountName })),
       status.target.accountId,
     );
-    await loadResources(status.target.folderId);
+    await loadResources(status.target.resources ?? {});
   }
 
+  /** One select per kind, each offering only the folders of that kind.
+   *  `targetType` is the host's own field on the folder row, so the filter
+   *  needs nothing from the provider and cannot disagree with the scope
+   *  check, which reads the same field. */
   async function loadResources(preselect) {
-    resourceRows = [];
+    folderRows = [];
     if (accountEl.value) {
       try {
         const rv = await rpc("getFolders", { accountId: accountEl.value });
-        resourceRows = rv.folders ?? [];
+        folderRows = rv.folders ?? [];
       } catch (err) {
         console.warn("[tbsync] bridge: could not list resources:", err);
       }
     }
-    fill(
-      resourceEl,
-      resourceRows.map((f) => ({
-        value: f.folderId,
-        label: f.displayName ?? f.folderId,
-      })),
-      preselect,
-    );
+    for (const [kind, select] of resourceEls) {
+      fill(
+        select,
+        folderRows
+          .filter((f) => f.targetType === kind)
+          .map((f) => ({
+            value: f.folderId,
+            label: f.displayName ?? f.folderId,
+          })),
+        preselect[kind]?.folderId ?? "",
+      );
+    }
   }
 
   /** Options plus a leading "no target" entry, with `selected` restored only
@@ -906,13 +985,19 @@ export function initManagerTab({ localizeSubtree, rpc }) {
 
   function saveTarget() {
     const account = accountRows.find((a) => a.accountId === accountEl.value);
-    const resource = resourceRows.find((f) => f.folderId === resourceEl.value);
+    const resources = {};
+    for (const [kind, select] of resourceEls) {
+      const row = folderRows.find((f) => f.folderId === select.value);
+      resources[kind] = {
+        folderId: row?.folderId ?? "",
+        folderName: row?.displayName ?? "",
+      };
+    }
     rpc("bridgeSetTarget", {
       target: {
         accountId: account?.accountId ?? "",
         accountName: account?.accountName ?? "",
-        folderId: resource?.folderId ?? "",
-        folderName: resource?.displayName ?? "",
+        resources,
       },
     }).catch((err) =>
       console.warn("[tbsync] bridge: could not store the target:", err),
@@ -974,7 +1059,8 @@ export function initManagerTab({ localizeSubtree, rpc }) {
     // refusal to explain it.
     warningEl.toggleAttribute(
       "hidden",
-      !status.connected || !!status.target.folderId,
+      !status.connected ||
+        RESOURCE_KINDS.some((k) => status.target.resources?.[k]?.folderId),
     );
     if (status.endpoint) {
       exampleEl.textContent = exampleFor(platform, status.endpoint);
@@ -1299,8 +1385,16 @@ function buildPanel() {
         el("select", { id: "bridge-target-account" }),
       ]),
       el("label", {}, [
-        i18n("span", "manager.bridge.target.resource"),
-        el("select", { id: "bridge-target-resource" }),
+        i18n("span", "manager.bridge.target.contacts"),
+        el("select", { id: "bridge-target-contacts" }),
+      ]),
+      el("label", {}, [
+        i18n("span", "manager.bridge.target.events"),
+        el("select", { id: "bridge-target-calendars" }),
+      ]),
+      el("label", {}, [
+        i18n("span", "manager.bridge.target.tasks"),
+        el("select", { id: "bridge-target-tasks" }),
       ]),
     ]),
     i18n("h3", "manager.bridge.activity"),
