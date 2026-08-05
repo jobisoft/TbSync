@@ -101,6 +101,10 @@ name a resource that was not granted.</p>
       <td>Rename the target calendar. The provider that supplies it mirrors the new name into its folder row, so this is how that path is driven from a script.</td></tr>
   <tr><td><code>calendars.remove</code></td><td>calendar</td>
       <td>Delete the target calendar, as the Remove button does — the API's remove unregisters it, which ends in <code>deletePrefBranch</code>. The folder row is left pointing at it, and the provider is expected to notice and clear the binding.</td></tr>
+  <tr><td><code>calendars.get</code></td><td>calendar</td>
+      <td>The target calendar as the platform sees it — name, colour, <code>readOnly</code> and the rest. The way to check what a sync or a provider hook did to the calendar itself rather than to the folder row. <code>capabilities</code> always reads <code>null</code> here and that is not a fault: the Experiment fills it only for the extension owning the calendar type, and these calendars belong to the provider, not to TbSync — read it provider-side.</td></tr>
+  <tr><td><code>calendars.setColor</code></td><td>calendar</td>
+      <td>Recolour the target calendar, as the colour picker in its properties does. Like <code>calendars.rename</code>, the provider mirrors the new colour into its folder row, so this is how that path is driven from a script.</td></tr>
 
   <tr><td><code>items.query</code></td><td>calendar</td>
       <td>Items in the target calendar, as iCal. Any other query option is passed through.</td></tr>

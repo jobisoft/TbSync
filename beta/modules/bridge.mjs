@@ -319,6 +319,27 @@ const COMMANDS = {
     run: (_args, { calendarId }) =>
       messenger.calendar.calendars.remove(calendarId),
   },
+  /** The target calendar as the platform sees it - name, colour, readOnly and
+   *  the rest of `Calendar`. The way to check what a sync or a provider hook
+   *  actually did to the calendar, rather than to the folder row.
+   *
+   *  `capabilities` comes back null here and that is not a bug: the Experiment
+   *  fills it only for the extension that owns the calendar type, and these
+   *  calendars belong to the provider, not to TbSync. Read it provider-side. */
+  "calendars.get": {
+    scope: "calendar",
+    run: (_args, { calendarId }) =>
+      messenger.calendar.calendars.get(calendarId),
+  },
+  /** Recolour the target calendar, as the colour picker in its properties
+   *  does. The provider watches for this and mirrors the colour into its
+   *  folder row, so - like `calendars.rename` - it is the only way to drive
+   *  that path from a script. */
+  "calendars.setColor": {
+    scope: "calendar",
+    run: ({ color }, { calendarId }) =>
+      messenger.calendar.calendars.update(calendarId, { color }),
+  },
   "items.query": {
     scope: "calendar",
     // `resource` is stripped: it picks which granted target to act on and is
