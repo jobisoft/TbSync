@@ -231,6 +231,7 @@ router.setProviderRpcHandler(
       "readOnly",
       "targetID",
       "targetName",
+      "targetColor",
     ];
     const clean = {};
     for (const key of allowed)

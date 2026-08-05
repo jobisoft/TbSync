@@ -134,6 +134,18 @@ export function replaceAccountFolders(accountId, incoming) {
             ? descriptor.targetName
             : (prior?.targetName ??
               (cached && "targetName" in cached ? cached.targetName : null)),
+        // targetColor: the same, for the colour of a bound calendar. Held
+        // here rather than provider-side because it outlives the binding -
+        // a resource that is disabled and enabled again has to come back
+        // looking the way the user left it, and the calendar itself is gone
+        // in between. No sync protocol carries it: ActiveSync's folder
+        // hierarchy has no colour element in any version, so it is local
+        // state or it is nothing.
+        targetColor:
+          "targetColor" in descriptor
+            ? descriptor.targetColor
+            : (prior?.targetColor ??
+              (cached && "targetColor" in cached ? cached.targetColor : null)),
         // Host-owned per-folder change queue. Authored by the address-book
         // observer (changelog-watcher.mjs); consumed by the provider at sync
         // time. Entry shape: `{ parentId, itemId, timestamp, status }`.
@@ -175,6 +187,9 @@ export function replaceAccountFolders(accountId, incoming) {
       const bag = { selected: true };
       if (typeof prior.targetName === "string" && prior.targetName !== "") {
         bag.targetName = prior.targetName;
+      }
+      if (typeof prior.targetColor === "string" && prior.targetColor !== "") {
+        bag.targetColor = prior.targetColor;
       }
       if (prior.downloadOnly === true) {
         bag.downloadOnly = true;
