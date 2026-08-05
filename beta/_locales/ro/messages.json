@@ -3,7 +3,7 @@
     "message": "Punte"
   },
   "manager.bridge.intro": {
-    "message": "Puntea permite unui script local să controleze TbSync printr-un soclu HTTP local, pentru testare automată. Este oprită până când o activați aici și se încheie odată cu Thunderbird. Această funcție există doar în versiunea beta de pe GitHub; nu face parte din versiunea publicată pe addons.thunderbird.net."
+    "message": "Puntea permite unui script local să controleze TbSync printr-un soclu HTTP local, pentru testare automată. Este oprită până când o activați aici și se încheie odată cu Thunderbird. Această funcție există doar în versiunea beta de pe GitHub. Nu face parte din versiunea publicată pe addons.thunderbird.net."
   },
   "manager.bridge.status.on": {
     "message": "Puntea funcționează"

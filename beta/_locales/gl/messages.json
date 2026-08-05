@@ -3,7 +3,7 @@
     "message": "Ponte"
   },
   "manager.bridge.intro": {
-    "message": "A ponte permite que un script local controle TbSync a través dun socket HTTP local, para probas automatizadas. Está apagada ata que a activa aquí e detense xunto co Thunderbird. Esta funcionalidade só existe na versión beta de GitHub; non forma parte da versión publicada en addons.thunderbird.net."
+    "message": "A ponte permite que un script local controle TbSync a través dun socket HTTP local, para probas automatizadas. Está apagada ata que a activa aquí e detense xunto co Thunderbird. Esta funcionalidade só existe na versión beta de GitHub. Non forma parte da versión publicada en addons.thunderbird.net."
   },
   "manager.bridge.status.on": {
     "message": "Ponte en marcha"

@@ -18,7 +18,7 @@
     "message": "Aide"
   },
   "manager.help.wiki": {
-    "message": "Ouvrez les pages wiki du projet TbSync ; elles fournissent des informations supplémentaires, des guides et des descriptions détaillées de la configuration."
+    "message": "Ouvrez les pages wiki du projet TbSync, elles fournissent des informations supplémentaires, des guides et des descriptions détaillées de la configuration."
   },
   "manager.eventLog.intro": {
     "message": "Les rapports de bogue incluent le contenu de ce journal. Pour un rapport plus utile, augmentez le niveau de verbosité, videz le journal et reproduisez le problème avant de cliquer sur le bouton de rapport."

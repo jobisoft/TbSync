@@ -3,7 +3,7 @@
     "message": "Híd"
   },
   "manager.bridge.intro": {
-    "message": "A híd lehetővé teszi, hogy egy helyi parancsfájl helyi HTTP-kapcsolaton keresztül vezérelje a TbSyncet, automatizált teszteléshez. Kikapcsolt állapotban van, amíg itt be nem kapcsolja, és a Thunderbirddel együtt áll le. Ez a szolgáltatás csak a GitHub bétaváltozatában létezik; nem része az addons.thunderbird.net oldalon közzétett kiadásnak."
+    "message": "A híd lehetővé teszi, hogy egy helyi parancsfájl helyi HTTP-kapcsolaton keresztül vezérelje a TbSyncet, automatizált teszteléshez. Kikapcsolt állapotban van, amíg itt be nem kapcsolja, és a Thunderbirddel együtt áll le. Ez a szolgáltatás csak a GitHub bétaváltozatában létezik. Nem része az addons.thunderbird.net oldalon közzétett kiadásnak."
   },
   "manager.bridge.status.on": {
     "message": "A híd fut"

@@ -3,7 +3,7 @@
     "message": "Brygga"
   },
   "manager.bridge.intro": {
-    "message": "Bryggan låter ett lokalt skript styra TbSync via ett lokalt HTTP-uttag, för automatiserade tester. Den är avstängd tills du slår på den här, och avslutas med Thunderbird. Den här funktionen finns endast i GitHub-betaversionen; den ingår inte i utgåvan som publiceras på addons.thunderbird.net."
+    "message": "Bryggan låter ett lokalt skript styra TbSync via ett lokalt HTTP-uttag, för automatiserade tester. Den är avstängd tills du slår på den här, och avslutas med Thunderbird. Den här funktionen finns endast i GitHub-betaversionen. Den ingår inte i utgåvan som publiceras på addons.thunderbird.net."
   },
   "manager.bridge.status.on": {
     "message": "Bryggan körs"

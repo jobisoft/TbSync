@@ -3,7 +3,7 @@
     "message": "Brücke"
   },
   "manager.bridge.intro": {
-    "message": "Die Brücke erlaubt einem lokalen Skript, TbSync über einen lokalen HTTP-Socket zu steuern – für automatisierte Tests. Sie ist deaktiviert, bis Sie sie hier einschalten, und endet mit Thunderbird. Diese Funktion gibt es nur in der GitHub-Beta-Version; sie ist nicht Teil der auf addons.thunderbird.net veröffentlichten Version."
+    "message": "Die Brücke erlaubt einem lokalen Skript, TbSync über einen lokalen HTTP-Socket zu steuern, für automatisierte Tests. Sie ist deaktiviert, bis Sie sie hier einschalten, und endet mit Thunderbird. Diese Funktion gibt es nur in der GitHub-Beta-Version. Sie ist nicht Teil der auf addons.thunderbird.net veröffentlichten Version."
   },
   "manager.bridge.status.on": {
     "message": "Brücke läuft"

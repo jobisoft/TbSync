@@ -18,7 +18,7 @@
     "message": "Ayuda"
   },
   "manager.help.wiki": {
-    "message": "Abra las páginas wiki del proyecto TbSync; allí encontrará información adicional, guías y descripciones detalladas de la configuración."
+    "message": "Abra las páginas wiki del proyecto TbSync, allí encontrará información adicional, guías y descripciones detalladas de la configuración."
   },
   "manager.eventLog.intro": {
     "message": "Los informes de error incluyen el contenido de este registro. Para un informe más útil, suba el nivel de detalle, vacíe el registro y reproduzca el problema antes de pulsar el botón de informe."

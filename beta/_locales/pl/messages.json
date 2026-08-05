@@ -3,7 +3,7 @@
     "message": "Mostek"
   },
   "manager.bridge.intro": {
-    "message": "Mostek pozwala lokalnemu skryptowi sterować TbSync przez lokalne gniazdo HTTP, na potrzeby testów automatycznych. Jest wyłączony, dopóki go tutaj nie włączysz, i kończy się razem z Thunderbirdem. Ta funkcja istnieje wyłącznie w wersji beta z GitHuba; nie jest częścią wydania opublikowanego w addons.thunderbird.net."
+    "message": "Mostek pozwala lokalnemu skryptowi sterować TbSync przez lokalne gniazdo HTTP, na potrzeby testów automatycznych. Jest wyłączony, dopóki go tutaj nie włączysz, i kończy się razem z Thunderbirdem. Ta funkcja istnieje wyłącznie w wersji beta z GitHuba. Nie jest częścią wydania opublikowanego w addons.thunderbird.net."
   },
   "manager.bridge.status.on": {
     "message": "Mostek działa"

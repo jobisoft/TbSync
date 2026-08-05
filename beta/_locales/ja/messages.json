@@ -3,7 +3,7 @@
     "message": "ブリッジ"
   },
   "manager.bridge.intro": {
-    "message": "ブリッジを使うと、ローカルのスクリプトがループバックの HTTP ソケット経由で TbSync を操作できます。自動テスト用の機能です。ここで有効にするまで動作せず、Thunderbird の終了とともに停止します。 この機能は GitHub のベータ版にのみ存在し、addons.thunderbird.net で公開されているリリース版には含まれません。"
+    "message": "ブリッジを使うと、ローカルのスクリプトがループバックの HTTP ソケット経由で TbSync を操作できます。自動テスト用の機能です。ここで有効にするまで動作せず、Thunderbird の終了とともに停止します。この機能は GitHub のベータ版にのみ存在し、addons.thunderbird.net で公開されているリリース版には含まれません。"
   },
   "manager.bridge.status.on": {
     "message": "ブリッジは動作中です"

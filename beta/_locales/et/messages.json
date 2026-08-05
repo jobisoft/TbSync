@@ -3,7 +3,7 @@
     "message": "Sild"
   },
   "manager.bridge.intro": {
-    "message": "Sild võimaldab kohalikul skriptil juhtida TbSynci kohaliku HTTP-pesa kaudu, automaatseks testimiseks. See on väljas, kuni sa selle siin sisse lülitad, ja lõpeb koos Thunderbirdiga. See võimalus on olemas ainult GitHubi beetaversioonis; see ei kuulu addons.thunderbird.net-is avaldatud väljalaskesse."
+    "message": "Sild võimaldab kohalikul skriptil juhtida TbSynci kohaliku HTTP-pesa kaudu, automaatseks testimiseks. See on väljas, kuni sa selle siin sisse lülitad, ja lõpeb koos Thunderbirdiga. See võimalus on olemas ainult GitHubi beetaversioonis. See ei kuulu addons.thunderbird.net-is avaldatud väljalaskesse."
   },
   "manager.bridge.status.on": {
     "message": "Sild töötab"

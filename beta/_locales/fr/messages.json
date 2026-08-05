@@ -3,7 +3,7 @@
     "message": "Passerelle"
   },
   "manager.bridge.intro": {
-    "message": "La passerelle permet à un script local de piloter TbSync via un socket HTTP local, pour des tests automatisés. Elle est désactivée tant que vous ne l’activez pas ici, et s’arrête avec Thunderbird. Cette fonctionnalité n’existe que dans la version bêta GitHub ; elle ne fait pas partie de la version publiée sur addons.thunderbird.net."
+    "message": "La passerelle permet à un script local de piloter TbSync via un socket HTTP local, pour des tests automatisés. Elle est désactivée tant que vous ne l’activez pas ici, et s’arrête avec Thunderbird. Cette fonctionnalité n’existe que dans la version bêta GitHub. Elle ne fait pas partie de la version publiée sur addons.thunderbird.net."
   },
   "manager.bridge.status.on": {
     "message": "Passerelle active"

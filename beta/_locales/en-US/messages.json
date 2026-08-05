@@ -3,7 +3,7 @@
     "message": "Bridge"
   },
   "manager.bridge.intro": {
-    "message": "The bridge lets a local script drive TbSync through a loopback HTTP socket, for automated testing. It is off until you switch it on here, and it stops when Thunderbird does. This feature exists only in the GitHub beta build; it is not part of the release published on addons.thunderbird.net."
+    "message": "The bridge lets a local script drive TbSync through a loopback HTTP socket, for automated testing. It is off until you switch it on here, and it stops when Thunderbird does. This feature exists only in the GitHub beta build. It is not part of the release published on addons.thunderbird.net."
   },
   "manager.bridge.status.on": {
     "message": "Bridge running"

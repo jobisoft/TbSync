@@ -3,7 +3,7 @@
     "message": "Most"
   },
   "manager.bridge.intro": {
-    "message": "Most umožňuje místnímu skriptu řídit TbSync přes místní HTTP soket, pro automatizované testování. Je vypnutý, dokud jej zde nezapnete, a končí spolu s Thunderbirdem. Tato funkce existuje pouze v beta verzi na GitHubu; není součástí vydání zveřejněného na addons.thunderbird.net."
+    "message": "Most umožňuje místnímu skriptu řídit TbSync přes místní HTTP soket, pro automatizované testování. Je vypnutý, dokud jej zde nezapnete, a končí spolu s Thunderbirdem. Tato funkce existuje pouze v beta verzi na GitHubu. Není součástí vydání zveřejněného na addons.thunderbird.net."
   },
   "manager.bridge.status.on": {
     "message": "Most běží"
