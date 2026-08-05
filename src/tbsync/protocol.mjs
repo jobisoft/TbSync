@@ -169,7 +169,7 @@ export const HOST_CMD = {
  * Folder universal fields:
  *   folderId, accountId, targetType, displayName, selected, readOnly,
  *   downloadOnly, hidden, status, warning, error, lastSyncTime, orderIndex,
- *   targetID, targetName, changelog, custom
+ *   targetID, targetName, targetColor, changelog, custom
  *
  * `readOnly` is server-announced (provider-authored from the server's ACL).
  * `downloadOnly` is the user override surfaced as the manager's ACL toggle;
@@ -183,6 +183,15 @@ export const HOST_CMD = {
  * to the remote resource (address-book id, calendar id, task-list id, …).
  * They are null until the provider's first sync creates the local artifact
  * and writes them back via UPDATE_FOLDER.
+ *
+ * `targetName` and `targetColor` describe how the user has that artifact
+ * set up, and outlive it on purpose. Unbinding a resource destroys the
+ * calendar or book, so a provider that clears these along with `targetID`
+ * throws away the name the user chose and the colour they picked, with
+ * nothing anywhere able to recover them - no sync protocol carries either.
+ * Clear `targetID` when the binding goes; keep these two, and pass them
+ * back when the resource is bound again. `targetColor` is a CSS hex colour
+ * and only meaningful for calendar-shaped targets.
  *
  * `custom` is opaque to the host and lets each provider stash its own
  * per-row configuration without host-schema changes. The host stores and
