@@ -66,6 +66,24 @@ export async function init() {
     handle("list", "deleted", { parentId, id }),
   );
 
+  // Membership: the user putting a contact into a mailing list, or taking it
+  // out. Its own kind rather than a change to either party, because it is a
+  // change to neither - the contact's fields are untouched and so is the
+  // list's name, so re-pushing either would send bytes the server already
+  // has while still not saying what actually changed.
+  //
+  // `onMemberAdded` hands back a ContactNode whose parentId is the *list*
+  // (measured; a card's own node carries the book instead) and
+  // `onMemberRemoved` gives the pair directly, so either way both halves
+  // arrive - which is what lets the entry name the exact pair the user
+  // touched rather than "something about this list changed".
+  messenger.mailingLists.onMemberAdded.addListener((node) =>
+    handleMembership("created", node?.parentId, node?.id),
+  );
+  messenger.mailingLists.onMemberRemoved.addListener((parentId, id) =>
+    handleMembership("deleted", parentId, id),
+  );
+
   // Keep `folder.targetName` in sync with the user's local TB address-book
   // or calendar label - the manager's resource-list cell shows targetName
   // for successfully-synced folders. Only watched targets are mirrored.
@@ -259,6 +277,37 @@ async function ghostGate(owner, op, itemId) {
   return "proceed";
 }
 
+/** A contact entering or leaving a mailing list.
+ *
+ *  Split from `handle` for one reason: the ids arrive the other way round.
+ *  Every other event names the book in `parentId`, which is what the
+ *  registry is keyed by; here `parentId` is the list, so the book has to be
+ *  fetched before the owner can be found at all. The entry then keeps the
+ *  list as its parent, so `(listId, contactId, "membership")` identifies the
+ *  pair exactly - and a provider that cannot store memberships sees an
+ *  unfamiliar `kind` and drops it, rather than mistaking it for a contact. */
+async function handleMembership(op, listId, contactId) {
+  if (!listId || !contactId) return;
+  let bookId = null;
+  try {
+    bookId = (await messenger.mailingLists.get(listId))?.parentId ?? null;
+  } catch {
+    // List already gone - deleting a list fires a member-removed event per
+    // member, and the list itself may lose the race. Nothing to record:
+    // the list's own deleted entry carries everything the provider needs.
+    return;
+  }
+  const owner = bookId ? registry.get(bookId) : null;
+  if (!owner) return; // book not watched
+  await recordEvent(owner, {
+    kind: "membership",
+    parentId: listId,
+    itemId: contactId,
+    name: null,
+    op,
+  });
+}
+
 async function handle(kind, op, node) {
   const parentId = node?.parentId;
   const itemId = node?.id;
@@ -307,6 +356,12 @@ async function handle(kind, op, node) {
   const name =
     kind === "list" && op === "created" ? (node?.name ?? null) : null;
 
+  await recordEvent(owner, { kind, parentId, itemId, name, op });
+}
+
+/** Fold one observed event into the owning folder's changelog, and tell the
+ *  manager only when the result differs in a way a user would see. */
+async function recordEvent(owner, { kind, parentId, itemId, name, op }) {
   // Broadcast only when the user-facing changelog content actually
   // changed. With DROP_SERVER_TAGS_ON_CONSUME on, every suppressed event
   // still returns a different array reference (with the consumed

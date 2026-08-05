@@ -325,7 +325,14 @@ router.setProviderRpcHandler(
     if (!acc || acc.provider !== providerId) {
       throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
     }
-    const allowedKinds = ["contact", "list", "list-by-name", "event", "task"];
+    const allowedKinds = [
+      "contact",
+      "list",
+      "list-by-name",
+      "membership",
+      "event",
+      "task",
+    ];
     if (!allowedKinds.includes(kind)) {
       throw withCode(
         new Error(
