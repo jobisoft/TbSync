@@ -317,6 +317,9 @@
   "error.E:UNKNOWN_COMMAND": {
     "message": "Nicht unterstützter Befehl"
   },
+  "error.E:PROVIDER_FAULT": {
+    "message": "Interner Fehler, siehe Ereignisprotokoll"
+  },
   "error.E:PORT_CLOSED": {
     "message": "Verbindung zum Anbieter getrennt"
   },

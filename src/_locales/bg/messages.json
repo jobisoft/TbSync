@@ -317,6 +317,9 @@
   "error.E:UNKNOWN_COMMAND": {
     "message": "Неподдържана команда"
   },
+  "error.E:PROVIDER_FAULT": {
+    "message": "Вътрешна грешка, вижте дневника със събития"
+  },
   "error.E:PORT_CLOSED": {
     "message": "Връзката с доставчика е прекъсната"
   },

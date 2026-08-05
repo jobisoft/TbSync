@@ -652,8 +652,13 @@ export class TbSyncProviderImplementation {
           requestId: msg.requestId,
           ok: false,
           error: err.message ?? "unknown error",
-          errorCode: err.code ?? ERR.UNKNOWN_COMMAND,
-          errorDetails: err.details ?? null,
+          errorCode: err.code ?? ERR.PROVIDER_FAULT,
+          // Only `message` crosses the port, so a programming error inside a
+          // provider used to arrive with no origin at all - and the host's
+          // own stack points at the wrapper it just built, not at the fault.
+          // One reproduction with this in place located a TypeError that had
+          // been unfindable by reading code.
+          errorDetails: err.details ?? err.stack ?? null,
         });
       }
     }

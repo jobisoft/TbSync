@@ -317,6 +317,9 @@
   "error.E:UNKNOWN_COMMAND": {
     "message": "Kommandot stöds inte"
   },
+  "error.E:PROVIDER_FAULT": {
+    "message": "Internt fel, se händelseloggen"
+  },
   "error.E:PORT_CLOSED": {
     "message": "Frånkopplad från leverantören"
   },

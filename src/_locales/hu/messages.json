@@ -317,6 +317,9 @@
   "error.E:UNKNOWN_COMMAND": {
     "message": "Nem támogatott parancs"
   },
+  "error.E:PROVIDER_FAULT": {
+    "message": "Belső hiba, lásd az eseménynaplót"
+  },
   "error.E:PORT_CLOSED": {
     "message": "A szolgáltatóval való kapcsolat megszakadt"
   },

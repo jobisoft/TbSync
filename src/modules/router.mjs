@@ -137,7 +137,7 @@ function handleIncoming(providerId, msg) {
       entry.reject(
         withCode(
           new Error(msg.error ?? "provider error"),
-          msg.errorCode ?? ERR.UNKNOWN_COMMAND,
+          msg.errorCode ?? ERR.PROVIDER_FAULT,
           msg.errorDetails ?? null,
         ),
       );

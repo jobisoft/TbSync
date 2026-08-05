@@ -317,6 +317,9 @@
   "error.E:UNKNOWN_COMMAND": {
     "message": "Неподдерживаемая команда"
   },
+  "error.E:PROVIDER_FAULT": {
+    "message": "Внутренняя ошибка, см. журнал событий"
+  },
   "error.E:PORT_CLOSED": {
     "message": "Соединение с провайдером прервано"
   },

@@ -317,6 +317,9 @@
   "error.E:UNKNOWN_COMMAND": {
     "message": "Nieobsługiwane polecenie"
   },
+  "error.E:PROVIDER_FAULT": {
+    "message": "Błąd wewnętrzny, zobacz dziennik zdarzeń"
+  },
   "error.E:PORT_CLOSED": {
     "message": "Rozłączono z dostawcą"
   },

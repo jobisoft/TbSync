@@ -317,6 +317,9 @@
   "error.E:UNKNOWN_COMMAND": {
     "message": "サポートされていないコマンド"
   },
+  "error.E:PROVIDER_FAULT": {
+    "message": "内部エラーです。イベントログを参照してください"
+  },
   "error.E:PORT_CLOSED": {
     "message": "プロバイダーから切断されました"
   },

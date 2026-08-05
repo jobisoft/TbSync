@@ -317,6 +317,9 @@
   "error.E:UNKNOWN_COMMAND": {
     "message": "Commande non prise en charge"
   },
+  "error.E:PROVIDER_FAULT": {
+    "message": "Erreur interne, voir le journal des événements"
+  },
   "error.E:PORT_CLOSED": {
     "message": "Déconnecté du fournisseur"
   },

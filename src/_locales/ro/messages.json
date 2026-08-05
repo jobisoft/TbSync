@@ -317,6 +317,9 @@
   "error.E:UNKNOWN_COMMAND": {
     "message": "Comandă nesuportată"
   },
+  "error.E:PROVIDER_FAULT": {
+    "message": "Eroare internă, consultați jurnalul de evenimente"
+  },
   "error.E:PORT_CLOSED": {
     "message": "Deconectat de la furnizor"
   },

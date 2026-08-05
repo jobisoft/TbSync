@@ -317,6 +317,9 @@
   "error.E:UNKNOWN_COMMAND": {
     "message": "Nepodporovaný příkaz"
   },
+  "error.E:PROVIDER_FAULT": {
+    "message": "Vnitřní chyba, viz protokol událostí"
+  },
   "error.E:PORT_CLOSED": {
     "message": "Spojení s poskytovatelem ukončeno"
   },

@@ -435,6 +435,13 @@ export const ERR = {
   UNKNOWN_ACCOUNT: "E:UNKNOWN_ACCOUNT",
   UNKNOWN_FOLDER: "E:UNKNOWN_FOLDER",
   UNKNOWN_COMMAND: "E:UNKNOWN_COMMAND",
+  // The provider threw something that is not one of the codes below - a
+  // TypeError, a failed assertion, a bug. Distinct from UNKNOWN_COMMAND,
+  // which used to absorb these: that says the *command* was wrong, sending
+  // whoever reads it after the caller when the fault is inside the provider.
+  // The message is deliberately not shown to the user; it is a stack or a
+  // JS error string, and the event log is where it belongs.
+  PROVIDER_FAULT: "E:PROVIDER_FAULT",
   TIMEOUT: "E:TIMEOUT",
   // Asked to reload while permanently installed. Not a malfunction - the
   // reload would have restarted identical code and reported success, which
@@ -454,6 +461,7 @@ export const PREDEFINED_ERROR_CODES = new Set([
   ERR.UNKNOWN_ACCOUNT,
   ERR.UNKNOWN_FOLDER,
   ERR.UNKNOWN_COMMAND,
+  ERR.PROVIDER_FAULT,
   ERR.NOT_TEMPORARY,
 ]);
 export const PREDEFINED_WARNING_CODES = new Set();

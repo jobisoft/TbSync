@@ -317,6 +317,9 @@
   "error.E:UNKNOWN_COMMAND": {
     "message": "Toetamata käsk"
   },
+  "error.E:PROVIDER_FAULT": {
+    "message": "Sisemine viga, vaadake sündmuste logi"
+  },
   "error.E:PORT_CLOSED": {
     "message": "Ühendus pakkujaga katkestatud"
   },

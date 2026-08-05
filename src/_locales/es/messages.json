@@ -317,6 +317,9 @@
   "error.E:UNKNOWN_COMMAND": {
     "message": "Comando no admitido"
   },
+  "error.E:PROVIDER_FAULT": {
+    "message": "Error interno, consulte el registro de eventos"
+  },
   "error.E:PORT_CLOSED": {
     "message": "Desconectado del proveedor"
   },
