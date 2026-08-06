@@ -24,6 +24,8 @@ import {
 } from "./modules/transient.mjs";
 import {
   syncAccount,
+  abortAccountSync,
+  endAccountCancel,
   recomputeAccountError,
 } from "./modules/sync-coordinator.mjs";
 import { runIfNeeded as runLegacyMigration } from "./modules/legacy-migration-runner.mjs";
@@ -838,29 +840,71 @@ ui.setManagerRpcHandler(
 ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
   const acc = await accounts.get(accountId);
   if (!acc) return null;
-  assertNotUpgrading(accountId);
+  // Disconnecting skips the upgrade guard - it is the recovery path, and a
+  // migration that never finished is a state where the user needs it - but
+  // both directions require the provider's port. Only the provider can tear
+  // down the Thunderbird resources it owns; a disconnect without it leaves
+  // calendars orphaned with refresh timers still armed, and provider-side
+  // account state (the FolderSync key) never learns the teardown happened.
+  // With the provider dead the one exit is Remove, which works ungated and
+  // accepts the orphans knowingly.
+  if (enabled) assertNotUpgrading(accountId);
   if (!router.isProviderConnected(acc.provider)) {
     throw withCode(
       new Error("Provider not available"),
       ERR.PROVIDER_UNAVAILABLE,
     );
   }
-  await withBusyAccount(accountId, async () => {
-    const cmd = enabled ? HOST_CMD.ACCOUNT_ENABLED : HOST_CMD.ACCOUNT_DISABLED;
-    await router.sendCmd(acc.provider, cmd, { accountId });
-    await accounts.update(accountId, {
-      enabled,
-      lastSyncTime: enabled ? acc.lastSyncTime : 0,
-      // Clear any standing auth/sync error on re-enable; on disable, drop
-      // it too so the row reads as a clean "off" state.
-      error: null,
+  try {
+    // Inside the try: `abortAccountSync` marks the account cancelling before
+    // it does anything else, and only this `finally` releases that mark. A
+    // throw in between - an event-log write failing, say - would otherwise
+    // leave the account marked for the life of the background page, and
+    // every future sync of it would return immediately with no explanation.
+    if (!enabled) await abortAccountSync(accountId);
+    await withBusyAccount(accountId, async () => {
+      const cmd = enabled
+        ? HOST_CMD.ACCOUNT_ENABLED
+        : HOST_CMD.ACCOUNT_DISABLED;
+      if (enabled) {
+        await router.sendCmd(acc.provider, cmd, { accountId });
+      } else {
+        // Best effort. The provider tears down its own Thunderbird resources
+        // here, and we want that to happen - but a provider that is wedged
+        // or gone must not be able to keep the account connected.
+        // Everything below runs either way.
+        try {
+          if (router.isProviderConnected(acc.provider)) {
+            await router.sendCmd(acc.provider, cmd, { accountId });
+          }
+        } catch (err) {
+          await eventLog.append({
+            accountId,
+            folderId: null,
+            level: "warning",
+            message: `Provider did not complete its teardown on disconnect: ${err?.message ?? err}`,
+            details: err?.details ?? null,
+          });
+        }
+      }
+      await accounts.update(accountId, {
+        enabled,
+        lastSyncTime: enabled ? acc.lastSyncTime : 0,
+        // Clear any standing auth/sync error on re-enable; on disable, drop
+        // it too so the row reads as a clean "off" state.
+        error: null,
+      });
+      if (!enabled) {
+        // Host forgets its folder records on disable; the provider already
+        // cleared its Thunderbird resources inside ACCOUNT_DISABLED above.
+        await folders.clearAccount(accountId);
+      }
     });
-    if (!enabled) {
-      // Host forgets its folder records on disable; the provider already
-      // cleared its Thunderbird resources inside ACCOUNT_DISABLED above.
-      await folders.clearAccount(accountId);
-    }
-  });
+  } finally {
+    // Only now: the account reads `enabled: false`, so nothing can start a
+    // sync into the teardown any more.
+    if (!enabled) endAccountCancel(accountId);
+  }
   ui.broadcast({ type: "folders-changed", accountId });
   return null;
 });

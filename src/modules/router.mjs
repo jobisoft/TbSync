@@ -1,6 +1,7 @@
 import {
   DEFAULT_RPC_TIMEOUT_MS,
   ERR,
+  HOST_CMD,
   NO_TIMEOUT_CMDS,
   PORT_NAME,
   PROVIDER_NOTIFY,
@@ -103,7 +104,19 @@ export function sendCmd(providerId, cmd, args = {}) {
 
   const requestId = genRequestId();
   return new Promise((resolve, reject) => {
-    const entry = { providerId, resolve, reject, timer: null };
+    // `accountId` and `cmd` are recorded so one account's in-flight *sync*
+    // commands can be settled without touching anything else - what
+    // Disconnect needs while another account syncs on the same provider,
+    // and without sweeping commands that must survive it (its own
+    // CANCEL_SYNC, an open popup, a concurrent ACCOUNT_DISABLED).
+    const entry = {
+      providerId,
+      accountId: args?.accountId ?? null,
+      cmd,
+      resolve,
+      reject,
+      timer: null,
+    };
     if (!NO_TIMEOUT_CMDS.has(cmd)) {
       entry.timer = setTimeout(() => {
         pending.delete(requestId);
@@ -249,13 +262,53 @@ function handleDisconnect(providerId, port) {
   ui.broadcast({ type: "providers-changed" });
 }
 
-function rejectPending(providerId, code, message) {
+function rejectPending(providerId, code, message, { accountId = null, cmds = null } = {}) {
   for (const [rid, entry] of pending) {
     if (entry.providerId !== providerId) continue;
+    if (accountId !== null && entry.accountId !== accountId) continue;
+    if (cmds !== null && !cmds.has(entry.cmd)) continue;
     pending.delete(rid);
     if (entry.timer) clearTimeout(entry.timer);
     entry.reject(withCode(new Error(message), code));
   }
+}
+
+/** The commands an abort settles: the sync flow, and nothing else.
+ *
+ *  The filter is what keeps an abort from eating its own tail. The abort
+ *  sends CANCEL_SYNC and then sweeps - an unfiltered sweep by accountId
+ *  rejected that very CANCEL_SYNC, logging "provider did not acknowledge
+ *  the cancel" on every disconnect. It also protected nothing else the
+ *  account may have in flight: an open config or reauth popup (which must
+ *  survive - its window is still on screen, and force-rejecting it strands
+ *  the window with the host believing it closed), and a concurrent
+ *  ACCOUNT_DISABLED from a second click, which is doing the teardown the
+ *  abort exists to enable. */
+const ABORTABLE_CMDS = new Set([
+  HOST_CMD.SYNC_ACCOUNT,
+  HOST_CMD.SYNC_FOLDER,
+  HOST_CMD.GET_SORTED_FOLDERS,
+]);
+
+/** Settle this account's in-flight sync commands.
+ *
+ *  The point of no return for an abort: `SYNC_ACCOUNT` and `SYNC_FOLDER` are
+ *  in `NO_TIMEOUT_CMDS`, so a provider that never answers would otherwise
+ *  leave the awaiting sync suspended for the life of the host. Once these
+ *  reject, `syncAccount`'s `finally` runs and the account is usable again -
+ *  whatever the provider is or is not doing. GET_SORTED_FOLDERS is included
+ *  because the sync loop parks on it too; it has a timeout, so rejecting it
+ *  only makes the unwind prompt rather than possible.
+ *
+ *  A late reply needs no handling: `handleIncoming` returns when the entry
+ *  is gone. */
+export function abortAccount(providerId, accountId) {
+  rejectPending(
+    providerId,
+    ERR.CANCELLED,
+    "Sync cancelled - the account was disconnected",
+    { accountId, cmds: ABORTABLE_CMDS },
+  );
 }
 
 function scheduleBackoffProbe(providerId) {

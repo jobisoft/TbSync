@@ -40,9 +40,34 @@ const DEFAULT_SETUP_HEIGHT = 640;
 const DEFAULT_CONFIG_WIDTH = 520;
 const DEFAULT_CONFIG_HEIGHT = 580;
 
+/** Commands that count as "a sync is running" for cancellation. Each gets an
+ *  AbortController for the duration of the call, so a CANCEL_SYNC arriving
+ *  while one is in flight can stop it. */
+const SYNC_CMDS = new Set([HOST_CMD.SYNC_ACCOUNT, HOST_CMD.SYNC_FOLDER]);
+
+/** The code to report for a thrown error.
+ *
+ *  `err.code` is only ours when it is one of our `E:` strings. A
+ *  DOMException carries a *numeric* legacy `code` - 20 for AbortError - so
+ *  reading it first sent `20` across the port and the host stamped the
+ *  folder with "The operation was aborted." instead of recognising a
+ *  cancellation. An aborted fetch is a cancellation, not a fault: reporting
+ *  it as one puts "Internal error" in front of someone who pressed
+ *  Disconnect. */
+function errorCodeFor(err) {
+  if (typeof err?.code === "string" && err.code.startsWith("E:")) {
+    return err.code;
+  }
+  if (err?.name === "AbortError") return ERR.CANCELLED;
+  return ERR.PROVIDER_FAULT;
+}
+
 export class TbSyncProviderImplementation {
   #port = null;
   #pending = new Map(); // requestId → {resolve, reject, timer}
+  // accountId → AbortController, for as long as a sync command is running.
+  // The host may cancel at any time; this is what makes that possible.
+  #syncAborts = new Map();
   #pendingSetups = new Map(); // setupToken → {resolve, reject, windowId}
   // accountId → Set<windowId>: every window this provider currently has
   // open on that account's behalf, whichever flow opened it. A Set rather
@@ -336,9 +361,45 @@ export class TbSyncProviderImplementation {
   async onSyncFolder(_args) {
     throw this.#notImplemented("onSyncFolder");
   }
-  /** Cooperative cancel for an in-flight sync. */
-  async onCancelSync(_args) {
+  /** Cooperative cancel for an in-flight sync.
+   *
+   *  Implemented here rather than left to each provider: aborting the
+   *  controller is the whole contract, and everything a subclass has to do
+   *  follows from consuming `syncSignal` / `throwIfCancelled`. Override only
+   *  if a provider has something else to unwind, and call `super` if you do.
+   *
+   *  The host does not wait for the sync to finish unwinding - it settles
+   *  the in-flight commands itself the moment it has sent this - but
+   *  answering means the provider stops on its own terms, with its
+   *  persistent state intact. */
+  async onCancelSync({ accountId } = {}) {
+    if (accountId == null) {
+      for (const held of this.#syncAborts.values()) held.controller.abort();
+    } else {
+      this.#syncAborts.get(accountId)?.controller.abort();
+    }
     return null;
+  }
+
+  /** The `AbortSignal` for this account's running sync, or null.
+   *
+   *  Hand it to anything that accepts one - `fetch` above all, so a cancel
+   *  drops a request in flight instead of waiting out a server that may
+   *  never answer. */
+  syncSignal(accountId) {
+    return this.#syncAborts.get(accountId)?.controller.signal ?? null;
+  }
+
+  /** Throw if this account's sync has been cancelled.
+   *
+   *  Call at loop boundaries, and always *before* a write rather than
+   *  between a write and the changelog entry that covers it: unwinding
+   *  half-way through an acknowledged push is the one way to lose a user
+   *  edit. Re-running the whole batch is free by comparison. */
+  throwIfCancelled(accountId) {
+    if (this.#syncAborts.get(accountId)?.controller.signal.aborted) {
+      throw withCode(new Error("Sync cancelled"), ERR.CANCELLED);
+    }
   }
 
   async onAccountEnabled(_args) {
@@ -637,6 +698,25 @@ export class TbSyncProviderImplementation {
   async #dispatchHostCmd(msg) {
     const activePort = this.#port;
     if (!activePort) return;
+    const syncing = SYNC_CMDS.has(msg.cmd) ? (msg.args?.accountId ?? null) : null;
+    // One controller per account, owned by the command that created it.
+    //
+    // Ownership matters because the host does not wait for us: it settles a
+    // cancelled SYNC_FOLDER and moves on, so its next command can arrive
+    // while our handler is still unwinding. Without the owner check, that
+    // handler's `finally` would delete the *new* command's controller
+    // (making the new sync uncancellable), and an aborted controller left
+    // in the map would be handed to the new sync, which would then fail
+    // every request instantly.
+    if (syncing != null) {
+      const held = this.#syncAborts.get(syncing);
+      if (!held || held.controller.signal.aborted) {
+        this.#syncAborts.set(syncing, {
+          controller: new AbortController(),
+          owner: msg.requestId,
+        });
+      }
+    }
     try {
       const result = await this.#callHostCmdHandler(msg.cmd, msg.args ?? {});
       if (this.#port === activePort) {
@@ -652,7 +732,7 @@ export class TbSyncProviderImplementation {
           requestId: msg.requestId,
           ok: false,
           error: err.message ?? "unknown error",
-          errorCode: err.code ?? ERR.PROVIDER_FAULT,
+          errorCode: errorCodeFor(err),
           // Only `message` crosses the port, so a programming error inside a
           // provider used to arrive with no origin at all - and the host's
           // own stack points at the wrapper it just built, not at the fault.
@@ -660,6 +740,12 @@ export class TbSyncProviderImplementation {
           // been unfindable by reading code.
           errorDetails: err.details ?? err.stack ?? null,
         });
+      }
+    } finally {
+      // Only if it is still ours - see the ownership note above.
+      if (syncing != null) {
+        const held = this.#syncAborts.get(syncing);
+        if (held?.owner === msg.requestId) this.#syncAborts.delete(syncing);
       }
     }
   }

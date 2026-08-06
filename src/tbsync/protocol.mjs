@@ -100,6 +100,24 @@ export const DISCOVERY = {
 export const HOST_CMD = {
   SYNC_ACCOUNT: "syncAccount",
   SYNC_FOLDER: "syncFolder",
+  /** `{ accountId }` - stop this account's sync now.
+   *
+   *  The provider must abort its in-flight requests (not merely stop
+   *  looping between them: the case this exists for is a server that has
+   *  stopped answering), unwind, and let the outstanding SYNC_ACCOUNT /
+   *  SYNC_FOLDER settle with `ERR.CANCELLED`. Persistent state must be left
+   *  consistent - no changelog entry consumed and no sync key advanced for
+   *  work that did not complete.
+   *
+   *  Answer promptly: this is not in `NO_TIMEOUT_CMDS`. The host does not
+   *  depend on the answer - it rejects the outstanding sync command itself
+   *  the moment it has sent this, because a provider that has stopped
+   *  answering is exactly what a cancel has to survive - but a provider
+   *  that answers stops on its own terms rather than having its work
+   *  declared lost.
+   *
+   *  The base class implements all of this; a subclass only has to consume
+   *  `syncSignal()` / `throwIfCancelled()`. */
   CANCEL_SYNC: "cancelSync",
   OPEN_SETUP_POPUP: "openSetupPopup",
   FOCUS_SETUP_POPUP: "focusSetupPopup",
@@ -388,7 +406,9 @@ export const SYNCSTATE_BASE_KEYS = new Set(["sync", "prepare", "send", "eval"]);
  *                                    until the error is cleared.
  *   error.E:NETWORK               - Could not reach the server.
  *   error.E:TIMEOUT               - Operation timed out.
- *   error.E:CANCELLED             - Operation cancelled.
+ *   error.E:CANCELLED             - Operation cancelled. Also what an
+ *                                   aborted sync settles with, so it is
+ *                                   never a failure the user has to read.
  *   error.E:PROVIDER_UNAVAILABLE  - Provider extension is not available.
  *   error.E:PROTOCOL_VERSION      - Provider protocol version mismatch.
  *   error.E:UNKNOWN_ACCOUNT       - Unknown account.

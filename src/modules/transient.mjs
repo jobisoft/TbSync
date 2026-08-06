@@ -11,6 +11,14 @@
 /** Accounts the sync coordinator is currently driving through a sync. */
 export const syncingAccounts = new Set();
 
+/** Accounts whose sync is being torn down right now.
+ *
+ *  Set by `abortAccountSync` before it asks the provider to stop, and read
+ *  by the sync loop at every await point so it unwinds instead of carrying
+ *  on into the next folder. Cleared when the abort finishes - never in the
+ *  sync's own `finally`, which may run long after the abort is over. */
+export const cancellingAccounts = new Set();
+
 /** Accounts with a UI-driven RPC (edit, reauth, delete, connect, disconnect)
  *  in flight. Locks action buttons in the manager for these accounts. */
 export const busyAccounts = new Set();
@@ -40,6 +48,7 @@ export const upgradeAccounts = new Set();
 export function snapshot() {
   return {
     syncingAccounts: [...syncingAccounts],
+    cancellingAccounts: [...cancellingAccounts],
     busyAccounts: [...busyAccounts],
     busyFolders: [...busyFolders],
     upgradeAccounts: [...upgradeAccounts],

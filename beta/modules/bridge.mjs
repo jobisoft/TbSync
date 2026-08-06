@@ -169,6 +169,15 @@ const COMMANDS = {
   setFolderSelected: { scope: "folder" },
   setAutoSyncInterval: { scope: "account" },
 
+  /** Connect or disconnect the granted account.
+   *
+   *  Disconnecting is the recovery path the manager's button drives: it
+   *  aborts a running sync, settles whatever the provider still owes, and
+   *  tears down the local resources. Scriptable because that path is worth
+   *  testing - in particular that the account can be connected again
+   *  afterwards, which is what says the sync lock is really gone. */
+  setAccountEnabled: { scope: "account" },
+
   /** Thunderbird's own console, which the event log never sees. A platform
    *  error - a TypeError inside a calendar module, an iCal parse complaint,
    *  a script that failed to load in a content process - is invisible to

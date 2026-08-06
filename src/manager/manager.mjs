@@ -462,7 +462,16 @@ function accountActions(acc) {
     // now, so Disconnect is the way to put it aside without deleting it, and
     // disabling clears the error.
     canConnect: baseEnabled && !acc.enabled,
-    canDisconnect: baseEnabled && !!acc.enabled,
+    // Disconnect ignores the transient locks - a sync that will not end,
+    // an upgrade that never finished, a busy RPC - because those are the
+    // states where the user needs it most; the host aborts the sync and
+    // settles the in-flight commands itself. What it does require is the
+    // provider: only the provider can tear down the Thunderbird resources
+    // it owns (the host has no calendar API at all), and disconnecting
+    // without it strands calendars and books with nothing left that knows
+    // them. A dead provider leaves exactly one exit, Remove - which works
+    // ungated and says so in its handler.
+    canDisconnect: providerActive && !!acc.enabled,
     // Re-clicks while the popup is open should focus it, even if the
     // account is currently transient-busy from the popup's own RPC.
     canReauth: providerActive && isReauth && (!transientLocked || reauthOpen),
