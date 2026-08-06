@@ -128,7 +128,23 @@ export const HOST_CMD = {
   // because it runs before an account exists.
   FOCUS_ACCOUNT_POPUP: "focusAccountPopup",
   ACCOUNT_ENABLED: "accountEnabled",
+  /** `{ accountId }` - the account is being disconnected.
+   *
+   *  Stop everything for it and drop provider-side state: auth caches,
+   *  runtime directories, sync continuation keys - so the next enable
+   *  starts clean. **Never delete Thunderbird resources**: the host owns
+   *  target deletion in every flow and performs it right after this
+   *  returns, whether or not it returns - a provider that cannot answer is
+   *  skipped, which is what makes Disconnect a recovery path. */
   ACCOUNT_DISABLED: "accountDisabled",
+  /** `{ accountId }` - the account is being removed.
+   *
+   *  Same contract as ACCOUNT_DISABLED: stop, clean provider state, do not
+   *  touch resources. The host deletes the targets (unless the user chose
+   *  to keep them) and then forgets the account entirely; by the time this
+   *  settles, host RPCs about the account will answer "unknown account".
+   *  The former `purgeTargets` argument is gone - keeping or purging is
+   *  the host's decision now. */
   ACCOUNT_DELETED: "accountDeleted",
   FOLDER_ENABLED: "folderEnabled",
   FOLDER_DISABLED: "folderDisabled",

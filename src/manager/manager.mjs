@@ -448,9 +448,11 @@ function accountActions(acc) {
   const reauthOpen = state.reauthsOpen.has(acc.accountId);
   const configOpen = state.configsOpen.has(acc.accountId);
 
-  // Removal works without the provider; only an in-flight transient state
-  // (own sync, upgrade, busy RPC) holds it back.
-  const canRemove = !transientLocked;
+  // The last-resort exit refuses nothing: not a running sync (the host
+  // aborts it), not an upgrade, not a dead provider. The host deletes the
+  // account's resources itself, so there is no state in which removal
+  // cannot finish - which is the whole point of having a last resort.
+  const canRemove = true;
 
   const baseEnabled = providerActive && !transientLocked;
 
@@ -462,16 +464,13 @@ function accountActions(acc) {
     // now, so Disconnect is the way to put it aside without deleting it, and
     // disabling clears the error.
     canConnect: baseEnabled && !acc.enabled,
-    // Disconnect ignores the transient locks - a sync that will not end,
-    // an upgrade that never finished, a busy RPC - because those are the
-    // states where the user needs it most; the host aborts the sync and
-    // settles the in-flight commands itself. What it does require is the
-    // provider: only the provider can tear down the Thunderbird resources
-    // it owns (the host has no calendar API at all), and disconnecting
-    // without it strands calendars and books with nothing left that knows
-    // them. A dead provider leaves exactly one exit, Remove - which works
-    // ungated and says so in its handler.
-    canDisconnect: providerActive && !!acc.enabled,
+    // Disconnect refuses nothing but "already disconnected": not a sync
+    // that will not end, not an upgrade, not a busy RPC, not a dead
+    // provider. Those are the states where the user needs it most. The
+    // host aborts the sync, settles the in-flight commands, and deletes
+    // the account's resources itself - a live provider is asked to stop
+    // and clean its own state first, a dead one is simply skipped.
+    canDisconnect: !!acc.enabled,
     // Re-clicks while the popup is open should focus it, even if the
     // account is currently transient-busy from the popup's own RPC.
     canReauth: providerActive && isReauth && (!transientLocked || reauthOpen),

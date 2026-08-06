@@ -36,20 +36,20 @@ case this exists for), and then rejects the account's in-flight commands with
 <code>NO_TIMEOUT_CMDS</code> command. Both layers landed together: the loop
 checks alone would have left the request in flight, and the abort alone would
 have let the loop march on to the next folder.</p>
-<p>Disconnect requires the provider's port to be up. Only the provider can
-tear down the Thunderbird resources it owns — the host has no calendar API —
-and a disconnect without it strands calendars with refresh timers still
-armed, while the provider's own account state (its FolderSync key) never
-learns the teardown happened. A dead provider leaves one exit, Remove, which
-works ungated and knowingly leaves the targets behind until the provider
-reappears or the user deletes them by hand.</p>
-<p>Still open: a cancel is only as good as the provider's willingness to stop
-— a third-party provider that ignores the verb gets its commands settled
-anyway and may keep writing into targets the teardown has removed. An
-<code>ACCOUNT_DISABLED</code> that times out on a connected-but-unresponsive
-provider currently proceeds with a warning, teardown possibly incomplete;
-whether it should instead leave the account connected is undecided. And
-orphaned targets left by remove-while-dead are considered fixable, later.</p>
+<p>Target deletion is host-owned in every flow — disconnect, removal, folder
+deselect, server-dropped folders. The calendar Experiment ships in the host
+now, and a dead provider's calendars exist as inert dummy registrations the
+calendar API removes like any other, so Disconnect and Remove both work with
+no provider at all: the provider is asked to stop and clean its own state,
+and forfeits that chance if it cannot answer. This resolved the two
+questions that stood here — an unresponsive provider's teardown timeout
+(the host finishes the job either way) and orphaned targets from
+remove-while-dead (there are none any more).</p>
+<p>Still open: a cancel is only as good as the provider's willingness to
+stop — a third-party provider that ignores <code>CANCEL_SYNC</code> may keep
+writing briefly into targets the host has already deleted; its writes land
+in resources that no longer exist and are lost, which is the accepted
+cost.</p>
 
 <h3>A provider that dies mid-sync locks the account</h3>
 <p><strong>Repo: TbSync.</strong> <code>SYNC_ACCOUNT</code> and

@@ -293,6 +293,35 @@ async function deleteLocalTargetBestEffort({ targetID, targetType }) {
   if (!targetID) return;
   if (targetType === "contacts") {
     await messenger.addressBooks.delete(targetID);
+  } else if (targetType === "calendars" || targetType === "tasks") {
+    // Works whether or not the owning provider is alive: a calendar whose
+    // provider type is unregistered exists as a force-disabled dummy under
+    // the same id, and unregistering it deletes the registration. This is
+    // what lets a disconnect or removal finish without the provider.
+    await messenger.calendar.calendars.remove(targetID);
+  }
+}
+
+/** Delete every local target behind the given folder rows, tolerating rows
+ *  that have no target or whose target is already gone.
+ *
+ *  The host owns target *deletion* in every flow - disconnect, removal,
+ *  folder deselect, server-dropped folders - while providers own creation.
+ *  One owner that runs every time, instead of a provider-side copy that
+ *  cannot run exactly when it is needed most (provider dead or wedged). */
+async function deleteTargetsBestEffort(rows) {
+  for (const row of rows ?? []) {
+    if (!row?.targetID) continue;
+    try {
+      await deleteLocalTargetBestEffort(row);
+    } catch (err) {
+      // Already gone counts as done; anything else is worth a trace but
+      // must not block a teardown.
+      console.debug(
+        `[tbsync] delete target ${row.targetID} (${row.targetType}) failed:`,
+        err?.message ?? err,
+      );
+    }
   }
 }
 
@@ -817,21 +846,48 @@ ui.setManagerRpcHandler(
   async ({ accountId, purgeTargets = true }) => {
     const acc = await accounts.get(accountId);
     if (!acc) return null;
-    assertNotUpgrading(accountId);
-    // A missing provider must not block removal: the user has no other way
-    // to get rid of the orphaned account. Skip the provider's cleanup hook
-    // and forget the record locally - Thunderbird-side targets stay behind
-    // until the provider reappears or the user removes them by hand.
-    await withBusyAccount(accountId, async () => {
-      if (router.isProviderConnected(acc.provider)) {
-        await router.sendCmd(acc.provider, HOST_CMD.ACCOUNT_DELETED, {
-          accountId,
-          purgeTargets,
-        });
-      }
-      await folders.clearAccount(accountId);
-      await accounts.remove(accountId);
-    });
+    // The last-resort exit refuses nothing: no upgrade guard, no transient
+    // lock, no provider requirement. A running sync is aborted here, and
+    // the host deletes the account's Thunderbird resources itself - a dead
+    // provider's calendars exist as inert dummy registrations the calendar
+    // API removes like any other. Nothing is left behind.
+    try {
+      await abortAccountSync(accountId);
+      await withBusyAccount(accountId, async () => {
+          const rows = await folders.listForAccount(accountId);
+        // Let the provider stop and drop its own account state first - auth
+        // caches, GAL directories - so the deletions below land on quiet
+        // resources. Best effort; a provider that cannot answer forfeits it.
+        try {
+          if (router.isProviderConnected(acc.provider)) {
+            await router.sendCmd(acc.provider, HOST_CMD.ACCOUNT_DELETED, {
+              accountId,
+            });
+          }
+        } catch (err) {
+          await eventLog.append({
+            accountId,
+            folderId: null,
+            level: "warning",
+            message: `Provider did not finish its part of the removal: ${err?.message ?? err}`,
+            details: err?.details ?? null,
+          });
+        }
+        // Rows first, targets second - see the disconnect handler: clearing
+        // the rows unhooks the changelog watcher before the deletions fire
+        // their cascade of events. `purgeTargets` is the host's decision
+        // now; the provider never deletes targets in any flow.
+        await folders.clearAccount(accountId);
+        if (purgeTargets !== false) {
+          await deleteTargetsBestEffort(rows);
+        }
+        await accounts.remove(accountId);
+      });
+    } finally {
+      // The abort marked the account cancelling; release it even though the
+      // record is gone - the set must not collect ids forever.
+      endAccountCancel(accountId);
+    }
     ui.broadcast({ type: "folders-changed", accountId });
     return null;
   },
@@ -840,20 +896,18 @@ ui.setManagerRpcHandler(
 ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
   const acc = await accounts.get(accountId);
   if (!acc) return null;
-  // Disconnecting skips the upgrade guard - it is the recovery path, and a
-  // migration that never finished is a state where the user needs it - but
-  // both directions require the provider's port. Only the provider can tear
-  // down the Thunderbird resources it owns; a disconnect without it leaves
-  // calendars orphaned with refresh timers still armed, and provider-side
-  // account state (the FolderSync key) never learns the teardown happened.
-  // With the provider dead the one exit is Remove, which works ungated and
-  // accepts the orphans knowingly.
-  if (enabled) assertNotUpgrading(accountId);
-  if (!router.isProviderConnected(acc.provider)) {
-    throw withCode(
-      new Error("Provider not available"),
-      ERR.PROVIDER_UNAVAILABLE,
-    );
+  // Disconnecting is the recovery path and refuses nothing: not a sync
+  // (aborted below), not an upgrade, not even a dead provider - the host
+  // deletes the account's resources itself now, so nothing depends on the
+  // provider being able to. Connecting keeps every guard.
+  if (enabled) {
+    assertNotUpgrading(accountId);
+    if (!router.isProviderConnected(acc.provider)) {
+      throw withCode(
+        new Error("Provider not available"),
+        ERR.PROVIDER_UNAVAILABLE,
+      );
+    }
   }
   try {
     // Inside the try: `abortAccountSync` marks the account cancelling before
@@ -866,13 +920,18 @@ ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
       const cmd = enabled
         ? HOST_CMD.ACCOUNT_ENABLED
         : HOST_CMD.ACCOUNT_DISABLED;
+      // Captured before anything clears them: these rows are the only
+      // record of which Thunderbird resources belong to this account, and
+      // the deletion below runs after the rows themselves are gone.
+      const rows = enabled ? null : await folders.listForAccount(accountId);
       if (enabled) {
         await router.sendCmd(acc.provider, cmd, { accountId });
       } else {
-        // Best effort. The provider tears down its own Thunderbird resources
-        // here, and we want that to happen - but a provider that is wedged
-        // or gone must not be able to keep the account connected.
-        // Everything below runs either way.
+        // Ask the provider to stop and clean its own state first, so the
+        // deletions below land on resources nothing is still writing to.
+        // Best effort: a provider that is wedged or gone must not be able
+        // to keep the account connected - the host finishes the teardown
+        // alone, which is what makes this the recovery path.
         try {
           if (router.isProviderConnected(acc.provider)) {
             await router.sendCmd(acc.provider, cmd, { accountId });
@@ -882,7 +941,7 @@ ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
             accountId,
             folderId: null,
             level: "warning",
-            message: `Provider did not complete its teardown on disconnect: ${err?.message ?? err}`,
+            message: `Provider did not finish its part of the disconnect: ${err?.message ?? err}`,
             details: err?.details ?? null,
           });
         }
@@ -895,9 +954,12 @@ ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
         error: null,
       });
       if (!enabled) {
-        // Host forgets its folder records on disable; the provider already
-        // cleared its Thunderbird resources inside ACCOUNT_DISABLED above.
+        // Rows first, targets second: dropping the rows is what unhooks the
+        // changelog watcher, so the cascade of deletion events from the
+        // targets is not recorded as user edits. The captured rows still
+        // carry the ids.
         await folders.clearAccount(accountId);
+        await deleteTargetsBestEffort(rows);
       }
     });
   } finally {
@@ -956,9 +1018,17 @@ ui.setManagerRpcHandler(
     try {
       const cmd = selected ? HOST_CMD.FOLDER_ENABLED : HOST_CMD.FOLDER_DISABLED;
       await router.sendCmd(acc.provider, cmd, { accountId, folderId });
+      if (!selected) {
+        // The provider has unhooked and cleared its per-folder state above;
+        // deleting the resource itself is the host's job in every flow. The
+        // row captured before the RPC still carries the target, because the
+        // provider no longer clears binding fields it will not need - and
+        // even if it did, `folder` predates the call.
+        await deleteTargetsBestEffort([folder]);
+      }
       // On disable, wipe the host-owned per-folder fields so re-enable shows
-      // a clean slate. The provider handles its own per-folder state (custom.*,
-      // targetID, targetName) inside FOLDER_DISABLED above.
+      // a clean slate. The provider handles its remaining per-folder state
+      // (custom.*, targetID, targetName) inside FOLDER_DISABLED above.
       const patch = selected
         ? { selected }
         : {
