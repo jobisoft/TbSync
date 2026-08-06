@@ -228,7 +228,7 @@
     "message": "Konto entfernen"
   },
   "manager.remove.confirmBody": {
-    "message": "Konto „$NAME$“ entfernen? Das Thunderbird-Adressbuch dieses Kontos wird ebenfalls gelöscht.",
+    "message": "Konto „$NAME$“ entfernen? Alle lokalen Ressourcen dieses Kontos werden ebenfalls gelöscht.",
     "placeholders": {
       "NAME": {
         "content": "$1",

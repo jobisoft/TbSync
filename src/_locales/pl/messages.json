@@ -228,7 +228,7 @@
     "message": "Usuń konto"
   },
   "manager.remove.confirmBody": {
-    "message": "Usunąć konto „$NAME$”? Książka adresowa Thunderbirda dla tego konta również zostanie usunięta.",
+    "message": "Usunąć konto „$NAME$”? Wszystkie lokalne zasoby tego konta zostaną również usunięte.",
     "placeholders": {
       "NAME": {
         "content": "$1",

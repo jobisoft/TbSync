@@ -228,7 +228,7 @@
     "message": "Eliminar cuenta"
   },
   "manager.remove.confirmBody": {
-    "message": "¿Eliminar la cuenta «$NAME$»? También se eliminará la libreta de direcciones de Thunderbird asociada.",
+    "message": "¿Eliminar la cuenta «$NAME$»? También se eliminarán todos los recursos locales de esta cuenta.",
     "placeholders": {
       "NAME": {
         "content": "$1",

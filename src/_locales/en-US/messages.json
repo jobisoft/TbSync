@@ -231,7 +231,7 @@
     "message": "Remove account"
   },
   "manager.remove.confirmBody": {
-    "message": "Remove account “$NAME$”? The Thunderbird address book for this account will also be deleted.",
+    "message": "Remove account “$NAME$”? All local resources of this account will also be deleted.",
     "placeholders": {
       "NAME": {
         "content": "$1",

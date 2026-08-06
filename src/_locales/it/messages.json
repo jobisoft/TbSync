@@ -228,7 +228,7 @@
     "message": "Rimuovi account"
   },
   "manager.remove.confirmBody": {
-    "message": "Rimuovere l'account “$NAME$”? Verrà eliminata anche la rubrica di Thunderbird associata.",
+    "message": "Rimuovere l'account “$NAME$”? Verranno eliminate anche tutte le risorse locali di questo account.",
     "placeholders": {
       "NAME": {
         "content": "$1",

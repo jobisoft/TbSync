@@ -228,7 +228,7 @@
     "message": "Elimină contul"
   },
   "manager.remove.confirmBody": {
-    "message": "Eliminați contul „$NAME$”? Agenda Thunderbird asociată acestui cont va fi de asemenea ștearsă.",
+    "message": "Eliminați contul „$NAME$”? Toate resursele locale ale acestui cont vor fi de asemenea șterse.",
     "placeholders": {
       "NAME": {
         "content": "$1",

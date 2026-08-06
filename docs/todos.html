@@ -39,12 +39,14 @@ have let the loop march on to the next folder.</p>
 <p>Target deletion is host-owned in every flow — disconnect, removal, folder
 deselect, server-dropped folders. The calendar Experiment ships in the host
 now, and a dead provider's calendars exist as inert dummy registrations the
-calendar API removes like any other, so Disconnect and Remove both work with
-no provider at all: the provider is asked to stop and clean its own state,
-and forfeits that chance if it cannot answer. This resolved the two
-questions that stood here — an unresponsive provider's teardown timeout
-(the host finishes the job either way) and orphaned targets from
-remove-while-dead (there are none any more).</p>
+calendar API removes like any other. Remove therefore refuses nothing — no
+provider, no locks — and leaves nothing behind. Disconnect ignores the
+transient locks but requires the provider to be present: it is a
+configuration change the provider participates in (stop, clean its own
+state), and its button is greyed out when the provider is gone. This
+resolved the two questions that stood here — an unresponsive provider's
+teardown timeout (the host finishes the job either way) and orphaned
+targets from remove-while-dead (there are none any more).</p>
 <p>Still open: a cancel is only as good as the provider's willingness to
 stop — a third-party provider that ignores <code>CANCEL_SYNC</code> may keep
 writing briefly into targets the host has already deleted; its writes land

@@ -228,7 +228,7 @@
     "message": "Ta bort konto"
   },
   "manager.remove.confirmBody": {
-    "message": "Ta bort kontot ”$NAME$”? Thunderbird-adressboken för detta konto kommer också att raderas.",
+    "message": "Ta bort kontot ”$NAME$”? Alla lokala resurser för det här kontot kommer också att tas bort.",
     "placeholders": {
       "NAME": {
         "content": "$1",

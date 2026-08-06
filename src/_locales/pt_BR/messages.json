@@ -228,7 +228,7 @@
     "message": "Remover conta"
   },
   "manager.remove.confirmBody": {
-    "message": "Remover a conta “$NAME$”? O catálogo de endereços do Thunderbird desta conta também será excluído.",
+    "message": "Remover a conta “$NAME$”? Todos os recursos locais desta conta também serão excluídos.",
     "placeholders": {
       "NAME": {
         "content": "$1",

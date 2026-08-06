@@ -896,18 +896,18 @@ ui.setManagerRpcHandler(
 ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
   const acc = await accounts.get(accountId);
   if (!acc) return null;
-  // Disconnecting is the recovery path and refuses nothing: not a sync
-  // (aborted below), not an upgrade, not even a dead provider - the host
-  // deletes the account's resources itself now, so nothing depends on the
-  // provider being able to. Connecting keeps every guard.
-  if (enabled) {
-    assertNotUpgrading(accountId);
-    if (!router.isProviderConnected(acc.provider)) {
-      throw withCode(
-        new Error("Provider not available"),
-        ERR.PROVIDER_UNAVAILABLE,
-      );
-    }
+  // Disconnecting skips the upgrade guard and every transient lock - a
+  // sync that will not end is exactly when it is needed, and the host
+  // aborts it and deletes the resources itself. Both directions do require
+  // the provider's port: disconnect is a configuration change the provider
+  // participates in (stop, clean its own state), not the last-resort exit.
+  // That is Remove, which refuses nothing - including a dead provider.
+  if (enabled) assertNotUpgrading(accountId);
+  if (!router.isProviderConnected(acc.provider)) {
+    throw withCode(
+      new Error("Provider not available"),
+      ERR.PROVIDER_UNAVAILABLE,
+    );
   }
   try {
     // Inside the try: `abortAccountSync` marks the account cancelling before

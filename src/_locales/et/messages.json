@@ -228,7 +228,7 @@
     "message": "Eemalda konto"
   },
   "manager.remove.confirmBody": {
-    "message": "Kas eemaldada konto „$NAME$“? Selle konto Thunderbirdi aadressiraamat kustutatakse samuti.",
+    "message": "Kas eemaldada konto „$NAME$“? Kustutatakse ka kõik selle konto kohalikud ressursid.",
     "placeholders": {
       "NAME": {
         "content": "$1",

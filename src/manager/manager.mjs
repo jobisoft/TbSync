@@ -464,13 +464,14 @@ function accountActions(acc) {
     // now, so Disconnect is the way to put it aside without deleting it, and
     // disabling clears the error.
     canConnect: baseEnabled && !acc.enabled,
-    // Disconnect refuses nothing but "already disconnected": not a sync
-    // that will not end, not an upgrade, not a busy RPC, not a dead
-    // provider. Those are the states where the user needs it most. The
-    // host aborts the sync, settles the in-flight commands, and deletes
-    // the account's resources itself - a live provider is asked to stop
-    // and clean its own state first, a dead one is simply skipped.
-    canDisconnect: !!acc.enabled,
+    // Disconnect ignores the transient locks - a sync that will not end,
+    // an upgrade, a busy RPC are the states where the user needs it most;
+    // the host aborts the sync and deletes the resources itself. It does
+    // require the provider to be present: disconnect is a configuration
+    // change the provider participates in (stop, clean its state), and
+    // offering it for a provider that cannot hear it reads as wrong. With
+    // the provider gone the exit is Remove, which refuses nothing.
+    canDisconnect: providerActive && !!acc.enabled,
     // Re-clicks while the popup is open should focus it, even if the
     // account is currently transient-busy from the popup's own RPC.
     canReauth: providerActive && isReauth && (!transientLocked || reauthOpen),

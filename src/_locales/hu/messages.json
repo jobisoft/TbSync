@@ -228,7 +228,7 @@
     "message": "Fiók eltávolítása"
   },
   "manager.remove.confirmBody": {
-    "message": "Eltávolítja a(z) „$NAME$” fiókot? A fiókhoz tartozó Thunderbird-címjegyzék is törlődik.",
+    "message": "Eltávolítja a(z) „$NAME$” fiókot? A fiók összes helyi erőforrása is törlődik.",
     "placeholders": {
       "NAME": {
         "content": "$1",

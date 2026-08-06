@@ -228,7 +228,7 @@
     "message": "Odstranit účet"
   },
   "manager.remove.confirmBody": {
-    "message": "Odstranit účet „$NAME$“? Adresář Thunderbirdu pro tento účet bude rovněž smazán.",
+    "message": "Odebrat účet „$NAME$“? Budou smazány také všechny místní zdroje tohoto účtu.",
     "placeholders": {
       "NAME": {
         "content": "$1",

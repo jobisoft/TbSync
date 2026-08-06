@@ -228,7 +228,7 @@
     "message": "アカウントの削除"
   },
   "manager.remove.confirmBody": {
-    "message": "アカウント「$NAME$」を削除しますか? このアカウントの Thunderbird アドレス帳も削除されます。",
+    "message": "アカウント「$NAME$」を削除しますか?このアカウントのすべてのローカルリソースも削除されます。",
     "placeholders": {
       "NAME": {
         "content": "$1",
