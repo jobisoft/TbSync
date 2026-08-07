@@ -85,5 +85,8 @@
   },
   "manager.bridge.detail.linkDead": {
     "message": "Hjälpappen svarar, men dess länk till TbSync är nere - förfrågningar kommer att hänga sig."
+  },
+  "manager.bridge.unrestricted": {
+    "message": "FULL ÅTKOMST: skript kan själva bevilja sig vilket konto som helst och komma åt alla tillgängliga resurser - inklusive att ansluta konton och aktivera resurser som ännu inte synkroniseras. Beviljandet nedan är då inte längre en gräns, bara det aktuella tillståndet. Slå av efter användning."
   }
 }

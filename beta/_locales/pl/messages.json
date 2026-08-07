@@ -85,5 +85,8 @@
   },
   "manager.bridge.detail.linkDead": {
     "message": "Aplikacja pomocnicza odpowiada, ale jej połączenie z TbSync jest zerwane - żądania zawisną."
+  },
+  "manager.bridge.unrestricted": {
+    "message": "PEŁNY DOSTĘP: skrypty mogą samodzielnie przyznać sobie każde konto i dostęp do wszystkich dostępnych zasobów - w tym podłączać konta i włączać jeszcze niezsynchronizowane zasoby. Uprawnienie poniżej nie jest wtedy już granicą, a jedynie bieżącym stanem. Wyłącz po użyciu."
   }
 }

@@ -85,5 +85,8 @@
   },
   "manager.bridge.detail.linkDead": {
     "message": "La aplicación auxiliar responde, pero su enlace con TbSync está caído: las solicitudes quedarán colgadas."
+  },
+  "manager.bridge.unrestricted": {
+    "message": "ACCESO TOTAL: los scripts pueden autoconcederse cualquier cuenta y acceder a todos los recursos disponibles, incluido conectar cuentas y activar recursos aún no sincronizados. La concesión de abajo deja entonces de ser un límite y es solo el estado actual. Desactívelo después de usarlo."
   }
 }

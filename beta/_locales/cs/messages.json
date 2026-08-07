@@ -85,5 +85,8 @@
   },
   "manager.bridge.detail.linkDead": {
     "message": "Pomocná aplikace odpovídá, ale její spojení s TbSync je přerušeno - požadavky zůstanou viset."
+  },
+  "manager.bridge.unrestricted": {
+    "message": "PLNÝ PŘÍSTUP: skripty si mohou samy udělit kterýkoli účet a přístup ke všem dostupným zdrojům - včetně připojování účtů a zapínání dosud nesynchronizovaných zdrojů. Oprávnění níže pak už není hranicí, jen aktuálním stavem. Po použití vypněte."
   }
 }

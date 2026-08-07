@@ -85,5 +85,8 @@
   },
   "manager.bridge.detail.linkDead": {
     "message": "Abirakendus vastab, aga selle ühendus TbSynciga on katkenud - päringud jäävad rippuma."
+  },
+  "manager.bridge.unrestricted": {
+    "message": "TÄISJUURDEPÄÄS: skriptid võivad endale ise anda mis tahes konto ja ligipääsu kõigile saadaolevatele ressurssidele - sealhulgas kontosid ühendada ja seni sünkroonimata ressursse sisse lülitada. Allolev luba pole siis enam piir, vaid ainult hetkeseis. Pärast kasutamist lülita välja."
   }
 }

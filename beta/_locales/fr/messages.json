@@ -85,5 +85,8 @@
   },
   "manager.bridge.detail.linkDead": {
     "message": "L'application auxiliaire répond, mais sa liaison avec TbSync est coupée - les requêtes resteront bloquées."
+  },
+  "manager.bridge.unrestricted": {
+    "message": "ACCÈS TOTAL : les scripts peuvent s'auto-attribuer n'importe quel compte et accéder à toutes les ressources disponibles - y compris connecter des comptes et activer des ressources pas encore synchronisées. L'autorisation ci-dessous n'est alors plus une limite, seulement l'état courant. Désactivez après usage."
   }
 }

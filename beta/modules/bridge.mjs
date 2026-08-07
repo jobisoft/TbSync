@@ -82,6 +82,12 @@ const EXPECTED_HELPER_VERSION = 2;
 
 const ENABLED_KEY = "tbsync-bridge-enabled";
 const TARGET_KEY = "tbsync-bridge-target";
+/** Opt-in for the `setTarget` verb: scripts may re-point the grant to any
+ *  account and resource. Toggled only from the Bridge tab - a mode the
+ *  bridge could switch on for itself would make the scope system
+ *  decorative - and protected from the storage verbs like the other two
+ *  bridge keys, for the same reason. */
+const UNRESTRICTED_KEY = "tbsync-bridge-unrestricted";
 
 /** The whole surface. `scope` is what the command may touch:
  *
@@ -262,7 +268,7 @@ const COMMANDS = {
       // would have no way left to restore what it just removed. The
       // importer's gate is `tbsync.accounts`, which these are not, so
       // keeping them does not affect what is being tested.
-      const keep = new Set([ENABLED_KEY, TARGET_KEY]);
+      const keep = new Set([ENABLED_KEY, TARGET_KEY, UNRESTRICTED_KEY]);
       const removed = {};
       for (const [k, v] of Object.entries(all)) {
         if (!keep.has(k)) removed[k] = v;
@@ -271,6 +277,49 @@ const COMMANDS = {
       return { removed, kept: [...keep].filter((k) => k in all) };
     },
   },
+  /** Re-point the grant to another account, its first folder of every
+   *  kind - or an exact target via `exact`. Refused unless the user has
+   *  switched the Bridge tab's unrestricted mode on: by default the grant
+   *  is the user's choice and scripts stay inside it. With the mode on, a
+   *  test run can move between accounts without a human in the loop -
+   *  which is the whole point, and why the mode is opt-in and loud. */
+  setTarget: {
+    async run({ accountId, exact }) {
+      const rv = await browser.storage.local.get({
+        [UNRESTRICTED_KEY]: false,
+      });
+      if (!rv[UNRESTRICTED_KEY]) {
+        throw withCode(
+          new Error(
+            "setTarget requires unrestricted mode - switch it on in " +
+              "TbSync's Bridge tab",
+          ),
+          "E:RESTRICTED",
+        );
+      }
+      if (exact && typeof exact === "object") {
+        await browser.storage.local.set({ [TARGET_KEY]: exact });
+        note("info", `target set (exact) for account ${exact.accountId}`);
+        return exact;
+      }
+      const acc = await accounts.get(accountId);
+      if (!acc) throw new Error("unknown account");
+      const rows = await folders.listForAccount(accountId);
+      const resources = {};
+      for (const kind of RESOURCE_KINDS) {
+        const row = rows.find((f) => f.targetType === kind);
+        resources[kind] = {
+          folderId: row?.folderId ?? "",
+          folderName: row?.displayName ?? "",
+        };
+      }
+      const target = { accountId, accountName: acc.accountName, resources };
+      await browser.storage.local.set({ [TARGET_KEY]: target });
+      note("info", `target set to account ${accountId} (${acc.accountName})`);
+      return target;
+    },
+  },
+
   "storage.restore": {
     async run({ data }) {
       if (!data || typeof data !== "object" || Array.isArray(data)) {
@@ -284,7 +333,8 @@ const COMMANDS = {
       const skipped = [];
       const write = {};
       for (const [k, v] of Object.entries(data)) {
-        if (k === ENABLED_KEY || k === TARGET_KEY) skipped.push(k);
+        if (k === ENABLED_KEY || k === TARGET_KEY || k === UNRESTRICTED_KEY)
+          skipped.push(k);
         else write[k] = v;
       }
       await browser.storage.local.set(write);
@@ -628,6 +678,9 @@ export async function initBackground() {
     helperListening,
     restartAttempts,
     enabled: await isEnabled(),
+    unrestricted: (
+      await browser.storage.local.get({ [UNRESTRICTED_KEY]: false })
+    )[UNRESTRICTED_KEY],
     endpoint,
     activity: activity.slice(-ACTIVITY_LIMIT),
     target: await readTarget(),
@@ -643,6 +696,11 @@ export async function initBackground() {
       disconnect();
     }
     return { connected: linkState === "up" };
+  });
+
+  ui.setManagerRpcHandler("bridgeSetUnrestricted", async ({ unrestricted }) => {
+    await browser.storage.local.set({ [UNRESTRICTED_KEY]: !!unrestricted });
+    return { unrestricted: !!unrestricted };
   });
 
   ui.setManagerRpcHandler("bridgeSetTarget", async ({ target }) => {
@@ -1009,6 +1067,15 @@ export function initManagerTab({ localizeSubtree, rpc }) {
 
   const $ = (id) => panel.querySelector(`#${id}`);
   const statusEl = $("bridge-status");
+  const unrestrictedEl = $("bridge-unrestricted");
+  unrestrictedEl.addEventListener("change", () => {
+    rpc("bridgeSetUnrestricted", {
+      unrestricted: unrestrictedEl.checked,
+    }).catch((err) =>
+      console.debug("[tbsync] bridge: set unrestricted failed:", err),
+    );
+    refresh();
+  });
   const toggleEl = $("bridge-toggle");
   const endpointEl = $("bridge-endpoint");
   const hintEl = $("bridge-download-hint");
@@ -1266,6 +1333,7 @@ export function initManagerTab({ localizeSubtree, rpc }) {
         (!linkUp && appUp),
     );
     isOn = status.connected || status.enabled;
+    unrestrictedEl.checked = !!status.unrestricted;
     toggleEl.textContent = browser.i18n.getMessage(
       isOn ? "manager.bridge.disable" : "manager.bridge.enable",
     );
@@ -1620,6 +1688,12 @@ function buildPanel() {
       i18n("p", "manager.bridge.example", { class: "bridge-hint" }),
       el("pre", { id: "bridge-example", class: "bridge-example" }),
       el("p", { id: "bridge-allowed", class: "bridge-hint" }),
+    ]),
+    el("div", { class: "bridge-row" }, [
+      el("label", { class: "bridge-hint" }, [
+        el("input", { type: "checkbox", id: "bridge-unrestricted" }),
+        i18n("span", "manager.bridge.unrestricted"),
+      ]),
     ]),
     el("fieldset", { class: "bridge-target" }, [
       i18n("legend", "manager.bridge.target"),

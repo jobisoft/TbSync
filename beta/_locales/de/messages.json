@@ -85,5 +85,8 @@
   },
   "manager.bridge.detail.linkDead": {
     "message": "Das Hilfsprogramm antwortet, aber seine Verbindung zu TbSync ist unterbrochen - Anfragen bleiben hängen."
+  },
+  "manager.bridge.unrestricted": {
+    "message": "VOLLZUGRIFF: Skripte können sich selbst jedes Konto freischalten und auf alle verfügbaren Ressourcen zugreifen - einschließlich Konten verbinden und noch nicht synchronisierte Ressourcen aktivieren. Die Freigabe unten ist dann keine Grenze mehr, nur noch der aktuelle Zustand. Nach Gebrauch wieder ausschalten."
   }
 }

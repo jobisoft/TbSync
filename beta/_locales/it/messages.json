@@ -85,5 +85,8 @@
   },
   "manager.bridge.detail.linkDead": {
     "message": "L'applicazione ausiliaria risponde, ma il collegamento con TbSync è interrotto: le richieste resteranno in sospeso."
+  },
+  "manager.bridge.unrestricted": {
+    "message": "ACCESSO COMPLETO: gli script possono autoconcedersi qualsiasi account e accedere a tutte le risorse disponibili - incluso collegare account e attivare risorse non ancora sincronizzate. La concessione qui sotto non è più allora un confine, solo lo stato corrente. Disattivare dopo l'uso."
   }
 }

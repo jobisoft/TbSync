@@ -85,5 +85,8 @@
   },
   "manager.bridge.detail.linkDead": {
     "message": "A segédalkalmazás válaszol, de a TbSync felé a kapcsolat megszakadt - a kérések függve maradnak."
+  },
+  "manager.bridge.unrestricted": {
+    "message": "TELJES HOZZÁFÉRÉS: a szkriptek önmaguknak engedélyezhetnek bármely fiókot, és hozzáférhetnek minden elérhető erőforráshoz - beleértve fiókok csatlakoztatását és még nem szinkronizált erőforrások engedélyezését. A lenti engedély ekkor már nem határ, csak a pillanatnyi állapot. Használat után kapcsolja ki."
   }
 }

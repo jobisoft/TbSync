@@ -85,5 +85,8 @@
   },
   "manager.bridge.detail.linkDead": {
     "message": "The helper app answers, but its link to TbSync is down - requests will hang."
+  },
+  "manager.bridge.unrestricted": {
+    "message": "FULL ACCESS: scripts may self-grant any account and access all available resources - including connecting accounts and enabling resources that are not synced yet. The grant below is then no longer a boundary, only the current state. Switch off after use."
   }
 }

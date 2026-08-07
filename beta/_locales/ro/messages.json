@@ -85,5 +85,8 @@
   },
   "manager.bridge.detail.linkDead": {
     "message": "Aplicația ajutătoare răspunde, dar legătura ei cu TbSync este căzută - cererile vor rămâne blocate."
+  },
+  "manager.bridge.unrestricted": {
+    "message": "ACCES TOTAL: scripturile își pot autoacorda orice cont și pot accesa toate resursele disponibile - inclusiv conectarea conturilor și activarea resurselor încă nesincronizate. Acordarea de mai jos nu mai este atunci o limită, ci doar starea curentă. Dezactivați după utilizare."
   }
 }
