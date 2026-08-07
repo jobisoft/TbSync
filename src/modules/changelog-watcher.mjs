@@ -194,7 +194,11 @@ export async function clearFolderTarget(accountId, folderId, targetID) {
 }
 
 /** Drop a `*_by_server` pre-tag for this item, for an event the ghost gate
- *  is about to discard.
+ *  is about to discard - but only the tag whose ANNOUNCED op this event
+ *  is. A ghost-suppressed created/updated is, in every real flow, the
+ *  provider's own announced write arriving byte-identical; a tag
+ *  announcing a different op (e.g. deleted_by_server) belongs to an event
+ *  that is still coming and must stay armed for it.
  *
  *  Age is deliberately not checked. `applyEvent` distinguishes a fresh tag
  *  (suppress the event) from a stale one (drop it and apply the event), but
@@ -207,7 +211,7 @@ export async function clearFolderTarget(accountId, folderId, targetID) {
  *  microseconds between two consecutive statements, and the cost if it is
  *  ever hit is one redundant push. Not clearing the tag costs a *lost user
  *  edit* on every no-op provider write, which is common on a pull. */
-async function consumeServerTag(owner, { kind, parentId, itemId }) {
+async function consumeServerTag(owner, { kind, parentId, itemId, op }) {
   try {
     await folders.mutateChangelog(
       owner.accountId,
@@ -218,7 +222,8 @@ async function consumeServerTag(owner, { kind, parentId, itemId }) {
             e.parentId === parentId &&
             e.itemId === itemId &&
             e.kind === kind &&
-            isServerTag(e.status),
+            isServerTag(e.status) &&
+            OP_FOR_TAG[e.status] === op,
         );
         if (idx < 0) return entries;
         return [...entries.slice(0, idx), ...entries.slice(idx + 1)];
@@ -343,7 +348,7 @@ async function handle(kind, op, node) {
         // server echoing back what we already hold) left its tag behind,
         // and that tag then suppressed the user's *next* edit to the item
         // for the rest of the freeze window.
-        await consumeServerTag(owner, { kind, parentId, itemId });
+        await consumeServerTag(owner, { kind, parentId, itemId, op });
         return;
       }
     }
@@ -417,13 +422,23 @@ function userFacingDiffers(before, after) {
  * same-by-reference) entries array.
  *
  * Order of precedence:
- *   1. Fresh exact-match `*_by_server` pre-tag (same parentId, itemId AND
- *      kind) → do not log the event as user-initiated. With
- *      DROP_SERVER_TAGS_ON_CONSUME the row is also removed; otherwise
- *      the tag stays alive within FREEZE_MS so a follow-up event for
- *      the same item is also suppressed. The kind filter prevents a
- *      contact event from claiming a list pre-tag whose itemId happens
- *      to be the same string (and vice versa).
+ *   1a. Fresh exact-match `*_by_server` pre-tag (same parentId, itemId AND
+ *       kind) whose announced op matches this event → do not log the
+ *       event as user-initiated. With DROP_SERVER_TAGS_ON_CONSUME the row
+ *       is also removed; otherwise the tag stays alive within FREEZE_MS
+ *       so a follow-up event for the same item is also suppressed. The
+ *       kind filter prevents a contact event from claiming a list
+ *       pre-tag whose itemId happens to be the same string (and vice
+ *       versa).
+ *   1b. Fresh pre-tag, NON-matching op → the event is ignored outright
+ *       and the tag stays armed. The tag is an announcement: the write
+ *       it names is imminent and will supersede whatever this bystander
+ *       event carried (a user edit under a deleted_by_server tag is
+ *       about to be deleted anyway). Consuming here instead used to turn
+ *       the announced event into a phantom user action - e.g. an interim
+ *       edit ate a deleted_by_server tag and the announced deletion was
+ *       then recorded as deleted_by_user, pushing a redundant Delete the
+ *       server answered with NOT_FOUND.
  *   2. Fresh `kind: "list-by-name"` pre-tag (parentId match, itemId ===
  *      node.name) on a `list.created` event → do not log the event as
  *      user-initiated. With DROP_SERVER_TAGS_ON_CONSUME the row is
@@ -433,6 +448,12 @@ function userFacingDiffers(before, after) {
  *   3. Stale pre-tag (age ≥ 1500ms) → clear it, then run normal transition.
  *   4. No pre-tag → run legacy state-machine transition based on existing
  *      `*_by_user` status (or none).
+ *
+ * Known ambiguity, accepted: a same-op race (the user edits in the
+ * milliseconds before the announced write's event arrives) is
+ * indistinguishable - the user's event consumes the tag and the
+ * provider's own event is then recorded as a user edit, costing one echo
+ * push that re-asserts server state.
  */
 function applyEvent(entries, { kind, parentId, itemId, name, op, now }) {
   const exactIdx = entries.findIndex(
@@ -444,10 +465,16 @@ function applyEvent(entries, { kind, parentId, itemId, name, op, now }) {
   if (exact && isServerTag(exact.status)) {
     const ageMs = now - (exact.timestamp ?? 0);
     if (ageMs < FREEZE_MS) {
-      // Do not log the event as user-initiated. With
+      // 1b. A bystander event: not the op this tag announces. Ignore it
+      // and keep the tag armed for the announced event. Must NOT fall
+      // through to applyUserTransition - that would record the event
+      // with the tag as priorStatus and its status-blind filter would
+      // delete the tag.
+      if (OP_FOR_TAG[exact.status] !== op) return entries;
+      // 1a. The announced event. Do not log it as user-initiated. With
       // DROP_SERVER_TAGS_ON_CONSUME also remove the row (single-use
-      // freeze); otherwise leave it in place so any follow-up event
-      // within the window is also suppressed.
+      // freeze); otherwise leave it in place so a follow-up event of
+      // the same op within the window is also suppressed.
       return DROP_SERVER_TAGS_ON_CONSUME
         ? [...entries.slice(0, exactIdx), ...entries.slice(exactIdx + 1)]
         : entries;
@@ -522,3 +549,17 @@ function isServerTag(status) {
     status === "deleted_by_server"
   );
 }
+
+/** The observer op each pre-tag announces. A tag is an announcement of an
+ *  imminent provider write, and only that write's event may consume it -
+ *  any other event inside the freeze window is a bystander: ignored, with
+ *  the tag left armed for the event it names. */
+const OP_FOR_TAG = {
+  added_by_server: "created",
+  modified_by_server: "updated",
+  deleted_by_server: "deleted",
+};
+
+/** Pure internals, exported for the unit tests (`npm test`). Nothing else
+ *  imports these. */
+export const __internals = { applyEvent, isServerTag, OP_FOR_TAG, FREEZE_MS };

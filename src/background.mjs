@@ -380,6 +380,22 @@ router.setProviderRpcHandler(
         ERR.UNKNOWN_COMMAND,
       );
     }
+    // The status string is load-bearing: the watcher consumes a tag only
+    // via the op it announces, and an unknown string would be invisible to
+    // `isServerTag` and masquerade as a user entry instead.
+    const allowedStatuses = [
+      "added_by_server",
+      "modified_by_server",
+      "deleted_by_server",
+    ];
+    if (!allowedStatuses.includes(status)) {
+      throw withCode(
+        new Error(
+          `changelogMarkServerWrite: status must be one of ${allowedStatuses.join(" | ")} (got ${JSON.stringify(status)})`,
+        ),
+        ERR.UNKNOWN_COMMAND,
+      );
+    }
     // A pre-tag exists for exactly one purpose: to stop our own observer
     // from logging the write we are about to make as a user edit. Where the
     // provider owns the resource we do not observe it, so there is nothing to
