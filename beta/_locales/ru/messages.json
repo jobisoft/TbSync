@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "Установленное вспомогательное приложение устарело. Загрузите его заново, снова запустите сценарий установки, затем выключите и включите мост."
+  },
+  "manager.bridge.status.starting": {
+    "message": "Мост запускается…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "Сбой моста"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "Мост работает частично"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "Вспомогательное приложение неоднократно не смогло запуститься. Отключите и включите снова, либо переустановите вспомогательное приложение."
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "Связь с TbSync работает, но HTTP-сокет вспомогательного приложения не отвечает."
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "Вспомогательное приложение отвечает, но его связь с TbSync разорвана - запросы зависнут."
   }
 }

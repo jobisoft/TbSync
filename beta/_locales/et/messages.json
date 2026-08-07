@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "Paigaldatud abirakendus on aegunud. Laadi see uuesti alla, käivita paigaldusskript uuesti ja lülita sild välja ning uuesti sisse."
+  },
+  "manager.bridge.status.starting": {
+    "message": "Bridge käivitub…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "Bridge nurjus"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "Bridge on häiritud"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "Abirakendus ei käivitunud korduvalt. Proovi uuesti keelates ja lubades, või paigalda abirakendus uuesti."
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "TbSynci ühendus töötab, aga abirakenduse HTTP-sokkel ei vasta."
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "Abirakendus vastab, aga selle ühendus TbSynciga on katkenud - päringud jäävad rippuma."
   }
 }

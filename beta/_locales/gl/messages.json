@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "A aplicación auxiliar instalada está desactualizada. Descárguea de novo, execute outra vez o script de instalación e apague e acenda a ponte."
+  },
+  "manager.bridge.status.starting": {
+    "message": "O bridge está a iniciarse…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "O bridge fallou"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "Bridge degradado"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "A aplicación auxiliar non puido iniciarse repetidamente. Desactívea e actívea de novo, ou reinstálea."
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "A ligazón con TbSync está activa, pero o socket HTTP da aplicación auxiliar non responde."
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "A aplicación auxiliar responde, pero a súa ligazón con TbSync está caída: as solicitudes quedarán colgadas."
   }
 }

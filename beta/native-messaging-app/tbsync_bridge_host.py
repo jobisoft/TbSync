@@ -63,7 +63,7 @@ TOKEN = 'tbsync'
 # when they disagree, which is the only way to tell a stale helper from a
 # broken one: reinstalling it is a separate act from updating the add-on,
 # because it lives outside the xpi where Thunderbird can launch it.
-VERSION = 1
+VERSION = 2
 
 # How long an HTTP request waits for the add-on to answer, in seconds. The
 # caller decides per request - it is the one that knows whether it asked for
@@ -156,13 +156,36 @@ def make_handler():
         def log_message(self, fmt, *args):
             pass
 
-        def _reply(self, status, payload):
+        def _reply(self, status, payload, cors=False):
             body = json.dumps(payload).encode('utf-8')
             self.send_response(status)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Content-Length', str(len(body)))
+            if cors:
+                # Only /health opts in: the Bridge tab (a moz-extension
+                # page) polls it to show "is the local app answering", and
+                # a cross-origin fetch needs the server's consent. The
+                # token is still required - CORS opens the door, not the
+                # lock. /rpc stays closed; scripts, not pages, call it.
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header(
+                    'Access-Control-Allow-Headers', 'Authorization'
+                )
             self.end_headers()
             self.wfile.write(body)
+
+        def do_OPTIONS(self):
+            # The Authorization header makes the tab's /health GET a
+            # non-simple request, so the browser preflights it.
+            if self.path != '/health':
+                self._reply(404, {'ok': False, 'error': 'not found'})
+                return
+            self.send_response(204)
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Headers', 'Authorization')
+            self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+            self.send_header('Content-Length', '0')
+            self.end_headers()
 
         def _authorized(self):
             header = self.headers.get('Authorization', '')
@@ -176,9 +199,9 @@ def make_handler():
             # is up and the token works, nothing about TbSync itself. Any real
             # command proves that.
             if not self._authorized():
-                self._reply(401, {'ok': False, 'error': 'unauthorized'})
+                self._reply(401, {'ok': False, 'error': 'unauthorized'}, cors=True)
                 return
-            self._reply(200, {'ok': True, 'pid': os.getpid()})
+            self._reply(200, {'ok': True, 'pid': os.getpid()}, cors=True)
 
         def do_POST(self):
             if self.path != '/rpc':
@@ -250,7 +273,8 @@ def main():
     server.daemon_threads = True
 
     log(f'listening on 127.0.0.1:{PORT}')
-    threading.Thread(target=server.serve_forever, daemon=True).start()
+    server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+    server_thread.start()
 
     # Tell the add-on we are up, so the Bridge tab can show the address
     # rather than describe it. Carries no requestId, which is how the add-on
@@ -266,6 +290,17 @@ def main():
             message = get_message()
             if message is None:
                 break
+            # Typed messages first: a ping is the add-on asking "are you
+            # alive, and is your socket?" - answered here, before the
+            # requestId dispatch, so the heartbeat can never disturb
+            # request matching.
+            if isinstance(message, dict) and message.get('type') == 'ping':
+                send_message({
+                    'type': 'pong',
+                    'id': message.get('id'),
+                    'listening': server_thread.is_alive(),
+                })
+                continue
             resolve(message)
     except (OSError, ValueError) as err:
         log('stdin pump stopped:', err)

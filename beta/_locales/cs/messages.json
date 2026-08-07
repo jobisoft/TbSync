@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "Nainstalovaná pomocná aplikace je zastaralá. Stáhněte ji znovu, spusťte znovu instalační skript a poté most vypněte a zapněte."
+  },
+  "manager.bridge.status.starting": {
+    "message": "Bridge se spouští…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "Bridge selhal"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "Bridge je omezený"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "Pomocnou aplikaci se opakovaně nepodařilo spustit. Zkuste vypnout a znovu zapnout, nebo ji přeinstalujte."
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "Spojení s TbSync funguje, ale HTTP socket pomocné aplikace neodpovídá."
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "Pomocná aplikace odpovídá, ale její spojení s TbSync je přerušeno - požadavky zůstanou viset."
   }
 }

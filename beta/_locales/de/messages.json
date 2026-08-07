@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "Das installierte Hilfsprogramm ist veraltet. Laden Sie es erneut herunter, führen Sie das Installationsskript noch einmal aus und schalten Sie die Brücke aus und wieder ein."
+  },
+  "manager.bridge.status.starting": {
+    "message": "Bridge startet…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "Bridge fehlgeschlagen"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "Bridge beeinträchtigt"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "Das Hilfsprogramm konnte wiederholt nicht gestartet werden. Zum erneuten Versuch deaktivieren und wieder aktivieren, oder das Hilfsprogramm neu installieren."
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "Die Verbindung zu TbSync steht, aber der HTTP-Socket des Hilfsprogramms antwortet nicht."
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "Das Hilfsprogramm antwortet, aber seine Verbindung zu TbSync ist unterbrochen - Anfragen bleiben hängen."
   }
 }

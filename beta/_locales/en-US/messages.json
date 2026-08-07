@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "The installed helper app is out of date. Download it again and re-run the install script, then switch the bridge off and on."
+  },
+  "manager.bridge.status.starting": {
+    "message": "Bridge starting…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "Bridge failed"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "Bridge degraded"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "The helper kept failing to start. Disable and re-enable to try again, or reinstall the helper."
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "TbSync's link is alive but the helper's HTTP socket is not answering."
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "The helper app answers, but its link to TbSync is down - requests will hang."
   }
 }

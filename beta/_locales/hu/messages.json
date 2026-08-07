@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "A telepített segédalkalmazás elavult. Töltse le újra, futtassa ismét a telepítő parancsfájlt, majd kapcsolja ki és be a hidat."
+  },
+  "manager.bridge.status.starting": {
+    "message": "A bridge indul…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "A bridge meghiúsult"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "A bridge akadozik"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "A segédalkalmazás ismételten nem tudott elindulni. Kapcsolja ki és be újra, vagy telepítse újra a segédalkalmazást."
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "A TbSync-kapcsolat él, de a segédalkalmazás HTTP-socketje nem válaszol."
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "A segédalkalmazás válaszol, de a TbSync felé a kapcsolat megszakadt - a kérések függve maradnak."
   }
 }

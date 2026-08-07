@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "Det installerade hjälpprogrammet är föråldrat. Hämta det igen, kör installationsskriptet på nytt och stäng sedan av och på bryggan."
+  },
+  "manager.bridge.status.starting": {
+    "message": "Bryggan startar…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "Bryggan misslyckades"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "Bryggan är nedsatt"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "Hjälpappen misslyckades upprepade gånger att starta. Inaktivera och aktivera igen för att försöka på nytt, eller installera om hjälpappen."
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "Länken till TbSync lever, men hjälpappens HTTP-socket svarar inte."
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "Hjälpappen svarar, men dess länk till TbSync är nere - förfrågningar kommer att hänga sig."
   }
 }

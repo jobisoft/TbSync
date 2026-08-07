@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "Инсталираното помощно приложение е остаряло. Изтеглете го отново, изпълнете пак инсталационния скрипт и след това изключете и включете моста."
+  },
+  "manager.bridge.status.starting": {
+    "message": "Мостът се стартира…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "Мостът се провали"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "Мостът е нарушен"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "Помощната програма многократно не успя да се стартира. Изключете и включете отново, или я преинсталирайте."
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "Връзката с TbSync е активна, но HTTP сокетът на помощната програма не отговаря."
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "Помощната програма отговаря, но връзката ѝ с TbSync е прекъсната - заявките ще увиснат."
   }
 }

@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "Zainstalowana aplikacja pomocnicza jest nieaktualna. Pobierz ją ponownie, uruchom ponownie skrypt instalacyjny, a następnie wyłącz i włącz mostek."
+  },
+  "manager.bridge.status.starting": {
+    "message": "Bridge się uruchamia…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "Bridge zawiódł"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "Bridge działa częściowo"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "Aplikacja pomocnicza wielokrotnie nie mogła się uruchomić. Wyłącz i włącz ponownie, albo przeinstaluj aplikację pomocniczą."
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "Połączenie z TbSync działa, ale gniazdo HTTP aplikacji pomocniczej nie odpowiada."
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "Aplikacja pomocnicza odpowiada, ale jej połączenie z TbSync jest zerwane - żądania zawisną."
   }
 }

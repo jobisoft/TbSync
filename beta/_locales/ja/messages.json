@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "インストール済みのヘルパーアプリが古くなっています。もう一度ダウンロードしてインストールスクリプトを再実行し、ブリッジをオフにしてからオンにしてください。"
+  },
+  "manager.bridge.status.starting": {
+    "message": "ブリッジを起動しています…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "ブリッジが失敗しました"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "ブリッジが劣化しています"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "ヘルパーアプリの起動に繰り返し失敗しました。無効化してから再度有効化するか、ヘルパーアプリを再インストールしてください。"
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "TbSyncとのリンクは生きていますが、ヘルパーアプリのHTTPソケットが応答しません。"
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "ヘルパーアプリは応答しますが、TbSyncへのリンクが切断されています。リクエストは応答しません。"
   }
 }

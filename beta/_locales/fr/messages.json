@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "L’application auxiliaire installée est obsolète. Téléchargez-la de nouveau, réexécutez le script d’installation, puis désactivez et réactivez la passerelle."
+  },
+  "manager.bridge.status.starting": {
+    "message": "Démarrage du bridge…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "Échec du bridge"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "Bridge dégradé"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "L'application auxiliaire n'a pas pu démarrer à plusieurs reprises. Désactivez puis réactivez pour réessayer, ou réinstallez-la."
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "La liaison avec TbSync est active, mais le socket HTTP de l'application auxiliaire ne répond pas."
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "L'application auxiliaire répond, mais sa liaison avec TbSync est coupée - les requêtes resteront bloquées."
   }
 }

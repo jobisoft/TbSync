@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "Aplicația auxiliară instalată este învechită. Descărcați-o din nou, rulați iar scriptul de instalare, apoi opriți și porniți puntea."
+  },
+  "manager.bridge.status.starting": {
+    "message": "Bridge-ul pornește…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "Bridge-ul a eșuat"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "Bridge degradat"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "Aplicația ajutătoare a eșuat repetat la pornire. Dezactivați și reactivați pentru a reîncerca, sau reinstalați aplicația ajutătoare."
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "Legătura cu TbSync este activă, dar socketul HTTP al aplicației ajutătoare nu răspunde."
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "Aplicația ajutătoare răspunde, dar legătura ei cu TbSync este căzută - cererile vor rămâne blocate."
   }
 }

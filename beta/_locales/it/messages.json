@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "L’applicazione ausiliaria installata non è aggiornata. Scaricala di nuovo, riesegui lo script di installazione, poi spegni e riaccendi il ponte."
+  },
+  "manager.bridge.status.starting": {
+    "message": "Avvio del bridge…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "Bridge non riuscito"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "Bridge degradato"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "L'applicazione ausiliaria non è riuscita ad avviarsi ripetutamente. Disattivare e riattivare per riprovare, o reinstallarla."
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "Il collegamento con TbSync è attivo, ma il socket HTTP dell'applicazione ausiliaria non risponde."
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "L'applicazione ausiliaria risponde, ma il collegamento con TbSync è interrotto: le richieste resteranno in sospeso."
   }
 }

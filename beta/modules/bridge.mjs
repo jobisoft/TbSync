@@ -78,7 +78,7 @@ const NATIVE_APP = "tbsync_bridge_host";
  *
  *  Adding commands never needs it: the helper forwards `cmd` as an opaque
  *  string and knows nothing about the vocabulary. */
-const EXPECTED_HELPER_VERSION = 1;
+const EXPECTED_HELPER_VERSION = 2;
 
 const ENABLED_KEY = "tbsync-bridge-enabled";
 const TARGET_KEY = "tbsync-bridge-target";
@@ -215,7 +215,16 @@ const COMMANDS = {
           "E:NOT_TEMPORARY",
         );
       }
-      setTimeout(() => browser.runtime.reload(), RELOAD_DELAY_MS);
+      setTimeout(() => {
+        // Close the native link cleanly before reloading. Both observed
+        // reload stalls were spawns issued into conduits the reload had
+        // torn ("sendRemoveListener on closed conduit" in the console); an
+        // orderly disconnect first is the best shot at the fresh instance
+        // starting from a clean slate. The enabled flag survives in
+        // storage, so the fresh instance reconnects on its own.
+        teardownLink();
+        browser.runtime.reload();
+      }, RELOAD_DELAY_MS);
       return { reloading: true, installType };
     },
   },
@@ -504,12 +513,120 @@ let port = null;
 let endpoint = null;
 const activity = [];
 
+/** The link's honest state. `port` alone cannot tell the truth:
+ *  `connectNative` returns a Port object synchronously whether or not a
+ *  helper ever spawns, and a spawn issued into a conduit torn by
+ *  `runtime.reload()` neither completes nor fails - the tab then reads
+ *  "running" off a zombie Port for as long as nobody toggles it. "up"
+ *  therefore means the helper said hello and answers pings; everything
+ *  else says what is actually known. */
+let linkState = "off"; // "off" | "starting" | "up" | "failed"
+let lastPong = 0; // ms epoch of the last pong (0 = none yet)
+let helperListening = null; // the pong's report about the HTTP socket
+let restartAttempts = 0; // failed starts since the last successful hello
+let helloTimer = null; // spawn watchdog
+let heartbeatTimer = null;
+let restartTimer = null;
+let pingSeq = 0;
+let lastPingAnswered = true;
+
+const HELLO_TIMEOUT_MS = 10_000;
+const HEARTBEAT_MS = 15_000;
+const RESTART_BACKOFF_MS = [2_000, 4_000, 8_000, 16_000, 30_000];
+const MAX_RESTART_ATTEMPTS = 5;
+
+function clearTimers() {
+  if (helloTimer) clearTimeout(helloTimer);
+  if (heartbeatTimer) clearInterval(heartbeatTimer);
+  if (restartTimer) clearTimeout(restartTimer);
+  helloTimer = heartbeatTimer = restartTimer = null;
+}
+
+/** Tear the link down and, while the user still has the bridge enabled, try
+ *  again on a backoff - which is exactly what the manual disable/enable
+ *  fix did, automated. Capped: a helper that keeps failing to *start* is
+ *  retried five times and then declared failed, because past that point
+ *  the retries are respawning a broken install, and the tab should say so
+ *  instead of flickering. Any successful hello resets the count. */
+async function failAndMaybeRestart(why) {
+  note("error", why);
+  teardownLink();
+  if (!(await isEnabled())) {
+    linkState = "off";
+    return;
+  }
+  if (restartAttempts >= MAX_RESTART_ATTEMPTS) {
+    linkState = "failed";
+    note(
+      "error",
+      `giving up after ${restartAttempts} failed starts - use Disable/Enable to try again, or reinstall the helper`,
+    );
+    return;
+  }
+  const delay =
+    RESTART_BACKOFF_MS[Math.min(restartAttempts, RESTART_BACKOFF_MS.length - 1)];
+  restartAttempts++;
+  linkState = "starting";
+  note("info", `restarting the helper in ${delay / 1000}s (attempt ${restartAttempts})`);
+  restartTimer = setTimeout(() => {
+    restartTimer = null;
+    connect().catch((err) =>
+      note("error", `restart failed: ${err?.message ?? err}`),
+    );
+  }, delay);
+}
+
+/** Drop the port and every timer, without touching the enabled flag. */
+function teardownLink() {
+  clearTimers();
+  if (port) {
+    try {
+      port.disconnect();
+    } catch (err) {
+      console.debug("[tbsync] bridge: disconnect failed:", err);
+    }
+  }
+  port = null;
+  endpoint = null;
+  lastPong = 0;
+  helperListening = null;
+  lastPingAnswered = true;
+}
+
+function startHeartbeat() {
+  if (heartbeatTimer) clearInterval(heartbeatTimer);
+  lastPingAnswered = true;
+  heartbeatTimer = setInterval(() => {
+    if (!port) return;
+    if (!lastPingAnswered) {
+      // Two intervals without an answer: the previous ping is still
+      // unanswered when the next one is due. The pipe is dead or the
+      // helper is wedged - either way, what a real request would hit.
+      failAndMaybeRestart("helper stopped answering pings");
+      return;
+    }
+    lastPingAnswered = false;
+    try {
+      port.postMessage({ type: "ping", id: ++pingSeq });
+    } catch (err) {
+      failAndMaybeRestart(`ping failed: ${err?.message ?? err}`);
+    }
+  }, HEARTBEAT_MS);
+}
+
 /** Attach the bridge to the background runtime. Call once from
  *  background.mjs, after `ui.init()` - the RPC handlers registered here go
  *  into the same table the manager uses. */
 export async function initBackground() {
   ui.setManagerRpcHandler("bridgeGetStatus", async () => ({
-    connected: !!port,
+    // "connected" kept for compatibility, but it now tells the truth: the
+    // helper said hello and has been answering pings. A zombie Port is
+    // "starting", a capped-out restart schedule is "failed".
+    connected: linkState === "up",
+    linkState,
+    lastPongAgeMs: lastPong ? Date.now() - lastPong : null,
+    helperListening,
+    restartAttempts,
     enabled: await isEnabled(),
     endpoint,
     activity: activity.slice(-ACTIVITY_LIMIT),
@@ -519,9 +636,13 @@ export async function initBackground() {
 
   ui.setManagerRpcHandler("bridgeSetEnabled", async ({ enabled }) => {
     await browser.storage.local.set({ [ENABLED_KEY]: !!enabled });
-    if (enabled) await connect();
-    else disconnect();
-    return { connected: !!port };
+    if (enabled) {
+      restartAttempts = 0;
+      await connect();
+    } else {
+      disconnect();
+    }
+    return { connected: linkState === "up" };
   });
 
   ui.setManagerRpcHandler("bridgeSetTarget", async ({ target }) => {
@@ -582,34 +703,50 @@ function grantedFolders(target) {
 
 async function connect() {
   if (port) return;
+  if (restartTimer) {
+    clearTimeout(restartTimer);
+    restartTimer = null;
+  }
+  linkState = "starting";
   try {
     port = browser.runtime.connectNative(NATIVE_APP);
   } catch (err) {
     port = null;
-    note("error", `could not start the helper app: ${err?.message ?? err}`);
+    await failAndMaybeRestart(
+      `could not start the helper app: ${err?.message ?? err}`,
+    );
     return;
   }
+  const thisPort = port;
   port.onMessage.addListener(onNativeMessage);
   port.onDisconnect.addListener((p) => {
-    port = null;
-    endpoint = null;
-    // Deliberately no reconnect loop. If the helper is missing or crashing,
-    // retrying just respawns a failing process forever; the tab shows the
-    // state and the user decides.
-    note("error", `helper app disconnected: ${p.error?.message ?? "closed"}`);
+    if (port !== thisPort) return;
+    // An unexpected death while enabled goes through the restart path -
+    // that is the one thing the old code deliberately did not do, and the
+    // restraint was half right: a helper that keeps dying after a
+    // successful hello IS a broken install, and the attempt cap preserves
+    // that judgement. But a link that dies once - a reload race, a killed
+    // process - is exactly what the manual Disable/Enable fixed, and the
+    // user should not have to be the retry loop.
+    failAndMaybeRestart(
+      `helper app disconnected: ${p.error?.message ?? "closed"}`,
+    );
   });
-  note("info", "helper app started");
+  // The spawn watchdog. `connectNative` handing back a Port object proves
+  // nothing; only the helper's hello does. A spawn issued into a torn
+  // conduit hangs forever with no error and no disconnect - the zombie
+  // that showed "Bridge running" for forty minutes.
+  helloTimer = setTimeout(() => {
+    helloTimer = null;
+    failAndMaybeRestart("helper did not say hello - spawn presumed stuck");
+  }, HELLO_TIMEOUT_MS);
+  note("info", "helper app starting");
 }
 
 function disconnect() {
-  if (!port) return;
-  try {
-    port.disconnect();
-  } catch (err) {
-    console.debug("[tbsync] bridge: disconnect failed:", err);
-  }
-  port = null;
-  endpoint = null;
+  teardownLink();
+  linkState = "off";
+  restartAttempts = 0;
   note("info", "helper app stopped");
 }
 
@@ -619,16 +756,31 @@ function disconnect() {
 async function onNativeMessage(msg) {
   if (!msg || typeof msg !== "object") return;
 
+  if (msg.type === "pong") {
+    lastPong = Date.now();
+    lastPingAnswered = true;
+    helperListening = msg.listening !== false;
+    return;
+  }
+
   // The helper's opening message, carrying the address it settled on. No
   // requestId, which is what tells it apart from a command.
   if (msg.type === "hello") {
+    if (helloTimer) {
+      clearTimeout(helloTimer);
+      helloTimer = null;
+    }
     if (msg.error) {
       // The helper started but could not listen - almost always the port
-      // already being in use. It exits right after telling us.
-      endpoint = null;
-      note("error", msg.error);
+      // already being in use. It exits right after telling us; the retry
+      // schedule below is what heals the in-use race a reload can leave.
+      failAndMaybeRestart(msg.error);
       return;
     }
+    linkState = "up";
+    restartAttempts = 0;
+    lastPong = Date.now();
+    startHeartbeat();
     // A helper predating the version field reports 0, which is exactly the
     // case worth catching: it is old enough not to know it should say.
     const version = msg.version ?? 0;
@@ -1034,6 +1186,34 @@ export function initManagerTab({ localizeSubtree, rpc }) {
     );
   }
 
+  // The tab's own view of the helper's HTTP socket - fetched from here, a
+  // genuinely external client, not relayed through the link under test.
+  // Throttled below the 2s refresh cadence; null until the first probe.
+  let healthOk = null;
+  let lastHealthProbe = 0;
+  const HEALTH_PROBE_MS = 6000;
+
+  async function probeHealth(endpoint) {
+    if (!endpoint?.url) {
+      healthOk = null;
+      return;
+    }
+    if (Date.now() - lastHealthProbe < HEALTH_PROBE_MS) return;
+    lastHealthProbe = Date.now();
+    try {
+      const ctl = new AbortController();
+      const t = setTimeout(() => ctl.abort(), 3000);
+      const resp = await fetch(`${endpoint.url}/health`, {
+        headers: { Authorization: `Bearer ${endpoint.token}` },
+        signal: ctl.signal,
+      });
+      clearTimeout(t);
+      healthOk = resp.ok;
+    } catch {
+      healthOk = false;
+    }
+  }
+
   async function refresh() {
     let status;
     try {
@@ -1042,12 +1222,49 @@ export function initManagerTab({ localizeSubtree, rpc }) {
       // Background not ready, or an ATN-shaped build somehow reaching here.
       return;
     }
-    statusEl.textContent = browser.i18n.getMessage(
-      status.connected
-        ? "manager.bridge.status.on"
-        : "manager.bridge.status.off",
+    await probeHealth(status.endpoint);
+
+    // Headline: running only when both halves are proven - the helper said
+    // hello and answers pings (link), and this page reached its HTTP
+    // socket (app). The in-between states say what is actually known
+    // instead of guessing "running" off a Port object.
+    const linkUp = status.linkState === "up";
+    const appUp = healthOk === true;
+    let headlineKey, detailKey;
+    if (linkUp && (appUp || healthOk === null)) {
+      headlineKey = "manager.bridge.status.on";
+      detailKey = null;
+    } else if (status.linkState === "starting") {
+      headlineKey = "manager.bridge.status.starting";
+      detailKey = null;
+    } else if (status.linkState === "failed") {
+      headlineKey = "manager.bridge.status.failed";
+      detailKey = "manager.bridge.detail.failed";
+    } else if (linkUp && healthOk === false) {
+      // Link answers, socket does not - the helper thread died or the
+      // port is blocked. A real client would hang; say so.
+      headlineKey = "manager.bridge.status.degraded";
+      detailKey = "manager.bridge.detail.socketDead";
+    } else if (!linkUp && appUp) {
+      // The inverse zombie: the local app answers HTTP but the native
+      // link is down - its requests are going nowhere.
+      headlineKey = "manager.bridge.status.degraded";
+      detailKey = "manager.bridge.detail.linkDead";
+    } else {
+      headlineKey = "manager.bridge.status.off";
+      detailKey = null;
+    }
+    statusEl.textContent = browser.i18n.getMessage(headlineKey);
+    const detailEl = $("bridge-link-detail");
+    detailEl.textContent = detailKey ? browser.i18n.getMessage(detailKey) : "";
+    detailEl.toggleAttribute("hidden", !detailKey);
+    statusEl.classList.toggle("bridge-on", linkUp && appUp !== false);
+    statusEl.classList.toggle(
+      "bridge-err",
+      status.linkState === "failed" ||
+        (linkUp && healthOk === false) ||
+        (!linkUp && appUp),
     );
-    statusEl.classList.toggle("bridge-on", status.connected);
     isOn = status.connected || status.enabled;
     toggleEl.textContent = browser.i18n.getMessage(
       isOn ? "manager.bridge.disable" : "manager.bridge.enable",
@@ -1064,9 +1281,9 @@ export function initManagerTab({ localizeSubtree, rpc }) {
     //             No uninstaller either - removing it is not the fix.
     //   running   "get the uninstaller", nothing else
     const stale = !!status.endpoint?.stale;
-    hintEl.toggleAttribute("hidden", status.connected);
-    downloadEl.toggleAttribute("hidden", status.connected && !stale);
-    uninstallEl.toggleAttribute("hidden", !status.connected || stale);
+    hintEl.toggleAttribute("hidden", linkUp);
+    downloadEl.toggleAttribute("hidden", linkUp && !stale);
+    uninstallEl.toggleAttribute("hidden", !linkUp || stale);
     staleEl.toggleAttribute("hidden", !stale);
 
     // The address the helper reported when it started, which is the only
@@ -1374,6 +1591,7 @@ function buildPanel() {
     i18n("p", "manager.bridge.intro"),
     el("div", { class: "bridge-row" }, [
       el("strong", { id: "bridge-status" }),
+      el("span", { id: "bridge-link-detail", class: "bridge-hint" }),
       el("button", { id: "bridge-toggle", type: "button" }),
       i18n("button", "manager.bridge.download", {
         id: "bridge-download",

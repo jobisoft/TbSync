@@ -67,5 +67,23 @@
   },
   "manager.bridge.stale": {
     "message": "설치된 도우미 앱이 오래되었습니다. 다시 내려받아 설치 스크립트를 재실행한 뒤, 브리지를 껐다가 켜세요."
+  },
+  "manager.bridge.status.starting": {
+    "message": "브리지 시작 중…"
+  },
+  "manager.bridge.status.failed": {
+    "message": "브리지 실패"
+  },
+  "manager.bridge.status.degraded": {
+    "message": "브리지 성능 저하"
+  },
+  "manager.bridge.detail.failed": {
+    "message": "도우미 앱이 반복적으로 시작에 실패했습니다. 비활성화 후 다시 활성화하거나 도우미 앱을 재설치하세요."
+  },
+  "manager.bridge.detail.socketDead": {
+    "message": "TbSync 링크는 살아 있지만 도우미 앱의 HTTP 소켓이 응답하지 않습니다."
+  },
+  "manager.bridge.detail.linkDead": {
+    "message": "도우미 앱은 응답하지만 TbSync와의 링크가 끊어졌습니다. 요청이 멈추게 됩니다."
   }
 }
