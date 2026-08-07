@@ -92,22 +92,17 @@ test("no tag: the user state machine is untouched", () => {
   assert.equal(again, entries, "double delete must be skipped");
 });
 
-test("the kind filter keeps a same-id tag of another kind from suppressing", () => {
-  // The exact-match lookup is kind-aware: a list pre-tag neither
-  // suppresses nor is consumed-as-match by a contact event with the same
-  // ids - the contact event records normally.
-  //
-  // NOT asserted: whether the list row survives the transition.
-  // `applyUserTransition` filters on (parentId, itemId) without kind and
-  // drops it - the open entry-identity question (review item 4), inert in
-  // practice because TB ids are UUIDs and cross-kind collisions do not
-  // occur. Pinning either answer here would prejudge that item.
+test("a same-id row of another kind survives the event untouched", () => {
+  // A changelog row's identity is the triple (parentId, itemId, kind).
+  // A list pre-tag neither suppresses a contact event with the same ids
+  // nor is destroyed by its transition - the contact event records
+  // alongside it. (This pinned the item-4 unification: before it, the
+  // status-blind transition filter silently deleted the foreign row.)
   const entries = [{ ...tag("added_by_server"), kind: "list" }];
   const out = applyEvent(entries, event("created"));
-  assert.ok(
-    out.some((e) => e.kind === "contact" && e.status === "added_by_user"),
-    "the contact event must be recorded despite the same-id list tag",
-  );
+  assert.equal(out.length, 2, "both rows present");
+  assert.ok(out.some((e) => e.kind === "list" && e.status === "added_by_server"));
+  assert.ok(out.some((e) => e.kind === "contact" && e.status === "added_by_user"));
 });
 
 test("list-by-name pull-create consumption is unaffected", () => {

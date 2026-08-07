@@ -326,7 +326,7 @@ export async function recordUserEdit(
   let changed = false;
   await mutateChangelog(accountId, folderId, (entries) => {
     const prior = entries.find(
-      (e) => e.parentId === parentId && e.itemId === itemId,
+      (e) => e.parentId === parentId && e.itemId === itemId && e.kind === kind,
     );
     const nextStatus = decideUserStatus(op, prior?.status ?? null);
 
@@ -343,7 +343,7 @@ export async function recordUserEdit(
     changed = true;
 
     const without = entries.filter(
-      (e) => !(e.parentId === parentId && e.itemId === itemId),
+      (e) => !(e.parentId === parentId && e.itemId === itemId && e.kind === kind),
     );
     if (nextStatus === "drop") return without;
 
@@ -379,14 +379,15 @@ export async function markServerWrite(
 ) {
   return mutateChangelog(accountId, folderId, (entries) => {
     const without = entries.filter(
-      (e) => !(e.parentId === parentId && e.itemId === itemId),
+      (e) => !(e.parentId === parentId && e.itemId === itemId && e.kind === kind),
     );
     without.push({ kind, parentId, itemId, timestamp: Date.now(), status });
     return without;
   });
 }
 
-/** Remove the queued **user** edit matching `(parentId, itemId)`. Used by a
+/** Remove the queued **user** edit matching `(parentId, itemId, kind)`.
+ *  Used by a
  *  provider once it has dealt with that edit - pushed it, or established that
  *  it can never be pushed.
  *
@@ -406,7 +407,7 @@ export async function markServerWrite(
 export async function removeChangelogEntry(
   accountId,
   folderId,
-  { parentId, itemId },
+  { parentId, itemId, kind },
 ) {
   return mutateChangelog(accountId, folderId, (entries) =>
     entries.filter(
@@ -414,13 +415,15 @@ export async function removeChangelogEntry(
         !(
           e.parentId === parentId &&
           e.itemId === itemId &&
+          e.kind === kind &&
           String(e.status).endsWith("_by_user")
         ),
     ),
   );
 }
 
-/** Move entries matching any `(parentId, itemId)` in `items` to the tail
+/** Move entries matching any `(parentId, itemId, kind)` in `items` to the
+ *  tail
  *  of the changelog, preserving their original timestamps and status.
  *  Used by providers after a push partially failed so the next sync
  *  attempts the un-failed items first (the failing ones land back at the
@@ -430,12 +433,14 @@ export async function removeChangelogEntry(
  *  match, the changelog is left untouched (no storage write). */
 export async function moveChangelogEntriesToTail(accountId, folderId, items) {
   if (!Array.isArray(items) || items.length === 0) return null;
-  const matchSet = new Set(items.map((i) => `${i.parentId}|${i.itemId}`));
+  const matchSet = new Set(
+    items.map((i) => `${i.parentId}|${i.itemId}|${i.kind}`),
+  );
   return mutateChangelog(accountId, folderId, (entries) => {
     const stay = [];
     const move = [];
     for (const e of entries) {
-      const k = `${e.parentId}|${e.itemId}`;
+      const k = `${e.parentId}|${e.itemId}|${e.kind}`;
       if (matchSet.has(k)) move.push(e);
       else stay.push(e);
     }

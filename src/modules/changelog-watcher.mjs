@@ -532,8 +532,10 @@ function applyUserTransition(
   entries,
   { kind, parentId, itemId, op, now, priorStatus },
 ) {
+  // The triple is the row's identity - a row of another kind sharing the
+  // ids is a different item's bookkeeping and must survive this event.
   const next = entries.filter(
-    (e) => !(e.parentId === parentId && e.itemId === itemId),
+    (e) => !(e.parentId === parentId && e.itemId === itemId && e.kind === kind),
   );
   const nextStatus = decideUserStatus(op, priorStatus);
   if (nextStatus === "skip") return entries; // no change at all (keep priorStatus entry)

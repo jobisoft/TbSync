@@ -283,15 +283,19 @@ export class TbSyncProviderImplementation {
   folderTargetRemoved(args) {
     return this.#sendCmd(PROVIDER_CMD.FOLDER_TARGET_REMOVED, args);
   }
-  /** Remove the changelog entry for `(parentId, itemId)` regardless of
-   *  status. Called after successfully pushing a `*_by_user` entry. */
+  /** Remove the queued user edit for `(parentId, itemId, kind)`. Called
+   *  after successfully pushing a `*_by_user` entry. `kind` is required -
+   *  a changelog row's identity is the triple, and the host refuses the
+   *  call without it. `*_by_server` rows are never touched. */
   changelogRemove(args) {
     return this.#sendCmd(PROVIDER_CMD.CHANGELOG_REMOVE, args);
   }
   /** Move the supplied changelog entries to the tail of the queue
    *  (preserving content + timestamps). Used after a partial-push
    *  failure so the next sync attempts non-failing items first.
-   *  args: `{accountId, folderId, items: [{parentId, itemId}, …]}`. */
+   *  args: `{accountId, folderId, items: [{parentId, itemId, kind}, …]}` -
+   *  `kind` is required on every item; the host refuses the call
+   *  otherwise. */
   changelogMoveToTail(args) {
     return this.#sendCmd(PROVIDER_CMD.CHANGELOG_MOVE_TO_TAIL, args);
   }

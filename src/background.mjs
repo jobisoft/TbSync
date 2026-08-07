@@ -348,6 +348,18 @@ router.setProviderRpcHandler(
 // a folder belonging to another provider). The observer on the host owns
 // user-initiated entries; these RPCs are for provider-initiated pre-tagging
 // and entry removal.
+// A changelog row's identity is the triple (parentId, itemId, kind) -
+// every handler below validates `kind` so no row can be written or matched
+// with a meaningless one.
+const ALLOWED_CHANGELOG_KINDS = [
+  "contact",
+  "list",
+  "list-by-name",
+  "membership",
+  "event",
+  "task",
+];
+
 router.setProviderRpcHandler(
   PROVIDER_CMD.CHANGELOG_MARK_SERVER_WRITE,
   async (providerId, args) => {
@@ -356,18 +368,10 @@ router.setProviderRpcHandler(
     if (!acc || acc.provider !== providerId) {
       throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
     }
-    const allowedKinds = [
-      "contact",
-      "list",
-      "list-by-name",
-      "membership",
-      "event",
-      "task",
-    ];
-    if (!allowedKinds.includes(kind)) {
+    if (!ALLOWED_CHANGELOG_KINDS.includes(kind)) {
       throw withCode(
         new Error(
-          `changelogMarkServerWrite: kind must be one of ${allowedKinds.join(" | ")} (got ${JSON.stringify(kind)})`,
+          `changelogMarkServerWrite: kind must be one of ${ALLOWED_CHANGELOG_KINDS.join(" | ")} (got ${JSON.stringify(kind)})`,
         ),
         ERR.UNKNOWN_COMMAND,
       );
@@ -432,6 +436,14 @@ router.setProviderRpcHandler(
       throw withCode(
         new Error(
           `changelogRecordUserEdit: op must be one of ${allowedOps.join(" | ")} (got ${JSON.stringify(op)})`,
+        ),
+        ERR.UNKNOWN_COMMAND,
+      );
+    }
+    if (!ALLOWED_CHANGELOG_KINDS.includes(kind)) {
+      throw withCode(
+        new Error(
+          `changelogRecordUserEdit: kind must be one of ${ALLOWED_CHANGELOG_KINDS.join(" | ")} (got ${JSON.stringify(kind)})`,
         ),
         ERR.UNKNOWN_COMMAND,
       );
@@ -522,14 +534,23 @@ router.setProviderRpcHandler(
 router.setProviderRpcHandler(
   PROVIDER_CMD.CHANGELOG_REMOVE,
   async (providerId, args) => {
-    const { accountId, folderId, parentId, itemId } = args ?? {};
+    const { accountId, folderId, parentId, itemId, kind } = args ?? {};
     const acc = await accounts.get(accountId);
     if (!acc || acc.provider !== providerId) {
       throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
     }
+    if (!ALLOWED_CHANGELOG_KINDS.includes(kind)) {
+      throw withCode(
+        new Error(
+          `changelogRemove: kind must be one of ${ALLOWED_CHANGELOG_KINDS.join(" | ")} (got ${JSON.stringify(kind)})`,
+        ),
+        ERR.UNKNOWN_COMMAND,
+      );
+    }
     await folders.removeChangelogEntry(accountId, folderId, {
       parentId,
       itemId,
+      kind,
     });
     return null;
   },
@@ -545,6 +566,16 @@ router.setProviderRpcHandler(
     }
     if (!Array.isArray(items)) {
       throw new Error("changelogMoveToTail: items must be an array");
+    }
+    for (const i of items) {
+      if (!ALLOWED_CHANGELOG_KINDS.includes(i?.kind)) {
+        throw withCode(
+          new Error(
+            `changelogMoveToTail: every item needs a kind out of ${ALLOWED_CHANGELOG_KINDS.join(" | ")} (got ${JSON.stringify(i?.kind)})`,
+          ),
+          ERR.UNKNOWN_COMMAND,
+        );
+      }
     }
     await folders.moveChangelogEntriesToTail(accountId, folderId, items);
     return null;
