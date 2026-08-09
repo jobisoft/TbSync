@@ -1232,8 +1232,8 @@ function aclSelectEl(folder, { onChange, disabled = false } = {}) {
     window.removeEventListener("resize", scrollClose);
   }
   function outsideClick(e) {
-    // The popup is now a fixed-positioned sibling of the trigger but
-    // still a DOM descendant of `wrap`, so wrap.contains() still works.
+    // The popup is a fixed-positioned sibling of the trigger and still a
+    // DOM descendant of `wrap`, so wrap.contains() covers it.
     if (!wrap.contains(e.target)) closePopup();
   }
   function escClose(e) {

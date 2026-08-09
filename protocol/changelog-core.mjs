@@ -100,8 +100,8 @@ export function isUserEntry(status) {
  * Calendars: a provider supplies its own calendar type and is handed every
  * user edit directly, with the previous item attached, so it records them
  * itself and its own writes never reach the observer. Watching as well would
- * queue each edit twice and pick up the provider's downstream writes - which
- * is what pre-tagging used to have to suppress.
+ * queue each edit twice and pick up the provider's downstream writes, which
+ * is exactly what pre-tagging exists to suppress.
  *
  * Address books have no provider API worth the name - `addressBooks.provider`
  * offers only `onSearchRequest` - so they stay observed on the host, and keep
@@ -205,11 +205,11 @@ export function applyUserTransition(
  *       and the tag stays armed. The tag is an announcement: the write
  *       it names is imminent and will supersede whatever this bystander
  *       event carried (a user edit under a deleted_by_server tag is
- *       about to be deleted anyway). Consuming here instead used to turn
- *       the announced event into a phantom user action - e.g. an interim
- *       edit ate a deleted_by_server tag and the announced deletion was
- *       then recorded as deleted_by_user, pushing a redundant Delete the
- *       server answered with NOT_FOUND.
+ *       about to be deleted anyway). Consuming here instead would turn the
+ *       announced event into a phantom user action: an interim edit eats a
+ *       deleted_by_server tag, the announced deletion is then recorded as
+ *       deleted_by_user, and a redundant Delete goes out for an item the
+ *       server answers NOT_FOUND for.
  *   2. Fresh `kind: "list-by-name"` pre-tag (parentId match, itemId ===
  *      node.name) on a `list.created` event → do not log the event as
  *      user-initiated. With DROP_SERVER_TAGS_ON_CONSUME the row is
@@ -421,12 +421,11 @@ export function markServerWriteUpdater(
  *  A `*_by_server` row is left alone, because it is not a queued edit. It is
  *  the note written immediately before a write of its own, telling the
  *  observer to expect that write and not log it as the user's. Both live in
- *  this one list and are told apart only by status, so a removal that
- *  ignored status took whichever happened to be there - and after
- *  `markServerWriteUpdater` that is the note, since writing one *replaces*
- *  the row it covers. Deleting it left the observer nothing to recognise,
- *  and the write was logged as a user edit: the item went dirty the moment
- *  it was pushed clean.
+ *  this one list and are told apart only by status, and after
+ *  `markServerWriteUpdater` the note is the row that is there - writing one
+ *  *replaces* the row it covers. So a status-blind removal would take the
+ *  note, leaving the observer nothing to recognise and the write logged as a
+ *  user edit: the item goes dirty the moment it is pushed clean.
  *
  *  Consuming a note is the observer's job, and consuming removes it. One
  *  whose write never arrives is dropped as stale by the next event for that

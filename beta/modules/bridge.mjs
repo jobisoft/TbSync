@@ -502,8 +502,8 @@ const COMMANDS = {
    * These exist so the contacts half of the changelog can be driven from a
    * script at all. It is the half with the special cases in it - the ghost
    * gate that swallows PopularityIndex writes, `contactHashes`, and the
-   * list-by-name pre-tag - and until now it was reachable only by a person
-   * clicking in the address book.
+   * list-by-name pre-tag - and without them it is reachable only by a
+   * person clicking in the address book.
    *
    * vCard is the payload throughout, as iCal is for calendar items: it is
    * what the platform stores and what the EAS codec reads, so a fixture can
@@ -820,12 +820,10 @@ async function connect() {
   port.onMessage.addListener(onNativeMessage);
   port.onDisconnect.addListener((p) => {
     if (port !== thisPort) return;
-    // An unexpected death while enabled goes through the restart path -
-    // that is the one thing the old code deliberately did not do, and the
-    // restraint was half right: a helper that keeps dying after a
-    // successful hello IS a broken install, and the attempt cap preserves
-    // that judgement. But a link that dies once - a reload race, a killed
-    // process - is exactly what the manual Disable/Enable fixed, and the
+    // An unexpected death while enabled goes through the restart path. A
+    // helper that keeps dying after a successful hello IS a broken install,
+    // which is what the attempt cap is for - but a link that dies once, to
+    // a reload race or a killed process, only needs reconnecting, and the
     // user should not have to be the retry loop.
     failAndMaybeRestart(
       `helper app disconnected: ${p.error?.message ?? "closed"}`,

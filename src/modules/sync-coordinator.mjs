@@ -175,7 +175,7 @@ export async function syncAccount(
   const acc = await accounts.get(accountId);
   if (!acc || !acc.enabled) return;
   // An account whose credentials the server rejected stays enabled, so
-  // `enabled` alone no longer holds syncing back. Refusing here covers every
+  // `enabled` alone does not hold syncing back. Refusing here covers every
   // caller at once; without it each autosync tick would present the same
   // rejected credentials again, which is how servers decide to lock an
   // account out. Cleared by authenticating, or by disabling the account.

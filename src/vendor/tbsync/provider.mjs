@@ -748,11 +748,10 @@ export class TbSyncProviderImplementation {
           ok: false,
           error: err.message ?? "unknown error",
           errorCode: errorCodeFor(err),
-          // Only `message` crosses the port, so a programming error inside a
-          // provider used to arrive with no origin at all - and the host's
-          // own stack points at the wrapper it just built, not at the fault.
-          // One reproduction with this in place located a TypeError that had
-          // been unfindable by reading code.
+          // Only `message` crosses the port, and the host's own stack points
+          // at the wrapper it just built rather than at the fault, so
+          // without this a programming error inside a provider arrives with
+          // no origin at all.
           errorDetails: err.details ?? err.stack ?? null,
         });
       }

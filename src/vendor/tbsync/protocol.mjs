@@ -35,18 +35,15 @@
  *
  *   1.3  Discovery is driven by the host instead of guessed at by the
  *        provider. A 1.3 provider announces exactly once, when it is ready,
- *        and otherwise waits to be told the host is listening; the retry
- *        schedule it used to fall back on is gone. Against a host that never
- *        broadcasts HOST_READY it would therefore fail to register on every
- *        start it lost the race for - which is why this is a version bump
- *        and not a drop-in change. PROBE renamed to HOST_READY.
+ *        and otherwise waits to be told the host is listening. Against a
+ *        host that never broadcasts HOST_READY it fails to register on
+ *        every start it loses the race for, which is why this is a version
+ *        bump and not a drop-in change.
  *
- *   2    Everything since the last release. 5.0.13 shipped 1.3, and 2 has
- *        never been released, so it is still open: a change that lands
- *        before the next release belongs *in* this entry rather than in a
- *        number of its own. There is no 2 in the wild to stay compatible
- *        with, and every peer that will ever speak 2 is being built from
- *        this tree.
+ *   2    The version this tree speaks. 5.0.13 shipped 1.3, so 2 is not yet
+ *        released and stays open until it is: anything landing before then
+ *        belongs in this entry, since every peer that will speak 2 is built
+ *        from this tree.
  *
  *        HOST_CMD.RELOAD: the host can ask a provider to reload itself. No
  *        extension can reload another - runtime.reload() takes no id and
@@ -55,17 +52,15 @@
  *
  *        Folder rows carry `sessionId`, and a provider may keep its own
  *        change queue namespaced by it (see the field's notes below). That
- *        is what makes 2 unpairable with 1.3 for a second reason: those
- *        rows have no session, so nothing would tell such a provider that a
- *        folder it still holds a queue for has been torn down and
- *        re-created, and edits belonging to a dead binding would be pushed
- *        into a live one. HOST_CMD.GET_CHANGELOG reads those queues.
+ *        is the second reason 2 cannot pair with 1.3: those rows have no
+ *        session, so nothing tells such a provider that a folder it still
+ *        holds a queue for has been torn down and re-created, and edits
+ *        belonging to a dead binding would be pushed into a live one.
+ *        HOST_CMD.GET_CHANGELOG reads those queues.
  *
- *        Versions are integers from here on. The dotted form implied minor
- *        bumps that a peer could tolerate, which was never true: the host
- *        refuses any provider whose version is not exactly its own.
- *
- *        PORT_NAME also stopped carrying the version - see below.
+ *        Versions are integers from here on: the dotted form implied minor
+ *        bumps a peer could tolerate, and the host refuses any provider
+ *        whose version is not exactly its own.
  */
 export const PROTOCOL_VERSION = 2;
 
@@ -76,23 +71,20 @@ export const PROTOCOL_VERSION = 2;
  *  entirely different mechanism, so the name says which era of TbSync is
  *  calling and nothing more.
  *
- *  It deliberately does *not* carry the protocol version, though it used to.
- *  The theory was that a breaking bump should leave mismatched peers unable
- *  to connect - but the version is agreed before any port exists: the host
- *  refuses a mismatched ANNOUNCE and only opens a port to a provider it has
- *  already accepted. The two names could therefore never disagree, and the
- *  check could never fire.
+ *  It deliberately does *not* carry the protocol version. The version is
+ *  agreed before any port exists - the host refuses a mismatched ANNOUNCE
+ *  and only opens a port to a provider it has already accepted - so a
+ *  version in this name could never disagree with it and never fire.
  *
- *  Where it could only have made things worse. A name mismatch is answered
- *  with a bare `return` in the provider's onConnectExternal listener: no
- *  error, no log, nothing for anyone to read. The version check writes the
- *  reason to the event log instead. Encoding the version here again would
- *  only add a way for a future bump to produce a silent, unexplainable
- *  disconnect by updating one constant and forgetting the other.
+ *  Encoding it here would only make failures quieter: a name mismatch is
+ *  answered with a bare `return` in the provider's onConnectExternal
+ *  listener - no error, no log - while the version check writes the reason
+ *  to the event log. A future bump that updated one constant and forgot the
+ *  other would produce a silent, unexplainable disconnect.
  *
- *  What actually guards this port is the sender check beside it - only
- *  TbSync's own extension id is accepted. The name just distinguishes this
- *  port from any other the extension may receive. */
+ *  What guards this port is the sender check beside it - only TbSync's own
+ *  extension id is accepted. The name just distinguishes this port from any
+ *  other the extension may receive. */
 export const PORT_NAME = "tbsync-v5";
 
 /** Discovery message types (runtime.onMessageExternal, one-shot).
@@ -525,10 +517,10 @@ export const ERR = {
   UNKNOWN_COMMAND: "E:UNKNOWN_COMMAND",
   // The provider threw something that is not one of the codes below - a
   // TypeError, a failed assertion, a bug. Distinct from UNKNOWN_COMMAND,
-  // which used to absorb these: that says the *command* was wrong, sending
-  // whoever reads it after the caller when the fault is inside the provider.
-  // The message is deliberately not shown to the user; it is a stack or a
-  // JS error string, and the event log is where it belongs.
+  // which says the *command* was wrong and would send whoever reads it
+  // after the caller when the fault is inside the provider. The message is
+  // deliberately not shown to the user; it is a stack or a JS error string,
+  // and the event log is where it belongs.
   PROVIDER_FAULT: "E:PROVIDER_FAULT",
   TIMEOUT: "E:TIMEOUT",
   // Asked to reload while permanently installed. Not a malfunction - the

@@ -281,10 +281,10 @@ router.setProviderRpcHandler(
     const result = await folders.replaceAccountFolders(accountId, descriptors);
     ui.broadcast({ type: "folders-changed", accountId });
     // Server removed these folders. The row is already gone (replaceAccount
-    // Folders just wrote storage), so the watcher's onRemoved listener will
-    // no-op when our deletes fire below. Cache populate already happened
-    // for any selected rows; deleting the local target now does not affect
-    // the cache. We skip awaiting individual deletes - they're best-effort.
+    // Folders just wrote storage), so the watcher's onRemoved listener
+    // no-ops when our deletes fire below. Cache populate already happened
+    // for any selected rows, so deleting the local target does not affect
+    // the cache. Individual deletes are best-effort and not awaited.
     for (const t of result.removedTargets) {
       deleteLocalTargetBestEffort(t).catch((err) =>
         console.debug(
@@ -838,11 +838,10 @@ ui.setManagerRpcHandler("authenticateAccount", async ({ accountId }) => {
     // pill across the whole sequence.
     if (!caught && statusData?.type === STATUS_TYPES.SUCCESS) {
       await accounts.update(accountId, { error: null });
-      // An auth failure no longer disables the account, so normally there is
-      // nothing to re-enable. Accounts stranded by the version that did
-      // disable them still need the enable flow to rebuild their Thunderbird
-      // resources and folder list, so they heal on the first authentication
-      // after an upgrade.
+      // An auth failure leaves the account enabled, so normally there is
+      // nothing to re-enable. An account stranded in the disabled state
+      // still needs the enable flow to rebuild its Thunderbird resources
+      // and folder list, so it heals on its first authentication.
       if (!acc.enabled) {
         await router.sendCmd(acc.provider, HOST_CMD.ACCOUNT_ENABLED, {
           accountId,
@@ -1069,9 +1068,9 @@ ui.setManagerRpcHandler(
       if (!selected) {
         // The provider has unhooked and cleared its per-folder state above;
         // deleting the resource itself is the host's job in every flow. The
-        // row captured before the RPC still carries the target, because the
-        // provider no longer clears binding fields it will not need - and
-        // even if it did, `folder` predates the call.
+        // row captured before the RPC still carries the target: the provider
+        // does not clear binding fields it will not need, and `folder`
+        // predates the call in any case.
         await deleteTargetsBestEffort([folder]);
       }
       // On disable, wipe the host-owned per-folder fields so re-enable shows
