@@ -533,7 +533,9 @@ ui.setManagerRpcHandler("getState", async () => {
       // fundraiser could not be, so it gets its own state and its own label.
       state: known.kind === "fundraiser" ? "fundraiser" : "uninstalled",
       capabilities: {},
-      icons: {},
+      // Bundled with the host when the catalogue carries them. An entry
+      // with no add-on behind it has nobody else to announce an icon.
+      icons: known.icons ?? {},
       installUrl: linkFor(known),
     });
   }

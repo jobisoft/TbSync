@@ -29,8 +29,19 @@ function providerUrlPrefix(provider) {
 
 export function providerIconUrl(providerId, providers) {
   const hit = providers.find((p) => p.providerId === providerId);
-  if (!hit || hit.state !== "active") return fallbackUrl();
-  return hit.icons?.["16"] ?? hit.icons?.["32"] ?? fallbackUrl();
+  const icon = hit?.icons?.["16"] ?? hit?.icons?.["32"];
+  if (!icon) return fallbackUrl();
+  // Two kinds of icon reach this function, told apart by whether the path
+  // is absolute. A running provider announces `moz-extension://` URLs into
+  // its own package; those die with it, so a provider that is not active
+  // falls back rather than rendering a broken image. A catalogue entry
+  // instead names a file inside *this* add-on, which resolves whatever the
+  // provider is doing - and is the only way a row with no add-on behind it
+  // can have an icon at all.
+  if (/^[a-z][a-z0-9+.-]*:/i.test(icon)) {
+    return hit.state === "active" ? icon : fallbackUrl();
+  }
+  return browser.runtime.getURL(icon);
 }
 
 /** Icon URL for an account row. Resolves the per-account icon override

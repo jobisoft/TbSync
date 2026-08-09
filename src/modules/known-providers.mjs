@@ -44,6 +44,14 @@ export const KNOWN_PROVIDERS = {
     // beta host pairing with a release provider; a campaign has no build
     // to be skewed against.
     url: "https://gofund.me/ff4f56354",
+    // Paths inside *this* add-on, size-keyed like the icons a running
+    // provider announces - so they flow into the row's `icons` with no
+    // translation. A provider normally supplies its own, which is why the
+    // other entries have none; there is no add-on here to supply any.
+    icons: {
+      16: "icons/exchange-graph_16.png",
+      32: "icons/exchange-graph_32.png",
+    },
   },
 };
 
