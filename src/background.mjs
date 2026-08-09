@@ -411,6 +411,62 @@ router.setProviderRpcHandler(
   },
 );
 
+/**
+ * Mark resources a provider can no longer sync, so they stop looking like
+ * working ones.
+ *
+ * Normally there is nothing here to do: the host deletes a target in every
+ * teardown flow, so by the time a provider notices the binding is gone the
+ * calendar or book is gone too. The case this exists for is the host losing
+ * its own rows - reinstalling TbSync - which leaves the resources behind
+ * with nothing syncing them and no way to reconnect them: the provider's
+ * queued edits name ids from the old binding, and the sync keys that would
+ * have placed them went with the rows.
+ *
+ * Marked, not deleted. The data is the user's, a rename is reversible, and
+ * a provider's belief that it has been orphaned is not grounds for
+ * destroying a calendar. Calendars are also disabled, which is the clearest
+ * signal the platform offers; address books have no disabled state, so the
+ * name is the whole signal there.
+ */
+router.setProviderRpcHandler(
+  PROVIDER_CMD.REPORT_ORPHANED_TARGETS,
+  async (_providerId, args) => {
+    const prefix = browser.i18n.getMessage("orphanedResourcePrefix");
+    for (const { targetID, targetType } of args?.targets ?? []) {
+      if (!targetID || !prefix) continue;
+      try {
+        if (targetType === "contacts") {
+          const book = await messenger.addressBooks.get(targetID);
+          if (!book || book.name.startsWith(prefix)) continue;
+          await messenger.addressBooks.update(targetID, {
+            name: prefix + book.name,
+          });
+        } else {
+          const cal = await messenger.calendar.calendars.get(targetID);
+          if (!cal) continue;
+          const patch = {};
+          if (!cal.name.startsWith(prefix)) patch.name = prefix + cal.name;
+          if (cal.enabled) patch.enabled = false;
+          if (!Object.keys(patch).length) continue;
+          await messenger.calendar.calendars.update(targetID, patch);
+        }
+        await eventLog.append({
+          accountId: null,
+          folderId: null,
+          level: "warning",
+          message: `A local resource is no longer synced by any account and has been marked: ${targetID}`,
+        });
+      } catch (err) {
+        // Already gone is the normal outcome - every ordinary teardown
+        // deletes the target before the provider ever gets here.
+        console.debug(`[tbsync] could not mark orphan ${targetID}:`, err);
+      }
+    }
+    return null;
+  },
+);
+
 router.setProviderRpcHandler(
   PROVIDER_CMD.LEGACY_MIGRATION_DONE,
   async (providerId, args) => {
@@ -696,7 +752,7 @@ ui.setManagerRpcHandler("authenticateAccount", async ({ accountId }) => {
 
 ui.setManagerRpcHandler(
   "deleteAccount",
-  async ({ accountId, purgeTargets = true }) => {
+  async ({ accountId }) => {
     const acc = await accounts.get(accountId);
     if (!acc) return null;
     // The last-resort exit refuses nothing: no upgrade guard, no transient
@@ -726,14 +782,14 @@ ui.setManagerRpcHandler(
             details: err?.details ?? null,
           });
         }
-        // Rows first, targets second - see the disconnect handler: clearing
-        // the rows unhooks the changelog watcher before the deletions fire
-        // their cascade of events. `purgeTargets` is the host's decision
-        // now; the provider never deletes targets in any flow.
+        // Rows first, targets second. Clearing the rows ends every one of
+        // this account's bindings before the deletions fire their cascade
+        // of events, so nothing is left resolving ids that are going away.
+        // Removing an account always takes its local resources with it -
+        // the confirmation says so - and the provider never deletes a
+        // target in any flow.
         await folders.clearAccount(accountId);
-        if (purgeTargets !== false) {
-          await deleteTargetsBestEffort(rows);
-        }
+        await deleteTargetsBestEffort(rows);
         await accounts.remove(accountId);
       });
     } finally {

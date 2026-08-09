@@ -252,6 +252,14 @@ export class TbSyncProviderImplementation {
    *
    *  Resolves when the sync it asked for has finished, so a caller answering
    *  a platform hook can report a real outcome. */
+  /** Tell the host about resources this provider has stopped syncing and
+   *  cannot resume - see REPORT_ORPHANED_TARGETS. Best-effort: the host
+   *  marks them for the user, and nothing here depends on the answer. */
+  reportOrphanedTargets(targets) {
+    if (!targets?.length) return Promise.resolve(null);
+    return this.#sendCmd(PROVIDER_CMD.REPORT_ORPHANED_TARGETS, { targets });
+  }
+
   requestSync(args) {
     return this.#sendCmd(PROVIDER_CMD.REQUEST_SYNC, args);
   }

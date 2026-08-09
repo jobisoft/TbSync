@@ -331,5 +331,9 @@
   },
   "manager.resources.col.syncStatus": {
     "message": "Estado de sincronización"
+  },
+  "orphanedResourcePrefix": {
+    "message": "[Huérfano] ",
+    "description": "Prefix put in front of a calendar or address book that no account syncs any more, so it is recognisable in Thunderbird's lists. Keep the trailing space."
   }
 }

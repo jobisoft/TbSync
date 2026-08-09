@@ -28,20 +28,6 @@
 
 // ── Vocabulary ────────────────────────────────────────────────────────────
 
-/** Every `kind` a row may carry. Validated at each wire boundary so no row
- *  can be written or matched with a meaningless one. */
-export const ALLOWED_CHANGELOG_KINDS = [
-  "contact",
-  "list",
-  "list-by-name",
-  "membership",
-  "event",
-  "task",
-];
-
-/** The observer ops a row can be recorded from. */
-export const CHANGELOG_OPS = ["created", "updated", "deleted"];
-
 /** The pre-tag statuses. Load-bearing strings: an unknown one would be
  *  invisible to `isServerTag` and masquerade as a user entry. */
 export const SERVER_TAG_STATUSES = [
@@ -76,11 +62,11 @@ export const FREEZE_MS = 1500;
  *  Flip to `false` to restore keep-alive if a future TB version (or a
  *  different provider) starts emitting follow-ups - the leak will return
  *  but suppression will cover both events. */
-export const DROP_SERVER_TAGS_ON_CONSUME = true;
+const DROP_SERVER_TAGS_ON_CONSUME = true;
 
 // ── Predicates ────────────────────────────────────────────────────────────
 
-export function isServerTag(status) {
+function isServerTag(status) {
   return (
     status === "added_by_server" ||
     status === "modified_by_server" ||
@@ -94,12 +80,12 @@ export function isUserEntry(status) {
 }
 
 /** A row's identity: the triple, as a string key. */
-export function rowKey({ parentId, itemId, kind }) {
+function rowKey({ parentId, itemId, kind }) {
   return `${parentId}|${itemId}|${kind}`;
 }
 
 /** Whether `entry` IS the row identified by the triple. */
-export function sameRow(entry, { parentId, itemId, kind }) {
+function sameRow(entry, { parentId, itemId, kind }) {
   return (
     entry.parentId === parentId &&
     entry.itemId === itemId &&
@@ -118,7 +104,7 @@ export function sameRow(entry, { parentId, itemId, kind }) {
  * Returns the next status, or `"skip"` to leave the existing entry alone,
  * or `"drop"` to remove it (an add cancelled by a delete).
  */
-export function decideUserStatus(op, prior) {
+function decideUserStatus(op, prior) {
   switch (op) {
     case "created":
       switch (prior) {
@@ -156,7 +142,7 @@ export function decideUserStatus(op, prior) {
   }
 }
 
-export function applyUserTransition(
+function applyUserTransition(
   entries,
   { kind, parentId, itemId, op, now, priorStatus },
 ) {

@@ -340,6 +340,26 @@ export const PROVIDER_CMD = {
   LIST_ACCOUNTS: "listAccounts",
   GET_ACCOUNT: "getAccount",
   FOLDER_TARGET_REMOVED: "folderTargetRemoved",
+  /** `{ targets: [{ targetID, targetType }] }` - resources this provider
+   *  has stopped syncing and cannot resume.
+   *
+   *  Sent when a provider sweeps state belonging to a binding the host no
+   *  longer names. Normally that binding's resource is already gone, since
+   *  the host deletes targets in every teardown flow - so a resource that
+   *  still exists here is one nothing will ever sync again. The usual way
+   *  to get one is reinstalling TbSync: its rows go, the provider's queues
+   *  reference ids that no longer resolve, and the calendars and books are
+   *  left behind, silently, looking exactly like working ones.
+   *
+   *  The host renames each to mark it, and disables it where the platform
+   *  has a notion of disabled (calendars do; address books do not). It does
+   *  not delete: the data is the user's, the name is reversible, and a
+   *  provider's belief that it has been orphaned is not grounds for
+   *  destroying a calendar.
+   *
+   *  The provider says *which*; the host decides *what to do with a
+   *  resource*, as it already does for creation and deletion. */
+  REPORT_ORPHANED_TARGETS: "reportOrphanedTargets",
   REQUEST_SYNC: "requestSync",
   // Provider-scoped upgrade lock. While locked, the host treats every
   // account belonging to the provider as "upgrading" - refuses every

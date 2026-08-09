@@ -295,22 +295,30 @@ export async function lookupBinding(targetID) {
 
 /**
  * Drop every queue whose session no folder row names, and every binding
- * pointing at one. `live` is the set of session ids currently in the host's
- * folder rows.
+ * whose target no folder row points at. Two different questions, so two
+ * different inputs: `liveSessions` decides what a queue belongs to,
+ * `liveTargets` decides whether a local resource is still bound.
  *
  * This is the entire teardown path. A folder deselected, an account
  * disconnected, a calendar deleted, a whole account removed while this
  * add-on was uninstalled - all of them end the same way: the host stops
  * naming a session, and the next time we look we do not recognise it.
  *
+ * Returns `{queues, orphans}` - what was deleted, and the local resources
+ * those bindings pointed at. A caller passes the orphans to the host, which
+ * marks any that still exist; see REPORT_ORPHANED_TARGETS.
+ *
  * Only ever called with rows actually read from the host. Sweeping against
  * an empty or partial list would delete live queues, so a caller that could
  * not read the rows must not call this at all.
  */
-export function sweep(liveSessionIds) {
-  const live = liveSessionIds instanceof Set
-    ? liveSessionIds
-    : new Set(liveSessionIds ?? []);
+export function sweep({ liveSessions, liveTargets } = {}) {
+  const live = liveSessions instanceof Set
+    ? liveSessions
+    : new Set(liveSessions ?? []);
+  const targets = liveTargets instanceof Set
+    ? liveTargets
+    : new Set(liveTargets ?? []);
   return serialize(async () => {
     const all = await browser.storage.local.get(null);
     const drop = [];
@@ -327,18 +335,35 @@ export function sweep(liveSessionIds) {
       });
     }
 
+    // A binding is judged on its TARGET, not on its session. A session that
+    // merely moved on still describes a resource the host is naming, and
+    // that resource is very much alive; what makes one an orphan is that no
+    // folder row points at it any more. Judging by session would have
+    // called a rebound folder orphaned and left a live calendar renamed and
+    // switched off.
     const bindings = all[BINDINGS_KEY] ?? {};
     const keptBindings = {};
-    let bindingsDirty = false;
+    const orphans = [];
     for (const [targetID, b] of Object.entries(bindings)) {
-      if (live.has(b?.sessionId)) keptBindings[targetID] = b;
-      else bindingsDirty = true;
+      if (targets.has(targetID)) {
+        keptBindings[targetID] = b;
+        continue;
+      }
+      // Usually already deleted - every ordinary teardown removes the
+      // resource before we get here - so this is a list of candidates and
+      // the host skips the ones that are gone.
+      orphans.push({
+        targetID,
+        targetType: b?.targetType ?? null,
+        accountId: b?.accountId ?? null,
+        folderId: b?.folderId ?? null,
+      });
     }
 
     if (drop.length) await browser.storage.local.remove(drop.map((d) => d.key));
-    if (bindingsDirty) {
+    if (orphans.length) {
       await browser.storage.local.set({ [BINDINGS_KEY]: keptBindings });
     }
-    return drop;
+    return { queues: drop, orphans };
   });
 }

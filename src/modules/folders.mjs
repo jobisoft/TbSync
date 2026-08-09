@@ -297,12 +297,9 @@ export async function clearTarget(accountId, folderId) {
   return true;
 }
 
-/** All folder rows that currently have a non-null `targetID`. The watcher
- *  uses this at startup + on every folders-changed broadcast to rebuild
- *  its `bookId → {accountId, folderId}` registry. */
 /** The folder bound to `targetID`, or null. Lets a provider report against
- *  the resource it was handed without having to carry an id mapping of its
- *  own - the host owns that table, so it does the lookup. */
+ *  the resource it was handed without carrying an id mapping of its own -
+ *  the host owns that table, so it does the lookup. */
 export async function getByTarget(targetID) {
   if (!targetID) return null;
   const state = await read();
@@ -314,22 +311,4 @@ export async function getByTarget(targetID) {
     }
   }
   return null;
-}
-
-export async function listWatchedTargets() {
-  const state = await read();
-  const out = [];
-  for (const [accountId, bucket] of Object.entries(state)) {
-    for (const folder of Object.values(bucket)) {
-      if (folder?.targetID) {
-        out.push({
-          accountId,
-          folderId: folder.folderId,
-          targetID: folder.targetID,
-          targetType: folder.targetType ?? null,
-        });
-      }
-    }
-  }
-  return out;
 }
