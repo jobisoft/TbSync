@@ -18,8 +18,20 @@ it. Copied into all three repos — **including TbSync itself**.
 | `status.mjs` | the StatusData result shape sync RPCs return |
 | `provider.mjs` | the provider SDK base class (host-side code never imports it) |
 | `changelog-core.mjs` | the changelog state machine, as pure `entries → entries` functions |
+| `change-queue.mjs` | the session-keyed queue a provider records edits into, plus binding lookup and the sweep |
 | `storage-queue.mjs` | `serialize()`, the read-modify-write mutex for extension storage |
+| `address-book.mjs` | everything a provider does with a Thunderbird address book: the calls it makes, and the watching it does |
+| `calendar.mjs` | the same for a calendar. Carries no provider identity — `createCalendar` is told the calling add-on's `type` and `url` |
 | `changelog-core.test.mjs` | unit tests for the core — stay here, not vendored |
+
+The rule for what belongs here: **vendor what the platform shapes, not what
+a service shapes.** Address books and calendars are Thunderbird's, so their
+wrappers are shared. OAuth is Microsoft's and Google's — two genuinely
+different flows that happen to share a filename — so it is not.
+
+A shared file may still need to know *which* add-on it is running in. That
+is passed in, never baked in: `createCalendar` takes the `type` and `url`,
+because a calendar's type is the id of the add-on supplying it.
 
 `build.js` zips `src/` and nothing else, so anything outside it is invisible
 to every xpi. A shared directory therefore cannot be imported directly by

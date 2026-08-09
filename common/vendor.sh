@@ -26,7 +26,7 @@ SIBLINGS_DIR="$(dirname "$TBSYNC_DIR")"
 # test-harness/ is Python and never ships; it is the loopback client and
 # test registry the providers' bridge suites import.
 PROTOCOL_FILES=(protocol.mjs provider.mjs status.mjs changelog-core.mjs
-                storage-queue.mjs change-queue.mjs contacts-observer.mjs)
+                storage-queue.mjs change-queue.mjs address-book.mjs calendar.mjs)
 HARNESS_FILES=(bridge.py harness.py)
 
 # The unit tests (*.test.mjs) deliberately stay here: they test the one
