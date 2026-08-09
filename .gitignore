@@ -1,6 +1,5 @@
 *.xpi
 dist
-dev
 node_modules
 __pycache__
 

@@ -811,7 +811,7 @@ export class TbSyncProviderImplementation {
     }
   }
 
-  /** Reload this add-on, so a rebuilt `dev/` tree takes effect without a
+  /** Reload this add-on, so a rebuilt xpi takes effect without a
    *  reinstall.
    *
    *  Only meaningful for a temporarily installed add-on: `runtime.reload()`

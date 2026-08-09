@@ -11,8 +11,8 @@
  * ## Why this file is alone in `beta/`
  *
  * Everything the feature needs lives here, so the build can leave it out by
- * simply not copying it: `beta/` is applied to the beta xpi and to `dev/`,
- * never to the ATN xpi. Its whole footprint in `src/` is two dynamic imports
+ * simply not copying it: `beta/` is applied to the beta xpi and never to
+ * the ATN xpi. Its whole footprint in `src/` is two dynamic imports
  * inside try/catch - one in background.mjs, one in manager/manager.mjs - which
  * throw harmlessly when the file is absent. Feature presence is file presence;
  * there is no flag to get wrong.
@@ -241,7 +241,7 @@ const COMMANDS = {
     run: () => browser.tbsyncConsole.clear(),
   },
 
-  /** Reload TbSync itself, so a rebuilt `dev/` tree takes effect without a
+  /** Reload TbSync itself, so a rebuilt xpi takes effect without a
    *  reinstall. Unscoped: it touches no account data, like setLogLevel.
    *
    *  Answers before reloading, and has to. The reload takes the native port

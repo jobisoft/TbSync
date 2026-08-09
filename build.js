@@ -19,8 +19,8 @@ const fs = require("fs");
 const path = require("path");
 const zlib = require("zlib");
 
-// Root-level folder mirroring `src/`, applied on top of it for the beta and
-// dev builds. See collectOverlay for the merge rules.
+// Root-level folder mirroring `src/`, applied on top of it for the beta
+// build. See collectOverlay for the merge rules.
 const OVERLAY_DIR = "beta";
 
 // Deep-merge `overlay` onto a clone of `base`: nested plain objects merge
@@ -177,7 +177,7 @@ function rm(dir) {
 
 /**
  * Read the overlay folder into a map of `src/`-relative path → bytes, ready
- * to hand to zip() as `overrides` or to write over a dev/ copy.
+ * to hand to zip() as `overrides`.
  *
  *   *.json  - deep-merged onto its src/ counterpart when there is one, so an
  *             overlay file only has to carry what it changes: a manifest with
@@ -231,10 +231,6 @@ function collectOverlay(overlayDir, srcDir) {
 }
 
 function main() {
-  // `npm run dev` (node build.js --dev) runs the same preparation steps but
-  // emits an unpacked add-on in dev/ instead of packaged XPIs in dist/.
-  const dev = process.argv.includes("--dev");
-
   // package.json is the single source of truth for the version, so `npm
   // version` drives the release and the manifest follows. The `version`
   // script re-runs this build and stages src/, which folds the rewritten
@@ -245,30 +241,11 @@ function main() {
   fs.writeFileSync("src/manifest.json", JSON.stringify(manifest, null, 2) + "\n");
   console.log(`Set manifest version to ${version}`);
 
-  const outDir = dev ? "dev" : "dist";
-  console.log(`Cleaning output directory (${outDir}) ...`);
-  rm(outDir);
+  console.log("Cleaning output directory (dist) ...");
+  rm("dist");
 
   const overlay = collectOverlay(OVERLAY_DIR, "src");
   const overlayCount = Object.keys(overlay).length;
-
-  if (dev) {
-    // Emit the live code unpacked, ready to load as a temporary add-on. The
-    // overlay goes on top, so what you develop against is the beta tree - a
-    // beta-only feature is otherwise impossible to run unpacked.
-    console.log("Copying src to dev/ (unpacked) ...");
-    fs.cpSync("src", "dev", { recursive: true });
-    if (overlayCount) {
-      console.log(`Applying ${OVERLAY_DIR}/ overlay (${overlayCount} file(s)) ...`);
-      for (const [rel, data] of Object.entries(overlay)) {
-        const dest = path.join("dev", rel);
-        fs.mkdirSync(path.dirname(dest), { recursive: true });
-        fs.writeFileSync(dest, data);
-      }
-    }
-    console.log("Dev build finished. Load the unpacked add-on from the 'dev' folder.");
-    return;
-  }
 
   const xpiVersion = version.replace(/\./g, "_");
 
