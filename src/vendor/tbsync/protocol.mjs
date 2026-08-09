@@ -51,8 +51,16 @@
  *        refuses any provider whose version is not exactly its own.
  *
  *        PORT_NAME also stopped carrying the version - see below.
+ *
+ *   3    Folder rows carry `sessionId`, and a provider may keep its own
+ *        change queue namespaced by it (see the field's notes below). A
+ *        provider that does so cannot pair with a 2 host: those rows have
+ *        no session, so nothing would tell the provider that a folder it
+ *        still holds a queue for has been torn down and re-created, and
+ *        edits belonging to a dead binding would be pushed into a live
+ *        one. HOST_CMD.GET_CHANGELOG arrives with it.
  */
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 
 /** Name used for the persistent runtime.connect port.
  *
@@ -156,6 +164,18 @@ export const HOST_CMD = {
   // source; the base class refuses otherwise rather than restarting the same
   // code and reporting success.
   RELOAD: "reload",
+  /** `{ accountId, folderId }` → the provider's own pending change queue
+   *  for that folder, as changelog rows, or `null` if it keeps none.
+   *
+   *  The read side of provider-owned queues. Where the provider owns the
+   *  changes (see `providerOwnsChanges` in changelog-core.mjs), the folder
+   *  row's `changelog` is empty and this is the only way to see what is
+   *  pending - the host needs it for diagnostics and the bridge's test
+   *  suites read it after every sync. A provider that keeps no queue of
+   *  its own answers `null`, and the caller falls back to the folder row.
+   *
+   *  Read-only: answering must not consume, re-order, or repair anything. */
+  GET_CHANGELOG: "getChangelog",
 };
 
 /** Provider → TbSync command names (RPC).
@@ -203,7 +223,32 @@ export const HOST_CMD = {
  * Folder universal fields:
  *   folderId, accountId, targetType, displayName, selected, readOnly,
  *   downloadOnly, hidden, status, warning, error, lastSyncTime, orderIndex,
- *   targetID, targetName, targetColor, changelog, custom
+ *   targetID, targetName, targetColor, changelog, sessionId, custom
+ *
+ * `sessionId` names the current *binding* of this folder - one generation
+ * of "this row, this local resource, this sync state". The host mints it,
+ * never reuses one, and replaces it whenever that generation ends: the
+ * folder is deselected, or its local resource is deleted. The row itself
+ * survives; what it was is over.
+ *
+ * It exists so a provider can keep per-folder state of its own - a change
+ * queue, most of all - without the host having to reach into that state to
+ * clean it up. The provider namespaces everything it stores by the session
+ * it saw; the host ends a generation by changing the id, which is a
+ * host-side fact needing no live provider (that is the point: Disconnect
+ * and Remove have to work when a provider is broken or gone). Next time the
+ * provider is asked anything, the session it holds data under is no longer
+ * one the host names, and it purges it.
+ *
+ * A provider MUST therefore:
+ *   - read `sessionId` from the folder row, never cache it across a sync;
+ *   - key everything it persists per folder by it;
+ *   - drop, on sight, anything stored under a session no folder row names.
+ * A provider that ignores it would push edits belonging to a binding the
+ * user has already thrown away.
+ *
+ * `changelog` stays host-owned and stays empty for folders whose changes
+ * the provider owns; HOST_CMD.GET_CHANGELOG reads those.
  *
  * `readOnly` is server-announced (provider-authored from the server's ACL).
  * `downloadOnly` is the user override surfaced as the manager's ACL toggle;

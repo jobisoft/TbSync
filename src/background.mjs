@@ -75,6 +75,15 @@ async function ensureSchema() {
     [KEYS.SETTINGS]: null,
   });
   if (rv[KEYS.SCHEMA_VERSION] !== CURRENT_SCHEMA_VERSION) {
+    // Fixups run before the version is stamped, so an interrupted upgrade
+    // is retried on the next boot rather than skipped. Each is idempotent
+    // for the same reason.
+    if (rv[KEYS.SCHEMA_VERSION] < 2) {
+      const stamped = await folders.backfillSessionIds();
+      if (stamped) {
+        console.info(`[tbsync] gave ${stamped} folder row(s) a session id`);
+      }
+    }
     await serialize(() =>
       browser.storage.local.set({
         [KEYS.SCHEMA_VERSION]: CURRENT_SCHEMA_VERSION,
@@ -1068,6 +1077,11 @@ ui.setManagerRpcHandler(
       // On disable, wipe the host-owned per-folder fields so re-enable shows
       // a clean slate. The provider handles its remaining per-folder state
       // (custom.*, targetID, targetName) inside FOLDER_DISABLED above.
+      //
+      // The new session is what makes that last part true even when the
+      // FOLDER_DISABLED above never arrived - the provider was down, or
+      // died mid-handler. Whatever it still holds for this folder is filed
+      // under a session nothing names now, and goes when it next looks.
       const patch = selected
         ? { selected }
         : {
@@ -1077,6 +1091,7 @@ ui.setManagerRpcHandler(
             warning: null,
             error: null,
             changelog: [],
+            sessionId: folders.newSession(),
           };
       await folders.update(accountId, folderId, patch);
       // Recompute account.error: deselecting a failing folder should

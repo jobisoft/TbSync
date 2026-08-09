@@ -17,7 +17,15 @@ export const KEYS = {
   MIGRATION: "tbsync.migration",
 };
 
-export const CURRENT_SCHEMA_VERSION = 1;
+/** Bumped when stored data needs a one-off fixup on the way in.
+ *
+ *   2  Every folder row carries a `sessionId` - the id of its current
+ *      binding, which providers namespace their own per-folder state by.
+ *      Rows written before it exists get one stamped on (folders.mjs
+ *      `backfillSessionIds`); a row without one would leave a provider
+ *      keeping state it can never be told to drop.
+ */
+export const CURRENT_SCHEMA_VERSION = 2;
 
 export const DEFAULT_SETTINGS = {
   // Event-log capture gate. 0 = errors only, 1 = errors + warnings,

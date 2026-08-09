@@ -427,6 +427,16 @@ export class TbSyncProviderImplementation {
     throw this.#notImplemented("onGetSortedFolders");
   }
 
+  /** The pending change queue this provider keeps for a folder, as
+   *  changelog rows - or `null` (the default) if it keeps none and the
+   *  host's own `folder.changelog` is the whole story.
+   *
+   *  Read-only. It is asked for diagnostics and by test suites, never as
+   *  part of a sync, so answering must not consume or repair anything. */
+  async onGetChangelog(_args) {
+    return null;
+  }
+
   async onReauthenticate(_args) {
     throw this.#notImplemented("onReauthenticate");
   }
@@ -787,6 +797,8 @@ export class TbSyncProviderImplementation {
         return this.onFolderDisabled(args);
       case HOST_CMD.GET_SORTED_FOLDERS:
         return this.onGetSortedFolders(args);
+      case HOST_CMD.GET_CHANGELOG:
+        return this.onGetChangelog(args);
       // Answered here rather than by a subclass hook: the work is identical
       // for every provider and there is nothing one could usefully do
       // differently.

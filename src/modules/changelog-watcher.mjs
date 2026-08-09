@@ -159,6 +159,12 @@ export async function clearFolderTarget(accountId, folderId, targetID) {
       targetName: null,
       selected: false,
       contactHashes: {},
+      // Everything queued was queued against a resource that no longer
+      // exists - item ids resolving to nothing, edits to a book the user
+      // threw away. Ours is one field to clear; a provider's queue ends
+      // because the binding it was filed under ends here.
+      changelog: [],
+      sessionId: folders.newSession(),
     });
     if (targetID) registry.delete(targetID);
     ui.broadcast({ type: "folders-changed", accountId });

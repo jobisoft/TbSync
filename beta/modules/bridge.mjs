@@ -66,6 +66,7 @@ import * as folders from "./folders.mjs";
 import * as router from "./router.mjs";
 import { syncAccount } from "./sync-coordinator.mjs";
 import { HOST_CMD } from "../vendor/tbsync/protocol.mjs";
+import { providerOwnsChanges } from "../vendor/tbsync/changelog-core.mjs";
 
 const NATIVE_APP = "tbsync_bridge_host";
 
@@ -125,6 +126,46 @@ const COMMANDS = {
   getFolders: {},
   setLogLevel: {},
   clearEventLog: {},
+
+  /** What is still queued for a folder, wherever the queue lives.
+   *
+   *  For an address book that is `folder.changelog`, and this is only a
+   *  convenience. For a calendar it is the only way to see: the provider
+   *  owns those changes and keeps them in its own storage, so the folder
+   *  row's changelog is permanently empty - reading it would report
+   *  "nothing pending" for a folder holding a dozen unpushed edits.
+   *
+   *  Asking the provider fails loudly when the provider cannot answer. A
+   *  suite asserting "the queue drained" must never be handed an empty
+   *  list by a provider that was not there: that turns the single most
+   *  common breakage into a pass. */
+  getChangelog: {
+    scope: "folder",
+    async run({ folderId }, { accountId }) {
+      const row = await folders.get(accountId, folderId);
+      if (!row) throw new Error(`unknown folder ${folderId}`);
+      if (!providerOwnsChanges(row.targetType)) {
+        return { owner: "host", entries: row.changelog ?? [] };
+      }
+      const acc = await accounts.get(accountId);
+      if (!acc) throw new Error("unknown account");
+      if (!router.isProviderConnected(acc.provider)) {
+        throw new Error(`provider ${acc.provider} is not connected`);
+      }
+      const entries = await router.sendCmd(
+        acc.provider,
+        HOST_CMD.GET_CHANGELOG,
+        { accountId, folderId },
+      );
+      if (entries == null) {
+        throw new Error(
+          `provider ${acc.provider} owns the changes of ${folderId} ` +
+            `but keeps no queue for it`,
+        );
+      }
+      return { owner: acc.provider, entries };
+    },
+  },
 
   /** Only what is new since `sinceSeq`. Entries carry a per-process
    *  monotonic seq, so "what did this sync produce" is exact instead of

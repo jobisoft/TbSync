@@ -4,6 +4,7 @@ import {
   isUserEntry,
   markServerWriteUpdater,
   moveToTailUpdater,
+  providerOwnsChanges,
   recordUserEditUpdater,
   removeEntryUpdater,
 } from "../vendor/tbsync/changelog-core.mjs";
@@ -28,6 +29,61 @@ async function write(state) {
   await browser.storage.local.set({ [KEYS.FOLDERS]: state });
 }
 
+// ── Sessions ──────────────────────────────────────────────────────────────
+//
+// A folder row outlives the things hanging off it. It is deselected and
+// selected again, its local resource is deleted and re-created, and each
+// time the sync state that belonged to the old binding - keys, id maps,
+// pending edits - is worthless and dangerous to keep.
+//
+// The host cannot delete that state itself: most of it lives in the
+// provider, and the two flows that end a binding, Disconnect and Remove,
+// have to work when the provider is broken or uninstalled - that is what
+// makes them recovery paths. So the host does not delete; it renames. Each
+// binding gets a `sessionId`, minted here and never reused, and ending a
+// binding means minting a new one. A provider stores everything under the
+// session it saw and drops what belongs to sessions no row names any more.
+// Teardown becomes one local write that needs nobody's cooperation.
+
+/** A fresh, never-before-used binding id. Callers that are already writing
+ *  a patch put it in there; `bumpSession` is for the rest. */
+export function newSession() {
+  return crypto.randomUUID();
+}
+
+/** End this folder's current binding: whatever any provider still holds
+ *  under the old session is now unclaimed, and will be dropped the next
+ *  time that provider is asked anything. The row itself is untouched
+ *  otherwise - the folder can be bound again later.
+ *
+ *  Note that this is not a request. Nothing is sent, nothing is awaited on
+ *  the other side, and a provider that is not running at all misses nothing:
+ *  it finds out by not finding its session. */
+export function bumpSession(accountId, folderId) {
+  return update(accountId, folderId, { sessionId: newSession() });
+}
+
+/** Give a session to every row that predates them. Rows written before
+ *  sessions existed carry none, and a provider cannot namespace against
+ *  `undefined` - it would keep one anonymous bucket per folder and never
+ *  learn that a binding ended. Runs once, from the schema migration. */
+export function backfillSessionIds() {
+  return serialize(async () => {
+    const state = await read();
+    let stamped = 0;
+    for (const bucket of Object.values(state)) {
+      for (const folder of Object.values(bucket)) {
+        if (folder && !folder.sessionId) {
+          folder.sessionId = newSession();
+          stamped++;
+        }
+      }
+    }
+    if (stamped) await write(state);
+    return stamped;
+  });
+}
+
 export async function listForAccount(accountId) {
   const state = await read();
   const bucket = state[accountId] ?? {};
@@ -37,24 +93,34 @@ export async function listForAccount(accountId) {
 }
 
 /** `{ [accountId]: true }` for every account that has at least one
- *  selected folder carrying a pending user-side changelog entry -
- *  i.e. local changes that haven't been pushed to the server yet. The
- *  manager surfaces these as a "needs sync" status without needing to
- *  load each account's folders client-side. Read-only folders never
- *  accumulate user-side entries (the watcher skips them), so the
- *  `_by_user` filter implicitly handles that. */
+ *  selected folder carrying a pending user-side change - i.e. local edits
+ *  that haven't been pushed to the server yet. The manager surfaces these
+ *  as a "needs sync" status without needing to load each account's folders
+ *  client-side. Read-only folders never accumulate user-side entries (the
+ *  watcher skips them), so the `_by_user` filter implicitly handles that.
+ *
+ *  Where the provider owns the changes, the queue is not here to count, so
+ *  the count comes to us: the provider keeps `custom.pendingUserChanges`
+ *  roughly current as it queues and drains. Roughly is the right word and
+ *  the accepted cost - this drives a badge, and the alternative is asking
+ *  every provider over RPC to paint an icon. A stale count shows or hides
+ *  a dot; nothing reads it to decide what to sync. */
 export async function needsSyncMap() {
   const state = await read();
   const out = {};
   for (const [accountId, bucket] of Object.entries(state)) {
-    out[accountId] = Object.values(bucket).some(
-      (f) =>
-        f.selected &&
+    out[accountId] = Object.values(bucket).some((f) => {
+      if (!f.selected) return false;
+      if (providerOwnsChanges(f.targetType)) {
+        return Number(f.custom?.pendingUserChanges ?? 0) > 0;
+      }
+      return (
         Array.isArray(f.changelog) &&
         f.changelog.some(
           (e) => typeof e?.status === "string" && isUserEntry(e.status),
-        ),
-    );
+        )
+      );
+    });
   }
   return out;
 }
@@ -157,8 +223,12 @@ export function replaceAccountFolders(accountId, incoming) {
         // observer (changelog-watcher.mjs); consumed by the provider at sync
         // time. Entry shape: `{ parentId, itemId, timestamp, status }`.
         // Preserved across folder-list pushes so a re-push doesn't wipe
-        // pending entries.
+        // pending entries. Stays empty where the provider owns the changes.
         changelog: prior?.changelog ?? [],
+        // This binding's generation - see the Sessions block above. Kept
+        // like the changelog: a re-push is the provider re-describing the
+        // same folders, not the user tearing one down.
+        sessionId: prior?.sessionId ?? newSession(),
         // Host-owned contact-content hashes used by the watcher to suppress
         // TB ghost onUpdated events (PopularityIndex, address-picker
         // recency markers). Map shape: `{ [contactId]: sha1Hex }`.
