@@ -63,6 +63,22 @@ function errorCodeFor(err) {
   return ERR.PROVIDER_FAULT;
 }
 
+/** The human-readable error that crosses the port. Never the bare
+ *  "unknown error": XPCOM and DOM exceptions routinely arrive with an
+ *  EMPTY message (which `??` passes through untouched) while carrying a
+ *  `name` and a numeric `result` that identify the fault precisely - and
+ *  "unknown" in the Event Log once cost days of troubleshooting against a
+ *  failure whose real cause sat in the browser console (EAS #335). */
+function describeError(err) {
+  if (err?.message) return err.message;
+  const parts = [];
+  if (err?.name) parts.push(err.name);
+  if (err?.result != null) parts.push(`(result 0x${err.result.toString(16)})`);
+  if (parts.length) return parts.join(" ");
+  const s = String(err ?? "");
+  return s && s !== "[object Object]" ? s : "unknown error";
+}
+
 export class TbSyncProviderImplementation {
   #port = null;
   #pending = new Map(); // requestId → {resolve, reject, timer}
@@ -689,7 +705,9 @@ export class TbSyncProviderImplementation {
   async #dispatchHostCmd(msg) {
     const activePort = this.#port;
     if (!activePort) return;
-    const syncing = SYNC_CMDS.has(msg.cmd) ? (msg.args?.accountId ?? null) : null;
+    const syncing = SYNC_CMDS.has(msg.cmd)
+      ? (msg.args?.accountId ?? null)
+      : null;
     // One controller per account, owned by the command that created it.
     //
     // Ownership matters because the host does not wait for us: it settles a
@@ -722,7 +740,7 @@ export class TbSyncProviderImplementation {
         activePort.postMessage({
           requestId: msg.requestId,
           ok: false,
-          error: err.message ?? "unknown error",
+          error: describeError(err),
           errorCode: errorCodeFor(err),
           // Only `message` crosses the port, and the host's own stack points
           // at the wrapper it just built rather than at the fault, so
