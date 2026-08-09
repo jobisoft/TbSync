@@ -18,7 +18,7 @@ function fallbackUrl() {
 
 /** Derive the `moz-extension://UUID/` prefix from any of the provider's
  *  announced absolute icon URLs. Returns null if no usable URL exists. */
-export function providerUrlPrefix(provider) {
+function providerUrlPrefix(provider) {
   for (const url of Object.values(provider?.icons ?? {})) {
     try {
       return `${new URL(url).origin}/`;

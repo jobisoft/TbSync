@@ -31,6 +31,17 @@ whose shape comes from the remote service is that provider's own, even when
 two providers happen to give it the same filename — same name, different
 problem.
 
+**"Unused" means something different here.** In an application - the host,
+or a provider's own modules - an export with no caller is dead and should
+go. In this directory the test is not who calls it today but whether the
+module is the complete, coherent surface for the thing it wraps. A calendar
+wrapper that can create but not delete is an incomplete one, and an
+incomplete vendored module is what makes the next provider add a method
+locally instead - which is a copy, which is how the address-book wrapper
+drifted 96 lines before it was shared. Speculative *features* still do not
+belong; the obvious complement of an operation already here does. TbSync
+vendors `provider.mjs` and never imports it, for the same reason.
+
 A shared file may still need to know *which* add-on it is running in. That
 is passed in, never baked in: `createCalendar` takes the `type` and `url`,
 because a calendar's type is the id of the add-on supplying it.

@@ -143,15 +143,6 @@ async function stillRunnable(accountId) {
   return !!acc?.enabled;
 }
 
-export async function syncAllAccounts() {
-  const all = await accounts.list();
-  for (const acc of all) {
-    if (!acc.enabled) continue;
-    await syncAccount(acc.accountId).catch((err) => {
-      console.warn(`[tbsync] syncAccount(${acc.accountId}) failed:`, err);
-    });
-  }
-}
 
 export async function syncAccount(
   accountId,
