@@ -8,7 +8,11 @@ import {
 import * as accounts from "./modules/accounts.mjs";
 import * as folders from "./modules/folders.mjs";
 import * as providers from "./modules/providers.mjs";
-import { KNOWN_PROVIDERS, installUrlFor } from "./modules/known-providers.mjs";
+import {
+  KNOWN_PROVIDERS,
+  installUrlFor,
+  linkFor,
+} from "./modules/known-providers.mjs";
 import * as eventLog from "./modules/event-log.mjs";
 import * as registry from "./modules/registry.mjs";
 import * as router from "./modules/router.mjs";
@@ -506,13 +510,17 @@ ui.setManagerRpcHandler("getState", async () => {
     folders.needsSyncMap(),
     providers.list(),
   ]);
-  // Overlay the known-providers catalogue: attach installUrl to live entries
-  // that match a known id, and synthesize stub rows for known providers that
-  // aren't installed so the manager can show an install affordance.
+  // Overlay the known-providers catalogue: attach an install url to live
+  // entries that match a known id, and synthesize stub rows for known
+  // providers that aren't installed so the manager can offer them.
   const liveIds = new Set(live.map((p) => p.providerId));
   const providerList = live.map((p) => {
     const known = KNOWN_PROVIDERS[p.providerId];
-    const installUrl = known && installUrlFor(known);
+    // A fundraiser is an offer to pay for work that does not exist. Once it
+    // does and the add-on is running, the row's job is to add an account -
+    // so the campaign link is deliberately not carried onto a live provider.
+    if (!known || known.kind === "fundraiser") return p;
+    const installUrl = installUrlFor(known);
     return installUrl ? { ...p, installUrl } : p;
   });
   for (const [providerId, known] of Object.entries(KNOWN_PROVIDERS)) {
@@ -520,10 +528,13 @@ ui.setManagerRpcHandler("getState", async () => {
     providerList.push({
       providerId,
       providerName: known.providerName,
-      state: "uninstalled",
+      kind: known.kind,
+      // "uninstalled" says a thing could be installed and is not. A
+      // fundraiser could not be, so it gets its own state and its own label.
+      state: known.kind === "fundraiser" ? "fundraiser" : "uninstalled",
       capabilities: {},
       icons: {},
-      installUrl: installUrlFor(known),
+      installUrl: linkFor(known),
     });
   }
   return {

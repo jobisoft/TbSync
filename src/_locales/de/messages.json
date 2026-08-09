@@ -335,5 +335,13 @@
   "orphanedResourcePrefix": {
     "message": "[Verwaist] ",
     "description": "Prefix put in front of a calendar or address book that no account syncs any more, so it is recognisable in Thunderbird's lists. Keep the trailing space."
+  },
+  "manager.provider.fundraiser": {
+    "message": "Spendenkampagne für diesen Anbieter besuchen",
+    "description": "Hover text on the provider row for a provider that does not exist yet and is being crowdfunded. Clicking opens the campaign page."
+  },
+  "provider.state.fundraiser": {
+    "message": "Spendenaktion",
+    "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
   }
 }

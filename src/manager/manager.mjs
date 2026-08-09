@@ -541,17 +541,29 @@ function renderSidebar() {
         !state.setupsInFlight.has(p.providerId) &&
         p.state === "active" &&
         p.capabilities?.folderTypes?.length;
+      // A fundraiser row is tested before the installable one, because it
+      // also satisfies "not active and carries a url" - and offering to
+      // install something that does not exist yet is the one thing this
+      // row must never do.
+      const isFundraiser = p.kind === "fundraiser" && p.state !== "active";
       // Installable means the provider isn't installed yet, not "addable
       // is unavailable for any reason" - otherwise an active provider's
       // plus icon would morph into the install arrow while setup is in
       // flight.
-      const canInstall = p.state !== "active" && !!p.installUrl;
+      const canInstall =
+        !isFundraiser && p.state !== "active" && !!p.installUrl;
       const stateLabel = i18n(`provider.state.${p.state}`, p.state);
 
       const row = cloneTpl("tpl-provider-row");
       row.classList.add(
         p.state,
-        canAdd ? "addable" : canInstall ? "installable" : "not-addable",
+        canAdd
+          ? "addable"
+          : isFundraiser
+            ? "fundraiser"
+            : canInstall
+              ? "installable"
+              : "not-addable",
       );
       // Active providers always carry data-provider-id so the click
       // handler can route - addable ones launch a new setup, not-addable
@@ -559,25 +571,32 @@ function renderSidebar() {
       // Inactive providers only get the id when they're installable.
       if (canAdd || canInstall || p.state === "active")
         row.dataset.providerId = p.providerId;
-      if (canInstall) row.dataset.installUrl = p.installUrl;
+      // Both link kinds travel in the same dataset field: the click handler
+      // opens whatever url it finds, and neither cares which it was.
+      if (canInstall || isFundraiser) row.dataset.installUrl = p.installUrl;
       row.title = canAdd
         ? i18n("manager.addAccount", "Add account")
-        : canInstall
-          ? isBetaBuild()
-            ? i18n(
-                "manager.provider.installBeta",
-                "Install the beta from GitHub",
-              )
-            : i18n(
-                "manager.provider.install",
-                "Install from addons.thunderbird.net",
-              )
-          : p.state === "active"
-            ? i18n(
-                "manager.provider.focusSetup",
-                "Bring the setup window to the front",
-              )
-            : "";
+        : isFundraiser
+          ? i18n(
+              "manager.provider.fundraiser",
+              "Visit fundraiser campaign for this provider",
+            )
+          : canInstall
+            ? isBetaBuild()
+              ? i18n(
+                  "manager.provider.installBeta",
+                  "Install the beta from GitHub",
+                )
+              : i18n(
+                  "manager.provider.install",
+                  "Install from addons.thunderbird.net",
+                )
+            : p.state === "active"
+              ? i18n(
+                  "manager.provider.focusSetup",
+                  "Bring the setup window to the front",
+                )
+              : "";
 
       row
         .querySelector(".col-provider-icon")
@@ -587,7 +606,11 @@ function renderSidebar() {
       row
         .querySelector(".col-status")
         .appendChild(
-          canInstall ? cloneTpl("tpl-install-icon") : cloneTpl("tpl-add-icon"),
+          isFundraiser
+            ? cloneTpl("tpl-fundraise-icon")
+            : canInstall
+              ? cloneTpl("tpl-install-icon")
+              : cloneTpl("tpl-add-icon"),
         );
       return row;
     });

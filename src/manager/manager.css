@@ -32,6 +32,9 @@
   --btn-secondary-hover: #d5d5d7;
   --btn-danger-bg: #c43b3b;
   --btn-danger-hover: #a92b2b;
+  /* The fundraiser heart. Its own token rather than the danger red: the
+     colour means "support this", not "this will destroy something". */
+  --fundraise: #d0453f;
 
   --status-error: #a92b2b;
   --status-warning: #8a6d1c;
@@ -75,6 +78,7 @@
     --btn-secondary-hover: #4a4d52;
     --btn-danger-bg: #a13535;
     --btn-danger-hover: #7e2828;
+    --fundraise: #e8796b;
 
     --status-error: #f18585;
     --status-warning: #e6c76c;
@@ -234,6 +238,11 @@ body {
 .provider-list tr.addable { cursor: pointer; }
 .provider-list tr.installable { cursor: pointer; }
 .provider-list tr.installable:hover td { background: var(--row-hover); }
+/* A fundraiser row clicks through to the campaign, so it behaves like an
+   installable one - it just does not offer an install. */
+.provider-list tr.fundraiser { cursor: pointer; }
+.provider-list tr.fundraiser:hover td { background: var(--row-hover); }
+.provider-list tr.fundraiser td.col-account-name .name { font-style: italic; }
 .provider-list tr.not-addable td { cursor: default; }
 .provider-list tr.not-addable:hover td { background: transparent; }
 .provider-list tr.not-addable .add-account-icon { opacity: .3; }
@@ -253,6 +262,12 @@ body {
   width: 16px;
   height: 16px;
   color: var(--accent-alt);
+  vertical-align: middle;
+}
+.provider-list .provider-fundraise-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--fundraise);
   vertical-align: middle;
 }
 

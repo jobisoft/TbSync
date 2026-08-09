@@ -8,18 +8,42 @@
 
 import { isBetaBuild } from "./channel.mjs";
 
-// Keyed by the provider's shortName. `installUrl` is the ATN listing,
-// `betaInstallUrl` the GitHub releases page carrying the beta XPIs.
+/** What a row in this catalogue offers, stated rather than inferred.
+ *
+ *   "install"     an add-on that exists and can be installed. Two urls,
+ *                 because the release and beta channels are separate
+ *                 add-ons - see `installUrlFor`.
+ *   "fundraiser"  work that does not exist yet, and a campaign to fund it.
+ *                 One url, and no install: the row is there to say the
+ *                 provider is planned and to offer a way to support it.
+ *
+ * The distinction used to be read off `state` plus the presence of an
+ * install url, which worked while every entry was installable. A row that
+ * can never be installed needs to say so itself, or it inherits an
+ * affordance that promises something impossible. */
 export const KNOWN_PROVIDERS = {
   google: {
+    kind: "install",
     providerName: "Google's People API",
     installUrl: "https://addons.thunderbird.net/addon/google-4-tbsync/",
     betaInstallUrl: "https://github.com/jobisoft/google-4-tbsync/releases",
   },
   eas: {
+    kind: "install",
     providerName: "Exchange ActiveSync",
     installUrl: "https://addons.thunderbird.net/addon/eas-4-tbsync/",
     betaInstallUrl: "https://github.com/jobisoft/EAS-4-TbSync/releases",
+  },
+  // No add-on behind this one yet. The id is internal - it only has to not
+  // collide with a real provider's - and if the add-on ever ships under it,
+  // the live row wins and this entry stops being offered (see getState).
+  "exchange-graph": {
+    kind: "fundraiser",
+    providerName: "Exchange Graph API",
+    // One url for both channels. `installUrlFor`'s split exists to stop a
+    // beta host pairing with a release provider; a campaign has no build
+    // to be skewed against.
+    url: "https://gofund.me/ff4f56354",
   },
 };
 
@@ -30,4 +54,9 @@ export const KNOWN_PROVIDERS = {
 // PROTOCOL_VERSION refuses to run.
 export function installUrlFor(known) {
   return isBetaBuild() ? known.betaInstallUrl : known.installUrl;
+}
+
+/** Where a catalogue row's click should go, whatever kind it is. */
+export function linkFor(known) {
+  return known.kind === "fundraiser" ? known.url : installUrlFor(known);
 }
