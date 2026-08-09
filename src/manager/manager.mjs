@@ -565,14 +565,16 @@ function renderSidebar() {
               ? "installable"
               : "not-addable",
       );
-      // Active providers always carry data-provider-id so the click
-      // handler can route - addable ones launch a new setup, not-addable
-      // ones (set-up-in-flight) ask the provider to focus its popup.
-      // Inactive providers only get the id when they're installable.
-      if (canAdd || canInstall || p.state === "active")
+      // data-provider-id is what the click handler selects on, so a row
+      // without it is not clickable at all, whatever else it carries.
+      // Active providers always have it - addable ones launch a new setup,
+      // not-addable ones (set-up-in-flight) ask the provider to focus its
+      // popup. Inactive rows get it when there is somewhere to send the
+      // click: an install listing, or a fundraiser campaign.
+      if (canAdd || canInstall || isFundraiser || p.state === "active")
         row.dataset.providerId = p.providerId;
-      // Both link kinds travel in the same dataset field: the click handler
-      // opens whatever url it finds, and neither cares which it was.
+      // Both link kinds travel in the same dataset field: the handler opens
+      // whatever url it finds, and neither cares which it was.
       if (canInstall || isFundraiser) row.dataset.installUrl = p.installUrl;
       row.title = canAdd
         ? i18n("manager.addAccount", "Add account")
