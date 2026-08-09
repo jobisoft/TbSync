@@ -41,26 +41,33 @@
  *        start it lost the race for - which is why this is a version bump
  *        and not a drop-in change. PROBE renamed to HOST_READY.
  *
- *   2    HOST_CMD.RELOAD: the host can ask a provider to reload itself. No
+ *   2    Everything since the last release. 5.0.13 shipped 1.3, and 2 has
+ *        never been released, so it is still open: a change that lands
+ *        before the next release belongs *in* this entry rather than in a
+ *        number of its own. There is no 2 in the wild to stay compatible
+ *        with, and every peer that will ever speak 2 is being built from
+ *        this tree.
+ *
+ *        HOST_CMD.RELOAD: the host can ask a provider to reload itself. No
  *        extension can reload another - runtime.reload() takes no id and
  *        management.setEnabled() is themes-only - so this is the only shape
  *        available, and a 1.3 provider has no handler for it.
+ *
+ *        Folder rows carry `sessionId`, and a provider may keep its own
+ *        change queue namespaced by it (see the field's notes below). That
+ *        is what makes 2 unpairable with 1.3 for a second reason: those
+ *        rows have no session, so nothing would tell such a provider that a
+ *        folder it still holds a queue for has been torn down and
+ *        re-created, and edits belonging to a dead binding would be pushed
+ *        into a live one. HOST_CMD.GET_CHANGELOG reads those queues.
  *
  *        Versions are integers from here on. The dotted form implied minor
  *        bumps that a peer could tolerate, which was never true: the host
  *        refuses any provider whose version is not exactly its own.
  *
  *        PORT_NAME also stopped carrying the version - see below.
- *
- *   3    Folder rows carry `sessionId`, and a provider may keep its own
- *        change queue namespaced by it (see the field's notes below). A
- *        provider that does so cannot pair with a 2 host: those rows have
- *        no session, so nothing would tell the provider that a folder it
- *        still holds a queue for has been torn down and re-created, and
- *        edits belonging to a dead binding would be pushed into a live
- *        one. HOST_CMD.GET_CHANGELOG arrives with it.
  */
-export const PROTOCOL_VERSION = 3;
+export const PROTOCOL_VERSION = 2;
 
 /** Name used for the persistent runtime.connect port.
  *
