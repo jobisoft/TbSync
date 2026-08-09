@@ -62,11 +62,11 @@ const CALENDAR_PALETTE = [
  * in least use across every calendar in the profile, ties going to the
  * earliest in the list.
  *
- * Needed because nothing else will supply one. ActiveSync's folder hierarchy
- * has no colour element in any protocol version, so the server cannot tell us
- * what colour a calendar "is", and Thunderbird sets none of its own - a
- * calendar created without this renders in the placeholder shade the calendar
- * API substitutes for "no colour", making every EAS calendar look alike.
+ * Needed because nothing else will supply one. No sync protocol we speak
+ * carries a colour, so the server cannot say what colour a calendar "is",
+ * and Thunderbird sets none of its own - a calendar created without this
+ * renders in the placeholder shade the calendar API substitutes for "no
+ * colour", making every calendar a provider creates look alike.
  *
  * Counts all calendars rather than only ours, as v4 did: the point is a colour
  * that stands out in the user's calendar list, and the other entries in that
@@ -100,9 +100,9 @@ export async function pickCalendarColor() {
  * Create a calendar of our own provider type. `kind` is "events" or "tasks",
  * and it decides what the calendar tells Thunderbird it can hold.
  *
- * An EAS folder stores one or the other, never both, and a calendar that
- * claims both is offered wherever either is wanted: a Tasks-backed calendar
- * turns up in the New Event dialog, a Calendar-backed one in the task
+ * A remote folder holds one or the other, never both, and a calendar that
+ * claims both is offered wherever either is wanted: a task-backed calendar
+ * turns up in the New Event dialog, an event-backed one in the task
  * pickers. Saving into the wrong one produces an item the folder's codec
  * cannot express and the server predictably rejects.
  *

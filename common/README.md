@@ -25,9 +25,11 @@ it. Copied into all three repos — **including TbSync itself**.
 | `changelog-core.test.mjs` | unit tests for the core — stay here, not vendored |
 
 The rule for what belongs here: **vendor what the platform shapes, not what
-a service shapes.** Address books and calendars are Thunderbird's, so their
-wrappers are shared. OAuth is Microsoft's and Google's — two genuinely
-different flows that happen to share a filename — so it is not.
+a service shapes.** Address books and calendars are Thunderbird's, so every
+provider talks to them the same way and the wrapper is shared. Anything
+whose shape comes from the remote service is that provider's own, even when
+two providers happen to give it the same filename — same name, different
+problem.
 
 A shared file may still need to know *which* add-on it is running in. That
 is passed in, never baked in: `createCalendar` takes the `type` and `url`,
