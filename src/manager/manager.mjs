@@ -573,9 +573,14 @@ function renderSidebar() {
       // click: an install listing, or a fundraiser campaign.
       if (canAdd || canInstall || isFundraiser || p.state === "active")
         row.dataset.providerId = p.providerId;
-      // Both link kinds travel in the same dataset field: the handler opens
-      // whatever url it finds, and neither cares which it was.
+      // Both link kinds travel in the same dataset field; where they open
+      // differs, so the row says which - same `data-link-target` vocabulary
+      // the routed anchors use. A donation page is an external site with a
+      // payment flow and belongs in the user's own browser; an add-on
+      // listing belongs in a Thunderbird tab, because installing from it
+      // only works there.
       if (canInstall || isFundraiser) row.dataset.installUrl = p.installUrl;
+      if (isFundraiser) row.dataset.linkTarget = "browser";
       row.title = canAdd
         ? i18n("manager.addAccount", "Add account")
         : isFundraiser
@@ -1650,18 +1655,30 @@ async function openThunderbirdTab(url) {
   }
 }
 
+/** Open a url where the caller asked for it.
+ *
+ *  `"browser"` hands it to the system default browser - for anything the
+ *  user should not be doing inside Thunderbird's content area, like a
+ *  payment flow. Anything else opens a Thunderbird tab, which is what an
+ *  add-on listing wants: installing works from there.
+ *
+ *  `openDefaultBrowser` is wrapped rather than returned directly because
+ *  not every version hands back a promise, and the callers want to attach
+ *  one error path to both branches. */
+function openLink(url, target) {
+  if (target === "browser") {
+    return Promise.resolve(messenger.windows.openDefaultBrowser(url));
+  }
+  return openThunderbirdTab(url);
+}
+
 // Routed external links: data-link-target="thunderbird" opens a Thunderbird
 // content tab; data-link-target="browser" opens the system default browser.
 document.body.addEventListener("click", (e) => {
   const a = e.target.closest("a[data-link-target]");
   if (!a) return;
   e.preventDefault();
-  const url = a.getAttribute("href");
-  if (a.dataset.linkTarget === "browser") {
-    messenger.windows.openDefaultBrowser(url);
-  } else {
-    openThunderbirdTab(url).catch(showError);
-  }
+  openLink(a.getAttribute("href"), a.dataset.linkTarget).catch(showError);
 });
 
 // Delegated sidebar clicks - one listener per list, independent of how many
@@ -1674,9 +1691,11 @@ document.getElementById("account-list").addEventListener("click", (e) => {
 document.getElementById("provider-list").addEventListener("click", (e) => {
   const row = e.target.closest("tr[data-provider-id]");
   if (!row) return;
-  const { providerId, installUrl } = row.dataset;
+  const { providerId, installUrl, linkTarget } = row.dataset;
   if (installUrl) {
-    openThunderbirdTab(installUrl).catch(showError);
+    // The row says where it wants to be opened - a fundraiser campaign
+    // goes to the default browser, an add-on listing to a Thunderbird tab.
+    openLink(installUrl, linkTarget).catch(showError);
     return;
   }
   // Class drives intent: addable rows start a new setup; not-addable
