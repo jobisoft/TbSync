@@ -1,359 +1,165 @@
 <link rel="stylesheet" href="docs.css">
 
-<style>
-  :root {
-    --bg:#fff; --fg:#1b1b1d; --muted:#6b6b70; --rule:#d7d7db;
-    --host:#2b6cb0; --prov:#7a4fb5; --ok:#1f7a4d; --bad:#c0392b;
-    --spanbg:#ecedf1; --delaybg:#fdeaea; --offbg:#f2f2f4;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg:#1b1b1d; --fg:#ececed; --muted:#9b9ba1; --rule:#3a3a3f;
-      --host:#74a9dc; --prov:#b795e0; --ok:#63c295; --bad:#e8796b;
-      --spanbg:#2a2a2f; --delaybg:#3a2626; --offbg:#232327; }
-  }
-  :root[data-theme="dark"] { --bg:#1b1b1d; --fg:#ececed; --muted:#9b9ba1; --rule:#3a3a3f;
-    --host:#74a9dc; --prov:#b795e0; --ok:#63c295; --bad:#e8796b;
-    --spanbg:#2a2a2f; --delaybg:#3a2626; --offbg:#232327; }
-  :root[data-theme="light"] { --bg:#fff; --fg:#1b1b1d; --muted:#6b6b70; --rule:#d7d7db;
-    --host:#2b6cb0; --prov:#7a4fb5; --ok:#1f7a4d; --bad:#c0392b;
-    --spanbg:#ecedf1; --delaybg:#fdeaea; --offbg:#f2f2f4; }
-  h1 { font-size:1.6rem; margin:0 0 .5rem; }
-  h2 { font-size:1.15rem; margin:2.2rem 0 .6rem; padding-top:.9rem; border-top:1px solid var(--rule); }
-  .lede { color:var(--muted); margin:0 0 1.5rem; }
-  code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.88em; }
-  a { color:var(--host); }
-  figure { margin:0 0 1.6rem; }
-  figcaption { color:var(--muted); font-size:.9rem; margin-top:.35rem; }
-  .panel-title { font-weight:600; margin:1.8rem 0 .4rem; display:flex; align-items:baseline;
-    gap:.6rem; flex-wrap:wrap; }
-  .verdict { font-size:.8rem; font-weight:600; padding:.1rem .5rem; border-radius:999px; }
-  .verdict.bad { background:var(--delaybg); color:var(--bad); }
-  .verdict.ok  { background:var(--spanbg); color:var(--ok); }
-  .scroller { overflow-x:auto; }
-  svg { display:block; min-width:860px; }
-  .legend { display:flex; gap:1.2rem; flex-wrap:wrap; color:var(--muted); font-size:.85rem; margin:.4rem 0 0; }
-  .legend span { display:flex; align-items:center; gap:.4rem; }
-  .sw { width:1.6rem; height:0; border-top:2px solid; }
-</style>
-
 <div class="shell">
 <nav class="sidebar">
   <h2>Notes</h2>
   <ul>
     <li><a href="descriptions.html" class="here">How things work</a></li>
-    <li><a href="todos.html">Todos</a></li>
     <li><a href="bridge.html">The bridge</a></li>
   </ul>
   <h2>On this page</h2>
   <ul class="toc">
-    <li><a href="#handshake">Provider discovery</a></li>
-    <li><a href="#who-detects">Who notices an edit</a></li>
-    <li><a href="#eauth">E:AUTH guards</a></li>
+    <li><a href="#handshake">Finding each other</a></li>
+    <li><a href="#queues">Who owns a change queue</a></li>
+    <li><a href="#sessions">Sessions</a></li>
+    <li><a href="#eauth">The E:AUTH rule</a></li>
   </ul>
 </nav>
 
 <main class="content">
 
 <h1>How things work</h1>
-<p class="lede">The host and its provider contract. Anything specific to a provider lives in that provider's own notes — for Exchange ActiveSync, <a href="https://jobisoft.github.io/EAS-4-TbSync/">EAS-4-TbSync</a>.</p>
+<p class="lede">The parts of the host a provider author has to know about.
+Anything specific to one protocol lives in that provider's own notes — for
+Exchange ActiveSync,
+<a href="https://jobisoft.github.io/EAS-4-TbSync/">EAS-4-TbSync</a>.</p>
 
-<h2 id="handshake">Provider discovery</h2>
-<p class="lede">
-  <strong>Repo: TbSync</strong>, with the matching provider half vendored into
-  EAS-4-TbSync and google-4-tbsync. The first three panels show the protocol 1.3
-  handshake under every startup order; the last two show what happens when only
-  one side of it is installed, which is what users see mid-rollout.
-</p>
+<h2 id="handshake">Finding each other</h2>
 
-<div id="panels"></div>
-
-<h3>Why no race remains</h3>
-
-<p>
-  Two rules, one on each side:
-</p>
-
-<ol>
-  <li>each side <strong>attaches its listener before it sends anything</strong>;</li>
-  <li>each side <strong>sends exactly once</strong> when it is ready — the host a
-    fire-and-forget <code>DISCOVERY.HOST_READY</code>, the provider its
-    <code>ANNOUNCE</code>.</li>
-</ol>
-
-<p>
-  That is enough. Whichever background page starts <em>later</em> sends into a
-  listener that is already attached, because the earlier one attached its
-  listener before it sent. So at least one of the two messages always lands:
-</p>
+<p>Host and provider are separate add-ons with separate background pages, and
+either can start first. Two rules make that safe, and there is nothing else
+to it:</p>
 
 <ul>
-  <li>host starts later → its host-ready reaches the provider → provider re-announces;</li>
-  <li>provider starts later → its announce reaches the host directly.</li>
+  <li>each side attaches its listener <em>before</em> it sends anything;</li>
+  <li>each side sends exactly once, when it is ready — the host a
+      fire-and-forget <code>DISCOVERY.HOST_READY</code>, the provider its
+      <code>ANNOUNCE</code>.</li>
 </ul>
 
-<p>
-  There is no third case. The two messages cannot both be lost, because losing
-  the announce means the host had not started, and losing the host-ready means the
-  provider had not started — and they cannot both have not-started at the moment
-  the other one sent.
-</p>
+<p>Whichever page starts later sends into a listener that is already there.
+If the host starts later, its host-ready reaches the provider and the
+provider announces; if the provider starts later, its announce reaches the
+host directly. Both messages cannot be lost, because losing the announce
+means the host was not running and losing the host-ready means the provider
+was not — and they cannot both have been not-running when the other sent.</p>
 
-<p>
-  The host-ready message carries nothing and establishes nothing. It is a
-  nudge: the real handshake is still <code>ANNOUNCE</code> →
-  <code>providers.upsert</code> → <code>openPortToProvider</code>, unchanged.
-</p>
+<p>Host-ready carries nothing and establishes nothing; it is a nudge. The
+handshake is <code>ANNOUNCE</code> → <code>providers.upsert</code> →
+<code>openPortToProvider</code>.</p>
 
-<h3>Testing it</h3>
+<p>To test it, enable order is enough: enable the provider, wait, enable
+TbSync (exercises host-ready); enable TbSync, wait, enable the provider
+(exercises announce); restart Thunderbird (both together). Each must end with
+an account actually syncing, not merely with the provider listed.</p>
 
-<p>
-  Enable order alone covers every case; nothing needs to be instrumented:
-</p>
+<h2 id="queues">Who owns a change queue</h2>
 
-<ul>
-  <li>enable the provider, wait 10&nbsp;s, enable TbSync → exercises the host-ready path;</li>
-  <li>enable TbSync, wait 10&nbsp;s, enable the provider → exercises the announce path;</li>
-  <li>restart Thunderbird → exercises both starting together.</li>
-</ul>
+<p>Before a local edit can be pushed, something has to notice it. Which side
+notices depends on what Thunderbird offers, and the split follows the
+platform rather than a preference.</p>
 
-<p>
-  Each must end with an account actually syncing, not merely with the provider
-  listed.
-</p>
+<p><strong>Calendars and task lists: the provider.</strong> A provider can
+register its own calendar type, and Thunderbird then hands it every user edit
+directly, with the previous item attached, while the provider's own sync
+writes go to <code>&lt;id&gt;#cache</code>, which fires no hooks. So the
+provider can tell a user edit from its own write structurally, and can say
+<em>what</em> changed rather than only that something did. It keeps those
+edits in its own storage: the hook answers while Thunderbird holds the user's
+save, so the record must not depend on the host being alive.</p>
 
-<h2 id="who-detects">Who notices a user's edit</h2>
-
-<p><strong>Calendars: the provider. Contacts: the host.</strong> Not a
-compromise - the platform is asymmetric and the split follows it.</p>
-
-<p>A provider can supply its own calendar type, and Thunderbird then hands it
-every user edit directly, with the previous item attached, while the
-provider's own writes go somewhere the hooks do not see. So the provider knows
-which edits are the user's without anything having to be marked, and it can
-say <em>what</em> changed rather than only that the item did. It reports them
-with <code>CHANGELOG_RECORD_USER_EDIT</code>, into the same
-<code>folder.changelog</code> the push already reads: the host still owns that
-table, only the author of an entry changed.</p>
-
-<p>Address books have no equivalent. <code>addressBooks.provider</code>
-offers one event, <code>onSearchRequest</code>, and nothing for items. So the
-host keeps observing them, and keeps pre-tagging its own writes so its observer
-can tell them from the user's. That logic - the ghost gate for
-Thunderbird's usage-tracking updates, the contact hashes, the list-by-name
-pre-tag - is better in one place than vendored into every provider.</p>
+<p><strong>Address books: the host.</strong> There is no equivalent API —
+<code>addressBooks.provider</code> offers only
+<code>onSearchRequest</code> — so the host observes book events itself and
+keeps those entries in <code>folder.changelog</code>. It pre-tags its own
+writes (<code>*_by_server</code>) so its observer can tell them from the
+user's. That machinery — the ghost gate for Thunderbird's usage-tracking
+updates, the contact hashes, the list-by-name pre-tag — is better in one
+place than vendored into every provider.</p>
 
 <p>Consequences worth knowing:</p>
 <ul>
-  <li>The host runs no calendar listener at all, and has no calendar API in
-    the shipped build. Rename mirroring and deselecting a folder whose
-    calendar the user deleted are the provider's work, reported with
-    <code>FOLDER_TARGET_REMOVED</code>.</li>
-  <li><code>*_by_server</code> pre-tags are never written for a
-    provider-owned target. Nothing would consume them, and they would
-    accumulate one per synced item.</li>
-  <li>The rule is the folder's <code>targetType</code>, so it holds only while
-    every provider that syncs calendars supplies its own type.</li>
+  <li>The host runs no calendar listener and ships no calendar API. Mirroring
+      a rename, and clearing the binding when the user deletes a calendar,
+      are the provider's work — reported with
+      <code>FOLDER_TARGET_REMOVED</code>.</li>
+  <li><code>folder.changelog</code> stays empty for a provider-owned folder.
+      <code>HOST_CMD.GET_CHANGELOG</code> is how anything reads those
+      queues.</li>
+  <li>The needs-sync badge is driven by
+      <code>folder.custom.pendingUserChanges</code>, which the provider keeps
+      roughly current. It is best-effort by design: a stale count shows or
+      hides a dot, and nothing reads it to decide what to sync.</li>
+  <li>The rule is the folder's <code>targetType</code>, so it holds only
+      while every provider that syncs calendars supplies its own type.</li>
 </ul>
 
-<h2 id="eauth">Anything that reaches the server needs its own E:AUTH guard</h2>
-<p><strong>Repo: every provider.</strong> The host cannot add these guards for
-you.</p>
+<h2 id="sessions">Sessions</h2>
+
+<p>A folder row outlives the things hanging off it. It is deselected and
+selected again; its calendar is deleted and re-created by the next sync. Each
+time, the sync state that belonged to the old binding — keys, id maps,
+pending edits — is worthless, and pushing those edits into the new binding
+would re-apply them to a resource the user never touched.</p>
+
+<p>The host cannot delete that state itself: most of it lives in the
+provider, and Disconnect and Remove have to work when the provider is broken
+or uninstalled — that is what makes them recovery paths. So the host does not
+delete; it renames. Every folder row carries a <code>sessionId</code>, minted
+by the host and never reused, and ending a binding means minting a new
+one.</p>
+
+<p>A provider therefore MUST:</p>
+<ul>
+  <li>read <code>sessionId</code> from the folder row, never cache it across
+      a sync;</li>
+  <li>key everything it persists per folder by it;</li>
+  <li>drop, on sight, anything stored under a session no folder row
+      names.</li>
+</ul>
+
+<p>Teardown is then one local host write that needs nobody's cooperation. A
+provider that was not running misses nothing: it finds out by not finding its
+session.</p>
+
+<h2 id="eauth">The E:AUTH rule</h2>
+
+<p class="lede">Every provider path that reaches the network needs its own
+guard. The host cannot add them for you.</p>
 
 <p>When the host stamps <code>error: "E:AUTH"</code>, the server has rejected
-the account's credentials. <strong>Every provider path that reaches the network
-must decline to run</strong> until that clears — not just the sync path.
-Presenting rejected credentials repeatedly is how a server decides to lock an
-account out, and one unguarded entry point is enough.</p>
+the account's credentials. Presenting rejected credentials repeatedly is how
+a server decides to lock an account out, and one unguarded entry point is
+enough to keep doing it.</p>
 
-<p>An <code>E:AUTH</code> account stays <strong>enabled</strong>: it keeps
-folders, sync keys, calendars and address books, and is only held back from
-syncing. What the host guards is the sync path, at one choke point in
+<p>An E:AUTH account stays <em>enabled</em>: it keeps its folders, sync keys,
+calendars and address books, and is only held back from syncing. What the
+host guards is the sync path, at one choke point in
 <code>sync-coordinator.mjs::syncAccount</code>:</p>
 
 <pre><code>if (!acc || !acc.enabled) return;
 if (acc.error === ERR.AUTH) return;</code></pre>
 
-<p>That covers all five callers of <code>syncAccount</code> and
-<strong>nothing else</strong>. A provider entry point the host does not invoke
-is invisible to it, and <code>enabled</code> is not a proxy for "safe to talk
-to the server".</p>
+<p>That covers the five callers of <code>syncAccount</code> and nothing else.
+An entry point the host does not invoke is invisible to it, and
+<code>enabled</code> is not a proxy for "safe to talk to the server".</p>
 
-<p>The one live example is <code>onSearchRequest</code> in EAS's
-<code>gal.mjs</code>, backing the per-account GAL address book. It fires on
-<strong>every keystroke</strong> in a compose window, outside the sync path,
-and issues an authenticated EAS <code>Search</code>. Two things about its guard
-are deliberate: it sits <strong>inside the callback</strong>, not around the
-registration, because deregistering would stop the traffic with nothing to put
-it back — an auth failure raises no account-enabled event; and it tests
-<code>=== ERR.AUTH</code> rather than "any error", because a folder-level
-failure should still answer autocomplete.</p>
+<p>The live example is <code>onSearchRequest</code> in EAS's
+<code>gal.mjs</code>, backing the per-account GAL address book: it fires on
+every keystroke in a compose window, outside the sync path, and issues an
+authenticated EAS Search. Two things about its guard are deliberate. It sits
+<em>inside</em> the callback rather than around the registration, because
+deregistering would stop the traffic with nothing to put it back — an auth
+failure raises no account-enabled event. And it tests
+<code>=== ERR.AUTH</code> rather than "any error", so a folder-level failure
+still answers autocomplete.</p>
 
-<p>When adding an entry point, ask: <em>can this reach the server without the
-host having called me?</em> If yes it needs the guard — anything on
-<code>addressBooks.provider.*</code>, <code>calendar.provider.*</code>, a
-<code>runtime</code> message from your own UI pages that performs network work,
-or a timer, alarm or observer you install yourself. <code>account.error</code>
-is on the row <code>getAccount</code> returns.</p>
-
-<script>
-  const PANELS = [
-    {
-      title: "Both start together (Thunderbird restart)",
-      verdict: "ok", verdictText: "connects immediately",
-      axis: { max: 1200, step: 200 },
-      lanes: [{ start: 0 }, { start: 0 }],
-      caption: "Both attach their listener before sending. Whichever sends second is heard; here " +
-        "both are. The duplicate announce is harmless — providers.upsert is idempotent.",
-      marks: [
-        { lane: 0, t: 15, label: "listener attached", kind: "ok" },
-        { lane: 1, t: 40, label: "listener attached", kind: "ok" },
-      ],
-      msgs: [
-        { t: 120, from: 1, to: 0, kind: "ok", label: "announce → upsert + open port" },
-        { t: 300, from: 0, to: 1, kind: "ok", label: "host-ready (fire-and-forget)" },
-        { t: 430, from: 1, to: 0, kind: "ok", label: "re-announce (idempotent)" },
-      ],
-    },
-    {
-      title: "Provider enabled first, TbSync 10 s later",
-      verdict: "ok", verdictText: "host-ready recovers it",
-      axis: { max: 11500, step: 2000 },
-      lanes: [{ start: 0 }, { start: 0 }],
-      hostStart: 10000,
-      caption: "The provider's single announce is lost — TbSync is not running at all, so there is " +
-        "nothing to receive it. When the host starts it attaches its listener and broadcasts; the " +
-        "provider has been listening for 10 s and answers with an announce.",
-      spans: [{ lane: 0, t0: 0, t1: 10000, label: "TbSync not running", fill: "off" }],
-      marks: [
-        { lane: 1, t: 40, label: "listener attached", kind: "ok" },
-        { lane: 0, t: 10040, label: "listener attached, then host-ready", kind: "ok" },
-      ],
-      msgs: [
-        { t: 120, from: 1, to: 0, kind: "bad", label: "announce — nobody home" },
-        { t: 10200, from: 0, to: 1, kind: "ok", label: "host-ready" },
-        { t: 10330, from: 1, to: 0, kind: "ok", label: "announce → upsert + open port" },
-      ],
-    },
-    {
-      title: "TbSync enabled first, provider 10 s later",
-      verdict: "ok", verdictText: "announce lands directly",
-      axis: { max: 11500, step: 2000 },
-      lanes: [{ start: 0 }, { start: 0 }],
-      caption: "The mirror image. The host's host-ready is lost because the provider is not running. " +
-        "When the provider starts, the host has been listening for 10 s, so its single announce " +
-        "is enough — no retry loop needed.",
-      spans: [{ lane: 1, t0: 0, t1: 10000, label: "provider not running", fill: "off" }],
-      marks: [
-        { lane: 0, t: 15, label: "listener attached, then host-ready", kind: "ok" },
-        { lane: 1, t: 10040, label: "listener attached", kind: "ok" },
-      ],
-      msgs: [
-        { t: 200, from: 0, to: 1, kind: "bad", label: "host-ready — nobody home" },
-        { t: 10140, from: 1, to: 0, kind: "ok", label: "announce → upsert + open port" },
-      ],
-    },
-  ];
-
-  const W = 940, PAD_L = 132, PAD_R = 150;
-  const LANE_Y = [96, 236], H = 300;
-  const LANES = [
-    { name: "TbSync", sub: "host", color: "var(--host)" },
-    { name: "EAS provider", sub: "guest", color: "var(--prov)" },
-  ];
-  const FILL = { span: "var(--spanbg)", delay: "var(--delaybg)", off: "var(--offbg)" };
-
-  const el = (n, a = {}, kids = []) => {
-    const e = document.createElementNS("http://www.w3.org/2000/svg", n);
-    for (const [k, v] of Object.entries(a)) e.setAttribute(k, v);
-    for (const c of [].concat(kids)) e.append(c);
-    return e;
-  };
-  const txt = (s, a) => el("text", a, [document.createTextNode(s)]);
-  const fmt = (ms) => (ms >= 1000 ? (ms / 1000).toFixed(ms % 1000 ? 1 : 0) + "s" : ms + "ms");
-
-  function drawPanel(p) {
-    const max = p.axis.max;
-    const x = (t) => PAD_L + (Math.min(t, max) / max) * (W - PAD_L - PAD_R);
-    const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img",
-      "aria-label": `${p.title} — ${p.verdictText}` });
-
-    for (let t = 0; t <= max; t += p.axis.step) {
-      svg.append(el("line", { x1: x(t), y1: 62, x2: x(t), y2: H - 44,
-        stroke: "var(--rule)", "stroke-dasharray": "2 4" }));
-      svg.append(txt(fmt(t), { x: x(t), y: H - 26, "text-anchor": "middle",
-        fill: "var(--muted)", "font-size": 11 }));
-    }
-
-    LANES.forEach((L, i) => {
-      const y = LANE_Y[i], sub = (p.laneSubs && p.laneSubs[i]) || L.sub;
-      svg.append(el("line", { x1: PAD_L, y1: y, x2: W - PAD_R, y2: y,
-        stroke: L.color, "stroke-width": 2 }));
-      svg.append(txt(L.name, { x: PAD_L - 12, y: y - 3, "text-anchor": "end",
-        fill: L.color, "font-size": 13, "font-weight": 600 }));
-      svg.append(txt(sub, { x: PAD_L - 12, y: y + 13, "text-anchor": "end",
-        fill: "var(--muted)", "font-size": 11 }));
-    });
-
-    for (const s of p.spans || []) {
-      const y = LANE_Y[s.lane], x0 = x(s.t0), x1 = x(s.t1);
-      svg.append(el("rect", { x: x0, y: y - 15, width: Math.max(2, x1 - x0), height: 30,
-        rx: 4, fill: FILL[s.fill] }));
-      svg.append(txt(s.label, (x1 - x0 > 110)
-        ? { x: (x0 + x1) / 2, y: y + 4, "text-anchor": "middle", fill: "var(--fg)", "font-size": 10.5 }
-        : { x: x1 + 6, y: y + 4, fill: "var(--muted)", "font-size": 10.5 }));
-    }
-
-    for (const m of p.msgs || []) {
-      const y0 = LANE_Y[m.from], y1 = LANE_Y[m.to], dir = y1 > y0 ? 1 : -1, X = x(m.t);
-      const col = m.kind === "bad" ? "var(--bad)" : "var(--ok)";
-      svg.append(el("line", { x1: X, y1: y0 + 15 * dir, x2: X, y2: y1 - 15 * dir, stroke: col,
-        "stroke-width": 1.4, "stroke-dasharray": m.kind === "bad" ? "3 3" : "none" }));
-      const ty = y1 - 15 * dir;
-      svg.append(el("path", { d: `M ${X - 4} ${ty - 6 * dir} L ${X} ${ty} L ${X + 4} ${ty - 6 * dir}`,
-        fill: "none", stroke: col, "stroke-width": 1.4 }));
-      if (m.kind === "bad")
-        svg.append(txt("✕", { x: X, y: ty - 10 * dir, "text-anchor": "middle", fill: col, "font-size": 11 }));
-      if (m.label)
-        svg.append(txt(m.label, { x: X + 7, y: (y0 + y1) / 2 + 4, fill: col, "font-size": 11 }));
-    }
-
-    for (const m of p.marks || []) {
-      const y = LANE_Y[m.lane], X = x(m.t);
-      const col = m.kind === "bad" ? "var(--bad)" : m.kind === "ok" ? "var(--ok)" : "var(--muted)";
-      svg.append(el("circle", { cx: X, cy: y, r: 4.5, fill: col }));
-      svg.append(txt(`${m.label} · +${fmt(m.t)}`,
-        { x: X + 8, y: m.lane === 0 ? y - 12 : y + 22, fill: col, "font-size": 11 }));
-    }
-    return svg;
-  }
-
-  const GROUPS = {
-    main: document.getElementById("panels"),
-  };
-  for (const p of PANELS) {
-    const head = document.createElement("div");
-    head.className = "panel-title";
-    head.innerHTML = `<span>${p.title}</span><span class="verdict ${p.verdict}">${p.verdictText}</span>`;
-    const fig = document.createElement("figure");
-    const scr = document.createElement("div");
-    scr.className = "scroller";
-    scr.append(drawPanel(p));
-    const cap = document.createElement("figcaption");
-    cap.textContent = p.caption;
-    fig.append(scr, cap);
-    GROUPS[p.group || "main"].append(head, fig);
-  }
-  for (const container of Object.values(GROUPS)) {
-    const legend = document.createElement("div");
-    legend.className = "legend";
-    legend.innerHTML =
-      `<span><i class="sw" style="border-color:var(--ok)"></i>delivered</span>` +
-      `<span><i class="sw" style="border-color:var(--bad);border-top-style:dashed"></i>lost — no listener</span>` +
-      `<span><i class="sw" style="border-color:var(--offbg);border-top-width:10px"></i>not running</span>` +
-      `<span><i class="sw" style="border-color:var(--delaybg);border-top-width:10px"></i>artificial delay</span>`;
-    container.append(legend);
-  }
-</script>
+<p>When adding an entry point, ask: can this reach the server without the
+host having called me? If yes it needs the guard. That covers anything on
+<code>addressBooks.provider.*</code> or <code>calendar.provider.*</code>, a
+runtime message from your own UI pages that performs network work, and any
+timer, alarm or observer you install yourself. <code>account.error</code> is
+on the row <code>getAccount</code> returns.</p>
 
 </main>
 </div>

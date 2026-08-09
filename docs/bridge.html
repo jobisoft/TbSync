@@ -5,12 +5,13 @@
   <h2>Notes</h2>
   <ul>
     <li><a href="descriptions.html">How things work</a></li>
-    <li><a href="todos.html">Todos</a></li>
     <li><a href="bridge.html" class="here">The bridge</a></li>
   </ul>
   <h2>On this page</h2>
   <ul class="toc">
+    <li><a href="#scope">Targets and scope</a></li>
     <li><a href="#verbs">Verbs</a></li>
+    <li><a href="#rules">Two rules</a></li>
     <li><a href="#running">Running it</a></li>
   </ul>
 </nav>
@@ -18,155 +19,96 @@
 <main class="content">
 
 <h1>The bridge</h1>
-<p class="lede"><strong>Repo: TbSync</strong>, beta builds only.
-<code>beta/modules/bridge.mjs</code> plus a native messaging helper.</p>
+<p class="lede">A development aid, in beta builds only. It exposes TbSync's
+internal RPC table on a loopback HTTP socket, so a script can import a
+fixture, sync, read the wire log back and assert — without a
+rebuild-install-click cycle per step. Both providers' test suites are driven
+through it.</p>
 
-<p>Exposes TbSync's internal manager RPC table on a loopback HTTP socket, so a
-script can drive it from a shell — import a fixture, sync, read the wire log
-back, assert — without a rebuild-install-paste cycle per step.</p>
+<pre><code>shell --HTTP--&gt; native helper --native messaging--&gt; bridge --&gt; RPC table</code></pre>
 
-<pre><code>shell --HTTP--&gt; native host --native messaging--&gt; bridge --&gt; RPC table</code></pre>
+<h2 id="scope">Targets and scope</h2>
 
-<p>The bridge is only shipped in the beta xpis.</p>
+<p>The Bridge tab grants <strong>one resource per kind</strong> — contacts,
+events, tasks — each select offering only folders of that kind. Every verb
+declares what it may touch, and the declaration is also the allow-list, so
+the two cannot drift:</p>
+
+<ul>
+  <li><strong>account</strong> and <strong>folder</strong> verbs check the ids
+      they are passed against the grant and refuse otherwise;</li>
+  <li><strong>calendar</strong> and <strong>book</strong> verbs take no
+      resource id at all — the grant supplies it, so there is no argument
+      left to get wrong. They also require the granted folder to still be of
+      that kind. A calendar verb uses the events grant by default; pass
+      <code>resource: "tasks"</code> to aim it at the tasks one;</li>
+  <li>unscoped verbs read configuration or turn a global knob.</li>
+</ul>
+
+<p>A bridge with nothing chosen answers "no" rather than "anything". Account
+lifecycle — add, edit, authenticate — is deliberately absent, which is why
+parts of the <a href="https://jobisoft.github.io/EAS-4-TbSync/manual-test-plan.html">manual
+test plan</a> still need a person.</p>
 
 <h2 id="verbs">Verbs</h2>
 
-<p><code>COMMANDS</code> is the entire surface, and is both the allow-list and
-the scope declaration so the two cannot drift. <strong>Account lifecycle — add,
-delete, edit, authenticate — is not supported.</strong> That is why several
-<a href="https://jobisoft.github.io/EAS-4-TbSync/test-plan.html">test-plan</a> sections need a human.</p>
-
-<p><em>Scope</em> is what a verb may touch. <em>account</em> and <em>folder</em>
-verbs check the ids passed against the chosen target and refuse otherwise;
-<em>calendar</em> and <em>book</em> verbs take no resource id at all — the
-target's is supplied, so there is no argument left to get wrong. Those two also
-require the granted folder to still be of that kind, so a <em>book</em> verb
-against a calendar folder is refused with the mismatch named, rather than
-reaching the platform as an id the caller never chose. Unscoped verbs read
-configuration or turn a global knob. A bridge with nothing chosen answers "no"
-rather than "anything".</p>
-
-<p>The Bridge tab grants <strong>one resource per kind</strong> — contacts,
-events, tasks — each select offering only folders of that kind, filtered on the
-host's own <code>targetType</code>. So a contacts test and a calendar test no
-longer take turns over a single grant. A <em>calendar</em> verb acts on the
-events grant by default; pass <code>resource: "tasks"</code> to aim it at the
-tasks one. That argument chooses between <em>your</em> grants and can never
-name a resource that was not granted.</p>
-
 <table>
-  <tr><th>Verb</th><th>Scope</th><th>Does</th></tr>
-
-  <tr><td><code>getState</code></td><td>—</td>
-      <td>Providers and their connection state, accounts and their status. How a caller discovers what the target could be.</td></tr>
-  <tr><td><code>getBrowserInfo</code></td><td>—</td>
-      <td>Name, version and buildID of the running Thunderbird. Beats inferring it from the process list.</td></tr>
-  <tr><td><code>getFolders</code></td><td>—</td>
-      <td>The account's folder rows: selection, status, target id, sync key, changelog, and the provider's <code>custom</code> data.</td></tr>
-  <tr><td><code>setLogLevel</code></td><td>—</td>
-      <td>Event Log verbosity. <code>debug</code> entries are dropped below level 3.</td></tr>
-
-  <tr><td><code>getEventLog</code></td><td>—</td>
-      <td>Log entries, optionally only those newer than <code>sinceSeq</code>. Entries carry a per-process sequence number, so "what did this sync produce" is exact rather than guessed from timestamps. Reports <code>dropped</code> when the buffer rolled past what the caller last saw.</td></tr>
-  <tr><td><code>clearEventLog</code></td><td>—</td>
-      <td>Empty it, so the next step starts from a known point.</td></tr>
-
-  <tr><td><code>getConsole</code></td><td>—</td>
-      <td>Thunderbird's own console, which the Event Log never sees — a TypeError inside a calendar module, an iCal parse complaint, a script that failed to load. Same <code>sinceSeq</code> shape, and seeded from the platform's backlog on first use.</td></tr>
-  <tr><td><code>clearConsole</code></td><td>—</td>
-      <td>Drop what is held.</td></tr>
-
-  <tr><td><code>syncAccount</code></td><td>account</td>
-      <td>Sync, and <strong>wait for it to finish</strong> — unlike the manager's RPC of the same name, which does not await. Returns the folder rows, which is how you tell "synced cleanly" from "did nothing at all": it returns early and silently for an account that is disabled, already syncing, holding <code>E:AUTH</code>, or whose provider is not connected.</td></tr>
-  <tr><td><code>setAutoSyncInterval</code></td><td>account</td>
-      <td>Set the account's autosync interval.</td></tr>
-  <tr><td><code>setFolderSelected</code></td><td>folder</td>
-      <td>Select or deselect a folder. Deselecting drops the target and resets the folder's sync key, which is how a run starts from a known state.</td></tr>
-  <tr><td><code>setTarget</code></td><td>—</td>
-      <td>Re-point the grant to another account (its first folder of every kind, or an exact target via <code>exact</code>). Refused with <code>E:RESTRICTED</code> unless the Bridge tab's <strong>unrestricted mode</strong> is on. Be clear about what that mode is: scripts may <strong>self-grant any account and access all available resources</strong> — including connecting accounts and enabling resources that are not synced yet, which pulls them down. The target stops being a boundary and becomes a current state. (Credentials are not part of what the mode adds: Thunderbird's password store is never reachable through the bridge, and what TbSync's own storage holds was always visible to <code>storage.snapshot</code>, mode or no mode.) The target stops being a boundary and becomes a current state. That is the point for unattended multi-account test runs, and exactly why the mode is opt-in, loud, toggleable only from the tab, and meant to be switched off afterwards.</td></tr>
-  <tr><td><code>setAccountEnabled</code></td><td>account</td>
-      <td>Connect or disconnect the account. Disconnecting drives what the manager's Disconnect button does: it marks the account cancelling, settles the account's in-flight commands with <code>E:CANCELLED</code>, asks the provider to stop and clean its own state, and then <strong>deletes the account's calendars and books itself</strong> — whatever transient state the account was in. Both directions require the provider's port (<code>E:PROVIDER_UNAVAILABLE</code>): disconnect is a configuration change the provider participates in. The last-resort exit for a dead provider is <code>deleteAccount</code>, which refuses nothing. Re-connecting afterwards is what proves the sync lock is really gone.</td></tr>
-
-  <tr><td><code>reloadHost</code></td><td>—</td>
-      <td>Reload TbSync itself. Answers <em>before</em> reloading, and has to: the reload takes the native port with it, the helper dies with the port, and the response in flight dies with the helper. Expect the endpoint to disappear and come back — poll <code>/health</code> rather than assuming the next request lands.</td></tr>
-  <tr><td><code>storage.snapshot</code></td><td>—</td>
-      <td>All of <code>storage.local</code>. Save it to a file before <code>storage.clear</code> — it is the only way back, and it contains the account credentials and OAuth refresh token.</td></tr>
-  <tr><td><code>storage.clear</code></td><td>—</td>
-      <td>Empty the add-on's persistent state, so the next reload behaves like a fresh install — the only way to exercise the legacy importer, which runs only when <code>tbsync.accounts</code> is absent. Returns what it removed. The bridge's own enabled flag and target are kept, or the reload would come back with the port closed and no way to restore.</td></tr>
-  <tr><td><code>storage.restore</code></td><td>—</td>
-      <td>Write a snapshot back. The bridge's own two keys are skipped: restoring them verbatim would let a script grant itself a different target, and <code>clear</code> never removes them anyway.</td></tr>
-
-  <tr><td><code>reloadProvider</code></td><td>account</td>
-      <td>Ask the account's provider to reload itself. Fails if that provider is not connected.</td></tr>
-
-  <tr><td><code>calendars.synchronize</code></td><td>calendar</td>
-      <td>Refresh the target calendar, as the Reload button does. For a provider-backed calendar it is the only way to reach <code>calendar.provider.onSync</code> from a script — the same entry point the button and the platform's refresh timer use.</td></tr>
-  <tr><td><code>calendars.rename</code></td><td>calendar</td>
-      <td>Rename the target calendar. The provider that supplies it mirrors the new name into its folder row, so this is how that path is driven from a script.</td></tr>
-  <tr><td><code>calendars.remove</code></td><td>calendar</td>
-      <td>Delete the target calendar, as the Remove button does — the API's remove unregisters it, which ends in <code>deletePrefBranch</code>. The folder row is left pointing at it, and the provider is expected to notice and clear the binding.</td></tr>
-  <tr><td><code>calendars.get</code></td><td>calendar</td>
-      <td>The target calendar as the platform sees it — name, colour, <code>readOnly</code> and the rest. The way to check what a sync or a provider hook did to the calendar itself rather than to the folder row. <code>capabilities</code> always reads <code>null</code> here and that is not a fault: the Experiment fills it only for the extension owning the calendar type, and these calendars belong to the provider, not to TbSync — read it provider-side.</td></tr>
-  <tr><td><code>calendars.setColor</code></td><td>calendar</td>
-      <td>Recolour the target calendar, as the colour picker in its properties does. Like <code>calendars.rename</code>, the provider mirrors the new colour into its folder row, so this is how that path is driven from a script.</td></tr>
-
-  <tr><td><code>items.query</code></td><td>calendar</td>
-      <td>Items in the target calendar, as iCal. Any other query option is passed through.</td></tr>
-  <tr><td><code>items.get</code></td><td>calendar</td>
-      <td>One item by id, as iCal.</td></tr>
-  <tr><td><code>items.create</code></td><td>calendar</td>
-      <td>Create from an iCal string. <code>type</code> defaults to <code>event</code>; an <code>id</code> may be pre-specified, which is how a fixture keeps the UID it was written with.</td></tr>
-  <tr><td><code>items.update</code></td><td>calendar</td>
-      <td>Replace an item's iCal.</td></tr>
-  <tr><td><code>items.remove</code></td><td>calendar</td>
-      <td>Delete an item by id.</td></tr>
-
-  <tr><td><code>contacts.query</code></td><td>book</td>
-      <td>Cards in the target book. Each carries its vCard in <code>properties</code>.</td></tr>
-  <tr><td><code>contacts.get</code></td><td>book</td>
-      <td>One card by id.</td></tr>
-  <tr><td><code>contacts.create</code></td><td>book</td>
-      <td>Create from a <code>vCard</code> string. An <code>id</code> may be pre-specified, so the changelog entry the create produces can be asserted on rather than hunted for.</td></tr>
-  <tr><td><code>contacts.update</code></td><td>book</td>
-      <td>Replace a card's vCard. Writing back a byte-identical one should produce <strong>no</strong> changelog entry — that is the ghost gate, which exists because Thunderbird also fires <code>onUpdated</code> for PopularityIndex and address-picker recency.</td></tr>
-  <tr><td><code>contacts.remove</code></td><td>book</td>
-      <td>Delete a card by id.</td></tr>
-
-  <tr><td><code>lists.query</code></td><td>book</td>
-      <td>Mailing lists in the target book.</td></tr>
-  <tr><td><code>lists.get</code></td><td>book</td>
-      <td>One list by id.</td></tr>
-  <tr><td><code>lists.create</code></td><td>book</td>
-      <td>Create from <code>name</code>, and optionally <code>nickName</code> and <code>description</code>. A list has no vCard representation, so it is properties rather than a payload.</td></tr>
-  <tr><td><code>lists.update</code></td><td>book</td>
-      <td>Change those properties. Renaming one drives the <code>list-by-name</code> pre-tag, where a pulled list is tagged by name and upgraded to a real id on the next <code>onCreated</code>.</td></tr>
-  <tr><td><code>lists.remove</code></td><td>book</td>
-      <td>Delete a list by id.</td></tr>
-  <tr><td><code>lists.addMember</code></td><td>book</td>
-      <td>Put an existing card in a list.</td></tr>
-  <tr><td><code>lists.removeMember</code></td><td>book</td>
-      <td>Take it out again.</td></tr>
-  <tr><td><code>lists.listMembers</code></td><td>book</td>
-      <td>The cards in a list.</td></tr>
+<tr><th>Verb</th><th>Scope</th><th>Does</th></tr>
+<tr><td><code>getState</code></td><td>—</td><td>Providers, connection state, accounts and status.</td></tr>
+<tr><td><code>getBrowserInfo</code></td><td>—</td><td>Which Thunderbird is actually running.</td></tr>
+<tr><td><code>getFolders</code></td><td>—</td><td>The account's folder rows, including <code>sessionId</code> and the provider's <code>custom</code> data.</td></tr>
+<tr><td><code>getChangelog</code></td><td>folder</td><td>What is queued for a folder, from whichever side owns it. Throws rather than answering an empty list when a provider cannot be reached.</td></tr>
+<tr><td><code>setLogLevel</code></td><td>—</td><td>Event Log verbosity. <code>debug</code> needs level 3.</td></tr>
+<tr><td><code>getEventLog</code></td><td>—</td><td>Entries, optionally only those after <code>sinceSeq</code>. Reports <code>dropped</code> when the buffer rolled past what the caller last saw.</td></tr>
+<tr><td><code>clearEventLog</code></td><td>—</td><td>Empty it.</td></tr>
+<tr><td><code>getConsole</code> / <code>clearConsole</code></td><td>—</td><td>Thunderbird's own console, which the Event Log never sees — a TypeError inside a calendar module, an iCal parse complaint.</td></tr>
+<tr><td><code>syncAccount</code></td><td>account</td><td>Sync and <em>wait for it to finish</em>. Returns the folder rows, which is how you tell "synced cleanly" from "did nothing": it returns early and silently for an account that is disabled, already syncing, holding E:AUTH, or whose provider is not connected.</td></tr>
+<tr><td><code>setAutoSyncInterval</code></td><td>account</td><td>Set the autosync interval.</td></tr>
+<tr><td><code>setFolderSelected</code></td><td>folder</td><td>Select or deselect. Deselecting drops the target and ends the binding, which is how a run starts from a known state.</td></tr>
+<tr><td><code>setAccountEnabled</code></td><td>account</td><td>Connect or disconnect. Disconnecting does what the manager's button does, including deleting the account's calendars and books.</td></tr>
+<tr><td><code>setTarget</code></td><td>—</td><td>Re-point the grant. Refused with <code>E:RESTRICTED</code> unless the Bridge tab's <strong>unrestricted mode</strong> is on — see the warning below.</td></tr>
+<tr><td><code>reloadHost</code></td><td>—</td><td>Reload TbSync. Answers <em>before</em> reloading, and has to: the reload takes the native port with it. Poll <code>/health</code> rather than assuming the next request lands.</td></tr>
+<tr><td><code>reloadProvider</code></td><td>account</td><td>Ask the account's provider to reload itself.</td></tr>
+<tr><td><code>storage.snapshot</code></td><td>—</td><td>All of <code>storage.local</code>. Save it before <code>storage.clear</code> — it is the only way back, and it holds credentials and OAuth tokens.</td></tr>
+<tr><td><code>storage.clear</code></td><td>—</td><td>Empty persistent state so the next reload behaves like a fresh install. The bridge's own keys are kept, or it would come back unreachable.</td></tr>
+<tr><td><code>storage.restore</code></td><td>—</td><td>Write a snapshot back, skipping the bridge's own keys.</td></tr>
+<tr><td><code>calendars.synchronize</code></td><td>calendar</td><td>Refresh as the Reload button does — the only way to reach <code>calendar.provider.onSync</code> from a script.</td></tr>
+<tr><td><code>calendars.rename</code> / <code>.setColor</code></td><td>calendar</td><td>Rename or recolour. The provider mirrors both into its folder row, so this is how that path is driven.</td></tr>
+<tr><td><code>calendars.remove</code></td><td>calendar</td><td>Delete the calendar. The folder row is left pointing at it, and the provider is expected to notice.</td></tr>
+<tr><td><code>calendars.get</code></td><td>calendar</td><td>The calendar as the platform sees it. <code>capabilities</code> always reads null here — the Experiment fills it only for the extension owning the type.</td></tr>
+<tr><td><code>items.query</code> / <code>.get</code> / <code>.create</code> / <code>.update</code> / <code>.remove</code></td><td>calendar</td><td>Items as iCal. <code>create</code> accepts a pre-specified <code>id</code>, so a fixture keeps the UID it was written with.</td></tr>
+<tr><td><code>contacts.*</code></td><td>book</td><td>Cards as vCard. Writing back a byte-identical one must produce <em>no</em> changelog entry — that is the ghost gate.</td></tr>
+<tr><td><code>lists.*</code></td><td>book</td><td>Mailing lists and their members. A list has no vCard, so these take properties rather than a payload.</td></tr>
 </table>
 
-<div class="note"><strong>Never reload mid-sync.</strong>
-<code>SYNC_FOLDER</code> has no timeout and nothing rejects it when the port
-drops, so the helper dies, the response never arrives, and recovery needs
-<code>about:debugging</code>. Let <code>syncAccount</code> return first.
+<div class="note">
+<p><strong>Unrestricted mode is not a convenience flag.</strong> With it on, a
+script may self-grant any account and reach every resource — including
+connecting accounts and enabling resources that are not synced yet, which
+pulls them down. The target stops being a boundary and becomes a current
+state. That is the point for unattended multi-account runs, and exactly why
+it is opt-in, toggleable only from the Bridge tab, and meant to be switched
+off afterwards. Credentials are not part of what it adds: Thunderbird's
+password store is never reachable through the bridge.</p>
+</div>
 
-<p>Deselect the test resource before executing a reload. Nothing can then be
-in flight, and the next run starts from a reset sync key instead of whatever
-the last one left behind.</p></div>
+<h2 id="rules">Two rules</h2>
+
+<p><strong>Never reload mid-sync.</strong> <code>SYNC_FOLDER</code> has no
+timeout and nothing rejects it when the port drops, so the helper dies, the
+response never arrives, and recovery needs <code>about:debugging</code>. Let
+<code>syncAccount</code> return first.</p>
+
+<p><strong>Deselect the test resource before a reload.</strong> Nothing can
+then be in flight, and the next run starts from a reset sync key instead of
+whatever the last one left behind.</p>
 
 <h2 id="running">Running it</h2>
 
-<p>Build the beta xpis with <code>npm run build</code> in each repo and install
-them as temporary installs from <code>about:debugging</code>, which is what
-makes <code>reloadHost</code> and <code>reloadProvider</code> work.</p>
-
-<p>After installing the temporary XPIs, enable the bridge in the TbSync Manager
-interface.</p>
+<p>Build the beta xpis with <code>npm run build</code> in each repo and
+install them from <code>about:debugging</code> as temporary add-ons — that is
+what makes <code>reloadHost</code> and <code>reloadProvider</code> work. Then
+enable the bridge in the TbSync Manager's Bridge tab and pick a target.</p>
 
 </main>
 </div>
