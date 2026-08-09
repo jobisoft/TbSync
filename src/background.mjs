@@ -1,10 +1,6 @@
 import { ERR, HOST_CMD, PROVIDER_CMD, withCode } from "./vendor/tbsync/protocol.mjs";
 import { STATUS_TYPES } from "./vendor/tbsync/status.mjs";
 import {
-  ALLOWED_CHANGELOG_KINDS,
-  SERVER_TAG_STATUSES,
-} from "./vendor/tbsync/changelog-core.mjs";
-import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_SETTINGS,
   KEYS,
@@ -19,7 +15,6 @@ import * as router from "./modules/router.mjs";
 import * as ui from "./modules/messaging-ui.mjs";
 import * as actionBadge from "./modules/action-badge.mjs";
 import * as actionMenu from "./modules/action-menu.mjs";
-import * as changelogWatcher from "./modules/changelog-watcher.mjs";
 import {
   busyAccounts,
   busyFolders,
@@ -240,6 +235,9 @@ router.setProviderRpcHandler(
     if (!existing) {
       throw withCode(new Error("unknown folder"), ERR.UNKNOWN_FOLDER);
     }
+    // `changelog` is writable only so a provider can empty the import
+    // inbox once it has taken the contents - see the field's notes in
+    // protocol.mjs. Nothing else on the host writes it.
     const allowed = [
       "displayName",
       "targetType",
@@ -247,6 +245,7 @@ router.setProviderRpcHandler(
       "targetID",
       "targetName",
       "targetColor",
+      "changelog",
     ];
     const clean = {};
     for (const key of allowed)
@@ -357,145 +356,22 @@ router.setProviderRpcHandler(
   },
 );
 
-// Changelog writes - scoped to the caller's providerId (we refuse to touch
-// a folder belonging to another provider). The observer on the host owns
-// user-initiated entries; these RPCs are for provider-initiated pre-tagging
-// and entry removal.
-// A changelog row's identity is the triple (parentId, itemId, kind) - every
-// handler below validates `kind` so no row can be written or matched with a
-// meaningless one. The vocabulary comes from the vendored core, so a
-// provider validating its own queue accepts exactly what we accept.
-
 router.setProviderRpcHandler(
-  PROVIDER_CMD.CHANGELOG_MARK_SERVER_WRITE,
+  PROVIDER_CMD.FOLDER_TARGET_REMOVED,
   async (providerId, args) => {
-    const { accountId, folderId, parentId, itemId, status, kind } = args ?? {};
-    const acc = await accounts.get(accountId);
-    if (!acc || acc.provider !== providerId) {
-      throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
-    }
-    if (!ALLOWED_CHANGELOG_KINDS.includes(kind)) {
-      throw withCode(
-        new Error(
-          `changelogMarkServerWrite: kind must be one of ${ALLOWED_CHANGELOG_KINDS.join(" | ")} (got ${JSON.stringify(kind)})`,
-        ),
-        ERR.UNKNOWN_COMMAND,
-      );
-    }
-    if (typeof itemId !== "string" || itemId.length === 0) {
-      throw withCode(
-        new Error(
-          `changelogMarkServerWrite: itemId must be a non-empty string (got ${JSON.stringify(itemId)})`,
-        ),
-        ERR.UNKNOWN_COMMAND,
-      );
-    }
-    // The status string is load-bearing: the watcher consumes a tag only
-    // via the op it announces, and an unknown string would be invisible to
-    // `isServerTag` and masquerade as a user entry instead.
-    if (!SERVER_TAG_STATUSES.includes(status)) {
-      throw withCode(
-        new Error(
-          `changelogMarkServerWrite: status must be one of ${SERVER_TAG_STATUSES.join(" | ")} (got ${JSON.stringify(status)})`,
-        ),
-        ERR.UNKNOWN_COMMAND,
-      );
-    }
-    // A pre-tag exists for exactly one purpose: to stop our own observer
-    // from logging the write we are about to make as a user edit. Where the
-    // provider owns the resource we do not observe it, so there is nothing to
-    // suppress - and the tag would never be consumed either, so it would sit
-    // in the changelog forever, one per synced item.
-    const row = await folders.get(accountId, folderId);
-    if (changelogWatcher.providerOwnsChanges(row?.targetType)) return null;
-
-    await folders.markServerWrite(accountId, folderId, {
-      parentId,
-      itemId,
-      status,
-      kind,
-    });
-    return null;
-  },
-);
-
-/**
- * A user edit the provider was handed directly, for a resource it supplies
- * itself. The host resolves which folder that is - the provider is given a
- * calendar, not a folder id, and the folder table is ours.
- *
- * `detail` is stored verbatim and never inspected here. For calendars it is
- * what the item looked like before the edit, which nothing on this side can
- * reconstruct once the new version has been written.
- */
-router.setProviderRpcHandler(
-  PROVIDER_CMD.CHANGELOG_RECORD_USER_EDIT,
-  async (providerId, args) => {
-    const { parentId, itemId, kind, op, detail } = args ?? {};
-    const allowedOps = ["created", "updated", "deleted"];
-    if (!allowedOps.includes(op)) {
-      throw withCode(
-        new Error(
-          `changelogRecordUserEdit: op must be one of ${allowedOps.join(" | ")} (got ${JSON.stringify(op)})`,
-        ),
-        ERR.UNKNOWN_COMMAND,
-      );
-    }
-    if (!ALLOWED_CHANGELOG_KINDS.includes(kind)) {
-      throw withCode(
-        new Error(
-          `changelogRecordUserEdit: kind must be one of ${ALLOWED_CHANGELOG_KINDS.join(" | ")} (got ${JSON.stringify(kind)})`,
-        ),
-        ERR.UNKNOWN_COMMAND,
-      );
-    }
-    if (typeof itemId !== "string" || itemId.length === 0) {
-      throw withCode(
-        new Error(
-          `changelogRecordUserEdit: itemId must be a non-empty string (got ${JSON.stringify(itemId)})`,
-        ),
-        ERR.UNKNOWN_COMMAND,
-      );
-    }
-    const owner = await folders.getByTarget(parentId);
-    if (!owner) {
-      throw withCode(new Error("unknown folder"), ERR.UNKNOWN_FOLDER);
-    }
+    const { targetID } = args ?? {};
+    const owner = await folders.getByTarget(targetID);
+    if (!owner) return null;
     const acc = await accounts.get(owner.accountId);
     if (!acc || acc.provider !== providerId) {
       throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
     }
-    const changed = await folders.recordUserEdit(
-      owner.accountId,
-      owner.folderId,
-      { parentId, itemId, kind, op, detail },
-    );
-    if (changed) {
-      ui.broadcast({ type: "folders-changed", accountId: owner.accountId });
-    }
+    const cleared = await folders.clearTarget(owner.accountId, owner.folderId);
+    if (cleared) ui.broadcast({ type: "folders-changed", accountId: owner.accountId });
     return null;
   },
 );
 
-/**
- * The local resource behind one of this provider's folders is gone - the user
- * deleted the calendar or address book it was bound to. Same teardown the
- * observer performs for the resources it still watches: the row stays so the
- * folder can be enabled again, but its binding is cleared and it stops syncing.
- *
- * A provider supplies its own calendars, so it is the only side that sees
- * those removals. It is also the only side that can tell a real deletion from
- * its own extension restarting, which the platform announces the same way.
- */
-/**
- * A provider asking for one of its folders to be synced - a user pressing
- * Reload on a calendar it supplies, or that calendar's own refresh timer.
- *
- * The host still decides how: its normal account prologue runs first, only the
- * named folder is synced, and a request arriving mid-sync is deferred rather
- * than dropped. Resolves when that sync has finished, so the provider can
- * report a real outcome back to whatever asked.
- */
 router.setProviderRpcHandler(
   PROVIDER_CMD.REQUEST_SYNC,
   async (providerId, args) => {
@@ -509,76 +385,6 @@ router.setProviderRpcHandler(
       throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
     }
     await syncAccount(owner.accountId, { only: owner.folderId });
-    return null;
-  },
-);
-
-router.setProviderRpcHandler(
-  PROVIDER_CMD.FOLDER_TARGET_REMOVED,
-  async (providerId, args) => {
-    const { targetID } = args ?? {};
-    const owner = await folders.getByTarget(targetID);
-    if (!owner) return null;
-    const acc = await accounts.get(owner.accountId);
-    if (!acc || acc.provider !== providerId) {
-      throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
-    }
-    await changelogWatcher.clearFolderTarget(
-      owner.accountId,
-      owner.folderId,
-      targetID,
-    );
-    return null;
-  },
-);
-
-router.setProviderRpcHandler(
-  PROVIDER_CMD.CHANGELOG_REMOVE,
-  async (providerId, args) => {
-    const { accountId, folderId, parentId, itemId, kind } = args ?? {};
-    const acc = await accounts.get(accountId);
-    if (!acc || acc.provider !== providerId) {
-      throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
-    }
-    if (!ALLOWED_CHANGELOG_KINDS.includes(kind)) {
-      throw withCode(
-        new Error(
-          `changelogRemove: kind must be one of ${ALLOWED_CHANGELOG_KINDS.join(" | ")} (got ${JSON.stringify(kind)})`,
-        ),
-        ERR.UNKNOWN_COMMAND,
-      );
-    }
-    await folders.removeChangelogEntry(accountId, folderId, {
-      parentId,
-      itemId,
-      kind,
-    });
-    return null;
-  },
-);
-
-router.setProviderRpcHandler(
-  PROVIDER_CMD.CHANGELOG_MOVE_TO_TAIL,
-  async (providerId, args) => {
-    const { accountId, folderId, items } = args ?? {};
-    const acc = await accounts.get(accountId);
-    if (!acc || acc.provider !== providerId) {
-      throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
-    }
-    if (!Array.isArray(items)) {
-      throw new Error("changelogMoveToTail: items must be an array");
-    }
-    for (const i of items) {
-      if (!ALLOWED_CHANGELOG_KINDS.includes(i?.kind)) {
-        throw withCode(
-          new Error(
-            `changelogMoveToTail: every item needs a kind out of ${ALLOWED_CHANGELOG_KINDS.join(" | ")} (got ${JSON.stringify(i?.kind)})`,
-          ),
-          ERR.UNKNOWN_COMMAND,
-        );
-      }
-    }
-    await folders.moveChangelogEntriesToTail(accountId, folderId, items);
     return null;
   },
 );
@@ -943,14 +749,18 @@ ui.setManagerRpcHandler(
 ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
   const acc = await accounts.get(accountId);
   if (!acc) return null;
-  // Disconnecting skips the upgrade guard and every transient lock - a
-  // sync that will not end is exactly when it is needed, and the host
-  // aborts it and deletes the resources itself. Both directions do require
-  // the provider's port: disconnect is a configuration change the provider
-  // participates in (stop, clean its own state), not the last-resort exit.
-  // That is Remove, which refuses nothing - including a dead provider.
+  // Connecting needs the provider: only it can reach the server and
+  // discover what the account holds, so there is nothing to do without it.
+  //
+  // Disconnecting does not, and refusing without it was the wrong shape - a
+  // wedged or uninstalled provider is exactly when a user reaches for
+  // Disconnect. Nothing in the teardown depends on it any more: the host
+  // aborts the sync, deletes the Thunderbird resources itself, and ends
+  // each folder's binding by minting a new session, which is what makes
+  // whatever the provider still holds unclaimed. It is told if it is
+  // listening, and finds out by not finding its session if it is not.
   if (enabled) assertNotUpgrading(accountId);
-  if (!router.isProviderConnected(acc.provider)) {
+  if (enabled && !router.isProviderConnected(acc.provider)) {
     throw withCode(
       new Error("Provider not available"),
       ERR.PROVIDER_UNAVAILABLE,
@@ -1166,7 +976,6 @@ for (const acc of await accounts.list()) {
 ui.init();
 actionBadge.init();
 await actionBadge.refresh();
-await changelogWatcher.init();
 await actionMenu.init();
 registry.init({
   openPortToProvider: router.openPortToProvider,

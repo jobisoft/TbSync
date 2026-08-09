@@ -241,22 +241,6 @@ export class TbSyncProviderImplementation {
    *                         resources and has nothing to suppress.
    *  Must be awaited BEFORE the actual TB API call so the tag is
    *  durable before the event fires. */
-  changelogMarkServerWrite(args) {
-    return this.#sendCmd(PROVIDER_CMD.CHANGELOG_MARK_SERVER_WRITE, args);
-  }
-  /** Record a user edit for a resource this provider supplies itself, e.g.
-   *  a calendar of its own type whose edits arrive as provider hooks rather
-   *  than through the host's observer.
-   *
-   *  `parentId` is the resource (the calendar's id); the host resolves which
-   *  folder that is. `op` is "created" | "updated" | "deleted" and is folded
-   *  into whatever is already queued for the item. `detail` is stored
-   *  verbatim and handed back on the changelog entry - for calendars it
-   *  carries the item's previous version, the one thing that cannot be
-   *  re-derived once the edit has been written. */
-  changelogRecordUserEdit(args) {
-    return this.#sendCmd(PROVIDER_CMD.CHANGELOG_RECORD_USER_EDIT, args);
-  }
   /** Ask the host to sync one of this provider's folders, identified by the
    *  local resource it is bound to.
    *
@@ -284,29 +268,13 @@ export class TbSyncProviderImplementation {
   folderTargetRemoved(args) {
     return this.#sendCmd(PROVIDER_CMD.FOLDER_TARGET_REMOVED, args);
   }
-  /** Remove the queued user edit for `(parentId, itemId, kind)`. Called
-   *  after successfully pushing a `*_by_user` entry. `kind` is required -
-   *  a changelog row's identity is the triple, and the host refuses the
-   *  call without it. `*_by_server` rows are never touched. */
-  changelogRemove(args) {
-    return this.#sendCmd(PROVIDER_CMD.CHANGELOG_REMOVE, args);
-  }
-  /** Move the supplied changelog entries to the tail of the queue
-   *  (preserving content + timestamps). Used after a partial-push
-   *  failure so the next sync attempts non-failing items first.
-   *  args: `{accountId, folderId, items: [{parentId, itemId, kind}, …]}` -
-   *  `kind` is required on every item; the host refuses the call
-   *  otherwise. */
-  changelogMoveToTail(args) {
-    return this.#sendCmd(PROVIDER_CMD.CHANGELOG_MOVE_TO_TAIL, args);
-  }
 
   /** Provider-scoped upgrade lock. While `locked: true`, the host
    *  refuses every user-initiated RPC against any account belonging to
    *  this provider and skips autosync ticks - the manager surfaces the
    *  state as "Provider is performing one-time upgrade work…". The
    *  upgrade itself is exempt: provider→host commands like
-   *  `updateAccount` / `changelogMarkServerWrite` continue to flow.
+   *  `updateAccount` / `updateFolder` continue to flow.
    *  Always pair a `true` call with a `false` call (use try/finally). */
   setProviderUpgradeLock(locked) {
     return this.#sendCmd(PROVIDER_CMD.SET_PROVIDER_UPGRADE_LOCK, {

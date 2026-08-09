@@ -66,7 +66,6 @@ import * as folders from "./folders.mjs";
 import * as router from "./router.mjs";
 import { syncAccount } from "./sync-coordinator.mjs";
 import { HOST_CMD } from "../vendor/tbsync/protocol.mjs";
-import { providerOwnsChanges } from "../vendor/tbsync/changelog-core.mjs";
 
 const NATIVE_APP = "tbsync_bridge_host";
 
@@ -127,13 +126,12 @@ const COMMANDS = {
   setLogLevel: {},
   clearEventLog: {},
 
-  /** What is still queued for a folder, wherever the queue lives.
+  /** What is still queued for a folder.
    *
-   *  For an address book that is `folder.changelog`, and this is only a
-   *  convenience. For a calendar it is the only way to see: the provider
-   *  owns those changes and keeps them in its own storage, so the folder
-   *  row's changelog is permanently empty - reading it would report
-   *  "nothing pending" for a folder holding a dozen unpushed edits.
+   *  Only the provider can answer: it owns every queue and keeps them in
+   *  its own storage, so the folder row's `changelog` is empty except as an
+   *  import inbox. Reading the row would report "nothing pending" for a
+   *  folder holding a dozen unpushed edits.
    *
    *  Asking the provider fails loudly when the provider cannot answer. A
    *  suite asserting "the queue drained" must never be handed an empty
@@ -144,9 +142,6 @@ const COMMANDS = {
     async run({ folderId }, { accountId }) {
       const row = await folders.get(accountId, folderId);
       if (!row) throw new Error(`unknown folder ${folderId}`);
-      if (!providerOwnsChanges(row.targetType)) {
-        return { owner: "host", entries: row.changelog ?? [] };
-      }
       const acc = await accounts.get(accountId);
       if (!acc) throw new Error("unknown account");
       if (!router.isProviderConnected(acc.provider)) {
@@ -499,11 +494,11 @@ const COMMANDS = {
    * answers to those. A verb naming an operation the authorised resource
    * cannot serve is refused by scope, with the mismatch named.
    *
-   * These exist so the contacts half of the changelog can be driven from a
+   * These exist so the contacts half of the queue can be driven from a
    * script at all. It is the half with the special cases in it - the ghost
-   * gate that swallows PopularityIndex writes, `contactHashes`, and the
-   * list-by-name pre-tag - and without them it is reachable only by a
-   * person clicking in the address book.
+   * gate that swallows PopularityIndex writes, the content hashes behind
+   * it, and the list-by-name pre-tag - and without them it is reachable
+   * only by a person clicking in the address book.
    *
    * vCard is the payload throughout, as iCal is for calendar items: it is
    * what the platform stores and what the EAS codec reads, so a fixture can

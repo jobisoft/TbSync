@@ -1,13 +1,5 @@
 import { KEYS } from "./storage-keys.mjs";
 import { serialize } from "../vendor/tbsync/storage-queue.mjs";
-import {
-  isUserEntry,
-  markServerWriteUpdater,
-  moveToTailUpdater,
-  providerOwnsChanges,
-  recordUserEditUpdater,
-  removeEntryUpdater,
-} from "../vendor/tbsync/changelog-core.mjs";
 
 /**
  * Folder directory, backed by browser.storage.local under KEYS.FOLDERS.
@@ -87,35 +79,23 @@ export async function listForAccount(accountId) {
   );
 }
 
-/** `{ [accountId]: true }` for every account that has at least one
- *  selected folder carrying a pending user-side change - i.e. local edits
- *  that haven't been pushed to the server yet. The manager surfaces these
- *  as a "needs sync" status without needing to load each account's folders
- *  client-side. Read-only folders never accumulate user-side entries (the
- *  watcher skips them), so the `_by_user` filter implicitly handles that.
+/** `{ [accountId]: true }` for every account with at least one selected
+ *  folder holding unpushed local edits, which the manager shows as a
+ *  "needs sync" status.
  *
- *  Where the provider owns the changes, the queue is not here to count, so
- *  the count comes to us: the provider keeps `custom.pendingUserChanges`
- *  roughly current as it queues and drains. Roughly is the right word and
- *  the accepted cost - this drives a badge, and the alternative is asking
- *  every provider over RPC to paint an icon. A stale count shows or hides
- *  a dot; nothing reads it to decide what to sync. */
+ *  The queues are the providers', so the count comes to us: each keeps
+ *  `custom.pendingUserChanges` roughly current as it queues and drains.
+ *  Roughly is the right word and the accepted cost - this drives a badge,
+ *  and the alternative is asking every provider over RPC to paint an icon.
+ *  A stale count shows or hides a dot; nothing reads it to decide what to
+ *  sync. */
 export async function needsSyncMap() {
   const state = await read();
   const out = {};
   for (const [accountId, bucket] of Object.entries(state)) {
-    out[accountId] = Object.values(bucket).some((f) => {
-      if (!f.selected) return false;
-      if (providerOwnsChanges(f.targetType)) {
-        return Number(f.custom?.pendingUserChanges ?? 0) > 0;
-      }
-      return (
-        Array.isArray(f.changelog) &&
-        f.changelog.some(
-          (e) => typeof e?.status === "string" && isUserEntry(e.status),
-        )
-      );
-    });
+    out[accountId] = Object.values(bucket).some(
+      (f) => f.selected && Number(f.custom?.pendingUserChanges ?? 0) > 0,
+    );
   }
   return out;
 }
@@ -214,21 +194,15 @@ export function replaceAccountFolders(accountId, incoming) {
             ? descriptor.targetColor
             : (prior?.targetColor ??
               (cached && "targetColor" in cached ? cached.targetColor : null)),
-        // Host-owned per-folder change queue. Authored by the address-book
-        // observer (changelog-watcher.mjs); consumed by the provider at sync
-        // time. Entry shape: `{ parentId, itemId, timestamp, status }`.
-        // Preserved across folder-list pushes so a re-push doesn't wipe
-        // pending entries. Stays empty where the provider owns the changes.
+        // Inbox for a TbSync 4 import, and nothing else. The importer puts
+        // that profile's pending edits here; the owning provider takes them
+        // into its own queue and empties this. Preserved across folder-list
+        // pushes so a re-push cannot drop an import nobody has claimed yet.
         changelog: prior?.changelog ?? [],
         // This binding's generation - see the Sessions block above. Kept
         // like the changelog: a re-push is the provider re-describing the
         // same folders, not the user tearing one down.
         sessionId: prior?.sessionId ?? newSession(),
-        // Host-owned contact-content hashes used by the watcher to suppress
-        // TB ghost onUpdated events (PopularityIndex, address-picker
-        // recency markers). Map shape: `{ [contactId]: sha1Hex }`.
-        // Preserved across folder-list pushes.
-        contactHashes: prior?.contactHashes ?? {},
         // Opaque provider-owned blob. Preserved across pushes so a full
         // folder re-push doesn't wipe provider-local per-folder state.
         custom: descriptor.custom ?? prior?.custom ?? {},
@@ -301,136 +275,26 @@ export function clearAccount(accountId) {
   });
 }
 
-// ── Changelog helpers ─────────────────────────────────────────────────────
-//
-// The changelog lives at `folder.changelog`. These helpers are atomic at the
-// storage-blob level (single read-modify-write per call) so concurrent
-// watcher events + RPC mutations don't step on each other. Callers pass an
-// `updater(entries)` that returns the new entries array.
-
-/** Generic read-modify-write helper for `folder.changelog`. The updater
- *  receives the current entries array and returns the new one. Returning
- *  the same reference short-circuits the write (no storage churn, no
- *  broadcast). Used by both the host-side watcher (for state machine
- *  transitions) and the provider-facing RPCs below. */
-export function mutateChangelog(accountId, folderId, updater) {
-  return serialize(async () => {
-    const state = await read();
-    const folder = state[accountId]?.[folderId];
-    if (!folder) return null;
-    const before = Array.isArray(folder.changelog) ? folder.changelog : [];
-    const after = updater(before) ?? before;
-    if (after === before) return before;
-    folder.changelog = after;
-    state[accountId][folderId] = folder;
-    await write(state);
-    return after;
-  });
-}
-
-// The four mutations below are the host's storage-bound wrappers around the
-// vendored core's pure updaters. The rules - which status follows which op,
-// what a pre-tag replaces, what a removal is allowed to touch - live in
-// `changelog-core.mjs` and are the same rules a provider keeping its own
-// queue runs. Only the read-modify-write around them is ours.
-
-/**
- * Record a user edit a provider was handed directly, folding it into
- * whatever is already queued for that item.
+/** Undo a folder's binding to a local resource that no longer exists.
  *
- * `detail` is opaque to the host - for calendars it carries what the item
- * looked like *before* the edit, which is the only thing the provider
- * cannot re-derive at push time.
+ *  The row stays, so the folder can be enabled again later; it just stops
+ *  pointing at something that is gone, and stops syncing until it is. The
+ *  session ends with the binding, which is what makes every provider drop
+ *  whatever it still holds for it.
  *
- * Returns whether the queue actually moved. The caller broadcasts on that
- * rather than on every call: a second edit of an already-queued item is a
- * no-op, and a bulk change would otherwise fire one folders-changed per
- * item - the same UI thrash the observer path documents avoiding.
- */
-export async function recordUserEdit(
-  accountId,
-  folderId,
-  { parentId, itemId, kind, op, detail },
-) {
-  let changed = false;
-  await mutateChangelog(accountId, folderId, (entries) => {
-    const result = recordUserEditUpdater(entries, {
-      parentId,
-      itemId,
-      kind,
-      op,
-      detail,
-      now: Date.now(),
-    });
-    changed = result.changed;
-    return result.entries;
+ *  Called by `FOLDER_TARGET_REMOVED`: the provider owns the resources it
+ *  supplies and the books it watches, so it is the side that notices. */
+export async function clearTarget(accountId, folderId) {
+  const row = await get(accountId, folderId);
+  if (!row) return false;
+  if (row.targetID == null && !row.selected) return false; // already cleared
+  await update(accountId, folderId, {
+    targetID: null,
+    targetName: null,
+    selected: false,
+    sessionId: newSession(),
   });
-  return changed;
-}
-
-/** Replace any existing row for the triple with a server-side pre-tag. Used
- *  by PROVIDER_CMD.CHANGELOG_MARK_SERVER_WRITE to freeze the next observer
- *  event for that item as self-inflicted. */
-export async function markServerWrite(
-  accountId,
-  folderId,
-  { parentId, itemId, status, kind },
-) {
-  return mutateChangelog(accountId, folderId, (entries) =>
-    markServerWriteUpdater(entries, {
-      parentId,
-      itemId,
-      kind,
-      status,
-      now: Date.now(),
-    }),
-  );
-}
-
-/** Remove the queued **user** edit matching `(parentId, itemId, kind)`. Used
- *  by a provider once it has dealt with that edit - pushed it, or
- *  established that it can never be pushed. A `*_by_server` row is left
- *  alone; see the core for why that distinction is load-bearing. */
-export async function removeChangelogEntry(
-  accountId,
-  folderId,
-  { parentId, itemId, kind },
-) {
-  return mutateChangelog(accountId, folderId, (entries) =>
-    removeEntryUpdater(entries, { parentId, itemId, kind }),
-  );
-}
-
-/** Move entries matching any `(parentId, itemId, kind)` in `items` to the
- *  tail of the changelog, preserving their original timestamps and status.
- *  Used by providers after a push partially failed so the next sync attempts
- *  the un-failed items first. */
-export async function moveChangelogEntriesToTail(accountId, folderId, items) {
-  if (!Array.isArray(items) || items.length === 0) return null;
-  return mutateChangelog(accountId, folderId, (entries) =>
-    moveToTailUpdater(entries, items),
-  );
-}
-
-/** Generic read-modify-write helper for `folder.contactHashes`. Same
- *  pattern as `mutateChangelog` above. Returning the same reference
- *  short-circuits the write. */
-export function mutateContactHashes(accountId, folderId, updater) {
-  return serialize(async () => {
-    const state = await read();
-    const folder = state[accountId]?.[folderId];
-    if (!folder) return null;
-    const before =
-      folder.contactHashes && typeof folder.contactHashes === "object"
-        ? folder.contactHashes
-        : {};
-    const after = updater(before) ?? before;
-    if (after === before) return before;
-    folder.contactHashes = after;
-    state[accountId][folderId] = folder;
-    await write(state);
-    return after;
-  });
+  return true;
 }
 
 /** All folder rows that currently have a non-null `targetID`. The watcher

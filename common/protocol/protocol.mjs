@@ -166,12 +166,10 @@ export const HOST_CMD = {
   /** `{ accountId, folderId }` → the provider's own pending change queue
    *  for that folder, as changelog rows, or `null` if it keeps none.
    *
-   *  The read side of provider-owned queues. Where the provider owns the
-   *  changes (see `providerOwnsChanges` in changelog-core.mjs), the folder
-   *  row's `changelog` is empty and this is the only way to see what is
-   *  pending - the host needs it for diagnostics and the bridge's test
-   *  suites read it after every sync. A provider that keeps no queue of
-   *  its own answers `null`, and the caller falls back to the folder row.
+   *  The read side of a provider's queue, and the only one: the folder
+   *  row's `changelog` is an import inbox, not a record of what is pending.
+   *  The host needs this for diagnostics and the bridge's test suites read
+   *  it after every sync. A provider that keeps no queue answers `null`.
    *
    *  Read-only: answering must not consume, re-order, or repair anything. */
   GET_CHANGELOG: "getChangelog",
@@ -246,8 +244,12 @@ export const HOST_CMD = {
  * A provider that ignores it would push edits belonging to a binding the
  * user has already thrown away.
  *
- * `changelog` stays host-owned and stays empty for folders whose changes
- * the provider owns; HOST_CMD.GET_CHANGELOG reads those.
+ * `changelog` is an inbox, not a queue. The host writes it in exactly one
+ * situation - importing a TbSync 4 profile, whose pending edits have to
+ * land somewhere - and a provider empties it (patch `changelog: []` via
+ * UPDATE_FOLDER) once it has taken the contents into its own storage.
+ * Nothing else writes it and it is empty in normal operation;
+ * HOST_CMD.GET_CHANGELOG is how anyone reads what is actually pending.
  *
  * `readOnly` is server-announced (provider-authored from the server's ACL).
  * `downloadOnly` is the user override surfaced as the manager's ACL toggle;
@@ -299,7 +301,8 @@ export const HOST_CMD = {
  *
  * UPDATE_FOLDER { accountId, folderId, patch }
  *   → patches top-level writable fields (`displayName`, `targetType`,
- *   `readOnly`, `downloadOnly`, `targetID`, `targetName`) and shallow-merges
+ *   `readOnly`, `downloadOnly`, `targetID`, `targetName`, `changelog` -
+ *   the last only to empty the import inbox described above) and shallow-merges
  *   `patch.custom` like UPDATE_ACCOUNT. `warning` / `error` / `lastSyncTime`
  *   / `status` are host-authored from the sync RPC outcome - see "Authoring"
  *   below. `downloadOnly` is also writable via the host's
@@ -336,22 +339,8 @@ export const PROVIDER_CMD = {
   // needs it. Both are scoped to the caller's providerId.
   LIST_ACCOUNTS: "listAccounts",
   GET_ACCOUNT: "getAccount",
-  // Changelog mutations - the queue lives at `folder.changelog` and is
-  // owned by the host's built-in Thunderbird-event observer. Providers
-  // tag `*_by_server` entries before their own sync writes so the observer
-  // skips the resulting TB events (all events within a 1500 ms window), and clear
-  // `*_by_user` entries after successfully pushing them to the server.
-  // CHANGELOG_MOVE_TO_TAIL re-orders specific entries to the end of the
-  // queue without changing their content; used by providers after a push
-  // partially failed so the next sync attempts the items that have not
-  // failed first (avoids replaying the same batch-shrink dance every
-  // sync against a stuck-bad item at the head).
-  CHANGELOG_MARK_SERVER_WRITE: "changelogMarkServerWrite",
-  CHANGELOG_RECORD_USER_EDIT: "changelogRecordUserEdit",
   FOLDER_TARGET_REMOVED: "folderTargetRemoved",
   REQUEST_SYNC: "requestSync",
-  CHANGELOG_REMOVE: "changelogRemove",
-  CHANGELOG_MOVE_TO_TAIL: "changelogMoveToTail",
   // Provider-scoped upgrade lock. While locked, the host treats every
   // account belonging to the provider as "upgrading" - refuses every
   // user-initiated RPC and skips autosync ticks. Used by the provider's

@@ -93,25 +93,6 @@ export function isUserEntry(status) {
   return String(status).endsWith("_by_user");
 }
 
-/**
- * True when the provider, not the host, is the source of truth for user
- * edits to a folder's target - which is every folder.
- *
- * A provider learns about an edit in one of two ways. It supplies the
- * calendar, so Thunderbird hands it the edit directly with the previous item
- * attached; or it watches the address book, because there is no provider API
- * for one and watching is the only way. Either way the record is made in the
- * provider's own storage, so it survives the host being disabled, updating
- * or absent - which is the point, since a provider's resources keep working
- * when the host does not.
- *
- * Kept as a function rather than folded away: it names the rule, and a
- * future target kind arrives here rather than in a dozen call sites.
- */
-export function providerOwnsChanges(_targetType) {
-  return true;
-}
-
 /** A row's identity: the triple, as a string key. */
 export function rowKey({ parentId, itemId, kind }) {
   return `${parentId}|${itemId}|${kind}`;
