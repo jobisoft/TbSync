@@ -1,4 +1,4 @@
-import { DISCOVERY, PROTOCOL_VERSION } from "../tbsync/protocol.mjs";
+import { DISCOVERY, PROTOCOL_VERSION } from "../vendor/tbsync/protocol.mjs";
 import * as eventLog from "./event-log.mjs";
 import * as providers from "./providers.mjs";
 import * as accounts from "./accounts.mjs";

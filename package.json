@@ -5,6 +5,7 @@
     "build": "node build.js",
     "dev": "node build.js --dev",
     "version": "node build.js && git add src",
-    "test": "node --test"
+    "test": "node --test protocol/*.test.mjs",
+    "vendor": "protocol/vendor.sh"
   }
 }

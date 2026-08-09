@@ -3,8 +3,8 @@
  * syncAccount / syncFolder RPCs. Account + folder *display* status are
  * derived at render time on the host; no persistent status enums live here.
  *
- * **MIRRORED INTO EVERY PROVIDER ADD-ON** - see the header of
- * `./protocol.mjs` for the sync rule.
+ * **VENDORED INTO EVERY CONSUMER** - see the header of `./protocol.mjs`
+ * for the rule.
  */
 
 export const STATUS_TYPES = {

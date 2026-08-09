@@ -23,3 +23,17 @@ This file lists files that were not created by this project and are maintained u
 - **File** : `/vendor/i18n/i18n.mjs`
 - **Source** : https://raw.githubusercontent.com/thunderbird/webext-support/6bbbf8ac2105d04c1b59083e8bd52e0046448ec7/modules/i18n/i18n.mjs
 - **License** : MIT
+
+---
+
+## tbsync protocol library
+
+- **Files** : `/vendor/tbsync/*`
+- **Source** : `../protocol/` — this repository's own directory, one level up
+  from `src/`
+- **Note** : not third-party, but vendored all the same. `build.js` zips `src/`
+  and nothing else, so the host can only import the library through a copy
+  inside `src/` — exactly as a provider does. Never edit these copies: change
+  the file in `protocol/` and run `protocol/vendor.sh` (or `npm run vendor`),
+  which refreshes every consumer and verifies each copy is byte-identical.
+  See `protocol/README.md`.

@@ -1,5 +1,5 @@
 import { KEYS } from "./storage-keys.mjs";
-import { serialize } from "./storage-queue.mjs";
+import { serialize } from "../vendor/tbsync/storage-queue.mjs";
 
 /**
  * ProviderMeta directory, backed by browser.storage.session under

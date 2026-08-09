@@ -65,7 +65,7 @@ import * as accounts from "./accounts.mjs";
 import * as folders from "./folders.mjs";
 import * as router from "./router.mjs";
 import { syncAccount } from "./sync-coordinator.mjs";
-import { HOST_CMD } from "../tbsync/protocol.mjs";
+import { HOST_CMD } from "../vendor/tbsync/protocol.mjs";
 
 const NATIVE_APP = "tbsync_bridge_host";
 

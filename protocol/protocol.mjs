@@ -4,12 +4,12 @@
  * This module is the single source of truth for message names, port name, and
  * version numbers.
  *
- * **THIS FILE IS MIRRORED INTO EVERY PROVIDER ADD-ON.** The copy in
- * `TbSync/src/tbsync/protocol.mjs` is authoritative; the copies shipped by
- * providers (e.g. `google-4-tbsync/src/vendor/tbsync/protocol.mjs`) MUST
- * match it byte-for-byte. When you change this file, re-copy it to every
- * provider and confirm with:
- *     diff -q TbSync/src/tbsync/protocol.mjs google-4-tbsync/src/vendor/tbsync/protocol.mjs
+ * **THIS FILE IS VENDORED INTO EVERY CONSUMER** - each provider and TbSync
+ * itself, under `src/vendor/tbsync/`. The copy in `TbSync/protocol/` is
+ * authoritative and all the others MUST match it byte-for-byte. Edit it
+ * there, then re-vendor and verify in one step:
+ *     TbSync/protocol/vendor.sh
+ * See `TbSync/protocol/README.md`.
  */
 
 /**

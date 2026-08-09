@@ -1,5 +1,9 @@
-import { ERR, HOST_CMD, PROVIDER_CMD, withCode } from "./tbsync/protocol.mjs";
-import { STATUS_TYPES } from "./tbsync/status.mjs";
+import { ERR, HOST_CMD, PROVIDER_CMD, withCode } from "./vendor/tbsync/protocol.mjs";
+import { STATUS_TYPES } from "./vendor/tbsync/status.mjs";
+import {
+  ALLOWED_CHANGELOG_KINDS,
+  SERVER_TAG_STATUSES,
+} from "./vendor/tbsync/changelog-core.mjs";
 import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_SETTINGS,
@@ -29,7 +33,7 @@ import {
   recomputeAccountError,
 } from "./modules/sync-coordinator.mjs";
 import { runIfNeeded as runLegacyMigration } from "./modules/legacy-migration-runner.mjs";
-import { serialize } from "./modules/storage-queue.mjs";
+import { serialize } from "./vendor/tbsync/storage-queue.mjs";
 
 // Where "TbSync Manager" bug reports are sent. Provider-authored reports go
 // to the provider's own `maintainerEmail` (carried on ProviderMeta from the
@@ -348,17 +352,10 @@ router.setProviderRpcHandler(
 // a folder belonging to another provider). The observer on the host owns
 // user-initiated entries; these RPCs are for provider-initiated pre-tagging
 // and entry removal.
-// A changelog row's identity is the triple (parentId, itemId, kind) -
-// every handler below validates `kind` so no row can be written or matched
-// with a meaningless one.
-const ALLOWED_CHANGELOG_KINDS = [
-  "contact",
-  "list",
-  "list-by-name",
-  "membership",
-  "event",
-  "task",
-];
+// A changelog row's identity is the triple (parentId, itemId, kind) - every
+// handler below validates `kind` so no row can be written or matched with a
+// meaningless one. The vocabulary comes from the vendored core, so a
+// provider validating its own queue accepts exactly what we accept.
 
 router.setProviderRpcHandler(
   PROVIDER_CMD.CHANGELOG_MARK_SERVER_WRITE,
@@ -387,15 +384,10 @@ router.setProviderRpcHandler(
     // The status string is load-bearing: the watcher consumes a tag only
     // via the op it announces, and an unknown string would be invisible to
     // `isServerTag` and masquerade as a user entry instead.
-    const allowedStatuses = [
-      "added_by_server",
-      "modified_by_server",
-      "deleted_by_server",
-    ];
-    if (!allowedStatuses.includes(status)) {
+    if (!SERVER_TAG_STATUSES.includes(status)) {
       throw withCode(
         new Error(
-          `changelogMarkServerWrite: status must be one of ${allowedStatuses.join(" | ")} (got ${JSON.stringify(status)})`,
+          `changelogMarkServerWrite: status must be one of ${SERVER_TAG_STATUSES.join(" | ")} (got ${JSON.stringify(status)})`,
         ),
         ERR.UNKNOWN_COMMAND,
       );

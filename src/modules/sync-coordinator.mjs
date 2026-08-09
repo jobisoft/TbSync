@@ -1,5 +1,5 @@
-import { ERR, HOST_CMD, PREDEFINED_ERROR_CODES } from "../tbsync/protocol.mjs";
-import { STATUS_TYPES } from "../tbsync/status.mjs";
+import { ERR, HOST_CMD, PREDEFINED_ERROR_CODES } from "../vendor/tbsync/protocol.mjs";
+import { STATUS_TYPES } from "../vendor/tbsync/status.mjs";
 import * as accounts from "./accounts.mjs";
 import * as folders from "./folders.mjs";
 import * as eventLog from "./event-log.mjs";

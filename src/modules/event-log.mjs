@@ -1,5 +1,5 @@
 import { DEFAULT_SETTINGS, EVENT_LOG_MAX, KEYS } from "./storage-keys.mjs";
-import { serialize } from "./storage-queue.mjs";
+import { serialize } from "../vendor/tbsync/storage-queue.mjs";
 
 /**
  * Ring-buffered event log, backed by browser.storage.session.

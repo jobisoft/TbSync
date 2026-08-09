@@ -6,8 +6,9 @@
  *
  * Startup: `new MyProvider(options); provider.init();`.
  *
- * **MIRRORED INTO EVERY PROVIDER ADD-ON** - see the header of
- * `./protocol.mjs` for the sync rule.
+ * **VENDORED INTO EVERY CONSUMER** - see the header of `./protocol.mjs`
+ * for the rule. TbSync itself vendors this file without importing it; the
+ * host has no use for the SDK, but the library travels as one unit.
  */
 
 import {

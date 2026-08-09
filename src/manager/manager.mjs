@@ -6,7 +6,7 @@
  * `accounts-changed`, `folders-changed`, `providers-changed`.
  */
 
-import { PROVIDER_NOTIFY, SYNCSTATE_BASE_KEYS } from "../tbsync/protocol.mjs";
+import { PROVIDER_NOTIFY, SYNCSTATE_BASE_KEYS } from "../vendor/tbsync/protocol.mjs";
 import {
   accountIconUrl,
   providerIconUrl,

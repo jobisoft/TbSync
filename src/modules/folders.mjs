@@ -1,5 +1,12 @@
 import { KEYS } from "./storage-keys.mjs";
-import { serialize } from "./storage-queue.mjs";
+import { serialize } from "../vendor/tbsync/storage-queue.mjs";
+import {
+  isUserEntry,
+  markServerWriteUpdater,
+  moveToTailUpdater,
+  recordUserEditUpdater,
+  removeEntryUpdater,
+} from "../vendor/tbsync/changelog-core.mjs";
 
 /**
  * Folder directory, backed by browser.storage.local under KEYS.FOLDERS.
@@ -45,7 +52,7 @@ export async function needsSyncMap() {
         f.selected &&
         Array.isArray(f.changelog) &&
         f.changelog.some(
-          (e) => typeof e?.status === "string" && e.status.endsWith("_by_user"),
+          (e) => typeof e?.status === "string" && isUserEntry(e.status),
         ),
     );
   }
@@ -256,53 +263,11 @@ export function mutateChangelog(accountId, folderId, updater) {
   });
 }
 
-/**
- * Legacy state-machine transitions for a user-side edit. Shared by the two
- * things that can learn about one: the host's own observer (address books,
- * and calendars that are plain storage) and a provider reporting an edit it
- * was handed directly (`CHANGELOG_RECORD_USER_EDIT`). One rule, so the two
- * routes cannot drift.
- *
- * Returns the next status, or `"skip"` to leave the existing entry alone,
- * or `"drop"` to remove it (an add cancelled by a delete).
- */
-export function decideUserStatus(op, prior) {
-  switch (op) {
-    case "created":
-      switch (prior) {
-        case "added_by_user":
-          return "skip"; // late duplicate
-        case "modified_by_user":
-          return "added_by_user"; // late create after modify
-        case "deleted_by_user":
-          return "modified_by_user"; // removed and re-added
-        default:
-          return "added_by_user";
-      }
-    case "updated":
-      switch (prior) {
-        case "added_by_user":
-          return "skip"; // keep pending add
-        case "modified_by_user":
-          return "skip"; // already pending
-        case "deleted_by_user":
-          return "modified_by_user"; // race: moved out + back + edited
-        default:
-          return "modified_by_user";
-      }
-    case "deleted":
-      switch (prior) {
-        case "added_by_user":
-          return "drop"; // add + del cancels
-        case "deleted_by_user":
-          return "skip"; // double delete notification
-        default:
-          return "deleted_by_user";
-      }
-    default:
-      return "skip";
-  }
-}
+// The four mutations below are the host's storage-bound wrappers around the
+// vendored core's pure updaters. The rules - which status follows which op,
+// what a pre-tag replaces, what a removal is allowed to touch - live in
+// `changelog-core.mjs` and are the same rules a provider keeping its own
+// queue runs. Only the read-modify-write around them is ours.
 
 /**
  * Record a user edit a provider was handed directly, folding it into
@@ -310,143 +275,76 @@ export function decideUserStatus(op, prior) {
  *
  * `detail` is opaque to the host - for calendars it carries what the item
  * looked like *before* the edit, which is the only thing the provider
- * cannot re-derive at push time. It is deliberately kept from the earliest
- * edit in a run: two edits between syncs are one delta, measured against
- * the version the server last gave us, not an intermediate it never saw.
+ * cannot re-derive at push time.
+ *
+ * Returns whether the queue actually moved. The caller broadcasts on that
+ * rather than on every call: a second edit of an already-queued item is a
+ * no-op, and a bulk change would otherwise fire one folders-changed per
+ * item - the same UI thrash the observer path documents avoiding.
  */
 export async function recordUserEdit(
   accountId,
   folderId,
   { parentId, itemId, kind, op, detail },
 ) {
-  // Whether the queue actually moved. The caller broadcasts on this rather
-  // than on every call: a second edit of an already-queued item is a no-op
-  // here, and a bulk change would otherwise fire one folders-changed per
-  // item - the same UI thrash the observer path documents avoiding.
   let changed = false;
   await mutateChangelog(accountId, folderId, (entries) => {
-    const prior = entries.find(
-      (e) => e.parentId === parentId && e.itemId === itemId && e.kind === kind,
-    );
-    const nextStatus = decideUserStatus(op, prior?.status ?? null);
-
-    if (nextStatus === "skip") {
-      // The queued entry stands. Still fill in a detail it lacks, so an
-      // edit seen first by the observer and then by a provider is not left
-      // without its baseline. That is not a user-facing change, so it does
-      // not set `changed`.
-      if (!prior || prior.detail !== undefined || detail === undefined) {
-        return entries;
-      }
-      return entries.map((e) => (e === prior ? { ...e, detail } : e));
-    }
-    changed = true;
-
-    const without = entries.filter(
-      (e) => !(e.parentId === parentId && e.itemId === itemId && e.kind === kind),
-    );
-    if (nextStatus === "drop") return without;
-
-    const entry = {
-      kind,
+    const result = recordUserEditUpdater(entries, {
       parentId,
       itemId,
-      timestamp: Date.now(),
-      status: nextStatus,
-    };
-    const keep = prior?.detail ?? detail;
-    if (keep !== undefined) entry.detail = keep;
-    without.push(entry);
-    return without;
+      kind,
+      op,
+      detail,
+      now: Date.now(),
+    });
+    changed = result.changed;
+    return result.entries;
   });
   return changed;
 }
 
-/** Replace any existing entry for `(parentId, itemId)` with a server-side
- *  pre-tag. Used by PROVIDER_CMD.CHANGELOG_MARK_SERVER_WRITE to freeze the
- *  next observer event for that item as self-inflicted. `kind` is one of
- *  `"contact"` | `"list"` | `"list-by-name"`:
- *    - `"contact"` / `"list"` : itemId is the TB id; the watcher
- *      exact-matches on `(parentId, kind, itemId)`.
- *    - `"list-by-name"` : itemId is the list NAME. Used by list pull-
- *      creates where the TB id isn't known pre-call; the watcher
- *      matches by name on the next `mailingLists.onCreated` and
- *      upgrades the row to `kind: "list", itemId: <real id>`. */
+/** Replace any existing row for the triple with a server-side pre-tag. Used
+ *  by PROVIDER_CMD.CHANGELOG_MARK_SERVER_WRITE to freeze the next observer
+ *  event for that item as self-inflicted. */
 export async function markServerWrite(
   accountId,
   folderId,
   { parentId, itemId, status, kind },
 ) {
-  return mutateChangelog(accountId, folderId, (entries) => {
-    const without = entries.filter(
-      (e) => !(e.parentId === parentId && e.itemId === itemId && e.kind === kind),
-    );
-    without.push({ kind, parentId, itemId, timestamp: Date.now(), status });
-    return without;
-  });
+  return mutateChangelog(accountId, folderId, (entries) =>
+    markServerWriteUpdater(entries, {
+      parentId,
+      itemId,
+      kind,
+      status,
+      now: Date.now(),
+    }),
+  );
 }
 
-/** Remove the queued **user** edit matching `(parentId, itemId, kind)`.
- *  Used by a
- *  provider once it has dealt with that edit - pushed it, or established that
- *  it can never be pushed.
- *
- *  A `*_by_server` row is left alone, because it is not a queued edit. It is
- *  the note a provider writes immediately before a write of its own, telling
- *  our observer to expect that write and not log it as the user's. Both live
- *  in this one list and are told apart only by status, so a removal that
- *  ignored status took whichever happened to be there - and after
- *  `markServerWrite` that is the note, since writing one *replaces* the row it
- *  covers. Deleting it left the observer nothing to recognise, and the
- *  provider's own write was logged as a user edit: the item went dirty the
- *  moment it was pushed clean.
- *
- *  Consuming a note is the observer's job, and consuming removes it. One whose
- *  write never arrives is dropped as stale by the next event for that item;
- *  until then it is inert - never pushed (only `*_by_user` is) and not shown. */
+/** Remove the queued **user** edit matching `(parentId, itemId, kind)`. Used
+ *  by a provider once it has dealt with that edit - pushed it, or
+ *  established that it can never be pushed. A `*_by_server` row is left
+ *  alone; see the core for why that distinction is load-bearing. */
 export async function removeChangelogEntry(
   accountId,
   folderId,
   { parentId, itemId, kind },
 ) {
   return mutateChangelog(accountId, folderId, (entries) =>
-    entries.filter(
-      (e) =>
-        !(
-          e.parentId === parentId &&
-          e.itemId === itemId &&
-          e.kind === kind &&
-          String(e.status).endsWith("_by_user")
-        ),
-    ),
+    removeEntryUpdater(entries, { parentId, itemId, kind }),
   );
 }
 
 /** Move entries matching any `(parentId, itemId, kind)` in `items` to the
- *  tail
- *  of the changelog, preserving their original timestamps and status.
- *  Used by providers after a push partially failed so the next sync
- *  attempts the un-failed items first (the failing ones land back at the
- *  head only after the rest of the queue has been drained).
- *
- *  Items not present in the changelog are silently ignored. If no items
- *  match, the changelog is left untouched (no storage write). */
+ *  tail of the changelog, preserving their original timestamps and status.
+ *  Used by providers after a push partially failed so the next sync attempts
+ *  the un-failed items first. */
 export async function moveChangelogEntriesToTail(accountId, folderId, items) {
   if (!Array.isArray(items) || items.length === 0) return null;
-  const matchSet = new Set(
-    items.map((i) => `${i.parentId}|${i.itemId}|${i.kind}`),
+  return mutateChangelog(accountId, folderId, (entries) =>
+    moveToTailUpdater(entries, items),
   );
-  return mutateChangelog(accountId, folderId, (entries) => {
-    const stay = [];
-    const move = [];
-    for (const e of entries) {
-      const k = `${e.parentId}|${e.itemId}|${e.kind}`;
-      if (matchSet.has(k)) move.push(e);
-      else stay.push(e);
-    }
-    if (move.length === 0) return entries;
-    return [...stay, ...move];
-  });
 }
 
 /** Generic read-modify-write helper for `folder.contactHashes`. Same

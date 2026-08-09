@@ -6,7 +6,7 @@ import {
   PORT_NAME,
   PROVIDER_NOTIFY,
   withCode,
-} from "../tbsync/protocol.mjs";
+} from "../vendor/tbsync/protocol.mjs";
 import * as providers from "./providers.mjs";
 import * as ui from "./messaging-ui.mjs";
 import * as eventLog from "./event-log.mjs";

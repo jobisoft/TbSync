@@ -13,7 +13,7 @@
  * the migration module to dual-write), this runner short-circuits on
  * every subsequent boot.
  */
-import { serialize } from "./storage-queue.mjs";
+import { serialize } from "../vendor/tbsync/storage-queue.mjs";
 import { KEYS } from "./storage-keys.mjs";
 import * as eventLog from "./event-log.mjs";
 
