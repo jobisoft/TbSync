@@ -45,22 +45,17 @@ async function write(state) {
 // session it saw and drops what belongs to sessions no row names any more.
 // Teardown becomes one local write that needs nobody's cooperation.
 
-/** A fresh, never-before-used binding id. Callers that are already writing
- *  a patch put it in there; `bumpSession` is for the rest. */
+/** A fresh, never-before-used binding id. Putting one in a folder patch
+ *  ends that folder's current binding: whatever any provider still holds
+ *  under the old session is unclaimed from that moment, and goes the next
+ *  time that provider looks. The row itself survives - the folder can be
+ *  bound again later.
+ *
+ *  Note what this is not. Nothing is sent, nothing is awaited on the other
+ *  side, and a provider that is not running at all misses nothing: it finds
+ *  out by not finding its session. */
 export function newSession() {
   return crypto.randomUUID();
-}
-
-/** End this folder's current binding: whatever any provider still holds
- *  under the old session is now unclaimed, and will be dropped the next
- *  time that provider is asked anything. The row itself is untouched
- *  otherwise - the folder can be bound again later.
- *
- *  Note that this is not a request. Nothing is sent, nothing is awaited on
- *  the other side, and a provider that is not running at all misses nothing:
- *  it finds out by not finding its session. */
-export function bumpSession(accountId, folderId) {
-  return update(accountId, folderId, { sessionId: newSession() });
 }
 
 /** Give a session to every row that predates them. Rows written before
