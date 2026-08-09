@@ -15,8 +15,8 @@ documentation, see the
 | [**The bridge**](bridge.html) | A development aid that lets a script drive the add-on. Beta builds only. |
 
 The provider contract itself lives in code, in
-[`protocol/`](https://github.com/jobisoft/TbSync/tree/main/protocol) — one
-directory, vendored into every provider.
+[`common/protocol/`](https://github.com/jobisoft/TbSync/tree/main/common/protocol)
+— one directory, vendored into every provider.
 
 Provider-specific notes live with the provider:
 [EAS-4-TbSync](https://jobisoft.github.io/EAS-4-TbSync/).

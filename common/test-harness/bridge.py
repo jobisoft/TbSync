@@ -15,7 +15,7 @@ Stdlib only, deliberately: no add-on in the family has a dependency and the
 suite should not be the thing that introduces one.
 
 Lives here because the bridge does. Providers vendor this file into
-`test/vendor/`; see test-harness/README.md.
+`test/vendor/`; see TbSync's common/README.md.
 """
 
 import json

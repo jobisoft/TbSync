@@ -15,7 +15,7 @@
  * The chain is module-global, which is exactly right for a vendored file:
  * each extension context gets its own module instance and therefore its own
  * chain, serialising that context's writes to its own storage and nothing
- * else. **Vendored - see `TbSync/protocol/README.md`.**
+ * else. **Vendored - see `TbSync/common/README.md`.**
  */
 
 let _queue = Promise.resolve();

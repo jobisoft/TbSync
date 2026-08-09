@@ -4,7 +4,7 @@
   "scripts": {
     "build": "node build.js",
     "version": "node build.js && git add src",
-    "test": "node --test protocol/*.test.mjs",
-    "vendor": "protocol/vendor.sh"
+    "test": "node --test common/protocol/*.test.mjs",
+    "vendor": "common/vendor.sh"
   }
 }

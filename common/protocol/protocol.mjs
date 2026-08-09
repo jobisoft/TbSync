@@ -5,11 +5,11 @@
  * version numbers.
  *
  * **THIS FILE IS VENDORED INTO EVERY CONSUMER** - each provider and TbSync
- * itself, under `src/vendor/tbsync/`. The copy in `TbSync/protocol/` is
+ * itself, under `src/vendor/tbsync/`. The copy in `TbSync/common/protocol/` is
  * authoritative and all the others MUST match it byte-for-byte. Edit it
  * there, then re-vendor and verify in one step:
- *     TbSync/protocol/vendor.sh
- * See `TbSync/protocol/README.md`.
+ *     TbSync/common/vendor.sh
+ * See `TbSync/common/README.md`.
  */
 
 /**

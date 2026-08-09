@@ -19,7 +19,7 @@
  *                   event must not be logged as the user's
  *
  * **THIS FILE IS THE SINGLE SOURCE OF TRUTH** and is vendored into the host
- * and into every provider - see `protocol/README.md`. Nothing here may
+ * and into every provider - see `common/README.md`. Nothing here may
  * touch storage, the network, `browser.*`, or the clock: every function is
  * an `entries → entries` transform with `now` injected by the caller. That
  * is what lets the host and a provider run the same state machine over two
