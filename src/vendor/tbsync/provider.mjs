@@ -806,6 +806,12 @@ export class TbSyncProviderImplementation {
       // explicit grant - an ATN user cannot trigger it.
       case "test.clearStorage":
         return this.#clearOwnStorage();
+      // Companion writer: put a chosen state into this provider's own
+      // storage - together with test.clearStorage this lets a migration
+      // test shape provider storage exactly (e.g. strip everything a
+      // newer schema added and hand back the 5.0.13 subset). Same guard.
+      case "test.setStorage":
+        return this.#setOwnStorage(args);
       default:
         throw withCode(
           new Error(`Unknown command: ${cmd}`),
@@ -858,6 +864,22 @@ export class TbSyncProviderImplementation {
     const removed = await browser.storage.local.get(null);
     await browser.storage.local.remove(Object.keys(removed));
     return { removed };
+  }
+
+  /** See the "test.setStorage" case above. */
+  async #setOwnStorage({ data }) {
+    const { installType } = await browser.management.getSelf();
+    if (installType !== "development") {
+      throw withCode(
+        new Error("test.setStorage needs a temporarily installed add-on"),
+        ERR.UNKNOWN_COMMAND,
+      );
+    }
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      throw new Error("test.setStorage needs a `data` object");
+    }
+    await browser.storage.local.set(data);
+    return { keys: Object.keys(data) };
   }
 
   #sendCmd(cmd, args = {}) {

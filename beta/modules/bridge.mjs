@@ -413,6 +413,32 @@ const COMMANDS = {
     },
   },
 
+  /** Companion writer to providerStorage.clear - same guard, relays
+   *  test.setStorage with the given data object. */
+  "providerStorage.set": {
+    scope: "account",
+    async run({ data }, { accountId }) {
+      const rv = await browser.storage.local.get({
+        [UNRESTRICTED_KEY]: false,
+      });
+      if (!rv[UNRESTRICTED_KEY]) {
+        throw withCode(
+          new Error("providerStorage.set requires unrestricted mode"),
+          "E:RESTRICTED",
+        );
+      }
+      const acc = await accounts.get(accountId);
+      if (!acc) throw new Error("unknown account");
+      if (!router.isProviderConnected(acc.provider)) {
+        throw new Error(`provider ${acc.provider} is not connected`);
+      }
+      const result = await router.sendCmd(acc.provider, "test.setStorage", {
+        data,
+      });
+      return { provider: acc.provider, ...result };
+    },
+  },
+
   reloadProvider: {
     scope: "account",
     async run(_args, { accountId }) {
