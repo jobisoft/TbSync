@@ -17,6 +17,8 @@ import assert from "node:assert/strict";
 
 import {
   applyEvent,
+  CHANGELOG_KINDS,
+  findConsumableServerTag,
   FREEZE_MS,
   markServerWriteUpdater,
   moveToTailUpdater,
@@ -40,7 +42,15 @@ function tag(status, ageMs = 0) {
 }
 
 function event(op, overrides = {}) {
-  return { kind: "contact", parentId: P, itemId: I, name: null, op, now: NOW, ...overrides };
+  return {
+    kind: "contact",
+    parentId: P,
+    itemId: I,
+    name: null,
+    op,
+    now: NOW,
+    ...overrides,
+  };
 }
 
 const TAGS = ["added_by_server", "modified_by_server", "deleted_by_server"];
@@ -49,7 +59,11 @@ const OPS = ["created", "updated", "deleted"];
 test("each tag is consumed by exactly its announced op", () => {
   for (const status of TAGS) {
     const out = applyEvent([tag(status)], event(OP_FOR_TAG[status]));
-    assert.deepEqual(out, [], `${status} must be consumed by ${OP_FOR_TAG[status]}`);
+    assert.deepEqual(
+      out,
+      [],
+      `${status} must be consumed by ${OP_FOR_TAG[status]}`,
+    );
   }
 });
 
@@ -83,9 +97,16 @@ test("S1: interim edit under a deleted_by_server tag leaves an empty changelog",
 });
 
 test("a stale tag is dropped and the event applies normally", () => {
-  const out = applyEvent([tag("deleted_by_server", FREEZE_MS + 1)], event("updated"));
+  const out = applyEvent(
+    [tag("deleted_by_server", FREEZE_MS + 1)],
+    event("updated"),
+  );
   assert.equal(out.length, 1);
-  assert.equal(out[0].status, "modified_by_user", "stale tag gone, real edit recorded");
+  assert.equal(
+    out[0].status,
+    "modified_by_user",
+    "stale tag gone, real edit recorded",
+  );
 });
 
 test("no tag: the user state machine is untouched", () => {
@@ -110,8 +131,12 @@ test("a same-id row of another kind survives the event untouched", () => {
   const entries = [{ ...tag("added_by_server"), kind: "list" }];
   const out = applyEvent(entries, event("created"));
   assert.equal(out.length, 2, "both rows present");
-  assert.ok(out.some((e) => e.kind === "list" && e.status === "added_by_server"));
-  assert.ok(out.some((e) => e.kind === "contact" && e.status === "added_by_user"));
+  assert.ok(
+    out.some((e) => e.kind === "list" && e.status === "added_by_server"),
+  );
+  assert.ok(
+    out.some((e) => e.kind === "contact" && e.status === "added_by_user"),
+  );
 });
 
 test("list-by-name pull-create consumption is unaffected", () => {
@@ -183,7 +208,11 @@ test("recordUserEdit backfills a detail a queued row lacks", () => {
     row({ op: "updated", detail: "v1" }),
   );
   assert.equal(filled.entries[0].detail, "v1");
-  assert.equal(filled.changed, false, "backfilling is not a user-facing change");
+  assert.equal(
+    filled.changed,
+    false,
+    "backfilling is not a user-facing change",
+  );
 });
 
 test("markServerWrite replaces the row it covers", () => {
@@ -205,8 +234,20 @@ test("removeEntry takes the user edit and never the pre-tag", () => {
   // markServerWrite that is the pre-tag, which left the observer nothing to
   // recognise: the item went dirty the moment it was pushed clean.
   const entries = [
-    { kind: "event", parentId: P, itemId: I, timestamp: NOW, status: "modified_by_user" },
-    { kind: "event", parentId: P, itemId: "other", timestamp: NOW, status: "added_by_server" },
+    {
+      kind: "event",
+      parentId: P,
+      itemId: I,
+      timestamp: NOW,
+      status: "modified_by_user",
+    },
+    {
+      kind: "event",
+      parentId: P,
+      itemId: "other",
+      timestamp: NOW,
+      status: "added_by_server",
+    },
   ];
   const out = removeEntryUpdater(entries, {
     parentId: P,
@@ -225,11 +266,31 @@ test("removeEntry takes the user edit and never the pre-tag", () => {
 
 test("removeEntry ignores a same-id row of another kind", () => {
   const entries = [
-    { kind: "event", parentId: P, itemId: I, timestamp: NOW, status: "modified_by_user" },
-    { kind: "task", parentId: P, itemId: I, timestamp: NOW, status: "modified_by_user" },
+    {
+      kind: "event",
+      parentId: P,
+      itemId: I,
+      timestamp: NOW,
+      status: "modified_by_user",
+    },
+    {
+      kind: "task",
+      parentId: P,
+      itemId: I,
+      timestamp: NOW,
+      status: "modified_by_user",
+    },
   ];
-  const out = removeEntryUpdater(entries, { parentId: P, itemId: I, kind: "event" });
-  assert.deepEqual(out, [entries[1]], "the task row is another item's bookkeeping");
+  const out = removeEntryUpdater(entries, {
+    parentId: P,
+    itemId: I,
+    kind: "event",
+  });
+  assert.deepEqual(
+    out,
+    [entries[1]],
+    "the task row is another item's bookkeeping",
+  );
 });
 
 test("moveToTail re-orders without rewriting", () => {
@@ -255,4 +316,96 @@ test("moveToTail re-orders without rewriting", () => {
     { parentId: P, itemId: "zz", kind: "event" },
   ]);
   assert.equal(none, entries, "no match: same array, no storage write");
+});
+
+// ── Kind validation ───────────────────────────────────────────────────────
+//
+// The write side must refuse a kind outside CHANGELOG_KINDS - a row born
+// with one matches nothing ever after. The removal side must NOT refuse:
+// it handles rows that already exist, and the cleanup paths pass the
+// offending kind verbatim. Both directions are load-bearing.
+
+test("every writing entry point refuses an unknown or missing kind", () => {
+  for (const kind of ["events", "contacts", "", undefined]) {
+    // "events"/"contacts": the createCalendar vocabulary is PLURAL, and the
+    // copy-paste between the two namespaces is the expected typo.
+    assert.throws(
+      () => applyEvent([], event("created", { kind })),
+      /unknown kind/,
+      `applyEvent must refuse ${JSON.stringify(kind)}`,
+    );
+    assert.throws(
+      () =>
+        recordUserEditUpdater([], {
+          parentId: P,
+          itemId: I,
+          kind,
+          op: "updated",
+          now: NOW,
+        }),
+      /unknown kind/,
+      `recordUserEditUpdater must refuse ${JSON.stringify(kind)}`,
+    );
+    assert.throws(
+      () =>
+        markServerWriteUpdater([], {
+          parentId: P,
+          itemId: I,
+          kind,
+          status: "modified_by_server",
+          now: NOW,
+        }),
+      /unknown kind/,
+      `markServerWriteUpdater must refuse ${JSON.stringify(kind)}`,
+    );
+  }
+});
+
+test("every valid kind is accepted on write", () => {
+  for (const kind of CHANGELOG_KINDS) {
+    const { entries } = recordUserEditUpdater([], {
+      parentId: P,
+      itemId: I,
+      kind,
+      op: "updated",
+      now: NOW,
+    });
+    assert.equal(entries.length, 1, `${kind} must be writable`);
+  }
+});
+
+test("removal still handles a row carrying a bad kind", () => {
+  // The regression test for the trap: EAS's skip path calls remove with
+  // the offending kind, and google parks then clears pre-release rows.
+  // If removal validated, a bad legacy row could never be cleaned up.
+  const bad = {
+    kind: "events",
+    parentId: P,
+    itemId: I,
+    timestamp: NOW,
+    status: "modified_by_user",
+  };
+  const out = removeEntryUpdater([bad], {
+    parentId: P,
+    itemId: I,
+    kind: "events",
+  });
+  assert.deepEqual(out, [], "a bad-kind row must remain removable");
+
+  const moved = moveToTailUpdater(
+    [bad, tag("added_by_server")],
+    [{ parentId: P, itemId: I, kind: "events" }],
+  );
+  assert.equal(moved.length, 2, "moveToTail must tolerate a bad kind");
+  assert.equal(moved[1], bad, "and still move it");
+});
+
+test("findConsumableServerTag tolerates a bad kind", () => {
+  const idx = findConsumableServerTag([tag("added_by_server")], {
+    parentId: P,
+    itemId: I,
+    kind: "events",
+    op: "created",
+  });
+  assert.equal(idx, -1, "no match, no throw");
 });

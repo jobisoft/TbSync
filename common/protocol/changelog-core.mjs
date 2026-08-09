@@ -18,6 +18,16 @@
  *                   make a write of its own, so the resulting Thunderbird
  *                   event must not be logged as the user's
  *
+ * `kind` is validated **on the writing entry points only** (`applyEvent`,
+ * `recordUserEditUpdater`, `markServerWriteUpdater`): those are where a new
+ * row is born, and a row born with a kind outside `CHANGELOG_KINDS` matches
+ * nothing ever after. The removal-side functions (`removeEntryUpdater`,
+ * `moveToTailUpdater`, `findConsumableServerTag`) deliberately do NOT
+ * validate - they match rows that already exist, including rows written
+ * before validation existed, and a provider's own cleanup path hands them
+ * the offending kind verbatim. Validating there would make a bad legacy row
+ * permanently unremovable, which is worse than the typo it would catch.
+ *
  * **THIS FILE IS THE SINGLE SOURCE OF TRUTH** and is vendored into the host
  * and into every provider - see `common/README.md`. Nothing here may
  * touch storage, the network, `browser.*`, or the clock: every function is
@@ -27,6 +37,32 @@
  */
 
 // ── Vocabulary ────────────────────────────────────────────────────────────
+
+/** Every kind a changelog row can carry. Load-bearing strings: the kind is
+ *  a third of the row's identity, so one outside this list creates a row no
+ *  matcher will ever find. Singular, always - `createCalendar` takes a
+ *  *plural* `kind` ("events"/"tasks") from a different vocabulary, and that
+ *  near-miss is exactly the typo this list exists to catch. */
+export const CHANGELOG_KINDS = Object.freeze([
+  "contact",
+  "list",
+  "list-by-name",
+  "membership",
+  "event",
+  "task",
+]);
+
+/** Throw unless `kind` is one of `CHANGELOG_KINDS`. Called by the writing
+ *  entry points only - see the module docstring for why removal must stay
+ *  unvalidated. */
+export function assertChangelogKind(kind) {
+  if (!CHANGELOG_KINDS.includes(kind)) {
+    throw new Error(
+      `changelog: unknown kind ${JSON.stringify(kind)} - ` +
+        `expected one of ${CHANGELOG_KINDS.join(", ")}`,
+    );
+  }
+}
 
 /** The pre-tag statuses. Load-bearing strings: an unknown one would be
  *  invisible to `isServerTag` and masquerade as a user entry. */
@@ -195,6 +231,7 @@ function applyUserTransition(
  * push that re-asserts server state.
  */
 export function applyEvent(entries, { kind, parentId, itemId, name, op, now }) {
+  assertChangelogKind(kind);
   const exactIdx = entries.findIndex((e) =>
     sameRow(e, { parentId, itemId, kind }),
   );
@@ -333,6 +370,7 @@ export function recordUserEditUpdater(
   entries,
   { parentId, itemId, kind, op, detail, now },
 ) {
+  assertChangelogKind(kind);
   const prior = entries.find((e) => sameRow(e, { parentId, itemId, kind }));
   const nextStatus = decideUserStatus(op, prior?.status ?? null);
 
@@ -364,7 +402,7 @@ export function recordUserEditUpdater(
 
 /** Replace any existing row for the triple with a server-side pre-tag, so
  *  the next observer event for that item is recognised as self-inflicted.
- *  `kind` is one of `"contact"` | `"list"` | `"list-by-name"`:
+ *  `kind` is any of `CHANGELOG_KINDS`; two get special observer handling:
  *    - `"contact"` / `"list"` : itemId is the TB id; the observer
  *      exact-matches on the triple.
  *    - `"list-by-name"` : itemId is the list NAME. Used by list pull-
@@ -375,6 +413,7 @@ export function markServerWriteUpdater(
   entries,
   { parentId, itemId, kind, status, now },
 ) {
+  assertChangelogKind(kind);
   const without = entries.filter(
     (e) => !sameRow(e, { parentId, itemId, kind }),
   );
