@@ -382,6 +382,37 @@ const COMMANDS = {
    *  bridge can reload the provider it was granted and no other - the caller
    *  never names one. The provider does the same check on its own side and
    *  refuses if it is permanently installed. */
+  /** Wipe the target account's provider's own storage - test-only, for
+   *  migration tests that need the provider in its never-ran state.
+   *  Destructive, so it demands unrestricted mode like setTarget; the
+   *  provider hands back what it removed, and that object is returned so
+   *  the caller can save it to disk before going on. */
+  "providerStorage.clear": {
+    scope: "account",
+    async run(_args, { accountId }) {
+      const rv = await browser.storage.local.get({
+        [UNRESTRICTED_KEY]: false,
+      });
+      if (!rv[UNRESTRICTED_KEY]) {
+        throw withCode(
+          new Error("providerStorage.clear requires unrestricted mode"),
+          "E:RESTRICTED",
+        );
+      }
+      const acc = await accounts.get(accountId);
+      if (!acc) throw new Error("unknown account");
+      if (!router.isProviderConnected(acc.provider)) {
+        throw new Error(`provider ${acc.provider} is not connected`);
+      }
+      const result = await router.sendCmd(
+        acc.provider,
+        "test.clearStorage",
+        {},
+      );
+      return { provider: acc.provider, ...result };
+    },
+  },
+
   reloadProvider: {
     scope: "account",
     async run(_args, { accountId }) {
@@ -650,10 +681,15 @@ async function failAndMaybeRestart(why) {
     return;
   }
   const delay =
-    RESTART_BACKOFF_MS[Math.min(restartAttempts, RESTART_BACKOFF_MS.length - 1)];
+    RESTART_BACKOFF_MS[
+      Math.min(restartAttempts, RESTART_BACKOFF_MS.length - 1)
+    ];
   restartAttempts++;
   linkState = "starting";
-  note("info", `restarting the helper in ${delay / 1000}s (attempt ${restartAttempts})`);
+  note(
+    "info",
+    `restarting the helper in ${delay / 1000}s (attempt ${restartAttempts})`,
+  );
   restartTimer = setTimeout(() => {
     restartTimer = null;
     connect().catch((err) =>

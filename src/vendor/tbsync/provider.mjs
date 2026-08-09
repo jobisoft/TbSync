@@ -797,6 +797,15 @@ export class TbSyncProviderImplementation {
       // differently.
       case HOST_CMD.RELOAD:
         return this.#reloadSelf();
+      // Test-only, development installs only: wipe this provider's own
+      // storage.local, so a migration test can put the provider into the
+      // never-ran state (no schemaVersion, no queues, no bindings) that a
+      // real old-version profile arrives in. Guarded like reload, and it
+      // hands back what it removed so the caller can restore. Reaching it
+      // requires the bridge, which requires a beta build and the user's
+      // explicit grant - an ATN user cannot trigger it.
+      case "test.clearStorage":
+        return this.#clearOwnStorage();
       default:
         throw withCode(
           new Error(`Unknown command: ${cmd}`),
@@ -835,6 +844,20 @@ export class TbSyncProviderImplementation {
     }
     setTimeout(() => browser.runtime.reload(), RELOAD_DELAY_MS);
     return { reloading: true, installType };
+  }
+
+  /** See the "test.clearStorage" case above. */
+  async #clearOwnStorage() {
+    const { installType } = await browser.management.getSelf();
+    if (installType !== "development") {
+      throw withCode(
+        new Error("test.clearStorage needs a temporarily installed add-on"),
+        ERR.UNKNOWN_COMMAND,
+      );
+    }
+    const removed = await browser.storage.local.get(null);
+    await browser.storage.local.remove(Object.keys(removed));
+    return { removed };
   }
 
   #sendCmd(cmd, args = {}) {
