@@ -26,6 +26,9 @@
   "manager.eventLog.bugReport.button": {
     "message": "Fehlerbericht erstellen"
   },
+  "manager.eventLog.download": {
+    "message": "Protokoll speichern"
+  },
   "bugReport.title": {
     "message": "Fehlerbericht erstellen"
   },

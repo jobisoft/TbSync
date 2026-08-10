@@ -26,6 +26,9 @@
   "manager.eventLog.bugReport.button": {
     "message": "Создать отчёт об ошибке"
   },
+  "manager.eventLog.download": {
+    "message": "Сохранить журнал"
+  },
   "bugReport.title": {
     "message": "Создать отчёт об ошибке"
   },

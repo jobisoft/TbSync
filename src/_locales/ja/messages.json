@@ -26,6 +26,9 @@
   "manager.eventLog.bugReport.button": {
     "message": "バグレポートを作成"
   },
+  "manager.eventLog.download": {
+    "message": "ログを保存"
+  },
   "bugReport.title": {
     "message": "バグレポートを作成"
   },

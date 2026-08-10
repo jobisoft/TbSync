@@ -26,6 +26,9 @@
   "manager.eventLog.bugReport.button": {
     "message": "Skapa felrapport"
   },
+  "manager.eventLog.download": {
+    "message": "Spara logg"
+  },
   "bugReport.title": {
     "message": "Skapa felrapport"
   },

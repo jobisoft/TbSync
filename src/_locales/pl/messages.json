@@ -26,6 +26,9 @@
   "manager.eventLog.bugReport.button": {
     "message": "Utwórz zgłoszenie błędu"
   },
+  "manager.eventLog.download": {
+    "message": "Zapisz dziennik"
+  },
   "bugReport.title": {
     "message": "Utwórz zgłoszenie błędu"
   },

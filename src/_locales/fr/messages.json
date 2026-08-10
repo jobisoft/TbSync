@@ -26,6 +26,9 @@
   "manager.eventLog.bugReport.button": {
     "message": "Créer un rapport de bogue"
   },
+  "manager.eventLog.download": {
+    "message": "Enregistrer le journal"
+  },
   "bugReport.title": {
     "message": "Créer un rapport de bogue"
   },

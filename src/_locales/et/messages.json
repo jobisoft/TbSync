@@ -26,6 +26,9 @@
   "manager.eventLog.bugReport.button": {
     "message": "Loo veaaruanne"
   },
+  "manager.eventLog.download": {
+    "message": "Salvesta logi"
+  },
   "bugReport.title": {
     "message": "Loo veaaruanne"
   },

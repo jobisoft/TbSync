@@ -26,6 +26,9 @@
   "manager.eventLog.bugReport.button": {
     "message": "Crear informe de error"
   },
+  "manager.eventLog.download": {
+    "message": "Guardar registro"
+  },
   "bugReport.title": {
     "message": "Crear informe de error"
   },

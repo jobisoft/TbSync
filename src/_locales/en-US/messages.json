@@ -26,6 +26,9 @@
   "manager.eventLog.bugReport.button": {
     "message": "Create Bug Report"
   },
+  "manager.eventLog.download": {
+    "message": "Save Log"
+  },
   "bugReport.title": {
     "message": "Create Bug Report"
   },

@@ -26,6 +26,9 @@
   "manager.eventLog.bugReport.button": {
     "message": "Vytvořit hlášení chyby"
   },
+  "manager.eventLog.download": {
+    "message": "Uložit protokol"
+  },
   "bugReport.title": {
     "message": "Vytvořit hlášení chyby"
   },

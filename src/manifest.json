@@ -34,7 +34,8 @@
     "menus",
     "menus.overrideContext",
     "notifications",
-    "compose"
+    "compose",
+    "downloads"
   ],
   "background": {
     "type": "module",

@@ -26,6 +26,9 @@
   "manager.eventLog.bugReport.button": {
     "message": "버그 신고 작성"
   },
+  "manager.eventLog.download": {
+    "message": "로그 저장"
+  },
   "bugReport.title": {
     "message": "버그 신고 작성"
   },

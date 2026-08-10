@@ -26,6 +26,9 @@
   "manager.eventLog.bugReport.button": {
     "message": "Създаване на доклад за грешка"
   },
+  "manager.eventLog.download": {
+    "message": "Запазване на журнала"
+  },
   "bugReport.title": {
     "message": "Създаване на доклад за грешка"
   },

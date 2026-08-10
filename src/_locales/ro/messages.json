@@ -26,6 +26,9 @@
   "manager.eventLog.bugReport.button": {
     "message": "Creează raport de eroare"
   },
+  "manager.eventLog.download": {
+    "message": "Salvează jurnalul"
+  },
   "bugReport.title": {
     "message": "Creează raport de eroare"
   },

@@ -1649,6 +1649,41 @@ document.getElementById("btn-bug-report").addEventListener("click", () => {
   createBugReport().catch(showError);
 });
 
+document.getElementById("btn-download-log").addEventListener("click", () => {
+  downloadEventLog().catch(showError);
+});
+
+/** Save the event log to a file the user chooses - the same text a bug
+ *  report attaches (`renderEventLogAttachment`), written straight to disk
+ *  instead of into a message. */
+async function downloadEventLog() {
+  const url = URL.createObjectURL(
+    new Blob([renderEventLogAttachment()], { type: "text/plain" }),
+  );
+  let id;
+  try {
+    id = await browser.downloads.download({
+      url,
+      filename: "tbsync-eventlog.txt",
+      saveAs: true,
+    });
+  } catch (err) {
+    URL.revokeObjectURL(url);
+    // Dismissing the Save-As dialog rejects; that is a choice, not a fault.
+    if (!/cancel/i.test(String(err?.message ?? err))) showError(err);
+    return;
+  }
+  // Free the blob once the write has settled, however it settled.
+  const onChanged = (delta) => {
+    if (delta.id !== id || !delta.state) return;
+    if (delta.state.current !== "in_progress") {
+      URL.revokeObjectURL(url);
+      browser.downloads.onChanged.removeListener(onChanged);
+    }
+  };
+  browser.downloads.onChanged.addListener(onChanged);
+}
+
 // Open a URL inside Thunderbird and raise the window that holds the new tab -
 // otherwise Thunderbird may create the tab in a background window and the user
 // doesn't see their click land.

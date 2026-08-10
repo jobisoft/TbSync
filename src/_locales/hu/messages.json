@@ -26,6 +26,9 @@
   "manager.eventLog.bugReport.button": {
     "message": "Hibajelentés készítése"
   },
+  "manager.eventLog.download": {
+    "message": "Napló mentése"
+  },
   "bugReport.title": {
     "message": "Hibajelentés készítése"
   },
