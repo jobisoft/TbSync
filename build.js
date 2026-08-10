@@ -269,6 +269,13 @@ function main() {
   );
   zip("src", `dist/${betaName}`, [], overlay);
 
+  // The same beta bytes under a name that never changes. Every other artifact
+  // carries the version in its filename, so a bump moves the file and any
+  // fixed install path stops resolving; dist/dev.xpi is the path that keeps
+  // working across bumps, which is what a reload during development needs.
+  console.log("Copying beta build to dist/dev.xpi ...");
+  fs.copyFileSync(`dist/${betaName}`, "dist/dev.xpi");
+
   console.log("Build finished. Output is in the 'dist' folder.");
 }
 
