@@ -110,11 +110,19 @@ export function create({
   });
 }
 
+/** Patch one account row. `custom` is shallow-merged against the row as
+ *  it stands inside the lock, never against a snapshot the caller read
+ *  before acquiring it - otherwise a concurrent patch is clobbered rather
+ *  than merged with. */
 export function update(accountId, patch) {
   return serialize(async () => {
     const state = await read();
     if (!state.data[accountId]) return null;
-    const merged = { ...state.data[accountId], ...patch };
+    const { custom, ...rest } = patch ?? {};
+    const merged = { ...state.data[accountId], ...rest };
+    if (custom && typeof custom === "object") {
+      merged.custom = { ...(state.data[accountId].custom ?? {}), ...custom };
+    }
     // Disabling an account drops every cached folder customisation - the
     // user has signalled "I'm done with this account for now", which we
     // treat as discarding the folder-restore expectations along with it.

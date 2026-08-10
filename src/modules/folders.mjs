@@ -197,8 +197,13 @@ export function replaceAccountFolders(accountId, incoming) {
         // Inbox for a TbSync 4 import, and nothing else. The importer puts
         // that profile's pending edits here; the owning provider takes them
         // into its own queue and empties this. Preserved across folder-list
-        // pushes so a re-push cannot drop an import nobody has claimed yet.
-        changelog: prior?.changelog ?? [],
+        // pushes so a re-push cannot drop an import nobody has claimed yet -
+        // and restored from the cache as well, so a folder the server
+        // stopped reporting and then reported again comes back with the
+        // import still claimable rather than silently emptied.
+        changelog:
+          prior?.changelog ??
+          (cached && Array.isArray(cached.changelog) ? cached.changelog : []),
         // This binding's generation - see the Sessions block above. Kept
         // like the changelog: a re-push is the provider re-describing the
         // same folders, not the user tearing one down.
@@ -228,9 +233,19 @@ export function replaceAccountFolders(accountId, incoming) {
           targetType: prior.targetType ?? null,
         });
       }
+      // An unclaimed v4 import inbox goes with the row otherwise. The
+      // comment above `changelog` promises a re-push cannot drop one, and
+      // that held only for folders the push still names: a folder the
+      // server has stopped reporting took its pending edits with it,
+      // unlogged. Carried in the same bag the colour and name ride in, so
+      // a folder that comes back is claimable again.
+      const strandedChangelog = Array.isArray(prior?.changelog)
+        ? prior.changelog
+        : [];
       if (!prior?.selected) continue;
       if (!cache) continue;
       const bag = { selected: true };
+      if (strandedChangelog.length) bag.changelog = strandedChangelog;
       if (typeof prior.targetName === "string" && prior.targetName !== "") {
         bag.targetName = prior.targetName;
       }
@@ -255,13 +270,28 @@ export function replaceAccountFolders(accountId, incoming) {
   });
 }
 
+/** Patch one folder row. `custom` is shallow-merged rather than replaced,
+ *  and the merge happens HERE, inside the lock, against the row as it is
+ *  at that moment.
+ *
+ *  That is the whole point: a caller that read the row, built the merged
+ *  `custom` itself and passed it in would be merging against a snapshot
+ *  taken before the lock, so a concurrent patch landing in between would
+ *  be overwritten wholesale. `custom.pendingUserChanges` is written from
+ *  exactly such a path, on every recorded edit. */
 export function update(accountId, folderId, patch) {
   return serialize(async () => {
     const state = await read();
-    if (!state[accountId]?.[folderId]) return null;
-    state[accountId][folderId] = { ...state[accountId][folderId], ...patch };
+    const row = state[accountId]?.[folderId];
+    if (!row) return null;
+    const { custom, ...rest } = patch ?? {};
+    const merged = { ...row, ...rest };
+    if (custom && typeof custom === "object") {
+      merged.custom = { ...(row.custom ?? {}), ...custom };
+    }
+    state[accountId][folderId] = merged;
     await write(state);
-    return state[accountId][folderId];
+    return merged;
   });
 }
 

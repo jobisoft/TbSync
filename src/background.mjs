@@ -219,7 +219,10 @@ router.setProviderRpcHandler(
       patch.custom &&
       typeof patch.custom === "object"
     ) {
-      clean.custom = { ...(acc.custom ?? {}), ...patch.custom };
+      // Merged by `accounts.update` inside the storage lock, not here:
+      // `acc` was read before it and a patch landing in between would be
+      // overwritten whole.
+      clean.custom = patch.custom;
     }
     await accounts.update(accountId, clean);
     ui.broadcast({ type: "accounts-changed", accountId });
@@ -254,15 +257,18 @@ router.setProviderRpcHandler(
     const clean = {};
     for (const key of allowed)
       if (key in (patch ?? {})) clean[key] = patch[key];
-    // `custom` is shallow-merged on the folder row - same semantics as
-    // UPDATE_ACCOUNT above. Sibling keys survive a partial patch.
+    // `custom` is shallow-merged on the folder row so sibling keys survive
+    // a partial patch - but the merge belongs to `folders.update`, inside
+    // the storage lock. Doing it here would merge against `existing`, read
+    // before the lock was taken, so a patch landing in between would be
+    // overwritten entirely rather than merged with.
     if (
       patch &&
       "custom" in patch &&
       patch.custom &&
       typeof patch.custom === "object"
     ) {
-      clean.custom = { ...(existing.custom ?? {}), ...patch.custom };
+      clean.custom = patch.custom;
     }
     await folders.update(accountId, folderId, clean);
     ui.broadcast({ type: "folders-changed", accountId });

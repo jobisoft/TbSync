@@ -106,8 +106,9 @@ export async function runIfNeeded() {
     message:
       `Migrated ${result.acc.count} account(s) and ${result.fld.count} folder(s) from legacy TbSync. ` +
       `Changelog: ${result.chg.matched} matched, ${result.chg.unmatched} dropped ` +
-      `(no matching folder), ${result.chg.unknownKind} dropped (the item is ` +
-      `already gone, so its type could not be established). ` +
+      `(no matching folder), ${result.chg.unknownKind} carried unclassified ` +
+      `(the item is already gone, or the row is provider state rather than ` +
+      `an edit - the provider decides). ` +
       `Preferences migrated: ${result.prf.applied.join(", ") || "none"}.`,
   });
 }
@@ -352,16 +353,23 @@ function migrateChangelog(legacyChangelog68) {
           if (target && entry.parentId.startsWith(target)) {
             const kind = await resolveLegacyKind(folder, entry.itemId);
             if (!kind) {
-              // The item is gone, so nothing can say what it was. Only
-              // reachable for a delete that was never pushed; letting it go
-              // means the server's copy returns on the next pull, which is
-              // visible and recoverable - unlike a row nobody can interpret.
+              // Nothing here can say what this row is: either the item is
+              // gone (a delete that was never pushed - the server's copy
+              // returns on the next pull, visible and recoverable), or the
+              // itemId never named an item at all. v4 providers parked
+              // their own state in this table because a mailing list
+              // cannot carry properties, and those rows look exactly like
+              // this. Carried through unclassified rather than discarded:
+              // inventing a kind would file someone's data as an edit,
+              // but dropping it silently destroys provider state that
+              // only the provider can recognise. It reads the row, or
+              // refuses it - either way the decision is made where the
+              // knowledge is.
               unknownKind++;
-              continue outer;
             }
             if (!Array.isArray(folder.changelog)) folder.changelog = [];
             folder.changelog.push({
-              kind,
+              kind: kind ?? null,
               parentId: entry.parentId,
               itemId: entry.itemId,
               timestamp: entry.timestamp,
