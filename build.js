@@ -269,12 +269,32 @@ function main() {
   );
   zip("src", `dist/${betaName}`, [], overlay);
 
-  // The same beta bytes under a name that never changes. Every other artifact
+  // The beta build under a name that never changes. Every other artifact
   // carries the version in its filename, so a bump moves the file and any
   // fixed install path stops resolving; dist/dev.xpi is the path that keeps
   // working across bumps, which is what a reload during development needs.
-  console.log("Copying beta build to dist/dev.xpi ...");
-  fs.copyFileSync(`dist/${betaName}`, "dist/dev.xpi");
+  //
+  // Its add-on name carries the build time, because the version alone cannot
+  // say which build is loaded: two builds minutes apart share a version, and
+  // an add-on that failed to reload looks exactly like one that did. The
+  // Add-ons Manager shows this name, so the answer is visible without
+  // unpacking anything.
+  // Local time, not UTC: this is read next to a wall clock, to answer "is the
+  // add-on running what I just built?".
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  const stamp =
+    `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ` +
+    `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const devOverlay = { ...overlay };
+  const devManifest = JSON.parse(devOverlay["manifest.json"].toString("utf8"));
+  devManifest.name = `${devManifest.name} (dev ${stamp})`;
+  devOverlay["manifest.json"] = Buffer.from(
+    JSON.stringify(devManifest, null, 2) + "\n",
+    "utf8"
+  );
+  console.log(`Creating dist/dev.xpi ("${devManifest.name}") ...`);
+  zip("src", "dist/dev.xpi", [], devOverlay);
 
   console.log("Build finished. Output is in the 'dist' folder.");
 }
