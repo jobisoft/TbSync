@@ -149,14 +149,14 @@
   "account.status.warning": {
     "message": "警告"
   },
+  "account.status.busy": {
+    "message": "処理中…"
+  },
   "account.status.aborted": {
     "message": "同期は中止されました"
   },
   "folder.status.pending": {
     "message": "同期を待機中"
-  },
-  "folder.status.busy": {
-    "message": "処理中…"
   },
   "folder.status.modified": {
     "message": "ローカルの変更あり"

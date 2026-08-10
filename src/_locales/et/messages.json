@@ -149,14 +149,14 @@
   "account.status.warning": {
     "message": "Hoiatus"
   },
+  "account.status.busy": {
+    "message": "Töötlemine…"
+  },
   "account.status.aborted": {
     "message": "Sünkroonimine katkestatud"
   },
   "folder.status.pending": {
     "message": "Ootab sünkroonimist"
-  },
-  "folder.status.busy": {
-    "message": "Töötlemine…"
   },
   "folder.status.modified": {
     "message": "Kohalikud muudatused"

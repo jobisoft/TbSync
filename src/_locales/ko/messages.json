@@ -149,14 +149,14 @@
   "account.status.warning": {
     "message": "경고"
   },
+  "account.status.busy": {
+    "message": "처리 중…"
+  },
   "account.status.aborted": {
     "message": "동기화 중단됨"
   },
   "folder.status.pending": {
     "message": "동기화 대기 중"
-  },
-  "folder.status.busy": {
-    "message": "처리 중…"
   },
   "folder.status.modified": {
     "message": "로컬 변경 사항"

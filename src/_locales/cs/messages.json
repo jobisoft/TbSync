@@ -149,14 +149,14 @@
   "account.status.warning": {
     "message": "Varování"
   },
+  "account.status.busy": {
+    "message": "Pracuje se…"
+  },
   "account.status.aborted": {
     "message": "Synchronizace přerušena"
   },
   "folder.status.pending": {
     "message": "Čeká na synchronizaci"
-  },
-  "folder.status.busy": {
-    "message": "Pracuje se…"
   },
   "folder.status.modified": {
     "message": "Místní změny"

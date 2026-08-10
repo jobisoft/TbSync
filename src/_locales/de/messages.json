@@ -149,14 +149,14 @@
   "account.status.warning": {
     "message": "Warnung"
   },
+  "account.status.busy": {
+    "message": "Wird verarbeitet …"
+  },
   "account.status.aborted": {
     "message": "Synchronisation abgebrochen"
   },
   "folder.status.pending": {
     "message": "Wartet auf Synchronisation"
-  },
-  "folder.status.busy": {
-    "message": "Wird verarbeitet …"
   },
   "folder.status.modified": {
     "message": "Lokale Änderungen"

@@ -149,14 +149,14 @@
   "account.status.warning": {
     "message": "Предупреждение"
   },
+  "account.status.busy": {
+    "message": "Обработка…"
+  },
   "account.status.aborted": {
     "message": "Синхронизирането е прекъснато"
   },
   "folder.status.pending": {
     "message": "Изчаква синхронизиране"
-  },
-  "folder.status.busy": {
-    "message": "Обработка…"
   },
   "folder.status.modified": {
     "message": "Местни промени"

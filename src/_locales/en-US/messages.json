@@ -155,6 +155,12 @@
   "account.status.error": {
     "message": "Error"
   },
+  "account.status.warning": {
+    "message": "Warning"
+  },
+  "account.status.busy": {
+    "message": "Processing…"
+  },
   "folder.status.pending": {
     "message": "Waiting to be synchronized"
   },

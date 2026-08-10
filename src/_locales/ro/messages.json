@@ -149,14 +149,14 @@
   "account.status.warning": {
     "message": "Avertisment"
   },
+  "account.status.busy": {
+    "message": "Se procesează…"
+  },
   "account.status.aborted": {
     "message": "Sincronizare întreruptă"
   },
   "folder.status.pending": {
     "message": "În așteptare pentru sincronizare"
-  },
-  "folder.status.busy": {
-    "message": "Se procesează…"
   },
   "folder.status.modified": {
     "message": "Modificări locale"

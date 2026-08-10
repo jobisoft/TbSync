@@ -149,14 +149,14 @@
   "account.status.warning": {
     "message": "Figyelmeztetés"
   },
+  "account.status.busy": {
+    "message": "Feldolgozás…"
+  },
   "account.status.aborted": {
     "message": "Szinkronizálás megszakítva"
   },
   "folder.status.pending": {
     "message": "Szinkronizálásra várva"
-  },
-  "folder.status.busy": {
-    "message": "Feldolgozás…"
   },
   "folder.status.modified": {
     "message": "Helyi módosítások"

@@ -149,14 +149,14 @@
   "account.status.warning": {
     "message": "Aviso"
   },
+  "account.status.busy": {
+    "message": "Procesando…"
+  },
   "account.status.aborted": {
     "message": "Sincronización interrumpida"
   },
   "folder.status.pending": {
     "message": "Esperando sincronización"
-  },
-  "folder.status.busy": {
-    "message": "Procesando…"
   },
   "folder.status.modified": {
     "message": "Cambios locales"

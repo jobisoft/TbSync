@@ -149,14 +149,14 @@
   "account.status.warning": {
     "message": "Varning"
   },
+  "account.status.busy": {
+    "message": "Bearbetar…"
+  },
   "account.status.aborted": {
     "message": "Synkronisering avbruten"
   },
   "folder.status.pending": {
     "message": "Väntar på synkronisering"
-  },
-  "folder.status.busy": {
-    "message": "Bearbetar…"
   },
   "folder.status.modified": {
     "message": "Lokala ändringar"
