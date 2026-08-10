@@ -123,7 +123,15 @@ export async function pickCalendarColor() {
  *
  * Returns the new calendar id.
  */
-export async function createCalendar({ name, kind, color, type, url }) {
+export async function createCalendar({
+  name,
+  kind,
+  color,
+  type,
+  url,
+  organizer,
+  organizerName,
+}) {
   if (!name || typeof name !== "string" || !name.trim()) {
     throw new Error("createCalendar requires a non-empty name");
   }
@@ -144,11 +152,47 @@ export async function createCalendar({ name, kind, color, type, url }) {
     capabilities: {
       events: kind === "events",
       tasks: kind === "tasks",
+      ...ownerCapabilities({ organizer, organizerName }),
     },
   };
   if (color) props.color = color;
   const calendar = await messenger.calendar.calendars.create(props);
   return calendar?.id ?? calendar;
+}
+
+/** The owner half of a calendar's capabilities, or nothing when the
+ *  caller does not know who owns it. */
+function ownerCapabilities({ organizer, organizerName }) {
+  const out = {};
+  if (organizer) out.organizer = organizer;
+  if (organizerName) out.organizerName = organizerName;
+  return out;
+}
+
+/**
+ * Tell a calendar whose mailbox it is.
+ *
+ * `organizer` is a `mailto:` URI, the form Thunderbird uses for
+ * `organizerId` everywhere: it becomes the organizer of events composed
+ * here, and it is what iTIP matches an invitation's attendee list
+ * against to decide whether the invitation is for you. Left undeclared,
+ * a calendar inherits the *default* account's identity - so a calendar
+ * belonging to one mailbox can claim another's address, and invitations
+ * in it are silently treated as already handled.
+ *
+ * Only writes when something differs, because every write persists an
+ * override and notifies observers.
+ */
+export async function setCalendarOwner(id, { organizer, organizerName }) {
+  if (!id || !organizer) return false;
+  const calendar = await messenger.calendar.calendars.get(id);
+  if (!calendar) return false;
+  const current = calendar.capabilities ?? {};
+  const wanted = ownerCapabilities({ organizer, organizerName });
+  const same = Object.entries(wanted).every(([k, v]) => current[k] === v);
+  if (same) return false;
+  await messenger.calendar.calendars.update(id, { capabilities: wanted });
+  return true;
 }
 
 export async function deleteCalendar(id) {
