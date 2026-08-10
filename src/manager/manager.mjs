@@ -6,11 +6,11 @@
  * `accounts-changed`, `folders-changed`, `providers-changed`.
  */
 
-import { PROVIDER_NOTIFY, SYNCSTATE_BASE_KEYS } from "../vendor/tbsync/protocol.mjs";
 import {
-  accountIconUrl,
-  providerIconUrl,
-} from "../modules/account-icons.mjs";
+  PROVIDER_NOTIFY,
+  SYNCSTATE_BASE_KEYS,
+} from "../vendor/tbsync/protocol.mjs";
+import { accountIconUrl, providerIconUrl } from "../modules/account-icons.mjs";
 import { isBetaBuild } from "../modules/channel.mjs";
 import { FOLDER_TYPES } from "../modules/folder-types.mjs";
 import { createManagerClient } from "../modules/manager-client.mjs";
@@ -311,7 +311,9 @@ function folderResultStatus(f) {
  *  "Waiting to be synchronized" stands in for the absent name. */
 function row1StatusText(f) {
   if (!f.selected) return "";
-  return f.targetName ?? i18n("folder.status.pending", "Waiting to be synchronized");
+  return (
+    f.targetName ?? i18n("folder.status.pending", "Waiting to be synchronized")
+  );
 }
 
 /** True when notifications are currently arriving for this folder.
@@ -607,7 +609,9 @@ function renderSidebar() {
 
       row
         .querySelector(".col-provider-icon")
-        .appendChild(makeImg({ src: providerIconUrl(p.providerId, state.providers) }));
+        .appendChild(
+          makeImg({ src: providerIconUrl(p.providerId, state.providers) }),
+        );
       row.querySelector(".name").textContent = p.providerName;
       row.querySelector(".sub").textContent = stateLabel;
       row
@@ -780,13 +784,16 @@ function renderDetail() {
         row.querySelector(".col-name").textContent = f.displayName;
         const iconStatus = folderResultStatus(f);
         if (iconStatus) {
-          row.querySelector(".col-status-icon").appendChild(statusIconEl(iconStatus));
+          row
+            .querySelector(".col-status-icon")
+            .appendChild(statusIconEl(iconStatus));
         }
         row.querySelector(".col-status").textContent = row1StatusText(f);
 
         if (isCurrentlySyncing(f)) {
           const syncRow = cloneTpl("tpl-folder-sync-row");
-          syncRow.querySelector(".col-sync-status").textContent = syncRowText(f);
+          syncRow.querySelector(".col-sync-status").textContent =
+            syncRowText(f);
           tbody.appendChild(syncRow);
         }
 
@@ -807,8 +814,10 @@ function renderDetail() {
       }
     } else {
       const emptyTbody = cloneTpl("tpl-folder-empty");
-      emptyTbody.querySelector("td").textContent =
-        i18n("manager.resources.empty", "No resources yet.");
+      emptyTbody.querySelector("td").textContent = i18n(
+        "manager.resources.empty",
+        "No resources yet.",
+      );
       table.appendChild(emptyTbody);
     }
 
@@ -1055,7 +1064,6 @@ function providerLabel(providerId) {
   );
 }
 
-
 // Status → icon filename. Matches the legacy TbSync mapping:
 // success → tick, disabled → disabled, warning → warning, notsyncronized
 // / needs-sync → info (informational state, not active work), syncing →
@@ -1148,10 +1156,7 @@ function aclSelectEl(folder, { onChange, disabled = false } = {}) {
   trigger.title = folder.downloadOnly ? labelRO : labelRW;
   trigger.setAttribute("aria-haspopup", "listbox");
   trigger.setAttribute("aria-expanded", "false");
-  trigger.setAttribute(
-    "aria-label",
-    folder.downloadOnly ? labelRO : labelRW,
-  );
+  trigger.setAttribute("aria-label", folder.downloadOnly ? labelRO : labelRW);
   // DOM children (not background-image) so no UA hover/active style can
   // drop the icon, and so flexbox can vertically centre the bits cleanly.
   const triggerIcon = document.createElement("img");
@@ -1191,8 +1196,7 @@ function aclSelectEl(folder, { onChange, disabled = false } = {}) {
     const li = document.createElement("li");
     li.setAttribute("role", "option");
     li.dataset.value = opt.value;
-    const isSelected =
-      (opt.value === "ro") === !!folder.downloadOnly;
+    const isSelected = (opt.value === "ro") === !!folder.downloadOnly;
     li.setAttribute("aria-selected", String(isSelected));
     if (isSelected) li.classList.add("selected");
 
@@ -1754,11 +1758,32 @@ const MENU_IDS = {
 // the only ones shown - both for row clicks (account actions) and off-row
 // clicks (event-log shortcut). Other tabs fall through to the default menu.
 // `overrideContext` must be called synchronously from `contextmenu`.
-document
-  .querySelector('[data-panel="accounts"]')
-  .addEventListener("contextmenu", () => {
-    browser.menus.overrideContext({ showDefaults: false });
-  });
+// Visibility is decided HERE, synchronously, before the menu is built.
+// The items are extension-global and their `visible` flags persist from
+// one showing to the next, so a menu must never rely on `onShown` +
+// `refresh()` to fix a stale state: by then the menu has already opened
+// from the old flags, and with `showDefaults: false` a showing where
+// everything was left hidden opens as no menu at all - the "context menu
+// works only once" bug. `menus.update` calls issued inside the
+// `contextmenu` event are applied before the menu is built; `onShown`
+// below stays as a second pass for the pieces that need the resolved
+// target (enabled states, toggle title).
+document.addEventListener("contextmenu", (event) => {
+  const inAccountsPanel = !!event.target.closest?.('[data-panel="accounts"]');
+  if (!inAccountsPanel) {
+    // Other tabs keep the default menu, without our items.
+    for (const id of Object.values(MENU_IDS)) {
+      browser.menus.update(id, { visible: false });
+    }
+    return;
+  }
+  const row = event.target.closest?.("tr[data-account-id]");
+  browser.menus.update(MENU_IDS.sync, { visible: !!row });
+  browser.menus.update(MENU_IDS.toggle, { visible: !!row });
+  browser.menus.update(MENU_IDS.delete, { visible: !!row });
+  browser.menus.update(MENU_IDS.eventLog, { visible: true });
+  browser.menus.overrideContext({ showDefaults: false });
+});
 
 browser.menus.onShown.addListener((info) => {
   const targetEl = info.targetElementId
@@ -1781,34 +1806,36 @@ browser.menus.onShown.addListener((info) => {
     row && state.accounts.find((a) => a.accountId === row.dataset.accountId);
 
   if (!acc) {
-    // Accounts tab, off-row: only the event-log shortcut.
-    browser.menus.update(MENU_IDS.sync, { visible: false });
-    browser.menus.update(MENU_IDS.toggle, { visible: false });
-    browser.menus.update(MENU_IDS.delete, { visible: false });
-    browser.menus.update(MENU_IDS.eventLog, { visible: true });
-    browser.menus.refresh();
+    // Accounts tab, off-row: the pre-open pass already reduced the menu
+    // to the event-log shortcut; nothing to correct.
     return;
   }
 
-  // Accounts tab, on a row: the three account actions.
+  // Accounts tab, on a row: the pre-open pass made the items visible;
+  // this pass fills in what needs the resolved account - enabled states
+  // and the toggle's wording. The updates are AWAITED before refresh():
+  // update() is async, and a refresh issued while they are still in
+  // flight redraws the menu from the state they were meant to replace -
+  // the timing half of the works-only-once bug.
   const actions = accountActions(acc);
-  browser.menus.update(MENU_IDS.sync, {
-    visible: true,
-    enabled: actions.canSync,
-  });
-  browser.menus.update(MENU_IDS.toggle, {
-    visible: true,
-    enabled: acc.enabled ? actions.canDisconnect : actions.canConnect,
-    title: acc.enabled
-      ? i18n("manager.account.disconnect", "Disconnect")
-      : i18n("manager.account.connect", "Connect"),
-  });
-  browser.menus.update(MENU_IDS.delete, {
-    visible: true,
-    enabled: actions.canRemove,
-  });
-  browser.menus.update(MENU_IDS.eventLog, { visible: true });
-  browser.menus.refresh();
+  Promise.all([
+    browser.menus.update(MENU_IDS.sync, {
+      enabled: actions.canSync,
+    }),
+    browser.menus.update(MENU_IDS.toggle, {
+      enabled: acc.enabled ? actions.canDisconnect : actions.canConnect,
+      title: acc.enabled
+        ? i18n("manager.account.disconnect", "Disconnect")
+        : i18n("manager.account.connect", "Connect"),
+    }),
+    browser.menus.update(MENU_IDS.delete, {
+      enabled: actions.canRemove,
+    }),
+  ])
+    .then(() => browser.menus.refresh())
+    .catch(() => {
+      // The menu can close before the updates land; nothing to repair then.
+    });
 });
 
 browser.menus.onClicked.addListener((info) => {

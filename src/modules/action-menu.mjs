@@ -6,8 +6,14 @@
  *
  * Triggers `syncAccount` directly — the manager UI doesn't need to be
  * open. Rebuilds on `accounts-changed` and `folders-changed` so the
- * suffix stays in sync; `removeAll` + recreate is cheaper than tracking
- * per-item state, and a JSON-snapshot dirty check skips no-op rebuilds.
+ * suffix stays in sync, removing exactly the items it created last time
+ * and nothing else. It MUST NOT use `menus.removeAll()`: that removes
+ * every menu item the extension owns, including the manager page's
+ * account context menu - which then opens empty (with overrideContext,
+ * as no menu at all) from the first rebuild after a sync until the next
+ * reload. That was the long-standing "context menu works only once"
+ * bug, wrongly suspected to be an upstream issue. A JSON-snapshot dirty
+ * check skips no-op rebuilds.
  */
 
 import { accountIconUrl } from "./account-icons.mjs";
@@ -61,7 +67,10 @@ async function rebuild() {
   if (snapshot === lastSnapshot) return;
   lastSnapshot = snapshot;
 
-  await browser.menus.removeAll();
+  // Children die with their parent, so removing the tracked parent is the
+  // whole cleanup. `.catch`: on the first rebuild there is nothing to
+  // remove yet.
+  await browser.menus.remove(PARENT_ID).catch(() => {});
   if (rows.length === 0) return;
 
   browser.menus.create({
@@ -77,7 +86,7 @@ async function rebuild() {
       contexts: ["browser_action"],
       title: row.accountName + statusSuffix(row),
       enabled: row.canSync,
-      icons: { "16": row.iconUrl },
+      icons: { 16: row.iconUrl },
     });
   }
 }
