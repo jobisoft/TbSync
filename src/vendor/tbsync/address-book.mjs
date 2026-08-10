@@ -385,10 +385,22 @@ export function installContactsObserver({ provider, report } = {}) {
     let bookId = null;
     try {
       bookId = (await messenger.mailingLists.get(listId))?.parentId ?? null;
-    } catch {
-      // The list is already gone - deleting one fires a member-removed event
-      // per member, and the list itself may lose the race. Nothing to
-      // record: the list's own deleted entry carries everything needed.
+    } catch (err) {
+      // The list being already gone is expected and silent: deleting one
+      // fires a member-removed event per member, and the list itself may
+      // lose the race. Its own deleted entry carries everything needed.
+      //
+      // Anything else is not that, and swallowing it drops a membership
+      // edit the user made with no trace at all - so name it. Still no
+      // rethrow: this runs inside a platform notification, where throwing
+      // helps nobody.
+      if (!isNotFoundError(err)) {
+        log(
+          "warning",
+          `[contacts] could not resolve list ${listId} for a membership ` +
+            `change; the edit is not queued: ${err?.message ?? err}`,
+        );
+      }
       return;
     }
     const binding = await bookBinding(bookId);

@@ -332,6 +332,12 @@
   "error.E:FOLDER_SYNC_FAILED": {
     "message": "Synchronisation für einen oder mehrere Ordner fehlgeschlagen"
   },
+  "error.E:ACCOUNT_SYNC_FAILED": {
+    "message": "Kontosynchronisation fehlgeschlagen"
+  },
+  "error.E:NOT_TEMPORARY": {
+    "message": "Der Server hat die Anfrage abgelehnt und wird sie auch bei erneutem Versuch nicht annehmen"
+  },
   "manager.resources.col.syncStatus": {
     "message": "Synchronisationsstatus"
   },

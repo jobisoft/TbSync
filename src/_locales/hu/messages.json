@@ -332,6 +332,12 @@
   "error.E:FOLDER_SYNC_FAILED": {
     "message": "A szinkronizálás sikertelen egy vagy több mappa esetében"
   },
+  "error.E:ACCOUNT_SYNC_FAILED": {
+    "message": "A fiókot nem sikerült szinkronizálni"
+  },
+  "error.E:NOT_TEMPORARY": {
+    "message": "A kiszolgáló elutasította a kérést, és újrapróbálkozásra sem fogadja el"
+  },
   "manager.resources.col.syncStatus": {
     "message": "Szinkronizálási állapot"
   },

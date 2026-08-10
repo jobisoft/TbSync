@@ -65,15 +65,44 @@ sync_set() {
   done
 }
 
+# A file sitting in a vendored directory that this script does not manage
+# is the worst of both worlds: it looks vendored, so nobody edits it in
+# common/, and --check passes while it silently drifts - or, as happened
+# with contacts-observer.mjs, stays behind as dead weight in every xpi
+# long after its logic moved elsewhere. Name them.
+check_strays() {
+  local subdir="$1"; shift
+  local -a known=("$@")
+  for repo in "${REPOS[@]}"; do
+    local dir="$SIBLINGS_DIR/$repo/$subdir"
+    [ -d "$dir" ] || continue
+    for path in "$dir"/*; do
+      [ -e "$path" ] || continue
+      local base; base="$(basename "$path")"
+      local found=0
+      for f in "${known[@]}"; do
+        [ "$base" = "$f" ] && found=1 && break
+      done
+      if [ "$found" -eq 0 ]; then
+        echo "STRAY: ${path#"$SIBLINGS_DIR"/} is not vendored from common/"
+        status=1
+      fi
+    done
+  done
+}
+
 REPOS=("${PROTOCOL_REPOS[@]}")
 sync_set protocol "src/vendor/tbsync" "${PROTOCOL_FILES[@]}"
+check_strays "src/vendor/tbsync" "${PROTOCOL_FILES[@]}"
 
 REPOS=("${HARNESS_REPOS[@]}")
 sync_set test-harness "test/vendor" "${HARNESS_FILES[@]}"
+check_strays "test/vendor" "${HARNESS_FILES[@]}" README.md __pycache__
 
 if [ "$status" -ne 0 ]; then
   echo
-  echo "One or more copies differ from common/. Re-run without --check to"
+  echo "One or more copies differ from common/, or a file is sitting in a"
+  echo "vendored directory without being vendored. Re-run without --check to"
   echo "refresh them - and if the difference came from editing a vendored"
   echo "copy, move that change into common/ first or it will be lost."
 fi

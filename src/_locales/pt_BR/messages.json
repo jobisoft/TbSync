@@ -332,6 +332,12 @@
   "error.E:FOLDER_SYNC_FAILED": {
     "message": "Falha na sincronização de uma ou mais pastas"
   },
+  "error.E:ACCOUNT_SYNC_FAILED": {
+    "message": "Não foi possível sincronizar a conta"
+  },
+  "error.E:NOT_TEMPORARY": {
+    "message": "O servidor recusou a solicitação e não aceitará uma nova tentativa"
+  },
   "manager.resources.col.syncStatus": {
     "message": "Status da sincronização"
   },

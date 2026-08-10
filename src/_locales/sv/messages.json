@@ -332,6 +332,12 @@
   "error.E:FOLDER_SYNC_FAILED": {
     "message": "Synkronisering misslyckades för en eller flera mappar"
   },
+  "error.E:ACCOUNT_SYNC_FAILED": {
+    "message": "Kontot kunde inte synkroniseras"
+  },
+  "error.E:NOT_TEMPORARY": {
+    "message": "Servern avvisade begäran och kommer inte att acceptera ett nytt försök"
+  },
   "manager.resources.col.syncStatus": {
     "message": "Synkroniseringsstatus"
   },

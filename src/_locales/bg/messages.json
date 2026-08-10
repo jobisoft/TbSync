@@ -332,6 +332,12 @@
   "error.E:FOLDER_SYNC_FAILED": {
     "message": "Синхронизирането е неуспешно за една или повече папки"
   },
+  "error.E:ACCOUNT_SYNC_FAILED": {
+    "message": "Синхронизирането на акаунта е неуспешно"
+  },
+  "error.E:NOT_TEMPORARY": {
+    "message": "Сървърът отказа заявката и няма да я приеме при повторен опит"
+  },
   "manager.resources.col.syncStatus": {
     "message": "Състояние на синхронизацията"
   },

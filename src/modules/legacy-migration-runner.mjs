@@ -20,12 +20,35 @@ import * as eventLog from "./event-log.mjs";
 const LEGACY_DIR = "TbSync";
 
 export async function runIfNeeded() {
-  // Sole detection: tbsync.accounts present means user data already
-  // exists. Either a previous migration ran, or they're on an
-  // updated-legacy that wrote to local storage directly. Either way:
-  // skip.
-  const local = await browser.storage.local.get(KEYS.ACCOUNTS);
-  if (KEYS.ACCOUNTS in local) return;
+  // Two questions, and they are not the same one.
+  //
+  // `tbsync.migration` says a migration RAN TO COMPLETION. It is written
+  // last, once every step has succeeded, so a run that dies half way is
+  // retried on the next boot rather than remembered as done. The steps
+  // are safe to repeat: each writes its whole key from the legacy files
+  // instead of appending to what is already there.
+  //
+  // `tbsync.accounts` says only that user data exists - a previous
+  // migration, or an updated-legacy that wrote local storage directly.
+  // On its own it cannot mean "finished", because the first step writes
+  // it: gating on it alone left an account with no folders and no
+  // changelog, permanently, if any later step threw. The changelog goes
+  // last and holds the user's pending edits, so it was the most
+  // expensive thing to lose.
+  const local = await browser.storage.local.get([
+    KEYS.MIGRATION,
+    KEYS.ACCOUNTS,
+  ]);
+  if (local[KEYS.MIGRATION]?.done) return;
+  if (KEYS.ACCOUNTS in local) {
+    // Data exists and we have no record of migrating it: not a partial
+    // run of ours, just a profile that already has its own storage.
+    // Remember the decision so it is made once.
+    await browser.storage.local.set({
+      [KEYS.MIGRATION]: { done: true, migrated: false },
+    });
+    return;
+  }
 
   // No legacy data on disk → nothing to migrate. Single existence
   // check on the directory; subsequent reads are gated on per-file

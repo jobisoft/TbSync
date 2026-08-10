@@ -332,6 +332,12 @@
   "error.E:FOLDER_SYNC_FAILED": {
     "message": "Sincronizarea a eșuat pentru unul sau mai multe foldere"
   },
+  "error.E:ACCOUNT_SYNC_FAILED": {
+    "message": "Contul nu a putut fi sincronizat"
+  },
+  "error.E:NOT_TEMPORARY": {
+    "message": "Serverul a refuzat cererea și nu va accepta o reîncercare"
+  },
   "manager.resources.col.syncStatus": {
     "message": "Starea sincronizării"
   },

@@ -332,6 +332,12 @@
   "error.E:FOLDER_SYNC_FAILED": {
     "message": "하나 이상의 폴더에서 동기화에 실패했습니다"
   },
+  "error.E:ACCOUNT_SYNC_FAILED": {
+    "message": "계정을 동기화하지 못했습니다"
+  },
+  "error.E:NOT_TEMPORARY": {
+    "message": "서버가 요청을 거부했으며 다시 시도해도 받아들이지 않습니다"
+  },
   "manager.resources.col.syncStatus": {
     "message": "동기화 상태"
   },

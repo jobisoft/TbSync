@@ -187,6 +187,11 @@ export async function syncAccount(
 
   let authFailed = false;
   let cancelled = false;
+  // The account-level call itself came back as an error. Distinct from a
+  // folder failure: no folder ever ran, so there is nothing for
+  // `recomputeAccountError` to aggregate and the account would otherwise
+  // finish looking freshly synced.
+  let accountFailed = false;
   try {
     let accountRuns = 0;
     let accountRerunRequested;
@@ -229,6 +234,7 @@ export async function syncAccount(
         },
       );
       if (statusData.type === STATUS_TYPES.ERROR) {
+        accountFailed = true;
         await logAccountOutcome(accountId, statusData, "error");
         return;
       }
@@ -297,7 +303,16 @@ export async function syncAccount(
         await folders.update(accountId, f.folderId, { status: "aborted" });
       }
     }
-    if (!authFailed && !cancelled) {
+    if (accountFailed) {
+      // No folder ran, so `recomputeAccountError` has nothing to find and
+      // would clear the error it is meant to surface. Write it here, and
+      // leave `lastSyncTime` alone for the same reason a cancelled sync
+      // does: this sync did not complete.
+      const acc = await accounts.get(accountId);
+      if (acc && acc.error !== ERR.AUTH && acc.error !== "E:ACCOUNT_SYNC_FAILED") {
+        await accounts.update(accountId, { error: "E:ACCOUNT_SYNC_FAILED" });
+      }
+    } else if (!authFailed && !cancelled) {
       // flagAccountForReauth already wrote the account record with
       // error: ERR.AUTH; don't overwrite it here. A cancelled sync gets no
       // stamp either: it did not complete, and "last synced: just now"
@@ -468,13 +483,17 @@ function statusFromResult(type) {
 }
 
 async function logAccountOutcome(accountId, statusData, level) {
-  if (statusData?.message) {
-    await eventLog.append({
-      accountId,
-      folderId: null,
-      level,
-      message: statusData.message,
-      details: statusData.details ?? null,
-    });
-  }
+  // Unconditional. A provider that reports a failure without wording it
+  // used to leave no trace at all, which is the one case where a log line
+  // matters most - the user sees a failed sync and the log has nothing to
+  // say about it.
+  await eventLog.append({
+    accountId,
+    folderId: null,
+    level,
+    message:
+      statusData?.message ||
+      `The account sync failed without a message (${statusData?.type ?? "no status"}).`,
+    details: statusData?.details ?? null,
+  });
 }

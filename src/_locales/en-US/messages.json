@@ -173,6 +173,12 @@
   "error.E:FOLDER_SYNC_FAILED": {
     "message": "Sync failed for one or more folders"
   },
+  "error.E:ACCOUNT_SYNC_FAILED": {
+    "message": "The account could not be synchronized"
+  },
+  "error.E:NOT_TEMPORARY": {
+    "message": "The server refused the request and will not accept a retry"
+  },
   "syncstate.sync": {
     "message": "Synchronizing…"
   },

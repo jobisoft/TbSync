@@ -332,6 +332,12 @@
   "error.E:FOLDER_SYNC_FAILED": {
     "message": "Échec de la synchronisation pour un ou plusieurs dossiers"
   },
+  "error.E:ACCOUNT_SYNC_FAILED": {
+    "message": "Le compte n'a pas pu être synchronisé"
+  },
+  "error.E:NOT_TEMPORARY": {
+    "message": "Le serveur a refusé la requête et n'acceptera pas de nouvelle tentative"
+  },
   "manager.resources.col.syncStatus": {
     "message": "État de la synchronisation"
   },

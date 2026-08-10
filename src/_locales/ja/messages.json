@@ -332,6 +332,12 @@
   "error.E:FOLDER_SYNC_FAILED": {
     "message": "1 つ以上のフォルダーで同期に失敗しました"
   },
+  "error.E:ACCOUNT_SYNC_FAILED": {
+    "message": "アカウントを同期できませんでした"
+  },
+  "error.E:NOT_TEMPORARY": {
+    "message": "サーバーが要求を拒否しました。再試行しても受け付けられません"
+  },
   "manager.resources.col.syncStatus": {
     "message": "同期ステータス"
   },
