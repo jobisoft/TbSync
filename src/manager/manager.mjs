@@ -1094,6 +1094,11 @@ function providerLabel(providerId) {
 // / needs-sync → info (informational state, not active work), syncing →
 // sync (animated), upgrading → spinner (active background work, distinct
 // from sync), everything else → error.
+//
+// `legacy-locked` is listed rather than left to the fallback: the account
+// really is one the user has to act on before it will ever sync, so the
+// error icon is the intended answer and not an accident of an unknown
+// status. The toolbar badge reads the same condition, so the two agree.
 const STATUS_ICON_FILE = {
   success: "status-tick16.png",
   disabled: "status-disabled16.png",
@@ -1102,6 +1107,7 @@ const STATUS_ICON_FILE = {
   "needs-sync": "status-info16.png",
   syncing: "status-sync16.png",
   upgrading: "spinner.gif",
+  "legacy-locked": "status-error16.png",
 };
 
 /** Icon for the Status column. Tooltip carries the localised status label

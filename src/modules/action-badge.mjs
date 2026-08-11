@@ -4,11 +4,13 @@
  * Four states, evaluated in priority order (first match wins):
  *   1. syncing       - any account is currently being driven by the sync
  *                      coordinator (transient.syncingAccounts).
- *   2. error         - some enabled account has account.error set, OR
- *                      its provider isn't currently active (uninstalled,
- *                      disabled, not yet announced) - both render in the
- *                      manager as a non-syncable account the user has to
- *                      act on.
+ *   2. error         - some enabled account has account.error set, OR was set
+ *                      up by an older version and so cannot sync until it is
+ *                      reconnected, OR its provider isn't currently active
+ *                      (uninstalled, disabled, not yet announced) - all three
+ *                      render in the manager as a non-syncable account the
+ *                      user has to act on, and the badge is the only place
+ *                      that says so without opening the manager.
  *   3. local-changes - some enabled account has at least one selected folder
  *                      whose changelog carries _by_user entries.
  *   4. ok            - none of the above; the badge is cleared.
@@ -58,7 +60,11 @@ async function computeState() {
       .filter((p) => p.state === "active")
       .map((p) => p.providerId),
   );
-  if (enabled.some((a) => a.error || !activeProviderIds.has(a.provider))) {
+  if (
+    enabled.some(
+      (a) => a.error || a.legacyImported || !activeProviderIds.has(a.provider),
+    )
+  ) {
     return "error";
   }
 
