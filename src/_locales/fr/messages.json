@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Le fournisseur effectue une opération ponctuelle sur ce compte…"
   },
+  "account.status.legacy-locked": {
+    "message": "Configuré par une version plus ancienne - reconnectez-le pour synchroniser"
+  },
   "actionButton.title.ok": {
     "message": "TbSync"
   },
@@ -352,5 +355,8 @@
   "provider.state.fundraiser": {
     "message": "Financement participatif",
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
+  },
+  "manager.account.migrated": {
+    "message": "Ce compte a été configuré par une version plus ancienne et ne peut pas se synchroniser. Déconnectez-le puis reconnectez-le pour le reconstruire depuis le serveur. La déconnexion supprime ses agendas et carnets d'adresses locaux : copiez d'abord tout ce qui n'a jamais été synchronisé."
   }
 }

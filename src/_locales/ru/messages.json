@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Провайдер выполняет одноразовую операцию для этой учётной записи…"
   },
+  "account.status.legacy-locked": {
+    "message": "Настроена в более старой версии — переподключите для синхронизации"
+  },
   "actionButton.title.ok": {
     "message": "TbSync"
   },
@@ -352,5 +355,8 @@
   "provider.state.fundraiser": {
     "message": "Сбор средств",
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
+  },
+  "manager.account.migrated": {
+    "message": "Эта учётная запись настроена в более старой версии и не может синхронизироваться. Отключите её и подключите заново, чтобы она была создана заново с сервера. При отключении удаляются локальные календари и адресные книги, поэтому сначала скопируйте всё, что никогда не синхронизировалось."
   }
 }

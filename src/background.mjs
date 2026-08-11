@@ -884,6 +884,11 @@ ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
         // Clear any standing auth/sync error on re-enable; on disable, drop
         // it too so the row reads as a clean "off" state.
         error: null,
+        // A disconnect ends the account's migrated life: everything the
+        // conversion carried is deleted below, and reconnecting rebuilds it
+        // from the server. That is the remedy the manager suggests to a
+        // carried-over account, so the suggestion retires when it is taken.
+        ...(enabled ? null : { legacyImported: false }),
       });
       if (!enabled) {
         // Rows first, targets second: dropping the rows is what unhooks the
@@ -1033,6 +1038,37 @@ browser.alarms.onAlarm.addListener((alarm) => {
     console.warn("[tbsync] autosync tick failed:", err),
   );
 });
+
+/** Accounts converted by a 5.0.x build carry the same uncertainty as a v4
+ *  import, and nothing on disk distinguishes them from accounts created
+ *  here. The update itself is the only reliable signal, and only at the
+ *  moment it happens - so it is taken then and recorded on the accounts.
+ *
+ *  Registered synchronously at the top level: a listener added after an
+ *  await can miss the event that started this page.
+ */
+browser.runtime.onInstalled.addListener((details) => {
+  if (details.reason !== "update") return;
+  if (!/^5\.0\./.test(details.previousVersion ?? "")) return;
+  markAccountsCarriedOver(details.previousVersion).catch((err) =>
+    console.warn("[tbsync] marking 5.0.x accounts failed:", err),
+  );
+});
+
+async function markAccountsCarriedOver(previousVersion) {
+  const all = await accounts.list();
+  if (!all.length) return;
+  for (const acc of all) {
+    await accounts.update(acc.accountId, { legacyImported: true });
+  }
+  await eventLog.append({
+    level: "info",
+    message:
+      `Updated from ${previousVersion}: ${all.length} account(s) marked as ` +
+      `carried over - a conversion done by that version cannot be verified ` +
+      `from here.`,
+  });
+}
 
 // ── Boot ───────────────────────────────────────────────────────────────────
 

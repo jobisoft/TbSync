@@ -140,6 +140,9 @@
   "account.status.upgrading": {
     "message": "Provider is performing one-time work on this account…"
   },
+  "account.status.legacy-locked": {
+    "message": "Set up by an older version - reconnect to synchronize"
+  },
   "account.status.disabled": {
     "message": "Disconnected"
   },
@@ -352,5 +355,9 @@
   "provider.state.fundraiser": {
     "message": "Fundraising",
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
+  },
+  "manager.account.migrated": {
+    "message": "This account was set up by an older version and cannot sync. Disconnect and reconnect it to rebuild it from the server. Disconnecting deletes its local calendars and address books, so copy anything that was never synced first.",
+    "description": "Shown under the account status for an account set up by an older version. Such accounts cannot sync; the note names the remedy and warns that disconnecting deletes the local copies."
   }
 }

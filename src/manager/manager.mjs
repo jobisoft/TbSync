@@ -396,6 +396,10 @@ function effectiveAccountState(acc) {
   const interactive = !state.transient.busyAccounts.has(acc.accountId);
   if (acc.error === "E:AUTH") return { status: "needs-reauth", interactive };
   if (!acc.enabled) return { status: "disabled", interactive };
+  // After `disabled`, deliberately: disconnecting is the remedy this state
+  // asks for, and an account that has taken it should read as off rather
+  // than keep naming a condition it no longer has.
+  if (acc.legacyImported) return { status: "legacy-locked", interactive };
   return { status: deriveAccountResultStatus(acc), interactive };
 }
 
@@ -413,6 +417,7 @@ function statusSlot(acc, eff) {
     "notsyncronized",
     "needs-sync",
     "upgrading",
+    "legacy-locked",
   ]);
   if (labelStates.has(eff.status)) {
     return {
@@ -460,7 +465,10 @@ function accountActions(acc) {
 
   return {
     canRemove,
-    canSync: baseEnabled && !!acc.enabled && !isReauth,
+    // `legacyImported` holds syncing back the same way a rejected credential
+    // does - the host refuses it in `syncAccount`, so offering the button
+    // would only produce a silent no-op.
+    canSync: baseEnabled && !!acc.enabled && !isReauth && !acc.legacyImported,
     // Connecting and disconnecting stay available while authentication is
     // outstanding - only syncing is held back. The account is left connected
     // now, so Disconnect is the way to put it aside without deleting it, and
@@ -737,6 +745,23 @@ function renderDetail() {
   const statusText = frag.querySelector(".status-text");
   statusText.textContent = status.text;
   if (status.severity) statusText.classList.add(status.severity);
+
+  // The account cannot sync, so the note carries the whole explanation:
+  // why nothing is happening, what to do, and - before the user does it -
+  // that disconnecting deletes the local copies. Said here because this is
+  // where someone looks when an account sits still, which a release note
+  // read months ago is not.
+  if (acc.legacyImported) {
+    const note = frag.querySelector(".migrated-note");
+    note.hidden = false;
+    note.textContent = i18n(
+      "manager.account.migrated",
+      "This account was set up by an older version and cannot sync. " +
+        "Disconnect and reconnect it to rebuild it from the server. " +
+        "Disconnecting deletes its local calendars and address books, so " +
+        "copy anything that was never synced first.",
+    );
+  }
 
   if (acc.enabled) {
     const resources = frag.querySelector(".resources-section");

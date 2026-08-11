@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Pakkuja teeb sellele kontole ühekordset tööd…"
   },
+  "account.status.legacy-locked": {
+    "message": "Seadistatud vanema versiooniga – sünkroonimiseks ühendage uuesti"
+  },
   "actionButton.title.ok": {
     "message": "TbSync"
   },
@@ -352,5 +355,8 @@
   "provider.state.fundraiser": {
     "message": "Annetuskampaania",
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
+  },
+  "manager.account.migrated": {
+    "message": "See konto seadistati vanema versiooniga ja seda ei saa sünkroonida. Ühendage lahti ja ühendage uuesti, et see serverist uuesti üles ehitada. Lahtiühendamine kustutab selle kohalikud kalendrid ja aadressiraamatud, seega kopeerige esmalt kõik, mida pole kunagi sünkroonitud."
   }
 }

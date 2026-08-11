@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Poskytovatel provádí jednorázovou operaci na tomto účtu…"
   },
+  "account.status.legacy-locked": {
+    "message": "Nastaveno starší verzí – pro synchronizaci znovu připojte"
+  },
   "actionButton.title.ok": {
     "message": "TbSync"
   },
@@ -352,5 +355,8 @@
   "provider.state.fundraiser": {
     "message": "Sbírka",
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
+  },
+  "manager.account.migrated": {
+    "message": "Tento účet byl nastaven starší verzí a nelze jej synchronizovat. Odpojte jej a znovu připojte, aby byl znovu sestaven ze serveru. Odpojení odstraní jeho místní kalendáře a adresáře, proto nejprve zkopírujte vše, co nikdy nebylo synchronizováno."
   }
 }

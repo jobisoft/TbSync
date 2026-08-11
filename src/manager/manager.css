@@ -331,6 +331,15 @@ body {
 .status-text.error   { color: var(--status-error); }
 .status-text.warning { color: var(--status-warning); }
 
+/* Secondary to the status it sits under: this is a standing caveat about
+   where the account came from, not a report of what it is doing now. */
+.status-note {
+  margin-top: 4px;
+  max-width: 60ch;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
 .card-description { margin: 0 0 10px; color: var(--text-secondary); font-size: 12px; }
 
 .detail-row {

@@ -171,6 +171,18 @@ export async function syncAccount(
   // rejected credentials again, which is how servers decide to lock an
   // account out. Cleared by authenticating, or by disabling the account.
   if (acc.error === ERR.AUTH) return;
+  // An account set up by an older version does not sync at all. Its local
+  // calendars and books were made by code that addressed them differently,
+  // and any queued edit was written by a changelog this version does not
+  // own - syncing into that would duplicate items rather than repair them.
+  // The account keeps its settings and its resources so the user can read
+  // them and copy anything out; connecting it afresh is the way forward,
+  // and disconnecting is what clears the flag (see `setAccountEnabled`).
+  //
+  // Refused here rather than at each caller, and silently, exactly like the
+  // rejected-credentials guard above: the manager states the condition and
+  // offers the remedy, so an autosync tick has nothing to add.
+  if (acc.legacyImported) return;
   if (!router.isProviderConnected(acc.provider)) {
     await eventLog.append({
       accountId,

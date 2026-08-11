@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Leverantören utför ett engångsarbete på detta konto…"
   },
+  "account.status.legacy-locked": {
+    "message": "Konfigurerat av en äldre version – återanslut för att synkronisera"
+  },
   "actionButton.title.ok": {
     "message": "TbSync"
   },
@@ -352,5 +355,8 @@
   "provider.state.fundraiser": {
     "message": "Insamling",
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
+  },
+  "manager.account.migrated": {
+    "message": "Det här kontot konfigurerades av en äldre version och kan inte synkronisera. Koppla från och anslut igen för att bygga upp det från servern. Frånkoppling raderar dess lokala kalendrar och adressböcker, så kopiera först allt som aldrig har synkroniserats."
   }
 }

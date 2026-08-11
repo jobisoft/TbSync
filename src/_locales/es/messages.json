@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "El proveedor está realizando una operación única en esta cuenta…"
   },
+  "account.status.legacy-locked": {
+    "message": "Configurada por una versión anterior: vuelva a conectarla para sincronizar"
+  },
   "actionButton.title.ok": {
     "message": "TbSync"
   },
@@ -352,5 +355,8 @@
   "provider.state.fundraiser": {
     "message": "Recaudación de fondos",
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
+  },
+  "manager.account.migrated": {
+    "message": "Esta cuenta fue configurada por una versión anterior y no puede sincronizarse. Desconéctela y vuelva a conectarla para reconstruirla desde el servidor. Al desconectarla se eliminan sus calendarios y libretas de direcciones locales, así que copie antes todo lo que nunca se haya sincronizado."
   }
 }

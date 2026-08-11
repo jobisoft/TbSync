@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Доставчикът извършва еднократна операция за този профил…"
   },
+  "account.status.legacy-locked": {
+    "message": "Настроен от по-стара версия – свържете отново за синхронизиране"
+  },
   "actionButton.title.ok": {
     "message": "TbSync"
   },
@@ -352,5 +355,8 @@
   "provider.state.fundraiser": {
     "message": "Набиране на средства",
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
+  },
+  "manager.account.migrated": {
+    "message": "Този акаунт е настроен от по-стара версия и не може да се синхронизира. Прекъснете връзката и я установете отново, за да бъде изграден наново от сървъра. Прекъсването изтрива локалните календари и адресни указатели, затова първо копирайте всичко, което никога не е било синхронизирано."
   }
 }

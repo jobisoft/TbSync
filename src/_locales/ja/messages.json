@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "プロバイダーがこのアカウントで一度限りの作業を実行しています…"
   },
+  "account.status.legacy-locked": {
+    "message": "以前のバージョンで設定されました - 同期するには再接続してください"
+  },
   "actionButton.title.ok": {
     "message": "TbSync"
   },
@@ -352,5 +355,8 @@
   "provider.state.fundraiser": {
     "message": "資金調達中",
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
+  },
+  "manager.account.migrated": {
+    "message": "このアカウントは以前のバージョンで設定されたため、同期できません。切断してから再接続すると、サーバーから再構築されます。切断するとローカルのカレンダーとアドレス帳は削除されるので、一度も同期されていないデータは先にコピーしてください。"
   }
 }
