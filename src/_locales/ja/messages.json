@@ -125,6 +125,14 @@
   "provider.state.uninstalled": {
     "message": "未インストール"
   },
+  "provider.state.incompatible": {
+    "message": "TbSync v$HOST$ と互換性がありません",
+    "placeholders": {
+      "host": {
+        "content": "$1"
+      }
+    }
+  },
   "account.status.success": {
     "message": "OK"
   },

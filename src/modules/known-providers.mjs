@@ -22,9 +22,13 @@ import { isBetaBuild } from "./channel.mjs";
  * can never be installed needs to say so itself, or it inherits an
  * affordance that promises something impossible. */
 export const KNOWN_PROVIDERS = {
+  // `providerName` matches what each add-on announces, so the catalogue row
+  // and the running provider are recognisably the same thing - and so a row
+  // that has to name an add-on the user must go and replace names the one
+  // they will actually find.
   google: {
     kind: "install",
-    providerName: "Google's People API",
+    providerName: "Google Contacts",
     installUrl: "https://addons.thunderbird.net/addon/google-4-tbsync/",
     betaInstallUrl: "https://github.com/jobisoft/google-4-tbsync/releases",
   },

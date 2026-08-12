@@ -125,6 +125,14 @@
   "provider.state.uninstalled": {
     "message": "Pole paigaldatud"
   },
+  "provider.state.incompatible": {
+    "message": "Ei ühildu TbSync v$HOST$-ga",
+    "placeholders": {
+      "host": {
+        "content": "$1"
+      }
+    }
+  },
   "account.status.success": {
     "message": "OK"
   },

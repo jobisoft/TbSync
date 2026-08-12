@@ -125,6 +125,14 @@
   "provider.state.uninstalled": {
     "message": "Nincs telepítve"
   },
+  "provider.state.incompatible": {
+    "message": "Nem kompatibilis a TbSync v$HOST$ verzióval",
+    "placeholders": {
+      "host": {
+        "content": "$1"
+      }
+    }
+  },
   "account.status.success": {
     "message": "OK"
   },

@@ -46,6 +46,10 @@ browser.tabs
 const i18n = (key, fallback, substitutions) =>
   browser.i18n.getMessage(key, substitutions) || fallback;
 
+/** This TbSync's own version, for the places that compare it with a
+ *  provider's. */
+const HOST_VERSION = browser.runtime.getManifest().version;
+
 // ── DOM helpers ───────────────────────────────────────────────────────────
 
 /** Clone a template's first element. For templates whose <template> wraps
@@ -574,7 +578,19 @@ function renderSidebar() {
       // flight.
       const canInstall =
         !isFundraiser && p.state !== "active" && !!p.installUrl;
-      const stateLabel = i18n(`provider.state.${p.state}`, p.state);
+      // An installed provider we refused reads as "not installed" without
+      // this - the one thing the row must not tell someone who is running
+      // it. The download stays: replacing the add-on is the remedy. The
+      // version goes on the name, so the two lines read as "what you have"
+      // over "why it will not do".
+      const incompatible = !!p.incompatibleVersion;
+      const stateLabel = incompatible
+        ? i18n(
+            "provider.state.incompatible",
+            `Incompatible with TbSync v${HOST_VERSION}`,
+            [HOST_VERSION],
+          )
+        : i18n(`provider.state.${p.state}`, p.state);
 
       const row = cloneTpl("tpl-provider-row");
       row.classList.add(
@@ -632,7 +648,9 @@ function renderSidebar() {
         .appendChild(
           makeImg({ src: providerIconUrl(p.providerId, state.providers) }),
         );
-      row.querySelector(".name").textContent = p.providerName;
+      row.querySelector(".name").textContent = incompatible
+        ? `${p.providerName} v${p.incompatibleVersion}`
+        : p.providerName;
       row.querySelector(".sub").textContent = stateLabel;
       row
         .querySelector(".col-status")

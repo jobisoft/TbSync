@@ -125,6 +125,14 @@
   "provider.state.uninstalled": {
     "message": "설치되지 않음"
   },
+  "provider.state.incompatible": {
+    "message": "TbSync v$HOST$과(와) 호환되지 않음",
+    "placeholders": {
+      "host": {
+        "content": "$1"
+      }
+    }
+  },
   "account.status.success": {
     "message": "OK"
   },

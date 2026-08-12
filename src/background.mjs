@@ -554,9 +554,17 @@ ui.setManagerRpcHandler("getState", async () => {
   });
   for (const [providerId, known] of Object.entries(KNOWN_PROVIDERS)) {
     if (liveIds.has(providerId)) continue;
+    // Installed and running, but turned away for speaking a different
+    // protocol version. The row keeps its download link - replacing the
+    // add-on is exactly the remedy - and stops claiming the provider is
+    // not installed.
+    const incompatible = registry.incompatibleProviders.get(providerId);
     providerList.push({
       providerId,
-      providerName: known.providerName,
+      // Its own name when it told us one: that is what the user sees in
+      // Thunderbird's add-on manager, so it names the thing they have to
+      // go and replace.
+      providerName: incompatible?.name ?? known.providerName,
       kind: known.kind,
       // "uninstalled" says a thing could be installed and is not. A
       // fundraiser could not be, so it gets its own state and its own label.
@@ -566,6 +574,7 @@ ui.setManagerRpcHandler("getState", async () => {
       // with no add-on behind it has nobody else to announce an icon.
       icons: known.icons ?? {},
       installUrl: linkFor(known),
+      incompatibleVersion: incompatible?.version ?? null,
     });
   }
   return {

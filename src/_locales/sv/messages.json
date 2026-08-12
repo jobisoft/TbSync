@@ -125,6 +125,14 @@
   "provider.state.uninstalled": {
     "message": "Inte installerad"
   },
+  "provider.state.incompatible": {
+    "message": "Inte kompatibel med TbSync v$HOST$",
+    "placeholders": {
+      "host": {
+        "content": "$1"
+      }
+    }
+  },
   "account.status.success": {
     "message": "OK"
   },

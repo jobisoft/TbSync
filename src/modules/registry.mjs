@@ -5,6 +5,19 @@ import * as accounts from "./accounts.mjs";
 import * as ui from "./messaging-ui.mjs";
 import { settingUpAccounts, upgradeAccounts } from "./transient.mjs";
 
+/** Providers that announced themselves this session and were turned away
+ *  for speaking the wrong protocol version, as `shortName -> {version}`.
+ *
+ *  The catalogue row for such a provider otherwise reads "not installed"
+ *  and offers to install it, which is the one thing it should not say to
+ *  someone who already has it. The download is still the remedy - the point
+ *  is to say which version is sitting there and that it needs replacing.
+ *
+ *  Runtime-only, like ProviderMeta itself: an announce is what puts an
+ *  entry here and a good announce removes it, so it cannot outlive the
+ *  truth. */
+export const incompatibleProviders = new Map();
+
 /**
  * Provider discovery and lifecycle.
  *
@@ -80,10 +93,23 @@ export function init({ openPortToProvider, closePortToProvider }) {
     }
 
     if (msg.protocolVersion !== PROTOCOL_VERSION) {
-      // Without this the refusal is invisible: the provider never registers,
-      // so the manager renders it as "Not installed" - an install button for
-      // an add-on that is plainly installed. Identify it by extensionId
-      // rather than shortName, which is not validated until below.
+      // Remember which version was turned away, so the catalogue row can say
+      // so. Without it the refusal is invisible in the UI: the provider never
+      // registers, so the manager renders it as "Not installed" - telling the
+      // user to install an add-on they are plainly running.
+      //
+      // Keyed by `shortName` because that is what the catalogue is keyed by,
+      // and unvalidated here on purpose: it is only used to look a row up, so
+      // the worst a bad one can do is match nothing.
+      if (msg.shortName) {
+        incompatibleProviders.set(msg.shortName, {
+          version: msg.providerVersion ?? null,
+          // What the add-on calls itself, which is what the user sees in
+          // Thunderbird's add-on manager - a better handle on the thing
+          // they have to replace than the catalogue's own wording.
+          name: msg.providerName ?? null,
+        });
+      }
       eventLog
         .append({
           level: "error",
@@ -112,6 +138,9 @@ export function init({ openPortToProvider, closePortToProvider }) {
       };
     }
     const providerId = msg.shortName;
+    // It speaks our version now, so whatever was refused earlier this
+    // session is history - the user updated it.
+    incompatibleProviders.delete(providerId);
 
     const meta = await providers.upsert(providerId, {
       providerName: msg.providerName ?? providerId,
