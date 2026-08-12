@@ -54,9 +54,8 @@ copy drifting is caught by the same check as a provider's.
 
 **Purity rule for `changelog-core.mjs`:** nothing in it may touch storage,
 the network, `browser.*`, or the clock — `now` is injected by the caller.
-That is what lets the host run the state machine over `folder.changelog`
-while a provider runs the identical machine over its own storage, and what
-makes it testable with plain `node --test`.
+That is what lets every provider run the identical state machine over its
+own storage, and what makes it testable with plain `node --test`.
 
 ## `test-harness/` → `test/vendor/`, and never ships
 

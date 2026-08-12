@@ -498,7 +498,7 @@ export function installContactsObserver({ provider, report } = {}) {
       ?.updateFolder({
         accountId: binding.accountId,
         folderId: binding.folderId,
-        patch: { custom: { pendingUserChanges: pending } },
+        patch: { localChanges: pending },
       })
       .catch((err) =>
         log("debug", `[contacts] could not update the pending count: ${err?.message ?? err}`),

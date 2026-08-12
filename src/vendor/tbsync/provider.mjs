@@ -236,27 +236,14 @@ export class TbSyncProviderImplementation {
   getAccount(accountId) {
     return this.#sendCmd(PROVIDER_CMD.GET_ACCOUNT, { accountId });
   }
-  /** Stamp a `*_by_server` pre-tag on `folder.changelog` so the host's
-   *  observer drops the next Thunderbird event for this item as
-   *  self-inflicted (1500 ms freeze). Args:
-   *    { accountId, folderId, parentId, itemId, status, kind }
-   *  `kind` selects both the matching strategy and the event family:
-   *    - `"contact"`      : itemId = TB contact id; suppresses
-   *                         `messenger.contacts.*` events.
-   *    - `"list"`         : itemId = TB mailing-list id; suppresses
-   *                         `messenger.mailingLists.*` events.
-   *    - `"list-by-name"` : itemId = list NAME (string). Used only for
-   *                         pull-creates where the TB id isn't known
-   *                         pre-call. The watcher matches the row by
-   *                         name on the next `mailingLists.onCreated`
-   *                         and upgrades it in place to
-   *                         `kind: "list", itemId: <real id>`.
-   *    - `"event"` / `"task"` : accepted and ignored. A provider supplies
-   *                         its own calendars and reports edits to them
-   *                         itself, so the host does not observe those
-   *                         resources and has nothing to suppress.
-   *  Must be awaited BEFORE the actual TB API call so the tag is
-   *  durable before the event fires. */
+  /** Tell the host about resources this provider has stopped syncing and
+   *  cannot resume - see REPORT_ORPHANED_TARGETS. Best-effort: the host
+   *  marks them for the user, and nothing here depends on the answer. */
+  reportOrphanedTargets(targets) {
+    if (!targets?.length) return Promise.resolve(null);
+    return this.#sendCmd(PROVIDER_CMD.REPORT_ORPHANED_TARGETS, { targets });
+  }
+
   /** Ask the host to sync one of this provider's folders, identified by the
    *  local resource it is bound to.
    *
@@ -268,14 +255,6 @@ export class TbSyncProviderImplementation {
    *
    *  Resolves when the sync it asked for has finished, so a caller answering
    *  a platform hook can report a real outcome. */
-  /** Tell the host about resources this provider has stopped syncing and
-   *  cannot resume - see REPORT_ORPHANED_TARGETS. Best-effort: the host
-   *  marks them for the user, and nothing here depends on the answer. */
-  reportOrphanedTargets(targets) {
-    if (!targets?.length) return Promise.resolve(null);
-    return this.#sendCmd(PROVIDER_CMD.REPORT_ORPHANED_TARGETS, { targets });
-  }
-
   requestSync(args) {
     return this.#sendCmd(PROVIDER_CMD.REQUEST_SYNC, args);
   }
@@ -420,8 +399,7 @@ export class TbSyncProviderImplementation {
   }
 
   /** The pending change queue this provider keeps for a folder, as
-   *  changelog rows - or `null` (the default) if it keeps none and the
-   *  host's own `folder.changelog` is the whole story.
+   *  changelog rows - or `null` (the default) if it keeps none.
    *
    *  Read-only. It is asked for diagnostics and by test suites, never as
    *  part of a sync, so answering must not consume or repair anything. */

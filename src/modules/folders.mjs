@@ -79,23 +79,32 @@ export async function listForAccount(accountId) {
   );
 }
 
-/** `{ [accountId]: true }` for every account with at least one selected
- *  folder holding unpushed local edits, which the manager shows as a
- *  "needs sync" status.
+/** Does this folder have edits waiting to be pushed?
  *
- *  The queues are the providers', so the count comes to us: each keeps
- *  `custom.pendingUserChanges` roughly current as it queues and drains.
- *  Roughly is the right word and the accepted cost - this drives a badge,
- *  and the alternative is asking every provider over RPC to paint an icon.
- *  A stale count shows or hides a dot; nothing reads it to decide what to
- *  sync. */
+ *  The one place that answers it, for the badge, the toolbar menu and both
+ *  of the manager's folder indicators - so they cannot disagree, and so a
+ *  reader added later inherits the rule instead of having to remember it.
+ *
+ *  Unselected is always no. That folder's local resource has been deleted
+ *  and its binding retired, so it owes nothing whatever it last reported.
+ *
+ *  The queue is the provider's, so the count comes to us: each keeps
+ *  `localChanges` roughly current as it queues and drains. Roughly is the
+ *  right word and the accepted cost - this drives a badge, and the
+ *  alternative is asking every provider over RPC to paint an icon. A stale
+ *  count shows or hides a dot; nothing reads it to decide what to sync. */
+export function hasLocalChanges(folder) {
+  return !!folder?.selected && Number(folder.localChanges ?? 0) > 0;
+}
+
+/** `{ [accountId]: true }` for every account with at least one folder
+ *  holding unpushed local edits, which the manager shows as a "needs sync"
+ *  status. */
 export async function needsSyncMap() {
   const state = await read();
   const out = {};
   for (const [accountId, bucket] of Object.entries(state)) {
-    out[accountId] = Object.values(bucket).some(
-      (f) => f.selected && Number(f.custom?.pendingUserChanges ?? 0) > 0,
-    );
+    out[accountId] = Object.values(bucket).some(hasLocalChanges);
   }
   return out;
 }
@@ -194,19 +203,13 @@ export function replaceAccountFolders(accountId, incoming) {
             ? descriptor.targetColor
             : (prior?.targetColor ??
               (cached && "targetColor" in cached ? cached.targetColor : null)),
-        // Inbox for a TbSync 4 import, and nothing else. The importer puts
-        // that profile's pending edits here; the owning provider takes them
-        // into its own queue and empties this. Preserved across folder-list
-        // pushes so a re-push cannot drop an import nobody has claimed yet -
-        // and restored from the cache as well, so a folder the server
-        // stopped reporting and then reported again comes back with the
-        // import still claimable rather than silently emptied.
-        changelog:
-          prior?.changelog ??
-          (cached && Array.isArray(cached.changelog) ? cached.changelog : []),
+        // How many edits this folder is holding for the server, as its
+        // provider last reported. Preserved across pushes: a re-push is the
+        // provider re-describing the same folders, not edits being pushed.
+        localChanges: prior?.localChanges ?? 0,
         // This binding's generation - see the Sessions block above. Kept
-        // like the changelog: a re-push is the provider re-describing the
-        // same folders, not the user tearing one down.
+        // for the same reason: a re-push is not the user tearing a folder
+        // down.
         sessionId: prior?.sessionId ?? newSession(),
         // Opaque provider-owned blob. Preserved across pushes so a full
         // folder re-push doesn't wipe provider-local per-folder state.
@@ -233,19 +236,9 @@ export function replaceAccountFolders(accountId, incoming) {
           targetType: prior.targetType ?? null,
         });
       }
-      // An unclaimed v4 import inbox goes with the row otherwise. The
-      // comment above `changelog` promises a re-push cannot drop one, and
-      // that held only for folders the push still names: a folder the
-      // server has stopped reporting took its pending edits with it,
-      // unlogged. Carried in the same bag the colour and name ride in, so
-      // a folder that comes back is claimable again.
-      const strandedChangelog = Array.isArray(prior?.changelog)
-        ? prior.changelog
-        : [];
       if (!prior?.selected) continue;
       if (!cache) continue;
       const bag = { selected: true };
-      if (strandedChangelog.length) bag.changelog = strandedChangelog;
       if (typeof prior.targetName === "string" && prior.targetName !== "") {
         bag.targetName = prior.targetName;
       }
@@ -277,8 +270,8 @@ export function replaceAccountFolders(accountId, incoming) {
  *  That is the whole point: a caller that read the row, built the merged
  *  `custom` itself and passed it in would be merging against a snapshot
  *  taken before the lock, so a concurrent patch landing in between would
- *  be overwritten wholesale. `custom.pendingUserChanges` is written from
- *  exactly such a path, on every recorded edit. */
+ *  be overwritten wholesale. A provider's per-folder sync state is written
+ *  from exactly such a path, on every sync. */
 export function update(accountId, folderId, patch) {
   return serialize(async () => {
     const state = await read();
@@ -322,6 +315,7 @@ export async function clearTarget(accountId, folderId) {
     targetID: null,
     targetName: null,
     selected: false,
+    localChanges: 0,
     sessionId: newSession(),
   });
   return true;

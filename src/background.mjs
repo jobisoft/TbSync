@@ -242,9 +242,6 @@ router.setProviderRpcHandler(
     if (!existing) {
       throw withCode(new Error("unknown folder"), ERR.UNKNOWN_FOLDER);
     }
-    // `changelog` is writable only so a provider can empty the import
-    // inbox once it has taken the contents - see the field's notes in
-    // protocol.mjs. Nothing else on the host writes it.
     const allowed = [
       "displayName",
       "targetType",
@@ -252,7 +249,7 @@ router.setProviderRpcHandler(
       "targetID",
       "targetName",
       "targetColor",
-      "changelog",
+      "localChanges",
     ];
     const clean = {};
     for (const key of allowed)
@@ -979,7 +976,7 @@ ui.setManagerRpcHandler(
             lastSyncTime: 0,
             warning: null,
             error: null,
-            changelog: [],
+            localChanges: 0,
             sessionId: folders.newSession(),
           };
       await folders.update(accountId, folderId, patch);

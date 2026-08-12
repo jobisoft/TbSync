@@ -70,10 +70,10 @@ save, so the record must not depend on the host being alive.</p>
 
 <p><strong>Address books: the host.</strong> There is no equivalent API —
 <code>addressBooks.provider</code> offers only
-<code>onSearchRequest</code> — so the host observes book events itself and
-keeps those entries in <code>folder.changelog</code>. It pre-tags its own
-writes (<code>*_by_server</code>) so its observer can tell them from the
-user's. That machinery — the ghost gate for Thunderbird's usage-tracking
+<code>onSearchRequest</code> — so a book has to be watched rather than served,
+and the observer keeps those entries in the provider's own queue. It pre-tags
+its own writes (<code>*_by_server</code>) so the observer can tell them from
+the user's. That machinery — the ghost gate for Thunderbird's usage-tracking
 updates, the contact hashes, the list-by-name pre-tag — is better in one
 place than vendored into every provider.</p>
 
@@ -83,13 +83,14 @@ place than vendored into every provider.</p>
       a rename, and clearing the binding when the user deletes a calendar,
       are the provider's work — reported with
       <code>FOLDER_TARGET_REMOVED</code>.</li>
-  <li><code>folder.changelog</code> stays empty for a provider-owned folder.
+  <li>The folder row carries no queue of its own.
       <code>HOST_CMD.GET_CHANGELOG</code> is how anything reads those
       queues.</li>
-  <li>The needs-sync badge is driven by
-      <code>folder.custom.pendingUserChanges</code>, which the provider keeps
-      roughly current. It is best-effort by design: a stale count shows or
-      hides a dot, and nothing reads it to decide what to sync.</li>
+  <li>The needs-sync badge is driven by <code>folder.localChanges</code>, a
+      count the provider keeps roughly current — written when it queues an
+      edit and again when a sync finishes. It is best-effort by design: a
+      stale count shows or hides a dot, and nothing reads it to decide what
+      to sync.</li>
   <li>The rule is the folder's <code>targetType</code>, so it holds only
       while every provider that syncs calendars supplies its own type.</li>
 </ul>

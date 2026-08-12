@@ -241,12 +241,12 @@ async function migrateFolders(legacyFolders68) {
         // state, never `custom.target`.
         targetID: legacyRow.target ? String(legacyRow.target) : null,
         targetName: legacyRow.targetName ? String(legacyRow.targetName) : null,
-        // Host-owned per-folder import inbox, and empty for an imported
-        // folder: the legacy add-on's pending edits are not carried over.
-        // They name items in local resources this version will not sync and
-        // that reconnecting replaces wholesale, so keeping them would only
-        // queue pushes against copies that no longer exist.
-        changelog: [],
+        // Nothing is owed to the server yet: the legacy add-on's pending
+        // edits are not carried over. They name items in local resources
+        // this version will not sync and that reconnecting replaces
+        // wholesale, so keeping them would only queue pushes against
+        // copies that no longer exist.
+        localChanges: 0,
         custom,
       };
       count++;

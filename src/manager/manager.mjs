@@ -13,6 +13,7 @@ import {
 import { accountIconUrl, providerIconUrl } from "../modules/account-icons.mjs";
 import { isBetaBuild } from "../modules/channel.mjs";
 import { FOLDER_TYPES } from "../modules/folder-types.mjs";
+import { hasLocalChanges } from "../modules/folders.mjs";
 import { createManagerClient } from "../modules/manager-client.mjs";
 import { EVENT_LOG_MAX, KEYS } from "../modules/storage-keys.mjs";
 import { localizeDocument } from "../vendor/i18n/i18n.mjs";
@@ -257,19 +258,6 @@ function messageText(msg) {
   );
 }
 
-/** True iff the folder's changelog has any user-authored entries waiting
- *  to be pushed on the next sync. Server pre-tag entries don't count. */
-function hasPendingUserEntries(folder) {
-  const log = folder?.changelog;
-  if (!Array.isArray(log) || log.length === 0) return false;
-  return log.some(
-    (e) =>
-      e.status === "added_by_user" ||
-      e.status === "modified_by_user" ||
-      e.status === "deleted_by_user",
-  );
-}
-
 /** Derive the account-level status name (one of the keys in
  *  `STATUS_ICON_FILE`) appropriate for this folder, so the per-folder
  *  status icon can reuse `statusIconEl` and look identical to the
@@ -281,12 +269,8 @@ function hasPendingUserEntries(folder) {
 function folderResultStatus(f) {
   if (isCurrentlySyncing(f)) return "syncing";
   if (!f.selected) return null;
-  if (
-    !state.transient.syncingAccounts.has(f.accountId) &&
-    hasPendingUserEntries(f)
-  ) {
+  if (!state.transient.syncingAccounts.has(f.accountId) && hasLocalChanges(f))
     return "needs-sync";
-  }
   switch (f.status) {
     case "pending":
       return state.transient.syncingAccounts.has(f.accountId)
@@ -338,8 +322,8 @@ function syncRowText(f) {
 }
 
 /** Up to two stacked entries for the message row: an informational
- *  "Local modifications" line when the changelog carries user-authored
- *  entries, and the highest-priority post-sync outcome (error /
+ *  "Local modifications" line when the folder is holding edits for the
+ *  server, and the highest-priority post-sync outcome (error /
  *  warning / aborted) when applicable. Returns an empty array while
  *  the account is mid-sync (the sync-progress sub-row owns the cell)
  *  or when there's nothing to show. */
@@ -350,7 +334,7 @@ function row2Messages(f) {
   // guard `folderResultStatus` uses to suppress the needs-sync icon.
   if (state.transient.syncingAccounts.has(f.accountId)) return [];
   const out = [];
-  if (hasPendingUserEntries(f)) {
+  if (hasLocalChanges(f)) {
     out.push({
       text: i18n("folder.status.modified", "Local modifications"),
       severity: "info",
@@ -496,10 +480,10 @@ function deriveAccountResultStatus(acc) {
   const selected = folderList.filter((f) => f.selected);
   if (acc.error || selected.some((f) => f.error)) return "error";
   if (selected.some((f) => f.warning)) return "warning";
-  // Local edits made since the last sync - at least one folder carries
-  // a `_by_user` changelog entry waiting to be pushed. Computed
-  // host-side and surfaced via `acc.needsSync` so the sidebar shows the
-  // right icon for every account, not just the selected one.
+  // Local edits made since the last sync - at least one folder reports a
+  // non-zero `localChanges`. Computed host-side and surfaced via
+  // `acc.needsSync` so the sidebar shows the right icon for every
+  // account, not just the selected one.
   if (acc.needsSync) return "needs-sync";
   if (selected.length === 0) return "notsyncronized";
   if (selected.some((f) => !f.lastSyncTime)) return "notsyncronized";

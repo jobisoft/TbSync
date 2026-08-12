@@ -166,10 +166,10 @@ export const HOST_CMD = {
   /** `{ accountId, folderId }` → the provider's own pending change queue
    *  for that folder, as changelog rows, or `null` if it keeps none.
    *
-   *  The read side of a provider's queue, and the only one: the folder
-   *  row's `changelog` is an import inbox, not a record of what is pending.
-   *  The host needs this for diagnostics and the bridge's test suites read
-   *  it after every sync. A provider that keeps no queue answers `null`.
+   *  The read side of a provider's queue, and the only one - the folder
+   *  row carries a count (`localChanges`) and nothing more. The host needs
+   *  this for diagnostics and the bridge's test suites read it after every
+   *  sync. A provider that keeps no queue answers `null`.
    *
    *  Read-only: answering must not consume, re-order, or repair anything. */
   GET_CHANGELOG: "getChangelog",
@@ -220,7 +220,7 @@ export const HOST_CMD = {
  * Folder universal fields:
  *   folderId, accountId, targetType, displayName, selected, readOnly,
  *   downloadOnly, hidden, status, warning, error, lastSyncTime, orderIndex,
- *   targetID, targetName, targetColor, changelog, sessionId, custom
+ *   targetID, targetName, targetColor, localChanges, sessionId, custom
  *
  * `sessionId` names the current *binding* of this folder - one generation
  * of "this row, this local resource, this sync state". The host mints it,
@@ -244,12 +244,23 @@ export const HOST_CMD = {
  * A provider that ignores it would push edits belonging to a binding the
  * user has already thrown away.
  *
- * `changelog` is an inbox, not a queue. The host writes it in exactly one
- * situation - importing a TbSync 4 profile, whose pending edits have to
- * land somewhere - and a provider empties it (patch `changelog: []` via
- * UPDATE_FOLDER) once it has taken the contents into its own storage.
- * Nothing else writes it and it is empty in normal operation;
- * HOST_CMD.GET_CHANGELOG is how anyone reads what is actually pending.
+ * `localChanges` is how many edits this folder has waiting to be pushed:
+ * a count, provider-authored via UPDATE_FOLDER, host-read. The queue is the
+ * provider's and only the provider can count it, so the number comes to us.
+ *
+ * It drives one thing, the needs-sync badge and the manager lines that go
+ * with it, which is why it is allowed to be approximate - the alternative,
+ * asking every provider over RPC before painting an icon, costs more than a
+ * lagging dot is worth. Nothing reads it to decide what to sync.
+ *
+ * A provider writes it when it queues a user edit, and again when a sync run
+ * finishes - including a run that failed early, which still changed how much
+ * is waiting. A count that only ever went up would be worse than none.
+ *
+ * The host resets it to 0 when a binding ends, along with the rest of the
+ * folder's per-binding state, and ignores it on an unselected folder: that
+ * folder's resource is gone and its queue with it, so it owes nothing
+ * whatever it last reported.
  *
  * `readOnly` is server-announced (provider-authored from the server's ACL).
  * `downloadOnly` is the user override surfaced as the manager's ACL toggle;
@@ -301,13 +312,12 @@ export const HOST_CMD = {
  *
  * UPDATE_FOLDER { accountId, folderId, patch }
  *   → patches top-level writable fields (`displayName`, `targetType`,
- *   `readOnly`, `downloadOnly`, `targetID`, `targetName`, `changelog` -
- *   the last only to empty the import inbox described above) and shallow-merges
- *   `patch.custom` like UPDATE_ACCOUNT. `warning` / `error` / `lastSyncTime`
- *   / `status` are host-authored from the sync RPC outcome - see "Authoring"
- *   below. `downloadOnly` is also writable via the host's
- *   `setFolderDownloadOnly` manager RPC; providers don't normally set it
- *   themselves.
+ *   `readOnly`, `targetID`, `targetName`, `targetColor`, `localChanges`)
+ *   and shallow-merges `patch.custom` like UPDATE_ACCOUNT. `warning` /
+ *   `error` / `lastSyncTime` / `status` are host-authored from the sync RPC
+ *   outcome - see "Authoring" below. `downloadOnly` is the user's: it is
+ *   writable only through the host's own `setFolderDownloadOnly` manager
+ *   RPC, and a provider patching it here is ignored.
  *
  * PUSH_FOLDER_LIST { accountId, folders: [descriptor…] }
  *   → replaces the account's folder list. `selected`, `downloadOnly`,
