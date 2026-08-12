@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "A szolgáltató egyszeri műveletet hajt végre ezen a fiókon…"
   },
+  "account.status.setting-up": {
+    "message": "A fiók előkészítése folyamatban…"
+  },
   "account.status.legacy-locked": {
     "message": "Egy korábbi verzió állította be – a szinkronizáláshoz csatlakoztassa újra"
   },

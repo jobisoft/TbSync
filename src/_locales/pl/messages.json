@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Dostawca wykonuje jednorazową operację dla tego konta…"
   },
+  "account.status.setting-up": {
+    "message": "Przygotowywanie konta…"
+  },
   "account.status.legacy-locked": {
     "message": "Skonfigurowane przez starszą wersję – połącz ponownie, aby synchronizować"
   },

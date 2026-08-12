@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Pakkuja teeb sellele kontole ühekordset tööd…"
   },
+  "account.status.setting-up": {
+    "message": "Kontot valmistatakse ette…"
+  },
   "account.status.legacy-locked": {
     "message": "Seadistatud vanema versiooniga – sünkroonimiseks ühendage uuesti"
   },

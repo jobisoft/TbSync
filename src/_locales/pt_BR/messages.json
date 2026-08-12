@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "O provedor está executando uma operação única nesta conta…"
   },
+  "account.status.setting-up": {
+    "message": "Preparando a conta…"
+  },
   "account.status.legacy-locked": {
     "message": "Configurada por uma versão anterior - reconecte para sincronizar"
   },

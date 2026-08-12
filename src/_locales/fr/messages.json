@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Le fournisseur effectue une opération ponctuelle sur ce compte…"
   },
+  "account.status.setting-up": {
+    "message": "Préparation du compte…"
+  },
   "account.status.legacy-locked": {
     "message": "Configuré par une version plus ancienne - reconnectez-le pour synchroniser"
   },

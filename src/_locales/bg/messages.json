@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Доставчикът извършва еднократна операция за този профил…"
   },
+  "account.status.setting-up": {
+    "message": "Профилът се подготвя…"
+  },
   "account.status.legacy-locked": {
     "message": "Настроен от по-стара версия – свържете отново за синхронизиране"
   },

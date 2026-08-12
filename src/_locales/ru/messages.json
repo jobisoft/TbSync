@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Провайдер выполняет одноразовую операцию для этой учётной записи…"
   },
+  "account.status.setting-up": {
+    "message": "Учётная запись подготавливается…"
+  },
   "account.status.legacy-locked": {
     "message": "Настроена в более старой версии — переподключите для синхронизации"
   },

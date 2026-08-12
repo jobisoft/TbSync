@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Furnizorul efectuează o operațiune unică pentru acest cont…"
   },
+  "account.status.setting-up": {
+    "message": "Contul este în curs de pregătire…"
+  },
   "account.status.legacy-locked": {
     "message": "Configurat de o versiune mai veche - reconectați-l pentru sincronizare"
   },

@@ -3,7 +3,7 @@ import * as eventLog from "./event-log.mjs";
 import * as providers from "./providers.mjs";
 import * as accounts from "./accounts.mjs";
 import * as ui from "./messaging-ui.mjs";
-import { upgradeAccounts } from "./transient.mjs";
+import { settingUpAccounts, upgradeAccounts } from "./transient.mjs";
 
 /**
  * Provider discovery and lifecycle.
@@ -192,11 +192,13 @@ async function broadcastHostReady() {
 async function handleUnannounce(providerId, closePortToProvider) {
   closePortToProvider(providerId);
   await providers.remove(providerId);
-  // Release any upgrade lock the provider was holding - without this, an
-  // extension that crashes mid-upgrade would leave its accounts stuck in
-  // the "upgrading" state across restarts of the host.
+  // Release any lock the provider was holding - without this, an extension
+  // that crashes mid-upgrade would leave its accounts stuck in the
+  // "upgrading" state, and one that crashes while preparing a new account
+  // would leave that account stuck being set up.
   for (const acc of await accounts.byProvider(providerId)) {
     upgradeAccounts.delete(acc.accountId);
+    settingUpAccounts.delete(acc.accountId);
   }
   // Accounts are NOT otherwise mutated here: account.enabled reflects user
   // intent and account.status reflects last-known sync outcome, both of

@@ -376,7 +376,31 @@ export const PROVIDER_CMD = {
   // user-initiated RPC and skips autosync ticks. Used by the provider's
   // one-shot upgrade runner so user-visible actions don't race with
   // upgrade work. Args: { locked: boolean }.
+  //
+  // Provider-scoped is the point, and also the limit: it is for work that
+  // spans the provider's accounts. Work on ONE account - preparing a newly
+  // registered one, most of all - takes SET_ACCOUNT_SETUP_LOCK instead, or
+  // it freezes every other account of that provider behind it.
   SET_PROVIDER_UPGRADE_LOCK: "setProviderUpgradeLock",
+  /** `{ accountId, locked }` - this one account is being prepared and is
+   *  not usable yet.
+   *
+   *  Registering an account and having a working account are not the same
+   *  moment: the row exists, the manager is already showing it, and the
+   *  provider still has to ask the server what it supports before anything
+   *  can be connected. While locked the host refuses to sync it and the
+   *  manager says so, so the user cannot start something that would race
+   *  that work.
+   *
+   *  Providers do not call this: `provider.mjs` holds it across
+   *  `onRegisterSuccessful` for every provider, since every provider has
+   *  the same gap. It is here because the host owns account state, not
+   *  because a provider is expected to reach for it.
+   *
+   *  The mark is in-memory, so a host restart clears it. A provider that
+   *  dies mid-setup therefore costs a restart, never a permanently stuck
+   *  account. */
+  SET_ACCOUNT_SETUP_LOCK: "setAccountSetupLock",
   // Clears `legacyMigrationPending` for one account. Args: { accountId }.
   // The host sets that flag on every row its legacy importer produces and
   // treats a flagged account as unserviceable; this is the only way to

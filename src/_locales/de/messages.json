@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Anbieter führt einmalige Arbeiten an diesem Konto durch…"
   },
+  "account.status.setting-up": {
+    "message": "Konto wird vorbereitet…"
+  },
   "account.status.legacy-locked": {
     "message": "Von einer älteren Version eingerichtet – zum Synchronisieren neu verbinden"
   },

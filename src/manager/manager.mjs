@@ -116,6 +116,7 @@ const state = {
     busyAccounts: new Set(),
     busyFolders: new Set(),
     upgradeAccounts: new Set(),
+    settingUpAccounts: new Set(),
   },
 };
 
@@ -198,6 +199,9 @@ async function refreshState() {
   state.transient.busyAccounts = new Set(s.transient?.busyAccounts ?? []);
   state.transient.busyFolders = new Set(s.transient?.busyFolders ?? []);
   state.transient.upgradeAccounts = new Set(s.transient?.upgradeAccounts ?? []);
+  state.transient.settingUpAccounts = new Set(
+    s.transient?.settingUpAccounts ?? [],
+  );
 
   // Wipe stale per-folder sync cache when an account toggles in or out of
   // syncing. On entry: clear leftovers from the previous run that
@@ -376,6 +380,11 @@ function effectiveAccountState(acc) {
   // Highest priority because no other action can run while it's set.
   if (state.transient.upgradeAccounts.has(acc.accountId))
     return { status: "upgrading", interactive: false };
+  // Registered but not finished being prepared. Same treatment, different
+  // words: nothing has gone wrong and nothing needs doing, the account is
+  // simply not ready yet.
+  if (state.transient.settingUpAccounts.has(acc.accountId))
+    return { status: "setting-up", interactive: false };
   if (state.transient.syncingAccounts.has(acc.accountId))
     return { status: "syncing", interactive: false };
   // Transient-busy locks interactive UI (buttons) while a UI-initiated RPC
@@ -405,6 +414,7 @@ function statusSlot(acc, eff) {
     "notsyncronized",
     "needs-sync",
     "upgrading",
+    "setting-up",
     "legacy-locked",
   ]);
   if (labelStates.has(eff.status)) {
@@ -436,13 +446,17 @@ function accountActions(acc) {
   const provider = state.providers.find((p) => p.providerId === acc.provider);
   const providerActive = provider?.state === "active";
   const upgrading = state.transient.upgradeAccounts.has(acc.accountId);
+  // Being prepared after registration. Locked like an upgrade and not like
+  // a teardown: nothing about the account is settled yet, so connecting or
+  // editing it is as premature as syncing it.
+  const settingUp = state.transient.settingUpAccounts.has(acc.accountId);
   const syncing = state.transient.syncingAccounts.has(acc.accountId);
   const busy = state.transient.busyAccounts.has(acc.accountId);
   // Deliberately not folded into `transientLocked` below: that gates five
   // other affordances, and whether a teardown should refuse all of them is
   // a separate question from whether Sync would do anything.
   const cancelling = state.transient.cancellingAccounts.has(acc.accountId);
-  const transientLocked = upgrading || syncing || busy;
+  const transientLocked = upgrading || settingUp || syncing || busy;
   const isReauth = acc.error === "E:AUTH";
   const reauthOpen = state.reauthsOpen.has(acc.accountId);
   const configOpen = state.configsOpen.has(acc.accountId);
@@ -1105,6 +1119,7 @@ const STATUS_ICON_FILE = {
   "needs-sync": "status-info16.png",
   syncing: "status-sync16.png",
   upgrading: "spinner.gif",
+  "setting-up": "spinner.gif",
   "legacy-locked": "status-error16.png",
 };
 

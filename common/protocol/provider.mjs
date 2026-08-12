@@ -478,16 +478,39 @@ export class TbSyncProviderImplementation {
 
     // Give the subclass a chance to do any post-register bookkeeping
     // (e.g. seed an in-memory cache keyed by accountId).
-    await this.onRegisterSuccessful({
-      accountId,
-      accountName,
-    });
+    //
+    // Held under the setup lock for every provider, because every provider
+    // has the same gap: the row exists and the manager is already showing
+    // it, while the work that makes the account usable has not run. The
+    // lock names that one account - a provider-wide one would freeze the
+    // provider's other accounts behind a new account's first server call.
+    //
+    // Best-effort on both ends. A host that does not know the verb is one
+    // that never locked anything here anyway, so the only thing lost is the
+    // "not ready" state; failing setup over it would be worse.
+    await this.#setAccountSetupLock(accountId, true);
+    try {
+      await this.onRegisterSuccessful({
+        accountId,
+        accountName,
+      });
+    } finally {
+      await this.#setAccountSetupLock(accountId, false);
+    }
 
     return { accountId, accountName };
   }
 
+  #setAccountSetupLock(accountId, locked) {
+    return this.#sendCmd(PROVIDER_CMD.SET_ACCOUNT_SETUP_LOCK, {
+      accountId,
+      locked,
+    }).catch(() => {});
+  }
+
   /** Called after registerAccount returns so a subclass can do any
-   *  post-register bookkeeping. Return value is discarded. */
+   *  post-register bookkeeping, with the account held "being prepared" for
+   *  the duration. Return value is discarded. */
   async onRegisterSuccessful(_args) {
     return null;
   }

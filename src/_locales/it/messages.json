@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Il provider sta eseguendo un'operazione una tantum su questo account…"
   },
+  "account.status.setting-up": {
+    "message": "Preparazione dell'account…"
+  },
   "account.status.legacy-locked": {
     "message": "Configurato da una versione precedente: riconnettilo per sincronizzare"
   },

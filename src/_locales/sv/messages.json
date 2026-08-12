@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Leverantören utför ett engångsarbete på detta konto…"
   },
+  "account.status.setting-up": {
+    "message": "Kontot förbereds…"
+  },
   "account.status.legacy-locked": {
     "message": "Konfigurerat av en äldre version – återanslut för att synkronisera"
   },

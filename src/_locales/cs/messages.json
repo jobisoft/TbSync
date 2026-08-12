@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "Poskytovatel provádí jednorázovou operaci na tomto účtu…"
   },
+  "account.status.setting-up": {
+    "message": "Účet se připravuje…"
+  },
   "account.status.legacy-locked": {
     "message": "Nastaveno starší verzí – pro synchronizaci znovu připojte"
   },

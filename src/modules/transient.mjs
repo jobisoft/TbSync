@@ -44,6 +44,16 @@ export const pendingSyncRequests = new Map();
  *  registry.mjs handleUnannounce). */
 export const upgradeAccounts = new Set();
 
+/** Accounts that have been registered but are not ready to be used, held
+ *  here across `onRegisterSuccessful` - see SET_ACCOUNT_SETUP_LOCK. One
+ *  account, not the provider's whole set: preparing a new account must not
+ *  freeze the ones already working.
+ *
+ *  In memory on purpose. A provider that dies mid-setup leaves a mark that
+ *  the next host start drops, which is the right trade against a flag on
+ *  disk that could strand an account for good. */
+export const settingUpAccounts = new Set();
+
 /** Serialise the sets for inclusion in the `getState` RPC reply. */
 export function snapshot() {
   return {
@@ -52,6 +62,7 @@ export function snapshot() {
     busyAccounts: [...busyAccounts],
     busyFolders: [...busyFolders],
     upgradeAccounts: [...upgradeAccounts],
+    settingUpAccounts: [...settingUpAccounts],
     pendingSyncRequests: Object.fromEntries(
       [...pendingSyncRequests].map(([accountId, folderIds]) => [
         accountId,

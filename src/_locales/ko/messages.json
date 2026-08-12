@@ -272,6 +272,9 @@
   "account.status.upgrading": {
     "message": "공급자가 이 계정에 대해 일회성 작업을 수행하는 중입니다…"
   },
+  "account.status.setting-up": {
+    "message": "계정을 준비하는 중입니다…"
+  },
   "account.status.legacy-locked": {
     "message": "이전 버전에서 설정됨 - 동기화하려면 다시 연결하세요"
   },

@@ -22,6 +22,7 @@ import * as actionMenu from "./modules/action-menu.mjs";
 import {
   busyAccounts,
   busyFolders,
+  settingUpAccounts,
   upgradeAccounts,
   snapshot as transientSnapshot,
 } from "./modules/transient.mjs";
@@ -418,6 +419,21 @@ router.setProviderRpcHandler(
   },
 );
 
+router.setProviderRpcHandler(
+  PROVIDER_CMD.SET_ACCOUNT_SETUP_LOCK,
+  async (providerId, args) => {
+    const { accountId } = args ?? {};
+    const acc = await accounts.get(accountId);
+    if (!acc || acc.provider !== providerId) {
+      throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
+    }
+    if (args?.locked) settingUpAccounts.add(accountId);
+    else settingUpAccounts.delete(accountId);
+    ui.broadcast({ type: "accounts-changed", accountId });
+    return null;
+  },
+);
+
 /**
  * Mark resources a provider can no longer sync, so they stop looking like
  * working ones.
@@ -493,13 +509,23 @@ router.setProviderRpcHandler(
   },
 );
 
-/** Reject an account-scoped UI RPC if the provider has the account
- *  locked for an upgrade. Throws with ERR.PROVIDER_UNAVAILABLE so the
- *  manager surfaces it the same way it surfaces a missing provider. */
-function assertNotUpgrading(accountId) {
+/** Reject an account-scoped UI RPC while the provider is working on the
+ *  account and it is not usable: an upgrade run, or the preparation that
+ *  follows registering it. Throws with ERR.PROVIDER_UNAVAILABLE so the
+ *  manager surfaces it the same way it surfaces a missing provider.
+ *
+ *  Named for what it asserts rather than for one of the two states it
+ *  refuses on, so the next state to join them does not make it a lie. */
+function assertAccountReady(accountId) {
   if (upgradeAccounts.has(accountId)) {
     throw withCode(
       new Error("Account is being upgraded"),
+      ERR.PROVIDER_UNAVAILABLE,
+    );
+  }
+  if (settingUpAccounts.has(accountId)) {
+    throw withCode(
+      new Error("Account is still being set up"),
       ERR.PROVIDER_UNAVAILABLE,
     );
   }
@@ -595,7 +621,7 @@ ui.setManagerRpcHandler("setLogLevel", async ({ level }) => {
 ui.setManagerRpcHandler("syncAccount", async ({ accountId }) => {
   const acc = await accounts.get(accountId);
   if (!acc) throw new Error("unknown account");
-  assertNotUpgrading(accountId);
+  assertAccountReady(accountId);
   if (!router.isProviderConnected(acc.provider)) {
     throw withCode(
       new Error("Provider not available"),
@@ -614,7 +640,7 @@ ui.setManagerRpcHandler(
   async ({ accountId, minutes }) => {
     const acc = await accounts.get(accountId);
     if (!acc) throw new Error("unknown account");
-    assertNotUpgrading(accountId);
+    assertAccountReady(accountId);
     const normalized = Math.max(0, Math.floor(Number(minutes) || 0));
     await accounts.update(accountId, { autoSyncIntervalMinutes: normalized });
     ui.broadcast({ type: "accounts-changed", accountId });
@@ -673,7 +699,7 @@ ui.setManagerRpcHandler("focusAccountPopup", async ({ accountId }) => {
 ui.setManagerRpcHandler("editAccount", async ({ accountId }) => {
   const acc = await accounts.get(accountId);
   if (!acc) throw new Error("unknown account");
-  assertNotUpgrading(accountId);
+  assertAccountReady(accountId);
   if (!router.isProviderConnected(acc.provider)) {
     throw withCode(
       new Error("Provider not available"),
@@ -694,7 +720,7 @@ ui.setManagerRpcHandler("editAccount", async ({ accountId }) => {
 ui.setManagerRpcHandler("authenticateAccount", async ({ accountId }) => {
   const acc = await accounts.get(accountId);
   if (!acc) throw new Error("unknown account");
-  assertNotUpgrading(accountId);
+  assertAccountReady(accountId);
   if (!router.isProviderConnected(acc.provider)) {
     throw withCode(
       new Error("Provider not available"),
@@ -831,7 +857,7 @@ ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
   // each folder's binding by minting a new session, which is what makes
   // whatever the provider still holds unclaimed. It is told if it is
   // listening, and finds out by not finding its session if it is not.
-  if (enabled) assertNotUpgrading(accountId);
+  if (enabled) assertAccountReady(accountId);
   if (enabled && !router.isProviderConnected(acc.provider)) {
     throw withCode(
       new Error("Provider not available"),
@@ -914,7 +940,7 @@ ui.setManagerRpcHandler(
     // meaningful when `readOnly` is false.
     const acc = await accounts.get(accountId);
     if (!acc) throw new Error("unknown account");
-    assertNotUpgrading(accountId);
+    assertAccountReady(accountId);
     const folder = await folders.get(accountId, folderId);
     if (!folder) throw new Error("unknown folder");
     if (folder.readOnly) {
@@ -934,7 +960,7 @@ ui.setManagerRpcHandler(
   async ({ accountId, folderId, selected }) => {
     const acc = await accounts.get(accountId);
     if (!acc) throw new Error("unknown account");
-    assertNotUpgrading(accountId);
+    assertAccountReady(accountId);
     if (!router.isProviderConnected(acc.provider)) {
       throw withCode(
         new Error("Provider not available"),
@@ -1073,7 +1099,7 @@ await ensureSchema();
 // Block every account the legacy importer left half-converted, before any
 // provider can announce itself. `ensureSchema` is where the import runs, so
 // rows it just produced are already readable here, and seeding the same set
-// the upgrade lock uses means the existing gates - `assertNotUpgrading`, the
+// the upgrade lock uses means the existing gates - `assertAccountReady`, the
 // autosync tick, the action menu, the manager's "upgrading" row - all cover
 // this case without knowing about it. Sequencing this ahead of
 // `registry.init` is what closes the window: no port can open, so no sync

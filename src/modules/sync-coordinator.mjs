@@ -10,6 +10,7 @@ import {
   cancellingAccounts,
   busyFolders,
   pendingSyncRequests,
+  settingUpAccounts,
 } from "./transient.mjs";
 
 /** Drive an account sync over the port: syncAccount, then syncFolder per
@@ -163,6 +164,9 @@ export async function syncAccount(
   // Mid-abort: the account is on its way out, and starting here would race
   // the teardown for the same targets.
   if (cancellingAccounts.has(accountId)) return;
+  // Registered but not prepared yet - the provider is still finding out
+  // what the server supports, and a sync now would run on guesses.
+  if (settingUpAccounts.has(accountId)) return;
   const acc = await accounts.get(accountId);
   if (!acc || !acc.enabled) return;
   // An account whose credentials the server rejected stays enabled, so

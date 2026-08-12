@@ -24,6 +24,7 @@ import * as router from "./router.mjs";
 import * as ui from "./messaging-ui.mjs";
 import {
   cancellingAccounts,
+  settingUpAccounts,
   syncingAccounts,
   upgradeAccounts,
 } from "./transient.mjs";
@@ -118,6 +119,8 @@ function statusSuffix({ syncing, error, needsSync, canSync }) {
 function canSync(acc) {
   if (!acc.enabled) return false;
   if (upgradeAccounts.has(acc.accountId)) return false;
+  // Registered, not prepared yet - see SET_ACCOUNT_SETUP_LOCK.
+  if (settingUpAccounts.has(acc.accountId)) return false;
   if (syncingAccounts.has(acc.accountId)) return false;
   // Being torn down. The mark outlives `syncingAccounts` on purpose - see
   // `endAccountCancel` - so this is a window the check above does not cover.
