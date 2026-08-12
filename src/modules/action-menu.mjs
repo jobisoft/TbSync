@@ -22,7 +22,11 @@ import * as folders from "./folders.mjs";
 import * as providers from "./providers.mjs";
 import * as router from "./router.mjs";
 import * as ui from "./messaging-ui.mjs";
-import { syncingAccounts, upgradeAccounts } from "./transient.mjs";
+import {
+  cancellingAccounts,
+  syncingAccounts,
+  upgradeAccounts,
+} from "./transient.mjs";
 import { syncAccount } from "./sync-coordinator.mjs";
 
 const PARENT_ID = "tbsync-sync-now";
@@ -115,6 +119,9 @@ function canSync(acc) {
   if (!acc.enabled) return false;
   if (upgradeAccounts.has(acc.accountId)) return false;
   if (syncingAccounts.has(acc.accountId)) return false;
+  // Being torn down. The mark outlives `syncingAccounts` on purpose - see
+  // `endAccountCancel` - so this is a window the check above does not cover.
+  if (cancellingAccounts.has(acc.accountId)) return false;
   if (acc.error === "E:AUTH") return false;
   // Set up by a version before 5.2.2 and not reconnected since. syncAccount
   // refuses these, and silently, so an entry offered here would be a click

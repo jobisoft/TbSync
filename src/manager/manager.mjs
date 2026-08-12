@@ -112,6 +112,7 @@ const state = {
   // Host-derived transient sets, snapshotted per getState call.
   transient: {
     syncingAccounts: new Set(),
+    cancellingAccounts: new Set(),
     busyAccounts: new Set(),
     busyFolders: new Set(),
     upgradeAccounts: new Set(),
@@ -191,6 +192,9 @@ async function refreshState() {
   state.settings = s.settings ?? state.settings;
   const prevSyncing = state.transient.syncingAccounts;
   state.transient.syncingAccounts = new Set(s.transient?.syncingAccounts ?? []);
+  state.transient.cancellingAccounts = new Set(
+    s.transient?.cancellingAccounts ?? [],
+  );
   state.transient.busyAccounts = new Set(s.transient?.busyAccounts ?? []);
   state.transient.busyFolders = new Set(s.transient?.busyFolders ?? []);
   state.transient.upgradeAccounts = new Set(s.transient?.upgradeAccounts ?? []);
@@ -434,6 +438,10 @@ function accountActions(acc) {
   const upgrading = state.transient.upgradeAccounts.has(acc.accountId);
   const syncing = state.transient.syncingAccounts.has(acc.accountId);
   const busy = state.transient.busyAccounts.has(acc.accountId);
+  // Deliberately not folded into `transientLocked` below: that gates five
+  // other affordances, and whether a teardown should refuse all of them is
+  // a separate question from whether Sync would do anything.
+  const cancelling = state.transient.cancellingAccounts.has(acc.accountId);
   const transientLocked = upgrading || syncing || busy;
   const isReauth = acc.error === "E:AUTH";
   const reauthOpen = state.reauthsOpen.has(acc.accountId);
@@ -449,10 +457,16 @@ function accountActions(acc) {
 
   return {
     canRemove,
-    // `legacyImported` holds syncing back the same way a rejected credential
-    // does - the host refuses it in `syncAccount`, so offering the button
-    // would only produce a silent no-op.
-    canSync: baseEnabled && !!acc.enabled && !isReauth && !acc.legacyImported,
+    // Mirrors what `syncAccount` refuses on. `legacyImported` and a running
+    // teardown both hold syncing back the same way a rejected credential
+    // does, and the host refuses all three silently, so offering the button
+    // would only produce a click with no effect and no explanation.
+    canSync:
+      baseEnabled &&
+      !!acc.enabled &&
+      !isReauth &&
+      !acc.legacyImported &&
+      !cancelling,
     // Connecting and disconnecting stay available while authentication is
     // outstanding - only syncing is held back. The account is left connected
     // now, so Disconnect is the way to put it aside without deleting it, and
