@@ -109,7 +109,10 @@ const UNRESTRICTED_KEY = "tbsync-bridge-unrestricted";
  * another name; those go through `ui.invokeRpc`.
  */
 const COMMANDS = {
-  getState: {},
+  getState: {
+    summary: "Accounts, providers, settings and the event log - everything the manager renders.",
+    args: "{}",
+  },
 
   /** Which Thunderbird this actually is - name, version, buildID - straight
    *  from `runtime.getBrowserInfo()`.
@@ -120,11 +123,22 @@ const COMMANDS = {
    *  wrong `omni.ja` then yields platform source that looks authoritative and
    *  is not. Unscoped: it says nothing about any account. */
   getBrowserInfo: {
+    summary: "Which Thunderbird this is: name, version, buildID.",
+    args: "{}",
     run: () => browser.runtime.getBrowserInfo(),
   },
-  getFolders: {},
-  setLogLevel: {},
-  clearEventLog: {},
+  getFolders: {
+    summary: "The folder rows of one account, as stored.",
+    args: "{ accountId }",
+  },
+  setLogLevel: {
+    summary: "Set the event log's capture threshold. 0 errors ... 3 debug.",
+    args: "{ level }",
+  },
+  clearEventLog: {
+    summary: "Empty the event log.",
+    args: "{}",
+  },
 
   /** What is still queued for a folder.
    *
@@ -138,6 +152,8 @@ const COMMANDS = {
    *  list by a provider that was not there: that turns the single most
    *  common breakage into a pass. */
   getChangelog: {
+    summary: "What a provider still has queued for a folder. Read-only.",
+    args: "{ accountId, folderId }",
     scope: "folder",
     async run({ folderId }, { accountId }) {
       const row = await folders.get(accountId, folderId);
@@ -167,6 +183,8 @@ const COMMANDS = {
    *  guessed from timestamps, and watching the wire is a tight loop rather
    *  than a repeated pull of the whole state. */
   getEventLog: {
+    summary: "Event-log entries, oldest first; `sinceSeq` reads only what is new.",
+    args: "{ sinceSeq? }",
     async run({ sinceSeq }) {
       const all = await eventLog.list();
       const from = Number.isFinite(sinceSeq) ? sinceSeq : -1;
@@ -189,6 +207,8 @@ const COMMANDS = {
    *  so the folder rows come back too - they are how you tell "synced
    *  cleanly" from "did nothing at all". */
   syncAccount: {
+    summary: "Sync one account and resolve when it has finished.",
+    args: "{ accountId }",
     scope: "account",
     async run({ accountId }) {
       const before = Date.now();
@@ -208,8 +228,16 @@ const COMMANDS = {
     },
   },
 
-  setFolderSelected: { scope: "folder" },
-  setAutoSyncInterval: { scope: "account" },
+  setFolderSelected: {
+    summary: "Enable or disable one folder. Disabling deletes its local resource.",
+    args: "{ accountId, folderId, selected }",
+    scope: "folder",
+  },
+  setAutoSyncInterval: {
+    summary: "Set an account's autosync interval in minutes. 0 disables it.",
+    args: "{ accountId, minutes }",
+    scope: "account",
+  },
 
   /** Connect or disconnect the granted account.
    *
@@ -218,7 +246,11 @@ const COMMANDS = {
    *  tears down the local resources. Scriptable because that path is worth
    *  testing - in particular that the account can be connected again
    *  afterwards, which is what says the sync lock is really gone. */
-  setAccountEnabled: { scope: "account" },
+  setAccountEnabled: {
+    summary: "Connect or disconnect an account. Disconnecting deletes its resources.",
+    args: "{ accountId, enabled }",
+    scope: "account",
+  },
 
   /** Thunderbird's own console, which the event log never sees. A platform
    *  error - a TypeError inside a calendar module, an iCal parse complaint,
@@ -230,9 +262,13 @@ const COMMANDS = {
    *  backlog on first use, so it also covers what happened before anyone
    *  thought to look. */
   getConsole: {
+    summary: "Browser-console messages captured for this profile.",
+    args: "{ sinceSeq? }",
     run: ({ sinceSeq }) => browser.tbsyncConsole.getMessages({ sinceSeq }),
   },
   clearConsole: {
+    summary: "Drop the captured console messages.",
+    args: "{}",
     run: () => browser.tbsyncConsole.clear(),
   },
 
@@ -246,6 +282,8 @@ const COMMANDS = {
    *  `initBackground` reconnects on restart and spawns a fresh helper, so
    *  poll /health rather than assuming the next request lands. */
   reloadHost: {
+    summary: "Reload TbSync itself. Needs a temporarily installed add-on.",
+    args: "{}",
     async run() {
       const { installType } = await browser.management.getSelf();
       if (installType !== "development") {
@@ -293,9 +331,13 @@ const COMMANDS = {
    * for. Beta-only, like everything in this file.
    */
   "storage.snapshot": {
+    summary: "The add-on's whole extension storage, verbatim.",
+    args: "{}",
     run: () => browser.storage.local.get(null),
   },
   "storage.clear": {
+    summary: "Erase the add-on's storage, keeping the bridge's own keys. Returns what it removed - snapshot to a file first.",
+    args: "{}",
     async run() {
       const all = await browser.storage.local.get(null);
       // Everything except the bridge's own two keys. Wiping those would
@@ -320,6 +362,8 @@ const COMMANDS = {
    *  test run can move between accounts without a human in the loop -
    *  which is the whole point, and why the mode is opt-in and loud. */
   setTarget: {
+    summary: "Re-point the bridge's grant. Needs unrestricted mode (Bridge tab).",
+    args: "{ accountId } | { exact }",
     async run({ accountId, exact }) {
       const rv = await browser.storage.local.get({
         [UNRESTRICTED_KEY]: false,
@@ -328,7 +372,7 @@ const COMMANDS = {
         throw withCode(
           new Error(
             "setTarget requires unrestricted mode - switch it on in " +
-              "TbSync's Bridge tab",
+              "TbSync's Bridge tab. `status` reports whether it is on.",
           ),
           "E:RESTRICTED",
         );
@@ -357,6 +401,8 @@ const COMMANDS = {
   },
 
   "storage.restore": {
+    summary: "Write a snapshot back. The bridge's own keys are never restored.",
+    args: "{ data }",
     async run({ data }) {
       if (!data || typeof data !== "object" || Array.isArray(data)) {
         throw new Error("storage.restore needs a `data` object");
@@ -388,6 +434,8 @@ const COMMANDS = {
    *  provider hands back what it removed, and that object is returned so
    *  the caller can save it to disk before going on. */
   "providerStorage.clear": {
+    summary: "Erase the owning provider's storage for the target account.",
+    args: "{ accountId }",
     scope: "account",
     async run(_args, { accountId }) {
       const rv = await browser.storage.local.get({
@@ -395,7 +443,10 @@ const COMMANDS = {
       });
       if (!rv[UNRESTRICTED_KEY]) {
         throw withCode(
-          new Error("providerStorage.clear requires unrestricted mode"),
+          new Error(
+            "providerStorage.clear requires unrestricted mode - switch it on in " +
+              "TbSync's Bridge tab. `status` reports whether it is on.",
+          ),
           "E:RESTRICTED",
         );
       }
@@ -416,6 +467,8 @@ const COMMANDS = {
   /** Companion writer to providerStorage.clear - same guard, relays
    *  test.setStorage with the given data object. */
   "providerStorage.set": {
+    summary: "Write keys into the owning provider's storage.",
+    args: "{ accountId, data }",
     scope: "account",
     async run({ data }, { accountId }) {
       const rv = await browser.storage.local.get({
@@ -423,7 +476,10 @@ const COMMANDS = {
       });
       if (!rv[UNRESTRICTED_KEY]) {
         throw withCode(
-          new Error("providerStorage.set requires unrestricted mode"),
+          new Error(
+            "providerStorage.set requires unrestricted mode - switch it on in " +
+              "TbSync's Bridge tab. `status` reports whether it is on.",
+          ),
           "E:RESTRICTED",
         );
       }
@@ -440,6 +496,8 @@ const COMMANDS = {
   },
 
   reloadProvider: {
+    summary: "Reload the provider that owns the target account.",
+    args: "{ accountId }",
     scope: "account",
     async run(_args, { accountId }) {
       const acc = await accounts.get(accountId);
@@ -460,6 +518,8 @@ const COMMANDS = {
    *  `calCachedCalendar.refresh()`, the same entry point the button and the
    *  platform's own refresh timer use. */
   "calendars.synchronize": {
+    summary: "Refresh the target calendar, as the Reload button does.",
+    args: "{ resource? }",
     scope: "calendar",
     run: (_args, { calendarId }) =>
       messenger.calendar.calendars.synchronize([calendarId]),
@@ -468,6 +528,8 @@ const COMMANDS = {
    *  the new name into its folder row, so it is the only way to drive that
    *  path from a script. */
   "calendars.rename": {
+    summary: "Rename the target calendar.",
+    args: "{ name, resource? }",
     scope: "calendar",
     run: ({ name }, { calendarId }) =>
       messenger.calendar.calendars.update(calendarId, { name }),
@@ -476,6 +538,8 @@ const COMMANDS = {
    *  does. The folder row is left pointing at it; the provider is expected to
    *  notice and clear the binding. */
   "calendars.remove": {
+    summary: "Delete the target calendar. The folder row is left pointing at it.",
+    args: "{ resource? }",
     scope: "calendar",
     run: (_args, { calendarId }) =>
       messenger.calendar.calendars.remove(calendarId),
@@ -488,6 +552,8 @@ const COMMANDS = {
    *  fills it only for the extension that owns the calendar type, and these
    *  calendars belong to the provider, not to TbSync. Read it provider-side. */
   "calendars.get": {
+    summary: "The target calendar as the platform sees it.",
+    args: "{ resource? }",
     scope: "calendar",
     run: (_args, { calendarId }) =>
       messenger.calendar.calendars.get(calendarId),
@@ -497,11 +563,15 @@ const COMMANDS = {
    *  folder row, so - like `calendars.rename` - it is the only way to drive
    *  that path from a script. */
   "calendars.setColor": {
+    summary: "Set the target calendar's colour.",
+    args: "{ color, resource? }",
     scope: "calendar",
     run: ({ color }, { calendarId }) =>
       messenger.calendar.calendars.update(calendarId, { color }),
   },
   "items.query": {
+    summary: "Items in the target calendar. Extra keys pass through to the platform query.",
+    args: "{ resource?, ... }",
     scope: "calendar",
     // `resource` is stripped: it picks which granted target to act on and is
     // meaningless to the platform, which rejects options it does not know.
@@ -513,11 +583,15 @@ const COMMANDS = {
       }),
   },
   "items.get": {
+    summary: "One item of the target calendar, as iCalendar.",
+    args: "{ id, resource? }",
     scope: "calendar",
     run: ({ id }, { calendarId }) =>
       messenger.calendar.items.get(calendarId, id, { returnFormat: "ical" }),
   },
   "items.create": {
+    summary: "Create an item from iCalendar text. `id` forces the item id.",
+    args: "{ ical, type?, id?, resource? }",
     scope: "calendar",
     run: ({ ical, type = "event", id }, { calendarId }) =>
       messenger.calendar.items.create(calendarId, {
@@ -529,6 +603,8 @@ const COMMANDS = {
       }),
   },
   "items.update": {
+    summary: "Replace an item with iCalendar text.",
+    args: "{ id, ical, resource? }",
     scope: "calendar",
     run: ({ id, ical }, { calendarId }) =>
       messenger.calendar.items.update(calendarId, id, {
@@ -538,6 +614,8 @@ const COMMANDS = {
       }),
   },
   "items.remove": {
+    summary: "Delete one item from the target calendar.",
+    args: "{ id, resource? }",
     scope: "calendar",
     run: ({ id }, { calendarId }) =>
       messenger.calendar.items.remove(calendarId, id),
@@ -562,10 +640,14 @@ const COMMANDS = {
    * be written down and compared literally.
    */
   "contacts.query": {
+    summary: "Every card in the target address book.",
+    args: "{}",
     scope: "book",
     run: (_args, { bookId }) => messenger.contacts.list(bookId),
   },
   "contacts.get": {
+    summary: "One card.",
+    args: "{ id }",
     scope: "book",
     run: ({ id }) => messenger.contacts.get(id),
   },
@@ -573,30 +655,42 @@ const COMMANDS = {
    *  predictable, which is what lets a caller assert on the changelog entry
    *  the create produces rather than hunting for it afterwards. */
   "contacts.create": {
+    summary: "Create a card from vCard text. `id` forces the card id.",
+    args: "{ vCard, id? }",
     scope: "book",
     run: ({ vCard, id }, { bookId }) =>
       messenger.contacts.create(bookId, id ?? null, { vCard }),
   },
   "contacts.update": {
+    summary: "Replace a card with vCard text.",
+    args: "{ id, vCard }",
     scope: "book",
     run: ({ id, vCard }) => messenger.contacts.update(id, { vCard }),
   },
   "contacts.remove": {
+    summary: "Delete one card.",
+    args: "{ id }",
     scope: "book",
     run: ({ id }) => messenger.contacts.delete(id),
   },
 
   "lists.query": {
+    summary: "Every mailing list in the target address book.",
+    args: "{}",
     scope: "book",
     run: (_args, { bookId }) => messenger.mailingLists.list(bookId),
   },
   "lists.get": {
+    summary: "One mailing list.",
+    args: "{ id }",
     scope: "book",
     run: ({ id }) => messenger.mailingLists.get(id),
   },
   /** A list is properties, not a vCard - the platform has no vCard
    *  representation for one. */
   "lists.create": {
+    summary: "Create a mailing list.",
+    args: "{ name, nickName?, description? }",
     scope: "book",
     run: ({ name, nickName, description }, { bookId }) =>
       messenger.mailingLists.create(bookId, {
@@ -606,27 +700,125 @@ const COMMANDS = {
       }),
   },
   "lists.update": {
+    summary: "Patch a mailing list's properties.",
+    args: "{ id, ... }",
     scope: "book",
     run: ({ id, ...properties }) =>
       messenger.mailingLists.update(id, properties),
   },
   "lists.remove": {
+    summary: "Delete one mailing list.",
+    args: "{ id }",
     scope: "book",
     run: ({ id }) => messenger.mailingLists.delete(id),
   },
   "lists.addMember": {
+    summary: "Put a card into a mailing list.",
+    args: "{ id, contactId }",
     scope: "book",
     run: ({ id, contactId }) => messenger.mailingLists.addMember(id, contactId),
   },
   "lists.removeMember": {
+    summary: "Take a card out of a mailing list.",
+    args: "{ id, contactId }",
     scope: "book",
     run: ({ id, contactId }) =>
       messenger.mailingLists.removeMember(id, contactId),
   },
   "lists.listMembers": {
+    summary: "The cards in a mailing list.",
+    args: "{ id }",
     scope: "book",
     run: ({ id }) => messenger.mailingLists.listMembers(id),
   },
+
+  /** What this bridge can do, read off the table above.
+   *
+   *  A projection, never a second copy: a verb added without a `summary`
+   *  still appears here, unexplained and visibly so, which is a prompt to
+   *  describe it. A hand-written list would instead go quietly out of date,
+   *  which is the failure mode of every stale doc there has ever been.
+   *
+   *  `help` alone lists everything; `help {verb}` answers for one. The
+   *  argument is `verb` and not `cmd` because `cmd` is what the client
+   *  takes positionally - `rpc("help", cmd=...)` collides with it. */
+  help: {
+    summary: "Every verb, its scope and its arguments. `help {verb}` for one.",
+    args: "{ verb? }",
+    run({ verb }) {
+      const describe = (name) => ({
+        cmd: name,
+        scope: COMMANDS[name].scope ?? null,
+        args: COMMANDS[name].args ?? null,
+        summary: COMMANDS[name].summary ?? null,
+      });
+      if (verb) {
+        if (!COMMANDS[verb]) throw new Error(`no such command: ${verb}`);
+        return describe(verb);
+      }
+      return {
+        scopes: SCOPE_HELP,
+        commands: Object.keys(COMMANDS).sort().map(describe),
+      };
+    },
+  },
+
+  /** Why a scoped verb would be refused right now, in one call.
+   *
+   *  The target is a stored account id plus folder ids, and every part of it
+   *  can go stale on its own: the account can be deleted, a folder
+   *  deselected, a resource unbound. Each produces a different refusal from
+   *  a different place, and answering "what is the bridge pointed at" by
+   *  dumping `storage.snapshot` and matching ids by eye is the archaeology
+   *  this verb exists to end. */
+  status: {
+    summary: "What the bridge is pointed at, and whether it still resolves.",
+    args: "{}",
+    async run() {
+      const target = await readTarget();
+      const rv = await browser.storage.local.get({ [UNRESTRICTED_KEY]: false });
+      const account = target.accountId
+        ? await accounts.get(target.accountId)
+        : null;
+      const resources = {};
+      for (const [kind, grant] of Object.entries(target.resources ?? {})) {
+        if (!grant?.folderId) continue;
+        const row = await folders.get(target.accountId, grant.folderId);
+        resources[kind] = {
+          folderId: grant.folderId,
+          folderName: grant.folderName ?? null,
+          exists: !!row,
+          selected: !!row?.selected,
+          targetType: row?.targetType ?? null,
+          bound: !!row?.targetID,
+        };
+      }
+      return {
+        helperVersion: EXPECTED_HELPER_VERSION,
+        unrestricted: !!rv[UNRESTRICTED_KEY],
+        target: {
+          accountId: target.accountId ?? null,
+          accountName: target.accountName ?? null,
+          // The stored id can name an account that no longer exists - a
+          // rebuilt profile mints new ones - and every scoped verb then
+          // refuses for a reason that reads like a permission problem.
+          exists: !!account,
+        },
+        resources,
+      };
+    },
+  },
+};
+
+/** What each `scope` means, for `help`. Beside the table it describes, for
+ *  the same reason the summaries are. */
+const SCOPE_HELP = {
+  unscoped: "TbSync's own configuration; no mailbox content",
+  account: "args.accountId must be the bridge's target account",
+  folder: "args.accountId and args.folderId must be the target's",
+  calendar:
+    "acts on the target's calendar; `resource` picks calendars (default) or tasks",
+  book: "acts on the target's address book",
 };
 
 /** Long enough for the reply to reach the caller before the background page
@@ -1013,14 +1205,20 @@ async function applyScope(scope, args, cmd) {
   if (!target.accountId) {
     throw withCode(
       new Error(
-        "no target selected - choose an account and a resource in the Bridge tab",
+        "no target selected - choose an account and a resource in the " +
+          "Bridge tab. `status` reports the grant, `help` lists the verbs.",
       ),
       "E:NO_TARGET",
     );
   }
   if (args.accountId && args.accountId !== target.accountId) {
     throw withCode(
-      new Error(`account ${args.accountId} is not the bridge's target`),
+      new Error(
+        `account ${args.accountId} is not the bridge's target ` +
+          `(${target.accountId}${target.accountName ? ` "${target.accountName}"` : ""}). ` +
+          `Call status to see the whole grant, or setTarget to move it ` +
+          `- which needs unrestricted mode, in the Bridge tab.`,
+      ),
       "E:OUT_OF_SCOPE",
     );
   }

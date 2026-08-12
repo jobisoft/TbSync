@@ -23,11 +23,13 @@ SIBLINGS_DIR="$(dirname "$TBSYNC_DIR")"
 #
 # protocol/ ends up inside every xpi - build.js zips src/ and nothing else,
 # which is why even the host consumes it through a copy under src/.
-# test-harness/ is Python and never ships; it is the loopback client and
-# test registry the providers' bridge suites import.
+# test-harness/ is Python and never ships; it is the loopback client, the
+# test registry the providers' bridge suites import, and the bridge's own
+# guide - which rides along so a provider repo has it beside the client it
+# imports, rather than in a sibling checkout the reader may not have.
 PROTOCOL_FILES=(protocol.mjs provider.mjs status.mjs changelog-core.mjs
                 storage-queue.mjs change-queue.mjs address-book.mjs calendar.mjs)
-HARNESS_FILES=(bridge.py harness.py)
+HARNESS_FILES=(bridge.py harness.py BRIDGE.md)
 
 # The unit tests (*.test.mjs) deliberately stay here: they test the one
 # authoritative copy, and shipping them inside an xpi would be dead weight.

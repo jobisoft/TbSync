@@ -1,9 +1,19 @@
 """Loopback HTTP client for the TbSync Bridge.
 
+Start here:
+
+    rpc("help")                     # every verb, its scope, its arguments
+    rpc("help", verb="items.create")  # one of them
+    rpc("status")                   # what the bridge is pointed at now
+
+`help` is generated from the command table itself, so it cannot be out of
+date. BRIDGE.md, beside this file, explains the model behind it: the reply
+envelope, the target and why calls get refused, unrestricted mode.
+
 The bridge is a beta-only automation surface: TbSync spawns a native helper
 that listens on a loopback port and forwards `cmd`/`args` to the manager's
 internal RPC table. Everything the suite does to Thunderbird goes through
-here.
+here. Every call answers `{ok, result}` - the payload is under `result`.
 
 PORT and TOKEN are fixed by the helper, not negotiated. The source of truth
 is `beta/native-messaging-app/tbsync_bridge_host.py`; if a future helper
