@@ -116,6 +116,10 @@ function canSync(acc) {
   if (upgradeAccounts.has(acc.accountId)) return false;
   if (syncingAccounts.has(acc.accountId)) return false;
   if (acc.error === "E:AUTH") return false;
+  // Set up by a version before 5.2.2 and not reconnected since. syncAccount
+  // refuses these, and silently, so an entry offered here would be a click
+  // with no effect and no explanation.
+  if (acc.legacyImported) return false;
   if (!router.isProviderConnected(acc.provider)) return false;
   return true;
 }
