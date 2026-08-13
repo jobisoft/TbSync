@@ -210,7 +210,13 @@ const COMMANDS = {
     summary: "Sync one account and resolve when it has finished.",
     args: "{ accountId }",
     scope: "account",
-    async run({ accountId }) {
+    // The account comes from the resolved scope, not from args: the grant is
+    // what a caller relies on when it omits accountId, and reading args here
+    // meant syncing `undefined` - which resolves immediately, reports no
+    // folders and looks like a sync that found nothing to do. An explicit
+    // accountId still works; the scope check has already refused it unless it
+    // is the granted one.
+    async run(_args, { accountId }) {
       const before = Date.now();
       await syncAccount(accountId);
       const rows = await folders.listForAccount(accountId);
