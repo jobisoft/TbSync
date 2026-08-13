@@ -28,13 +28,20 @@ SIBLINGS_DIR="$(dirname "$TBSYNC_DIR")"
 # guide - which rides along so a provider repo has it beside the client it
 # imports, rather than in a sibling checkout the reader may not have.
 PROTOCOL_FILES=(protocol.mjs provider.mjs status.mjs changelog-core.mjs
-                storage-queue.mjs change-queue.mjs address-book.mjs calendar.mjs)
+                storage-queue.mjs change-queue.mjs address-book.mjs)
+# calendar.mjs goes only to the repos that use it. google-4-tbsync
+# synchronises contacts and nothing else, so a copy there would ship in every
+# xpi and have to be kept in step by hand for nothing. It is named as a stray
+# if it turns up there.
+CALENDAR_FILES=(calendar.mjs)
 HARNESS_FILES=(bridge.py harness.py BRIDGE.md)
 
 # The unit tests (*.test.mjs) deliberately stay here: they test the one
 # authoritative copy, and shipping them inside an xpi would be dead weight.
 
 PROTOCOL_REPOS=("$TBSYNC_DIR" "$SIBLINGS_DIR/EAS-4-TbSync" "$SIBLINGS_DIR/google-4-tbsync")
+CALENDAR_REPOS=("$TBSYNC_DIR" "$SIBLINGS_DIR/EAS-4-TbSync")
+NO_CALENDAR_REPOS=("$SIBLINGS_DIR/google-4-tbsync")
 # TbSync runs no bridge suite of its own - the providers' suites are what
 # exercise the harness - so it takes no copy.
 HARNESS_REPOS=("$SIBLINGS_DIR/EAS-4-TbSync" "$SIBLINGS_DIR/google-4-tbsync")
@@ -76,7 +83,10 @@ check_strays() {
   local subdir="$1"; shift
   local -a known=("$@")
   for repo in "${REPOS[@]}"; do
-    local dir="$SIBLINGS_DIR/$repo/$subdir"
+    # REPOS holds absolute paths, as sync_set uses them - prefixing
+    # SIBLINGS_DIR again produced a path that never exists, so every repo was
+    # skipped and no stray was ever reported.
+    local dir="$repo/$subdir"
     [ -d "$dir" ] || continue
     for path in "$dir"/*; do
       [ -e "$path" ] || continue
@@ -95,6 +105,14 @@ check_strays() {
 
 REPOS=("${PROTOCOL_REPOS[@]}")
 sync_set protocol "src/vendor/tbsync" "${PROTOCOL_FILES[@]}"
+
+REPOS=("${CALENDAR_REPOS[@]}")
+sync_set protocol "src/vendor/tbsync" "${CALENDAR_FILES[@]}"
+check_strays "src/vendor/tbsync" "${PROTOCOL_FILES[@]}" "${CALENDAR_FILES[@]}"
+
+# Same directory, shorter list: a calendar file reappearing here is a stray
+# rather than something --check would quietly accept.
+REPOS=("${NO_CALENDAR_REPOS[@]}")
 check_strays "src/vendor/tbsync" "${PROTOCOL_FILES[@]}"
 
 REPOS=("${HARNESS_REPOS[@]}")
