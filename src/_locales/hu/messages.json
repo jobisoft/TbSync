@@ -284,7 +284,7 @@
     "message": "A fiók előkészítése folyamatban…"
   },
   "account.status.legacy-locked": {
-    "message": "Egy korábbi verzió állította be – a szinkronizáláshoz csatlakoztassa újra"
+    "message": "Egy korábbi verzió állította be - a szinkronizáláshoz csatlakoztassa újra"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -294,6 +294,9 @@
   },
   "actionButton.title.error": {
     "message": "TbSync - Szinkronizálási hiba"
+  },
+  "actionButton.title.warning": {
+    "message": "TbSync - Szinkronizálási figyelmeztetés"
   },
   "actionButton.title.localChanges": {
     "message": "TbSync - Függő helyi változások"

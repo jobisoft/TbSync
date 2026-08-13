@@ -295,6 +295,9 @@
   "actionButton.title.error": {
     "message": "TbSync - Errore di sincronizzazione"
   },
+  "actionButton.title.warning": {
+    "message": "TbSync - Avviso di sincronizzazione"
+  },
   "actionButton.title.localChanges": {
     "message": "TbSync - Modifiche locali in sospeso"
   },

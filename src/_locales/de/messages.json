@@ -284,7 +284,7 @@
     "message": "Konto wird vorbereitet…"
   },
   "account.status.legacy-locked": {
-    "message": "Von einer älteren Version eingerichtet – zum Synchronisieren neu verbinden"
+    "message": "Von einer älteren Version eingerichtet - zum Synchronisieren neu verbinden"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -294,6 +294,9 @@
   },
   "actionButton.title.error": {
     "message": "TbSync - Synchronisationsfehler"
+  },
+  "actionButton.title.warning": {
+    "message": "TbSync - Synchronisationswarnung"
   },
   "actionButton.title.localChanges": {
     "message": "TbSync - Ausstehende lokale Änderungen"

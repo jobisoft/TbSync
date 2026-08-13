@@ -13,7 +13,7 @@ import {
 import { accountIconUrl, providerIconUrl } from "../modules/account-icons.mjs";
 import { isBetaBuild } from "../modules/channel.mjs";
 import { FOLDER_TYPES } from "../modules/folder-types.mjs";
-import { hasLocalChanges } from "../modules/folders.mjs";
+import { hasLocalChanges, hasWarning } from "../modules/folders.mjs";
 import { createManagerClient } from "../modules/manager-client.mjs";
 import { EVENT_LOG_MAX, KEYS } from "../modules/storage-keys.mjs";
 import { localizeDocument } from "../vendor/i18n/i18n.mjs";
@@ -511,7 +511,9 @@ function deriveAccountResultStatus(acc) {
   const folderList = state.folders.get(acc.accountId) ?? [];
   const selected = folderList.filter((f) => f.selected);
   if (acc.error || selected.some((f) => f.error)) return "error";
-  if (selected.some((f) => f.warning)) return "warning";
+  // Via the shared accessor, which is also what the toolbar badge asks -
+  // the row and the badge answer "does this account warn?" the same way.
+  if (folderList.some(hasWarning)) return "warning";
   // Local edits made since the last sync - at least one folder reports a
   // non-zero `localChanges`. Computed host-side and surfaced via
   // `acc.needsSync` so the sidebar shows the right icon for every

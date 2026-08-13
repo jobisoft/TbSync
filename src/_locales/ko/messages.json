@@ -295,6 +295,9 @@
   "actionButton.title.error": {
     "message": "TbSync - 동기화 오류"
   },
+  "actionButton.title.warning": {
+    "message": "TbSync - 동기화 경고"
+  },
   "actionButton.title.localChanges": {
     "message": "TbSync - 대기 중인 로컬 변경 사항"
   },

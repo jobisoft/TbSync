@@ -284,7 +284,7 @@
     "message": "Kontot förbereds…"
   },
   "account.status.legacy-locked": {
-    "message": "Konfigurerat av en äldre version – återanslut för att synkronisera"
+    "message": "Konfigurerat av en äldre version - återanslut för att synkronisera"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -294,6 +294,9 @@
   },
   "actionButton.title.error": {
     "message": "TbSync - Synkroniseringsfel"
+  },
+  "actionButton.title.warning": {
+    "message": "TbSync - Synkroniseringsvarning"
   },
   "actionButton.title.localChanges": {
     "message": "TbSync - Lokala ändringar väntar"

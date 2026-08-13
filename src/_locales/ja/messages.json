@@ -295,6 +295,9 @@
   "actionButton.title.error": {
     "message": "TbSync - 同期エラー"
   },
+  "actionButton.title.warning": {
+    "message": "TbSync - 同期の警告"
+  },
   "actionButton.title.localChanges": {
     "message": "TbSync - ローカルの変更が保留中"
   },

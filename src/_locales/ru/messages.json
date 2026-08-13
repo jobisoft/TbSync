@@ -284,7 +284,7 @@
     "message": "Учётная запись подготавливается…"
   },
   "account.status.legacy-locked": {
-    "message": "Настроена в более старой версии — переподключите для синхронизации"
+    "message": "Настроена в более старой версии - переподключите для синхронизации"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -294,6 +294,9 @@
   },
   "actionButton.title.error": {
     "message": "TbSync - Ошибка синхронизации"
+  },
+  "actionButton.title.warning": {
+    "message": "TbSync - Предупреждение синхронизации"
   },
   "actionButton.title.localChanges": {
     "message": "TbSync - Ожидающие локальные изменения"

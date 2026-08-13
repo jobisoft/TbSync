@@ -284,7 +284,7 @@
     "message": "Kontot valmistatakse ette…"
   },
   "account.status.legacy-locked": {
-    "message": "Seadistatud vanema versiooniga – sünkroonimiseks ühendage uuesti"
+    "message": "Seadistatud vanema versiooniga - sünkroonimiseks ühendage uuesti"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -294,6 +294,9 @@
   },
   "actionButton.title.error": {
     "message": "TbSync - Sünkroonimisviga"
+  },
+  "actionButton.title.warning": {
+    "message": "TbSync - Sünkroonimise hoiatus"
   },
   "actionButton.title.localChanges": {
     "message": "TbSync - Kohalikud muudatused ootel"

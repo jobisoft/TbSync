@@ -1,7 +1,9 @@
 /**
  * Drives the toolbar button badge from aggregated account state.
  *
- * Four states, evaluated in priority order (first match wins):
+ * Five states, evaluated in priority order (first match wins). The order is
+ * the severity order the manager's account row uses, so a row and the badge
+ * can never name different conditions for the same account:
  *   1. syncing       - any account is currently being driven by the sync
  *                      coordinator (transient.syncingAccounts).
  *   2. error         - some enabled account has account.error set, OR was set
@@ -11,12 +13,18 @@
  *                      render in the manager as a non-syncable account the
  *                      user has to act on, and the badge is the only place
  *                      that says so without opening the manager.
- *   3. local-changes - some enabled account has at least one selected folder
- *                      whose changelog carries _by_user entries.
- *   4. ok            - none of the above; the badge is cleared.
+ *   3. warning       - some enabled account has a selected folder whose last
+ *                      sync ended in a warning. Nothing is blocked and the
+ *                      wording lives in the manager, but a folder that is
+ *                      not carrying what it appears to be should not need
+ *                      the manager to be open to be noticed.
+ *   4. local-changes - some enabled account has at least one selected folder
+ *                      reporting a non-zero `localChanges`.
+ *   5. ok            - none of the above, and the badge is cleared.
  *
- * Disabled accounts never drive the badge: their stale error or changelog is
- * not something the user is currently being asked to act on.
+ * Disabled accounts never drive the badge: a stale error, warning or count
+ * from before they were disconnected is not something the user is being
+ * asked to act on.
  */
 
 import * as accounts from "./accounts.mjs";
@@ -37,6 +45,14 @@ const BADGES = {
     bg: "#d32f2f",
     fg: "#ffffff",
     titleKey: "actionButton.title.error",
+  },
+  // Black on yellow, where the other three are white on a colour: yellow is
+  // too light to carry white text at badge size.
+  warning: {
+    text: "⚠",
+    bg: "#f2c200",
+    fg: "#000000",
+    titleKey: "actionButton.title.warning",
   },
   "local-changes": {
     text: "✻",
@@ -67,6 +83,9 @@ async function computeState() {
   ) {
     return "error";
   }
+
+  const warnings = await folders.warningMap();
+  if (enabled.some((a) => warnings[a.accountId])) return "warning";
 
   const needs = await folders.needsSyncMap();
   if (enabled.some((a) => needs[a.accountId])) return "local-changes";

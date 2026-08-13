@@ -109,6 +109,32 @@ export async function needsSyncMap() {
   return out;
 }
 
+/** Did this folder's last sync leave something for the user to read?
+ *
+ *  The counterpart to `hasLocalChanges`, and here for the same reason: the
+ *  manager's account row and the toolbar badge both ask it, and a rule
+ *  written twice is a rule that drifts. Unselected is no, because that
+ *  folder no longer syncs and its last outcome describes a binding that
+ *  has been retired. */
+export function hasWarning(folder) {
+  return !!folder?.selected && !!folder.warning;
+}
+
+/** `{ [accountId]: true }` for every account whose last sync left a warning
+ *  on a selected folder.
+ *
+ *  Errors are absent on purpose: `recomputeAccountError` lifts those onto
+ *  `account.error`, which the badge already reads. A warning gets no such
+ *  lift, because it does not stop the account from syncing. */
+export async function warningMap() {
+  const state = await read();
+  const out = {};
+  for (const [accountId, bucket] of Object.entries(state)) {
+    out[accountId] = Object.values(bucket).some(hasWarning);
+  }
+  return out;
+}
+
 export async function get(accountId, folderId) {
   const state = await read();
   return state[accountId]?.[folderId] ?? null;

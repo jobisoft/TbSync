@@ -284,7 +284,7 @@
     "message": "Účet se připravuje…"
   },
   "account.status.legacy-locked": {
-    "message": "Nastaveno starší verzí – pro synchronizaci znovu připojte"
+    "message": "Nastaveno starší verzí - pro synchronizaci znovu připojte"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -294,6 +294,9 @@
   },
   "actionButton.title.error": {
     "message": "TbSync - Chyba synchronizace"
+  },
+  "actionButton.title.warning": {
+    "message": "TbSync - Upozornění synchronizace"
   },
   "actionButton.title.localChanges": {
     "message": "TbSync - Čekající místní změny"
