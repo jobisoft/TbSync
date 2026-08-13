@@ -149,6 +149,11 @@ export async function createCalendar({
     name: name.trim(),
     type,
     url,
+    // We schedule our own synchronisation, so Thunderbird's refresh timer
+    // would only duplicate it. Declared at creation rather than corrected
+    // afterwards: the host arms the timer when the calendar is registered,
+    // so anything later leaves a window in which it can already have fired.
+    refreshInterval: 0,
     capabilities: {
       events: kind === "events",
       tasks: kind === "tasks",
@@ -193,6 +198,38 @@ export async function setCalendarOwner(id, { organizer, organizerName }) {
   if (same) return false;
   await messenger.calendar.calendars.update(id, { capabilities: wanted });
   return true;
+}
+
+/**
+ * Keep Thunderbird's own refresh timer off a calendar we synchronise
+ * ourselves, by setting the interval to 0 ("do not refresh").
+ *
+ * `createCalendar` already asks for this, so a calendar we made carries it
+ * from the start. This exists for the ones that do not: calendars created
+ * before the property was declared, and any where the user has since picked
+ * an interval in the calendar's properties dialog. Calling it whenever sync
+ * comes past a calendar is what makes the setting stick.
+ *
+ * Only writes when it differs, because every write persists an override and
+ * notifies observers - and because the host re-arms the timer on each
+ * change, so a needless write is a needless timer rebuild. Returns whether
+ * it wrote. Tolerant of "calendar not found": the user may have deleted it
+ * since the folder row was bound.
+ */
+export async function suppressCalendarRefresh(id) {
+  if (!id) return false;
+  try {
+    const calendar = await messenger.calendar.calendars.get(id);
+    if (!calendar) return false;
+    // Absent means the calendar has never been given an interval, and the
+    // host falls back to 30 minutes - so absent still needs the write.
+    if (calendar.refreshInterval === 0) return false;
+    await messenger.calendar.calendars.update(id, { refreshInterval: 0 });
+    return true;
+  } catch (err) {
+    if (isNotFoundError(err)) return false;
+    throw err;
+  }
 }
 
 export async function deleteCalendar(id) {
