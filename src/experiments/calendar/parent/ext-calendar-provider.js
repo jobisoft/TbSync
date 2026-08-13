@@ -190,6 +190,24 @@ class ExtCalendar extends cal.provider.BaseClass {
     return this;
   }
 
+  // boolean canNotify(in AUTF8String aMethod, in calIItemBase aItem);
+  //
+  // True for every method when the server does the scheduling, which is what
+  // "server" declares: it sends the invitation for a meeting we push to it,
+  // and the reply for one we answer through its own API. Thunderbird then
+  // sends neither, and the event dialog says so - the attendee notification
+  // checkbox switches to the branch that visualizes "the server will send
+  // out mail" instead of offering to send it from here.
+  //
+  // The inherited implementation answers false for every calendar, so a
+  // provider declaring "server" was invisible to everything that asks this.
+  // Outgoing mail stopped regardless, one layer lower, where the transport
+  // for "server" reports success without sending - so what was wrong was
+  // only what the user was being told.
+  canNotify() {
+    return this.capabilities.scheduling == "server";
+  }
+
   setProperty(name, value) {
     if (name === "readOnly" && this.capabilities.mutable === false) {
       return; // prevent change
