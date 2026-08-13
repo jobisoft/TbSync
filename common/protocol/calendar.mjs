@@ -157,6 +157,9 @@ export async function createCalendar({
     capabilities: {
       events: kind === "events",
       tasks: kind === "tasks",
+      // The server invites the attendees, so Thunderbird must not. See
+      // `deferSchedulingToServer`.
+      scheduling: "server",
       ...ownerCapabilities({ organizer, organizerName }),
     },
   };
@@ -198,6 +201,46 @@ export async function setCalendarOwner(id, { organizer, organizerName }) {
   if (same) return false;
   await messenger.calendar.calendars.update(id, { capabilities: wanted });
   return true;
+}
+
+/**
+ * Leave the invitation mail to the server.
+ *
+ * A calendar that says nothing about scheduling gets Thunderbird's default,
+ * `"client"`, and Thunderbird then mails the attendees itself the moment a
+ * meeting is saved. We also send the meeting to the server with its attendee
+ * list, and the server invites them too - so every attendee of a meeting
+ * organised here was getting two invitations, one from each. Measured
+ * against Exchange Online: one mail at save, a second after the sync.
+ *
+ * `"server"` swaps Thunderbird's mail transport for one that reports success
+ * without sending, which leaves exactly one sender. It is also the honest
+ * description of an ActiveSync calendar - the server is the scheduling
+ * authority there, which is why an invitation is answered with a
+ * MeetingResponse rather than by editing the item.
+ *
+ * The cost is timing: an invitation now leaves with the next sync instead of
+ * at the moment of saving.
+ *
+ * `createCalendar` already declares it, so a calendar we made carries it from
+ * the start. This exists for the ones that do not - every calendar created
+ * before this shipped. Only writes when it differs, because a write persists
+ * an override and notifies observers. Returns whether it wrote.
+ */
+export async function deferSchedulingToServer(id) {
+  if (!id) return false;
+  try {
+    const calendar = await messenger.calendar.calendars.get(id);
+    if (!calendar) return false;
+    if (calendar.capabilities?.scheduling === "server") return false;
+    await messenger.calendar.calendars.update(id, {
+      capabilities: { scheduling: "server" },
+    });
+    return true;
+  } catch (err) {
+    if (isNotFoundError(err)) return false;
+    throw err;
+  }
 }
 
 /**

@@ -16,7 +16,11 @@
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 
-import { createCalendar, setCalendarOwner } from "./calendar.mjs";
+import {
+  createCalendar,
+  deferSchedulingToServer,
+  setCalendarOwner,
+} from "./calendar.mjs";
 
 /** Records what the wrapper asked the platform to do. */
 let calls;
@@ -100,6 +104,36 @@ test("setCalendarOwner writes once and then stays quiet", async () => {
     "a changed address is written",
   );
   assert.equal(calls.update.length, 2);
+});
+
+test("a calendar is created leaving the invitations to the server", async () => {
+  // Without this the calendar gets Thunderbird's default, "client", and both
+  // Thunderbird and the server mail every attendee.
+  await createCalendar({ ...base });
+  assert.equal(calls.create[0].capabilities.scheduling, "server");
+});
+
+test("deferSchedulingToServer writes once and then stays quiet", async () => {
+  // A calendar made before this shipped: it says nothing about scheduling,
+  // which is what Thunderbird reads as "client".
+  calendars.set("old", { id: "old", capabilities: { events: true } });
+
+  assert.equal(await deferSchedulingToServer("old"), true, "first call writes");
+  assert.deepEqual(calls.update[0].props.capabilities, { scheduling: "server" });
+  assert.equal(
+    calls.update[0].props.capabilities.events,
+    undefined,
+    "only the one capability is sent - the platform merges the rest",
+  );
+
+  assert.equal(await deferSchedulingToServer("old"), false, "already declared");
+  assert.equal(calls.update.length, 1, "no second write");
+});
+
+test("deferSchedulingToServer is quiet about a calendar that is gone", async () => {
+  assert.equal(await deferSchedulingToServer(""), false, "no id");
+  assert.equal(await deferSchedulingToServer("missing"), false);
+  assert.equal(calls.update.length, 0, "nothing was written");
 });
 
 test("setCalendarOwner does nothing without an owner or a calendar", async () => {
