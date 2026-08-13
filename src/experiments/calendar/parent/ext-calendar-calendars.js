@@ -92,6 +92,15 @@ this.calendar_calendars = class extends ExtensionAPI {
               throw new ExtensionError(`Calendar type ${createProperties.type} is unknown`);
             }
 
+            // Rejected before anything is applied or registered, so a refused
+            // call leaves nothing behind. A calendar that cannot refresh must
+            // never carry an interval, not even 0.
+            if (createProperties.refreshInterval != null && !calendar.canRefresh) {
+              throw new ExtensionError(
+                `Cannot set refreshInterval on a ${createProperties.type} calendar: it cannot refresh`
+              );
+            }
+
             calendar.name = createProperties.name;
 
             if (createProperties.color != null) {
@@ -108,6 +117,13 @@ this.calendar_calendars = class extends ExtensionAPI {
             }
             if (createProperties.showReminders != null) {
               calendar.setProperty("suppressAlarms", !createProperties.showReminders);
+            }
+            // Set before registerCalendar below, which is what arms the host's
+            // refresh timer. Passing 0 here means a provider that runs its own
+            // schedule never gets a host timer at all, rather than having to
+            // race one that has already started.
+            if (createProperties.refreshInterval != null) {
+              calendar.setProperty("refreshInterval", createProperties.refreshInterval);
             }
             if (createProperties.capabilities != null) {
               if (!isOwnCalendar(calendar, context.extension)) {
@@ -134,6 +150,14 @@ this.calendar_calendars = class extends ExtensionAPI {
             if (updateProperties.url && !isOwnCalendar(calendar, context.extension)) {
               throw new ExtensionError("Cannot update url for foreign calendars");
             }
+            // A calendar that cannot refresh must never carry an interval, not
+            // even 0. Checked here with the other preconditions, so a refused
+            // update applies none of its other properties either.
+            if (updateProperties.refreshInterval != null && !calendar.canRefresh) {
+              throw new ExtensionError(
+                `Cannot set refreshInterval on calendar ${id}: it cannot refresh`
+              );
+            }
 
             if (updateProperties.url) {
               calendar.uri = Services.io.newURI(updateProperties.url);
@@ -155,6 +179,14 @@ this.calendar_calendars = class extends ExtensionAPI {
               if (updateProperties[prop] != null) {
                 calendar.setProperty(prop, updateProperties[prop]);
               }
+            }
+
+            // Minutes between automatic refreshes, 0 meaning "do not refresh".
+            // Nothing else to do: CalCalendarManager observes this property and
+            // re-arms the calendar's refresh timer from onPropertyChanged, so
+            // the new interval takes effect immediately.
+            if (updateProperties.refreshInterval != null) {
+              calendar.setProperty("refreshInterval", updateProperties.refreshInterval);
             }
 
             if (updateProperties.capabilities) {
@@ -296,6 +328,14 @@ this.calendar_calendars = class extends ExtensionAPI {
                       break;
                     case "disabled":
                       fire.sync(converted, { enabled: !value });
+                      break;
+                    case "refreshInterval":
+                      // Reported from the converted calendar rather than from
+                      // `value`, which the property bag may hand over as a
+                      // string - convertCalendar has already normalised it.
+                      fire.sync(converted, {
+                        refreshInterval: converted.refreshInterval,
+                      });
                       break;
                   }
                 },

@@ -69,6 +69,16 @@ export function convertCalendar(extension, calendar) {
     color: calendar.getProperty("color") || "#A8C2E1",
   };
 
+  // Minutes between automatic refreshes, 0 meaning "do not refresh".
+  // Absent when the calendar has never been given one: the property is
+  // genuinely unset then, and CalCalendarManager.setupRefreshTimer falls
+  // back to 30. Reporting 30 here would claim a stored value that is not
+  // there. The property bag can hold it as a string, so normalise.
+  const refreshInterval = parseInt(calendar.getProperty("refreshInterval"), 10);
+  if (Number.isInteger(refreshInterval) && refreshInterval >= 0) {
+    props.refreshInterval = refreshInterval;
+  }
+
   if (isOwnCalendar(calendar, extension)) {
     props.cacheId = calendar.superCalendar.id + "#cache";
     props.capabilities = unwrapCalendar(calendar.superCalendar).capabilities; // TODO needs deep clone?
