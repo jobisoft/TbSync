@@ -592,6 +592,33 @@ const COMMANDS = {
     run: ({ color }, { calendarId }) =>
       messenger.calendar.calendars.update(calendarId, { color }),
   },
+  /** Minutes between Thunderbird's own refreshes of the calendar, 0 meaning
+   *  it does not refresh on its own. The value is read back by
+   *  `calendars.get`, which omits it entirely when the calendar has never
+   *  been given one - the host then falls back to 30.
+   *
+   *  Providers that run their own schedule set 0, so this is what lets a
+   *  test put an interval back and watch the provider remove it again.
+   *  Rejected here rather than at the platform, which answers a bad value
+   *  with a schema error naming neither the verb nor the argument. */
+  "calendars.setRefreshInterval": {
+    summary: "Set the target calendar's refresh interval in minutes. 0 disables it.",
+    args: "{ minutes, resource? }",
+    scope: "calendar",
+    run: ({ minutes }, { calendarId }) => {
+      if (!Number.isInteger(minutes) || minutes < 0) {
+        throw withCode(
+          new Error(
+            `calendars.setRefreshInterval needs minutes as an integer >= 0 (got ${JSON.stringify(minutes)})`,
+          ),
+          "E:BAD_ARGS",
+        );
+      }
+      return messenger.calendar.calendars.update(calendarId, {
+        refreshInterval: minutes,
+      });
+    },
+  },
   "items.query": {
     summary: "Items in the target calendar. Extra keys pass through to the platform query.",
     args: "{ resource?, ... }",
