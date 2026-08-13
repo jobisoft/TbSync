@@ -501,18 +501,35 @@ const COMMANDS = {
     },
   },
 
+  /** Unscoped, like `reloadHost`: restarting an add-on reads and writes no
+   *  mailbox content, and the grant exists to protect content. Holding it to
+   *  the target would also make the verb useless for its main job - picking
+   *  up a rebuilt provider that the grant does not happen to point at.
+   *
+   *  Takes a providerId; accountId is accepted as a convenience and means
+   *  "whichever provider owns this account", which is what the account
+   *  scoped version used to do. */
   reloadProvider: {
-    summary: "Reload the provider that owns the target account.",
-    args: "{ accountId }",
-    scope: "account",
-    async run(_args, { accountId }) {
-      const acc = await accounts.get(accountId);
-      if (!acc) throw new Error("unknown account");
-      if (!router.isProviderConnected(acc.provider)) {
-        throw new Error(`provider ${acc.provider} is not connected`);
+    summary: "Reload a provider add-on. Any of them, not only the target's.",
+    args: "{ providerId } or { accountId }",
+    async run({ providerId, accountId }) {
+      let id = providerId;
+      if (!id) {
+        if (!accountId) {
+          throw withCode(
+            new Error("reloadProvider needs a providerId or an accountId"),
+            "E:BAD_ARGS",
+          );
+        }
+        const acc = await accounts.get(accountId);
+        if (!acc) throw new Error("unknown account");
+        id = acc.provider;
       }
-      const result = await router.sendCmd(acc.provider, HOST_CMD.RELOAD, {});
-      return { provider: acc.provider, ...result };
+      if (!router.isProviderConnected(id)) {
+        throw new Error(`provider ${id} is not connected`);
+      }
+      const result = await router.sendCmd(id, HOST_CMD.RELOAD, {});
+      return { provider: id, ...result };
     },
   },
 
