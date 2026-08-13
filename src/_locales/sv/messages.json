@@ -214,6 +214,9 @@
   "manager.account.settings": {
     "message": "Inställningar"
   },
+  "manager.account.services": {
+    "message": "Tjänster"
+  },
   "manager.account.remove": {
     "message": "Ta bort"
   },

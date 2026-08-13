@@ -106,6 +106,9 @@ export class TbSyncProviderImplementation {
   #configPath;
   #configWidth;
   #configHeight;
+  #servicesPath;
+  #servicesWidth;
+  #servicesHeight;
   #logPrefix;
 
   constructor(options = {}) {
@@ -124,6 +127,12 @@ export class TbSyncProviderImplementation {
     this.#configPath = options.configPath ?? null;
     this.#configWidth = options.configWidth ?? DEFAULT_CONFIG_WIDTH;
     this.#configHeight = options.configHeight ?? DEFAULT_CONFIG_HEIGHT;
+    // Opt-in: a provider that sets neither this nor
+    // `capabilities.hasServicesPopup` never gets the button, and the host
+    // never sends it the command.
+    this.#servicesPath = options.servicesPath ?? null;
+    this.#servicesWidth = options.servicesWidth ?? DEFAULT_CONFIG_WIDTH;
+    this.#servicesHeight = options.servicesHeight ?? DEFAULT_CONFIG_HEIGHT;
     this.#logPrefix = options.logPrefix ?? `[${browser.runtime.id}]`;
   }
 
@@ -533,6 +542,39 @@ export class TbSyncProviderImplementation {
     return null;
   }
 
+  /**
+   * Open the Services window with an `accountId` URL param. Resolves when
+   * it closes.
+   *
+   * Services are settings kept on the server rather than by TbSync, so
+   * unlike the config popup this one is reachable only while the account
+   * is connected - the host will not offer the button otherwise - and it
+   * carries no `readOnly` flag, because being connected is the condition
+   * for editing rather than against it.
+   *
+   * Registered as an account window like the config popup, so a second
+   * click raises the one already open instead of making another.
+   */
+  async onOpenServicesPopup(args) {
+    if (!this.#servicesPath)
+      throw this.#notImplemented("onOpenServicesPopup (no servicesPath)");
+    const url = new URL(browser.runtime.getURL(this.#servicesPath));
+    url.searchParams.set("accountId", args.accountId);
+    const win = await browser.windows.create({
+      url: url.toString(),
+      type: "popup",
+      width: this.#servicesWidth,
+      height: this.#servicesHeight,
+    });
+    this.registerAccountWindow(args.accountId, win.id);
+    try {
+      await waitForWindowClose(win.id);
+    } finally {
+      this.unregisterAccountWindow(args.accountId, win.id);
+    }
+    return null;
+  }
+
   /** Open the config popup with `accountId`, `readOnly`, and `mode` URL
    *  params. Resolves when the popup closes. */
   async onOpenConfigPopup(args) {
@@ -775,6 +817,8 @@ export class TbSyncProviderImplementation {
         return this.onFocusSetupPopup(args);
       case HOST_CMD.OPEN_CONFIG_POPUP:
         return this.onOpenConfigPopup(args);
+      case HOST_CMD.OPEN_SERVICES_POPUP:
+        return this.onOpenServicesPopup(args);
       case HOST_CMD.FOCUS_ACCOUNT_POPUP:
         return this.onFocusAccountPopup(args);
       case HOST_CMD.REAUTHENTICATE:

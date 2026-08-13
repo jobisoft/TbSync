@@ -214,6 +214,9 @@
   "manager.account.settings": {
     "message": "Nastavení"
   },
+  "manager.account.services": {
+    "message": "Služby"
+  },
   "manager.account.remove": {
     "message": "Odstranit"
   },

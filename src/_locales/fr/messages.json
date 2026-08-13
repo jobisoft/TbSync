@@ -214,6 +214,9 @@
   "manager.account.settings": {
     "message": "Paramètres"
   },
+  "manager.account.services": {
+    "message": "Services"
+  },
   "manager.account.remove": {
     "message": "Supprimer"
   },

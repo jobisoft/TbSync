@@ -1,4 +1,9 @@
-import { ERR, HOST_CMD, PROVIDER_CMD, withCode } from "./vendor/tbsync/protocol.mjs";
+import {
+  ERR,
+  HOST_CMD,
+  PROVIDER_CMD,
+  withCode,
+} from "./vendor/tbsync/protocol.mjs";
 import { STATUS_TYPES } from "./vendor/tbsync/status.mjs";
 import {
   CURRENT_SCHEMA_VERSION,
@@ -375,7 +380,8 @@ router.setProviderRpcHandler(
       throw withCode(new Error("unknown account"), ERR.UNKNOWN_ACCOUNT);
     }
     const cleared = await folders.clearTarget(owner.accountId, owner.folderId);
-    if (cleared) ui.broadcast({ type: "folders-changed", accountId: owner.accountId });
+    if (cleared)
+      ui.broadcast({ type: "folders-changed", accountId: owner.accountId });
     return null;
   },
 );
@@ -726,6 +732,28 @@ ui.setManagerRpcHandler("editAccount", async ({ accountId }) => {
   return null;
 });
 
+ui.setManagerRpcHandler("openServices", async ({ accountId }) => {
+  const acc = await accounts.get(accountId);
+  if (!acc) throw new Error("unknown account");
+  assertAccountReady(accountId);
+  if (!router.isProviderConnected(acc.provider)) {
+    throw withCode(
+      new Error("Provider not available"),
+      ERR.PROVIDER_UNAVAILABLE,
+    );
+  }
+  // Services live on the server, so there is nothing to show for an
+  // account that is not connected to one. The manager disables the button
+  // for the same reason; this is the guard for anyone calling it anyway.
+  if (!acc.enabled) throw new Error("account is not connected");
+  await withBusyAccount(accountId, () =>
+    runPopupFlow(() =>
+      router.sendCmd(acc.provider, HOST_CMD.OPEN_SERVICES_POPUP, { accountId }),
+    ),
+  );
+  return null;
+});
+
 ui.setManagerRpcHandler("authenticateAccount", async ({ accountId }) => {
   const acc = await accounts.get(accountId);
   if (!acc) throw new Error("unknown account");
@@ -801,57 +829,54 @@ ui.setManagerRpcHandler("authenticateAccount", async ({ accountId }) => {
   return null;
 });
 
-ui.setManagerRpcHandler(
-  "deleteAccount",
-  async ({ accountId }) => {
-    const acc = await accounts.get(accountId);
-    if (!acc) return null;
-    // The last-resort exit refuses nothing: no upgrade guard, no transient
-    // lock, no provider requirement. A running sync is aborted here, and
-    // the host deletes the account's Thunderbird resources itself - a dead
-    // provider's calendars exist as inert dummy registrations the calendar
-    // API removes like any other. Nothing is left behind.
-    try {
-      await abortAccountSync(accountId);
-      await withBusyAccount(accountId, async () => {
-          const rows = await folders.listForAccount(accountId);
-        // Let the provider stop and drop its own account state first - auth
-        // caches, GAL directories - so the deletions below land on quiet
-        // resources. Best effort; a provider that cannot answer forfeits it.
-        try {
-          if (router.isProviderConnected(acc.provider)) {
-            await router.sendCmd(acc.provider, HOST_CMD.ACCOUNT_DELETED, {
-              accountId,
-            });
-          }
-        } catch (err) {
-          await eventLog.append({
+ui.setManagerRpcHandler("deleteAccount", async ({ accountId }) => {
+  const acc = await accounts.get(accountId);
+  if (!acc) return null;
+  // The last-resort exit refuses nothing: no upgrade guard, no transient
+  // lock, no provider requirement. A running sync is aborted here, and
+  // the host deletes the account's Thunderbird resources itself - a dead
+  // provider's calendars exist as inert dummy registrations the calendar
+  // API removes like any other. Nothing is left behind.
+  try {
+    await abortAccountSync(accountId);
+    await withBusyAccount(accountId, async () => {
+      const rows = await folders.listForAccount(accountId);
+      // Let the provider stop and drop its own account state first - auth
+      // caches, GAL directories - so the deletions below land on quiet
+      // resources. Best effort; a provider that cannot answer forfeits it.
+      try {
+        if (router.isProviderConnected(acc.provider)) {
+          await router.sendCmd(acc.provider, HOST_CMD.ACCOUNT_DELETED, {
             accountId,
-            folderId: null,
-            level: "warning",
-            message: `Provider did not finish its part of the removal: ${err?.message ?? err}`,
-            details: err?.details ?? null,
           });
         }
-        // Rows first, targets second. Clearing the rows ends every one of
-        // this account's bindings before the deletions fire their cascade
-        // of events, so nothing is left resolving ids that are going away.
-        // Removing an account always takes its local resources with it -
-        // the confirmation says so - and the provider never deletes a
-        // target in any flow.
-        await folders.clearAccount(accountId);
-        await deleteTargetsBestEffort(rows);
-        await accounts.remove(accountId);
-      });
-    } finally {
-      // The abort marked the account cancelling; release it even though the
-      // record is gone - the set must not collect ids forever.
-      endAccountCancel(accountId);
-    }
-    ui.broadcast({ type: "folders-changed", accountId });
-    return null;
-  },
-);
+      } catch (err) {
+        await eventLog.append({
+          accountId,
+          folderId: null,
+          level: "warning",
+          message: `Provider did not finish its part of the removal: ${err?.message ?? err}`,
+          details: err?.details ?? null,
+        });
+      }
+      // Rows first, targets second. Clearing the rows ends every one of
+      // this account's bindings before the deletions fire their cascade
+      // of events, so nothing is left resolving ids that are going away.
+      // Removing an account always takes its local resources with it -
+      // the confirmation says so - and the provider never deletes a
+      // target in any flow.
+      await folders.clearAccount(accountId);
+      await deleteTargetsBestEffort(rows);
+      await accounts.remove(accountId);
+    });
+  } finally {
+    // The abort marked the account cancelling; release it even though the
+    // record is gone - the set must not collect ids forever.
+    endAccountCancel(accountId);
+  }
+  ui.broadcast({ type: "folders-changed", accountId });
+  return null;
+});
 
 ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
   const acc = await accounts.get(accountId);

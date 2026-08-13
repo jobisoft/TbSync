@@ -214,6 +214,9 @@
   "manager.account.settings": {
     "message": "설정"
   },
+  "manager.account.services": {
+    "message": "서비스"
+  },
   "manager.account.remove": {
     "message": "제거"
   },

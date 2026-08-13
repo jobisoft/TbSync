@@ -214,6 +214,9 @@
   "manager.account.settings": {
     "message": "Setări"
   },
+  "manager.account.services": {
+    "message": "Servicii"
+  },
   "manager.account.remove": {
     "message": "Elimină"
   },

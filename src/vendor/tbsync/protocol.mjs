@@ -129,6 +129,24 @@ export const HOST_CMD = {
   OPEN_SETUP_POPUP: "openSetupPopup",
   FOCUS_SETUP_POPUP: "focusSetupPopup",
   OPEN_CONFIG_POPUP: "openConfigPopup",
+  /** `{ accountId }` - open the provider's *Services* window.
+   *
+   *  Services are settings that live on the server rather than in TbSync,
+   *  and can only be reached while the account is connected - an
+   *  out-of-office reply is the first of them. That is the inverse of
+   *  everything in the config popup, which is stored here and locked
+   *  *while* connected, so the two are deliberately separate windows.
+   *
+   *  Opt-in: the host offers the button only to a provider whose announce
+   *  declares `capabilities.hasServicesPopup`, and only while the account
+   *  is connected. A provider that declares nothing never sees this
+   *  command. The button's label is the host's, so it reads the same
+   *  everywhere, what is behind it is entirely the provider's.
+   *
+   *  Like the other popup commands this one is answered when the window
+   *  closes, so it is in `NO_TIMEOUT_CMDS` - a user reading and editing a
+   *  server-side setting is not a stalled provider. */
+  OPEN_SERVICES_POPUP: "openServicesPopup",
   REAUTHENTICATE: "reauthenticate",
   // Raise whatever window the provider currently has open for this
   // account, whichever flow opened it. Setup keeps its own command
@@ -610,5 +628,6 @@ export const NO_TIMEOUT_CMDS = new Set([
   HOST_CMD.SYNC_FOLDER,
   HOST_CMD.OPEN_SETUP_POPUP,
   HOST_CMD.OPEN_CONFIG_POPUP,
+  HOST_CMD.OPEN_SERVICES_POPUP,
   HOST_CMD.REAUTHENTICATE,
 ]);

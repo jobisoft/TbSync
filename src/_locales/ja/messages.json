@@ -214,6 +214,9 @@
   "manager.account.settings": {
     "message": "設定"
   },
+  "manager.account.services": {
+    "message": "サービス"
+  },
   "manager.account.remove": {
     "message": "削除"
   },

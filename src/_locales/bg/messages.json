@@ -214,6 +214,9 @@
   "manager.account.settings": {
     "message": "Настройки"
   },
+  "manager.account.services": {
+    "message": "Услуги"
+  },
   "manager.account.remove": {
     "message": "Премахване"
   },

@@ -214,6 +214,9 @@
   "manager.account.settings": {
     "message": "Beállítások"
   },
+  "manager.account.services": {
+    "message": "Szolgáltatások"
+  },
   "manager.account.remove": {
     "message": "Eltávolítás"
   },

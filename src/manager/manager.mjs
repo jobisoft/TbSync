@@ -502,6 +502,18 @@ function accountActions(acc) {
     // account is currently transient-busy from the popup's own RPC.
     canReauth: providerActive && isReauth && (!transientLocked || reauthOpen),
     canEditSettings: providerActive && (!transientLocked || configOpen),
+    // Settings kept on the server, so a connection is the condition for
+    // reaching them - the inverse of everything in the config popup, which
+    // is locked *while* connected. Offered only to a provider that says it
+    // has any: the button is the host's, what is behind it is not.
+    canOpenServices:
+      providerActive &&
+      !!acc.enabled &&
+      !!provider?.capabilities?.hasServicesPopup &&
+      (!transientLocked || configOpen),
+    // Whether the provider has any services at all, which decides if the
+    // button exists rather than whether it is usable right now.
+    hasServices: !!provider?.capabilities?.hasServicesPopup,
     canChangeAutosync: baseEnabled && !!acc.enabled,
     canEditFolders: baseEnabled && !!acc.enabled,
   };
@@ -764,6 +776,26 @@ function renderDetail() {
     state.configsOpen.add(acc.accountId);
     markBusyLocally();
     rpc("editAccount", { accountId: acc.accountId })
+      .catch(showError)
+      .finally(() => state.configsOpen.delete(acc.accountId));
+  });
+
+  const btnServices = frag.querySelector("#btn-services");
+  // Hidden rather than disabled for a provider that has none: a control
+  // that can never do anything is noise, while one that is merely
+  // unreachable right now is information.
+  btnServices.hidden = !actions.hasServices;
+  btnServices.disabled = !actions.canOpenServices;
+  btnServices.addEventListener("click", () => {
+    if (state.configsOpen.has(acc.accountId)) {
+      rpc("focusAccountPopup", { accountId: acc.accountId }).catch((err) =>
+        console.debug("[tbsync] manager: focusAccountPopup failed:", err),
+      );
+      return;
+    }
+    state.configsOpen.add(acc.accountId);
+    markBusyLocally();
+    rpc("openServices", { accountId: acc.accountId })
       .catch(showError)
       .finally(() => state.configsOpen.delete(acc.accountId));
   });

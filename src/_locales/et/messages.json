@@ -214,6 +214,9 @@
   "manager.account.settings": {
     "message": "Sätted"
   },
+  "manager.account.services": {
+    "message": "Teenused"
+  },
   "manager.account.remove": {
     "message": "Eemalda"
   },
