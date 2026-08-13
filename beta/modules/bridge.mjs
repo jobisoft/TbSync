@@ -699,7 +699,7 @@ const COMMANDS = {
     summary: "One card.",
     args: "{ id }",
     scope: "book",
-    run: ({ id }) => messenger.contacts.get(id),
+    run: ({ id }, { bookId }) => requireInBook("card", id, bookId),
   },
   /** `id` is optional and worth passing: it makes the created card's id
    *  predictable, which is what lets a caller assert on the changelog entry
@@ -715,13 +715,19 @@ const COMMANDS = {
     summary: "Replace a card with vCard text.",
     args: "{ id, vCard }",
     scope: "book",
-    run: ({ id, vCard }) => messenger.contacts.update(id, { vCard }),
+    async run({ id, vCard }, { bookId }) {
+      await requireInBook("card", id, bookId);
+      return messenger.contacts.update(id, { vCard });
+    },
   },
   "contacts.remove": {
     summary: "Delete one card.",
     args: "{ id }",
     scope: "book",
-    run: ({ id }) => messenger.contacts.delete(id),
+    async run({ id }, { bookId }) {
+      await requireInBook("card", id, bookId);
+      return messenger.contacts.delete(id);
+    },
   },
 
   "lists.query": {
@@ -734,7 +740,7 @@ const COMMANDS = {
     summary: "One mailing list.",
     args: "{ id }",
     scope: "book",
-    run: ({ id }) => messenger.mailingLists.get(id),
+    run: ({ id }, { bookId }) => requireInBook("mailing list", id, bookId),
   },
   /** A list is properties, not a vCard - the platform has no vCard
    *  representation for one. */
@@ -753,33 +759,50 @@ const COMMANDS = {
     summary: "Patch a mailing list's properties.",
     args: "{ id, ... }",
     scope: "book",
-    run: ({ id, ...properties }) =>
-      messenger.mailingLists.update(id, properties),
+    async run({ id, ...properties }, { bookId }) {
+      await requireInBook("mailing list", id, bookId);
+      return messenger.mailingLists.update(id, properties);
+    },
   },
   "lists.remove": {
     summary: "Delete one mailing list.",
     args: "{ id }",
     scope: "book",
-    run: ({ id }) => messenger.mailingLists.delete(id),
+    async run({ id }, { bookId }) {
+      await requireInBook("mailing list", id, bookId);
+      return messenger.mailingLists.delete(id);
+    },
   },
   "lists.addMember": {
     summary: "Put a card into a mailing list.",
     args: "{ id, contactId }",
     scope: "book",
-    run: ({ id, contactId }) => messenger.mailingLists.addMember(id, contactId),
+    // Both ids are checked: a card from another book would otherwise be
+    // copied into a granted list, which reaches outside the grant just as
+    // surely as writing to the other book directly.
+    async run({ id, contactId }, { bookId }) {
+      await requireInBook("mailing list", id, bookId);
+      await requireInBook("card", contactId, bookId);
+      return messenger.mailingLists.addMember(id, contactId);
+    },
   },
   "lists.removeMember": {
     summary: "Take a card out of a mailing list.",
     args: "{ id, contactId }",
     scope: "book",
-    run: ({ id, contactId }) =>
-      messenger.mailingLists.removeMember(id, contactId),
+    async run({ id, contactId }, { bookId }) {
+      await requireInBook("mailing list", id, bookId);
+      return messenger.mailingLists.removeMember(id, contactId);
+    },
   },
   "lists.listMembers": {
     summary: "The cards in a mailing list.",
     args: "{ id }",
     scope: "book",
-    run: ({ id }) => messenger.mailingLists.listMembers(id),
+    async run({ id }, { bookId }) {
+      await requireInBook("mailing list", id, bookId);
+      return messenger.mailingLists.listMembers(id);
+    },
   },
 
   /** What this bridge can do, read off the table above.
@@ -1352,6 +1375,35 @@ async function applyScope(scope, args, cmd) {
   return scope === "book"
     ? { bookId: row.targetID }
     : { calendarId: row.targetID };
+}
+
+/**
+ * Hold a card or mailing-list id to the granted address book.
+ *
+ * Book-scoped verbs are handed a `bookId`, but the platform addresses cards
+ * and lists by ids that are unique across every book - so an id belonging to
+ * another book resolves perfectly well, and the grant only looks enforced.
+ * The calendar verbs have no such gap: `messenger.calendar.items.*` take the
+ * calendar id alongside the item id, so the platform scopes the lookup for
+ * them.
+ *
+ * Returns the node, because the callers that only need to read it want it
+ * anyway and a second fetch would be wasted. An unknown id raises the
+ * platform's own "not found" rather than a scope error: it is not a grant
+ * problem, and saying so would be misleading.
+ */
+async function requireInBook(noun, id, bookId) {
+  const api = noun === "card" ? messenger.contacts : messenger.mailingLists;
+  const node = await api.get(id);
+  if (node?.parentId !== bookId) {
+    throw withCode(
+      new Error(
+        `${noun} ${id} is not in the bridge's address book (${bookId})`,
+      ),
+      "E:OUT_OF_SCOPE",
+    );
+  }
+  return node;
 }
 
 function withCode(err, code) {
