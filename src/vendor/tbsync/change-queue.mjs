@@ -32,12 +32,16 @@
 import { serialize } from "./storage-queue.mjs";
 import {
   applyEvent,
+  familyOf,
   findConsumableServerTag,
+  FOR_SENDMAIL,
   isUserEntry,
   markServerWriteUpdater,
   moveToTailUpdater,
+  recordSendMailUpdater,
   recordUserEditUpdater,
   removeEntryUpdater,
+  removeSendMailUpdater,
   userFacingDiffers,
 } from "./changelog-core.mjs";
 
@@ -153,6 +157,45 @@ export function localQueue(binding) {
         return result.entries;
       });
       return after.filter((e) => isUserEntry(e?.status)).length;
+    },
+
+    /** Every message this binding still owes, oldest first.
+     *
+     *  Read by the phase that sends them, which runs after the pull so that
+     *  what it says reflects the settled item rather than what we hoped to
+     *  push. */
+    async sendMailPending() {
+      const entries = await readQueue(binding.sessionId);
+      return entries.filter((e) => familyOf(e?.status) === FOR_SENDMAIL);
+    },
+
+    /** Note that this item owes a message, or leave the existing note
+     *  alone. See `recordSendMailUpdater` for why the first note wins.
+     *
+     *  Deliberately does not return a pending count: a note is not a
+     *  pending change and must not move the needs-sync badge on a folder
+     *  that is otherwise fully synced. */
+    async recordSendMail({ parentId, itemId, kind, status, detail }) {
+      await mutate(binding, (entries) => {
+        const result = recordSendMailUpdater(entries, {
+          parentId,
+          itemId,
+          kind,
+          status,
+          detail,
+          now: Date.now(),
+        });
+        return result.entries;
+      });
+    },
+
+    /** Drop the note, once the message has been dealt with - sent, refused,
+     *  or found to have nothing to say. One attempt, so all three are the
+     *  same thing here. */
+    async removeSendMail({ parentId, itemId, kind }) {
+      await mutate(binding, (entries) =>
+        removeSendMailUpdater(entries, { parentId, itemId, kind }),
+      );
     },
 
     /** Drop the queued edit for this item - pushed, or established as

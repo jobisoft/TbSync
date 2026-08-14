@@ -25,6 +25,11 @@ import {
   OP_FOR_TAG,
   recordUserEditUpdater,
   removeEntryUpdater,
+  removeSendMailUpdater,
+  recordSendMailUpdater,
+  familyOf,
+  isUserEntry,
+  userFacingDiffers,
 } from "./changelog-core.mjs";
 
 const NOW = 1_000_000;
@@ -408,4 +413,238 @@ test("findConsumableServerTag tolerates a bad kind", () => {
     op: "created",
   });
   assert.equal(idx, -1, "no match, no throw");
+});
+
+// ── The `*_for_sendMail` family ───────────────────────────────────────────
+//
+// The third family exists so a note about a message we still owe can sit
+// beside the pending edit for the same item without either destroying the
+// other. That coexistence is the whole point, and it is what the family
+// being part of a row's identity buys - so most of what follows is checking
+// that every matcher leaves the note alone.
+
+const EV = { kind: "event", parentId: P, itemId: I };
+
+function note(status = "modified_for_sendMail", detail = { from: "A" }) {
+  return { ...EV, timestamp: NOW, status, detail };
+}
+
+function userRow(status = "modified_by_user") {
+  return { ...EV, timestamp: NOW, status };
+}
+
+test("a note and a pending edit coexist for one item", () => {
+  const { entries } = recordSendMailUpdater([userRow()], {
+    ...EV,
+    status: "modified_for_sendMail",
+    detail: { from: "A" },
+    now: NOW,
+  });
+  assert.equal(entries.length, 2, "the pending edit was not replaced");
+  assert.deepEqual(
+    entries.map((e) => e.status).sort(),
+    ["modified_by_user", "modified_for_sendMail"],
+  );
+});
+
+test("a note is never pushed and never shown", () => {
+  assert.equal(isUserEntry("modified_for_sendMail"), false);
+  assert.equal(isUserEntry("added_for_sendMail"), false);
+  assert.equal(
+    userFacingDiffers([userRow()], [userRow(), note()]),
+    false,
+    "adding a note must not repaint the manager",
+  );
+});
+
+test("a further user edit leaves the note alone", () => {
+  // The regression this family was created to avoid: a status-blind matcher
+  // takes the note as the edit's `prior` and then deletes it, so the
+  // message is never sent and nothing says why.
+  const before = [note(), userRow("added_by_user")];
+  const { entries } = recordUserEditUpdater(before, {
+    ...EV,
+    op: "updated",
+    detail: { exceptions: "x" },
+    now: NOW + 1,
+  });
+  assert.ok(
+    entries.some((e) => e.status === "modified_for_sendMail"),
+    "the note survived",
+  );
+  assert.deepEqual(
+    entries.find((e) => e.status === "modified_for_sendMail").detail,
+    { from: "A" },
+    "and kept its own detail, not the edit's",
+  );
+  assert.ok(entries.some((e) => e.status === "added_by_user"));
+});
+
+test("an observed event leaves the note alone", () => {
+  const after = applyEvent([note(), userRow("added_by_user")], {
+    ...EV,
+    op: "updated",
+    now: NOW + 1,
+  });
+  assert.ok(after.some((e) => e.status === "modified_for_sendMail"));
+});
+
+test("a pre-tag replaces the pending edit but never the note", () => {
+  const after = markServerWriteUpdater([note(), userRow()], {
+    ...EV,
+    status: "modified_by_server",
+    now: NOW + 1,
+  });
+  assert.deepEqual(
+    after.map((e) => e.status).sort(),
+    ["modified_by_server", "modified_for_sendMail"],
+    "the user edit was covered, the note was not",
+  );
+});
+
+test("pushing the edit does not take the note with it", () => {
+  // The sequence a successful push runs: the entry is removed, and the note
+  // has to still be there for the mail phase that comes after the pull.
+  const after = removeEntryUpdater([note(), userRow()], EV);
+  assert.deepEqual(after.map((e) => e.status), ["modified_for_sendMail"]);
+});
+
+test("re-staging a failed push does not re-order the note", () => {
+  const before = [note(), userRow()];
+  const after = moveToTailUpdater(before, [EV]);
+  assert.equal(after[0].status, "modified_for_sendMail");
+  assert.equal(after[1].status, "modified_by_user");
+});
+
+test("the note keeps the baseline from the FIRST edit", () => {
+  // Two edits between syncs are one delta, measured against what the
+  // recipients actually hold - not against an intermediate they never saw.
+  let entries = [];
+  ({ entries } = recordSendMailUpdater(entries, {
+    ...EV,
+    status: "modified_for_sendMail",
+    detail: { from: "A" },
+    now: NOW,
+  }));
+  const second = recordSendMailUpdater(entries, {
+    ...EV,
+    status: "modified_for_sendMail",
+    detail: { from: "B" },
+    now: NOW + 1,
+  });
+  assert.equal(second.changed, false, "nothing moved, so no storage write");
+  assert.equal(second.entries, entries, "same reference");
+  assert.deepEqual(entries[0].detail, { from: "A" });
+});
+
+test("an invitation still owed is never downgraded to an update", () => {
+  // Create a meeting, edit it five times, sync once: the attendees get one
+  // invitation carrying the final state, not an invitation and four
+  // corrections. Nobody knows the meeting exists until the first one goes.
+  let entries = [];
+  ({ entries } = recordSendMailUpdater(entries, {
+    ...EV,
+    status: "added_for_sendMail",
+    now: NOW,
+  }));
+  for (let i = 1; i <= 5; i++) {
+    ({ entries } = recordSendMailUpdater(entries, {
+      ...EV,
+      status: "modified_for_sendMail",
+      detail: { from: `edit-${i}` },
+      now: NOW + i,
+    }));
+  }
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].status, "added_for_sendMail");
+  assert.equal(entries[0].detail, undefined, "an add has nothing to diff");
+});
+
+test("deleting the item drops the message it owed", () => {
+  // A deletion is never announced, so an item on its way out owes nobody
+  // anything. Without this the note outlives the item, and the only thing
+  // between it and a wrong message is a guard in the mail phase.
+  const { entries } = recordUserEditUpdater([note(), userRow()], {
+    ...EV,
+    op: "deleted",
+    now: NOW + 1,
+  });
+  assert.deepEqual(entries.map((e) => e.status), ["deleted_by_user"]);
+});
+
+test("an add cancelled by a delete takes its note with it", () => {
+  const { entries } = recordUserEditUpdater(
+    [note("added_for_sendMail", undefined), userRow("added_by_user")],
+    { ...EV, op: "deleted", now: NOW + 1 },
+  );
+  assert.deepEqual(entries, [], "nothing queued, nothing owed");
+});
+
+test("an observed delete drops the note too", () => {
+  const after = applyEvent([note(), userRow()], {
+    ...EV,
+    op: "deleted",
+    now: NOW + 1,
+  });
+  assert.deepEqual(after.map((e) => e.status), ["deleted_by_user"]);
+});
+
+test("delete then re-create starts clean", () => {
+  // The reason the note's own rules can stay trivial: there is no stale
+  // baseline for the new item to trip over.
+  let entries = [note(), userRow()];
+  ({ entries } = recordUserEditUpdater(entries, {
+    ...EV,
+    op: "deleted",
+    now: NOW + 1,
+  }));
+  ({ entries } = recordSendMailUpdater(entries, {
+    ...EV,
+    status: "added_for_sendMail",
+    now: NOW + 2,
+  }));
+  const owed = entries.filter((e) => familyOf(e.status) === "for_sendMail");
+  assert.deepEqual(owed.map((e) => e.status), ["added_for_sendMail"]);
+  assert.equal(owed[0].detail, undefined);
+});
+
+test("removing the note takes only the note", () => {
+  const after = removeSendMailUpdater([note(), userRow()], EV);
+  assert.deepEqual(after.map((e) => e.status), ["modified_by_user"]);
+});
+
+test("notes of another kind and another item are untouched", () => {
+  const other = { ...note(), kind: "task" };
+  const elsewhere = { ...note(), itemId: "item-2" };
+  const after = removeSendMailUpdater([note(), other, elsewhere], EV);
+  assert.deepEqual(after, [other, elsewhere]);
+});
+
+test("a note refuses a status from another family, and a bad kind", () => {
+  assert.throws(
+    () =>
+      recordSendMailUpdater([], {
+        ...EV,
+        status: "modified_by_user",
+        now: NOW,
+      }),
+    /not a sendMail status/,
+  );
+  assert.throws(
+    () =>
+      recordSendMailUpdater([], {
+        ...EV,
+        kind: "events",
+        status: "modified_for_sendMail",
+        now: NOW,
+      }),
+    /unknown kind/,
+  );
+});
+
+test("a row from a family we do not know is inert, not misfiled", () => {
+  assert.equal(familyOf("something_by_future"), null);
+  const alien = { ...EV, timestamp: NOW, status: "something_by_future" };
+  assert.deepEqual(removeEntryUpdater([alien], EV), [alien]);
+  assert.deepEqual(removeSendMailUpdater([alien], EV), [alien]);
 });
