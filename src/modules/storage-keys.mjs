@@ -33,6 +33,15 @@ export const DEFAULT_SETTINGS = {
   // Entries with a higher level than this are dropped on append, never
   // enter the buffer, and are therefore never part of a bug report.
   logLevel: 2,
+  // How many entries the session buffer keeps. Raised by a test run that
+  // needs a whole section's wire in one piece: a section asserting on what
+  // was sent reads the buffer, and once it rolls the missing command reads
+  // as "never sent" rather than "no longer recorded".
+  eventLogMax: 500,
 };
 
+/** Fallback when the setting is missing or unusable. */
 export const EVENT_LOG_MAX = 500;
+
+/** Bounds, so a bad value cannot cost the whole log or exhaust the quota. */
+export const EVENT_LOG_MAX_RANGE = Object.freeze({ min: 50, max: 20000 });
