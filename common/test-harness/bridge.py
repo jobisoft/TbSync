@@ -107,7 +107,19 @@ def audit():
         )
 
 
-def rpc(cmd, timeout=180, **args):
+# The helper clamps every call to its own ceiling, so this is the longest a
+# verb can be given. Syncing is the one verb whose length is set by a server
+# rather than by us: the protocol deliberately exempts SYNC_ACCOUNT from the
+# host-to-provider timeout for that reason, and a flat 180s here contradicted
+# it - the helper would stop waiting while the sync carried on inside
+# Thunderbird, so a slow-but-healthy sync surfaced as a failure. What bounds
+# a run is the runner's own per-section limit, which can say "too long for a
+# section"; a per-call number cannot.
+MAX_TIMEOUT_S = 600
+LONG_CMDS = {"syncAccount": MAX_TIMEOUT_S}
+
+
+def rpc(cmd, timeout=None, **args):
     """Call one bridge verb.
 
     Returns the decoded reply: `{"ok": True, "result": ...}` or
@@ -118,6 +130,8 @@ def rpc(cmd, timeout=180, **args):
     The event log is read after every call, so an error surfaces at the next
     thing the suite does rather than at the next thing that happens to check.
     """
+    if timeout is None:
+        timeout = LONG_CMDS.get(cmd, 180)
     body = json.dumps(
         {"cmd": cmd, "args": args, "timeoutMs": timeout * 1000}
     ).encode()
