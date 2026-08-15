@@ -85,7 +85,20 @@ def applies(t, family):
     return any(family.startswith(v) for v in t["versions"])
 
 
-def run(tests, session, prepare=None, stop_on_error=True):
+def _finish_section(finish, section, failures):
+    """Close one section. Returns True when it reported a problem."""
+    try:
+        finish(section)
+        return False
+    except Exception as e:
+        for i, line in enumerate(str(e).splitlines()):
+            head = f"  ERROR section {section} teardown: " if not i else "       "
+            print(f"{head}{line}")
+        failures.append(f"{section}.teardown")
+        return True
+
+
+def run(tests, session, prepare=None, finish=None, stop_on_error=True):
     """Run tests in order. Returns the exit code: 0 when nothing failed.
 
     Stops at the first failure by default. Once something has gone wrong the
@@ -98,6 +111,13 @@ def run(tests, session, prepare=None, stop_on_error=True):
     that will actually run - never for a section whose tests are all skipped,
     since preparing costs syncs. It is where a section states the account it
     needs rather than inheriting whatever the last one left behind.
+
+    `finish(section)` is called once after that section's last test, and is
+    the other half of the same idea: a section states what it leaves behind.
+    Raising from it fails the section, which is the point - work still owed
+    when a section ends is a real result, and the next section's setup would
+    otherwise discard it unseen. It does not run after a failure, since a
+    section that already stopped will naturally be mid-flight.
     """
     passed = failed = skipped = 0
     started = time.time()
@@ -112,6 +132,11 @@ def run(tests, session, prepare=None, stop_on_error=True):
             time.sleep(PAUSE_S)
         first = False
         if applies(t, session.family) and t["section"] != prepared:
+            if prepared is not None and not failed and finish:
+                if _finish_section(finish, prepared, failures):
+                    failed += 1
+                    if stop_on_error:
+                        break
             prepared = t["section"]
             if prepare:
                 try:
@@ -159,6 +184,11 @@ def run(tests, session, prepare=None, stop_on_error=True):
                 print(f"\n  stopping: {remaining} later test(s) not run - the "
                       f"account is no longer in a known state")
             break
+
+    # The last section has no successor to close it.
+    if not failed and finish and prepared is not None:
+        if _finish_section(finish, prepared, failures):
+            failed += 1
 
     # Nothing follows the last test to catch what it logged. An entry can
     # land after the call that caused it has already answered, so the run
