@@ -64,7 +64,7 @@ import * as eventLog from "./event-log.mjs";
 import * as accounts from "./accounts.mjs";
 import * as folders from "./folders.mjs";
 import * as router from "./router.mjs";
-import { syncAccount } from "./sync-coordinator.mjs";
+import { syncAccount, maintainAccount } from "./sync-coordinator.mjs";
 import { HOST_CMD } from "../vendor/tbsync/protocol.mjs";
 
 const NATIVE_APP = "tbsync_bridge_host";
@@ -206,6 +206,28 @@ const COMMANDS = {
    *  already syncing, holding E:AUTH, or whose provider is not connected,
    *  so the folder rows come back too - they are how you tell "synced
    *  cleanly" from "did nothing at all". */
+  /** Offer the account its housekeeping slot now, instead of waiting for
+   *  the hourly tick.
+   *
+   *  The same call the tick makes, so it exercises the real path rather
+   *  than a private one - including stepping aside for an account that is
+   *  syncing, which is what `asked: false` reports.
+   *
+   *  Deliberately no way to force the work. What is due is the provider's
+   *  policy and the host neither knows nor asks; a `force` here would put
+   *  that policy back in the host. A caller that wants the work to actually
+   *  happen clears whatever the provider stamps to record its last run -
+   *  `custom` is writable through `storage.restore` - and then calls this. */
+  maintainAccount: {
+    summary: "Offer an account its maintenance slot now, and wait for it.",
+    args: "{ accountId }",
+    scope: "account",
+    async run(_args, { accountId }) {
+      const asked = await maintainAccount(accountId);
+      return { accountId, asked };
+    },
+  },
+
   syncAccount: {
     summary: "Sync one account and resolve when it has finished.",
     args: "{ accountId }",

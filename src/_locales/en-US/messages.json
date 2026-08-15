@@ -151,6 +151,9 @@
   "account.status.setting-up": {
     "message": "Account is being prepared…"
   },
+  "account.status.maintaining": {
+    "message": "Provider is checking this account's data…"
+  },
   "account.status.legacy-locked": {
     "message": "Set up by an older version - reconnect to synchronize"
   },

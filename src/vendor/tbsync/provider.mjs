@@ -44,7 +44,13 @@ const DEFAULT_CONFIG_HEIGHT = 580;
 /** Commands that count as "a sync is running" for cancellation. Each gets an
  *  AbortController for the duration of the call, so a CANCEL_SYNC arriving
  *  while one is in flight can stop it. */
-const SYNC_CMDS = new Set([HOST_CMD.SYNC_ACCOUNT, HOST_CMD.SYNC_FOLDER]);
+const SYNC_CMDS = new Set([
+  HOST_CMD.SYNC_ACCOUNT,
+  HOST_CMD.SYNC_FOLDER,
+  // Maintenance is cancellable for the same reason a sync is: it runs as
+  // long as the account is big, and a disconnect must be able to stop it.
+  HOST_CMD.MAINTAIN,
+]);
 
 /** The code to report for a thrown error.
  *
@@ -345,6 +351,22 @@ export class TbSyncProviderImplementation {
   /** Sync one folder. Host calls this per selected folder after onSyncAccount. */
   async onSyncFolder(_args) {
     throw this.#notImplemented("onSyncFolder");
+  }
+
+  /** Housekeeping time - `{ accountId }`, answer `{ done }`.
+   *
+   *  Not `notImplemented`: a provider with nothing to maintain is the
+   *  normal case, and the host asks every enabled account hourly. Throwing
+   *  would fill its event log with a failure that means "nothing to do".
+   *
+   *  Override it to do work the account should not be synced during. The
+   *  host has already taken the account's lock, so a sync cannot be running
+   *  and one asked for meanwhile waits - but it will wait for as long as
+   *  this takes, and the user is looking at a locked account while it does.
+   *  Keep it short, and answer `{ done: false }` the moment there is
+   *  nothing due rather than checking expensively. */
+  async onMaintain(_args) {
+    return { done: false };
   }
   /** Cooperative cancel for an in-flight sync.
    *
@@ -809,6 +831,8 @@ export class TbSyncProviderImplementation {
         return this.onSyncAccount(args);
       case HOST_CMD.SYNC_FOLDER:
         return this.onSyncFolder(args);
+      case HOST_CMD.MAINTAIN:
+        return this.onMaintain(args);
       case HOST_CMD.CANCEL_SYNC:
         return this.onCancelSync(args);
       case HOST_CMD.OPEN_SETUP_POPUP:

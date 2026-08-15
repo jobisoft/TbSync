@@ -27,14 +27,30 @@ export const busyAccounts = new Set();
  *  checkbox + rejects overlapping toggles on the same folder. */
 export const busyFolders = new Set();
 
-/** Folder syncs a provider asked for while the account was already syncing,
- *  as `accountId -> Set<folderId>`. Drained when that sync finishes.
+/** Work asked for while the account was busy, as
+ *  `accountId -> Map<kind, { at, payload }>`.
  *
- *  A request is deferred rather than dropped because something asked for it on
- *  purpose - a user pressing Reload on a calendar, or the calendar's own
- *  refresh timer firing. Repeats for the same folder collapse into the set, so
- *  five impatient clicks still cost one run. */
-export const pendingSyncRequests = new Map();
+ *  Deferred rather than dropped because something asked for it on purpose -
+ *  a user pressing Reload on a calendar, the calendar's own refresh timer,
+ *  or the maintenance tick.
+ *
+ *  **One slot per kind** is the whole design. There is nowhere to put a
+ *  second sync, so five impatient clicks cost one run, and a kind cannot
+ *  crowd out another kind however often it arrives.
+ *
+ *  `at` is when the slot was *first* filled, and a merge keeps the earlier
+ *  one. That is not cosmetic: the next item to run is the oldest slot, so a
+ *  request that kept refreshing its own timestamp could starve every other
+ *  kind indefinitely.
+ *
+ *  In memory, like the locks above - a host restart drops deferred work,
+ *  which is the right trade against replaying it against a world that has
+ *  moved on. */
+export const pendingWork = new Map();
+
+/** The kinds that can be queued. `sync` carries `{ full, folderIds }`;
+ *  `maintain` carries nothing. */
+export const WORK = Object.freeze({ SYNC: "sync", MAINTAIN: "maintain" });
 
 /** Accounts a provider has declared "upgrading" via SET_PROVIDER_UPGRADE_LOCK.
  *  While in this set, the host refuses every user-initiated RPC against
@@ -54,6 +70,19 @@ export const upgradeAccounts = new Set();
  *  disk that could strand an account for good. */
 export const settingUpAccounts = new Set();
 
+/** Accounts inside a HOST_CMD.MAINTAIN call.
+ *
+ *  A lock of its own rather than reusing `syncingAccounts`: the manager
+ *  renders these sets, and painting "syncing" while a provider tidies its
+ *  own storage would say something untrue about an account doing no
+ *  network at all. It greys out Sync exactly as the other locks do, so a
+ *  user cannot click into a request that would silently wait.
+ *
+ *  In memory for the reason `settingUpAccounts` gives: a provider that dies
+ *  mid-maintenance leaves a mark the next host start drops, rather than a
+ *  disk flag that could strand an account for good. */
+export const maintainingAccounts = new Set();
+
 /** Serialise the sets for inclusion in the `getState` RPC reply. */
 export function snapshot() {
   return {
@@ -63,10 +92,11 @@ export function snapshot() {
     busyFolders: [...busyFolders],
     upgradeAccounts: [...upgradeAccounts],
     settingUpAccounts: [...settingUpAccounts],
-    pendingSyncRequests: Object.fromEntries(
-      [...pendingSyncRequests].map(([accountId, folderIds]) => [
+    maintainingAccounts: [...maintainingAccounts],
+    pendingWork: Object.fromEntries(
+      [...pendingWork].map(([accountId, kinds]) => [
         accountId,
-        [...folderIds],
+        Object.fromEntries(kinds),
       ]),
     ),
   };

@@ -9,9 +9,113 @@ import {
   syncingAccounts,
   cancellingAccounts,
   busyFolders,
-  pendingSyncRequests,
+  pendingWork,
+  maintainingAccounts,
   settingUpAccounts,
+  WORK,
 } from "./transient.mjs";
+
+/** Remember work for an account that is busy, in that kind's one slot.
+ *
+ *  Merging `sync` is a join, because a full account sync and a per-folder
+ *  one are not independent: a full sync covers every folder, so it replaces
+ *  a pending folder list, and a folder request arriving against a pending
+ *  full sync is absorbed by it. Two folder requests union. Anything else
+ *  would sync the same folder twice for no reason.
+ *
+ *  The slot keeps the `at` it was first filled with. The drain runs the
+ *  oldest slot first, so a kind that refreshed its own timestamp on every
+ *  merge could hold the queue forever - `sync` is exactly the kind that
+ *  arrives often enough to do it.
+ */
+function enqueueWork(accountId, kind, payload = null) {
+  const kinds = pendingWork.get(accountId) ?? new Map();
+  const held = kinds.get(kind);
+  let next = payload;
+  if (held && kind === WORK.SYNC) {
+    next = {
+      full: held.payload.full || payload.full,
+      folderIds: new Set([...held.payload.folderIds, ...payload.folderIds]),
+    };
+    if (next.full) next.folderIds = new Set();
+  }
+  kinds.set(kind, { at: held?.at ?? Date.now(), payload: next });
+  pendingWork.set(accountId, kinds);
+}
+
+/** Offer an account its housekeeping slot.
+ *
+ *  The same refusals a sync makes, for the same reasons: an account that is
+ *  disconnected, mid-teardown, still being prepared, locked out on
+ *  credentials or held back as a legacy import has nothing a provider
+ *  should be tidying, and several of those states mean the provider is not
+ *  in a position to answer.
+ *
+ *  A sync in progress defers this rather than queueing behind it - the tick
+ *  comes round again in a minute and the work is due once a day, so waiting
+ *  is free and holding a slot for it would only delay the syncs behind it.
+ *  The reverse is not symmetrical: a sync asked for while this runs *is*
+ *  remembered, because somebody asked for that on purpose.
+ *
+ *  Answers whether the provider was actually asked. False means the account
+ *  was busy or ineligible and nothing happened, so the caller should offer
+ *  again shortly rather than counting this as the account's turn - an
+ *  account that is syncing whenever the offer arrives would otherwise never
+ *  be maintained at all, and the busiest accounts are the likeliest to be.
+ *
+ *  The account is locked while it runs and the manager says so. That is the
+ *  point rather than a side effect: the alternative was accepting a Sync
+ *  click and silently making the user wait for it.
+ */
+export async function maintainAccount(accountId) {
+  if (syncingAccounts.has(accountId)) return false;
+  if (maintainingAccounts.has(accountId)) return false;
+  if (cancellingAccounts.has(accountId)) return false;
+  if (settingUpAccounts.has(accountId)) return false;
+  const acc = await accounts.get(accountId);
+  if (!acc || !acc.enabled) return false;
+  if (acc.error === ERR.AUTH) return false;
+  if (acc.legacyImported) return false;
+
+  maintainingAccounts.add(accountId);
+  ui.broadcast({ type: "accounts-changed", accountId });
+  try {
+    await router.sendCmd(acc.provider, HOST_CMD.MAINTAIN, { accountId });
+  } catch (err) {
+    // Housekeeping nobody asked for, so a failure is worth a line and
+    // nothing more: no account error, no folder status, no retry. The next
+    // tick offers the slot again.
+    await eventLog
+      .append({
+        accountId,
+        folderId: null,
+        level: "info",
+        message: `Maintenance did not complete: ${err?.message ?? err}`,
+      })
+      .catch(() => {});
+  } finally {
+    maintainingAccounts.delete(accountId);
+    ui.broadcast({ type: "accounts-changed", accountId });
+  }
+  await drainPendingWork(accountId);
+  // Asked, whatever came back. A provider that answered "nothing due", or
+  // could not be reached at all, has still had its turn - retrying either
+  // every minute would only fill the log.
+  return true;
+}
+
+/** Take the slot that has waited longest, or null. */
+function takeOldestWork(accountId) {
+  const kinds = pendingWork.get(accountId);
+  if (!kinds?.size) return null;
+  let pick = null;
+  for (const [kind, slot] of kinds) {
+    if (!pick || slot.at < pick.slot.at) pick = { kind, slot };
+  }
+  kinds.delete(pick.kind);
+  if (!kinds.size) pendingWork.delete(accountId);
+  return pick;
+}
 
 /** Drive an account sync over the port: syncAccount, then syncFolder per
  *  selected folder. The host owns the universal sync-status fields
@@ -101,7 +205,7 @@ export async function abortAccountSync(accountId) {
       // and the first one's finally would then clear the second one's lock.
       router.abortAccount(acc.provider, accountId);
     }
-    pendingSyncRequests.delete(accountId);
+    pendingWork.delete(accountId);
     if (wasSyncing) {
       await eventLog.append({
         accountId,
@@ -149,16 +253,19 @@ export async function syncAccount(
   accountId,
   { syncList = true, only = null } = {},
 ) {
-  if (syncingAccounts.has(accountId)) {
-    // Something asked for this on purpose and we are busy. Remember it rather
-    // than dropping it - the `finally` below runs it once this sync settles.
-    // Only a scoped request survives: an unscoped one is what is already
-    // happening.
-    if (only) {
-      const pending = pendingSyncRequests.get(accountId) ?? new Set();
-      pending.add(only);
-      pendingSyncRequests.set(accountId, pending);
-    }
+  if (syncingAccounts.has(accountId) || maintainingAccounts.has(accountId)) {
+    // Something asked for this on purpose and we are busy. Remember it
+    // rather than dropping it - the drain below runs it once we settle.
+    //
+    // Including an unscoped request, which used to be dropped as "what is
+    // already happening". It is not: the run in progress may be maintenance
+    // rather than a sync, and even against a sync the request may come from
+    // a user who has just edited something the pass has already gone past.
+    // One slot per kind bounds any number of them to a single extra run.
+    enqueueWork(accountId, WORK.SYNC, {
+      full: !only,
+      folderIds: new Set(only ? [only] : []),
+    });
     return;
   }
   // Mid-abort: the account is on its way out, and starting here would race
@@ -348,7 +455,7 @@ export async function syncAccount(
   // the deferred set, but a request can arrive between the abort and this
   // line, and honouring it would restart exactly what the user asked us to
   // stop.
-  if (!cancelled) await drainPendingSyncRequests(accountId);
+  if (!cancelled) await drainPendingWork(accountId);
 }
 
 /** Run whatever was asked for while this account was busy.
@@ -359,12 +466,21 @@ export async function syncAccount(
  *  request arriving during the deferred sync is deferred again rather than
  *  lost.
  */
-async function drainPendingSyncRequests(accountId) {
-  const pending = pendingSyncRequests.get(accountId);
-  if (!pending?.size) return;
-  pendingSyncRequests.delete(accountId);
-  for (const folderId of pending) {
-    await syncAccount(accountId, { only: folderId });
+async function drainPendingWork(accountId) {
+  for (;;) {
+    const next = takeOldestWork(accountId);
+    if (!next) return;
+    if (next.kind === WORK.MAINTAIN) {
+      await maintainAccount(accountId);
+      continue;
+    }
+    if (next.payload?.full ?? next.slot.payload.full) {
+      await syncAccount(accountId);
+      continue;
+    }
+    for (const folderId of next.slot.payload.folderIds) {
+      await syncAccount(accountId, { only: folderId });
+    }
   }
 }
 

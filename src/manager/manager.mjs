@@ -121,6 +121,7 @@ const state = {
     busyFolders: new Set(),
     upgradeAccounts: new Set(),
     settingUpAccounts: new Set(),
+    maintainingAccounts: new Set(),
   },
 };
 
@@ -205,6 +206,9 @@ async function refreshState() {
   state.transient.upgradeAccounts = new Set(s.transient?.upgradeAccounts ?? []);
   state.transient.settingUpAccounts = new Set(
     s.transient?.settingUpAccounts ?? [],
+  );
+  state.transient.maintainingAccounts = new Set(
+    s.transient?.maintainingAccounts ?? [],
   );
 
   // Wipe stale per-folder sync cache when an account toggles in or out of
@@ -389,6 +393,11 @@ function effectiveAccountState(acc) {
   // simply not ready yet.
   if (state.transient.settingUpAccounts.has(acc.accountId))
     return { status: "setting-up", interactive: false };
+  // Housekeeping the provider asked for no permission to do. Same
+  // treatment as the two above: nothing is wrong, nothing needs doing, and
+  // acting on the account now would collide with it.
+  if (state.transient.maintainingAccounts.has(acc.accountId))
+    return { status: "maintaining", interactive: false };
   if (state.transient.syncingAccounts.has(acc.accountId))
     return { status: "syncing", interactive: false };
   // Transient-busy locks interactive UI (buttons) while a UI-initiated RPC

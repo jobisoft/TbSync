@@ -33,6 +33,7 @@ import {
 } from "./modules/transient.mjs";
 import {
   syncAccount,
+  maintainAccount,
   abortAccountSync,
   endAccountCancel,
   recomputeAccountError,
@@ -1068,6 +1069,18 @@ ui.setManagerRpcHandler(
 const AUTOSYNC_ALARM = "tbsync.autosync.tick";
 const AUTOSYNC_TICK_MINUTES = 1;
 
+/** How often an enabled account is offered its housekeeping slot.
+ *
+ *  The offer, not the work: what is due and how often is the provider's,
+ *  and it answers `{ done: false }` when there is nothing. Hourly is chosen
+ *  so a provider on a daily cycle lands within an hour of its own deadline
+ *  without the host having to know what that deadline is.
+ *
+ *  In memory: a host restart offers the slot again, which costs one
+ *  round-trip against a provider that will decline it. */
+const MAINTAIN_EVERY_MS = 60 * 60_000;
+const lastMaintainOffer = new Map();
+
 async function onAutosyncTick() {
   const now = Date.now();
   for (const acc of await accounts.list()) {
@@ -1086,6 +1099,32 @@ async function onAutosyncTick() {
     syncAccount(acc.accountId).catch((err) =>
       console.warn(`[tbsync] autosync(${acc.accountId}) failed:`, err),
     );
+  }
+  await offerMaintenance(now);
+}
+
+/** Offer the housekeeping slot to every account that is due one.
+ *
+ *  After the sync pass on purpose, and one account at a time: an account
+ *  that is syncing declines and takes its turn on a later tick - a minute
+ *  later, against work due daily - and nothing starts a second provider's
+ *  housekeeping while the first is still going.
+ */
+async function offerMaintenance(now) {
+  for (const acc of await accounts.list()) {
+    if (!acc.enabled) continue;
+    if (now - (lastMaintainOffer.get(acc.accountId) ?? 0) < MAINTAIN_EVERY_MS) {
+      continue;
+    }
+    // Stamped only when the provider was actually asked. Stamping before
+    // the attempt spent the whole hour on an account that merely happened
+    // to be syncing, and the accounts busy enough to collide are exactly
+    // the ones that most need the work done.
+    const asked = await maintainAccount(acc.accountId).catch((err) => {
+      console.warn(`[tbsync] maintain(${acc.accountId}) failed:`, err);
+      return true;
+    });
+    if (asked) lastMaintainOffer.set(acc.accountId, now);
   }
 }
 

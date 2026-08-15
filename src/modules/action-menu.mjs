@@ -25,6 +25,7 @@ import * as ui from "./messaging-ui.mjs";
 import {
   cancellingAccounts,
   settingUpAccounts,
+  maintainingAccounts,
   syncingAccounts,
   upgradeAccounts,
 } from "./transient.mjs";
@@ -121,6 +122,10 @@ function canSync(acc) {
   if (upgradeAccounts.has(acc.accountId)) return false;
   // Registered, not prepared yet - see SET_ACCOUNT_SETUP_LOCK.
   if (settingUpAccounts.has(acc.accountId)) return false;
+  // The provider is tidying its own storage - HOST_CMD.MAINTAIN. Offering
+  // Sync here would accept a click and then make the user wait for work
+  // they never asked for and cannot see.
+  if (maintainingAccounts.has(acc.accountId)) return false;
   if (syncingAccounts.has(acc.accountId)) return false;
   // Being torn down. The mark outlives `syncingAccounts` on purpose - see
   // `endAccountCancel` - so this is a window the check above does not cover.

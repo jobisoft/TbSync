@@ -61,8 +61,22 @@
  *        Versions are integers from here on: the dotted form implied minor
  *        bumps a peer could tolerate, and the host refuses any provider
  *        whose version is not exactly its own.
+ *
+ *   3    2 shipped as 5.2.3, so this entry is what has changed since.
+ *
+ *        A changelog row gained a **family**, and a row's identity went
+ *        from `(parentId, itemId, kind)` to that plus the family. It is
+ *        what lets a `*_for_sendMail` note sit beside the `*_by_user` edit
+ *        for the same item without either displacing the other. A peer
+ *        built against the triple removes one when asked to remove the
+ *        other, so a message owed to somebody outside is dropped in
+ *        silence - which is why 3 cannot pair with 2 even without the
+ *        command below.
+ *
+ *        HOST_CMD.MAINTAIN: a periodic, serialised slot in which a provider
+ *        may do its own housekeeping. A 2 provider has no handler for it.
  */
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 
 /** Name used for the persistent runtime.connect port.
  *
@@ -107,6 +121,26 @@ export const DISCOVERY = {
 export const HOST_CMD = {
   SYNC_ACCOUNT: "syncAccount",
   SYNC_FOLDER: "syncFolder",
+  /** `{ accountId }` - housekeeping time. Answer `{ done }`: false when
+   *  there was nothing to do.
+   *
+   *  The host offers the slot and does not ask what fills it. It is sent
+   *  about hourly per enabled account; a provider whose work belongs on a
+   *  longer cycle keeps its own stamp and answers `done: false` until it is
+   *  due. Deciding *what* or *how often* here would put a provider's
+   *  internals in the host.
+   *
+   *  What the host promises is the part a provider cannot arrange for
+   *  itself: this never overlaps a sync of the same account, and while it
+   *  runs the account is locked - the manager shows it and greys out Sync,
+   *  rather than accepting a click that would appear to do nothing. A sync
+   *  asked for meanwhile is remembered and runs after.
+   *
+   *  Untimed and cancellable, like a sync: the work is bounded by the size
+   *  of the account rather than by anything the host can predict, and a
+   *  disconnect has to be able to stop it. Nothing may be left half-applied
+   *  - the same standard CANCEL_SYNC sets. */
+  MAINTAIN: "maintain",
   /** `{ accountId }` - stop this account's sync now.
    *
    *  The provider must abort its in-flight requests (not merely stop
@@ -626,6 +660,7 @@ export const DEFAULT_RPC_TIMEOUT_MS = 30_000;
 export const NO_TIMEOUT_CMDS = new Set([
   HOST_CMD.SYNC_ACCOUNT,
   HOST_CMD.SYNC_FOLDER,
+  HOST_CMD.MAINTAIN,
   HOST_CMD.OPEN_SETUP_POPUP,
   HOST_CMD.OPEN_CONFIG_POPUP,
   HOST_CMD.OPEN_SERVICES_POPUP,
