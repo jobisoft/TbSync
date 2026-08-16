@@ -296,6 +296,21 @@ class ExtCalendar extends cal.provider.BaseClass {
   }
   async adoptItem(aItem) {
     const adoptCallback = this._cachedAdoptItemCallback;
+    // An item can arrive without a calendar: pasting parses one straight out
+    // of the clipboard's ICS, clones it and gives it a fresh id, and nothing
+    // on that path ever assigns one. Every other route into here - the event
+    // dialog, the items API, offline playback - sets it, which is why paste
+    // was the one thing that broke. `convertItem` reads
+    // `item.calendar.superCalendar.id` to tell the extension which calendar
+    // this is, so without this it throws before any listener is reached, and
+    // paste does not await us: the rejection went nowhere and the event
+    // simply never appeared.
+    if (!aItem.calendar) {
+      if (!aItem.isMutable) {
+        aItem = aItem.clone();
+      }
+      aItem.calendar = this;
+    }
     try {
       // TODO There should be an easier way to determine this
       const options = {};

@@ -6,7 +6,7 @@ calendar/experiments/calendar, at commit
 
     b7f7cb3e76807903a785a03784d6e7df7b213f21
 
-as recorded in ../../VENDOR.md. It is NOT a pristine copy. Five files carry
+as recorded in ../../VENDOR.md. It is NOT a pristine copy. Six files carry
 local changes; every other file is byte-identical to that commit.
 
 The same folder is vendored into TbSync, and the two copies are kept
@@ -50,7 +50,8 @@ What changed, and why
 
 Items 0-4 are in child/ext-calendar-timezones.js, item 5 in
 parent/ext-calendar-timezones.js, item 6 in schema/calendar-calendars.json,
-ext-calendar-utils.sys.mjs and parent/ext-calendar-calendars.js.
+ext-calendar-utils.sys.mjs and parent/ext-calendar-calendars.js, items 7 and
+8 in parent/ext-calendar-provider.js.
 
 0. Priming the timezone service. This runs in the child process, where the
    service is a fresh instance Thunderbird's own startup never touched -
@@ -154,6 +155,59 @@ ext-calendar-utils.sys.mjs and parent/ext-calendar-calendars.js.
    base implementation in calProviderUtils returns false, so storage and
    memory calendars - which have nothing to refresh from - are what the
    guard actually rejects.
+
+7. canNotify answers for the calendar rather than for the base class.
+
+   `calICalendar.canNotify(method, item)` is how Thunderbird asks whether
+   the calendar itself will notify attendees. The inherited implementation
+   in cal.provider.BaseClass answers false unconditionally, so a provider
+   declaring `scheduling: "server"` - the server sends the invitation for a
+   meeting pushed to it, and the reply for one answered through its API -
+   was invisible to everything that asks. The event dialog kept drawing the
+   client-side "notify attendees" checkbox for a calendar that never sends
+   from here.
+
+   Display only: outgoing mail was already suppressed one layer lower,
+   where the transport for "server" reports success without sending. So
+   what was wrong was what the user was told, not what was sent.
+
+   Recorded late. This landed with the scheduling work (EAS 19221a3,
+   TbSync a1e69e9, kept byte-identical by hand) and was never written down
+   here, which is why the header said five files when it was already six.
+
+8. adoptItem gives an item a calendar when it arrives without one. Upstream
+   reads `item.calendar.superCalendar.id` in convertItem, to tell the
+   extension which calendar the item belongs to, and nothing checks that
+   `item.calendar` is set.
+
+   Usually it is. The event dialog, calendar.items.create and offline
+   playback all assign one before adding. Pasting does not: calendar-
+   clipboard.js parses the item straight out of the clipboard's ICS with
+   calIIcsParser, clones it, gives it a fresh id and hands it to addItem,
+   and no step on that path touches calendar. The parsed item never came
+   from a calendar, so there is nothing to inherit.
+
+   The result is that pasting an event into a provider calendar does
+   nothing at all, silently. convertItem is evaluated while building the
+   arguments for fire.async, so it throws before any listener of ours runs -
+   which is why the add-on's own event log stays empty and the reporter of
+   EAS-4-TbSync#354 saw no errors. And pasteFromClipboard calls
+   doTransaction without awaiting it, so the rejection is an unhandled
+   promise that reaches only the Error Console. Nothing appears in the
+   calendar and nothing explains why.
+
+   Fixed in adoptItem rather than in convertItem because that is where the
+   fact is known: an item being adopted belongs to the calendar adopting
+   it, and every consumer of the emitted item benefits, not just the one
+   that happened to dereference it. The item is cloned first when it is
+   immutable.
+
+   This is an upstream bug, not a deviation we want: addItem is documented
+   to take an item, and other providers - storage, CalDAV - never read
+   item.calendar in it. Worth offering upstream ahead of the others.
+
+   Measured on Thunderbird 153.0.3: reported on macOS, reproduced on Linux,
+   so it is not platform-specific.
 
 Verified against Thunderbird 153.0.2 (esr153), 154.0 (beta) and 155.0a1:
 every other member these files touch - defaultTimezone, timezoneIds and
