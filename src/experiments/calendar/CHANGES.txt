@@ -190,8 +190,8 @@ ext-calendar-utils.sys.mjs and parent/ext-calendar-calendars.js, items 7 and
    The result is that pasting an event into a provider calendar does
    nothing at all, silently. convertItem is evaluated while building the
    arguments for fire.async, so it throws before any listener of ours runs -
-   which is why the add-on's own event log stays empty and the reporter of
-   EAS-4-TbSync#354 saw no errors. And pasteFromClipboard calls
+   which is why the add-on's own event log stays empty and the reporter saw
+   no errors. And pasteFromClipboard calls
    doTransaction without awaiting it, so the rejection is an unhandled
    promise that reaches only the Error Console. Nothing appears in the
    calendar and nothing explains why.
