@@ -33,9 +33,9 @@
     "eas4tbsync@jobisoft.de": {
       "updates": [
         {
-          "version": "5.3.1",
-          "update_info_url": "https://github.com/jobisoft/EAS-4-TbSync/releases/tag/v5.3.1",
-          "update_link": "https://github.com/jobisoft/EAS-4-TbSync/releases/download/v5.3.1/eas-4-tbsync_5_3_1_beta.xpi",
+          "version": "5.3.2",
+          "update_info_url": "https://github.com/jobisoft/EAS-4-TbSync/releases/tag/v5.3.2",
+          "update_link": "https://github.com/jobisoft/EAS-4-TbSync/releases/download/v5.3.2/eas-4-tbsync_5_3_2_beta.xpi",
           "applications": {
             "gecko": {
               "strict_min_version": "153.0",
