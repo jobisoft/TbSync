@@ -1,9 +1,4 @@
-import {
-  DEFAULT_SETTINGS,
-  EVENT_LOG_MAX,
-  EVENT_LOG_MAX_RANGE,
-  KEYS,
-} from "./storage-keys.mjs";
+import { DEFAULT_SETTINGS, EVENT_LOG_MAX, KEYS } from "./storage-keys.mjs";
 import { serialize } from "../vendor/tbsync/storage-queue.mjs";
 
 /**
@@ -41,17 +36,6 @@ async function currentLogLevel() {
   return rv[KEYS.SETTINGS]?.logLevel ?? DEFAULT_SETTINGS.logLevel;
 }
 
-async function currentLogMax() {
-  const rv = await browser.storage.local.get({
-    [KEYS.SETTINGS]: DEFAULT_SETTINGS,
-  });
-  const want = Number(rv[KEYS.SETTINGS]?.eventLogMax);
-  if (!Number.isFinite(want)) return EVENT_LOG_MAX;
-  return Math.min(
-    EVENT_LOG_MAX_RANGE.max,
-    Math.max(EVENT_LOG_MAX_RANGE.min, Math.trunc(want)),
-  );
-}
 
 /** Append an entry to the session log if its level passes the current
  *  capture threshold. Returns the stamped entry on persist, or `null` if
@@ -72,9 +56,8 @@ export function append(entry) {
       seq: log.length ? log[log.length - 1].seq + 1 : 0,
     };
     log.push(stamped);
-    const cap = await currentLogMax();
-    if (log.length > cap) {
-      log.splice(0, log.length - cap);
+    if (log.length > EVENT_LOG_MAX) {
+      log.splice(0, log.length - EVENT_LOG_MAX);
     }
     await browser.storage.session.set({ [KEYS.EVENT_LOG]: log });
     return stamped;
