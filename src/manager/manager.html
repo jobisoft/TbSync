@@ -71,15 +71,6 @@
       <div class="event-log">
         <header class="event-log-header">
           <div class="actions">
-            <label class="event-log-verbosity">
-              <span data-i18n-content="manager.eventLog.verbosity"></span>
-              <select id="event-log-verbosity">
-                <option value="0" data-i18n-content="manager.eventLog.verbosity.errors"></option>
-                <option value="1" data-i18n-content="manager.eventLog.verbosity.warnings"></option>
-                <option value="2" data-i18n-content="manager.eventLog.verbosity.info"></option>
-                <option value="3" data-i18n-content="manager.eventLog.verbosity.debug"></option>
-              </select>
-            </label>
             <button id="event-log-clear" class="btn-ghost" type="button" data-i18n-content="manager.eventLog.clear"></button>
             <button id="btn-download-log" type="button" data-i18n-content="manager.eventLog.download"></button>
             <button id="btn-bug-report" type="button" data-i18n-content="manager.eventLog.bugReport.button"></button>
@@ -98,6 +89,28 @@
           <div id="event-log-empty" class="event-log-empty" data-i18n-content="manager.eventLog.empty"></div>
         </div>
       </div>
+
+      <section class="event-log-options">
+        <header data-i18n-content="manager.eventLog.options"></header>
+        <div class="event-log-options-body">
+          <label class="option-row">
+            <span data-i18n-content="manager.eventLog.verbosity"></span>
+            <select id="event-log-verbosity">
+              <option value="0" data-i18n-content="manager.eventLog.verbosity.errors"></option>
+              <option value="1" data-i18n-content="manager.eventLog.verbosity.warnings"></option>
+              <option value="2" data-i18n-content="manager.eventLog.verbosity.info"></option>
+              <option value="3" data-i18n-content="manager.eventLog.verbosity.debug"></option>
+            </select>
+          </label>
+          <label class="option-row">
+            <span data-i18n-content="manager.eventLog.keep"></span>
+            <select id="event-log-limit">
+              <option value="limited" data-i18n-content="manager.eventLog.keep.limited"></option>
+              <option value="unlimited" data-i18n-content="manager.eventLog.keep.unlimited"></option>
+            </select>
+          </label>
+        </div>
+      </section>
     </div>
 
     <div class="tab-panel" data-panel="help" hidden>

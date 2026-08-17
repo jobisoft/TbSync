@@ -8,6 +8,7 @@ import { STATUS_TYPES } from "./vendor/tbsync/status.mjs";
 import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_SETTINGS,
+  EVENT_LOG_DISPLAY_MAX,
   KEYS,
 } from "./modules/storage-keys.mjs";
 import * as accounts from "./modules/accounts.mjs";
@@ -590,7 +591,10 @@ ui.setManagerRpcHandler("getState", async () => {
       needsSync: !!needsSync[a.accountId],
     })),
     providers: providerList,
-    eventLog: await eventLog.list(),
+    // The newest slice only. With the limit lifted the log can be far
+    // longer than a table should hold; `getEventLogAll` serves the file
+    // and the bug report, which do want every line.
+    eventLog: await eventLog.list({ limit: EVENT_LOG_DISPLAY_MAX }),
     settings: (
       await browser.storage.local.get({ [KEYS.SETTINGS]: DEFAULT_SETTINGS })
     )[KEYS.SETTINGS],
@@ -604,6 +608,27 @@ ui.setManagerRpcHandler("getFolders", async ({ accountId }) => ({
 
 ui.setManagerRpcHandler("clearEventLog", async () => {
   await eventLog.clear();
+  return null;
+});
+
+/** Every entry, for the downloaded file and the bug report. The manager
+ *  holds only what it can display, so it must ask rather than export its
+ *  own view - with the limit lifted the two are not the same log. */
+ui.setManagerRpcHandler("getEventLogAll", async () => ({
+  entries: await eventLog.list(),
+}));
+
+/** Keep every entry of this session, or roll at EVENT_LOG_MAX. Lifting
+ *  the limit does not resurrect what has already rolled off. */
+ui.setManagerRpcHandler("setEventLogUnlimited", async ({ unlimited }) => {
+  await serialize(async () => {
+    const rv = await browser.storage.local.get({
+      [KEYS.SETTINGS]: DEFAULT_SETTINGS,
+    });
+    const settings = { ...rv[KEYS.SETTINGS], eventLogUnlimited: !!unlimited };
+    await browser.storage.local.set({ [KEYS.SETTINGS]: settings });
+  });
+  ui.broadcast({ type: "settings-changed" });
   return null;
 });
 

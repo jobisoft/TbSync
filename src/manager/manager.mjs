@@ -15,7 +15,7 @@ import { isBetaBuild } from "../modules/channel.mjs";
 import { FOLDER_TYPES } from "../modules/folder-types.mjs";
 import { hasLocalChanges, hasWarning } from "../modules/folders.mjs";
 import { createManagerClient } from "../modules/manager-client.mjs";
-import { EVENT_LOG_MAX, KEYS } from "../modules/storage-keys.mjs";
+import { EVENT_LOG_DISPLAY_MAX } from "../modules/storage-keys.mjs";
 import { localizeDocument } from "../vendor/i18n/i18n.mjs";
 
 // Self-publish our tab id to session storage so the background can find
@@ -108,11 +108,12 @@ const state = {
   // both now send the same RPC: these gate different buttons, and one
   // shared set would enable Settings during a re-auth.
   reauthsOpen: new Set(),
+  // What the table shows: the newest EVENT_LOG_DISPLAY_MAX entries, which
+  // with the limit lifted is a window onto a much longer log.
   eventLog: [],
-  // Highest seq we've already rendered. Driven by browser.storage.onChanged
-  // so the UI picks up host-internal appends without a parallel broadcast.
+  // Highest seq we've already rendered, so a re-announced entry is ignored.
   lastSeenSeq: -1,
-  settings: { logLevel: 0 },
+  settings: { logLevel: 0, eventLogUnlimited: false },
   // Host-derived transient sets, snapshotted per getState call.
   transient: {
     syncingAccounts: new Set(),
@@ -158,32 +159,33 @@ function handleEvent(event) {
     case "settings-changed":
       refreshState();
       break;
+    // The log lives in IndexedDB, which has no cross-context change event,
+    // so every appender announces its entry here - one entry per message,
+    // and only while a manager tab is open. Every appender (host or via
+    // router) goes through `eventLog.append`, so this catches all of them.
+    case "event-log-entry": {
+      const entry = event.entry;
+      if (typeof entry?.seq !== "number") break;
+      if (entry.seq <= state.lastSeenSeq) break;
+      // seq is dense - it only advances when an entry is really stored -
+      // so a jump means an announcement never arrived. Reload instead of
+      // leaving a hole: the storage-driven path this replaces carried the
+      // whole log every time and healed itself.
+      if (state.lastSeenSeq >= 0 && entry.seq > state.lastSeenSeq + 1) {
+        refreshState();
+        break;
+      }
+      appendEventLogEntry(entry);
+      state.lastSeenSeq = entry.seq;
+      break;
+    }
+    case "event-log-cleared":
+      state.eventLog = [];
+      state.lastSeenSeq = -1;
+      renderEventLog();
+      break;
   }
 }
-
-// Drive event-log refresh from storage instead of a parallel broadcast bus.
-// Every appender (host or via router) eventually writes through
-// `eventLog.append`, so observing the storage key catches all of them
-// uniformly. Diffing by seq makes the update incremental and
-// collision-free.
-browser.storage.onChanged.addListener((changes, area) => {
-  if (area !== "session") return;
-  const change = changes[KEYS.EVENT_LOG];
-  if (!change) return;
-  const next = change.newValue ?? [];
-  if (next.length === 0) {
-    state.eventLog = [];
-    state.lastSeenSeq = -1;
-    renderEventLog();
-    return;
-  }
-  for (const entry of next) {
-    if (typeof entry?.seq !== "number") continue;
-    if (entry.seq <= state.lastSeenSeq) continue;
-    appendEventLogEntry(entry);
-    state.lastSeenSeq = entry.seq;
-  }
-});
 
 // ── Data loaders ──────────────────────────────────────────────────────────
 
@@ -225,7 +227,7 @@ async function refreshState() {
   for (const accId of state.transient.syncingAccounts) {
     if (!prevSyncing.has(accId)) clearFolderSyncCacheForAccount(accId);
   }
-  syncVerbositySelect();
+  syncLogOptions();
 
   // Invariant: exactly one account is selected whenever any exist.
   if (
@@ -1091,13 +1093,13 @@ function renderEventLog() {
 
 function appendEventLogEntry(entry) {
   state.eventLog.push(entry);
-  if (state.eventLog.length > EVENT_LOG_MAX) {
-    state.eventLog.splice(0, state.eventLog.length - EVENT_LOG_MAX);
+  if (state.eventLog.length > EVENT_LOG_DISPLAY_MAX) {
+    state.eventLog.splice(0, state.eventLog.length - EVENT_LOG_DISPLAY_MAX);
   }
   const body = document.getElementById("event-log-rows");
   if (body) {
     body.prepend(eventLogRow(entry));
-    while (body.rows.length > EVENT_LOG_MAX)
+    while (body.rows.length > EVENT_LOG_DISPLAY_MAX)
       body.deleteRow(body.rows.length - 1);
   }
   updateEventLogEmptyState();
@@ -1668,9 +1670,15 @@ async function buildReportBody({ componentId, description }) {
 }
 
 /** Render the session-scoped event log as plain text for the attachment.
- *  One entry per line, chronological (oldest first). */
-function renderEventLogAttachment() {
-  const lines = state.eventLog.map((e) => {
+ *  One entry per line, chronological (oldest first).
+ *
+ *  Asks the host for the whole log rather than rendering `state.eventLog`:
+ *  the table holds only the newest EVENT_LOG_DISPLAY_MAX entries, and with
+ *  the limit lifted a report rendered from the view would silently omit
+ *  everything before that - the part the user lifted the limit to keep. */
+async function renderEventLogAttachment() {
+  const { entries } = await rpc("getEventLogAll");
+  const lines = (entries ?? []).map((e) => {
     const ts = new Date(e.timestamp ?? Date.now()).toISOString();
     const bits = [ts, `[${e.level}]`];
     // Source matches the UI's Source column: provider name, or "TbSync
@@ -1724,7 +1732,7 @@ async function createBugReport() {
     componentId: form.component,
     description: form.description,
   });
-  const logText = renderEventLogAttachment();
+  const logText = await renderEventLogAttachment();
   const file = new File([logText], "tbsync-eventlog.txt", {
     type: "text/plain",
   });
@@ -1816,12 +1824,24 @@ document
     rpc("setLogLevel", { level }).catch(showError);
   });
 
-function syncVerbositySelect() {
-  const select = document.getElementById("event-log-verbosity");
-  if (!select) return;
-  const current = String(state.settings?.logLevel ?? 0);
-  if (select.value !== current) select.value = current;
+/** Put both Log options selects back in step with stored settings. */
+function syncLogOptions() {
+  const verbosity = document.getElementById("event-log-verbosity");
+  if (verbosity) {
+    const level = String(state.settings?.logLevel ?? 0);
+    if (verbosity.value !== level) verbosity.value = level;
+  }
+  const limit = document.getElementById("event-log-limit");
+  if (limit) {
+    const keep = state.settings?.eventLogUnlimited ? "unlimited" : "limited";
+    if (limit.value !== keep) limit.value = keep;
+  }
 }
+
+document.getElementById("event-log-limit").addEventListener("change", (e) => {
+  const unlimited = e.currentTarget.value === "unlimited";
+  rpc("setEventLogUnlimited", { unlimited }).catch(showError);
+});
 
 document.getElementById("btn-bug-report").addEventListener("click", () => {
   createBugReport().catch(showError);
@@ -1836,7 +1856,7 @@ document.getElementById("btn-download-log").addEventListener("click", () => {
  *  instead of into a message. */
 async function downloadEventLog() {
   const url = URL.createObjectURL(
-    new Blob([renderEventLogAttachment()], { type: "text/plain" }),
+    new Blob([await renderEventLogAttachment()], { type: "text/plain" }),
   );
   let id;
   try {

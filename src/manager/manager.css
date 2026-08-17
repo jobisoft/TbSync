@@ -854,9 +854,41 @@ button:disabled {
 }
 .bug-report-fields textarea { resize: vertical; }
 
-/* Event log tab - verbosity dropdown next to the Clear button. */
-.event-log-verbosity { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
-.event-log-verbosity select {
+/* Event log tab - the settings that shape the log, below the log itself.
+   Same card chrome and header strip as the log above it and the sidebar
+   lists; label and control per row, labels on a fixed column so the two
+   selects line up. */
+.event-log-options {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.event-log-options > header {
+  padding: 6px 12px;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 11px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+/* Two content-sized columns so the selects line up under each other
+   whatever length the labels are - one of them is a full sentence. The
+   rows are `display: contents` so each label's span and select become
+   items of this grid rather than of the row. */
+.event-log-options-body {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  gap: 10px 12px;
+  align-items: center;
+  padding: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.event-log-options .option-row { display: contents; }
+.event-log-options select {
   padding: 3px 6px;
   border: 1px solid var(--border-input);
   border-radius: 4px;

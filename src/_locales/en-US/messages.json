@@ -56,8 +56,20 @@
   "manager.eventLog.clear": {
     "message": "Clear"
   },
+  "manager.eventLog.keep": {
+    "message": "Keep entries of this session:"
+  },
+  "manager.eventLog.keep.limited": {
+    "message": "Last 5000 entries"
+  },
+  "manager.eventLog.keep.unlimited": {
+    "message": "Everything"
+  },
   "manager.eventLog.empty": {
     "message": "No events yet."
+  },
+  "manager.eventLog.options": {
+    "message": "Log options"
   },
   "manager.eventLog.verbosity": {
     "message": "Verbosity level for event collection:"
