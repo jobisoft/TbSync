@@ -89,10 +89,7 @@
           <table id="event-log-table">
             <thead>
               <tr>
-                <th class="time" data-i18n-content="manager.eventLog.col.time"></th>
-                <th class="sev" data-i18n-content="manager.eventLog.col.level"></th>
-                <th class="src" data-i18n-content="manager.eventLog.col.source"></th>
-                <th class="acct" data-i18n-content="manager.eventLog.col.account"></th>
+                <th class="ctx" data-i18n-content="manager.eventLog.col.classification"></th>
                 <th class="msg" data-i18n-content="manager.eventLog.col.message"></th>
               </tr>
             </thead>
@@ -262,10 +259,13 @@
 
     <template id="tpl-event-log-row">
       <tr>
-        <td class="time"></td>
-        <td class="sev"></td>
-        <td class="src"></td>
-        <td class="acct"></td>
+        <td class="ctx">
+          <div class="time"></div>
+          <div class="sev"></div>
+          <div class="src"></div>
+          <div class="acct"></div>
+          <div class="res"></div>
+        </td>
         <td class="msg">
           <span class="msg-text"></span>
           <div class="details" hidden></div>

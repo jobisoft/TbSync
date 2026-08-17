@@ -1112,24 +1112,89 @@ function formatDetails(details) {
   }
 }
 
+/** An entry's account or resource, as `id (name)`.
+ *
+ *  The id leads because it is what the entry actually carries and what a
+ *  bug report has to be diagnosed against; the name is a convenience that
+ *  may be missing - a folder whose target was torn down, or an account
+ *  removed while its entries are still in the session log - and is simply
+ *  left off then. Entries that are about neither render as empty. */
+function idWithName(id, name) {
+  if (!id) return "";
+  return name ? `${id} (${name})` : String(id);
+}
+
+/** The folder an entry names, or null. `folderId` is unique per account, so
+ *  the account's list is searched first; entries that carry a folder but no
+ *  account (none today, but the protocol permits it) fall back to a scan. */
+function eventLogFolder(entry) {
+  if (!entry.folderId) return null;
+  const lists = entry.accountId
+    ? [state.folders.get(entry.accountId) ?? []]
+    : [...state.folders.values()];
+  for (const list of lists) {
+    const hit = list.find((f) => f.folderId === entry.folderId);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+/** Fill one line of the classification cell, or drop it.
+ *
+ *  A field the entry does not carry gets no line at all rather than a
+ *  dangling label - an account-wide entry has no resource, and saying
+ *  "Resource:" with nothing after it reads as a lookup that failed. */
+function ctxLine(row, cls, label, value) {
+  const el = row.querySelector(`.${cls}`);
+  if (!value) {
+    el.remove();
+    return;
+  }
+  el.textContent = label ? `${label}: ${value}` : value;
+}
+
 function eventLogRow(entry) {
   const acc = entry.accountId
     ? state.accounts.find((a) => a.accountId === entry.accountId)
     : null;
   const row = cloneTpl("tpl-event-log-row");
   row.className = entry.level;
-  row.querySelector(".time").textContent = new Date(
-    entry.timestamp ?? Date.now(),
-  ).toLocaleString();
-  row.querySelector(".sev").textContent = entry.level;
-  // Source = entry's filer. Provider-emitted entries carry `providerId`;
+  // One classification cell, one line per field: the ids are long enough
+  // (a folder id plus its name) that a column each wrapped them to
+  // ribbons, and the message needs the width far more than they do.
+  ctxLine(
+    row,
+    "time",
+    "",
+    new Date(entry.timestamp ?? Date.now()).toLocaleString(),
+  );
+  ctxLine(
+    row,
+    "sev",
+    i18n("manager.eventLog.field.level", "Level"),
+    entry.level,
+  );
+  // Reporter = entry's filer. Provider-emitted entries carry `providerId`;
   // host-emitted entries (e.g. router warnings) don't, so they read as
   // "TbSync Manager" to match the bug-report component label.
-  row.querySelector(".src").textContent = entry.providerId
-    ? providerLabel(entry.providerId)
-    : "TbSync Manager";
-  row.querySelector(".acct").textContent =
-    acc?.accountName ?? entry.accountId ?? "";
+  ctxLine(
+    row,
+    "src",
+    i18n("manager.eventLog.field.reporter", "Reporter"),
+    entry.providerId ? providerLabel(entry.providerId) : "TbSync Manager",
+  );
+  ctxLine(
+    row,
+    "acct",
+    i18n("manager.eventLog.field.account", "Account"),
+    idWithName(entry.accountId, acc?.accountName),
+  );
+  ctxLine(
+    row,
+    "res",
+    i18n("manager.eventLog.field.resource", "Resource"),
+    idWithName(entry.folderId, eventLogFolder(entry)?.displayName),
+  );
   row.querySelector(".msg-text").textContent = entry.message ?? "";
   if (entry.details) {
     const details = row.querySelector(".details");
@@ -1615,9 +1680,17 @@ function renderEventLogAttachment() {
           ?.providerName ?? e.providerId)
       : "TbSync Manager";
     bits.push(`{${src}}`);
+    // Account and resource, in the UI's `id (name)` form: the id is what
+    // the entry carries and what the report is diagnosed against, so it
+    // must survive even when the account or folder it named is gone. A
+    // resource-less entry - anything account-wide, like an upgrade or a
+    // token refresh - contributes no group at all.
     if (e.accountId) {
       const acc = state.accounts.find((a) => a.accountId === e.accountId);
-      bits.push(`(${acc?.accountName ?? e.accountId})`);
+      bits.push(`(${idWithName(e.accountId, acc?.accountName)})`);
+    }
+    if (e.folderId) {
+      bits.push(`[${idWithName(e.folderId, eventLogFolder(e)?.displayName)}]`);
     }
     bits.push(e.message ?? "");
     let line = bits.join(" ");

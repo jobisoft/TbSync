@@ -74,17 +74,20 @@
   "manager.eventLog.verbosity.debug": {
     "message": "Errors, warnings, info messages and debug logs"
   },
-  "manager.eventLog.col.time": {
-    "message": "Time"
+  "manager.eventLog.col.classification": {
+    "message": "Classification"
   },
-  "manager.eventLog.col.level": {
+  "manager.eventLog.field.level": {
     "message": "Level"
   },
-  "manager.eventLog.col.source": {
-    "message": "Source"
+  "manager.eventLog.field.reporter": {
+    "message": "Reporter"
   },
-  "manager.eventLog.col.account": {
+  "manager.eventLog.field.account": {
     "message": "Account"
+  },
+  "manager.eventLog.field.resource": {
+    "message": "Resource"
   },
   "manager.eventLog.col.message": {
     "message": "Message"

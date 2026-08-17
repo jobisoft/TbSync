@@ -751,13 +751,20 @@ button:disabled {
   border-bottom: 1px solid var(--border-row);
   vertical-align: top;
 }
-#event-log-table th.time, #event-log-table td.time { width: 140px; white-space: nowrap; color: var(--text-tertiary); }
-#event-log-table th.sev,  #event-log-table td.sev  { width: 90px; }
-#event-log-table th.src, #event-log-table td.src { width: 140px; color: var(--text-secondary); }
-#event-log-table th.acct, #event-log-table td.acct { width: 160px; color: var(--text-secondary); }
-#event-log-table tr.error   td.sev { color: var(--status-error); font-weight: 600; }
-#event-log-table tr.warning td.sev { color: var(--status-warning); font-weight: 600; }
-#event-log-table tr.debug   td.sev { color: var(--text-muted); }
+/* Classification: every field of the entry except its message, stacked.
+   Nothing here may wrap - an id broken across lines cannot be read back,
+   which is the whole point of showing it. The column therefore sizes to
+   its longest line; `width: 1%` keeps the table's auto layout from giving
+   it any of the slack, so all of it goes to the message. */
+#event-log-table th.ctx, #event-log-table td.ctx {
+  width: 1%;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+#event-log-table td.ctx .time { color: var(--text-tertiary); }
+#event-log-table tr.error   td.ctx .sev { color: var(--status-error); font-weight: 600; }
+#event-log-table tr.warning td.ctx .sev { color: var(--status-warning); font-weight: 600; }
+#event-log-table tr.debug   td.ctx .sev { color: var(--text-muted); }
 #event-log-table .details {
   font-family: ui-monospace, monospace;
   font-size: 11px;
