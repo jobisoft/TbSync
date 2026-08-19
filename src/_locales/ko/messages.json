@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "이벤트 로그"
   },
+  "manager.tab.managedConfig": {
+    "message": "관리되는 구성"
+  },
+  "manager.managedConfig.intro": {
+    "message": "이 구성은 관리자가 배포했으며 관리되는 저장소에서 읽어 들입니다. 여기서는 변경할 수 없습니다."
+  },
   "manager.eventLog.clear": {
     "message": "비우기"
   },

@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "Registro de eventos"
   },
+  "manager.tab.managedConfig": {
+    "message": "Configuração gerenciada"
+  },
+  "manager.managedConfig.intro": {
+    "message": "Esta configuração foi implantada pelo seu administrador e é lida do armazenamento gerenciado. Ela não pode ser alterada aqui."
+  },
   "manager.eventLog.clear": {
     "message": "Limpar"
   },

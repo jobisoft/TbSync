@@ -21,6 +21,10 @@
         <img src="../icons/tab-eventlog.svg" alt="" />
         <span data-i18n-content="manager.tab.eventLog"></span>
       </button>
+      <button class="tab-button" data-tab="managedConfig" type="button" hidden>
+        <img src="../icons/tab-managed.svg" alt="" />
+        <span data-i18n-content="manager.tab.managedConfig"></span>
+      </button>
       <button class="tab-button" data-tab="help" type="button">
         <img src="../icons/tab-help-32.png" alt="" />
         <span data-i18n-content="manager.tab.help"></span>
@@ -111,6 +115,11 @@
           </label>
         </div>
       </section>
+    </div>
+
+    <div class="tab-panel" data-panel="managedConfig" hidden>
+      <p data-i18n-content="manager.managedConfig.intro"></p>
+      <pre id="managed-config" class="code-block"></pre>
     </div>
 
     <div class="tab-panel" data-panel="help" hidden>

@@ -2110,6 +2110,25 @@ browser.menus.onClicked.addListener((info) => {
 
 refreshState();
 
+// Managed storage - the configuration an administrator deployed alongside the
+// add-on. Nothing is deployed on an ordinary install, and the API rejects
+// rather than resolving empty in that case, so both outcomes leave the tab
+// hidden and only a real deployment reveals it.
+try {
+  const managed = await browser.storage.managed.get();
+  if (managed && Object.keys(managed).length) {
+    document.getElementById("managed-config").textContent = JSON.stringify(
+      managed,
+      null,
+      2,
+    );
+    const tab = document.querySelector('.tab-button[data-tab="managedConfig"]');
+    tab.hidden = false;
+  }
+} catch (err) {
+  console.debug("[tbsync] no managed storage:", err?.message ?? err);
+}
+
 // Beta-only bridge tab. `beta/modules/bridge.mjs` reaches the beta and dev
 // trees only, so on an ATN build this import throws and the tab never
 // appears - the intended behaviour there, not a failure. It builds its own

@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "Protokol událostí"
   },
+  "manager.tab.managedConfig": {
+    "message": "Spravovaná konfigurace"
+  },
+  "manager.managedConfig.intro": {
+    "message": "Tuto konfiguraci nasadil váš správce a načítá se ze spravovaného úložiště. Zde ji nelze změnit."
+  },
   "manager.eventLog.clear": {
     "message": "Vyčistit"
   },

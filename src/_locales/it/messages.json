@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "Registro eventi"
   },
+  "manager.tab.managedConfig": {
+    "message": "Configurazione gestita"
+  },
+  "manager.managedConfig.intro": {
+    "message": "Questa configurazione è stata distribuita dall'amministratore e viene letta dall'archivio gestito. Non può essere modificata qui."
+  },
   "manager.eventLog.clear": {
     "message": "Svuota"
   },

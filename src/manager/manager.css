@@ -118,6 +118,9 @@ body {
   background: var(--bg-card);
   padding: 0;
 }
+/* A tab whose feature is not present. Needs the attribute selector: the
+   rule below sets a display, which would otherwise win over [hidden]. */
+.tab-button[hidden] { display: none; }
 .tab-button {
   flex: 0 0 auto;
   display: flex;
@@ -895,4 +898,18 @@ button:disabled {
   background: var(--bg-card);
   color: var(--text-primary);
   font: inherit;
+}
+
+.code-block {
+  margin: 0;
+  padding: 12px;
+  overflow: auto;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-primary);
+  white-space: pre;
 }

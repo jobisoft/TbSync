@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "Rexistro de eventos"
   },
+  "manager.tab.managedConfig": {
+    "message": "Configuración xestionada"
+  },
+  "manager.managedConfig.intro": {
+    "message": "Esta configuración foi implantada polo teu administrador e lese do almacenamento xestionado. Non se pode modificar aquí."
+  },
   "manager.eventLog.clear": {
     "message": "Baleirar"
   },

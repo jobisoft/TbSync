@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "Ereignisprotokoll"
   },
+  "manager.tab.managedConfig": {
+    "message": "Verwaltete Konfiguration"
+  },
+  "manager.managedConfig.intro": {
+    "message": "Diese Konfiguration wurde von Ihrem Administrator bereitgestellt und wird aus dem verwalteten Speicher gelesen. Sie kann hier nicht geändert werden."
+  },
   "manager.eventLog.clear": {
     "message": "Leeren"
   },

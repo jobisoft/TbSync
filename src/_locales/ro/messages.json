@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "Jurnal de evenimente"
   },
+  "manager.tab.managedConfig": {
+    "message": "Configurație gestionată"
+  },
+  "manager.managedConfig.intro": {
+    "message": "Această configurație a fost implementată de administratorul dumneavoastră și este citită din stocarea gestionată. Nu poate fi modificată aici."
+  },
   "manager.eventLog.clear": {
     "message": "Golește"
   },

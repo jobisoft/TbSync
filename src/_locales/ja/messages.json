@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "イベントログ"
   },
+  "manager.tab.managedConfig": {
+    "message": "管理された設定"
+  },
+  "manager.managedConfig.intro": {
+    "message": "この設定は管理者によって配布され、管理されたストレージから読み込まれます。ここでは変更できません。"
+  },
   "manager.eventLog.clear": {
     "message": "クリア"
   },

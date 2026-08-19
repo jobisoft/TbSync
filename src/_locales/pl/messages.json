@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "Dziennik zdarzeń"
   },
+  "manager.tab.managedConfig": {
+    "message": "Konfiguracja zarządzana"
+  },
+  "manager.managedConfig.intro": {
+    "message": "Ta konfiguracja została wdrożona przez administratora i jest odczytywana z zarządzanego magazynu. Nie można jej tutaj zmienić."
+  },
   "manager.eventLog.clear": {
     "message": "Wyczyść"
   },

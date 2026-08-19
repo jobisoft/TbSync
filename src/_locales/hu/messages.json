@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "Eseménynapló"
   },
+  "manager.tab.managedConfig": {
+    "message": "Felügyelt konfiguráció"
+  },
+  "manager.managedConfig.intro": {
+    "message": "Ezt a konfigurációt a rendszergazda telepítette, és a felügyelt tárolóból származik. Itt nem módosítható."
+  },
   "manager.eventLog.clear": {
     "message": "Törlés"
   },

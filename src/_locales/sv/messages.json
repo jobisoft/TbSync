@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "Händelselogg"
   },
+  "manager.tab.managedConfig": {
+    "message": "Hanterad konfiguration"
+  },
+  "manager.managedConfig.intro": {
+    "message": "Den här konfigurationen har distribuerats av din administratör och läses från den hanterade lagringen. Den kan inte ändras här."
+  },
   "manager.eventLog.clear": {
     "message": "Töm"
   },

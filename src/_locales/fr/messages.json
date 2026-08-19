@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "Journal des événements"
   },
+  "manager.tab.managedConfig": {
+    "message": "Configuration gérée"
+  },
+  "manager.managedConfig.intro": {
+    "message": "Cette configuration a été déployée par votre administrateur et est lue depuis le stockage géré. Elle ne peut pas être modifiée ici."
+  },
   "manager.eventLog.clear": {
     "message": "Effacer"
   },

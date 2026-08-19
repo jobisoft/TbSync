@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "Дневник на събитията"
   },
+  "manager.tab.managedConfig": {
+    "message": "Управлявана конфигурация"
+  },
+  "manager.managedConfig.intro": {
+    "message": "Тази конфигурация е разпространена от вашия администратор и се чете от управляваното хранилище. Тя не може да бъде променяна тук."
+  },
   "manager.eventLog.clear": {
     "message": "Изчистване"
   },

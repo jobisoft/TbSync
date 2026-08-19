@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "Sündmuste logi"
   },
+  "manager.tab.managedConfig": {
+    "message": "Hallatav seadistus"
+  },
+  "manager.managedConfig.intro": {
+    "message": "Selle seadistuse on paigaldanud sinu administraator ja see loetakse hallatavast salvestusruumist. Seda ei saa siin muuta."
+  },
   "manager.eventLog.clear": {
     "message": "Tühjenda"
   },

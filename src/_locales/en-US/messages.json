@@ -53,6 +53,12 @@
   "manager.tab.eventLog": {
     "message": "Event Log"
   },
+  "manager.tab.managedConfig": {
+    "message": "Managed Config"
+  },
+  "manager.managedConfig.intro": {
+    "message": "This configuration was deployed by your administrator and is read from managed storage. It cannot be changed here."
+  },
   "manager.eventLog.clear": {
     "message": "Clear"
   },
