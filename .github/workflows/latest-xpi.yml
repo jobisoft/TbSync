@@ -1,0 +1,103 @@
+# Keeps latest.xpi on exactly one release - the public one - so this URL can be
+# pinned by enterprise policies as install_url:
+#
+#   https://github.com/<owner>/<repo>/releases/latest/download/latest.xpi
+#
+# Publishing a pre-release arms a watcher that polls updates.json until that
+# file names this very release - the moment the add-on goes public - and then
+# adds latest.xpi to it, takes the Latest designation, and strips latest.xpi
+# from every other release.
+#
+# Run by hand instead and it is a repair pass: whatever release is currently
+# Latest gets the alias, every other release loses it, nothing is promoted.
+#
+# The versioned asset is never touched and stays the visible one.
+
+name: latest.xpi
+
+on:
+  release:
+    types: [prereleased]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# A newer pre-release supersedes whatever the previous run is still waiting for.
+concurrency:
+  group: latest-xpi
+  cancel-in-progress: true
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    # Just under the 6h ceiling a job gets, so the timeout is ours and reports
+    # as one. Re-arm by publishing the pre-release again if updates.json is
+    # going to land later than that.
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish latest.xpi on the public release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.event.release.tag_name }}
+          UPDATES_URL: https://raw.githubusercontent.com/jobisoft/tbsync/refs/heads/Main/updates.json
+        run: |
+          set -euo pipefail
+
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            release=$(gh api "repos/$GH_REPO/releases/latest")
+            TAG=$(printf '%s' "$release" | jq -r .tag_name)
+            name=$(printf '%s' "$release" \
+                   | jq -r '[.assets[].name | select(endswith("_beta.xpi"))] | first // empty')
+            if [ -z "$name" ]; then
+              echo "::error::$TAG carries no *_beta.xpi to copy."
+              exit 1
+            fi
+            promote=false
+            echo "Repair pass on $TAG ($name), the current latest release."
+          else
+            id=$(jq -r '.browser_specific_settings.gecko.id' src/manifest.json)
+            echo "Watching updates.json for $id -> $TAG"
+            while :; do
+              link=$(curl -sf "$UPDATES_URL" \
+                     | jq -r --arg id "$id" \
+                         '.addons[$id].updates // [] | max_by(.version) | .update_link // empty' \
+                     || true)
+              linktag=$(printf '%s' "$link" | sed -nE 's#.*/releases/download/([^/]+)/.*#\1#p')
+              [ "$linktag" = "$TAG" ] && break
+              echo "updates.json still on '${linktag:-nothing}', waiting 60s ..."
+              sleep 60
+            done
+            name=$(basename "$link")
+            promote=true
+            echo "updates.json released $TAG ($name)."
+          fi
+          export TAG
+
+          # 1. latest.xpi, beside the versioned asset it copies.
+          mkdir -p out
+          gh release download "$TAG" --pattern "$name" --dir out
+          mv "out/$name" out/latest.xpi
+          gh release upload "$TAG" out/latest.xpi --clobber
+
+          # 2. Leave pre-release and take the Latest designation. Both flags in
+          #    one call: a pre-release is not allowed to hold it.
+          if [ "$promote" = true ]; then
+            release_id=$(gh api "repos/$GH_REPO/releases/tags/$TAG" -q .id)
+            gh api -X PATCH "repos/$GH_REPO/releases/$release_id" \
+                   -F prerelease=false -f make_latest=true
+          fi
+
+          # 3. Exactly one release carries latest.xpi.
+          gh api --paginate "repos/$GH_REPO/releases" \
+            -q '.[] | select(.tag_name != env.TAG) | .assets[]
+                    | select(.name == "latest.xpi") | .id' \
+          | while read -r asset_id; do
+              echo "removing stale latest.xpi (asset $asset_id)"
+              gh api -X DELETE "repos/$GH_REPO/releases/assets/$asset_id"
+            done
+
+          echo "$TAG carries latest.xpi and is the public release."
