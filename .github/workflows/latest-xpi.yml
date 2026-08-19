@@ -3,6 +3,12 @@
 #
 #   https://github.com/<owner>/<repo>/releases/latest/download/latest.xpi
 #
+# latest.yaml is published beside it, naming the version, byte size and
+# download URL of that xpi, so a deployment can read what it is about to
+# install without downloading it:
+#
+#   https://github.com/<owner>/<repo>/releases/latest/download/latest.yaml
+#
 # Publishing a pre-release arms a watcher that polls updates.json until that
 # file names this very release - the moment the add-on goes public - and then
 # adds latest.xpi to it, takes the Latest designation, and strips latest.xpi
@@ -77,11 +83,21 @@ jobs:
           fi
           export TAG
 
-          # 1. latest.xpi, beside the versioned asset it copies.
+          # 1. latest.xpi, beside the versioned asset it copies, and
+          #    latest.yaml describing it. The version is read out of the xpi
+          #    rather than taken from the tag, so it states what is served.
           mkdir -p out
           gh release download "$TAG" --pattern "$name" --dir out
           mv "out/$name" out/latest.xpi
-          gh release upload "$TAG" out/latest.xpi --clobber
+
+          version=$(unzip -p out/latest.xpi manifest.json | jq -r .version)
+          size=$(stat -c%s out/latest.xpi)
+          url="https://github.com/$GH_REPO/releases/latest/download/latest.xpi"
+          printf 'version: "%s"\nsize: %s\nurl: "%s"\n' "$version" "$size" "$url" \
+            > out/latest.yaml
+          cat out/latest.yaml
+
+          gh release upload "$TAG" out/latest.xpi out/latest.yaml --clobber
 
           # 2. Leave pre-release and take the Latest designation. Both flags in
           #    one call: a pre-release is not allowed to hold it.
@@ -91,13 +107,13 @@ jobs:
                    -F prerelease=false -f make_latest=true
           fi
 
-          # 3. Exactly one release carries latest.xpi.
+          # 3. Exactly one release carries latest.xpi and latest.yaml.
           gh api --paginate "repos/$GH_REPO/releases" \
             -q '.[] | select(.tag_name != env.TAG) | .assets[]
-                    | select(.name == "latest.xpi") | .id' \
+                    | select(.name == "latest.xpi" or .name == "latest.yaml") | .id' \
           | while read -r asset_id; do
-              echo "removing stale latest.xpi (asset $asset_id)"
+              echo "removing stale alias (asset $asset_id)"
               gh api -X DELETE "repos/$GH_REPO/releases/assets/$asset_id"
             done
 
-          echo "$TAG carries latest.xpi and is the public release."
+          echo "$TAG carries latest.xpi + latest.yaml and is the public release."
