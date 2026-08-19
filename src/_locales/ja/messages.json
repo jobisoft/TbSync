@@ -62,8 +62,20 @@
   "manager.eventLog.clear": {
     "message": "クリア"
   },
+  "manager.eventLog.keep": {
+    "message": "このセッションのエントリの保持:"
+  },
+  "manager.eventLog.keep.limited": {
+    "message": "最新の 5000 件"
+  },
+  "manager.eventLog.keep.unlimited": {
+    "message": "すべて"
+  },
   "manager.eventLog.empty": {
     "message": "イベントはまだありません。"
+  },
+  "manager.eventLog.options": {
+    "message": "ログオプション"
   },
   "manager.eventLog.verbosity": {
     "message": "イベント収集の詳細レベル:"
@@ -80,17 +92,20 @@
   "manager.eventLog.verbosity.debug": {
     "message": "エラー、警告、情報メッセージ、デバッグログ"
   },
-  "manager.eventLog.col.time": {
-    "message": "時刻"
+  "manager.eventLog.col.classification": {
+    "message": "分類"
   },
-  "manager.eventLog.col.level": {
+  "manager.eventLog.field.level": {
     "message": "レベル"
   },
-  "manager.eventLog.col.source": {
+  "manager.eventLog.field.reporter": {
     "message": "ソース"
   },
-  "manager.eventLog.col.account": {
+  "manager.eventLog.field.account": {
     "message": "アカウント"
+  },
+  "manager.eventLog.field.resource": {
+    "message": "リソース"
   },
   "manager.eventLog.col.message": {
     "message": "メッセージ"
@@ -291,6 +306,9 @@
   },
   "account.status.setting-up": {
     "message": "アカウントを準備しています…"
+  },
+  "account.status.maintaining": {
+    "message": "プロバイダーがこのアカウントのデータを確認しています…"
   },
   "account.status.legacy-locked": {
     "message": "以前のバージョンで設定されました - 同期するには再接続してください"

@@ -62,8 +62,20 @@
   "manager.eventLog.clear": {
     "message": "Vyčistit"
   },
+  "manager.eventLog.keep": {
+    "message": "Uchovávat záznamy této relace:"
+  },
+  "manager.eventLog.keep.limited": {
+    "message": "Posledních 5000 záznamů"
+  },
+  "manager.eventLog.keep.unlimited": {
+    "message": "Vše"
+  },
   "manager.eventLog.empty": {
     "message": "Zatím žádné události."
+  },
+  "manager.eventLog.options": {
+    "message": "Nastavení protokolu"
   },
   "manager.eventLog.verbosity": {
     "message": "Úroveň podrobnosti pro sběr událostí:"
@@ -80,17 +92,20 @@
   "manager.eventLog.verbosity.debug": {
     "message": "Chyby, varování, informační zprávy a ladicí záznamy"
   },
-  "manager.eventLog.col.time": {
-    "message": "Čas"
+  "manager.eventLog.col.classification": {
+    "message": "Klasifikace"
   },
-  "manager.eventLog.col.level": {
+  "manager.eventLog.field.level": {
     "message": "Úroveň"
   },
-  "manager.eventLog.col.source": {
-    "message": "Zdroj"
+  "manager.eventLog.field.reporter": {
+    "message": "Původce"
   },
-  "manager.eventLog.col.account": {
+  "manager.eventLog.field.account": {
     "message": "Účet"
+  },
+  "manager.eventLog.field.resource": {
+    "message": "Zdroj"
   },
   "manager.eventLog.col.message": {
     "message": "Zpráva"
@@ -291,6 +306,9 @@
   },
   "account.status.setting-up": {
     "message": "Účet se připravuje…"
+  },
+  "account.status.maintaining": {
+    "message": "Poskytovatel kontroluje data tohoto účtu…"
   },
   "account.status.legacy-locked": {
     "message": "Nastaveno starší verzí - pro synchronizaci znovu připojte"

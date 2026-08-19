@@ -62,8 +62,20 @@
   "manager.eventLog.clear": {
     "message": "Törlés"
   },
+  "manager.eventLog.keep": {
+    "message": "A munkamenet bejegyzéseinek megőrzése:"
+  },
+  "manager.eventLog.keep.limited": {
+    "message": "Utolsó 5000 bejegyzés"
+  },
+  "manager.eventLog.keep.unlimited": {
+    "message": "Mindent"
+  },
   "manager.eventLog.empty": {
     "message": "Még nincs esemény."
+  },
+  "manager.eventLog.options": {
+    "message": "Naplóbeállítások"
   },
   "manager.eventLog.verbosity": {
     "message": "Eseménygyűjtés részletességi szintje:"
@@ -80,17 +92,20 @@
   "manager.eventLog.verbosity.debug": {
     "message": "Hibák, figyelmeztetések, tájékoztató üzenetek és hibakeresési naplók"
   },
-  "manager.eventLog.col.time": {
-    "message": "Idő"
+  "manager.eventLog.col.classification": {
+    "message": "Besorolás"
   },
-  "manager.eventLog.col.level": {
+  "manager.eventLog.field.level": {
     "message": "Szint"
   },
-  "manager.eventLog.col.source": {
+  "manager.eventLog.field.reporter": {
     "message": "Forrás"
   },
-  "manager.eventLog.col.account": {
+  "manager.eventLog.field.account": {
     "message": "Fiók"
+  },
+  "manager.eventLog.field.resource": {
+    "message": "Erőforrás"
   },
   "manager.eventLog.col.message": {
     "message": "Üzenet"
@@ -291,6 +306,9 @@
   },
   "account.status.setting-up": {
     "message": "A fiók előkészítése folyamatban…"
+  },
+  "account.status.maintaining": {
+    "message": "A szolgáltató ellenőrzi a fiók adatait…"
   },
   "account.status.legacy-locked": {
     "message": "Egy korábbi verzió állította be - a szinkronizáláshoz csatlakoztassa újra"

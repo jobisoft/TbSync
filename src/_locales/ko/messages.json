@@ -62,8 +62,20 @@
   "manager.eventLog.clear": {
     "message": "비우기"
   },
+  "manager.eventLog.keep": {
+    "message": "이 세션의 항목 보관:"
+  },
+  "manager.eventLog.keep.limited": {
+    "message": "최근 5000개 항목"
+  },
+  "manager.eventLog.keep.unlimited": {
+    "message": "전체"
+  },
   "manager.eventLog.empty": {
     "message": "아직 이벤트가 없습니다."
+  },
+  "manager.eventLog.options": {
+    "message": "로그 옵션"
   },
   "manager.eventLog.verbosity": {
     "message": "이벤트 수집 자세히 표시 정도:"
@@ -80,17 +92,20 @@
   "manager.eventLog.verbosity.debug": {
     "message": "오류, 경고, 정보 메시지 및 디버그 로그"
   },
-  "manager.eventLog.col.time": {
-    "message": "시각"
+  "manager.eventLog.col.classification": {
+    "message": "분류"
   },
-  "manager.eventLog.col.level": {
+  "manager.eventLog.field.level": {
     "message": "수준"
   },
-  "manager.eventLog.col.source": {
+  "manager.eventLog.field.reporter": {
     "message": "원본"
   },
-  "manager.eventLog.col.account": {
+  "manager.eventLog.field.account": {
     "message": "계정"
+  },
+  "manager.eventLog.field.resource": {
+    "message": "리소스"
   },
   "manager.eventLog.col.message": {
     "message": "메시지"
@@ -291,6 +306,9 @@
   },
   "account.status.setting-up": {
     "message": "계정을 준비하는 중입니다…"
+  },
+  "account.status.maintaining": {
+    "message": "공급자가 이 계정의 데이터를 확인하는 중입니다…"
   },
   "account.status.legacy-locked": {
     "message": "이전 버전에서 설정됨 - 동기화하려면 다시 연결하세요"

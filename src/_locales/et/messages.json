@@ -62,8 +62,20 @@
   "manager.eventLog.clear": {
     "message": "Tühjenda"
   },
+  "manager.eventLog.keep": {
+    "message": "Selle seansi kirjete säilitamine:"
+  },
+  "manager.eventLog.keep.limited": {
+    "message": "Viimased 5000 kirjet"
+  },
+  "manager.eventLog.keep.unlimited": {
+    "message": "Kõik"
+  },
   "manager.eventLog.empty": {
     "message": "Sündmusi veel pole."
+  },
+  "manager.eventLog.options": {
+    "message": "Logi valikud"
   },
   "manager.eventLog.verbosity": {
     "message": "Sündmuste kogumise üksikasjalikkuse tase:"
@@ -80,17 +92,20 @@
   "manager.eventLog.verbosity.debug": {
     "message": "Vead, hoiatused, teabesõnumid ja silumislogid"
   },
-  "manager.eventLog.col.time": {
-    "message": "Aeg"
+  "manager.eventLog.col.classification": {
+    "message": "Liigitus"
   },
-  "manager.eventLog.col.level": {
+  "manager.eventLog.field.level": {
     "message": "Tase"
   },
-  "manager.eventLog.col.source": {
+  "manager.eventLog.field.reporter": {
     "message": "Allikas"
   },
-  "manager.eventLog.col.account": {
+  "manager.eventLog.field.account": {
     "message": "Konto"
+  },
+  "manager.eventLog.field.resource": {
+    "message": "Ressurss"
   },
   "manager.eventLog.col.message": {
     "message": "Sõnum"
@@ -291,6 +306,9 @@
   },
   "account.status.setting-up": {
     "message": "Kontot valmistatakse ette…"
+  },
+  "account.status.maintaining": {
+    "message": "Teenusepakkuja kontrollib selle konto andmeid…"
   },
   "account.status.legacy-locked": {
     "message": "Seadistatud vanema versiooniga - sünkroonimiseks ühendage uuesti"

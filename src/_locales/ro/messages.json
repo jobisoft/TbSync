@@ -62,8 +62,20 @@
   "manager.eventLog.clear": {
     "message": "Golește"
   },
+  "manager.eventLog.keep": {
+    "message": "Păstrează intrările din această sesiune:"
+  },
+  "manager.eventLog.keep.limited": {
+    "message": "Ultimele 5000 de intrări"
+  },
+  "manager.eventLog.keep.unlimited": {
+    "message": "Tot"
+  },
   "manager.eventLog.empty": {
     "message": "Încă nu există evenimente."
+  },
+  "manager.eventLog.options": {
+    "message": "Opțiuni jurnal"
   },
   "manager.eventLog.verbosity": {
     "message": "Nivel de detaliere pentru colectarea evenimentelor:"
@@ -80,17 +92,20 @@
   "manager.eventLog.verbosity.debug": {
     "message": "Erori, avertismente, mesaje informative și jurnale de depanare"
   },
-  "manager.eventLog.col.time": {
-    "message": "Oră"
+  "manager.eventLog.col.classification": {
+    "message": "Clasificare"
   },
-  "manager.eventLog.col.level": {
+  "manager.eventLog.field.level": {
     "message": "Nivel"
   },
-  "manager.eventLog.col.source": {
+  "manager.eventLog.field.reporter": {
     "message": "Sursă"
   },
-  "manager.eventLog.col.account": {
+  "manager.eventLog.field.account": {
     "message": "Cont"
+  },
+  "manager.eventLog.field.resource": {
+    "message": "Resursă"
   },
   "manager.eventLog.col.message": {
     "message": "Mesaj"
@@ -291,6 +306,9 @@
   },
   "account.status.setting-up": {
     "message": "Contul este în curs de pregătire…"
+  },
+  "account.status.maintaining": {
+    "message": "Furnizorul verifică datele acestui cont…"
   },
   "account.status.legacy-locked": {
     "message": "Configurat de o versiune mai veche - reconectați-l pentru sincronizare"

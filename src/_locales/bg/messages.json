@@ -62,8 +62,20 @@
   "manager.eventLog.clear": {
     "message": "Изчистване"
   },
+  "manager.eventLog.keep": {
+    "message": "Запазване на записите от тази сесия:"
+  },
+  "manager.eventLog.keep.limited": {
+    "message": "Последните 5000 записа"
+  },
+  "manager.eventLog.keep.unlimited": {
+    "message": "Всичко"
+  },
   "manager.eventLog.empty": {
     "message": "Все още няма събития."
+  },
+  "manager.eventLog.options": {
+    "message": "Настройки на дневника"
   },
   "manager.eventLog.verbosity": {
     "message": "Ниво на детайлност при събиране на събития:"
@@ -80,17 +92,20 @@
   "manager.eventLog.verbosity.debug": {
     "message": "Грешки, предупреждения, информационни съобщения и записи за отстраняване на грешки"
   },
-  "manager.eventLog.col.time": {
-    "message": "Час"
+  "manager.eventLog.col.classification": {
+    "message": "Класификация"
   },
-  "manager.eventLog.col.level": {
+  "manager.eventLog.field.level": {
     "message": "Ниво"
   },
-  "manager.eventLog.col.source": {
+  "manager.eventLog.field.reporter": {
     "message": "Източник"
   },
-  "manager.eventLog.col.account": {
+  "manager.eventLog.field.account": {
     "message": "Акаунт"
+  },
+  "manager.eventLog.field.resource": {
+    "message": "Ресурс"
   },
   "manager.eventLog.col.message": {
     "message": "Съобщение"
@@ -291,6 +306,9 @@
   },
   "account.status.setting-up": {
     "message": "Профилът се подготвя…"
+  },
+  "account.status.maintaining": {
+    "message": "Доставчикът проверява данните на този акаунт…"
   },
   "account.status.legacy-locked": {
     "message": "Настроен от по-стара версия - свържете отново за синхронизиране"

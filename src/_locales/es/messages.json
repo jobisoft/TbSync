@@ -62,8 +62,20 @@
   "manager.eventLog.clear": {
     "message": "Vaciar"
   },
+  "manager.eventLog.keep": {
+    "message": "Conservar las entradas de esta sesión:"
+  },
+  "manager.eventLog.keep.limited": {
+    "message": "Últimas 5000 entradas"
+  },
+  "manager.eventLog.keep.unlimited": {
+    "message": "Todo"
+  },
   "manager.eventLog.empty": {
     "message": "Aún no hay eventos."
+  },
+  "manager.eventLog.options": {
+    "message": "Opciones del registro"
   },
   "manager.eventLog.verbosity": {
     "message": "Nivel de detalle para la recopilación de eventos:"
@@ -80,17 +92,20 @@
   "manager.eventLog.verbosity.debug": {
     "message": "Errores, avisos, mensajes informativos y registros de depuración"
   },
-  "manager.eventLog.col.time": {
-    "message": "Hora"
+  "manager.eventLog.col.classification": {
+    "message": "Clasificación"
   },
-  "manager.eventLog.col.level": {
+  "manager.eventLog.field.level": {
     "message": "Nivel"
   },
-  "manager.eventLog.col.source": {
+  "manager.eventLog.field.reporter": {
     "message": "Origen"
   },
-  "manager.eventLog.col.account": {
+  "manager.eventLog.field.account": {
     "message": "Cuenta"
+  },
+  "manager.eventLog.field.resource": {
+    "message": "Recurso"
   },
   "manager.eventLog.col.message": {
     "message": "Mensaje"
@@ -291,6 +306,9 @@
   },
   "account.status.setting-up": {
     "message": "Preparando la cuenta…"
+  },
+  "account.status.maintaining": {
+    "message": "El proveedor está comprobando los datos de esta cuenta…"
   },
   "account.status.legacy-locked": {
     "message": "Configurada por una versión anterior: vuelva a conectarla para sincronizar"

@@ -62,8 +62,20 @@
   "manager.eventLog.clear": {
     "message": "Очистить"
   },
+  "manager.eventLog.keep": {
+    "message": "Хранить записи этого сеанса:"
+  },
+  "manager.eventLog.keep.limited": {
+    "message": "Последние 5000 записей"
+  },
+  "manager.eventLog.keep.unlimited": {
+    "message": "Всё"
+  },
   "manager.eventLog.empty": {
     "message": "Событий пока нет."
+  },
+  "manager.eventLog.options": {
+    "message": "Параметры журнала"
   },
   "manager.eventLog.verbosity": {
     "message": "Уровень детализации сбора событий:"
@@ -80,17 +92,20 @@
   "manager.eventLog.verbosity.debug": {
     "message": "Ошибки, предупреждения, информационные сообщения и отладочные журналы"
   },
-  "manager.eventLog.col.time": {
-    "message": "Время"
+  "manager.eventLog.col.classification": {
+    "message": "Классификация"
   },
-  "manager.eventLog.col.level": {
+  "manager.eventLog.field.level": {
     "message": "Уровень"
   },
-  "manager.eventLog.col.source": {
+  "manager.eventLog.field.reporter": {
     "message": "Источник"
   },
-  "manager.eventLog.col.account": {
+  "manager.eventLog.field.account": {
     "message": "Учётная запись"
+  },
+  "manager.eventLog.field.resource": {
+    "message": "Ресурс"
   },
   "manager.eventLog.col.message": {
     "message": "Сообщение"
@@ -291,6 +306,9 @@
   },
   "account.status.setting-up": {
     "message": "Учётная запись подготавливается…"
+  },
+  "account.status.maintaining": {
+    "message": "Провайдер проверяет данные этой учётной записи…"
   },
   "account.status.legacy-locked": {
     "message": "Настроена в более старой версии - переподключите для синхронизации"

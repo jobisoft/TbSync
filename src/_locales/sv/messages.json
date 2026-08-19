@@ -62,8 +62,20 @@
   "manager.eventLog.clear": {
     "message": "Töm"
   },
+  "manager.eventLog.keep": {
+    "message": "Behåll poster från den här sessionen:"
+  },
+  "manager.eventLog.keep.limited": {
+    "message": "Senaste 5000 posterna"
+  },
+  "manager.eventLog.keep.unlimited": {
+    "message": "Allt"
+  },
   "manager.eventLog.empty": {
     "message": "Inga händelser ännu."
+  },
+  "manager.eventLog.options": {
+    "message": "Loggalternativ"
   },
   "manager.eventLog.verbosity": {
     "message": "Utförlighetsnivå för händelseinsamling:"
@@ -80,17 +92,20 @@
   "manager.eventLog.verbosity.debug": {
     "message": "Fel, varningar, informationsmeddelanden och felsökningsloggar"
   },
-  "manager.eventLog.col.time": {
-    "message": "Tid"
+  "manager.eventLog.col.classification": {
+    "message": "Klassificering"
   },
-  "manager.eventLog.col.level": {
+  "manager.eventLog.field.level": {
     "message": "Nivå"
   },
-  "manager.eventLog.col.source": {
+  "manager.eventLog.field.reporter": {
     "message": "Källa"
   },
-  "manager.eventLog.col.account": {
+  "manager.eventLog.field.account": {
     "message": "Konto"
+  },
+  "manager.eventLog.field.resource": {
+    "message": "Resurs"
   },
   "manager.eventLog.col.message": {
     "message": "Meddelande"
@@ -291,6 +306,9 @@
   },
   "account.status.setting-up": {
     "message": "Kontot förbereds…"
+  },
+  "account.status.maintaining": {
+    "message": "Leverantören kontrollerar kontots data…"
   },
   "account.status.legacy-locked": {
     "message": "Konfigurerat av en äldre version - återanslut för att synkronisera"
