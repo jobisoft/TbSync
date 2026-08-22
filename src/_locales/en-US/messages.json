@@ -400,5 +400,13 @@
   "manager.account.migrated": {
     "message": "This account was set up by an older version and cannot sync. Disconnect and reconnect it to rebuild it from the server. Disconnecting deletes its local calendars and address books, so copy anything that was never synced first.",
     "description": "Shown under the account status for an account set up by an older version. Such accounts cannot sync; the note names the remedy and warns that disconnecting deletes the local copies."
+  },
+  "manager.account.autosyncPaused": {
+    "message": "The server asked to pause automatic synchronization until $TIME$. A manual sync works at any time.",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
   }
 }

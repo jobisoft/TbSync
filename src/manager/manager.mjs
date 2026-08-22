@@ -838,6 +838,43 @@ function renderDetail() {
     );
   }
 
+  // A provider-set autosync pause (`noAutosyncUntil`), told beside the
+  // status rather than in its slot, so an error, a transient state and
+  // the pause stay visible at once. Worded as an event with its deadline
+  // - "the server asked to pause ... until 14:32" - which is true
+  // whenever it is read, before the deadline and after; no timer has to
+  // retract it. Shown only where autosync actually runs: on a disabled
+  // account, a migration-locked one (the v4 import carries the timestamp
+  // over), or one with no interval, a pause gates nothing - and on the
+  // accounts it does gate, the resuming autosync re-renders this pane
+  // and the lapsed note leaves with it.
+  const pausedUntil = Number(acc.noAutosyncUntil ?? 0);
+  const autosyncOn =
+    acc.enabled &&
+    !acc.legacyImported &&
+    (acc.autoSyncIntervalMinutes ?? 0) > 0;
+  if (autosyncOn && pausedUntil > Date.now()) {
+    const note = frag.querySelector(".autosync-paused-note");
+    note.hidden = false;
+    // The field is unbounded, and a bare clock time names a moment today
+    // - so a deadline on another day carries its date.
+    const when = new Date(pausedUntil);
+    const sameDay = when.toDateString() === new Date().toDateString();
+    const time = sameDay
+      ? when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      : when.toLocaleString([], {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+    note.textContent = i18n(
+      "manager.account.autosyncPaused",
+      `The server asked to pause automatic synchronization until ${time}. A manual sync works at any time.`,
+      [time],
+    );
+  }
+
   if (acc.enabled) {
     const resources = frag.querySelector(".resources-section");
     resources.hidden = false;
