@@ -87,7 +87,7 @@ export function convertCalendar(extension, calendar) {
   return props;
 }
 
-function parseJcalData(jcalComp) {
+async function parseJcalData(jcalComp, calendar) {
   function generateItem(jcalSubComp) {
     let item;
     if (jcalSubComp.name == "vevent") {
@@ -131,8 +131,31 @@ function parseJcalData(jcalComp) {
       parent = generateItem(subComp);
     }
 
+    if (!parent && exceptions.length && calendar) {
+      // Only exceptions were supplied. That is what a single occurrence
+      // looks like: convertItem serializes the one item it was given, so
+      // an edited occurrence arrives as a lone vevent carrying a
+      // recurrence-id and nothing to attach it to. The series it belongs
+      // to is the one that shares its uid.
+      //
+      // getItem on a provider calendar reads the offline store directly
+      // rather than asking the provider, so this does not re-enter the
+      // modifyItem that is asking for it.
+      const uid = exceptions[0].getFirstPropertyValue("uid");
+      const stored = uid ? await calendar.getItem(uid) : null;
+      if (stored) {
+        // Cloned because merging the exception mutates the recurrence
+        // info, and the stored item is not ours to change.
+        parent = stored.clone();
+      }
+    }
+
     if (!parent) {
-      throw new ExtensionError("TODO need to retrieve a parent item from storage");
+      throw new ExtensionError(
+        exceptions.length
+          ? "Exceptions were supplied for an item that could not be found"
+          : "No vevent or vtodo component found"
+      );
     }
 
     if (exceptions.length && !parent.recurrenceInfo) {
@@ -151,7 +174,7 @@ function parseJcalData(jcalComp) {
   throw new ExtensionError("Don't know how to handle component type " + jcalComp.name);
 }
 
-export function propsToItem(props) {
+export async function propsToItem(props, calendar) {
   let jcalComp;
 
   if (props.format == "ical") {
@@ -160,14 +183,14 @@ export function propsToItem(props) {
     } catch (e) {
       throw new ExtensionError("Could not parse iCalendar", { cause: e });
     }
-    return parseJcalData(jcalComp);
+    return parseJcalData(jcalComp, calendar);
   } else if (props.format == "jcal") {
     try {
       jcalComp = new ICAL.Component(props.item);
     } catch (e) {
       throw new ExtensionError("Could not parse jCal", { cause: e });
     }
-    return parseJcalData(jcalComp);
+    return parseJcalData(jcalComp, calendar);
   }
 
   throw new ExtensionError("Invalid item format: " + props.format);

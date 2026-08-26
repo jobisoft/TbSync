@@ -6,8 +6,8 @@ calendar/experiments/calendar, at commit
 
     b7f7cb3e76807903a785a03784d6e7df7b213f21
 
-as recorded in ../../VENDOR.md. It is NOT a pristine copy. Six files carry
-local changes; every other file is byte-identical to that commit.
+as recorded in ../../VENDOR.md. It is NOT a pristine copy. Seven files
+carry local changes; every other file is byte-identical to that commit.
 
 The same folder is vendored into TbSync, and the two copies are kept
 byte-identical by hand - this file included. Verify with
@@ -51,7 +51,8 @@ What changed, and why
 Items 0-4 are in child/ext-calendar-timezones.js, item 5 in
 parent/ext-calendar-timezones.js, item 6 in schema/calendar-calendars.json,
 ext-calendar-utils.sys.mjs and parent/ext-calendar-calendars.js, items 7 and
-8 in parent/ext-calendar-provider.js.
+8 in parent/ext-calendar-provider.js, item 9 in ext-calendar-utils.sys.mjs,
+parent/ext-calendar-provider.js and parent/ext-calendar-items.js.
 
 0. Priming the timezone service. This runs in the child process, where the
    service is a fresh instance Thunderbird's own startup never touched -
@@ -208,6 +209,83 @@ ext-calendar-utils.sys.mjs and parent/ext-calendar-calendars.js, items 7 and
 
    Measured on Thunderbird 153.0.3: reported on macOS, reproduced on Linux,
    so it is not platform-specific.
+
+9. parseJcalData fetches the parent it could not find, so editing a single
+   occurrence works.
+
+   Upstream leaves this unimplemented:
+
+       if (!parent) {
+         throw new ExtensionError("TODO need to retrieve a parent item from storage");
+       }
+
+   That branch is not exotic - it is what one occurrence looks like. Asked
+   for an item, convertItem serializes only the item it was given
+   (`serializer.addItems([item])`), so an edited occurrence arrives as a
+   lone vevent carrying a recurrence-id and nothing to attach it to.
+   parseJcalData collects it into `exceptions`, never finds a parent, and
+   throws.
+
+   What the user sees is nothing at all. The throw happens while
+   ext-calendar-provider.js is building the arguments for its listener, so
+   modifyItem's catch turns it into a bare NS_ERROR_FAILURE, the event
+   dialog closes as though the edit had been saved, and the occurrence is
+   unchanged. "Edit all occurrences" works, which makes it look like a
+   provider bug (EAS-4-TbSync#354).
+
+   Done the way the TODO says and the way the rest of the file already
+   works: the series is the item sharing the exception's uid, so it is read
+   with `await calendar.getItem(uid)` - the same call ext-calendar-items.js
+   makes in five places whenever it has an id and needs the item. The
+   calendar is passed in rather than a parent, because a calendar is
+   unambiguous while a parent asks each caller to know which item is the
+   right one; a caller that got that wrong would corrupt the series rather
+   than fail.
+
+   Reading storage from inside modifyItem does not re-enter the provider:
+   ext-calendar-provider.js's own getItem delegates straight to
+   `this.offlineStorage`, so the lookup goes to the cache and not back
+   through the provider that is asking.
+
+   Only the two paths that modify pass a calendar - items.update and the
+   provider's onItemUpdated. The create paths deliberately do not: a
+   create carrying only an exception, for a series the calendar already
+   holds, would otherwise resolve that series and quietly modify it, so
+   `create` would do the job of `update`. Upstream throws there, and it
+   still does.
+
+   The cost is that parseJcalData and propsToItem become async. All four
+   callers already are.
+
+   The stored item is cloned before use, since merging an exception mutates
+   the recurrence info, and the merged parent is returned rather than the
+   exception. That is not new: the branch above already returns the parent
+   for a vcalendar carrying exceptions, so it is the shape this function
+   already promises.
+
+   The throw stays for what nothing can rescue - no such item, or no item
+   component at all - but says which of the two happened instead of naming
+   a TODO.
+
+   Measured on cvjmbonn (Exchange 16.1): before, an exception-only update
+   is refused with the TODO text; after, it is applied, the stored item is
+   the parent with the occurrence merged into it, and a full sync carries
+   it to the server and back with no warnings.
+
+   Both routes into the branch were exercised, which needs some care. An
+   exception-only vcalendar handed to calendar.items.update reaches it in
+   ext-calendar-items.js and never gets as far as the provider. To reach
+   the copy in ext-calendar-provider.js - the one the event dialog uses -
+   send a *bare* vevent carrying a recurrence-id instead: parseJcalData's
+   first branch returns that as an occurrence, so modifyItem is handed one,
+   convertItem then serialises it alone, and the provider's own listener
+   parses the result. That second route only runs when the extension
+   returns a typed item from the listener, so the series has to be synced
+   first: with no stamps to restore, this add-on's hook returns the item
+   unchanged and the API skips propsToItem entirely.
+
+   Upstream's own gap rather than a deviation we want, like item 8, and
+   worth offering there.
 
 Verified against Thunderbird 153.0.2 (esr153), 154.0 (beta) and 155.0a1:
 every other member these files touch - defaultTimezone, timezoneIds and

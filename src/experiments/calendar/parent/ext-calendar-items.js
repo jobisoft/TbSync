@@ -73,7 +73,7 @@ this.calendar_items = class extends ExtensionAPI {
           },
           async create(calendarId, createProperties) {
             const calendar = getResolvedCalendarById(context.extension, calendarId);
-            const item = propsToItem(createProperties);
+            const item = await propsToItem(createProperties);
             item.calendar = calendar.superCalendar;
 
             if (createProperties.metadata && isOwnCalendar(calendar, context.extension)) {
@@ -105,7 +105,7 @@ this.calendar_items = class extends ExtensionAPI {
               throw new ExtensionError(`Encountered unknown item type for ${calendarId}/${id}`);
             }
 
-            const newItem = propsToItem(updateProperties);
+            const newItem = await propsToItem(updateProperties, calendar);
             newItem.calendar = calendar.superCalendar;
 
             if (updateProperties.metadata && isOwnCalendar(calendar, context.extension)) {
