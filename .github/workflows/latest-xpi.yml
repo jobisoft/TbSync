@@ -1,5 +1,5 @@
-# Keeps latest.xpi on exactly one release - the public one - so this URL can be
-# pinned by enterprise policies as install_url:
+# Keeps latest.xpi on exactly one release - the one GitHub calls Latest - so
+# this URL can be pinned by enterprise policies as install_url:
 #
 #   https://github.com/<owner>/<repo>/releases/latest/download/latest.xpi
 #
@@ -9,13 +9,32 @@
 #
 #   https://github.com/<owner>/<repo>/releases/latest/download/latest.yaml
 #
-# Publishing a pre-release arms a watcher that polls updates.json until that
-# file names this very release - the moment the add-on goes public - and then
-# adds latest.xpi to it, takes the Latest designation, and strips latest.xpi
-# from every other release.
+# This workflow has one job: make the alias follow the Latest designation,
+# wherever that is. It never moves the designation itself - `promote.yml`
+# does that, and everything else is a person clicking "Set as the latest
+# release". Either way this runs afterwards and catches up.
 #
-# Run by hand instead and it is a repair pass: whatever release is currently
-# Latest gets the alias, every other release loses it, nothing is promoted.
+# There is no release event for "was made Latest", and the payload carries
+# no field saying so. Setting it on an already-published release is an
+# `edited`, so this listens for the three types that can leave a different
+# release holding it - and then ignores which one raised the event.
+#
+# It does not work out what changed. It reconciles: one listing says
+# whether the latest release holds the whole alias and nothing else holds
+# any of it. If so the run is over. If not, the alias comes off every
+# release and a freshly built one goes onto the latest.
+#
+# Both halves of that condition earn their place. Without the first, an
+# edit to any release rebuilds an alias that was already right. Without the
+# second, a run that died half way through leaves a duplicate that no later
+# run will ever clear.
+#
+# A pre-release skips even that. One cannot hold Latest, so nothing it does
+# can matter here, and betas are published far more often than promoted.
+#
+# Run by hand and it does the same reconciliation, so a manual run is a
+# genuine repair rather than a second code path that can disagree with the
+# first - and it is the way to fix the state by hand after anything unusual.
 #
 # The versioned asset is never touched and stays the visible one.
 
@@ -23,69 +42,93 @@ name: latest.xpi
 
 on:
   release:
-    types: [prereleased]
+    types: [published, edited, released]
   workflow_dispatch:
 
 permissions:
   contents: write
 
-# A newer pre-release supersedes whatever the previous run is still waiting for.
+# Never cancel: a run that dies between the upload and the cleanup leaves the
+# alias on two releases, or on none. Queue instead - each run is seconds.
 concurrency:
   group: latest-xpi
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  promote:
+  alias:
     runs-on: ubuntu-latest
-    # Just under the 6h ceiling a job gets, so the timeout is ours and reports
-    # as one. Re-arm by publishing the pre-release again if updates.json is
-    # going to land later than that.
-    timeout-minutes: 350
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Publish latest.xpi on the public release
+      - name: Put latest.xpi on the release that holds Latest
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          TAG: ${{ github.event.release.tag_name }}
-          UPDATES_URL: https://raw.githubusercontent.com/jobisoft/tbsync/refs/heads/Main/updates.json
+          EVENT_TAG: ${{ github.event.release.tag_name }}
+          EVENT_PRERELEASE: ${{ github.event.release.prerelease }}
         run: |
           set -euo pipefail
 
-          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
-            release=$(gh api "repos/$GH_REPO/releases/latest")
-            TAG=$(printf '%s' "$release" | jq -r .tag_name)
-            name=$(printf '%s' "$release" \
-                   | jq -r '[.assets[].name | select(endswith("_beta.xpi"))] | first // empty')
-            if [ -z "$name" ]; then
-              echo "::error::$TAG carries no *_beta.xpi to copy."
-              exit 1
-            fi
-            promote=false
-            echo "Repair pass on $TAG ($name), the current latest release."
-          else
-            id=$(jq -r '.browser_specific_settings.gecko.id' src/manifest.json)
-            echo "Watching updates.json for $id -> $TAG"
-            while :; do
-              link=$(curl -sf "$UPDATES_URL" \
-                     | jq -r --arg id "$id" \
-                         '.addons[$id].updates // [] | max_by(.version) | .update_link // empty' \
-                     || true)
-              linktag=$(printf '%s' "$link" | sed -nE 's#.*/releases/download/([^/]+)/.*#\1#p')
-              [ "$linktag" = "$TAG" ] && break
-              echo "updates.json still on '${linktag:-nothing}', waiting 60s ..."
-              sleep 60
-            done
-            name=$(basename "$link")
-            promote=true
-            echo "updates.json released $TAG ($name)."
+          # A pre-release cannot hold Latest, so nothing it does can matter
+          # here. Answered without asking anybody, and it is most events.
+          if [ "${EVENT_PRERELEASE:-}" = "true" ]; then
+            echo "$EVENT_TAG is a pre-release; Latest cannot have moved."
+            exit 0
           fi
-          export TAG
 
-          # 1. latest.xpi, beside the versioned asset it copies, and
-          #    latest.yaml describing it. The version is read out of the xpi
-          #    rather than taken from the tag, so it states what is served.
+          # Everything else reconciles the whole repository rather than
+          # working out what changed: the alias comes off every release, then
+          # a freshly built one goes onto the latest. Deciding first would
+          # save a few seconds and cost the only thing that clears up after a
+          # run that died half way - a run that concludes it has nothing to
+          # do cannot remove a duplicate.
+          latest=$(gh api "repos/$GH_REPO/releases/latest")
+          TAG=$(printf '%s' "$latest" | jq -r .tag_name)
+
+          name=$(printf '%s' "$latest" \
+                 | jq -r '[.assets[].name | select(endswith("_beta.xpi"))] | first // empty')
+          if [ -z "$name" ]; then
+            echo "::error::$TAG carries no *_beta.xpi to copy."
+            exit 1
+          fi
+          echo "Latest is $TAG ($name)."
+
+          # One listing answers both questions: is anything holding the
+          # alias that should not be, and does the latest release hold all
+          # of it? Cheap, because the removal below needs this list anyway.
+          releases=$(gh api --paginate "repos/$GH_REPO/releases")
+          stale=$(printf '%s' "$releases" \
+                  | jq -r --arg tag "$TAG" '.[] | select(.tag_name != $tag) | .assets[]
+                      | select(.name == "latest.xpi" or .name == "latest.yaml") | .id')
+          mine=$(printf '%s' "$releases" \
+                 | jq -r --arg tag "$TAG" '.[] | select(.tag_name == $tag)
+                     | [.assets[].name | select(. == "latest.xpi" or . == "latest.yaml")]
+                     | sort | join(",")')
+
+          if [ -z "$stale" ] && [ "$mine" = "latest.xpi,latest.yaml" ]; then
+            echo "$TAG already carries the alias, and nothing else does."
+            exit 0
+          fi
+
+          # 1. Off every release, the latest one included, so what follows
+          #    starts from a known state instead of a guessed one.
+          #
+          #    Order costs nothing where it counts. When the designation has
+          #    just moved, the pinned
+          #    releases/latest/download/latest.xpi already resolves to the
+          #    new release - which has no alias yet - so the gap is open from
+          #    the moment the label moved, whichever end this does first.
+          printf '%s' "$releases" \
+            | jq -r '.[] | .assets[]
+                         | select(.name == "latest.xpi" or .name == "latest.yaml") | .id' \
+            | while read -r asset_id; do
+                echo "removing alias (asset $asset_id)"
+                gh api -X DELETE "repos/$GH_REPO/releases/assets/$asset_id"
+              done
+
+          # 2. Then onto the latest release: latest.xpi beside the versioned
+          #    asset it copies, and latest.yaml describing it. The version is
+          #    read out of the xpi rather than taken from the tag, so it
+          #    states what is served.
           mkdir -p out
           gh release download "$TAG" --pattern "$name" --dir out
           mv "out/$name" out/latest.xpi
@@ -98,22 +141,5 @@ jobs:
           cat out/latest.yaml
 
           gh release upload "$TAG" out/latest.xpi out/latest.yaml --clobber
-
-          # 2. Leave pre-release and take the Latest designation. Both flags in
-          #    one call: a pre-release is not allowed to hold it.
-          if [ "$promote" = true ]; then
-            release_id=$(gh api "repos/$GH_REPO/releases/tags/$TAG" -q .id)
-            gh api -X PATCH "repos/$GH_REPO/releases/$release_id" \
-                   -F prerelease=false -f make_latest=true
-          fi
-
-          # 3. Exactly one release carries latest.xpi and latest.yaml.
-          gh api --paginate "repos/$GH_REPO/releases" \
-            -q '.[] | select(.tag_name != env.TAG) | .assets[]
-                    | select(.name == "latest.xpi" or .name == "latest.yaml") | .id' \
-          | while read -r asset_id; do
-              echo "removing stale alias (asset $asset_id)"
-              gh api -X DELETE "repos/$GH_REPO/releases/assets/$asset_id"
-            done
 
           echo "$TAG carries latest.xpi + latest.yaml and is the public release."

@@ -1,0 +1,115 @@
+# Makes the release TbSync's updates.json names the public one.
+#
+# That file is the authority, not this repository: installed copies poll it,
+# so a release becomes real the moment it appears there and not when it was
+# published here. So this reads the tag out of updates.json rather than
+# taking it from whatever triggered the run - a release published under one
+# tag and then superseded by another resolves correctly instead of waiting
+# for a moment that will never come.
+#
+# Publishing anything arms it. Pre-release or not does not matter; what
+# matters is that the release is not already Latest, because then there is
+# nothing to do.
+#
+# Triggered on `published` rather than `prereleased`, deliberately: the
+# documentation is explicit that "the prereleased type will not trigger for
+# pre-releases published from draft releases, but the published type will
+# trigger" - and publishing from a draft is the ordinary way to write release
+# notes first. Listening to the narrower event is why a release could go out
+# and nothing happen at all.
+#
+# Run by hand to pick the wait up again - after a timeout, or for a release
+# published before this existed.
+
+name: promote
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to promote. Defaults to the one updates.json names."
+        required: false
+
+permissions:
+  contents: write
+
+# A newer pre-release supersedes whatever the previous run is still waiting
+# for, so cancelling is right here - unlike the alias workflow, nothing is
+# half-written when this dies.
+concurrency:
+  group: promote
+  cancel-in-progress: true
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    # Just under the 6h ceiling a job gets, so the timeout is ours and reports
+    # as one. Re-arm by running this by hand if updates.json lands later.
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for updates.json, then make this release public
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EVENT_TAG: ${{ github.event.release.tag_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+          UPDATES_URL: https://raw.githubusercontent.com/jobisoft/tbsync/refs/heads/Main/updates.json
+        run: |
+          set -euo pipefail
+
+          id=$(jq -r '.browser_specific_settings.gecko.id' src/manifest.json)
+          LATEST=$(gh api "repos/$GH_REPO/releases/latest" -q .tag_name 2>/dev/null || true)
+          echo "Latest is currently '${LATEST:-nothing}'."
+
+          # Nothing to do for a release that already holds Latest - and
+          # without this an edit to it would arm a wait that cannot end.
+          if [ -n "${EVENT_TAG:-}" ] && [ "$EVENT_TAG" = "$LATEST" ]; then
+            echo "$EVENT_TAG is already the public release."
+            exit 0
+          fi
+
+          # A tag can be named to force one, but the file decides by default.
+          TAG="${INPUT_TAG:-}"
+          if [ -n "$TAG" ]; then
+            echo "Promoting $TAG because the run asked for it."
+          else
+            echo "Watching updates.json for $id to name a release other than '${LATEST:-nothing}'"
+            while :; do
+              # The first entry, not the highest: comparing these version
+              # strings sorts them as text, where "5.9.0" outranks "5.10.0".
+              # Every add-on here publishes exactly one.
+              link=$(curl -sf "$UPDATES_URL" \
+                     | jq -r --arg id "$id" '.addons[$id].updates // [] | .[0].update_link // empty' \
+                     || true)
+              TAG=$(printf '%s' "$link" | sed -nE 's#.*/releases/download/([^/]+)/.*#\1#p')
+              [ -n "$TAG" ] && [ "$TAG" != "$LATEST" ] && break
+              echo "updates.json still on '${TAG:-nothing}', waiting 60s ..."
+              TAG=""
+              sleep 60
+            done
+            echo "updates.json released $TAG ($link)."
+          fi
+
+          release_id=$(gh api "repos/$GH_REPO/releases/tags/$TAG" -q .id 2>/dev/null || true)
+          if [ -z "$release_id" ]; then
+            echo "::error::$TAG is named for release but is not a release here."
+            exit 1
+          fi
+
+          # Leave pre-release and take the Latest designation. Both flags in
+          # one call: a pre-release is not allowed to hold it. Harmless on a
+          # release that was published public already - it just gains Latest.
+          gh api -X PATCH "repos/$GH_REPO/releases/$release_id" \
+                 -F prerelease=false -f make_latest=true
+
+          # Hand over to the alias workflow. A PATCH made with GITHUB_TOKEN
+          # raises no event a workflow can see - "events triggered by the
+          # GITHUB_TOKEN will not create a new workflow run" - but
+          # workflow_dispatch is one of the two documented exceptions and
+          # "always create workflow runs", so this needs no PAT.
+          gh workflow run latest-xpi.yml --repo "$GH_REPO"
+          echo "$TAG is public; asked latest-xpi.yml to move the alias."
