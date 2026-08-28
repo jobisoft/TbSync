@@ -32,8 +32,13 @@ on:
         description: "Release tag to promote. Defaults to the one updates.json names."
         required: false
 
+# `contents` to flip the release flags, `actions` to dispatch the alias
+# workflow below. Those are separate gates: a GITHUB_TOKEN dispatch does
+# raise a workflow run where other token-made events do not, but it is
+# still refused with 403 unless the job is granted `actions: write`.
 permissions:
   contents: write
+  actions: write
 
 # A newer pre-release supersedes whatever the previous run is still waiting
 # for, so cancelling is right here - unlike the alias workflow, nothing is
