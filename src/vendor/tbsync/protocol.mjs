@@ -656,7 +656,13 @@ export function withCode(err, code, details = null) {
 /** Default timeout for host→provider RPCs in milliseconds. */
 export const DEFAULT_RPC_TIMEOUT_MS = 30_000;
 
-/** Long-running RPCs (sync, popups) that should not be timed out. */
+/** Long-running RPCs (sync, popups) that should not be timed out.
+ *
+ *  Both directions: the host waits on the first group, the provider on
+ *  `REQUEST_SYNC`. That one resolves only when the sync it asked for has
+ *  finished, which is the same wait as `SYNC_FOLDER` seen from the other
+ *  end - so timing it out means abandoning a sync that is still running
+ *  and reporting a failure for work that goes on to succeed. */
 export const NO_TIMEOUT_CMDS = new Set([
   HOST_CMD.SYNC_ACCOUNT,
   HOST_CMD.SYNC_FOLDER,
@@ -665,4 +671,5 @@ export const NO_TIMEOUT_CMDS = new Set([
   HOST_CMD.OPEN_CONFIG_POPUP,
   HOST_CMD.OPEN_SERVICES_POPUP,
   HOST_CMD.REAUTHENTICATE,
+  PROVIDER_CMD.REQUEST_SYNC,
 ]);
