@@ -4,7 +4,7 @@ Deliberately small: a decorator that records tests in declaration order, a
 selector, and a loop that prints one line per test. No dependency, no
 discovery magic beyond importing `test_*.py`.
 
-Ids are the numbers from the test plan (`2.1`, `3.11`), kept because they are
+Ids are the numbers from the test plan (`2.1`, `7.11`), kept because they are
 shared vocabulary - the code cites them, and so do we when talking about a
 failure. `npm test -- 3` runs a section, `npm test -- 3.4` one step.
 
@@ -62,10 +62,10 @@ def test(test_id, description, versions=None):
 
 
 def select(selectors):
-    """Filter the registry by `["3"]` (section) or `["3.4"]` (exact id).
+    """Filter the registry by `["7"]` (section) or `["7.4"]` (exact id).
 
-    An exact id wins over a section prefix, so `3.1` never also matches
-    `3.11` - which plain string prefixing would get wrong.
+    An exact id wins over a section prefix, so `7.1` never also matches
+    `7.11` - which plain string prefixing would get wrong.
     """
     if not selectors:
         return list(REGISTRY)
@@ -116,8 +116,20 @@ def run(tests, session, prepare=None, finish=None, stop_on_error=True):
     the other half of the same idea: a section states what it leaves behind.
     Raising from it fails the section, which is the point - work still owed
     when a section ends is a real result, and the next section's setup would
-    otherwise discard it unseen. It does not run after a failure, since a
-    section that already stopped will naturally be mid-flight.
+    otherwise discard it unseen. It does not run for a section a failure
+    abandoned, which will naturally be mid-flight.
+
+    A failing *test* abandons its own section and nothing more. Steps within a
+    section chain on purpose, so the tests after a failed one are judging a
+    fixture that never reached the state they assume. Sections do not chain
+    - each clears and builds what it needs - so the run carries on with the
+    next one. Stopping the whole run instead let one defect hide every
+    section behind it: a contact failure in section 9 cost sections 11
+    through 19 on a server nothing else was wrong with.
+
+    A failing *preflight* still stops the run. It states the conditions a
+    section's tests are judged against, so one that could not do its job
+    leaves every later result moot rather than merely unrelated.
     """
     passed = failed = skipped = 0
     started = time.time()
@@ -125,18 +137,21 @@ def run(tests, session, prepare=None, finish=None, stop_on_error=True):
     first = True
 
     prepared = None
+    # The section a failure abandoned. Its remaining tests are passed over;
+    # the next section starts clean.
+    abandoned = None
     for t in tests:
+        if abandoned is not None and t["section"] == abandoned:
+            continue
         # Only between tests, and only before ones that will actually do
         # something - a skipped test costs the server nothing.
         if not first and applies(t, session.family):
             time.sleep(PAUSE_S)
         first = False
         if applies(t, session.family) and t["section"] != prepared:
-            if prepared is not None and not failed and finish:
+            if prepared is not None and prepared != abandoned and finish:
                 if _finish_section(finish, prepared, failures):
                     failed += 1
-                    if stop_on_error:
-                        break
             prepared = t["section"]
             if prepare:
                 try:
@@ -147,6 +162,10 @@ def run(tests, session, prepare=None, finish=None, stop_on_error=True):
                         print(f"{head}{line}")
                     failed += 1
                     failures.append(f"{prepared}.preflight")
+                    # Hard stop, unlike a failing test. Preparing a section
+                    # states the conditions its tests are judged against,
+                    # so a preflight that could not do its job makes every
+                    # result after it moot rather than merely unrelated.
                     if stop_on_error:
                         break
                     continue
@@ -158,6 +177,7 @@ def run(tests, session, prepare=None, finish=None, stop_on_error=True):
             )
             skipped += 1
             continue
+        failed_before = failed
         try:
             t["fn"](session)
             print(f"  PASS {t['id']:<5} {t['description']}")
@@ -178,12 +198,24 @@ def run(tests, session, prepare=None, finish=None, stop_on_error=True):
                 print(f"       {line}")
             failures.append(t["id"])
             failed += 1
-        if failed and stop_on_error:
-            remaining = len(tests) - tests.index(t) - 1
-            if remaining:
-                print(f"\n  stopping: {remaining} later test(s) not run - the "
-                      f"account is no longer in a known state")
-            break
+        # This test, not the run: `failed` is a running total, so asking it
+        # abandoned every later section after the first failure anywhere -
+        # each one running a single test before being written off.
+        if failed > failed_before and stop_on_error:
+            # The section is abandoned, not the run. Steps within a section
+            # chain on purpose, so what follows a failure there is judging
+            # a fixture that never reached the state it assumes. Sections
+            # do not chain - each clears and builds what it needs - so a
+            # failure in one says nothing about the next, and stopping the
+            # lot meant a single defect could hide every section behind it.
+            abandoned = t["section"]
+            rest = sum(
+                1 for later in tests[tests.index(t) + 1:]
+                if later["section"] == abandoned and applies(later, session.family)
+            )
+            if rest:
+                print(f"       ...abandoning section {abandoned}: {rest} later "
+                      f"test(s) in it judge a fixture that never got there")
 
     # The last section has no successor to close it.
     if not failed and finish and prepared is not None:
