@@ -267,7 +267,7 @@ parent/ext-calendar-provider.js and parent/ext-calendar-items.js.
    component at all - but says which of the two happened instead of naming
    a TODO.
 
-   Measured on cvjmbonn (Exchange 16.1): before, an exception-only update
+   Measured on Microsoft (Exchange 16.1): before, an exception-only update
    is refused with the TODO text; after, it is applied, the stored item is
    the parent with the occurrence merged into it, and a full sync carries
    it to the server and back with no warnings.
