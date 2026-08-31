@@ -469,7 +469,7 @@ body {
   background-color: transparent;
   /* Visible 1px border always - the trigger reads as a control even at
      rest. Hover/open deepen the border and tint the fill. */
-  border: 1px solid var(--border-row, #ccc);
+  border: 1px solid var(--border-row);
   border-radius: 3px;
   padding: 0;
   margin: 0;
@@ -482,15 +482,15 @@ body {
 }
 .folder-acl-trigger:hover:not(:disabled),
 .folder-acl-trigger[aria-expanded="true"] {
-  border-color: var(--text-secondary, #888);
-  background-color: rgba(0, 0, 0, 0.04);
+  border-color: var(--text-secondary);
+  background-color: var(--row-hover);
 }
 .folder-acl-trigger:hover:not(:disabled) .folder-acl-trigger-sep,
 .folder-acl-trigger[aria-expanded="true"] .folder-acl-trigger-sep {
-  background-color: var(--text-secondary, #888);
+  background-color: var(--text-secondary);
 }
 .folder-acl-trigger:focus-visible {
-  outline: 1px solid var(--focus-ring, currentColor);
+  outline: 1px solid currentColor;
   outline-offset: 1px;
 }
 .folder-acl-trigger:disabled {
@@ -509,14 +509,14 @@ body {
   width: 1px;
   align-self: stretch;
   margin: 2px 0;
-  background-color: var(--border-row, #ccc);
+  background-color: var(--border-row);
   flex-shrink: 0;
 }
 .folder-acl-trigger-chevron {
   width: 8px;
   height: 5px;
   margin: 0 5px;
-  fill: var(--text-secondary, #666);
+  fill: var(--text-secondary);
   flex-shrink: 0;
 }
 
@@ -531,10 +531,11 @@ body {
   margin: 0;
   padding: 4px 0;
   list-style: none;
-  background-color: var(--bg-popup, var(--bg-input, #fff));
-  border: 1px solid var(--border-row, #ccc);
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-row);
   border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px var(--dialog-shadow);
   min-width: max-content;
   white-space: nowrap;
 }
@@ -552,7 +553,7 @@ body {
 }
 .folder-acl-popup li:hover,
 .folder-acl-popup li:focus-visible {
-  background-color: var(--row-hover, rgba(0, 0, 0, 0.06));
+  background-color: var(--row-hover);
 }
 .folder-acl-popup li.selected {
   font-weight: 600;
