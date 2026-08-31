@@ -229,6 +229,9 @@
   "manager.account.disconnect": {
     "message": "Lecsatlakozás"
   },
+  "manager.account.migrate": {
+    "message": "Migrálás…"
+  },
   "manager.account.authenticate": {
     "message": "Hitelesítés"
   },
@@ -312,6 +315,9 @@
   },
   "account.status.legacy-locked": {
     "message": "Egy korábbi verzió állította be - a szinkronizáláshoz csatlakoztassa újra"
+  },
+  "account.status.legacy-migrate": {
+    "message": "Régebbi verzió állította be - migrálni kell"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -398,6 +404,14 @@
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
   },
   "manager.account.migrated": {
-    "message": "Ezt a fiókot egy korábbi verzió állította be, és nem tud szinkronizálni. Válassza le, majd csatlakoztassa újra, hogy a kiszolgálóról épüljön fel. A leválasztás törli a helyi naptárakat és címjegyzékeket, ezért előbb másolja ki mindazt, ami soha nem lett szinkronizálva."
+    "message": "Ezt a fiókot egy régebbi verzió állította be, ezért nem tud szinkronizálni. Bontsa a kapcsolatot, majd csatlakoztassa újra, hogy a kiszolgálóról épüljön fel."
+  },
+  "manager.account.migrated.held": {
+    "message": "Ezt a fiókot egy régebbi verzió állította be, ezért nem tud szinkronizálni. $COUNT$ olyan módosítás maradt meg, amely soha nem jutott el a kiszolgálóra - a fiókot migrálni kell, mielőtt újra használható lenne.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

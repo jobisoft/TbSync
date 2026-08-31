@@ -229,6 +229,9 @@
   "manager.account.disconnect": {
     "message": "Katkesta ühendus"
   },
+  "manager.account.migrate": {
+    "message": "Migreeri…"
+  },
   "manager.account.authenticate": {
     "message": "Autendi"
   },
@@ -312,6 +315,9 @@
   },
   "account.status.legacy-locked": {
     "message": "Seadistatud vanema versiooniga - sünkroonimiseks ühendage uuesti"
+  },
+  "account.status.legacy-migrate": {
+    "message": "Seadistatud vanema versiooniga - vajab migreerimist"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -398,6 +404,14 @@
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
   },
   "manager.account.migrated": {
-    "message": "See konto seadistati vanema versiooniga ja seda ei saa sünkroonida. Ühendage lahti ja ühendage uuesti, et see serverist uuesti üles ehitada. Lahtiühendamine kustutab selle kohalikud kalendrid ja aadressiraamatud, seega kopeerige esmalt kõik, mida pole kunagi sünkroonitud."
+    "message": "See konto seadistati vanema versiooniga ega saa sünkroonida. Katkesta ühendus ja ühenda uuesti, et see serverist üles ehitada."
+  },
+  "manager.account.migrated.held": {
+    "message": "See konto seadistati vanema versiooniga ega saa sünkroonida. Alles on hoitud $COUNT$ muudatust, mis ei jõudnud kunagi serverisse - konto tuleb enne edasist kasutamist migreerida.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

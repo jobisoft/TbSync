@@ -229,6 +229,9 @@
   "manager.account.disconnect": {
     "message": "연결 끊기"
   },
+  "manager.account.migrate": {
+    "message": "마이그레이션…"
+  },
   "manager.account.authenticate": {
     "message": "인증"
   },
@@ -312,6 +315,9 @@
   },
   "account.status.legacy-locked": {
     "message": "이전 버전에서 설정됨 - 동기화하려면 다시 연결하세요"
+  },
+  "account.status.legacy-migrate": {
+    "message": "이전 버전에서 설정됨 - 마이그레이션 필요"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -398,6 +404,14 @@
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
   },
   "manager.account.migrated": {
-    "message": "이 계정은 이전 버전에서 설정되어 동기화할 수 없습니다. 연결을 끊었다가 다시 연결하면 서버에서 새로 구성됩니다. 연결을 끊으면 로컬 달력과 주소록이 삭제되므로, 한 번도 동기화되지 않은 데이터는 먼저 복사하세요."
+    "message": "이 계정은 이전 버전에서 설정되어 동기화할 수 없습니다. 연결을 끊었다가 다시 연결하면 서버에서 다시 만들어집니다."
+  },
+  "manager.account.migrated.held": {
+    "message": "이 계정은 이전 버전에서 설정되어 동기화할 수 없습니다. 서버로 전송되지 않은 변경 사항 $COUNT$개가 보관되어 있어, 다시 사용하려면 마이그레이션해야 합니다.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

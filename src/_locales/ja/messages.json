@@ -229,6 +229,9 @@
   "manager.account.disconnect": {
     "message": "切断"
   },
+  "manager.account.migrate": {
+    "message": "移行…"
+  },
   "manager.account.authenticate": {
     "message": "認証"
   },
@@ -312,6 +315,9 @@
   },
   "account.status.legacy-locked": {
     "message": "以前のバージョンで設定されました - 同期するには再接続してください"
+  },
+  "account.status.legacy-migrate": {
+    "message": "以前のバージョンで設定されました - 移行が必要です"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -398,6 +404,14 @@
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
   },
   "manager.account.migrated": {
-    "message": "このアカウントは以前のバージョンで設定されたため、同期できません。切断してから再接続すると、サーバーから再構築されます。切断するとローカルのカレンダーとアドレス帳は削除されるので、一度も同期されていないデータは先にコピーしてください。"
+    "message": "このアカウントは以前のバージョンで設定されたため同期できません。接続を解除して再接続すると、サーバーから再構築されます。"
+  },
+  "manager.account.migrated.held": {
+    "message": "このアカウントは以前のバージョンで設定されたため同期できません。サーバーに送信されなかった変更 $COUNT$ 件が保存されています。再び使用するには移行が必要です。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

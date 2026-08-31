@@ -229,6 +229,9 @@
   "manager.account.disconnect": {
     "message": "Rozłącz"
   },
+  "manager.account.migrate": {
+    "message": "Migruj…"
+  },
   "manager.account.authenticate": {
     "message": "Uwierzytelnij"
   },
@@ -312,6 +315,9 @@
   },
   "account.status.legacy-locked": {
     "message": "Skonfigurowane przez starszą wersję - połącz ponownie, aby synchronizować"
+  },
+  "account.status.legacy-migrate": {
+    "message": "Skonfigurowane przez starszą wersję - wymaga migracji"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -398,6 +404,14 @@
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
   },
   "manager.account.migrated": {
-    "message": "To konto zostało skonfigurowane przez starszą wersję i nie może się synchronizować. Rozłącz je i połącz ponownie, aby odtworzyć je z serwera. Rozłączenie usuwa jego lokalne kalendarze i książki adresowe, więc najpierw skopiuj wszystko, co nigdy nie zostało zsynchronizowane."
+    "message": "To konto zostało skonfigurowane przez starszą wersję i nie może się synchronizować. Rozłącz je i połącz ponownie, aby odbudować je z serwera."
+  },
+  "manager.account.migrated.held": {
+    "message": "To konto zostało skonfigurowane przez starszą wersję i nie może się synchronizować. Zachowano $COUNT$ zmian, które nigdy nie zostały wysłane na serwer - konto musi zostać zmigrowane, zanim będzie można go ponownie użyć.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

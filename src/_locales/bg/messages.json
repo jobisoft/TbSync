@@ -229,6 +229,9 @@
   "manager.account.disconnect": {
     "message": "Прекъсване"
   },
+  "manager.account.migrate": {
+    "message": "Мигриране…"
+  },
   "manager.account.authenticate": {
     "message": "Удостоверяване"
   },
@@ -312,6 +315,9 @@
   },
   "account.status.legacy-locked": {
     "message": "Настроен от по-стара версия - свържете отново за синхронизиране"
+  },
+  "account.status.legacy-migrate": {
+    "message": "Настроена от по-стара версия - изисква мигриране"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -398,6 +404,14 @@
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
   },
   "manager.account.migrated": {
-    "message": "Този акаунт е настроен от по-стара версия и не може да се синхронизира. Прекъснете връзката и я установете отново, за да бъде изграден наново от сървъра. Прекъсването изтрива локалните календари и адресни указатели, затова първо копирайте всичко, което никога не е било синхронизирано."
+    "message": "Тази регистрация е настроена от по-стара версия и не може да се синхронизира. Прекъснете връзката и я свържете отново, за да бъде изградена наново от сървъра."
+  },
+  "manager.account.migrated.held": {
+    "message": "Тази регистрация е настроена от по-стара версия и не може да се синхронизира. Запазени са $COUNT$ промени, които никога не са изпращани към сървъра - тя трябва да бъде мигрирана, преди да се използва отново.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

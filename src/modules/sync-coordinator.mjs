@@ -288,7 +288,8 @@ export async function syncAccount(
   // own - syncing into that would duplicate items rather than repair them.
   // The account keeps its settings and its resources so the user can read
   // them and copy anything out; connecting it afresh is the way forward,
-  // and disconnecting is what clears the flag (see `setAccountEnabled`).
+  // and disconnecting is one of the two things that clear the flag (see
+  // `liftLegacyLock`).
   //
   // Refused here rather than at each caller, and silently, exactly like the
   // rejected-credentials guard above: the manager states the condition and

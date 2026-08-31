@@ -16,6 +16,10 @@ import {
   parseLegacyChangelog,
   keysOf,
   resolveTarget,
+  listToGroupVCard,
+  groupVCardToList,
+  isGroup,
+  easServerIdOf,
 } from "../src/modules/legacy-rescue.mjs";
 
 // The three resources of the captured account, keyed as the changelog
@@ -219,13 +223,17 @@ test("an edit to an item the server holds keeps the server's id", () => {
     [{ id: "card-1", vCard }],
     { "card-1": { "X-EAS-SERVERID": serverId } },
   );
-  assert.deepEqual(r.items, [{ op: "modified", serverId, data: vCard }]);
+  assert.deepEqual(r.items, [
+    { rescueId: "r1", op: "modified", serverId, data: vCard },
+  ]);
 });
 
 test("a deletion is an edit with an id and no data", () => {
   const serverId = "U9fc3a:57a543ff54dc4fadad3dbb0ec2054d078c7279000000";
   const r = resolveTarget({ added: [], modified: [], deleted: [serverId] }, [], null);
-  assert.deepEqual(r.items, [{ op: "deleted", serverId, data: null }]);
+  assert.deepEqual(r.items, [
+    { rescueId: "r1", op: "deleted", serverId, data: null },
+  ]);
 });
 
 test("a card read straight from the contacts API is still recovered", () => {
@@ -277,7 +285,7 @@ test("a ServerId that is itself colon-shaped resolves to its own item", () => {
   ];
   const r = resolveTarget({ added: [], modified: ["6:125"], deleted: [] }, nodes, null);
   assert.deepEqual(r.items, [
-    { op: "modified", serverId: "6:125", data: nodes[0].vCard },
+    { rescueId: "r1", op: "modified", serverId: "6:125", data: nodes[0].vCard },
   ]);
 });
 
@@ -291,7 +299,7 @@ test("a row naming an item the resource does not hold yields nothing", () => {
     null,
   );
   assert.deepEqual(r.items, [
-    { op: "deleted", serverId: "bye", data: null },
+    { rescueId: "r1", op: "deleted", serverId: "bye", data: null },
   ]);
 });
 
@@ -311,4 +319,67 @@ test("an item present but empty is not rescued blank", () => {
     null,
   );
   assert.deepEqual(r.items, []);
+});
+
+test("every entry gets an id of the record's own, and a creation can be named by it", () => {
+  // A list points at a card only this record holds, and that pointer has to
+  // be to the entry - there is nothing else to point at, since the card has
+  // no id on the server and the one it had locally is not kept.
+  const vCard = "BEGIN:VCARD\r\nFN:new\r\nEND:VCARD";
+  const r = resolveTarget(
+    { added: ["placeholder-1"], modified: [], deleted: [] },
+    [{ id: "card-1", vCard }],
+    { "card-1": { "X-EAS-SERVERID": "placeholder-1" } },
+  );
+  assert.equal(r.items[0].rescueId, "r1");
+  assert.equal(r.createdBy.get("placeholder-1"), "r1");
+});
+
+test("an id names an entry, and only entries this run creates get named", () => {
+  // An edited item is found again by its own server id, so nothing needs to
+  // point at its entry - and pointing at it would say "re-created", which
+  // is not what happens to it.
+  const vCard = "BEGIN:VCARD\r\nFN:x\r\nEND:VCARD";
+  const r = resolveTarget(
+    { added: [], modified: ["Ued67e:57a5"], deleted: [] },
+    [{ id: "card-1", vCard }],
+    { "card-1": { "X-EAS-SERVERID": "Ued67e:57a5" } },
+  );
+  assert.equal(r.items[0].rescueId, "r1");
+  assert.equal(r.createdBy.size, 0);
+});
+
+test("a list becomes a group vCard and comes back the same", () => {
+  const data = listToGroupVCard({
+    name: "Team; Nord",
+    nickName: "team",
+    description: "two\nlines",
+    members: [{ serverId: "Ued67e:57a5" }, { rescueId: "r4" }],
+  });
+  assert.ok(isGroup(data));
+  assert.deepEqual(groupVCardToList(data), {
+    name: "Team; Nord",
+    nickName: "team",
+    description: "two\nlines",
+    members: [{ serverId: "Ued67e:57a5" }, { rescueId: "r4" }],
+  });
+});
+
+test("a contact is not a list", () => {
+  assert.equal(isGroup("BEGIN:VCARD\r\nFN:Someone\r\nEND:VCARD"), false);
+  assert.equal(groupVCardToList("BEGIN:VCARD\r\nKIND:individual\r\nEND:VCARD"), null);
+});
+
+test("the stamp is read from a card property or from the text", () => {
+  // The previous version kept a card's in a property; this one writes it
+  // into the vCard. Both are the same question.
+  assert.equal(
+    easServerIdOf({ id: "c1" }, { c1: { "X-EAS-SERVERID": "Ued67e:57a5" } }),
+    "Ued67e:57a5",
+  );
+  assert.equal(
+    easServerIdOf({ id: "c2", vCard: "BEGIN:VCARD\r\nX-EAS-SERVERID:6:125\r\nEND:VCARD" }, null),
+    "6:125",
+  );
+  assert.equal(easServerIdOf({ id: "c3", vCard: "BEGIN:VCARD\r\nEND:VCARD" }, null), null);
 });

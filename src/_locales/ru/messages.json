@@ -229,6 +229,9 @@
   "manager.account.disconnect": {
     "message": "Отключить"
   },
+  "manager.account.migrate": {
+    "message": "Перенести…"
+  },
   "manager.account.authenticate": {
     "message": "Аутентификация"
   },
@@ -312,6 +315,9 @@
   },
   "account.status.legacy-locked": {
     "message": "Настроена в более старой версии - переподключите для синхронизации"
+  },
+  "account.status.legacy-migrate": {
+    "message": "Настроена более старой версией - требуется перенос"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -398,6 +404,14 @@
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
   },
   "manager.account.migrated": {
-    "message": "Эта учётная запись настроена в более старой версии и не может синхронизироваться. Отключите её и подключите заново, чтобы она была создана заново с сервера. При отключении удаляются локальные календари и адресные книги, поэтому сначала скопируйте всё, что никогда не синхронизировалось."
+    "message": "Эта учётная запись была настроена более старой версией и не может синхронизироваться. Отключите и подключите её заново, чтобы восстановить с сервера."
+  },
+  "manager.account.migrated.held": {
+    "message": "Эта учётная запись была настроена более старой версией и не может синхронизироваться. Сохранено изменений, так и не отправленных на сервер: $COUNT$ - её нужно перенести, прежде чем использовать снова.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

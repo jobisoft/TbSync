@@ -229,6 +229,9 @@
   "manager.account.disconnect": {
     "message": "Desconectar"
   },
+  "manager.account.migrate": {
+    "message": "Migrar…"
+  },
   "manager.account.authenticate": {
     "message": "Autenticar"
   },
@@ -312,6 +315,9 @@
   },
   "account.status.legacy-locked": {
     "message": "Configurada por uma versão anterior - reconecte para sincronizar"
+  },
+  "account.status.legacy-migrate": {
+    "message": "Configurada por uma versão anterior - precisa ser migrada"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -398,6 +404,14 @@
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
   },
   "manager.account.migrated": {
-    "message": "Esta conta foi configurada por uma versão anterior e não pode sincronizar. Desconecte-a e conecte-a novamente para reconstruí-la a partir do servidor. Desconectar exclui seus calendários e catálogos de endereços locais, portanto copie antes tudo o que nunca foi sincronizado."
+    "message": "Esta conta foi configurada por uma versão anterior e não pode sincronizar. Desconecte-a e conecte-a novamente para reconstruí-la a partir do servidor."
+  },
+  "manager.account.migrated.held": {
+    "message": "Esta conta foi configurada por uma versão anterior e não pode sincronizar. $COUNT$ alterações que nunca foram enviadas ao servidor foram preservadas, portanto ela precisa ser migrada antes de poder ser usada novamente.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

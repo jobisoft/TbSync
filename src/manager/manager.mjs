@@ -411,7 +411,16 @@ function effectiveAccountState(acc) {
   // After `disabled`, deliberately: disconnecting is the remedy this state
   // asks for, and an account that has taken it should read as off rather
   // than keep naming a condition it no longer has.
-  if (acc.legacyImported) return { status: "legacy-locked", interactive };
+  if (acc.legacyImported) {
+    // Two ways out, and the status names the one on offer. Something was
+    // kept for this account, or nothing was; the first has to be dealt with
+    // before the account can be taken apart, the second is the remedy this
+    // state has always asked for.
+    return {
+      status: acc.legacyHeld ? "legacy-migrate" : "legacy-locked",
+      interactive,
+    };
+  }
   return { status: deriveAccountResultStatus(acc), interactive };
 }
 
@@ -431,6 +440,7 @@ function statusSlot(acc, eff) {
     "upgrading",
     "setting-up",
     "legacy-locked",
+    "legacy-migrate",
   ]);
   if (labelStates.has(eff.status)) {
     return {
@@ -509,11 +519,18 @@ function accountActions(acc) {
     // offering it for a provider that cannot hear it reads as wrong. With
     // the provider gone the exit is Remove, which refuses nothing.
     //
-    // It does not ignore the legacy lock, which is the one state where
-    // disconnecting destroys something: it deletes the local calendars and
-    // address books, and on an account set up by an older version those
-    // hold every edit that version never sent. Remove stays available.
-    canDisconnect: providerActive && !!acc.enabled && !acc.legacyImported,
+    // It does not ignore one thing: while an account still holds what a
+    // previous version never sent, disconnecting destroys it - the teardown
+    // deletes the local calendars and address books, and no server can give
+    // that back. One flag says so, and this does not ask why it is set.
+    // Remove stays available either way.
+    canDisconnect:
+      providerActive && !!acc.enabled && !acc.legacyReplayPending,
+    // The migration rebuilds every resource from the server and then puts
+    // the rescued changes back, so it needs the provider present and the
+    // account settled - and something to put back.
+    canMigrate:
+      baseEnabled && !!acc.enabled && !!acc.legacyHeld && !!acc.legacyImported,
     // Re-clicks while the popup is open should focus it, even if the
     // account is currently transient-busy from the popup's own RPC.
     canReauth: providerActive && isReauth && (!transientLocked || reauthOpen),
@@ -831,20 +848,29 @@ function renderDetail() {
   if (status.severity) statusText.classList.add(status.severity);
 
   // The account cannot sync, so the note carries the whole explanation:
-  // why nothing is happening, what to do, and - before the user does it -
-  // that disconnecting deletes the local copies. Said here because this is
-  // where someone looks when an account sits still, which a release note
-  // read months ago is not.
+  // why nothing is happening, and which of the two ways out this account
+  // has. Said here because this is where someone looks when an account
+  // sits still, which a release note read months ago is not.
   if (acc.legacyImported) {
     const note = frag.querySelector(".migrated-note");
     note.hidden = false;
-    note.textContent = i18n(
-      "manager.account.migrated",
-      "This account was set up by an older version and cannot sync. " +
-        "Disconnect and reconnect it to rebuild it from the server. " +
-        "Disconnecting deletes its local calendars and address books, so " +
-        "copy anything that was never synced first.",
-    );
+    // With something kept, the account has to be migrated and the button
+    // below offers it. With nothing kept, the old remedy is the way out and
+    // says nothing about losing anything: we have looked, and there was
+    // nothing to lose.
+    note.textContent = acc.legacyHeld
+      ? i18n(
+          "manager.account.migrated.held",
+          `This account was set up by an older version and cannot sync. ` +
+            `${acc.legacyHeld} changes it never sent to the server have been ` +
+            `kept, so it has to be migrated before it can be used again.`,
+          [String(acc.legacyHeld)],
+        )
+      : i18n(
+          "manager.account.migrated",
+          "This account was set up by an older version and cannot sync. " +
+            "Disconnect and reconnect it to rebuild it from the server.",
+        );
   }
 
   // A provider-set autosync pause (`noAutosyncUntil`), told beside the
@@ -1281,10 +1307,12 @@ function providerLabel(providerId) {
 // sync (animated), upgrading → spinner (active background work, distinct
 // from sync), everything else → error.
 //
-// `legacy-locked` is listed rather than left to the fallback: the account
-// really is one the user has to act on before it will ever sync, so the
-// error icon is the intended answer and not an accident of an unknown
-// status. The toolbar badge reads the same condition, so the two agree.
+// The two carried-over states are listed rather than left to the fallback:
+// such an account really is one the user has to act on before it will ever
+// sync, so the error icon is the intended answer and not an accident of an
+// unknown status. The toolbar badge reads the same condition, so the two
+// agree. They differ only in what the user has to do - reconnect it, or
+// migrate it - which the label says and the icon does not need to.
 const STATUS_ICON_FILE = {
   success: "status-tick16.png",
   disabled: "status-disabled16.png",
@@ -1295,6 +1323,7 @@ const STATUS_ICON_FILE = {
   upgrading: "spinner.gif",
   "setting-up": "spinner.gif",
   "legacy-locked": "status-error16.png",
+  "legacy-migrate": "status-error16.png",
 };
 
 /** Icon for the Status column. Tooltip carries the localised status label

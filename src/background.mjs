@@ -44,10 +44,16 @@ import {
   runIfNeeded as runLegacyMigration,
 } from "./modules/legacy-migration-runner.mjs";
 import {
+  easServerIdOf,
+  listToGroupVCard,
   parseLegacyChangelog,
   resolveTarget,
 } from "./modules/legacy-rescue.mjs";
-import { listContacts } from "./vendor/tbsync/address-book.mjs";
+import {
+  listContacts,
+  listMailingListMembers,
+  listMailingLists,
+} from "./vendor/tbsync/address-book.mjs";
 import { listItems } from "./vendor/tbsync/calendar.mjs";
 import { serialize } from "./vendor/tbsync/storage-queue.mjs";
 
@@ -568,11 +574,13 @@ function assertFolderSelectionUnlocked(acc) {
 // ── Manager popup → background RPC handlers ────────────────────────────────
 
 ui.setManagerRpcHandler("getState", async () => {
-  const [accountList, needsSync, live] = await Promise.all([
+  const [accountList, needsSync, live, rescues] = await Promise.all([
     accounts.list(),
     folders.needsSyncMap(),
     providers.list(),
+    browser.storage.local.get({ [KEYS.LEGACY_RESCUE]: {} }),
   ]);
+  const heldFor = rescues[KEYS.LEGACY_RESCUE] ?? {};
   // Overlay the known-providers catalogue: attach an install url to live
   // entries that match a known id, and synthesize stub rows for known
   // providers that aren't installed so the manager can offer them.
@@ -615,6 +623,10 @@ ui.setManagerRpcHandler("getState", async () => {
     accounts: accountList.map((a) => ({
       ...a,
       needsSync: !!needsSync[a.accountId],
+      // How much a previous version left this account holding. Nothing but
+      // a number: it decides which of the two ways out the manager offers,
+      // and says how much is waiting when that way is the migration.
+      legacyHeld: countHeld(heldFor[a.accountId]),
     })),
     providers: providerList,
     // The newest slice only. With the limit lifted the log can be far
@@ -945,15 +957,15 @@ ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
   // whatever the provider still holds unclaimed. It is told if it is
   // listening, and finds out by not finding its session if it is not.
   if (enabled) assertAccountReady(accountId);
-  // The one state where disconnecting destroys something. The teardown
-  // deletes the account's calendars and address books, and on an account
-  // set up by an older version those are the only place the edits that
-  // version never sent still exist. Refused here as well as in the manager
-  // because a second window, a stale render or the bridge reach this
-  // directly. Removing the account is still allowed, and still deletes
-  // them - that one is the user saying so.
-  if (!enabled && acc.legacyImported) {
-    throw new Error("Account was set up by an older version");
+  // The teardown deletes the account's calendars and address books, and
+  // while this flag stands they hold something no server can give back -
+  // either edits a previous version never sent, or the fact that nobody has
+  // looked yet. One term, and this does not ask why it is set. Refused here
+  // as well as in the manager because a second window, a stale render or
+  // the bridge reach this directly. Removing the account is still allowed,
+  // and still deletes them - that one is the user saying so.
+  if (!enabled && acc.legacyReplayPending) {
+    throw new Error("Account still holds changes a previous version made");
   }
   if (enabled && !router.isProviderConnected(acc.provider)) {
     throw withCode(
@@ -1004,13 +1016,20 @@ ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
         // Clear any standing auth/sync error on re-enable; on disable, drop
         // it too so the row reads as a clean "off" state.
         error: null,
-        // A disconnect ends the account's migrated life: everything the
-        // conversion carried is deleted below, and reconnecting rebuilds it
-        // from the server. That is the remedy the manager suggests to a
-        // carried-over account, so the suggestion retires when it is taken.
-        ...(enabled ? null : { legacyImported: false }),
       });
       if (!enabled) {
+        // A disconnect ends the account's carried-over life: everything the
+        // conversion brought is deleted below, and reconnecting rebuilds it
+        // from the server. That is one of the two ways the lock comes off,
+        // and it goes through the same function as the other so neither can
+        // leave part of it standing.
+        //
+        // Only for an account that is actually carrying one. Every other
+        // disconnect has nothing to lift, and a resource this add-on never
+        // froze is not ours to make writable on the way out.
+        if (acc.legacyImported || acc.legacyReplayPending) {
+          await liftLegacyLock(accountId);
+        }
         // Rows first, targets second: dropping the rows is what unhooks the
         // changelog watcher, so the cascade of deletion events from the
         // targets is not recorded as user edits. The captured rows still
@@ -1210,10 +1229,11 @@ browser.alarms.onAlarm.addListener((alarm) => {
  *  Best effort per resource: a book or calendar the user deleted by hand
  *  answers false or throws, and the rest still have to be frozen.
  *
- *  Nothing lifts these flags. The only thing that clears `legacyImported`
- *  is the disconnect, and that deletes the resources in the same handler -
- *  which the flag does not block, since a whole book is removed through the
- *  address book manager rather than through the directory. */
+ *  `liftLegacyLock` takes these flags off again, for both ways out of the
+ *  lock - the disconnect, which deletes the resources in the same handler,
+ *  and a finished migration, which keeps them. The flag blocks neither,
+ *  since a whole book is removed through the address book manager rather
+ *  than through the directory. */
 async function freezeLegacyTargets(accountId) {
   for (const row of await folders.listForAccount(accountId)) {
     if (!row?.targetID) continue;
@@ -1228,6 +1248,100 @@ async function freezeLegacyTargets(accountId) {
     } catch (err) {
       console.debug(
         `[tbsync] freezing ${row.targetID} (${row.targetType}) failed:`,
+        err?.message ?? err,
+      );
+    }
+  }
+}
+
+/** How many entries a rescue holds. Derived, never stored: a tally of the
+ *  record is not a fact about it. */
+function countHeld(rescue) {
+  let n = 0;
+  for (const folder of rescue?.folders ?? []) n += folder.items?.length ?? 0;
+  return n;
+}
+
+/** Every mailing list in a book, as an entry of its own.
+ *
+ *  Neither this version nor the previous one syncs a list - ActiveSync has
+ *  no such thing - so a list exists only in the book it is in. The rebuild
+ *  deletes that book, and no server can give the list back: unlike every
+ *  other thing in there, it is gone for good. So all of them are kept, not
+ *  only the ones somebody edited, and put back afterwards.
+ *
+ *  A member names itself by what will identify it once the book has been
+ *  rebuilt. A card the server holds comes back carrying the same stamp, so
+ *  that is the name. A card the previous version never sent has no name on
+ *  the server at all; it is one of the entries this record is about to have
+ *  re-created, so it is named by that entry.
+ *
+ *  Best effort, like everything else here: a list that cannot be read is
+ *  one list lost, not a rescue abandoned. */
+async function rescueMailingLists(bookId, properties, resolved, mintId) {
+  const out = [];
+  let lists = [];
+  try {
+    lists = await listMailingLists(bookId);
+  } catch (err) {
+    console.debug(
+      `[tbsync] reading the mailing lists of ${bookId} failed:`,
+      err?.message ?? err,
+    );
+    return out;
+  }
+
+  for (const list of lists) {
+    try {
+      const members = [];
+      for (const card of await listMailingListMembers(list.id)) {
+        const stamp = easServerIdOf(card, properties);
+        if (!stamp) continue;
+        const rescueId = resolved.createdBy.get(stamp);
+        members.push(rescueId ? { rescueId } : { serverId: stamp });
+      }
+      out.push({
+        rescueId: mintId(),
+        op: "added",
+        serverId: null,
+        data: listToGroupVCard({
+          name: list.name,
+          nickName: list.nickName,
+          description: list.description,
+          members,
+        }),
+      });
+    } catch (err) {
+      console.debug(
+        `[tbsync] reading the mailing list ${list?.id} failed:`,
+        err?.message ?? err,
+      );
+    }
+  }
+  return out;
+}
+
+/** Let a locked account's resources accept edits again.
+ *
+ *  The mirror of the freeze, and it exists because the freeze runs at every
+ *  boot: a restart in the middle of a migration would find the *rebuilt*
+ *  resources and make those read-only too, and nothing would ever write to
+ *  them again. Whatever is bound to the account when the lock lifts is
+ *  released, without asking how it came to be frozen. */
+async function thawLegacyTargets(accountId) {
+  for (const row of await folders.listForAccount(accountId)) {
+    if (!row?.targetID) continue;
+    try {
+      if (row.targetType === "contacts") {
+        await browser.LegacyData.setAddressBookReadOnly(row.targetID, false);
+      } else if (row.targetType === "calendars" || row.targetType === "tasks") {
+        await messenger.calendar.calendars.update(row.targetID, {
+          readOnly: false,
+        });
+      }
+    } catch (err) {
+      console.debug(
+        `[tbsync] releasing ${row.targetID} (${row.targetType}) failed:`,
         err?.message ?? err,
       );
     }
@@ -1277,6 +1391,10 @@ async function rescueLegacyEdits(accountId) {
   // had, and its own totals would credit each account with the others'.
   const counts = { added: 0, modified: 0, deleted: 0 };
   const rescued = [];
+  // Entry ids run across the whole account, not per folder: a list names a
+  // member by one, and nothing should have to say which folder it meant.
+  let minted = 0;
+  const mintId = () => `r${++minted}`;
 
   for (const row of await folders.listForAccount(accountId)) {
     // The changelog names a resource by the id the previous version bound
@@ -1302,9 +1420,15 @@ async function rescueLegacyEdits(accountId) {
       );
     }
 
-    const resolved = resolveTarget(bucket, nodes, properties);
-    if (!resolved.items.length) continue;
-    for (const item of resolved.items) counts[item.op]++;
+    const resolved = resolveTarget(bucket, nodes, properties, mintId);
+    const items = resolved.items;
+    if (row.targetType === "contacts") {
+      items.push(
+        ...(await rescueMailingLists(row.targetID, properties, resolved, mintId)),
+      );
+    }
+    if (!items.length) continue;
+    for (const item of items) counts[item.op]++;
     rescued.push({
       // The folder row, not a copy of what it says. This runs before the
       // provider has converted its own half of the import, and one of the
@@ -1317,7 +1441,7 @@ async function rescueLegacyEdits(accountId) {
       // it correctly whenever it is actually needed.
       folderId: row.folderId,
       legacyTargetId: row.targetID,
-      items: resolved.items,
+      items,
     });
   }
 
@@ -1330,7 +1454,15 @@ async function rescueLegacyEdits(accountId) {
   );
 
   const kept = counts.added + counts.modified + counts.deleted;
-  if (!kept) return;
+  if (!kept) {
+    // Nothing was owed. The account is still locked and still cannot sync,
+    // but there is nothing here a teardown could destroy, so the hold on
+    // the disconnect comes off and the old remedy - disconnect, reconnect,
+    // rebuild from the server - is the way out again.
+    await accounts.update(accountId, { legacyReplayPending: false });
+    ui.broadcast({ type: "accounts-changed", accountId });
+    return;
+  }
   await eventLog.append({
     accountId,
     folderId: null,
@@ -1340,6 +1472,28 @@ async function rescueLegacyEdits(accountId) {
       `(${counts.added} added, ${counts.modified} modified, ` +
       `${counts.deleted} deleted).`,
   });
+  ui.broadcast({ type: "accounts-changed", accountId });
+}
+
+/** Let a carried-over account go: it can sync again, nothing holds its
+ *  disconnect, and what was kept for it is released.
+ *
+ *  The one way the lock comes off, whichever route the user took to it -
+ *  disconnecting, or finishing the migration. Everything the lock put in
+ *  place is undone here, so no route can undo half of it: the two flags go
+ *  together, the kept edits go with them, and the resources are writable
+ *  again. A rescue outliving its account's lock would be a record nothing
+ *  can ever offer, and a resource left read-only would be a lock nobody
+ *  can lift. */
+async function liftLegacyLock(accountId) {
+  await thawLegacyTargets(accountId).catch((err) =>
+    console.warn("[tbsync] releasing legacy resources failed:", err),
+  );
+  await accounts.update(accountId, {
+    legacyImported: false,
+    legacyReplayPending: false,
+  });
+  await dropLegacyRescue(accountId);
 }
 
 /** Forget an account's rescue. Removing the account is the only way a

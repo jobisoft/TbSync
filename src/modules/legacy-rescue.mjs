@@ -223,7 +223,9 @@ function easServerIdFrom(raw) {
  * and an opaque id with no item behind it is not something anyone can be
  * shown or act on. The changelog is simply ahead of the resource there.
  */
-export function resolveTarget(bucket, nodes, properties) {
+export function resolveTarget(bucket, nodes, properties, mintId = null) {
+  let n = 0;
+  const mint = mintId ?? (() => `r${++n}`);
   const byKey = new Map();
   for (const node of nodes ?? []) {
     for (const key of keysOf(node, properties)) {
@@ -235,22 +237,129 @@ export function resolveTarget(bucket, nodes, properties) {
   }
 
   const items = [];
+  // What a list will name a member by, when that member is a card only
+  // this record holds. Keyed by the id the changelog used, which is what a
+  // card's own stamp will match.
+  const createdBy = new Map();
+
   for (const op of ["added", "modified"]) {
     for (const legacyItemId of bucket?.[op] ?? []) {
       const node = byKey.get(legacyItemId);
       const data = rawOf(node);
       if (!node || !data) continue;
-      items.push({
+      const entry = {
+        rescueId: mint(),
         op,
         serverId: op === "added" ? null : legacyItemId,
         data,
-      });
+      };
+      if (op === "added") createdBy.set(legacyItemId, entry.rescueId);
+      items.push(entry);
     }
   }
 
   for (const serverId of bucket?.deleted ?? []) {
-    items.push({ op: "deleted", serverId, data: null });
+    items.push({ rescueId: mint(), op: "deleted", serverId, data: null });
   }
 
-  return { items };
+  return { items, createdBy };
+}
+
+/** The id the provider stamped on an item, wherever it keeps it.
+ *
+ *  In this version's own data it is in the text. The previous version put a
+ *  card's in a card property instead, which is why the properties are read
+ *  separately and passed in here. */
+export function easServerIdOf(node, properties) {
+  const fromProps = properties?.[node?.id]?.[X_EAS_SERVERID_NAME];
+  if (typeof fromProps === "string" && fromProps) return fromProps;
+  return easServerIdFrom(rawOf(node));
+}
+
+const X_EAS_SERVERID_NAME = "X-EAS-SERVERID";
+
+/** A mailing list, written as the vCard that describes a group of cards.
+ *
+ *  `KIND:group` is what RFC 6350 defines for exactly this, so a list needs
+ *  no place of its own in the record and no format of its own: it is an
+ *  entry like any other, and its `data` says what it is. A contact says
+ *  `KIND:individual` or nothing at all, and Thunderbird writes no group
+ *  vCards itself, so the two can never be confused.
+ *
+ *  Nothing outside reads this. A list is put back through
+ *  `mailingLists.create` and `addMember`, so Thunderbird never parses it -
+ *  but being the standard form, a downloaded copy means something to other
+ *  software.
+ *
+ *  Each member names itself by the kind of reference it is using, because
+ *  the two kinds survive the rebuild differently and nothing may work that
+ *  out from how a token looks:
+ *
+ *    MEMBER:x-serverid:<id>   a card the server holds, found again by the
+ *                             same value on the rebuilt card
+ *    MEMBER:x-rescueid:<id>   a card only this record holds, found among
+ *                             the entries the replay re-creates
+ */
+export function listToGroupVCard({ name, nickName, description, members }) {
+  const lines = ["BEGIN:VCARD", "VERSION:4.0", "KIND:group"];
+  if (name) lines.push(`FN:${escapeVCardText(name)}`);
+  if (nickName) lines.push(`NICKNAME:${escapeVCardText(nickName)}`);
+  if (description) lines.push(`NOTE:${escapeVCardText(description)}`);
+  for (const m of members ?? []) {
+    if (m?.serverId) lines.push(`MEMBER:x-serverid:${m.serverId}`);
+    else if (m?.rescueId) lines.push(`MEMBER:x-rescueid:${m.rescueId}`);
+  }
+  lines.push("END:VCARD");
+  return lines.join("\r\n") + "\r\n";
+}
+
+/** Read a group vCard back: its three fields and its members, each with the
+ *  kind of reference it declared. Returns null for anything that is not one,
+ *  which is how a contact is told apart from a list. */
+export function groupVCardToList(data) {
+  if (typeof data !== "string") return null;
+  const unfolded = data.replace(/\r?\n[ \t]/g, "");
+  if (!/^KIND:group\s*$/im.test(unfolded)) return null;
+
+  const read = (name) => {
+    const m = new RegExp(`^${name}:(.*)$`, "im").exec(unfolded);
+    return m ? unescapeVCardText(m[1].trim()) : "";
+  };
+  const members = [];
+  for (const line of unfolded.split(/\r?\n/)) {
+    const m = /^MEMBER:x-(serverid|rescueid):(.*)$/i.exec(line);
+    if (!m) continue;
+    const value = m[2].trim();
+    if (!value) continue;
+    members.push(
+      m[1].toLowerCase() === "serverid"
+        ? { serverId: value }
+        : { rescueId: value },
+    );
+  }
+  return {
+    name: read("FN"),
+    nickName: read("NICKNAME"),
+    description: read("NOTE"),
+    members,
+  };
+}
+
+/** True for the entry that is a mailing list rather than an item. */
+export function isGroup(data) {
+  return groupVCardToList(data) !== null;
+}
+
+function escapeVCardText(value) {
+  return String(value)
+    .replace(/\\/g, "\\\\")
+    .replace(/\n/g, "\\n")
+    .replace(/,/g, "\\,")
+    .replace(/;/g, "\\;");
+}
+
+function unescapeVCardText(value) {
+  return String(value).replace(/\\([\\,;nN])/g, (_, c) =>
+    c === "n" || c === "N" ? "\n" : c,
+  );
 }

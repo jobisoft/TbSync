@@ -178,6 +178,9 @@
   "account.status.legacy-locked": {
     "message": "Set up by an older version - reconnect to synchronize"
   },
+  "account.status.legacy-migrate": {
+    "message": "Set up by an older version - needs to be migrated"
+  },
   "account.status.disabled": {
     "message": "Disconnected"
   },
@@ -252,6 +255,9 @@
   },
   "manager.account.disconnect": {
     "message": "Disconnect"
+  },
+  "manager.account.migrate": {
+    "message": "Migrate…"
   },
   "manager.account.authenticate": {
     "message": "Authenticate"
@@ -398,8 +404,16 @@
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
   },
   "manager.account.migrated": {
-    "message": "This account was set up by an older version and cannot sync. Disconnect and reconnect it to rebuild it from the server. Disconnecting deletes its local calendars and address books, so copy anything that was never synced first.",
+    "message": "This account was set up by an older version and cannot sync. Disconnect and reconnect it to rebuild it from the server.",
     "description": "Shown under the account status for an account set up by an older version. Such accounts cannot sync; the note names the remedy and warns that disconnecting deletes the local copies."
+  },
+  "manager.account.migrated.held": {
+    "message": "This account was set up by an older version and cannot sync. $COUNT$ changes it never sent to the server have been kept, so it has to be migrated before it can be used again.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "manager.account.autosyncPaused": {
     "message": "The server asked to pause automatic synchronization until $TIME$. A manual sync works at any time.",

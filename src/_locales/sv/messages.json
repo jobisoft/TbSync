@@ -229,6 +229,9 @@
   "manager.account.disconnect": {
     "message": "Koppla från"
   },
+  "manager.account.migrate": {
+    "message": "Migrera…"
+  },
   "manager.account.authenticate": {
     "message": "Autentisera"
   },
@@ -312,6 +315,9 @@
   },
   "account.status.legacy-locked": {
     "message": "Konfigurerat av en äldre version - återanslut för att synkronisera"
+  },
+  "account.status.legacy-migrate": {
+    "message": "Skapat av en äldre version - måste migreras"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -398,6 +404,14 @@
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
   },
   "manager.account.migrated": {
-    "message": "Det här kontot konfigurerades av en äldre version och kan inte synkronisera. Koppla från och anslut igen för att bygga upp det från servern. Frånkoppling raderar dess lokala kalendrar och adressböcker, så kopiera först allt som aldrig har synkroniserats."
+    "message": "Det här kontot skapades av en äldre version och kan inte synkronisera. Koppla från och anslut igen för att bygga upp det från servern."
+  },
+  "manager.account.migrated.held": {
+    "message": "Det här kontot skapades av en äldre version och kan inte synkronisera. $COUNT$ ändringar som aldrig skickades till servern har sparats, så kontot måste migreras innan det kan användas igen.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

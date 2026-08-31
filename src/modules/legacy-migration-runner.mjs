@@ -189,6 +189,11 @@ async function migrateAccounts(legacyAccounts68) {
       // The manager says so on the account, which it can only do if the
       // account still remembers.
       legacyImported: true,
+      // Held from this moment, before anything has looked at what the
+      // account is carrying: "we have not looked yet" has to hold the
+      // disconnect exactly as firmly as "there is something here". The
+      // rescue clears it if it finds nothing owed.
+      legacyReplayPending: true,
       custom,
     };
   }

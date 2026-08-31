@@ -229,6 +229,9 @@
   "manager.account.disconnect": {
     "message": "Odpojit"
   },
+  "manager.account.migrate": {
+    "message": "Migrovat…"
+  },
   "manager.account.authenticate": {
     "message": "Ověřit"
   },
@@ -312,6 +315,9 @@
   },
   "account.status.legacy-locked": {
     "message": "Nastaveno starší verzí - pro synchronizaci znovu připojte"
+  },
+  "account.status.legacy-migrate": {
+    "message": "Nastaveno starší verzí - vyžaduje migraci"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -398,6 +404,14 @@
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
   },
   "manager.account.migrated": {
-    "message": "Tento účet byl nastaven starší verzí a nelze jej synchronizovat. Odpojte jej a znovu připojte, aby byl znovu sestaven ze serveru. Odpojení odstraní jeho místní kalendáře a adresáře, proto nejprve zkopírujte vše, co nikdy nebylo synchronizováno."
+    "message": "Tento účet byl nastaven starší verzí a nemůže se synchronizovat. Odpojte jej a znovu připojte, aby se obnovil ze serveru."
+  },
+  "manager.account.migrated.held": {
+    "message": "Tento účet byl nastaven starší verzí a nemůže se synchronizovat. Bylo zachováno $COUNT$ změn, které nikdy nebyly odeslány na server - před dalším použitím je nutné účet migrovat.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

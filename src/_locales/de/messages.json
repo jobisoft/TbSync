@@ -229,6 +229,9 @@
   "manager.account.disconnect": {
     "message": "Trennen"
   },
+  "manager.account.migrate": {
+    "message": "Migrieren…"
+  },
   "manager.account.authenticate": {
     "message": "Authentifizieren"
   },
@@ -312,6 +315,9 @@
   },
   "account.status.legacy-locked": {
     "message": "Von einer älteren Version eingerichtet - zum Synchronisieren neu verbinden"
+  },
+  "account.status.legacy-migrate": {
+    "message": "Von einer älteren Version eingerichtet - muss migriert werden"
   },
   "actionButton.title.ok": {
     "message": "TbSync"
@@ -398,6 +404,14 @@
     "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
   },
   "manager.account.migrated": {
-    "message": "Dieses Konto wurde von einer älteren Version eingerichtet und kann nicht synchronisiert werden. Trennen Sie es und verbinden Sie es erneut, um es vom Server neu aufzubauen. Beim Trennen werden seine lokalen Kalender und Adressbücher gelöscht - kopieren Sie daher zuerst alles, was nie synchronisiert wurde."
+    "message": "Dieses Konto wurde von einer älteren Version eingerichtet und kann nicht synchronisieren. Trennen Sie es und verbinden Sie es erneut, um es vom Server neu aufzubauen."
+  },
+  "manager.account.migrated.held": {
+    "message": "Dieses Konto wurde von einer älteren Version eingerichtet und kann nicht synchronisieren. $COUNT$ Änderungen, die nie an den Server gesendet wurden, wurden aufbewahrt - das Konto muss migriert werden, bevor es wieder genutzt werden kann.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }
