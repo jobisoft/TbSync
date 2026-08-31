@@ -75,6 +75,20 @@
         "script": "experiments/ProfileFiles/implementation.js"
       }
     },
+    "LegacyData": {
+      "schema": "experiments/LegacyData/schema.json",
+      "parent": {
+        "scopes": [
+          "addon_parent"
+        ],
+        "paths": [
+          [
+            "LegacyData"
+          ]
+        ],
+        "script": "experiments/LegacyData/implementation.js"
+      }
+    },
     "calendar_provider": {
       "schema": "experiments/calendar/schema/calendar-provider.json",
       "parent": {

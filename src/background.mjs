@@ -539,6 +539,23 @@ function assertAccountReady(accountId) {
   }
 }
 
+/** Reject a change to which resources an account syncs while it is locked
+ *  as set up by an older version.
+ *
+ *  Deselecting a resource deletes the local copy, and on such an account
+ *  that copy is the only place anything the older version never sent still
+ *  exists. The manager greys the controls, but a second window, a stale
+ *  render or a bridge call reaches the RPC directly - so the refusal has to
+ *  live here as well.
+ *
+ *  Separate from `assertAccountReady`, which is shared with RPCs that have
+ *  no reason to refuse this state. */
+function assertFolderSelectionUnlocked(acc) {
+  if (acc?.legacyImported) {
+    throw new Error("Account was set up by an older version");
+  }
+}
+
 // ── Manager popup → background RPC handlers ────────────────────────────────
 
 ui.setManagerRpcHandler("getState", async () => {
@@ -918,6 +935,16 @@ ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
   // whatever the provider still holds unclaimed. It is told if it is
   // listening, and finds out by not finding its session if it is not.
   if (enabled) assertAccountReady(accountId);
+  // The one state where disconnecting destroys something. The teardown
+  // deletes the account's calendars and address books, and on an account
+  // set up by an older version those are the only place the edits that
+  // version never sent still exist. Refused here as well as in the manager
+  // because a second window, a stale render or the bridge reach this
+  // directly. Removing the account is still allowed, and still deletes
+  // them - that one is the user saying so.
+  if (!enabled && acc.legacyImported) {
+    throw new Error("Account was set up by an older version");
+  }
   if (enabled && !router.isProviderConnected(acc.provider)) {
     throw withCode(
       new Error("Provider not available"),
@@ -1001,6 +1028,7 @@ ui.setManagerRpcHandler(
     const acc = await accounts.get(accountId);
     if (!acc) throw new Error("unknown account");
     assertAccountReady(accountId);
+    assertFolderSelectionUnlocked(acc);
     const folder = await folders.get(accountId, folderId);
     if (!folder) throw new Error("unknown folder");
     if (folder.readOnly) {
@@ -1021,6 +1049,7 @@ ui.setManagerRpcHandler(
     const acc = await accounts.get(accountId);
     if (!acc) throw new Error("unknown account");
     assertAccountReady(accountId);
+    assertFolderSelectionUnlocked(acc);
     if (!router.isProviderConnected(acc.provider)) {
       throw withCode(
         new Error("Provider not available"),
@@ -1160,6 +1189,41 @@ browser.alarms.onAlarm.addListener((alarm) => {
   );
 });
 
+/** Stop a locked account's local resources from accepting edits.
+ *
+ *  An account set up by an older version cannot sync, and its calendars and
+ *  address books were written by code that addressed their items
+ *  differently. Every edit made to them now is an edit against data that
+ *  will be replaced, so it is lost either way - silently, and with nothing
+ *  telling the user. Freezing them says it.
+ *
+ *  Best effort per resource: a book or calendar the user deleted by hand
+ *  answers false or throws, and the rest still have to be frozen.
+ *
+ *  Nothing lifts these flags. The only thing that clears `legacyImported`
+ *  is the disconnect, and that deletes the resources in the same handler -
+ *  which the flag does not block, since a whole book is removed through the
+ *  address book manager rather than through the directory. */
+async function freezeLegacyTargets(accountId) {
+  for (const row of await folders.listForAccount(accountId)) {
+    if (!row?.targetID) continue;
+    try {
+      if (row.targetType === "contacts") {
+        await browser.LegacyData.setAddressBookReadOnly(row.targetID, true);
+      } else if (row.targetType === "calendars" || row.targetType === "tasks") {
+        await messenger.calendar.calendars.update(row.targetID, {
+          readOnly: true,
+        });
+      }
+    } catch (err) {
+      console.debug(
+        `[tbsync] freezing ${row.targetID} (${row.targetType}) failed:`,
+        err?.message ?? err,
+      );
+    }
+  }
+}
+
 // ── Boot ───────────────────────────────────────────────────────────────────
 
 await ensureSchema();
@@ -1171,8 +1235,13 @@ await ensureSchema();
 // this case without knowing about it. Sequencing this ahead of
 // `registry.init` is what closes the window: no port can open, so no sync
 // can start against a flagged account before the flag takes effect.
+//
+// The same loop freezes the local resources of an account the importer
+// locked, for the same reason it runs here: this is the first moment those
+// rows exist, and nothing else can reach them yet.
 for (const acc of await accounts.list()) {
   if (acc.legacyMigrationPending) upgradeAccounts.add(acc.accountId);
+  if (acc.legacyImported) await freezeLegacyTargets(acc.accountId);
 }
 ui.init();
 actionBadge.init();

@@ -508,7 +508,12 @@ function accountActions(acc) {
     // change the provider participates in (stop, clean its state), and
     // offering it for a provider that cannot hear it reads as wrong. With
     // the provider gone the exit is Remove, which refuses nothing.
-    canDisconnect: providerActive && !!acc.enabled,
+    //
+    // It does not ignore the legacy lock, which is the one state where
+    // disconnecting destroys something: it deletes the local calendars and
+    // address books, and on an account set up by an older version those
+    // hold every edit that version never sent. Remove stays available.
+    canDisconnect: providerActive && !!acc.enabled && !acc.legacyImported,
     // Re-clicks while the popup is open should focus it, even if the
     // account is currently transient-busy from the popup's own RPC.
     canReauth: providerActive && isReauth && (!transientLocked || reauthOpen),
@@ -526,7 +531,11 @@ function accountActions(acc) {
     // button exists rather than whether it is usable right now.
     hasServices: !!provider?.capabilities?.hasServicesPopup,
     canChangeAutosync: baseEnabled && !!acc.enabled,
-    canEditFolders: baseEnabled && !!acc.enabled,
+    // Both the selection checkbox and the ACL dropdown. An account set up
+    // by an older version is frozen until it is dealt with: deselecting a
+    // resource deletes the local copy, which on such an account holds
+    // everything that version never sent.
+    canEditFolders: baseEnabled && !!acc.enabled && !acc.legacyImported,
   };
 }
 

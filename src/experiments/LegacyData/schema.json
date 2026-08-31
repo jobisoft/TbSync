@@ -1,0 +1,25 @@
+[
+  {
+    "namespace": "LegacyData",
+    "functions": [
+      {
+        "name": "setAddressBookReadOnly",
+        "type": "function",
+        "async": true,
+        "description": "Set or clear the read-only flag on an address book, which blocks adding, modifying and deleting its cards. Returns false if the book does not exist.",
+        "parameters": [
+          {
+            "name": "bookUid",
+            "type": "string",
+            "description": "The address book's UID, as reported by the addressBooks API."
+          },
+          {
+            "name": "readOnly",
+            "type": "boolean",
+            "description": "True to freeze the book, false to release it."
+          }
+        ]
+      }
+    ]
+  }
+]
