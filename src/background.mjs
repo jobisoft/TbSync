@@ -39,7 +39,16 @@ import {
   endAccountCancel,
   recomputeAccountError,
 } from "./modules/sync-coordinator.mjs";
-import { runIfNeeded as runLegacyMigration } from "./modules/legacy-migration-runner.mjs";
+import {
+  LEGACY_DIR,
+  runIfNeeded as runLegacyMigration,
+} from "./modules/legacy-migration-runner.mjs";
+import {
+  parseLegacyChangelog,
+  resolveTarget,
+} from "./modules/legacy-rescue.mjs";
+import { listContacts } from "./vendor/tbsync/address-book.mjs";
+import { listItems } from "./vendor/tbsync/calendar.mjs";
 import { serialize } from "./vendor/tbsync/storage-queue.mjs";
 
 // Where "TbSync Manager" bug reports are sent. Provider-authored reports go
@@ -910,6 +919,7 @@ ui.setManagerRpcHandler("deleteAccount", async ({ accountId }) => {
       // target in any flow.
       await folders.clearAccount(accountId);
       await deleteTargetsBestEffort(rows);
+      await dropLegacyRescue(accountId);
       await accounts.remove(accountId);
     });
   } finally {
@@ -1224,6 +1234,126 @@ async function freezeLegacyTargets(accountId) {
   }
 }
 
+/** Read out the edits a previous version queued and never sent.
+ *
+ *  The account is locked and its resources are frozen, so what they hold is
+ *  what that version left behind. Anything it had not pushed lives nowhere
+ *  else - the server does not have it - and a later step offers it back
+ *  once the resources have been rebuilt.
+ *
+ *  Written once. A rescue already stored is left alone, so this cannot
+ *  overwrite a record of edits with a reading taken after something has
+ *  already consumed them.
+ *
+ *  Best effort throughout, and deliberately silent about a resource it
+ *  cannot read: the account is still locked afterwards, and a rescue that
+ *  stops the boot would strand every other account too.
+ *
+ *  What is stored is the edits themselves and where they came from, and
+ *  nothing that could be worked out from them. Each edit is its operation,
+ *  the server's own id for it - null when the server never had it - and the
+ *  item's text exactly as it stands. Its UID and whether it is a card, an
+ *  event or a task are all in that text already, and the folder it belongs
+ *  to is the row it is filed under, so none of them is copied out to fall
+ *  out of step later.
+ */
+async function rescueLegacyEdits(accountId) {
+  const stored = await browser.storage.local.get({ [KEYS.LEGACY_RESCUE]: {} });
+  const all = stored[KEYS.LEGACY_RESCUE] ?? {};
+  if (all[accountId]) return;
+
+  const path = `${LEGACY_DIR}/changelog68.json`;
+  if (!(await browser.ProfileFiles.exists(LEGACY_DIR))) return;
+  if (!(await browser.ProfileFiles.exists(path))) return;
+
+  const parsed = parseLegacyChangelog(
+    await browser.ProfileFiles.readJSON(path),
+  );
+  if (!parsed) return;
+
+  // For the log line only - a tally of what was stored, so it is not
+  // stored beside it. Counted from what THIS account resolved rather than
+  // from the parse: one changelog covers every account the previous version
+  // had, and its own totals would credit each account with the others'.
+  const counts = { added: 0, modified: 0, deleted: 0 };
+  const rescued = [];
+
+  for (const row of await folders.listForAccount(accountId)) {
+    // The changelog names a resource by the id the previous version bound
+    // it to, which the import lifted into `targetID`.
+    const bucket = parsed.targets[row?.targetID];
+    if (!bucket) continue;
+
+    let nodes = [];
+    let properties = null;
+    try {
+      if (row.targetType === "contacts") {
+        nodes = await listContacts(row.targetID);
+        // The stamp identifying a card to its provider is a card property,
+        // which the contacts API does not return.
+        properties = await browser.LegacyData.readCardProperties(row.targetID);
+      } else if (row.targetType === "calendars" || row.targetType === "tasks") {
+        nodes = await listItems(row.targetID);
+      }
+    } catch (err) {
+      console.debug(
+        `[tbsync] reading ${row.targetID} (${row.targetType}) for rescue failed:`,
+        err?.message ?? err,
+      );
+    }
+
+    const resolved = resolveTarget(bucket, nodes, properties);
+    if (!resolved.items.length) continue;
+    for (const item of resolved.items) counts[item.op]++;
+    rescued.push({
+      // The folder row, not a copy of what it says. This runs before the
+      // provider has converted its own half of the import, and one of the
+      // things still uncorrected is `targetType`: the previous version used
+      // Lightning's single "calendar" for both calendars and task lists, so
+      // a task list reads as "calendars" until the provider re-derives it.
+      // Reading and freezing do not care - both go through the calendar API
+      // - but recording it here would file a task as an event for whatever
+      // reads this later. The row keeps its id, so the type can be had from
+      // it correctly whenever it is actually needed.
+      folderId: row.folderId,
+      legacyTargetId: row.targetID,
+      items: resolved.items,
+    });
+  }
+
+  // One write, at the end: a crash part-way leaves nothing rather than a
+  // fragment that would be mistaken for a complete reading and never
+  // retried.
+  all[accountId] = { capturedAt: Date.now(), folders: rescued };
+  await serialize(() =>
+    browser.storage.local.set({ [KEYS.LEGACY_RESCUE]: all }),
+  );
+
+  const kept = counts.added + counts.modified + counts.deleted;
+  if (!kept) return;
+  await eventLog.append({
+    accountId,
+    folderId: null,
+    level: "info",
+    message:
+      `Rescued ${kept} change(s) a previous version never sent ` +
+      `(${counts.added} added, ${counts.modified} modified, ` +
+      `${counts.deleted} deleted).`,
+  });
+}
+
+/** Forget an account's rescue. Removing the account is the only way a
+ *  locked one goes away, so this is the only path that can orphan one. */
+async function dropLegacyRescue(accountId) {
+  const stored = await browser.storage.local.get({ [KEYS.LEGACY_RESCUE]: {} });
+  const all = stored[KEYS.LEGACY_RESCUE] ?? {};
+  if (!all[accountId]) return;
+  delete all[accountId];
+  await serialize(() =>
+    browser.storage.local.set({ [KEYS.LEGACY_RESCUE]: all }),
+  );
+}
+
 // ── Boot ───────────────────────────────────────────────────────────────────
 
 await ensureSchema();
@@ -1241,7 +1371,16 @@ await ensureSchema();
 // rows exist, and nothing else can reach them yet.
 for (const acc of await accounts.list()) {
   if (acc.legacyMigrationPending) upgradeAccounts.add(acc.accountId);
-  if (acc.legacyImported) await freezeLegacyTargets(acc.accountId);
+  if (acc.legacyImported) {
+    // Freeze first: the rescue reads these resources, and nothing may edit
+    // them while it does.
+    await freezeLegacyTargets(acc.accountId).catch((err) =>
+      console.warn("[tbsync] freezing legacy resources failed:", err),
+    );
+    await rescueLegacyEdits(acc.accountId).catch((err) =>
+      console.warn("[tbsync] rescuing legacy edits failed:", err),
+    );
+  }
 }
 ui.init();
 actionBadge.init();

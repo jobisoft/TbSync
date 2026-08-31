@@ -14,6 +14,10 @@ export const KEYS = {
   FOLDERS: "tbsync.folders",
   PROVIDERS: "tbsync.providers",
   MIGRATION: "tbsync.migration",
+  // The edits a previous version queued and never sent, read out of an
+  // account's resources while it is locked, before anything can replace
+  // them. Written once per account and never amended.
+  LEGACY_RESCUE: "tbsync.legacyRescue",
 };
 
 /** Bumped when stored data needs a one-off fixup on the way in.

@@ -17,7 +17,9 @@ import { serialize } from "../vendor/tbsync/storage-queue.mjs";
 import { KEYS } from "./storage-keys.mjs";
 import * as eventLog from "./event-log.mjs";
 
-const LEGACY_DIR = "TbSync";
+/** Where a previous version kept its state, relative to the profile. Its
+ *  changelog is read from here too, by the rescue. */
+export const LEGACY_DIR = "TbSync";
 
 export async function runIfNeeded() {
   // Two questions, and they are not the same one.

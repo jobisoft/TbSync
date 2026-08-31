@@ -3,6 +3,19 @@
     "namespace": "LegacyData",
     "functions": [
       {
+        "name": "readCardProperties",
+        "type": "function",
+        "async": true,
+        "description": "Every property of every card in an address book, keyed by the card UID the contacts API reports. Empty if the book does not exist.",
+        "parameters": [
+          {
+            "name": "bookUid",
+            "type": "string",
+            "description": "The address book's UID, as reported by the addressBooks API."
+          }
+        ]
+      },
+      {
         "name": "setAddressBookReadOnly",
         "type": "function",
         "async": true,

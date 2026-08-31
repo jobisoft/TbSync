@@ -358,6 +358,33 @@ const COMMANDS = {
    * real installation can be in, which is the opposite of what these are
    * for. Beta-only, like everything in this file.
    */
+  /** What a previous version's changelog says is owed, and the card
+   *  properties the contacts API does not return.
+   *
+   *  Both exist because the rescue reads two things a test cannot see any
+   *  other way: a file outside the add-on, and a per-card property the
+   *  WebExtension API hides. Every silent bug in this area so far was found
+   *  by looking at these rather than by reasoning about them - a card
+   *  reported as gone when it was merely keyed differently, and a rescue
+   *  that cleared itself after placing nothing.
+   *
+   *  Read-only, and unscoped like the storage commands: neither touches an
+   *  account. */
+  "legacy.changelog": {
+    summary: "The previous version's changelog file, verbatim.",
+    args: "{}",
+    async run() {
+      const path = "TbSync/changelog68.json";
+      if (!(await browser.ProfileFiles.exists(path))) return null;
+      return browser.ProfileFiles.readJSON(path);
+    },
+  },
+  "legacy.cardProps": {
+    summary: "Every property of every card in an address book.",
+    args: "{ bookUid }",
+    run: ({ bookUid }) => browser.LegacyData.readCardProperties(bookUid),
+  },
+
   "storage.snapshot": {
     summary: "The add-on's whole extension storage, verbatim.",
     args: "{}",
