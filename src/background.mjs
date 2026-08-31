@@ -1160,37 +1160,6 @@ browser.alarms.onAlarm.addListener((alarm) => {
   );
 });
 
-/** Accounts converted by a 5.0.x build carry the same uncertainty as a v4
- *  import, and nothing on disk distinguishes them from accounts created
- *  here. The update itself is the only reliable signal, and only at the
- *  moment it happens - so it is taken then and recorded on the accounts.
- *
- *  Registered synchronously at the top level: a listener added after an
- *  await can miss the event that started this page.
- */
-browser.runtime.onInstalled.addListener((details) => {
-  if (details.reason !== "update") return;
-  if (!/^5\.0\./.test(details.previousVersion ?? "")) return;
-  markAccountsCarriedOver(details.previousVersion).catch((err) =>
-    console.warn("[tbsync] marking 5.0.x accounts failed:", err),
-  );
-});
-
-async function markAccountsCarriedOver(previousVersion) {
-  const all = await accounts.list();
-  if (!all.length) return;
-  for (const acc of all) {
-    await accounts.update(acc.accountId, { legacyImported: true });
-  }
-  await eventLog.append({
-    level: "info",
-    message:
-      `Updated from ${previousVersion}: ${all.length} account(s) marked as ` +
-      `carried over - a conversion done by that version cannot be verified ` +
-      `from here.`,
-  });
-}
-
 // ── Boot ───────────────────────────────────────────────────────────────────
 
 await ensureSchema();
