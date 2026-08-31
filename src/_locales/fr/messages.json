@@ -407,7 +407,108 @@
     "message": "Ce compte a été configuré par une version plus ancienne et ne peut pas se synchroniser. Déconnectez-le puis reconnectez-le pour le reconstruire depuis le serveur."
   },
   "manager.account.migrated.held": {
-    "message": "Ce compte a été configuré par une version plus ancienne et ne peut pas se synchroniser. $COUNT$ modifications jamais envoyées au serveur ont été conservées : il doit être migré avant de pouvoir être réutilisé.",
+    "message": "Ce compte a été configuré par une version plus ancienne et ne peut pas se synchroniser. $COUNT$ modifications uniquement locales ont été récupérées : il doit être migré avant de pouvoir être réutilisé.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.title": {
+    "message": "Migrer le compte"
+  },
+  "migration.intro.lead": {
+    "message": "$COUNT$ modifications de « $ACCOUNT$ » n'ont jamais été synchronisées avec le serveur et ont été récupérées.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "account": {
+        "content": "$2"
+      }
+    }
+  },
+  "migration.intro.what": {
+    "message": "La migration reconstruit depuis le serveur tous les agendas et carnets d'adresses de ce compte, puis vous propose les modifications récupérées afin que vous choisissiez lesquelles rétablir."
+  },
+  "migration.button.download": {
+    "message": "Sauvegarder les modifications uniquement locales"
+  },
+  "migration.button.start": {
+    "message": "Démarrer la migration"
+  },
+  "migration.button.apply": {
+    "message": "Terminer la migration du compte"
+  },
+  "migration.button.close": {
+    "message": "Fermer"
+  },
+  "migration.column.item": {
+    "message": "Élément"
+  },
+  "migration.column.action": {
+    "message": "Action"
+  },
+  "migration.column.type": {
+    "message": "Type"
+  },
+  "migration.type.contact": {
+    "message": "Contact"
+  },
+  "migration.type.event": {
+    "message": "Événement"
+  },
+  "migration.type.task": {
+    "message": "Tâche"
+  },
+  "migration.type.list": {
+    "message": "Liste de diffusion"
+  },
+  "migration.running.lead": {
+    "message": "Reconstruction du compte depuis le serveur."
+  },
+  "migration.running.replacing": {
+    "message": "Remplacement de $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncing": {
+    "message": "Téléchargement de $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.op.added": {
+    "message": "Ajouter"
+  },
+  "migration.op.modified": {
+    "message": "Mettre à jour"
+  },
+  "migration.op.deleted": {
+    "message": "Supprimer"
+  },
+  "migration.op.gone": {
+    "message": "n'est plus sur le serveur"
+  },
+  "migration.item.unnamed": {
+    "message": "(sans nom)"
+  },
+  "migration.detail.empty": {
+    "message": "Rien à afficher."
+  },
+  "migration.replay.lead": {
+    "message": "Vos ressources ont été reconstruites depuis le serveur. Veuillez choisir les modifications locales récupérées à rétablir :"
+  },
+  "migration.replay.none": {
+    "message": "Vos ressources ont été reconstruites depuis le serveur. Il n'y a aucune modification locale récupérée à rétablir."
+  },
+  "migration.done": {
+    "message": "$COUNT$ modifications ont été rétablies et sont en attente de synchronisation. Le compte est prêt à être utilisé.",
     "placeholders": {
       "count": {
         "content": "$1"

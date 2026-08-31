@@ -363,3 +363,317 @@ function unescapeVCardText(value) {
     c === "n" || c === "N" ? "\n" : c,
   );
 }
+
+/** What a stored entry is called, for showing it to somebody. */
+export function displayNameOf(data) {
+  if (typeof data !== "string") return "";
+  const unfolded = data.replace(/\r?\n[ \t]/g, "");
+  const m = /^(?:FN|SUMMARY):(.*)$/im.exec(unfolded);
+  return m ? unescapeVCardText(m[1].trim()) : "";
+}
+
+/** The identity an item already has: what Thunderbird calls it, and
+ *  everything the provider has stamped on it. */
+export function identityOf(text) {
+  const unfolded = String(text ?? "").replace(/\r?\n[ \t]/g, "");
+  const uid = /^UID:(.*)$/im.exec(unfolded)?.[1]?.trim() ?? null;
+  const stamps = unfolded
+    .split(/\r?\n/)
+    .filter((line) => /^X-EAS-[A-Z0-9-]+[;:]/i.test(line));
+  return { uid, stamps };
+}
+
+/**
+ * Put the rescued content into an item without disturbing what the item is.
+ *
+ * An update changes what the user wrote and nothing else. Afterwards the
+ * item's `UID` and every one of its `X-EAS-*` properties are exactly what
+ * they were before: the first is its identity to Thunderbird, which
+ * everything else in the profile refers to it by, and the rest are the
+ * provider's - its identity on the server, what an organiser has been told,
+ * the answer a mailbox recorded. Those are state, and an update has no
+ * business touching state.
+ *
+ * The rescued text carries none of them, because the previous version kept
+ * a card's stamp in a card property and gave calendar items no stamps at
+ * all - so they have to be put back for the invariant to hold rather than
+ * merely left alone.
+ *
+ * Every `UID` line is rewritten, not just the first: a recurring item's
+ * overrides each carry one, and they all name the same item. The stamps go
+ * back on the component that holds the first of them, which is the master -
+ * where the provider keeps them.
+ *
+ * Stamps are matched by prefix, so one added later is carried without
+ * anyone remembering to come back here.
+ */
+export function transplantIdentity({ from, into }) {
+  const identity = identityOf(from);
+  if (typeof into !== "string" || !into) return into;
+  if (!identity.uid) return into;
+
+  const lines = into.replace(/\r?\n[ \t]/g, "").split(/\r?\n/);
+  const out = [];
+  let stampsPlaced = false;
+  for (const line of lines) {
+    if (/^X-EAS-[A-Z0-9-]+[;:]/i.test(line)) continue; // never the blob's
+    if (/^UID:/i.test(line)) {
+      out.push(`UID:${identity.uid}`);
+      if (!stampsPlaced) {
+        out.push(...identity.stamps);
+        stampsPlaced = true;
+      }
+      continue;
+    }
+    out.push(line);
+  }
+  return out.join("\r\n");
+}
+
+/** Take an item's identity off, so whatever writes it next mints its own.
+ *
+ *  For something the previous version created and never sent: the id it had
+ *  belonged to a resource that no longer exists and the server never saw
+ *  it, so keeping it gains nothing and risks colliding with an item the
+ *  fresh pull has just brought back. */
+export function stripIdentity(data, { keepUid = false } = {}) {
+  if (typeof data !== "string") return data;
+  const drop = keepUid ? /^X-EAS-[A-Z0-9-]+[;:]/i : /^(UID:|X-EAS-[A-Z0-9-]+[;:])/i;
+  return data
+    .replace(/\r?\n[ \t]/g, "")
+    .split(/\r?\n/)
+    .filter((line) => !drop.test(line))
+    .join("\r\n");
+}
+
+/** Skipped when showing an item to somebody: structure, bookkeeping, and
+ *  the identity fields, which say nothing about what the user wrote and
+ *  differ between any two copies of the same thing. */
+const NOT_CONTENT =
+  /^(BEGIN|END|VERSION|PRODID|CALSCALE|METHOD|UID|DTSTAMP|LAST-MODIFIED|CREATED|X-EAS-[A-Z0-9-]+)[;:]/i;
+
+/**
+ * An item's content, as lines somebody can read.
+ *
+ * The whole timezone block goes: it is several dozen lines of rules the
+ * user never wrote, and two copies of one appointment differ in it for
+ * reasons that have nothing to do with them.
+ */
+export function contentLines(text) {
+  if (typeof text !== "string" || !text) return [];
+  const out = [];
+  let inTimezone = false;
+  for (const line of text.replace(/\r?\n[ \t]/g, "").split(/\r?\n/)) {
+    if (/^BEGIN:VTIMEZONE/i.test(line)) inTimezone = true;
+    else if (/^END:VTIMEZONE/i.test(line)) inTimezone = false;
+    else if (!inTimezone && line.trim() && !NOT_CONTENT.test(line)) {
+      out.push(line.trim());
+    }
+  }
+  return out;
+}
+
+/**
+ * What a kept change would do to an item, line by line.
+ *
+ * Compared as sets rather than in sequence: these are properties, not
+ * prose, and an appointment whose fields come back from the server in
+ * another order has not changed. A line on one side only is an addition or
+ * a removal; a line on both is context.
+ */
+export function diffLines(before, after) {
+  const a = new Set(before ?? []);
+  const b = new Set(after ?? []);
+  const rows = [];
+  for (const line of before ?? []) {
+    if (!b.has(line)) rows.push({ mark: "-", line });
+  }
+  for (const line of after ?? []) {
+    rows.push({ mark: b.has(line) && a.has(line) ? " " : "+", line });
+  }
+  return rows;
+}
+
+/** A file name that survives every filesystem, from a folder's own name. */
+function safeFileName(name) {
+  return (
+    String(name ?? "")
+      .replace(/[\\/:*?"<>|]/g, "-")
+      .replace(/^\.+/, "")
+      .trim()
+      .slice(0, 80) || "resource"
+  );
+}
+
+/** Take off what belongs to this installation, and leave what belongs to
+ *  the item.
+ *
+ *  Only the provider's stamps go: they mean nothing outside the account
+ *  they came from. The item keeps the id it had, for two reasons. A list
+ *  can then name its members, since a `MEMBER` resolves against a UID in
+ *  the same file and nowhere else. And importing the archive twice yields
+ *  one copy rather than two.
+ *
+ *  It cannot collide with what the account already holds: the previous
+ *  version named a synced item by its id on the server, and this one names
+ *  it by the server's own UID, so the two never coincide.
+ */
+function forExport(data) {
+  return stripIdentity(data, { keepUid: true });
+}
+
+/** What a rescued change can still do, now the folder holds what the server
+ *  holds.
+ *
+ *  A change is applied to the item it was made against, found by the
+ *  ServerId the server issued for it. When that item is not there any more,
+ *  somebody deleted it elsewhere while this account could not sync, and the
+ *  two operations part company:
+ *
+ *    - a change becomes a **creation**. The edit is the user's work either
+ *      way, and the only other answer is to drop it, which is the one
+ *      outcome that loses it. It goes back as a new item and the server
+ *      issues it an identity like any other.
+ *    - a deletion is **null**, having already happened. There is nothing
+ *      left to offer and nothing to do.
+ *
+ *  `present` is the rebuilt folder keyed by ServerId. */
+export function effectiveOp(entry, present) {
+  if (entry.op === "added") return "added";
+  if (entry.serverId && present.get(entry.serverId)) return entry.op;
+  return entry.op === "modified" ? "added" : null;
+}
+
+/**
+ * The rescued changes as files somebody can import: one per resource, named
+ * after it, in the format that resource speaks.
+ *
+ * A deletion appears in no file - there is nothing to import for something
+ * that was removed. A mailing list keeps its name and description but loses
+ * its members, which are named here by ids that mean nothing outside this
+ * record; a list of dangling references would be worse than a list of none.
+ *
+ * @param {object} rescue the stored record
+ * @param {Map<string,{name: string, type: string}>} folderInfo by folderId
+ */
+export function backupFiles(rescue, folderInfo) {
+  const files = [];
+  const used = new Set();
+
+  for (const held of rescue?.folders ?? []) {
+    const info = folderInfo.get(held.folderId);
+    const isBook = info?.type === "contacts";
+    const bodies = [];
+
+    // What each entry is called in the file, so a list can point at it.
+    // Both ways a member names itself resolve here and nowhere else: this
+    // record's own id, and the id the server knows the card by.
+    const uidByRescueId = new Map();
+    const uidByServerId = new Map();
+    for (const entry of held.items ?? []) {
+      const uid = entry.data ? identityOf(entry.data).uid : null;
+      if (!uid) continue;
+      uidByRescueId.set(entry.rescueId, uid);
+      if (entry.serverId) uidByServerId.set(entry.serverId, uid);
+    }
+
+    for (const entry of held.items ?? []) {
+      if (!entry.data) continue;
+      if (isGroup(entry.data)) {
+        bodies.push(exportGroup(entry.data, uidByRescueId, uidByServerId));
+        continue;
+      }
+      bodies.push(forExport(entry.data));
+    }
+    if (!bodies.length) continue;
+
+    const stem = safeFileName(info?.name);
+    const ext = isBook ? "vcf" : "ics";
+    let name = `${stem}.${ext}`;
+    for (let n = 2; used.has(name); n++) name = `${stem}-${n}.${ext}`;
+    used.add(name);
+    files.push({
+      name,
+      text: isBook ? bodies.join("\r\n") : mergeCalendars(bodies),
+    });
+  }
+  return files;
+}
+
+/** A list, with its members named the way a vCard names them.
+ *
+ *  Inside the record a member says which kind of name it is using, because
+ *  the two kinds are resolved against different things. In a file there is
+ *  only one thing to resolve against - the cards in that same file - so
+ *  both become the plain `urn:uuid:` reference vCard defines, pointing at a
+ *  card the reader is about to import.
+ *
+ *  A member that is in no file is dropped rather than left dangling. That
+ *  is why the record carries the cards a list names even when nobody edited
+ *  them. */
+function exportGroup(data, uidByRescueId, uidByServerId) {
+  const list = groupVCardToList(data);
+  const lines = forExport(data)
+    .split(/\r?\n/)
+    .filter((line) => !/^MEMBER[;:]/i.test(line));
+  const members = [];
+  for (const member of list?.members ?? []) {
+    const uid = member.serverId
+      ? uidByServerId.get(member.serverId)
+      : uidByRescueId.get(member.rescueId);
+    if (uid) members.push(`MEMBER:urn:uuid:${uid}`);
+  }
+  const end = lines.lastIndexOf("END:VCARD");
+  if (end < 0) return lines.join("\r\n");
+  return [...lines.slice(0, end), ...members, ...lines.slice(end)].join("\r\n");
+}
+
+/** Several one-item calendars as one calendar.
+ *
+ *  Each kept item is a whole VCALENDAR of its own, and a file holding
+ *  several of them end to end is not one any reader will accept. The
+ *  components come out and go into a single wrapper, and a timezone is
+ *  written once however many items refer to it.
+ */
+function mergeCalendars(bodies) {
+  const seenTimezones = new Set();
+  const timezones = [];
+  const components = [];
+
+  for (const body of bodies) {
+    const lines = body.replace(/\r?\n[ \t]/g, "").split(/\r?\n/);
+    let block = null;
+    let kind = null;
+    for (const line of lines) {
+      if (/^BEGIN:(VTIMEZONE|VEVENT|VTODO)$/i.test(line)) {
+        kind = line.slice(6).toUpperCase();
+        block = [line];
+        continue;
+      }
+      if (!block) continue;
+      block.push(line);
+      if (!/^END:(VTIMEZONE|VEVENT|VTODO)$/i.test(line)) continue;
+      const text = block.join("\r\n");
+      if (kind === "VTIMEZONE") {
+        const id = /^TZID:(.*)$/im.exec(text)?.[1]?.trim() ?? text;
+        if (!seenTimezones.has(id)) {
+          seenTimezones.add(id);
+          timezones.push(text);
+        }
+      } else {
+        components.push(text);
+      }
+      block = null;
+    }
+  }
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//TbSync//Migration backup//EN",
+    ...timezones,
+    ...components,
+    "END:VCALENDAR",
+    "",
+  ].join("\r\n");
+}

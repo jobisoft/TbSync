@@ -407,7 +407,108 @@
     "message": "Ezt a fiókot egy régebbi verzió állította be, ezért nem tud szinkronizálni. Bontsa a kapcsolatot, majd csatlakoztassa újra, hogy a kiszolgálóról épüljön fel."
   },
   "manager.account.migrated.held": {
-    "message": "Ezt a fiókot egy régebbi verzió állította be, ezért nem tud szinkronizálni. $COUNT$ olyan módosítás maradt meg, amely soha nem jutott el a kiszolgálóra - a fiókot migrálni kell, mielőtt újra használható lenne.",
+    "message": "Ezt a fiókot egy régebbi verzió állította be, ezért nem tud szinkronizálni. $COUNT$ csak helyben meglévő módosítás megmenekült - a fiókot migrálni kell, mielőtt újra használható lenne.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.title": {
+    "message": "Fiók migrálása"
+  },
+  "migration.intro.lead": {
+    "message": "$COUNT$ módosítás a(z) „$ACCOUNT$” fiókon soha nem lett szinkronizálva a kiszolgálóval, ezért megmenekült.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "account": {
+        "content": "$2"
+      }
+    }
+  },
+  "migration.intro.what": {
+    "message": "A migrálás a fiók összes naptárát és címjegyzékét újraépíti a kiszolgálóról, majd felkínálja a megmentett módosításokat, hogy kiválaszthassa, melyeket állítsuk helyre."
+  },
+  "migration.button.download": {
+    "message": "A csak helyben meglévő módosítások mentése"
+  },
+  "migration.button.start": {
+    "message": "Migrálás indítása"
+  },
+  "migration.button.apply": {
+    "message": "Fiókmigrálás befejezése"
+  },
+  "migration.button.close": {
+    "message": "Bezárás"
+  },
+  "migration.column.item": {
+    "message": "Elem"
+  },
+  "migration.column.action": {
+    "message": "Művelet"
+  },
+  "migration.column.type": {
+    "message": "Típus"
+  },
+  "migration.type.contact": {
+    "message": "Névjegy"
+  },
+  "migration.type.event": {
+    "message": "Esemény"
+  },
+  "migration.type.task": {
+    "message": "Feladat"
+  },
+  "migration.type.list": {
+    "message": "Levelezőlista"
+  },
+  "migration.running.lead": {
+    "message": "A fiók újraépítése a kiszolgálóról."
+  },
+  "migration.running.replacing": {
+    "message": "$FOLDER$ cseréje…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncing": {
+    "message": "$FOLDER$ letöltése…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.op.added": {
+    "message": "Hozzáadás"
+  },
+  "migration.op.modified": {
+    "message": "Frissítés"
+  },
+  "migration.op.deleted": {
+    "message": "Törlés"
+  },
+  "migration.op.gone": {
+    "message": "már nincs a kiszolgálón"
+  },
+  "migration.item.unnamed": {
+    "message": "(névtelen)"
+  },
+  "migration.detail.empty": {
+    "message": "Nincs megjeleníthető."
+  },
+  "migration.replay.lead": {
+    "message": "Az erőforrások újraépültek a kiszolgálóról. Válassza ki, mely megmentett helyi módosítások kerüljenek vissza:"
+  },
+  "migration.replay.none": {
+    "message": "Az erőforrások újraépültek a kiszolgálóról. Nincs visszaállítandó megmentett helyi módosítás."
+  },
+  "migration.done": {
+    "message": "$COUNT$ módosítás helyreállt, és szinkronizálásra vár. A fiók használatra kész.",
     "placeholders": {
       "count": {
         "content": "$1"

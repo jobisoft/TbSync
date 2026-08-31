@@ -407,7 +407,108 @@
     "message": "Эта учётная запись была настроена более старой версией и не может синхронизироваться. Отключите и подключите её заново, чтобы восстановить с сервера."
   },
   "manager.account.migrated.held": {
-    "message": "Эта учётная запись была настроена более старой версией и не может синхронизироваться. Сохранено изменений, так и не отправленных на сервер: $COUNT$ - её нужно перенести, прежде чем использовать снова.",
+    "message": "Эта учётная запись была настроена более старой версией и не может синхронизироваться. Сохранено только локальных изменений: $COUNT$ - её нужно перенести, прежде чем использовать снова.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.title": {
+    "message": "Перенос учётной записи"
+  },
+  "migration.intro.lead": {
+    "message": "Изменений в «$ACCOUNT$», так и не синхронизированных с сервером и сохранённых: $COUNT$.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "account": {
+        "content": "$2"
+      }
+    }
+  },
+  "migration.intro.what": {
+    "message": "Перенос заново создаёт с сервера все календари и адресные книги этой учётной записи, а затем предлагает сохранённые изменения, чтобы вы выбрали, какие восстановить."
+  },
+  "migration.button.download": {
+    "message": "Сохранить только локальные изменения"
+  },
+  "migration.button.start": {
+    "message": "Начать перенос"
+  },
+  "migration.button.apply": {
+    "message": "Завершить перенос учётной записи"
+  },
+  "migration.button.close": {
+    "message": "Закрыть"
+  },
+  "migration.column.item": {
+    "message": "Элемент"
+  },
+  "migration.column.action": {
+    "message": "Действие"
+  },
+  "migration.column.type": {
+    "message": "Тип"
+  },
+  "migration.type.contact": {
+    "message": "Контакт"
+  },
+  "migration.type.event": {
+    "message": "Событие"
+  },
+  "migration.type.task": {
+    "message": "Задача"
+  },
+  "migration.type.list": {
+    "message": "Список рассылки"
+  },
+  "migration.running.lead": {
+    "message": "Учётная запись создаётся заново с сервера."
+  },
+  "migration.running.replacing": {
+    "message": "Замена «$FOLDER$»…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncing": {
+    "message": "Загрузка «$FOLDER$»…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.op.added": {
+    "message": "Добавить"
+  },
+  "migration.op.modified": {
+    "message": "Обновить"
+  },
+  "migration.op.deleted": {
+    "message": "Удалить"
+  },
+  "migration.op.gone": {
+    "message": "больше нет на сервере"
+  },
+  "migration.item.unnamed": {
+    "message": "(без имени)"
+  },
+  "migration.detail.empty": {
+    "message": "Показывать нечего."
+  },
+  "migration.replay.lead": {
+    "message": "Ресурсы созданы заново с сервера. Выберите, какие из сохранённых локальных изменений следует восстановить:"
+  },
+  "migration.replay.none": {
+    "message": "Ресурсы созданы заново с сервера. Сохранённых локальных изменений для восстановления нет."
+  },
+  "migration.done": {
+    "message": "Восстановлено изменений: $COUNT$, они ожидают синхронизации. Учётной записью можно пользоваться.",
     "placeholders": {
       "count": {
         "content": "$1"

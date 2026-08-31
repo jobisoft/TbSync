@@ -408,7 +408,7 @@
     "description": "Shown under the account status for an account set up by an older version. Such accounts cannot sync; the note names the remedy and warns that disconnecting deletes the local copies."
   },
   "manager.account.migrated.held": {
-    "message": "This account was set up by an older version and cannot sync. $COUNT$ changes it never sent to the server have been kept, so it has to be migrated before it can be used again.",
+    "message": "This account was set up by an older version and cannot sync. $COUNT$ local-only changes have been rescued, so it has to be migrated before it can be used again.",
     "placeholders": {
       "count": {
         "content": "$1"
@@ -419,6 +419,107 @@
     "message": "The server asked to pause automatic synchronization until $TIME$. A manual sync works at any time.",
     "placeholders": {
       "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.title": {
+    "message": "Migrate account"
+  },
+  "migration.intro.lead": {
+    "message": "$COUNT$ changes to \"$ACCOUNT$\" were never synchronized with the server and have been rescued.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "account": {
+        "content": "$2"
+      }
+    }
+  },
+  "migration.intro.what": {
+    "message": "Migrating rebuilds every calendar and address book of this account from the server, and then offers the rescued changes back so you can choose which ones to restore."
+  },
+  "migration.button.download": {
+    "message": "Back up the local-only changes"
+  },
+  "migration.button.start": {
+    "message": "Start migration"
+  },
+  "migration.button.apply": {
+    "message": "Complete account migration"
+  },
+  "migration.button.close": {
+    "message": "Close"
+  },
+  "migration.column.item": {
+    "message": "Item"
+  },
+  "migration.column.action": {
+    "message": "Action"
+  },
+  "migration.column.type": {
+    "message": "Type"
+  },
+  "migration.type.contact": {
+    "message": "Contact"
+  },
+  "migration.type.event": {
+    "message": "Event"
+  },
+  "migration.type.task": {
+    "message": "Task"
+  },
+  "migration.type.list": {
+    "message": "Mailing list"
+  },
+  "migration.running.lead": {
+    "message": "Rebuilding this account from the server."
+  },
+  "migration.running.replacing": {
+    "message": "Replacing $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncing": {
+    "message": "Downloading $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.op.added": {
+    "message": "Add"
+  },
+  "migration.op.modified": {
+    "message": "Update"
+  },
+  "migration.op.deleted": {
+    "message": "Delete"
+  },
+  "migration.op.gone": {
+    "message": "no longer on the server"
+  },
+  "migration.item.unnamed": {
+    "message": "(no name)"
+  },
+  "migration.detail.empty": {
+    "message": "Nothing to show."
+  },
+  "migration.replay.lead": {
+    "message": "Your resources have been rebuilt from the server. Please select which of the rescued local changes should be restored:"
+  },
+  "migration.replay.none": {
+    "message": "Your resources have been rebuilt from the server. There are no rescued local changes to restore."
+  },
+  "migration.done": {
+    "message": "$COUNT$ changes were restored and are waiting to be synchronized. The account is ready to use.",
+    "placeholders": {
+      "count": {
         "content": "$1"
       }
     }

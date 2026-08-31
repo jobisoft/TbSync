@@ -769,10 +769,34 @@ function renderDetail() {
     ? new Date(acc.lastSyncTime).toLocaleString()
     : "-";
 
+  // Offered only while something is being held for the account, which is
+  // also the only time the disconnect above is refused - so the pane never
+  // shows two dead buttons and no way forward.
+  const btnMigrate = frag.querySelector("#btn-migrate");
+  btnMigrate.hidden = !acc.legacyHeld;
+  btnMigrate.textContent = i18n("manager.account.migrate", "Migrate…");
+  btnMigrate.disabled = !actions.canMigrate;
+  btnMigrate.addEventListener("click", () => {
+    rpc("openMigrationDialog", { accountId: acc.accountId }).catch(showError);
+  });
+
   const btnPrimary = frag.querySelector("#btn-primary");
   btnPrimary.textContent = primaryLabel;
   btnPrimary.dataset.action = primaryAction;
   btnPrimary.disabled = !primaryEnabled;
+  // While the account has to be migrated, Disconnect is refused for as long
+  // as that lasts - so it is taken away rather than shown dead. A button
+  // that can never be pressed says nothing the note above has not already
+  // said, and invites the reader to work out what they did wrong. Migrate
+  // takes its place; the two are never both absent, because whatever holds
+  // the disconnect is exactly what puts the other one there.
+  //
+  // Only Disconnect. Connect and Authenticate mean something in states this
+  // does not cover, and hiding either would leave the pane with no action
+  // at all.
+  if (!btnMigrate.hidden && primaryAction === "disconnect") {
+    btnPrimary.hidden = true;
+  }
   btnPrimary.addEventListener("click", () => {
     if (primaryAction === "reauth" && state.reauthsOpen.has(acc.accountId)) {
       rpc("focusAccountPopup", { accountId: acc.accountId }).catch((err) =>
@@ -862,8 +886,8 @@ function renderDetail() {
       ? i18n(
           "manager.account.migrated.held",
           `This account was set up by an older version and cannot sync. ` +
-            `${acc.legacyHeld} changes it never sent to the server have been ` +
-            `kept, so it has to be migrated before it can be used again.`,
+            `${acc.legacyHeld} local-only changes have been rescued, so it ` +
+            `has to be migrated before it can be used again.`,
           [String(acc.legacyHeld)],
         )
       : i18n(

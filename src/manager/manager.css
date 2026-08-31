@@ -1,92 +1,5 @@
-:root {
-  --bg-page: #f6f6f7;
-  --bg-card: #fff;
-  --bg-subtle: #fafafb;
-  --bg-input-disabled: #f4f4f6;
-
-  --border-strong: #555;
-  --border: #e1e1e3;
-  --border-dialog: #d0d0d4;
-  --border-subtle: #ececee;
-  --border-row: #f0f0f0;
-  --border-input: #ccc;
-
-  --text-primary: #222;
-  --text-secondary: #555;
-  --text-tertiary: #666;
-  --text-muted: #888;
-  --text-disabled: #999;
-  --text-body-soft: #444;
-
-  --accent: #2a7fd4;
-  --accent-hover: #1a6fc4;
-  --accent-alt: #1a6fe0;
-  --accent-soft: #eaf3fc;
-
-  --row-selected: #d7e7fa;
-  --row-hover: #ececee;
-  --tab-hover: #e0e8f6;
-  --tab-active: #c1d2ee;
-
-  --btn-secondary-bg: #e5e5e7;
-  --btn-secondary-hover: #d5d5d7;
-  --btn-danger-bg: #c43b3b;
-  --btn-danger-hover: #a92b2b;
-  /* The fundraiser heart. Its own token rather than the danger red: the
-     colour means "support this", not "this will destroy something". */
-  --fundraise: #d0453f;
-
-  --status-error: #a92b2b;
-  --status-warning: #8a6d1c;
-
-  --dialog-backdrop: rgba(0, 0, 0, 0.35);
-  --dialog-shadow: rgba(0, 0, 0, 0.2);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-page: #1e1f21;
-    --bg-card: #2b2d30;
-    --bg-subtle: #26282b;
-    --bg-input-disabled: #2a2c2f;
-
-    --border-strong: #4a4d52;
-    --border: #3a3c40;
-    --border-dialog: #4a4d52;
-    --border-subtle: #34363a;
-    --border-row: #34363a;
-    --border-input: #4a4d52;
-
-    --text-primary: #e8e9eb;
-    --text-secondary: #b3b5ba;
-    --text-tertiary: #9498a0;
-    --text-muted: #7f8188;
-    --text-disabled: #6e7075;
-    --text-body-soft: #c7c9cd;
-
-    --accent: #5fa6e8;
-    --accent-hover: #7ab5ec;
-    --accent-alt: #6ea9e8;
-    --accent-soft: #1f3144;
-
-    --row-selected: #2a3e5a;
-    --row-hover: #35383d;
-    --tab-hover: #35475e;
-    --tab-active: #4a6891;
-
-    --btn-secondary-bg: #3a3c40;
-    --btn-secondary-hover: #4a4d52;
-    --btn-danger-bg: #a13535;
-    --btn-danger-hover: #7e2828;
-    --fundraise: #e8796b;
-
-    --status-error: #f18585;
-    --status-warning: #e6c76c;
-
-    --dialog-backdrop: rgba(0, 0, 0, 0.55);
-    --dialog-shadow: rgba(0, 0, 0, 0.6);
-  }
-}
+/* The manager window's layout. Its colours and controls are in
+ * `../shared.css`, which the page links first - see the note there. */
 
 * { box-sizing: border-box; }
 
@@ -683,25 +596,6 @@ body {
 .resources-footer #autosync-minutes:disabled { background: var(--bg-input-disabled); color: var(--text-muted); }
 .resources-footer .autosync-unit { color: var(--text-secondary); margin-right: 10px; }
 
-button {
-  padding: 5px 12px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-}
-button:not(:disabled):hover { background: var(--accent-hover); }
-button.secondary { background: var(--btn-secondary-bg); color: var(--text-primary); }
-button.secondary:not(:disabled):hover { background: var(--btn-secondary-hover); }
-button.danger { background: var(--btn-danger-bg); }
-button.danger:not(:disabled):hover { background: var(--btn-danger-hover); }
-
-button:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-}
 
 .btn-ghost {
   background: var(--bg-card);

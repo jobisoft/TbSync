@@ -251,7 +251,7 @@ async function stillRunnable(accountId) {
 
 export async function syncAccount(
   accountId,
-  { syncList = true, only = null } = {},
+  { syncList = true, only = null, carriedOverMigration = false } = {},
 ) {
   if (syncingAccounts.has(accountId) || maintainingAccounts.has(accountId)) {
     // Something asked for this on purpose and we are busy. Remember it
@@ -294,7 +294,13 @@ export async function syncAccount(
   // Refused here rather than at each caller, and silently, exactly like the
   // rejected-credentials guard above: the manager states the condition and
   // offers the remedy, so an autosync tick has nothing to add.
-  if (acc.legacyImported) return;
+  //
+  // The migration is the exception, and the only one. Rebuilding such an
+  // account is done *while* it is locked - the lock is what keeps everyone
+  // else out for the duration - so that flow says so and comes through.
+  // Nothing else may pass this: an ordinary sync of a half-rebuilt account
+  // is what the flag exists to prevent.
+  if (acc.legacyImported && !carriedOverMigration) return;
   if (!router.isProviderConnected(acc.provider)) {
     await eventLog.append({
       accountId,

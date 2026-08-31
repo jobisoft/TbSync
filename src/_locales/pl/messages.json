@@ -407,7 +407,108 @@
     "message": "To konto zostało skonfigurowane przez starszą wersję i nie może się synchronizować. Rozłącz je i połącz ponownie, aby odbudować je z serwera."
   },
   "manager.account.migrated.held": {
-    "message": "To konto zostało skonfigurowane przez starszą wersję i nie może się synchronizować. Zachowano $COUNT$ zmian, które nigdy nie zostały wysłane na serwer - konto musi zostać zmigrowane, zanim będzie można go ponownie użyć.",
+    "message": "To konto zostało skonfigurowane przez starszą wersję i nie może się synchronizować. Uratowano $COUNT$ zmian tylko lokalnych - konto musi zostać zmigrowane, zanim będzie można go ponownie użyć.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.title": {
+    "message": "Migruj konto"
+  },
+  "migration.intro.lead": {
+    "message": "$COUNT$ zmian na koncie „$ACCOUNT$” nigdy nie zostało zsynchronizowanych z serwerem i zostało uratowanych.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "account": {
+        "content": "$2"
+      }
+    }
+  },
+  "migration.intro.what": {
+    "message": "Migracja odbudowuje z serwera wszystkie kalendarze i książki adresowe tego konta, a następnie proponuje uratowane zmiany, abyś mógł wybrać, które przywrócić."
+  },
+  "migration.button.download": {
+    "message": "Utwórz kopię zmian tylko lokalnych"
+  },
+  "migration.button.start": {
+    "message": "Rozpocznij migrację"
+  },
+  "migration.button.apply": {
+    "message": "Zakończ migrację konta"
+  },
+  "migration.button.close": {
+    "message": "Zamknij"
+  },
+  "migration.column.item": {
+    "message": "Element"
+  },
+  "migration.column.action": {
+    "message": "Działanie"
+  },
+  "migration.column.type": {
+    "message": "Typ"
+  },
+  "migration.type.contact": {
+    "message": "Kontakt"
+  },
+  "migration.type.event": {
+    "message": "Wydarzenie"
+  },
+  "migration.type.task": {
+    "message": "Zadanie"
+  },
+  "migration.type.list": {
+    "message": "Lista dystrybucyjna"
+  },
+  "migration.running.lead": {
+    "message": "Odbudowywanie konta z serwera."
+  },
+  "migration.running.replacing": {
+    "message": "Zastępowanie $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncing": {
+    "message": "Pobieranie $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.op.added": {
+    "message": "Dodaj"
+  },
+  "migration.op.modified": {
+    "message": "Zaktualizuj"
+  },
+  "migration.op.deleted": {
+    "message": "Usuń"
+  },
+  "migration.op.gone": {
+    "message": "nie ma już na serwerze"
+  },
+  "migration.item.unnamed": {
+    "message": "(bez nazwy)"
+  },
+  "migration.detail.empty": {
+    "message": "Nie ma nic do pokazania."
+  },
+  "migration.replay.lead": {
+    "message": "Zasoby zostały odbudowane z serwera. Wybierz, które z uratowanych zmian lokalnych mają zostać przywrócone:"
+  },
+  "migration.replay.none": {
+    "message": "Zasoby zostały odbudowane z serwera. Nie ma uratowanych zmian lokalnych do przywrócenia."
+  },
+  "migration.done": {
+    "message": "Przywrócono $COUNT$ zmian, które oczekują na synchronizację. Konta można używać.",
     "placeholders": {
       "count": {
         "content": "$1"

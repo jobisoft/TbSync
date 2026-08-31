@@ -44,17 +44,36 @@ import {
   runIfNeeded as runLegacyMigration,
 } from "./modules/legacy-migration-runner.mjs";
 import {
+  backupFiles,
+  contentLines,
+  effectiveOp,
+  diffLines,
+  displayNameOf,
   easServerIdOf,
+  groupVCardToList,
+  isGroup,
   listToGroupVCard,
   parseLegacyChangelog,
   resolveTarget,
+  stripIdentity,
+  transplantIdentity,
 } from "./modules/legacy-rescue.mjs";
 import {
+  addMailingListMember,
+  createContact,
+  createMailingList,
+  deleteContact,
   listContacts,
   listMailingListMembers,
   listMailingLists,
+  updateContact,
 } from "./vendor/tbsync/address-book.mjs";
-import { listItems } from "./vendor/tbsync/calendar.mjs";
+import {
+  createItem,
+  deleteItem,
+  listItems,
+  updateItem,
+} from "./vendor/tbsync/calendar.mjs";
 import { serialize } from "./vendor/tbsync/storage-queue.mjs";
 
 // Where "TbSync Manager" bug reports are sent. Provider-authored reports go
@@ -571,6 +590,289 @@ function assertFolderSelectionUnlocked(acc) {
   }
 }
 
+
+// ── Migrating a carried-over account ───────────────────────────────────────
+
+/** Accounts being migrated right now.
+ *
+ *  The only guard this needs. Everything else is already held off by the
+ *  lock itself - syncing, folder changes, disconnecting are all refused
+ *  while it stands - so the one thing left to prevent is a second run of
+ *  the migration, which is the one flow the lock lets through. */
+const migratingAccounts = new Set();
+
+/** Read the current contents of a folder, keyed by the id the server knows
+ *  each item by. What the replay looks an edit up in. */
+async function currentByServerId(row) {
+  const byServerId = new Map();
+  const nodes =
+    row.targetType === "contacts"
+      ? await listContacts(row.targetID)
+      : await listItems(row.targetID);
+  for (const node of nodes) {
+    const stamp = easServerIdOf(node, null);
+    if (stamp) byServerId.set(stamp, node);
+  }
+  return byServerId;
+}
+
+/** What the replay would do, before anybody is asked.
+ *
+ *  Every kept entry, said in terms of what will happen to the resource it
+ *  belongs to. An edit whose item the fresh pull did not bring back is
+ *  described but cannot be taken: the server no longer has it, so there is
+ *  nothing to change and re-creating it would resurrect what somebody else
+ *  deleted. */
+async function describeLegacyReplay(accountId) {
+  const stored = await browser.storage.local.get({ [KEYS.LEGACY_RESCUE]: {} });
+  const rescue = (stored[KEYS.LEGACY_RESCUE] ?? {})[accountId];
+  const folders_ = [];
+
+  for (const held of rescue?.folders ?? []) {
+    const row = await folders.get(accountId, held.folderId);
+    if (!row?.targetID) continue;
+    const byServerId = await currentByServerId(row);
+    const rows = [];
+    for (const entry of held.items ?? []) {
+      // Carried for the backup's sake, owed to nobody.
+      if (entry.op === "context") continue;
+      const current = entry.serverId ? byServerId.get(entry.serverId) : null;
+      // What it can still do rather than what it was: an edit whose item
+      // the server no longer has goes back as a creation.
+      const op = effectiveOp(entry, byServerId);
+      const available = op !== null;
+      // What the change would do, so the answer is not given on a count
+      // alone. A creation is shown as what it is; a change against what the
+      // item says now, so the user can see which version they are choosing;
+      // a deletion as what would go.
+      const now = contentLines(current?.vCard ?? current?.item);
+      const kept = contentLines(entry.data);
+      rows.push({
+        rescueId: entry.rescueId,
+        op,
+        // What kind of thing it is. Taken from the folder row, which by now
+        // the provider has corrected - the same reason it was never stored
+        // beside the entry.
+        // A list says what it is in its own data; everything else is
+        // whatever its folder holds.
+        type: isGroup(entry.data) ? "list" : row.targetType,
+        available,
+        name:
+          displayNameOf(entry.data) ||
+          displayNameOf(current?.vCard ?? current?.item) ||
+          "",
+        detail:
+          op === "deleted"
+            ? diffLines(now, [])
+            : op === "added"
+              ? diffLines([], kept)
+              : diffLines(now, kept),
+      });
+    }
+    if (rows.length) {
+      folders_.push({ folderId: row.folderId, name: row.displayName, rows });
+    }
+  }
+  return { folders: folders_ };
+}
+
+/** Rebuild every selected folder of a carried-over account from the server.
+ *
+ *  Per folder: let go of the local resource, take it again, and pull it in
+ *  full. Letting go deletes the resource and returns the provider's own
+ *  per-folder state to nothing; taking it again builds a fresh one; and
+ *  because the provider's sync key went back with it, the pull that follows
+ *  is a complete one without anybody having to ask for that.
+ *
+ *  The row survives all of it, with the id this account's record refers to
+ *  it by - which is what lets the whole thing happen in place, with the
+ *  account never leaving the locked state that is keeping everyone else
+ *  out. */
+async function rebuildCarriedOverFolders(acc, report) {
+  const rows = (await folders.listForAccount(acc.accountId)).filter(
+    (row) => row.selected && row.targetID,
+  );
+  for (const row of rows) {
+    report({ folder: row.displayName, step: "replacing" });
+    // A restart part-way through would have found these already rebuilt and
+    // frozen them with the rest; nothing can be written to a resource in
+    // that state.
+    await thawLegacyTargets(acc.accountId).catch(() => {});
+    await selectFolder(acc, row.folderId, false);
+    await selectFolder(acc, row.folderId, true);
+    report({ folder: row.displayName, step: "syncing" });
+    await syncAccount(acc.accountId, {
+      syncList: false,
+      only: row.folderId,
+      carriedOverMigration: true,
+    });
+  }
+}
+
+/** Write one kept edit back. Returns the id it was written as, if it made
+ *  one - a list needs that to point at a card this run has just created. */
+async function replayOne(row, entry, byServerId) {
+  const isBook = row.targetType === "contacts";
+  const op = effectiveOp(entry, byServerId);
+  if (!op) return null;
+
+  if (op === "added") {
+    // No identity, whether this was always a creation or has become one:
+    // a UID naming a resource that is gone, and a ServerId either never
+    // issued or since retired. A card gets a fresh one from Thunderbird,
+    // the calendar API wants one up front, so one is minted here.
+    const data = stripIdentity(entry.data);
+    let id;
+    if (isBook) {
+      id = await createContact(row.targetID, data);
+    } else {
+      id = crypto.randomUUID();
+      await createItem(row.targetID, {
+        id,
+        type: row.targetType === "tasks" ? "task" : "event",
+        ical: data.replace(
+          /^(BEGIN:(?:VEVENT|VTODO))$/im,
+          `$1\r\nUID:${id}`,
+        ),
+      });
+    }
+    // A change that became a creation is still what anything naming that
+    // ServerId meant - a mailing list holding the card, say - so the entry
+    // now standing for it is the one just written.
+    if (entry.serverId) byServerId.set(entry.serverId, { id });
+    return id;
+  }
+
+  const current = byServerId.get(entry.serverId);
+
+  if (op === "deleted") {
+    if (isBook) await deleteContact(current.id);
+    else await deleteItem(row.targetID, current.id);
+    return null;
+  }
+
+  const merged = transplantIdentity({
+    from: current.vCard ?? current.item,
+    into: entry.data,
+  });
+  if (isBook) await updateContact(current.id, merged);
+  else await updateItem(row.targetID, current.id, { ical: merged });
+  return current.id;
+}
+
+/** Put the mailing lists back.
+ *
+ *  Last, once every taken edit has been written, so the cards a list names
+ *  are there to be found. A member says which kind of name it is using: one
+ *  the server knows, or one of this record's own entries - and that second
+ *  kind is why the ids the replay handed out are kept as it goes. */
+async function restoreMailingLists(row, held, createdIds, byServerId, wanted) {
+  let restored = 0;
+  for (const entry of held.items ?? []) {
+    const list = groupVCardToList(entry.data);
+    if (!list || !wanted.has(entry.rescueId)) continue;
+    try {
+      const listId = await createMailingList(row.targetID, {
+        name: list.name || "?",
+        nickName: list.nickName,
+        description: list.description,
+      });
+      for (const member of list.members) {
+        const contactId = member.serverId
+          ? byServerId.get(member.serverId)?.id
+          : createdIds.get(member.rescueId);
+        if (!contactId) continue;
+        await addMailingListMember(listId, contactId).catch(() => {});
+      }
+      restored++;
+    } catch (err) {
+      console.debug("[tbsync] restoring a mailing list failed:", err?.message ?? err);
+    }
+  }
+  return restored;
+}
+
+/** Write back the edits the user chose, then let the account go. */
+async function applyLegacyReplay(accountId, taken) {
+  const wanted = new Set(taken ?? []);
+  const stored = await browser.storage.local.get({ [KEYS.LEGACY_RESCUE]: {} });
+  const rescue = (stored[KEYS.LEGACY_RESCUE] ?? {})[accountId];
+  const createdIds = new Map();
+  let applied = 0;
+  let failed = 0;
+  let lists = 0;
+
+  for (const held of rescue?.folders ?? []) {
+    const row = await folders.get(accountId, held.folderId);
+    if (!row?.targetID) {
+      // Its resource is gone, so there is nowhere to put these back and the
+      // lock is about to be lifted over them. Counted and named rather than
+      // passed over, because this is the one way a rescued change can be
+      // lost without anybody being told.
+      const owed = (held.items ?? []).filter(
+        (e) => e.op !== "context",
+      ).length;
+      if (owed) {
+        failed += owed;
+        await eventLog
+          .append({
+            accountId,
+            folderId: held.folderId,
+            level: "warning",
+            message:
+              `${owed} rescued change(s) could not be offered or restored: ` +
+              `the folder they belong to no longer has a calendar or ` +
+              `address book.`,
+          })
+          .catch(() => {});
+      }
+      continue;
+    }
+    const byServerId = await currentByServerId(row);
+
+    for (const entry of held.items ?? []) {
+      if (entry.op === "context") continue;
+      if (isGroup(entry.data) || !wanted.has(entry.rescueId)) continue;
+      // A deletion of something the server has already dropped asks for
+      // nothing, so it is not one of the changes reported as put back.
+      if (!effectiveOp(entry, byServerId)) continue;
+      try {
+        const id = await replayOne(row, entry, byServerId);
+        if (id) createdIds.set(entry.rescueId, id);
+        applied++;
+      } catch (err) {
+        // One item that will not go back must not strand the rest, nor the
+        // account: it has no second way out.
+        failed++;
+        await eventLog
+          .append({
+            accountId,
+            folderId: held.folderId,
+            level: "warning",
+            message: `Could not restore a rescued change: ${err?.message ?? err}`,
+          })
+          .catch(() => {});
+      }
+    }
+    lists += await restoreMailingLists(row, held, createdIds, byServerId, wanted);
+  }
+
+  await eventLog.append({
+    accountId,
+    folderId: null,
+    level: "info",
+    message:
+      `Restored ${applied} rescued change(s)` +
+      (lists ? ` and ${lists} mailing list(s)` : "") +
+      (failed ? `; ${failed} could not be written` : "") +
+      `. They are waiting to be synchronized, as they were.`,
+  });
+  await liftLegacyLock(accountId);
+  ui.broadcast({ type: "accounts-changed", accountId });
+  ui.broadcast({ type: "folders-changed", accountId });
+  return { applied, failed, lists };
+}
+
 // ── Manager popup → background RPC handlers ────────────────────────────────
 
 ui.setManagerRpcHandler("getState", async () => {
@@ -638,6 +940,117 @@ ui.setManagerRpcHandler("getState", async () => {
     )[KEYS.SETTINGS],
     transient: transientSnapshot(),
   };
+});
+
+/** The window that offers the migration, and the three things it asks for.
+ *
+ *  Opened from here rather than by the manager so a second one cannot be
+ *  put up for the same account: the migration is not something to have two
+ *  of. */
+const migrationWindows = new Map();
+
+ui.setManagerRpcHandler("openMigrationDialog", async ({ accountId }) => {
+  const acc = await accounts.get(accountId);
+  if (!acc) throw new Error("unknown account");
+  const open = migrationWindows.get(accountId);
+  if (open != null) {
+    await browser.windows.update(open, { focused: true }).catch(() => {});
+    return null;
+  }
+  const url = new URL(
+    browser.runtime.getURL("dialogs/legacy-migration/migration.html"),
+  );
+  url.searchParams.set("accountId", accountId);
+  const win = await browser.windows.create({
+    url: url.toString(),
+    type: "popup",
+    width: 720,
+    height: 560,
+  });
+  migrationWindows.set(accountId, win.id);
+  const onRemoved = (windowId) => {
+    if (windowId !== win.id) return;
+    browser.windows.onRemoved.removeListener(onRemoved);
+    migrationWindows.delete(accountId);
+  };
+  browser.windows.onRemoved.addListener(onRemoved);
+  return null;
+});
+
+ui.setManagerRpcHandler("getMigrationOffer", async ({ accountId }) => {
+  const acc = await accounts.get(accountId);
+  if (!acc) throw new Error("unknown account");
+  const stored = await browser.storage.local.get({ [KEYS.LEGACY_RESCUE]: {} });
+  const rescue = (stored[KEYS.LEGACY_RESCUE] ?? {})[accountId];
+  let changes = 0;
+  for (const folder of rescue?.folders ?? []) {
+    for (const entry of folder.items ?? []) {
+      if (entry.op !== "context") changes++;
+    }
+  }
+  return { accountName: acc.accountName, changes };
+});
+
+/** Rebuild the account, then say what is left to decide.
+ *
+ *  One call: the rebuild has to finish before the list means anything, and
+ *  the window has nothing to ask in between. Progress arrives as events
+ *  while it runs. */
+ui.setManagerRpcHandler("startMigration", async ({ accountId }) => {
+  const acc = await accounts.get(accountId);
+  if (!acc) throw new Error("unknown account");
+  if (!acc.legacyImported) throw new Error("account is not carried over");
+  if (migratingAccounts.has(accountId)) {
+    throw withCode(new Error("Migration already running"), "E:BUSY");
+  }
+  if (!router.isProviderConnected(acc.provider)) {
+    throw withCode(
+      new Error("Provider not available"),
+      ERR.PROVIDER_UNAVAILABLE,
+    );
+  }
+  migratingAccounts.add(accountId);
+  ui.broadcast({ type: "accounts-changed", accountId });
+  try {
+    await rebuildCarriedOverFolders(acc, (progress) =>
+      ui.broadcast({ type: "migration-progress", accountId, ...progress }),
+    );
+    return await describeLegacyReplay(accountId);
+  } finally {
+    migratingAccounts.delete(accountId);
+    ui.broadcast({ type: "accounts-changed", accountId });
+  }
+});
+
+ui.setManagerRpcHandler("applyMigration", async ({ accountId, take }) => {
+  const acc = await accounts.get(accountId);
+  if (!acc) throw new Error("unknown account");
+  if (migratingAccounts.has(accountId)) {
+    throw withCode(new Error("Migration already running"), "E:BUSY");
+  }
+  migratingAccounts.add(accountId);
+  try {
+    return await applyLegacyReplay(accountId, take);
+  } finally {
+    migratingAccounts.delete(accountId);
+  }
+});
+
+/** The rescued changes as files somebody can import, one per resource.
+ *
+ *  A backup is for reading elsewhere: what comes out is ordinary vCard and
+ *  iCalendar, named after the resource it came from, with this
+ *  installation's own marks taken off. The window puts them in an archive
+ *  and hands it over. */
+ui.setManagerRpcHandler("getRescueBackup", async ({ accountId }) => {
+  const stored = await browser.storage.local.get({ [KEYS.LEGACY_RESCUE]: {} });
+  const rescue = (stored[KEYS.LEGACY_RESCUE] ?? {})[accountId];
+  if (!rescue) return { files: [] };
+  const info = new Map();
+  for (const row of await folders.listForAccount(accountId)) {
+    info.set(row.folderId, { name: row.displayName, type: row.targetType });
+  }
+  return { files: backupFiles(rescue, info) };
 });
 
 ui.setManagerRpcHandler("getFolders", async ({ accountId }) => ({
@@ -1085,67 +1498,81 @@ ui.setManagerRpcHandler(
         ERR.PROVIDER_UNAVAILABLE,
       );
     }
-    const folder = await folders.get(accountId, folderId);
-    if (!folder) throw new Error("unknown folder");
-    if (busyFolders.has(folderId)) {
-      throw withCode(new Error("Folder is busy"), "E:BUSY");
-    }
-
-    busyFolders.add(folderId);
-    ui.broadcast({ type: "folders-changed", accountId });
-    try {
-      const cmd = selected ? HOST_CMD.FOLDER_ENABLED : HOST_CMD.FOLDER_DISABLED;
-      await router.sendCmd(acc.provider, cmd, { accountId, folderId });
-      if (!selected) {
-        // The provider has unhooked and cleared its per-folder state above;
-        // deleting the resource itself is the host's job in every flow. The
-        // row captured before the RPC still carries the target: the provider
-        // does not clear binding fields it will not need, and `folder`
-        // predates the call in any case.
-        await deleteTargetsBestEffort([folder]);
-      }
-      // On disable, wipe the host-owned per-folder fields so re-enable shows
-      // a clean slate. The provider handles its remaining per-folder state
-      // (custom.*, targetID, targetName) inside FOLDER_DISABLED above.
-      //
-      // The new session is what makes that last part true even when the
-      // FOLDER_DISABLED above never arrived - the provider was down, or
-      // died mid-handler. Whatever it still holds for this folder is filed
-      // under a session nothing names now, and goes when it next looks.
-      const patch = selected
-        ? { selected }
-        : {
-            selected,
-            status: null,
-            lastSyncTime: 0,
-            warning: null,
-            error: null,
-            localChanges: 0,
-            sessionId: folders.newSession(),
-          };
-      await folders.update(accountId, folderId, patch);
-      // Recompute account.error: deselecting a failing folder should
-      // immediately drop the toolbar badge and the manager's
-      // account-row aggregated error, not wait for the next sync.
-      // Re-enabling a folder is a no-op here (folder.error is null on
-      // enable) but kept symmetric.
-      await recomputeAccountError(accountId);
-    } catch (err) {
-      await eventLog.append({
-        accountId,
-        folderId,
-        level: "error",
-        message: `Could not ${selected ? "enable" : "disable"} resource: ${err.message}`,
-        details: err.details ?? null,
-      });
-      throw err;
-    } finally {
-      busyFolders.delete(folderId);
-      ui.broadcast({ type: "folders-changed", accountId });
-    }
+    await selectFolder(acc, folderId, selected);
     return null;
   },
 );
+
+/** Bind or unbind one folder: the provider is told, the local resource is
+ *  created or deleted, and the row is left describing what happened.
+ *
+ *  Separate from the RPC above because the migration drives the same steps
+ *  while that RPC is refusing everybody - the account is locked precisely
+ *  so that nothing *else* can do this, and the migration is the one thing
+ *  that may. The guards belong to the caller; this is the work.
+ */
+async function selectFolder(acc, folderId, selected) {
+  const accountId = acc.accountId;
+  const folder = await folders.get(accountId, folderId);
+  if (!folder) throw new Error("unknown folder");
+  if (busyFolders.has(folderId)) {
+    throw withCode(new Error("Folder is busy"), "E:BUSY");
+  }
+
+  busyFolders.add(folderId);
+  ui.broadcast({ type: "folders-changed", accountId });
+  try {
+    const cmd = selected ? HOST_CMD.FOLDER_ENABLED : HOST_CMD.FOLDER_DISABLED;
+    await router.sendCmd(acc.provider, cmd, { accountId, folderId });
+    if (!selected) {
+      // The provider has unhooked and cleared its per-folder state above;
+      // deleting the resource itself is the host's job in every flow. The
+      // row captured before the RPC still carries the target: the provider
+      // does not clear binding fields it will not need, and `folder`
+      // predates the call in any case.
+      await deleteTargetsBestEffort([folder]);
+    }
+    // On disable, wipe the host-owned per-folder fields so re-enable shows
+    // a clean slate. The provider handles its remaining per-folder state
+    // (custom.*, targetID, targetName) inside FOLDER_DISABLED above.
+    //
+    // The new session is what makes that last part true even when the
+    // FOLDER_DISABLED above never arrived - the provider was down, or
+    // died mid-handler. Whatever it still holds for this folder is filed
+    // under a session nothing names now, and goes when it next looks.
+    const patch = selected
+      ? { selected }
+      : {
+          selected,
+          status: null,
+          lastSyncTime: 0,
+          warning: null,
+          error: null,
+          localChanges: 0,
+          sessionId: folders.newSession(),
+        };
+    await folders.update(accountId, folderId, patch);
+    // Recompute account.error: deselecting a failing folder should
+    // immediately drop the toolbar badge and the manager's
+    // account-row aggregated error, not wait for the next sync.
+    // Re-enabling a folder is a no-op here (folder.error is null on
+    // enable) but kept symmetric.
+    await recomputeAccountError(accountId);
+  } catch (err) {
+    await eventLog.append({
+      accountId,
+      folderId,
+      level: "error",
+      message: `Could not ${selected ? "enable" : "disable"} resource: ${err.message}`,
+      details: err.details ?? null,
+    });
+    throw err;
+  } finally {
+    busyFolders.delete(folderId);
+    ui.broadcast({ type: "folders-changed", accountId });
+  }
+}
+
 
 // ── Auto-sync ──────────────────────────────────────────────────────────────
 
@@ -1258,7 +1685,11 @@ async function freezeLegacyTargets(accountId) {
  *  record is not a fact about it. */
 function countHeld(rescue) {
   let n = 0;
-  for (const folder of rescue?.folders ?? []) n += folder.items?.length ?? 0;
+  for (const folder of rescue?.folders ?? []) {
+    for (const entry of folder.items ?? []) {
+      if (entry.op !== "context") n++;
+    }
+  }
   return n;
 }
 
@@ -1280,6 +1711,12 @@ function countHeld(rescue) {
  *  one list lost, not a rescue abandoned. */
 async function rescueMailingLists(bookId, properties, resolved, mintId) {
   const out = [];
+  // What the record already accounts for, so a member that is also an edit
+  // is not carried twice.
+  const known = new Set();
+  for (const item of resolved.items) if (item.serverId) known.add(item.serverId);
+  for (const id of resolved.createdBy.keys()) known.add(id);
+
   let lists = [];
   try {
     lists = await listMailingLists(bookId);
@@ -1299,6 +1736,19 @@ async function rescueMailingLists(bookId, properties, resolved, mintId) {
         if (!stamp) continue;
         const rescueId = resolved.createdBy.get(stamp);
         members.push(rescueId ? { rescueId } : { serverId: stamp });
+        // A member the record would otherwise not hold - a card the server
+        // has, which nobody edited. It is not owed to anyone and is never
+        // replayed; it is here so that a list in the backup can name its
+        // members and be a list rather than a title.
+        if (!known.has(stamp)) {
+          known.add(stamp);
+          out.push({
+            rescueId: mintId(),
+            op: "context",
+            serverId: stamp,
+            data: card.vCard ?? card.properties?.vCard ?? null,
+          });
+        }
       }
       out.push({
         rescueId: mintId(),

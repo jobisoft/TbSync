@@ -407,7 +407,108 @@
     "message": "Det här kontot skapades av en äldre version och kan inte synkronisera. Koppla från och anslut igen för att bygga upp det från servern."
   },
   "manager.account.migrated.held": {
-    "message": "Det här kontot skapades av en äldre version och kan inte synkronisera. $COUNT$ ändringar som aldrig skickades till servern har sparats, så kontot måste migreras innan det kan användas igen.",
+    "message": "Det här kontot skapades av en äldre version och kan inte synkronisera. $COUNT$ enbart lokala ändringar har räddats, så kontot måste migreras innan det kan användas igen.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.title": {
+    "message": "Migrera konto"
+  },
+  "migration.intro.lead": {
+    "message": "$COUNT$ ändringar i \"$ACCOUNT$\" har aldrig synkroniserats med servern och har räddats.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "account": {
+        "content": "$2"
+      }
+    }
+  },
+  "migration.intro.what": {
+    "message": "Migreringen bygger upp alla kalendrar och adressböcker i kontot på nytt från servern och erbjuder sedan de räddade ändringarna så att du kan välja vilka som ska återställas."
+  },
+  "migration.button.download": {
+    "message": "Säkerhetskopiera de enbart lokala ändringarna"
+  },
+  "migration.button.start": {
+    "message": "Starta migrering"
+  },
+  "migration.button.apply": {
+    "message": "Slutför kontomigreringen"
+  },
+  "migration.button.close": {
+    "message": "Stäng"
+  },
+  "migration.column.item": {
+    "message": "Objekt"
+  },
+  "migration.column.action": {
+    "message": "Åtgärd"
+  },
+  "migration.column.type": {
+    "message": "Typ"
+  },
+  "migration.type.contact": {
+    "message": "Kontakt"
+  },
+  "migration.type.event": {
+    "message": "Händelse"
+  },
+  "migration.type.task": {
+    "message": "Uppgift"
+  },
+  "migration.type.list": {
+    "message": "Sändlista"
+  },
+  "migration.running.lead": {
+    "message": "Kontot byggs upp på nytt från servern."
+  },
+  "migration.running.replacing": {
+    "message": "Ersätter $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncing": {
+    "message": "Hämtar $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.op.added": {
+    "message": "Lägg till"
+  },
+  "migration.op.modified": {
+    "message": "Uppdatera"
+  },
+  "migration.op.deleted": {
+    "message": "Ta bort"
+  },
+  "migration.op.gone": {
+    "message": "finns inte längre på servern"
+  },
+  "migration.item.unnamed": {
+    "message": "(utan namn)"
+  },
+  "migration.detail.empty": {
+    "message": "Inget att visa."
+  },
+  "migration.replay.lead": {
+    "message": "Dina resurser har byggts upp på nytt från servern. Välj vilka av de räddade lokala ändringarna som ska återställas:"
+  },
+  "migration.replay.none": {
+    "message": "Dina resurser har byggts upp på nytt från servern. Det finns inga räddade lokala ändringar att återställa."
+  },
+  "migration.done": {
+    "message": "$COUNT$ ändringar återställdes och väntar på synkronisering. Kontot går att använda.",
     "placeholders": {
       "count": {
         "content": "$1"

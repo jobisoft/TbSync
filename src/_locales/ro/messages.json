@@ -407,7 +407,108 @@
     "message": "Acest cont a fost configurat de o versiune mai veche și nu se poate sincroniza. Deconectați-l și reconectați-l pentru a-l reconstrui de pe server."
   },
   "manager.account.migrated.held": {
-    "message": "Acest cont a fost configurat de o versiune mai veche și nu se poate sincroniza. Au fost păstrate $COUNT$ modificări care nu au ajuns niciodată la server, așa că trebuie migrat înainte de a putea fi folosit din nou.",
+    "message": "Acest cont a fost configurat de o versiune mai veche și nu se poate sincroniza. Au fost salvate $COUNT$ modificări doar locale, așa că trebuie migrat înainte de a putea fi folosit din nou.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.title": {
+    "message": "Migrare cont"
+  },
+  "migration.intro.lead": {
+    "message": "$COUNT$ modificări ale contului „$ACCOUNT$” nu au fost niciodată sincronizate cu serverul și au fost salvate.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "account": {
+        "content": "$2"
+      }
+    }
+  },
+  "migration.intro.what": {
+    "message": "Migrarea reconstruiește de pe server toate calendarele și agendele acestui cont, apoi vă oferă modificările salvate ca să alegeți pe care să le restaurați."
+  },
+  "migration.button.download": {
+    "message": "Salvează modificările doar locale"
+  },
+  "migration.button.start": {
+    "message": "Pornește migrarea"
+  },
+  "migration.button.apply": {
+    "message": "Finalizează migrarea contului"
+  },
+  "migration.button.close": {
+    "message": "Închide"
+  },
+  "migration.column.item": {
+    "message": "Element"
+  },
+  "migration.column.action": {
+    "message": "Acțiune"
+  },
+  "migration.column.type": {
+    "message": "Tip"
+  },
+  "migration.type.contact": {
+    "message": "Contact"
+  },
+  "migration.type.event": {
+    "message": "Eveniment"
+  },
+  "migration.type.task": {
+    "message": "Sarcină"
+  },
+  "migration.type.list": {
+    "message": "Listă de distribuție"
+  },
+  "migration.running.lead": {
+    "message": "Contul este reconstruit de pe server."
+  },
+  "migration.running.replacing": {
+    "message": "Se înlocuiește $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncing": {
+    "message": "Se descarcă $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.op.added": {
+    "message": "Adaugă"
+  },
+  "migration.op.modified": {
+    "message": "Actualizează"
+  },
+  "migration.op.deleted": {
+    "message": "Șterge"
+  },
+  "migration.op.gone": {
+    "message": "nu mai există pe server"
+  },
+  "migration.item.unnamed": {
+    "message": "(fără nume)"
+  },
+  "migration.detail.empty": {
+    "message": "Nu este nimic de afișat."
+  },
+  "migration.replay.lead": {
+    "message": "Resursele au fost reconstruite de pe server. Selectați care dintre modificările locale salvate să fie restaurate:"
+  },
+  "migration.replay.none": {
+    "message": "Resursele au fost reconstruite de pe server. Nu există modificări locale salvate de restaurat."
+  },
+  "migration.done": {
+    "message": "$COUNT$ modificări au fost restaurate și așteaptă sincronizarea. Contul poate fi folosit.",
     "placeholders": {
       "count": {
         "content": "$1"

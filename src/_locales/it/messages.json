@@ -407,7 +407,108 @@
     "message": "Questo account è stato configurato da una versione precedente e non può sincronizzarsi. Disconnettilo e riconnettilo per ricostruirlo dal server."
   },
   "manager.account.migrated.held": {
-    "message": "Questo account è stato configurato da una versione precedente e non può sincronizzarsi. Sono state conservate $COUNT$ modifiche mai inviate al server: deve essere migrato prima di poter essere riutilizzato.",
+    "message": "Questo account è stato configurato da una versione precedente e non può sincronizzarsi. Sono state recuperate $COUNT$ modifiche solo locali: deve essere migrato prima di poter essere riutilizzato.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.title": {
+    "message": "Migra account"
+  },
+  "migration.intro.lead": {
+    "message": "$COUNT$ modifiche a «$ACCOUNT$» non sono mai state sincronizzate con il server e sono state recuperate.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "account": {
+        "content": "$2"
+      }
+    }
+  },
+  "migration.intro.what": {
+    "message": "La migrazione ricostruisce dal server tutti i calendari e le rubriche di questo account e poi ripropone le modifiche recuperate, così puoi scegliere quali ripristinare."
+  },
+  "migration.button.download": {
+    "message": "Salva una copia delle modifiche solo locali"
+  },
+  "migration.button.start": {
+    "message": "Avvia migrazione"
+  },
+  "migration.button.apply": {
+    "message": "Completa la migrazione dell'account"
+  },
+  "migration.button.close": {
+    "message": "Chiudi"
+  },
+  "migration.column.item": {
+    "message": "Elemento"
+  },
+  "migration.column.action": {
+    "message": "Azione"
+  },
+  "migration.column.type": {
+    "message": "Tipo"
+  },
+  "migration.type.contact": {
+    "message": "Contatto"
+  },
+  "migration.type.event": {
+    "message": "Evento"
+  },
+  "migration.type.task": {
+    "message": "Attività"
+  },
+  "migration.type.list": {
+    "message": "Lista di distribuzione"
+  },
+  "migration.running.lead": {
+    "message": "Ricostruzione dell'account dal server."
+  },
+  "migration.running.replacing": {
+    "message": "Sostituzione di $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncing": {
+    "message": "Scaricamento di $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.op.added": {
+    "message": "Aggiungi"
+  },
+  "migration.op.modified": {
+    "message": "Aggiorna"
+  },
+  "migration.op.deleted": {
+    "message": "Elimina"
+  },
+  "migration.op.gone": {
+    "message": "non è più sul server"
+  },
+  "migration.item.unnamed": {
+    "message": "(senza nome)"
+  },
+  "migration.detail.empty": {
+    "message": "Niente da mostrare."
+  },
+  "migration.replay.lead": {
+    "message": "Le tue risorse sono state ricostruite dal server. Seleziona quali delle modifiche locali recuperate devono essere ripristinate:"
+  },
+  "migration.replay.none": {
+    "message": "Le tue risorse sono state ricostruite dal server. Non ci sono modifiche locali recuperate da ripristinare."
+  },
+  "migration.done": {
+    "message": "$COUNT$ modifiche sono state ripristinate e sono in attesa di sincronizzazione. L'account è pronto all'uso.",
     "placeholders": {
       "count": {
         "content": "$1"

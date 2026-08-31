@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title data-i18n-content="migration.title"></title>
+    <link rel="stylesheet" href="../../shared.css" />
+    <link rel="stylesheet" href="migration.css" />
+    <script type="module" src="migration.mjs"></script>
+  </head>
+  <body>
+    <h2 data-i18n-content="migration.title"></h2>
+
+    <div id="error" class="error"></div>
+
+    <!-- Before anything has been touched. -->
+    <section id="intro">
+      <p id="intro-text"></p>
+      <p class="hint" data-i18n-content="migration.intro.what"></p>
+      <div class="actions">
+        <div class="right">
+          <button
+            type="button"
+            id="btn-download"
+            class="secondary"
+            data-i18n-content="migration.button.download"
+          ></button>
+          <button
+            type="button"
+            id="btn-start"
+            data-i18n-content="migration.button.start"
+          ></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- While the resources are being rebuilt. -->
+    <section id="running" hidden>
+      <p data-i18n-content="migration.running.lead"></p>
+      <p id="running-step" class="hint"></p>
+    </section>
+
+    <!-- What was kept, once there is somewhere to put it. -->
+    <section id="replay" hidden>
+      <p id="replay-lead"></p>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="col-check">
+                <input type="checkbox" id="check-all" />
+              </th>
+              <th data-i18n-content="migration.column.item"></th>
+              <th data-i18n-content="migration.column.action"></th>
+              <th data-i18n-content="migration.column.type"></th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="actions">
+        <div class="right">
+          <button
+            type="button"
+            id="btn-apply"
+            data-i18n-content="migration.button.apply"
+          ></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Done. -->
+    <section id="done" hidden>
+      <p id="done-text"></p>
+      <div class="actions">
+        <div class="right">
+          <button
+            type="button"
+            id="btn-close"
+            data-i18n-content="migration.button.close"
+          ></button>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>

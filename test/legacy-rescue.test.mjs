@@ -13,13 +13,21 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  parseLegacyChangelog,
-  keysOf,
-  resolveTarget,
-  listToGroupVCard,
-  groupVCardToList,
-  isGroup,
+  backupFiles,
+  contentLines,
+  diffLines,
+  displayNameOf,
   easServerIdOf,
+  effectiveOp,
+  groupVCardToList,
+  identityOf,
+  isGroup,
+  keysOf,
+  listToGroupVCard,
+  parseLegacyChangelog,
+  resolveTarget,
+  stripIdentity,
+  transplantIdentity,
 } from "../src/modules/legacy-rescue.mjs";
 
 // The three resources of the captured account, keyed as the changelog
@@ -382,4 +390,320 @@ test("the stamp is read from a card property or from the text", () => {
     "6:125",
   );
   assert.equal(easServerIdOf({ id: "c3", vCard: "BEGIN:VCARD\r\nEND:VCARD" }, null), null);
+});
+
+// An update changes what the user wrote and nothing else. Afterwards the
+// item's UID and every X-EAS-* property are exactly what they were.
+const SERVER_EVENT = [
+  "BEGIN:VCALENDAR",
+  "BEGIN:VEVENT",
+  "UID:server-uid",
+  "SUMMARY:as the server has it",
+  "X-EAS-SERVERID:U2f1ad:57a543ff",
+  "X-EAS-MEETINGSTATUS:1",
+  "END:VEVENT",
+  "END:VCALENDAR",
+].join("\r\n");
+
+const RESCUED_EVENT = [
+  "BEGIN:VCALENDAR",
+  "BEGIN:VEVENT",
+  "UID:the-old-uid",
+  "SUMMARY:what the user wrote",
+  "END:VEVENT",
+  "END:VCALENDAR",
+].join("\r\n");
+
+test("an update leaves the UID and every stamp exactly as they were", () => {
+  const before = identityOf(SERVER_EVENT);
+  const after = identityOf(
+    transplantIdentity({ from: SERVER_EVENT, into: RESCUED_EVENT }),
+  );
+  assert.equal(after.uid, before.uid);
+  assert.deepEqual(after.stamps, before.stamps);
+});
+
+test("an update still carries the user's content", () => {
+  const out = transplantIdentity({ from: SERVER_EVENT, into: RESCUED_EVENT });
+  assert.ok(out.includes("SUMMARY:what the user wrote"));
+  assert.ok(!out.includes("SUMMARY:as the server has it"));
+  assert.ok(!out.includes("the-old-uid"));
+});
+
+test("a recurring item keeps a UID on every component", () => {
+  // A master and its overrides all carry one and all name the same item, so
+  // rewriting only the first would leave the rest naming something else.
+  const rescued = [
+    "BEGIN:VCALENDAR",
+    "BEGIN:VEVENT",
+    "UID:the-old-uid",
+    "SUMMARY:series",
+    "END:VEVENT",
+    "BEGIN:VEVENT",
+    "UID:the-old-uid",
+    "RECURRENCE-ID:20260901T090000",
+    "SUMMARY:one occurrence",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+  const out = transplantIdentity({ from: SERVER_EVENT, into: rescued });
+  const uids = out.split("\r\n").filter((l) => l.startsWith("UID:"));
+  assert.deepEqual(uids, ["UID:server-uid", "UID:server-uid"]);
+  // And the stamps go back once, on the component holding the first of them.
+  assert.equal(out.split("\r\n").filter((l) => l.startsWith("X-EAS-")).length, 2);
+});
+
+test("stamps the rescued text should not have are not carried in", () => {
+  // Nothing in the record should be stamped, but if anything ever is, the
+  // item being updated is what says what its stamps are.
+  const impostor = RESCUED_EVENT.replace(
+    "SUMMARY:what the user wrote",
+    "SUMMARY:what the user wrote\r\nX-EAS-SERVERID:not-this-one",
+  );
+  const out = transplantIdentity({ from: SERVER_EVENT, into: impostor });
+  assert.ok(!out.includes("not-this-one"));
+  assert.deepEqual(identityOf(out).stamps, identityOf(SERVER_EVENT).stamps);
+});
+
+test("a card is transplanted the same way", () => {
+  const server =
+    "BEGIN:VCARD\r\nUID:card-uid\r\nFN:Server\r\nX-EAS-SERVERID:Ued67e:57a5\r\nEND:VCARD";
+  const rescued = "BEGIN:VCARD\r\nUID:old\r\nFN:What the user typed\r\nEND:VCARD";
+  const out = transplantIdentity({ from: server, into: rescued });
+  assert.deepEqual(identityOf(out), identityOf(server));
+  assert.ok(out.includes("FN:What the user typed"));
+});
+
+test("a creation goes in with no identity at all", () => {
+  const out = stripIdentity(
+    "BEGIN:VCARD\r\nUID:minted-by-the-old-version\r\nX-EAS-SERVERID:placeholder\r\nFN:New\r\nEND:VCARD",
+  );
+  assert.equal(out, "BEGIN:VCARD\r\nFN:New\r\nEND:VCARD");
+});
+
+test("what an entry is called, for showing it", () => {
+  assert.equal(displayNameOf("BEGIN:VCARD\r\nFN:Ada Lovelace\r\nEND:VCARD"), "Ada Lovelace");
+  assert.equal(displayNameOf("BEGIN:VEVENT\r\nSUMMARY:Team\\, Nord\r\nEND:VEVENT"), "Team, Nord");
+  assert.equal(displayNameOf(null), "");
+});
+
+test("what is shown of an item is what the user wrote", () => {
+  // Not the structure, not the bookkeeping, and not the timezone rules -
+  // two copies of one appointment differ in those for reasons that have
+  // nothing to do with anybody.
+  const ical = [
+    "BEGIN:VCALENDAR",
+    "PRODID:-//Mozilla.org//EN",
+    "VERSION:2.0",
+    "BEGIN:VTIMEZONE",
+    "TZID:Europe/Berlin",
+    "BEGIN:STANDARD",
+    "DTSTART:18930401T000000",
+    "END:STANDARD",
+    "END:VTIMEZONE",
+    "BEGIN:VEVENT",
+    "UID:u1",
+    "DTSTAMP:20260101T000000Z",
+    "LAST-MODIFIED:20260101T000000Z",
+    "X-EAS-SERVERID:U2f1ad:57a5",
+    "SUMMARY:Test Event",
+    "LOCATION:Room 1",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+  assert.deepEqual(contentLines(ical), [
+    "SUMMARY:Test Event",
+    "LOCATION:Room 1",
+  ]);
+});
+
+test("a folded line is read whole before being shown", () => {
+  // The break and the space that marks it both go, so what comes back is
+  // the value as it was written.
+  assert.deepEqual(
+    contentLines("BEGIN:VCARD\r\nNOTE:one \r\n two\r\nEND:VCARD"),
+    ["NOTE:one two"],
+  );
+});
+
+test("a change reads as what it takes away and what it puts", () => {
+  const rows = diffLines(
+    ["SUMMARY:Test Event", "LOCATION:Room 1"],
+    ["SUMMARY:Test Event (edited)", "LOCATION:Room 1"],
+  );
+  assert.deepEqual(rows, [
+    { mark: "-", line: "SUMMARY:Test Event" },
+    { mark: "+", line: "SUMMARY:Test Event (edited)" },
+    { mark: " ", line: "LOCATION:Room 1" },
+  ]);
+});
+
+test("a creation is all additions and a deletion all removals", () => {
+  assert.deepEqual(diffLines([], ["FN:New"]), [{ mark: "+", line: "FN:New" }]);
+  assert.deepEqual(diffLines(["FN:Old"], []), [{ mark: "-", line: "FN:Old" }]);
+});
+
+test("properties that came back in another order have not changed", () => {
+  // These are fields, not prose: the server is free to hand them over in
+  // whatever order it likes.
+  const rows = diffLines(["A:1", "B:2"], ["B:2", "A:1"]);
+  assert.equal(rows.filter((r) => r.mark !== " ").length, 0);
+});
+
+// The backup is for reading elsewhere: ordinary vCard and iCalendar, one
+// file per resource, with this installation's own marks taken off.
+const BOOK = "book-1";
+const CAL = "cal-1";
+const INFO = new Map([
+  [BOOK, { name: "Kontakte", type: "contacts" }],
+  [CAL, { name: "Kalender", type: "calendars" }],
+]);
+const card = (uid, fn) =>
+  `BEGIN:VCARD\r\nVERSION:4.0\r\nFN:${fn}\r\nUID:${uid}\r\nX-EAS-SERVERID:s-${uid}\r\nEND:VCARD`;
+
+test("the provider's marks come off and the item keeps its own id", () => {
+  const [file] = backupFiles(
+    { folders: [{ folderId: BOOK, items: [{ rescueId: "r1", op: "added", serverId: null, data: card("u1", "One") }] }] },
+    INFO,
+  );
+  assert.equal(file.name, "Kontakte.vcf");
+  assert.ok(!file.text.includes("X-EAS-"), "no stamp survives");
+  assert.ok(file.text.includes("UID:u1"), "the item keeps its id");
+});
+
+test("a list names its members by a reference the file can resolve", () => {
+  // Inside the record a member says which kind of name it uses; in a file
+  // there is only one thing to point at, so both become urn:uuid.
+  const group = [
+    "BEGIN:VCARD",
+    "VERSION:4.0",
+    "KIND:group",
+    "FN:Team",
+    "MEMBER:x-rescueid:r1",
+    "MEMBER:x-serverid:s-u2",
+    "END:VCARD",
+  ].join("\r\n");
+  const [file] = backupFiles(
+    {
+      folders: [
+        {
+          folderId: BOOK,
+          items: [
+            { rescueId: "r1", op: "added", serverId: null, data: card("u1", "One") },
+            { rescueId: "r2", op: "added", serverId: null, data: group },
+            // the member nobody edited, carried so the list is a list
+            { rescueId: "r3", op: "context", serverId: "s-u2", data: card("u2", "Two") },
+          ],
+        },
+      ],
+    },
+    INFO,
+  );
+  assert.ok(file.text.includes("MEMBER:urn:uuid:u1"));
+  assert.ok(file.text.includes("MEMBER:urn:uuid:u2"));
+  assert.ok(file.text.includes("UID:u2"), "the carried member is in the file");
+});
+
+test("a member no file holds is dropped rather than left dangling", () => {
+  const group =
+    "BEGIN:VCARD\r\nVERSION:4.0\r\nKIND:group\r\nFN:Team\r\nMEMBER:x-serverid:s-gone\r\nEND:VCARD";
+  const [file] = backupFiles(
+    { folders: [{ folderId: BOOK, items: [{ rescueId: "r1", op: "added", serverId: null, data: group }] }] },
+    INFO,
+  );
+  assert.ok(!file.text.includes("MEMBER"), "no reference to nothing");
+  assert.ok(file.text.includes("FN:Team"), "the list itself survives");
+});
+
+test("a deletion is in no file - there is nothing to import", () => {
+  const files = backupFiles(
+    { folders: [{ folderId: BOOK, items: [{ rescueId: "r1", op: "deleted", serverId: "s-x", data: null }] }] },
+    INFO,
+  );
+  assert.deepEqual(files, []);
+});
+
+test("several kept items become one calendar, with one copy of a timezone", () => {
+  const event = (uid, summary) =>
+    [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "BEGIN:VTIMEZONE",
+      "TZID:Europe/Berlin",
+      "END:VTIMEZONE",
+      "BEGIN:VEVENT",
+      `UID:${uid}`,
+      `SUMMARY:${summary}`,
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\r\n");
+  const [file] = backupFiles(
+    {
+      folders: [
+        {
+          folderId: CAL,
+          items: [
+            { rescueId: "r1", op: "added", serverId: null, data: event("e1", "One") },
+            { rescueId: "r2", op: "added", serverId: null, data: event("e2", "Two") },
+          ],
+        },
+      ],
+    },
+    INFO,
+  );
+  assert.equal(file.name, "Kalender.ics");
+  assert.equal(file.text.match(/BEGIN:VCALENDAR/g).length, 1, "one wrapper");
+  assert.equal(file.text.match(/BEGIN:VTIMEZONE/g).length, 1, "one timezone");
+  assert.equal(file.text.match(/BEGIN:VEVENT/g).length, 2);
+});
+
+test("a folder name that could not be a file name still becomes one", () => {
+  const info = new Map([[BOOK, { name: "Kon/takte: *?", type: "contacts" }]]);
+  const [file] = backupFiles(
+    { folders: [{ folderId: BOOK, items: [{ rescueId: "r1", op: "added", serverId: null, data: card("u1", "One") }] }] },
+    info,
+  );
+  assert.ok(!/[\\/:*?"<>|]/.test(file.name), `unusable name: ${file.name}`);
+});
+
+/* ------------------------------------------------------------------ *
+ * What a rescued change can still do.
+ *
+ * The folder has been rebuilt from the server, so an item the server no
+ * longer has is not there. A change made against it cannot be applied as a
+ * change, and dropping it is the one outcome that loses the user's work, so
+ * it goes back as a creation. A deletion in that state has already
+ * happened.
+ * ------------------------------------------------------------------ */
+
+test("a change is a change while its item is there", () => {
+  const present = new Map([["S1", { id: "local-1" }]]);
+  assert.equal(effectiveOp({ op: "modified", serverId: "S1" }, present), "modified");
+  assert.equal(effectiveOp({ op: "deleted", serverId: "S1" }, present), "deleted");
+});
+
+test("a change whose item is gone becomes a creation", () => {
+  assert.equal(effectiveOp({ op: "modified", serverId: "S1" }, new Map()), "added");
+});
+
+test("a deletion whose item is gone is already done", () => {
+  assert.equal(effectiveOp({ op: "deleted", serverId: "S1" }, new Map()), null);
+});
+
+test("a creation is a creation whatever the folder holds", () => {
+  assert.equal(effectiveOp({ op: "added", serverId: null }, new Map()), "added");
+  assert.equal(
+    effectiveOp({ op: "added", serverId: null }, new Map([["S1", { id: "x" }]])),
+    "added",
+  );
+});
+
+test("an id is compared whole, never taken apart", () => {
+  const serverId = "Ued67e:57a543ff54dc4fadad3dbb0ec2054d075c2c78000000";
+  const present = new Map([[serverId, { id: "local-1" }]]);
+  assert.equal(effectiveOp({ op: "modified", serverId }, present), "modified");
+  assert.equal(
+    effectiveOp({ op: "modified", serverId: serverId.split(":")[1] }, present),
+    "added",
+  );
 });

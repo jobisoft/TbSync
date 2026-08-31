@@ -407,7 +407,108 @@
     "message": "See konto seadistati vanema versiooniga ega saa sünkroonida. Katkesta ühendus ja ühenda uuesti, et see serverist üles ehitada."
   },
   "manager.account.migrated.held": {
-    "message": "See konto seadistati vanema versiooniga ega saa sünkroonida. Alles on hoitud $COUNT$ muudatust, mis ei jõudnud kunagi serverisse - konto tuleb enne edasist kasutamist migreerida.",
+    "message": "See konto seadistati vanema versiooniga ega saa sünkroonida. Päästetud on $COUNT$ ainult kohalikku muudatust - konto tuleb enne edasist kasutamist migreerida.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.title": {
+    "message": "Konto migreerimine"
+  },
+  "migration.intro.lead": {
+    "message": "$COUNT$ muudatust kontol „$ACCOUNT$“ ei ole kunagi serveriga sünkroonitud ja on päästetud.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "account": {
+        "content": "$2"
+      }
+    }
+  },
+  "migration.intro.what": {
+    "message": "Migreerimine ehitab serverist üles kõik selle konto kalendrid ja aadressiraamatud ning pakub seejärel päästetud muudatused, et saaksid valida, millised taastada."
+  },
+  "migration.button.download": {
+    "message": "Varunda ainult kohalikud muudatused"
+  },
+  "migration.button.start": {
+    "message": "Alusta migreerimist"
+  },
+  "migration.button.apply": {
+    "message": "Lõpeta konto migreerimine"
+  },
+  "migration.button.close": {
+    "message": "Sulge"
+  },
+  "migration.column.item": {
+    "message": "Element"
+  },
+  "migration.column.action": {
+    "message": "Toiming"
+  },
+  "migration.column.type": {
+    "message": "Tüüp"
+  },
+  "migration.type.contact": {
+    "message": "Kontakt"
+  },
+  "migration.type.event": {
+    "message": "Sündmus"
+  },
+  "migration.type.task": {
+    "message": "Ülesanne"
+  },
+  "migration.type.list": {
+    "message": "Postiloend"
+  },
+  "migration.running.lead": {
+    "message": "Kontot ehitatakse serverist uuesti üles."
+  },
+  "migration.running.replacing": {
+    "message": "$FOLDER$ asendamine…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncing": {
+    "message": "$FOLDER$ allalaadimine…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.op.added": {
+    "message": "Lisa"
+  },
+  "migration.op.modified": {
+    "message": "Uuenda"
+  },
+  "migration.op.deleted": {
+    "message": "Kustuta"
+  },
+  "migration.op.gone": {
+    "message": "serveris enam pole"
+  },
+  "migration.item.unnamed": {
+    "message": "(nimetu)"
+  },
+  "migration.detail.empty": {
+    "message": "Pole midagi näidata."
+  },
+  "migration.replay.lead": {
+    "message": "Ressursid on serverist uuesti üles ehitatud. Valige, millised päästetud kohalikud muudatused taastada:"
+  },
+  "migration.replay.none": {
+    "message": "Ressursid on serverist uuesti üles ehitatud. Taastamiseks pole päästetud kohalikke muudatusi."
+  },
+  "migration.done": {
+    "message": "$COUNT$ muudatust taastati ja need ootavad sünkroonimist. Kontot saab kasutada.",
     "placeholders": {
       "count": {
         "content": "$1"

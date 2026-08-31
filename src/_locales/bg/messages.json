@@ -407,7 +407,108 @@
     "message": "Тази регистрация е настроена от по-стара версия и не може да се синхронизира. Прекъснете връзката и я свържете отново, за да бъде изградена наново от сървъра."
   },
   "manager.account.migrated.held": {
-    "message": "Тази регистрация е настроена от по-стара версия и не може да се синхронизира. Запазени са $COUNT$ промени, които никога не са изпращани към сървъра - тя трябва да бъде мигрирана, преди да се използва отново.",
+    "message": "Тази регистрация е настроена от по-стара версия и не може да се синхронизира. Запазени са $COUNT$ само локални промени - тя трябва да бъде мигрирана, преди да се използва отново.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.title": {
+    "message": "Мигриране на регистрацията"
+  },
+  "migration.intro.lead": {
+    "message": "$COUNT$ промени в „$ACCOUNT$“ никога не са били синхронизирани със сървъра и са запазени.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "account": {
+        "content": "$2"
+      }
+    }
+  },
+  "migration.intro.what": {
+    "message": "Мигрирането изгражда наново от сървъра всички календари и адресници на тази регистрация, след което предлага запазените промени, за да изберете кои да бъдат възстановени."
+  },
+  "migration.button.download": {
+    "message": "Резервно копие на само локалните промени"
+  },
+  "migration.button.start": {
+    "message": "Начало на мигрирането"
+  },
+  "migration.button.apply": {
+    "message": "Завършване на мигрирането на регистрацията"
+  },
+  "migration.button.close": {
+    "message": "Затваряне"
+  },
+  "migration.column.item": {
+    "message": "Елемент"
+  },
+  "migration.column.action": {
+    "message": "Действие"
+  },
+  "migration.column.type": {
+    "message": "Вид"
+  },
+  "migration.type.contact": {
+    "message": "Контакт"
+  },
+  "migration.type.event": {
+    "message": "Събитие"
+  },
+  "migration.type.task": {
+    "message": "Задача"
+  },
+  "migration.type.list": {
+    "message": "Пощенски списък"
+  },
+  "migration.running.lead": {
+    "message": "Регистрацията се изгражда наново от сървъра."
+  },
+  "migration.running.replacing": {
+    "message": "Замяна на $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncing": {
+    "message": "Изтегляне на $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.op.added": {
+    "message": "Добавяне"
+  },
+  "migration.op.modified": {
+    "message": "Обновяване"
+  },
+  "migration.op.deleted": {
+    "message": "Изтриване"
+  },
+  "migration.op.gone": {
+    "message": "вече го няма на сървъра"
+  },
+  "migration.item.unnamed": {
+    "message": "(без име)"
+  },
+  "migration.detail.empty": {
+    "message": "Няма какво да се покаже."
+  },
+  "migration.replay.lead": {
+    "message": "Ресурсите бяха изградени наново от сървъра. Изберете кои от запазените локални промени да бъдат възстановени:"
+  },
+  "migration.replay.none": {
+    "message": "Ресурсите бяха изградени наново от сървъра. Няма запазени локални промени за възстановяване."
+  },
+  "migration.done": {
+    "message": "$COUNT$ промени бяха възстановени и изчакват синхронизиране. Регистрацията е готова за употреба.",
     "placeholders": {
       "count": {
         "content": "$1"

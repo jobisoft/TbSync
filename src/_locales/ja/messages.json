@@ -407,7 +407,108 @@
     "message": "このアカウントは以前のバージョンで設定されたため同期できません。接続を解除して再接続すると、サーバーから再構築されます。"
   },
   "manager.account.migrated.held": {
-    "message": "このアカウントは以前のバージョンで設定されたため同期できません。サーバーに送信されなかった変更 $COUNT$ 件が保存されています。再び使用するには移行が必要です。",
+    "message": "このアカウントは以前のバージョンで設定されたため同期できません。ローカルにしかない変更 $COUNT$ 件を保存しました。再び使用するには移行が必要です。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.title": {
+    "message": "アカウントの移行"
+  },
+  "migration.intro.lead": {
+    "message": "「$ACCOUNT$」への変更 $COUNT$ 件はサーバーと同期されないまま保存されています。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "account": {
+        "content": "$2"
+      }
+    }
+  },
+  "migration.intro.what": {
+    "message": "移行では、このアカウントのすべてのカレンダーとアドレス帳をサーバーから作り直したうえで、保存された変更を提示します。どれを復元するかを選べます。"
+  },
+  "migration.button.download": {
+    "message": "ローカルにしかない変更をバックアップ"
+  },
+  "migration.button.start": {
+    "message": "移行を開始"
+  },
+  "migration.button.apply": {
+    "message": "アカウントの移行を完了"
+  },
+  "migration.button.close": {
+    "message": "閉じる"
+  },
+  "migration.column.item": {
+    "message": "項目"
+  },
+  "migration.column.action": {
+    "message": "操作"
+  },
+  "migration.column.type": {
+    "message": "種類"
+  },
+  "migration.type.contact": {
+    "message": "連絡先"
+  },
+  "migration.type.event": {
+    "message": "予定"
+  },
+  "migration.type.task": {
+    "message": "ToDo"
+  },
+  "migration.type.list": {
+    "message": "メーリングリスト"
+  },
+  "migration.running.lead": {
+    "message": "アカウントをサーバーから作り直しています。"
+  },
+  "migration.running.replacing": {
+    "message": "$FOLDER$ を置き換えています…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncing": {
+    "message": "$FOLDER$ をダウンロードしています…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.op.added": {
+    "message": "追加"
+  },
+  "migration.op.modified": {
+    "message": "更新"
+  },
+  "migration.op.deleted": {
+    "message": "削除"
+  },
+  "migration.op.gone": {
+    "message": "サーバーにはもうありません"
+  },
+  "migration.item.unnamed": {
+    "message": "(名前なし)"
+  },
+  "migration.detail.empty": {
+    "message": "表示するものはありません。"
+  },
+  "migration.replay.lead": {
+    "message": "リソースをサーバーから作り直しました。復元するローカル変更を選んでください:"
+  },
+  "migration.replay.none": {
+    "message": "リソースをサーバーから作り直しました。復元するローカル変更はありません。"
+  },
+  "migration.done": {
+    "message": "$COUNT$ 件の変更を復元しました。同期を待機中です。アカウントは使用できます。",
     "placeholders": {
       "count": {
         "content": "$1"

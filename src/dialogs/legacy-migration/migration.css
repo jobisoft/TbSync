@@ -1,0 +1,155 @@
+/* The window's own layout. Its colours and controls come from
+   `../../shared.css`, so every TbSync window stays the same thing. */
+body {
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--bg-page);
+  margin: 0;
+  padding: 20px 24px;
+}
+/* A section that is not the current one takes no room at all. Said out
+   loud rather than left to the browser's default for `hidden`, which any
+   `display` rule reaching these elements would quietly win against. */
+[hidden] {
+  display: none !important;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+/* Spacing between paragraphs is set here, not inherited: the browser's own
+   is an em top and bottom, which reads as a gap rather than a rhythm. */
+p {
+  margin: 0 0 10px;
+  line-height: 1.45;
+}
+section > :first-child {
+  margin-top: 0;
+}
+.hint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.error {
+  margin: 10px 0;
+  padding: 8px 12px;
+  background: var(--accent-soft);
+  border-left: 3px solid var(--status-error);
+  color: var(--status-error);
+  font-size: 12px;
+  border-radius: 3px;
+  display: none;
+}
+.error.visible {
+  display: block;
+}
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+.actions .right {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.scroll {
+  overflow-x: auto;
+  max-height: 320px;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-page);
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 8px 6px 0;
+}
+tbody td {
+  padding: 6px 8px 6px 0;
+  border-bottom: 1px solid var(--border-row);
+  color: var(--text-body-soft);
+  vertical-align: top;
+}
+.col-check {
+  width: 28px;
+}
+/* An edit whose item the server no longer has. Shown so the count is
+   explicable, but there is nothing to apply it to. */
+tr.unavailable td {
+  color: var(--text-disabled);
+}
+
+/* The item's name doubles as the control that shows what the change is:
+   the name is the thing you would click anyway, so it is the button. */
+.reveal {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.reveal::before {
+  content: "▸ ";
+  color: var(--text-tertiary);
+}
+.reveal.open::before {
+  content: "▾ ";
+}
+tr.detail td {
+  padding: 0 0 10px 20px;
+  border-bottom: 1px solid var(--border-row);
+}
+.diff {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+/* Marked with a sign as well as a colour: which line is which should not
+   depend on being able to tell two colours apart. */
+.diff .added {
+  color: var(--status-success);
+}
+.diff .removed {
+  color: var(--status-error);
+}
+.diff .same {
+  color: var(--text-tertiary);
+}
+
+/* The three operations, told apart at a glance. Colour is the quick read;
+   the word carries it for anyone who cannot use the colour. */
+td.op {
+  font-weight: 600;
+}
+td.op.added {
+  color: var(--status-success);
+}
+td.op.modified {
+  color: var(--status-warning);
+}
+td.op.deleted {
+  color: var(--status-error);
+}
+td.op.gone {
+  color: var(--text-disabled);
+  font-weight: normal;
+}

@@ -128,17 +128,28 @@ export async function getMailingList(id) {
   }
 }
 
-/** Create a mailing list. Returns the new id. */
-export async function createMailingList(bookId, { name }) {
+/** Create a mailing list. Returns the new id.
+ *
+ *  A list is its name, its nickname and its description - all three are
+ *  the user's, and a list put back with only its name has lost two of the
+ *  things that made it theirs. */
+export async function createMailingList(bookId, { name, nickName, description }) {
   if (!bookId) throw new Error("createMailingList requires a bookId");
   if (!name) throw new Error("createMailingList requires a name");
-  return await messenger.mailingLists.create(bookId, { name });
+  const properties = { name };
+  if (nickName) properties.nickName = nickName;
+  if (description) properties.description = description;
+  return await messenger.mailingLists.create(bookId, properties);
 }
 
-/** Rename / update a mailing list. */
-export async function updateMailingList(id, { name }) {
+/** Rename / update a mailing list. Only the fields given are touched. */
+export async function updateMailingList(id, { name, nickName, description }) {
   if (!id) throw new Error("updateMailingList requires an id");
-  await messenger.mailingLists.update(id, { name });
+  const properties = {};
+  if (name !== undefined) properties.name = name;
+  if (nickName !== undefined) properties.nickName = nickName;
+  if (description !== undefined) properties.description = description;
+  await messenger.mailingLists.update(id, properties);
 }
 
 /** Delete a mailing list, tolerating "not found". */

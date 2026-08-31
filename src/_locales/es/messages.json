@@ -407,7 +407,108 @@
     "message": "Esta cuenta fue configurada por una versión anterior y no puede sincronizarse. Desconéctela y vuelva a conectarla para reconstruirla desde el servidor."
   },
   "manager.account.migrated.held": {
-    "message": "Esta cuenta fue configurada por una versión anterior y no puede sincronizarse. Se han conservado $COUNT$ cambios que nunca se enviaron al servidor, por lo que debe migrarse antes de poder usarse de nuevo.",
+    "message": "Esta cuenta fue configurada por una versión anterior y no puede sincronizarse. Se han rescatado $COUNT$ cambios solo locales, por lo que debe migrarse antes de poder usarse de nuevo.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.title": {
+    "message": "Migrar cuenta"
+  },
+  "migration.intro.lead": {
+    "message": "$COUNT$ cambios en «$ACCOUNT$» nunca se sincronizaron con el servidor y se han rescatado.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "account": {
+        "content": "$2"
+      }
+    }
+  },
+  "migration.intro.what": {
+    "message": "La migración reconstruye desde el servidor todos los calendarios y libretas de direcciones de esta cuenta y después le ofrece los cambios rescatados para que elija cuáles restaurar."
+  },
+  "migration.button.download": {
+    "message": "Guardar una copia de los cambios solo locales"
+  },
+  "migration.button.start": {
+    "message": "Iniciar migración"
+  },
+  "migration.button.apply": {
+    "message": "Completar la migración de la cuenta"
+  },
+  "migration.button.close": {
+    "message": "Cerrar"
+  },
+  "migration.column.item": {
+    "message": "Elemento"
+  },
+  "migration.column.action": {
+    "message": "Acción"
+  },
+  "migration.column.type": {
+    "message": "Tipo"
+  },
+  "migration.type.contact": {
+    "message": "Contacto"
+  },
+  "migration.type.event": {
+    "message": "Evento"
+  },
+  "migration.type.task": {
+    "message": "Tarea"
+  },
+  "migration.type.list": {
+    "message": "Lista de correo"
+  },
+  "migration.running.lead": {
+    "message": "Reconstruyendo la cuenta desde el servidor."
+  },
+  "migration.running.replacing": {
+    "message": "Reemplazando $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncing": {
+    "message": "Descargando $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.op.added": {
+    "message": "Añadir"
+  },
+  "migration.op.modified": {
+    "message": "Actualizar"
+  },
+  "migration.op.deleted": {
+    "message": "Eliminar"
+  },
+  "migration.op.gone": {
+    "message": "ya no está en el servidor"
+  },
+  "migration.item.unnamed": {
+    "message": "(sin nombre)"
+  },
+  "migration.detail.empty": {
+    "message": "No hay nada que mostrar."
+  },
+  "migration.replay.lead": {
+    "message": "Sus recursos se han reconstruido desde el servidor. Seleccione cuáles de los cambios locales rescatados deben restaurarse:"
+  },
+  "migration.replay.none": {
+    "message": "Sus recursos se han reconstruido desde el servidor. No hay cambios locales rescatados que restaurar."
+  },
+  "migration.done": {
+    "message": "Se restauraron $COUNT$ cambios y están esperando sincronización. La cuenta ya se puede usar.",
     "placeholders": {
       "count": {
         "content": "$1"

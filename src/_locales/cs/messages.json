@@ -407,7 +407,108 @@
     "message": "Tento účet byl nastaven starší verzí a nemůže se synchronizovat. Odpojte jej a znovu připojte, aby se obnovil ze serveru."
   },
   "manager.account.migrated.held": {
-    "message": "Tento účet byl nastaven starší verzí a nemůže se synchronizovat. Bylo zachováno $COUNT$ změn, které nikdy nebyly odeslány na server - před dalším použitím je nutné účet migrovat.",
+    "message": "Tento účet byl nastaven starší verzí a nemůže se synchronizovat. Bylo zachráněno $COUNT$ pouze místních změn - před dalším použitím je nutné účet migrovat.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.title": {
+    "message": "Migrovat účet"
+  },
+  "migration.intro.lead": {
+    "message": "$COUNT$ změn v účtu „$ACCOUNT$“ nebylo nikdy synchronizováno se serverem a bylo zachráněno.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "account": {
+        "content": "$2"
+      }
+    }
+  },
+  "migration.intro.what": {
+    "message": "Migrace znovu sestaví ze serveru všechny kalendáře a adresáře tohoto účtu a poté nabídne zachráněné změny, abyste si vybrali, které obnovit."
+  },
+  "migration.button.download": {
+    "message": "Zálohovat pouze místní změny"
+  },
+  "migration.button.start": {
+    "message": "Spustit migraci"
+  },
+  "migration.button.apply": {
+    "message": "Dokončit migraci účtu"
+  },
+  "migration.button.close": {
+    "message": "Zavřít"
+  },
+  "migration.column.item": {
+    "message": "Položka"
+  },
+  "migration.column.action": {
+    "message": "Akce"
+  },
+  "migration.column.type": {
+    "message": "Typ"
+  },
+  "migration.type.contact": {
+    "message": "Kontakt"
+  },
+  "migration.type.event": {
+    "message": "Událost"
+  },
+  "migration.type.task": {
+    "message": "Úkol"
+  },
+  "migration.type.list": {
+    "message": "Konference"
+  },
+  "migration.running.lead": {
+    "message": "Účet se znovu sestavuje ze serveru."
+  },
+  "migration.running.replacing": {
+    "message": "Nahrazuje se $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncing": {
+    "message": "Stahuje se $FOLDER$…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.op.added": {
+    "message": "Přidat"
+  },
+  "migration.op.modified": {
+    "message": "Aktualizovat"
+  },
+  "migration.op.deleted": {
+    "message": "Smazat"
+  },
+  "migration.op.gone": {
+    "message": "již není na serveru"
+  },
+  "migration.item.unnamed": {
+    "message": "(bez názvu)"
+  },
+  "migration.detail.empty": {
+    "message": "Není co zobrazit."
+  },
+  "migration.replay.lead": {
+    "message": "Vaše zdroje byly znovu sestaveny ze serveru. Vyberte, které ze zachráněných místních změn se mají obnovit:"
+  },
+  "migration.replay.none": {
+    "message": "Vaše zdroje byly znovu sestaveny ze serveru. Nejsou žádné zachráněné místní změny k obnovení."
+  },
+  "migration.done": {
+    "message": "$COUNT$ změn bylo obnoveno a čeká na synchronizaci. Účet je připraven k použití.",
     "placeholders": {
       "count": {
         "content": "$1"

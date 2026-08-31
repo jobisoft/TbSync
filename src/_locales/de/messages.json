@@ -407,7 +407,108 @@
     "message": "Dieses Konto wurde von einer älteren Version eingerichtet und kann nicht synchronisieren. Trennen Sie es und verbinden Sie es erneut, um es vom Server neu aufzubauen."
   },
   "manager.account.migrated.held": {
-    "message": "Dieses Konto wurde von einer älteren Version eingerichtet und kann nicht synchronisieren. $COUNT$ Änderungen, die nie an den Server gesendet wurden, wurden aufbewahrt - das Konto muss migriert werden, bevor es wieder genutzt werden kann.",
+    "message": "Dieses Konto wurde von einer älteren Version eingerichtet und kann nicht synchronisieren. $COUNT$ nur lokal vorhandene Änderungen wurden gerettet - das Konto muss migriert werden, bevor es wieder genutzt werden kann.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.title": {
+    "message": "Konto migrieren"
+  },
+  "migration.intro.lead": {
+    "message": "$COUNT$ Änderungen an \"$ACCOUNT$\" wurden nie mit dem Server synchronisiert und wurden gerettet.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "account": {
+        "content": "$2"
+      }
+    }
+  },
+  "migration.intro.what": {
+    "message": "Bei der Migration werden alle Kalender und Adressbücher dieses Kontos neu vom Server aufgebaut. Anschließend werden die geretteten Änderungen wieder angeboten, damit Sie auswählen können, welche wiederhergestellt werden sollen."
+  },
+  "migration.button.download": {
+    "message": "Nur lokal vorhandene Änderungen sichern"
+  },
+  "migration.button.start": {
+    "message": "Migration starten"
+  },
+  "migration.button.apply": {
+    "message": "Kontomigration abschließen"
+  },
+  "migration.button.close": {
+    "message": "Schließen"
+  },
+  "migration.column.item": {
+    "message": "Element"
+  },
+  "migration.column.action": {
+    "message": "Aktion"
+  },
+  "migration.column.type": {
+    "message": "Typ"
+  },
+  "migration.type.contact": {
+    "message": "Kontakt"
+  },
+  "migration.type.event": {
+    "message": "Termin"
+  },
+  "migration.type.task": {
+    "message": "Aufgabe"
+  },
+  "migration.type.list": {
+    "message": "Verteilerliste"
+  },
+  "migration.running.lead": {
+    "message": "Das Konto wird neu vom Server aufgebaut."
+  },
+  "migration.running.replacing": {
+    "message": "$FOLDER$ wird ersetzt…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncing": {
+    "message": "$FOLDER$ wird heruntergeladen…",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.op.added": {
+    "message": "Hinzufügen"
+  },
+  "migration.op.modified": {
+    "message": "Aktualisieren"
+  },
+  "migration.op.deleted": {
+    "message": "Löschen"
+  },
+  "migration.op.gone": {
+    "message": "nicht mehr auf dem Server"
+  },
+  "migration.item.unnamed": {
+    "message": "(ohne Namen)"
+  },
+  "migration.detail.empty": {
+    "message": "Nichts anzuzeigen."
+  },
+  "migration.replay.lead": {
+    "message": "Ihre Ressourcen wurden neu vom Server aufgebaut. Bitte wählen Sie aus, welche der geretteten lokalen Änderungen wiederhergestellt werden sollen:"
+  },
+  "migration.replay.none": {
+    "message": "Ihre Ressourcen wurden neu vom Server aufgebaut. Es gibt keine geretteten lokalen Änderungen zum Wiederherstellen."
+  },
+  "migration.done": {
+    "message": "$COUNT$ Änderungen wurden wiederhergestellt und warten auf die Synchronisation. Das Konto kann verwendet werden.",
     "placeholders": {
       "count": {
         "content": "$1"
