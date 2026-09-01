@@ -414,6 +414,14 @@
       }
     }
   },
+  "manager.account.autosyncPaused": {
+    "message": "Le serveur a demandé de suspendre la synchronisation automatique jusqu'à $TIME$. Une synchronisation manuelle reste possible à tout moment.",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
   "migration.title": {
     "message": "Migrer le compte"
   },

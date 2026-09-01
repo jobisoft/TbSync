@@ -414,6 +414,14 @@
       }
     }
   },
+  "manager.account.autosyncPaused": {
+    "message": "Il server ha chiesto di sospendere la sincronizzazione automatica fino alle $TIME$. La sincronizzazione manuale funziona in qualsiasi momento.",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
   "migration.title": {
     "message": "Migra account"
   },

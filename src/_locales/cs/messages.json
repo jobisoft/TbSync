@@ -414,6 +414,14 @@
       }
     }
   },
+  "manager.account.autosyncPaused": {
+    "message": "Server požádal o pozastavení automatické synchronizace do $TIME$. Ruční synchronizace funguje kdykoli.",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
   "migration.title": {
     "message": "Migrovat účet"
   },

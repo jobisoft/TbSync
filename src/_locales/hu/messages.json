@@ -414,6 +414,14 @@
       }
     }
   },
+  "manager.account.autosyncPaused": {
+    "message": "A kiszolgáló kérte az automatikus szinkronizálás szüneteltetését eddig: $TIME$. A kézi szinkronizálás bármikor működik.",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
   "migration.title": {
     "message": "Fiók migrálása"
   },

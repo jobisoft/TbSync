@@ -414,6 +414,14 @@
       }
     }
   },
+  "manager.account.autosyncPaused": {
+    "message": "O servidor pediu pausar a sincronización automática ata as $TIME$. A sincronización manual funciona en calquera momento.",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
   "migration.title": {
     "message": "Migrar a conta"
   },

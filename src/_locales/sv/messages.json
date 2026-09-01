@@ -414,6 +414,14 @@
       }
     }
   },
+  "manager.account.autosyncPaused": {
+    "message": "Servern bad om att pausa den automatiska synkroniseringen till $TIME$. Manuell synkronisering fungerar när som helst.",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
   "migration.title": {
     "message": "Migrera konto"
   },

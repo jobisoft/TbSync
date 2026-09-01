@@ -414,6 +414,14 @@
       }
     }
   },
+  "manager.account.autosyncPaused": {
+    "message": "サーバーから $TIME$ まで自動同期を停止するよう要求されました。手動同期はいつでも実行できます。",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
   "migration.title": {
     "message": "アカウントの移行"
   },

@@ -414,6 +414,14 @@
       }
     }
   },
+  "manager.account.autosyncPaused": {
+    "message": "Server palus automaatse sünkroonimise peatada kuni $TIME$. Käsitsi sünkroonimine töötab igal ajal.",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
   "migration.title": {
     "message": "Konto migreerimine"
   },

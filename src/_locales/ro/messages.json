@@ -414,6 +414,14 @@
       }
     }
   },
+  "manager.account.autosyncPaused": {
+    "message": "Serverul a cerut suspendarea sincronizării automate până la $TIME$. Sincronizarea manuală funcționează oricând.",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
   "migration.title": {
     "message": "Migrare cont"
   },

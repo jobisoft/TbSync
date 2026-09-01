@@ -414,6 +414,14 @@
       }
     }
   },
+  "manager.account.autosyncPaused": {
+    "message": "서버가 $TIME$까지 자동 동기화를 일시 중지하도록 요청했습니다. 수동 동기화는 언제든지 가능합니다.",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
   "migration.title": {
     "message": "계정 마이그레이션"
   },

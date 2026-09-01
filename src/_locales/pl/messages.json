@@ -414,6 +414,14 @@
       }
     }
   },
+  "manager.account.autosyncPaused": {
+    "message": "Serwer poprosił o wstrzymanie automatycznej synchronizacji do $TIME$. Ręczna synchronizacja działa w każdej chwili.",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
   "migration.title": {
     "message": "Migruj konto"
   },

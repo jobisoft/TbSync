@@ -414,6 +414,14 @@
       }
     }
   },
+  "manager.account.autosyncPaused": {
+    "message": "Сервер попросил приостановить автоматическую синхронизацию до $TIME$. Ручная синхронизация доступна в любое время.",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
   "migration.title": {
     "message": "Перенос учётной записи"
   },
