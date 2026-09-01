@@ -313,8 +313,17 @@ async function computeHash(vcard) {
  * `provider` is the SDK instance, used for the two things only the host can
  * do: carrying a renamed book's name back to the folder row, and reporting
  * that the user deleted the book. `report` is an event-log sink.
+ *
+ * `onUserEdit` is called once per edit a person made, after the queue has
+ * taken it - see `record`. Optional, and what a provider does with it is its
+ * own business: this file is vendored into every provider and knows none of
+ * their settings.
+ *
+ * All three are captured by the first call and kept, so they must be things
+ * that outlive a connection. The provider instance is one, which is what
+ * every caller passes.
  */
-export function installContactsObserver({ provider, report } = {}) {
+export function installContactsObserver({ provider, report, onUserEdit } = {}) {
   if (installed) return;
   installed = true;
 
@@ -500,6 +509,34 @@ export function installContactsObserver({ provider, report } = {}) {
       return;
     }
     if (!changed) return;
+
+    // Past here a person edited something and the account owes the server
+    // more than it did. Our own writes never reach it: a `*_by_server`
+    // pre-tag is consumed by `recordEvent` and leaves `changed` false, and
+    // the ghost gate has already dropped the saves that changed no bytes.
+    //
+    // Told before the badge, whose own read can fail and return - a
+    // provider acting on the edit must not depend on that succeeding. It
+    // cannot fail the edit either, which is already durable, so anything it
+    // throws is swallowed here.
+    const failed = (err) =>
+      log("debug", `[contacts] user-edit handler threw: ${err?.message ?? err}`);
+    try {
+      // Caught both ways, because a handler may be async and then a
+      // rejection is what a throw looks like from here.
+      Promise.resolve(
+        onUserEdit?.({
+          accountId: binding.accountId,
+          folderId: binding.folderId,
+          parentId: event.parentId,
+          kind: event.kind,
+          op: event.op,
+          itemId: event.itemId,
+        }),
+      ).catch(failed);
+    } catch (err) {
+      failed(err);
+    }
 
     // The host paints a needs-sync badge and cannot count a queue it does
     // not hold. Best-effort: the edit is already safe either way.
