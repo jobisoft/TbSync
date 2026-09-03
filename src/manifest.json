@@ -4,7 +4,7 @@
     "gecko": {
       "id": "tbsync@jobisoft.de",
       "strict_min_version": "153.0",
-      "strict_max_version": "154.*"
+      "strict_max_version": "157.*"
     }
   },
   "name": "TbSync Manager",
