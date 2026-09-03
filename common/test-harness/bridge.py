@@ -29,6 +29,8 @@ Lives here because the bridge does. Providers vendor this file into
 """
 
 import json
+import os
+import time
 import urllib.error
 import urllib.request
 
@@ -182,3 +184,71 @@ def is_up():
         return True
     except BridgeDown:
         return False
+
+
+def _repo_root():
+    """The add-on repo, found from this file rather than from the working
+    directory: a provider vendors it to `<repo>/test/vendor/bridge.py`."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    return os.path.dirname(os.path.dirname(here))
+
+
+def restart_provider(account_id, xpi="dist/dev.xpi", wait=60):
+    """Put the built provider in front of Thunderbird again, whichever way
+    this profile allows, and wait for it to answer.
+
+    A temporarily installed add-on reloads: it re-reads its source, so the
+    build on disk is what comes back. An ordinary one cannot - a reload would
+    restart the same code - and for it the only route is installing the xpi
+    over itself.
+
+    So the reload is tried first and the install is the fallback, keyed on
+    the refusal itself rather than on a guess about how this profile was set
+    up. That also keeps the temporary case on the cheaper path, and honours
+    the installer's own rule: it refuses a temporary add-on outright, because
+    installing over one would turn it into a normal install and take its
+    reload away.
+
+    A relative `xpi` is resolved against the repo root - this file's own
+    location says where that is, since a provider vendors it to
+    `<repo>/test/vendor/`. Not against the working directory, which is
+    `<repo>/test` when the suite runs and would send it looking in
+    `test/dist/`. Every add-on in the family builds `dist/dev.xpi`.
+
+    Returns "reload" or "install" so a caller can say which happened.
+    """
+    reply = rpc("reloadProvider", accountId=account_id)
+    how = "reload"
+    if not reply.get("ok"):
+        if reply.get("errorCode") != "E:NOT_TEMPORARY":
+            raise AssertionError(
+                f"reloadProvider refused: "
+                f"{reply.get('error') or reply.get('errorCode')}"
+            )
+        how = "install"
+        path = xpi if os.path.isabs(xpi) else os.path.join(_repo_root(), xpi)
+        if not os.path.isfile(path):
+            raise AssertionError(
+                f"this add-on is installed normally, so it can only be "
+                f"restarted by installing it - but there is no build at "
+                f"{path}. Run `npm run build` first."
+            )
+        # Not `ok`: the install takes the add-on down with it, so a lost
+        # reply is the ordinary outcome rather than a failure. What follows
+        # is the same wait either way.
+        try:
+            rpc("installAddon", path=path)
+        except BridgeDown:
+            pass
+
+    deadline = time.time() + wait
+    while time.time() < deadline:
+        time.sleep(3)
+        if is_up():
+            # Answering is not the same as ready: the provider reconnects to
+            # the host a moment after the bridge does.
+            time.sleep(3)
+            return how
+    raise AssertionError(
+        f"the provider did not come back within {wait}s after a {how}"
+    )
