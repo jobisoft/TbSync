@@ -23,6 +23,20 @@
         ],
         "script": "experiments/console/implementation.js"
       }
+    },
+    "installAddon": {
+      "schema": "experiments/installAddon/schema.json",
+      "parent": {
+        "scopes": [
+          "addon_parent"
+        ],
+        "paths": [
+          [
+            "installAddon"
+          ]
+        ],
+        "script": "experiments/installAddon/implementation.js"
+      }
     }
   }
 }

@@ -559,6 +559,32 @@ const COMMANDS = {
    *  Takes a providerId; accountId is accepted as a convenience and means
    *  "whichever provider owns this account", which is what the account
    *  scoped version used to do. */
+  installAddon: {
+    summary:
+      "Install an xpi over the running add-on of the same id. Beta only.",
+    args: "{ path }",
+    async run({ path }) {
+      if (!path || typeof path !== "string") {
+        throw withCode(new Error("installAddon needs a path"), "E:BAD_ARGS");
+      }
+      // Refusing a temporary install is the experiment's job, not this
+      // one's: it is the half that can see how each add-on was installed.
+      //
+      // Installing TbSync over itself is allowed, and is how this bridge
+      // picks up a new host build - but the reply is lost when the old copy
+      // goes down mid-call. Expect the call to fail, wait, and ask
+      // `listAddons` for the version that came up.
+      return await browser.installAddon.install(path);
+    },
+  },
+
+  listAddons: {
+    summary: "The installed extensions, with the version each is running.",
+    async run() {
+      return { addons: await browser.installAddon.list() };
+    },
+  },
+
   reloadProvider: {
     summary: "Reload a provider add-on. Any of them, not only the target's.",
     args: "{ providerId } or { accountId }",

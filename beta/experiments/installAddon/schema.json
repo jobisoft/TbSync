@@ -1,0 +1,28 @@
+[
+  {
+    "namespace": "installAddon",
+    "description": "Install an add-on from a file. Beta builds only - this exists so the bridge can put a freshly built xpi in front of a running Thunderbird, which no WebExtension API can do.",
+    "functions": [
+      {
+        "name": "install",
+        "type": "function",
+        "async": true,
+        "description": "Install the xpi at the given absolute path, upgrading in place when its id is already installed. Resolves once the add-on is installed.",
+        "parameters": [
+          {
+            "name": "path",
+            "type": "string",
+            "description": "Absolute path to the .xpi file."
+          }
+        ]
+      },
+      {
+        "name": "list",
+        "type": "function",
+        "async": true,
+        "description": "The installed extensions, so a caller can tell which build is actually running.",
+        "parameters": []
+      }
+    ]
+  }
+]
