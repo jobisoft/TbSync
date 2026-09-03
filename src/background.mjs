@@ -12,6 +12,7 @@ import {
   KEYS,
 } from "./modules/storage-keys.mjs";
 import * as accounts from "./modules/accounts.mjs";
+import * as consoleTail from "./modules/console-tail.mjs";
 import * as folders from "./modules/folders.mjs";
 import * as providers from "./modules/providers.mjs";
 import {
@@ -1959,6 +1960,17 @@ async function dropLegacyRescue(accountId) {
 }
 
 // ── Boot ───────────────────────────────────────────────────────────────────
+
+// First, and before anything can fail. Two errors below are the host's own
+// and never travel through a provider call - an incompatible provider
+// (`registry.mjs`) and a legacy migration that threw
+// (`legacy-migration-runner.mjs`) - so this is the only "before" they have.
+// It has to precede `ensureSchema`, which is where the import runs: a mark
+// taken after it would miss the very failure it exists to explain. Taking it
+// here also starts the capture at the earliest moment there is, so what
+// follows is recorded as it happens rather than reconstructed afterwards
+// from whatever the platform still had in its own backlog.
+await consoleTail.markBoot();
 
 await ensureSchema();
 // Block every account the legacy importer left half-converted, before any

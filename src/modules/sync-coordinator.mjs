@@ -512,7 +512,10 @@ async function flagAccountForReauth(acc, err) {
     level: "error",
     message:
       "The server rejected this account's credentials - syncing is paused until you authenticate again.",
-    details: err?.message ?? null,
+    // `details` first: this error came back through a provider call, so it
+    // carries what the console said while that call was failing. The message
+    // is the fallback, and used to be all there was.
+    details: err?.details ?? err?.message ?? null,
   });
   ui.broadcast({ type: "accounts-changed", accountId });
 }

@@ -24,6 +24,13 @@
         ]
       },
       {
+        "name": "getPosition",
+        "type": "function",
+        "async": true,
+        "description": "Where the capture currently stands, and nothing else. For a caller that wants to remember a starting point before doing something, and read what followed only if it fails - sending the messages back as well would be the whole buffer for the sake of one number. Starts the capture, exactly as getMessages does.",
+        "parameters": []
+      },
+      {
         "name": "clear",
         "type": "function",
         "async": true,

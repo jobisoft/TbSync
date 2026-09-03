@@ -117,6 +117,16 @@ var tbsyncConsole = class extends ExtensionCommon.ExtensionAPI {
           };
         },
 
+        /** Where the capture stands, without its contents.
+         *
+         *  A caller that wants "what happened while I was doing this" needs
+         *  a number before it starts and the messages only if it fails.
+         *  `getMessages` would hand back the whole buffer to answer that,
+         *  every time, for a call that usually succeeds. */
+        async getPosition() {
+          return { lastSeq: held.length ? held[held.length - 1].seq : -1 };
+        },
+
         async clear() {
           held.length = 0;
           return null;

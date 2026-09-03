@@ -1,5 +1,6 @@
 import { DISCOVERY, PROTOCOL_VERSION } from "../vendor/tbsync/protocol.mjs";
 import * as eventLog from "./event-log.mjs";
+import * as consoleTail from "./console-tail.mjs";
 import * as providers from "./providers.mjs";
 import * as accounts from "./accounts.mjs";
 import * as ui from "./messaging-ui.mjs";
@@ -114,10 +115,14 @@ export function init({ openPortToProvider, closePortToProvider }) {
         .append({
           level: "error",
           message: `Provider ${extensionId} uses an incompatible protocol version`,
-          details:
+          // The sentence stays first: it is the whole answer, and a console
+          // slice underneath it is for the case where it is not.
+          details: consoleTail.withConsole(
             `Provider speaks ${msg.protocolVersion ?? "unknown"}, this ` +
-            `TbSync speaks ${PROTOCOL_VERSION}. Update both add-ons to the ` +
-            `same release.`,
+              `TbSync speaks ${PROTOCOL_VERSION}. Update both add-ons to the ` +
+              `same release.`,
+            await consoleTail.sinceBoot(),
+          ),
         })
         .catch(() => {
           /* event-log write failed; nothing left to do */

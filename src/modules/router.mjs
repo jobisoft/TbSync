@@ -10,6 +10,7 @@ import {
 import * as providers from "./providers.mjs";
 import * as ui from "./messaging-ui.mjs";
 import * as eventLog from "./event-log.mjs";
+import * as consoleTail from "./console-tail.mjs";
 
 // Opaque RPC-correlation token for host→provider commands. Prefix is
 // cosmetic (log legibility); providers generate their own request ids on
@@ -30,7 +31,7 @@ const genRequestId = () => `tbsync-request-${crypto.randomUUID()}`;
 
 const ports = new Map(); // providerId(shortName) -> Port
 const extensionIds = new Map(); // providerId(shortName) -> extensionId (for runtime.connect on (re)connect)
-const pending = new Map(); // requestId -> { resolve, reject, timer }
+const pending = new Map(); // requestId -> { accountId, cmd, resolve, fail, timer }
 const backoff = new Map(); // providerId -> { attempts, timerId }
 const rpcHandlers = new Map(); // cmd -> async (providerId, args) => result
 
@@ -104,6 +105,25 @@ export function sendCmd(providerId, cmd, args = {}) {
 
   const requestId = genRequestId();
   return new Promise((resolve, reject) => {
+    // Where Thunderbird's console stood as this call went out. Read back
+    // only if the call fails, and then it says what the console produced
+    // while this one command was in flight - which for a provider talking
+    // to an Experiment is the only place the real reason is written down.
+    // See `console-tail.mjs`. A value, not shared state: concurrent calls
+    // each hold their own, so neither consumes the other's output.
+    const consoleMark = consoleTail.mark();
+    /** Reject, carrying that slice. Every failure of this call goes through
+     *  here - the timeout and the dead port below, the provider's own error
+     *  reply, and a sweep - so none of them has to remember to collect it.
+     *  Settling is one API round trip later than it used to be; everything
+     *  that awaits a command already awaits this. */
+    const fail = async (err) => {
+      err.details = consoleTail.withConsole(
+        err.details,
+        await consoleTail.since(await consoleMark),
+      );
+      reject(err);
+    };
     // `accountId` and `cmd` are recorded so one account's in-flight *sync*
     // commands can be settled without touching anything else - what
     // Disconnect needs while another account syncs on the same provider,
@@ -114,13 +134,13 @@ export function sendCmd(providerId, cmd, args = {}) {
       accountId: args?.accountId ?? null,
       cmd,
       resolve,
-      reject,
+      fail,
       timer: null,
     };
     if (!NO_TIMEOUT_CMDS.has(cmd)) {
       entry.timer = setTimeout(() => {
         pending.delete(requestId);
-        reject(withCode(new Error(`Timeout waiting for ${cmd}`), ERR.TIMEOUT));
+        fail(withCode(new Error(`Timeout waiting for ${cmd}`), ERR.TIMEOUT));
       }, DEFAULT_RPC_TIMEOUT_MS);
     }
     pending.set(requestId, entry);
@@ -129,7 +149,7 @@ export function sendCmd(providerId, cmd, args = {}) {
     } catch (err) {
       pending.delete(requestId);
       if (entry.timer) clearTimeout(entry.timer);
-      reject(withCode(err, ERR.PORT_CLOSED));
+      fail(withCode(err, ERR.PORT_CLOSED));
     }
   });
 }
@@ -147,7 +167,7 @@ function handleIncoming(providerId, msg) {
     if (entry.timer) clearTimeout(entry.timer);
     if (msg.ok) entry.resolve(msg.result);
     else
-      entry.reject(
+      entry.fail(
         withCode(
           new Error(msg.error ?? "provider error"),
           msg.errorCode ?? ERR.PROVIDER_FAULT,
@@ -269,7 +289,7 @@ function rejectPending(providerId, code, message, { accountId = null, cmds = nul
     if (cmds !== null && !cmds.has(entry.cmd)) continue;
     pending.delete(rid);
     if (entry.timer) clearTimeout(entry.timer);
-    entry.reject(withCode(new Error(message), code));
+    entry.fail(withCode(new Error(message), code));
   }
 }
 

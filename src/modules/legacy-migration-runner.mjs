@@ -16,6 +16,7 @@
 import { serialize } from "../vendor/tbsync/storage-queue.mjs";
 import { KEYS } from "./storage-keys.mjs";
 import * as eventLog from "./event-log.mjs";
+import * as consoleTail from "./console-tail.mjs";
 
 /** Where a previous version kept its state, relative to the profile. Its
  *  changelog is read from here too, by the rescue. */
@@ -89,7 +90,10 @@ export async function runIfNeeded() {
     await eventLog.append({
       level: "error",
       message: `Legacy TbSync migration failed: ${err?.message ?? err}`,
-      details: err?.stack ?? null,
+      details: consoleTail.withConsole(
+        err?.stack ?? null,
+        await consoleTail.sinceBoot(),
+      ),
     });
     return;
   }
