@@ -1013,6 +1013,24 @@ ui.setManagerRpcHandler("startMigration", async ({ accountId }) => {
   migratingAccounts.add(accountId);
   ui.broadcast({ type: "accounts-changed", accountId });
   try {
+    // The provider's own step, before a single folder is touched: whatever
+    // it keeps for this account that a carried-over profile left wrong is
+    // put right while the resources are about to be replaced anyway, so
+    // the rebuild's own pull runs under the corrected settings. Optional,
+    // and a provider that fails it does not cost the user the rebuild.
+    try {
+      await router.sendCmd(acc.provider, HOST_CMD.MIGRATE_LEGACY_ACCOUNT, {
+        accountId,
+      });
+    } catch (err) {
+      await eventLog.append({
+        accountId,
+        folderId: null,
+        level: "warning",
+        message: `The provider could not migrate its own settings for this account: ${err?.message ?? err}`,
+      });
+    }
+
     await rebuildCarriedOverFolders(acc, (progress) =>
       ui.broadcast({ type: "migration-progress", accountId, ...progress }),
     );

@@ -438,6 +438,15 @@ export class TbSyncProviderImplementation {
     return null;
   }
 
+  /** A carried-over account is being migrated in place - `{ accountId }`.
+   *
+   *  Not `notImplemented`: a provider with nothing to correct is the
+   *  ordinary case. Override it to put stored settings right while the
+   *  account's resources are about to be rebuilt from the server, which is
+   *  what makes changing them safe. Called before the first folder is
+   *  touched, so what it writes governs the rebuild's own pull. */
+  async onMigrateLegacyAccount(_args) {}
+
   async onReauthenticate(_args) {
     throw this.#notImplemented("onReauthenticate");
   }
@@ -861,6 +870,8 @@ export class TbSyncProviderImplementation {
         return this.onGetSortedFolders(args);
       case HOST_CMD.GET_CHANGELOG:
         return this.onGetChangelog(args);
+      case HOST_CMD.MIGRATE_LEGACY_ACCOUNT:
+        return this.onMigrateLegacyAccount(args);
       // Answered here rather than by a subclass hook: the work is identical
       // for every provider and there is nothing one could usefully do
       // differently.

@@ -205,6 +205,20 @@ export const HOST_CMD = {
    *  The former `purgeTargets` argument is gone - keeping or purging is
    *  the host's decision now. */
   ACCOUNT_DELETED: "accountDeleted",
+  /** `{ accountId }` - this carried-over account is being migrated in
+   *  place: its resources are about to be deleted, rebuilt from the server
+   *  and have the rescued changes replayed onto them.
+   *
+   *  A provider's chance to correct its own stored settings for the account
+   *  first. What needs correcting is the provider's business - the host
+   *  asks and does not look. Sent once per migration, before the first
+   *  folder is touched, so anything changed here is in force for the
+   *  rebuild's own pull.
+   *
+   *  Answering is optional: the base class does nothing, which is the
+   *  ordinary case. A provider that throws is logged and the migration
+   *  carries on, because the rebuild is worth having either way. */
+  MIGRATE_LEGACY_ACCOUNT: "migrateLegacyAccount",
   FOLDER_ENABLED: "folderEnabled",
   FOLDER_DISABLED: "folderDisabled",
   GET_SORTED_FOLDERS: "getSortedFolders",
