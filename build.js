@@ -60,6 +60,30 @@ function crc32(buf) {
 }
 
 /**
+ * A file's modification time in the two 16-bit fields a zip entry carries.
+ *
+ * The date packs year-1980 in bits 15-9, the month in 8-5 and the day in
+ * 4-0; the time packs hours in 15-11, minutes in 10-5 and two-second steps
+ * in 4-0. Months and days count from one, so a zeroed field is not a date
+ * that exists - readers disagree about what it means, and the ones that
+ * guess print anything from 1979 to 2159.
+ *
+ * The range is 1980 to 2107 and nothing outside it is representable, so a
+ * date below the floor is clamped to it rather than wrapped into a year the
+ * format can hold but nobody meant.
+ */
+function dosDateTime(when) {
+  const d = when instanceof Date && !Number.isNaN(when.getTime()) ? when : new Date();
+  const year = d.getFullYear();
+  if (year < 1980) return { date: (1 << 5) | 1, time: 0 };
+  if (year > 2107) return { date: (127 << 9) | (12 << 5) | 31, time: (23 << 11) | (59 << 5) | 29 };
+  return {
+    date: ((year - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate(),
+    time: (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1),
+  };
+}
+
+/**
  * Zip files/folders into destFile.
  * @param {string|string[]} sources - Paths to zip
  * @param {string} destFile - Output zip file
@@ -87,7 +111,7 @@ function zip(sources, destFile, exclude = [], overrides = {}) {
         collect(path.join(full, name), rel + "/" + name);
       }
     } else {
-      files.push({ full, rel });
+      files.push({ full, rel, mtime: stat.mtime });
     }
   }
 
@@ -101,14 +125,17 @@ function zip(sources, destFile, exclude = [], overrides = {}) {
   // `sources` - it is an overlay-only addition. Give it an entry of its own;
   // the read below takes its bytes from `overrides` and never touches `full`.
   for (const rel of Object.keys(overrides)) {
-    if (!files.some((f) => f.rel === rel)) files.push({ full: null, rel });
+    if (!files.some((f) => f.rel === rel)) {
+      files.push({ full: null, rel, mtime: new Date() });
+    }
   }
 
   const parts = [];
   const centralDir = [];
   let offset = 0;
 
-  for (const { full, rel } of files) {
+  for (const { full, rel, mtime } of files) {
+    const stamp = dosDateTime(mtime);
     const data = overrides[rel] ?? fs.readFileSync(full);
     const compressed = zlib.deflateRawSync(data);
     const useDeflate = compressed.length < data.length;
@@ -122,8 +149,8 @@ function zip(sources, destFile, exclude = [], overrides = {}) {
     local.writeUInt16LE(20, 4);
     local.writeUInt16LE(0, 6);
     local.writeUInt16LE(method, 8);
-    local.writeUInt16LE(0, 10);
-    local.writeUInt16LE(0, 12);
+    local.writeUInt16LE(stamp.time, 10);
+    local.writeUInt16LE(stamp.date, 12);
     local.writeUInt32LE(crc, 14);
     local.writeUInt32LE(fileData.length, 18);
     local.writeUInt32LE(data.length, 22);
@@ -137,8 +164,8 @@ function zip(sources, destFile, exclude = [], overrides = {}) {
     cd.writeUInt16LE(20, 6);
     cd.writeUInt16LE(0, 8);
     cd.writeUInt16LE(method, 10);
-    cd.writeUInt16LE(0, 12);
-    cd.writeUInt16LE(0, 14);
+    cd.writeUInt16LE(stamp.time, 12);
+    cd.writeUInt16LE(stamp.date, 14);
     cd.writeUInt32LE(crc, 16);
     cd.writeUInt32LE(fileData.length, 20);
     cd.writeUInt32LE(data.length, 24);
