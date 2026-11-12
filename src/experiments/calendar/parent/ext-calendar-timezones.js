@@ -48,7 +48,11 @@ this.calendar_timezones = class extends ExtensionAPI {
               Services.prefs.addObserver("calendar.timezone.useSystemTimezone", observer);
               Services.prefs.addObserver("calendar.timezone.local", observer);
               Services.obs.addObserver(observer, "default-timezone-changed");
+              // The timezone service emits this after updating its cached
+              // value. The system topic above can arrive before that update.
+              Services.obs.addObserver(observer, "defaultTimezoneChanged");
               return () => {
+                Services.obs.removeObserver(observer, "defaultTimezoneChanged");
                 Services.obs.removeObserver(observer, "default-timezone-changed");
                 Services.prefs.removeObserver("calendar.timezone.local", observer);
                 Services.prefs.removeObserver("calendar.timezone.useSystemTimezone", observer);

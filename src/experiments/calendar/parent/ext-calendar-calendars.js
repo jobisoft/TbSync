@@ -239,20 +239,12 @@ this.calendar_calendars = class extends ExtensionAPI {
               throw new ExtensionError("Cannot clear foreign calendar");
             }
 
-            await new Promise((resolve, reject) => {
-              const listener = {
-                onDeleteCalendar(aCalendar, aStatus, aDetail) {
-                  if (Components.isSuccessCode(aStatus)) {
-                    resolve();
-                  } else {
-                    reject(aDetail);
-                  }
-                },
-              };
-              offlineStorage
-                .QueryInterface(Ci.calICalendarProvider)
-                .deleteCalendar(offlineStorage, listener);
-            });
+            // Storage calendars already return a promise on Thunderbird 153.
+            // Thunderbird 158 removed the optional completion listener, so
+            // waiting for that listener would leave clear() pending forever.
+            await offlineStorage
+              .QueryInterface(Ci.calICalendarProvider)
+              .deleteCalendar(offlineStorage);
 
             calendar.wrappedJSObject.mObservers.notify("onLoad", [calendar]);
           },

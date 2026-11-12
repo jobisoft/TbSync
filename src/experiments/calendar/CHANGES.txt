@@ -52,7 +52,9 @@ Items 0-4 are in child/ext-calendar-timezones.js, item 5 in
 parent/ext-calendar-timezones.js, item 6 in schema/calendar-calendars.json,
 ext-calendar-utils.sys.mjs and parent/ext-calendar-calendars.js, items 7 and
 8 in parent/ext-calendar-provider.js, item 9 in ext-calendar-utils.sys.mjs,
-parent/ext-calendar-provider.js and parent/ext-calendar-items.js.
+parent/ext-calendar-provider.js and parent/ext-calendar-items.js. Items 10
+and 11 are in parent/ext-calendar-calendars.js and
+parent/ext-calendar-timezones.js, respectively.
 
 0. Priming the timezone service. This runs in the child process, where the
    service is a fresh instance Thunderbird's own startup never touched -
@@ -287,7 +289,30 @@ parent/ext-calendar-provider.js and parent/ext-calendar-items.js.
    Upstream's own gap rather than a deviation we want, like item 8, and
    worth offering there.
 
-Verified against Thunderbird 153.0.2 (esr153), 154.0 (beta) and 155.0a1:
+10. clear() awaits the promise returned by the storage calendar's
+    deleteCalendar(). Thunderbird 158 removed its optional completion
+    listener, so waiting for the callback leaves clear() pending forever.
+    The promise is also available on the minimum supported Thunderbird 153.
+    A failed deletion still rejects, without reporting an onLoad event.
+
+11. onUpdated also observes defaultTimezoneChanged, which the timezone
+    service sends after updating its cached default zone. The system topic
+    default-timezone-changed can arrive before that update. Keep the
+    existing preference and system observers for older hosts, suppress
+    duplicate values, and remove all observers when the listener stops.
+
+    Unit regressions: calendar-clear.test.mjs and
+    calendar-timezone-observer.test.mjs.
+
+    Rechecked against Thunderbird 159.0 (build 20261026161902): storage
+    deletion still returns a promise and clears the item and metadata
+    models; defaultTimezoneChanged still follows the cached timezone update.
+    The provider registration and cached-calendar APIs used here remain
+    available. The two regression tests pass on this source tree. Runtime
+    checks in an account-free offline profile are separate from server
+    synchronization tests.
+
+For items 0-9, verified against Thunderbird 153.0.2 (esr153), 154.0 (beta) and 155.0a1:
 every other member these files touch - defaultTimezone, timezoneIds and
 calITimezoneDatabase.getTimezoneDefinition - is present unchanged in all
 three, so startup() and wrappedJSObject on the timezone service are the only
