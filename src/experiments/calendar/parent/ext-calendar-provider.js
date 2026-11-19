@@ -58,13 +58,32 @@ class ItemError extends Error {
   }
 }
 
+// The utils module of this extension. The version in the url keeps an updated
+// extension from getting the module of the previous one.
+function getUtils(extension) {
+  return ChromeUtils.importESModule(
+    `resource://experiments-calendar-${extension.uuid}/experiments/calendar/ext-calendar-utils.sys.mjs?${extension.manifest.version}`
+  );
+}
+
 function convertProps(props, extension) {
+  const { validateCapabilities, mergeCapabilities } = getUtils(extension);
+  // Before anything is set on the calendar, so that invalid capabilities
+  // reject the whole calendar
+  const capabilities = validateCapabilities(props.capabilities);
+
   const calendar = new ExtCalendar(extension);
   calendar.setProperty("name", props.name);
   calendar.setProperty("readOnly", props.readOnly);
   calendar.setProperty("disabled", props.enabled === false);
   calendar.setProperty("color", props.color || "#A8C2E1");
-  calendar.capabilities = props.capabilities; // TODO validation necessary?
+
+  // The capabilities are the ones of the manifest, overridden by the ones the
+  // calendar was detected with. They are stored as the override like those of a
+  // created calendar, so that they survive the registration, which computes
+  // them again from the manifest and the stored override.
+  calendar.setProperty("overrideCapabilities", JSON.stringify(capabilities));
+  calendar.capabilities = mergeCapabilities(extension.manifest.calendar_provider?.capabilities || {}, capabilities);
 
   calendar.uri = Services.io.newURI(props.url);
 
@@ -129,7 +148,13 @@ class ExtCalendarProvider {
 
   async detectCalendars(username, password, location=null, savePassword=null, extraProperties={}) {
     const detectionResponses = await this.extension.emit("calendar.provider.onDetectCalendars", username, password, location, savePassword, extraProperties);
-    return detectionResponses.reduce((allCalendars, calendars) => allCalendars.concat(calendars)).map(props => convertProps(props, this.extension));
+    try {
+      return detectionResponses.reduce((allCalendars, calendars) => allCalendars.concat(calendars)).map(props => convertProps(props, this.extension));
+    } catch (e) {
+      // The wizard only reports that nothing was found, so tell the developer why
+      console.error(e);
+      throw e;
+    }
   }
 }
 
@@ -167,7 +192,8 @@ class ExtCalendar extends cal.provider.BaseClass {
       }
 
       const manifestCapabilities = this.extension.manifest.calendar_provider.capabilities || {};
-      this.capabilities = Object.assign({}, manifestCapabilities, overrideCapabilities);
+      const { mergeCapabilities } = getUtils(this.extension);
+      this.capabilities = mergeCapabilities(manifestCapabilities, overrideCapabilities);
 
       this.extension.emit("calendar.provider.onInit", this);
     }
@@ -192,18 +218,12 @@ class ExtCalendar extends cal.provider.BaseClass {
 
   // boolean canNotify(in AUTF8String aMethod, in calIItemBase aItem);
   //
-  // True for every method when the server does the scheduling, which is what
-  // "server" declares: it sends the invitation for a meeting we push to it,
-  // and the reply for one we answer through its own API. Thunderbird then
-  // sends neither, and the event dialog says so - the attendee notification
-  // checkbox switches to the branch that visualizes "the server will send
-  // out mail" instead of offering to send it from here.
-  //
-  // The inherited implementation answers false for every calendar, so a
-  // provider declaring "server" was invisible to everything that asks this.
-  // Outgoing mail stopped regardless, one layer lower, where the transport
-  // for "server" reports success without sending - so what was wrong was
-  // only what the user was being told.
+  // True when the server does the scheduling: it sends the invitations for a
+  // meeting pushed to it, and the replies for one answered through its API. The
+  // event dialog asks this to decide whether to offer the client-side "notify
+  // attendees" options, and the inherited implementation answers false for every
+  // calendar. Outgoing mail is already suppressed by the "itip.transport"
+  // property below, so this only keeps the dialog from suggesting otherwise.
   canNotify() {
     return this.capabilities.scheduling == "server";
   }
@@ -296,21 +316,21 @@ class ExtCalendar extends cal.provider.BaseClass {
   }
   async adoptItem(aItem) {
     const adoptCallback = this._cachedAdoptItemCallback;
-    // An item can arrive without a calendar: pasting parses one straight out
-    // of the clipboard's ICS, clones it and gives it a fresh id, and nothing
-    // on that path ever assigns one. Every other route into here - the event
-    // dialog, the items API, offline playback - sets it, which is why paste
-    // was the one thing that broke. `convertItem` reads
-    // `item.calendar.superCalendar.id` to tell the extension which calendar
-    // this is, so without this it throws before any listener is reached, and
-    // paste does not await us: the rejection went nowhere and the event
-    // simply never appeared.
+
+    // An item can arrive without a calendar: pasting parses one straight out of
+    // the clipboard's ICS, clones it and gives it a new id, and nothing on that
+    // path assigns a calendar. Every other route in (the event dialog, the items
+    // API, offline playback) does. convertItem reads item.calendar to tell the
+    // extension which calendar the item belongs to, so without this it throws
+    // before any listener runs, and paste does not await the result: the event
+    // simply never appears.
     if (!aItem.calendar) {
       if (!aItem.isMutable) {
         aItem = aItem.clone();
       }
       aItem.calendar = this;
     }
+
     try {
       // TODO There should be an easier way to determine this
       const options = {};

@@ -4,11 +4,11 @@
     "namespace": "calendar.timezones",
     "properties": {
       "currentZone": {
-        "description": "The current timezone id",
-        "type": "string"
+        "description": "The current timezone id, or null if the host has no default timezone",
+        "choices": [{ "type": "string" }, { "type": "null" }]
       },
       "timezoneIds": {
-        "description": "The current timezone id",
+        "description": "The ids of all timezones known to the host",
         "type": "array",
         "items": { "type": "string" }
       }
@@ -28,12 +28,13 @@
             "$ref": "calendar.items.CalendarItemFormats",
             "name":"returnFormat",
             "optional": true,
-            "default": "ical",
+            "default": "jcal",
             "description": "The return format of the definition"
           }
         ],
         "returns": {
-          "type": "string"
+          "description": "The definition, or null if there is no timezone with that id",
+          "choices": [{ "type": "string" }, { "type": "array" }, { "type": "null" }]
         }
       }
     ],

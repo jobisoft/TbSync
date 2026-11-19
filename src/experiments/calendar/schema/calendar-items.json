@@ -11,8 +11,11 @@
           "calendarId": { "type": "string" },
           "type": { "type": "string", "enum": ["event", "task"] },
           "instance": { "type": "string", "optional": true },
-          "format": { "$ref": "CalendarItemFormats", "optional": true },
-          "item": { "$ref": "RawCalendarItem" },
+          "format": { "$ref": "CalendarItemFormats" },
+          "item": {
+            "$ref": "RawCalendarItem",
+            "description": "The item in the requested returnFormat, or in the jcal format if none was requested."
+          },
           "metadata": { "type": "object", "additionalProperties": { "type": "any" }, "optional": true }
         }
       },
@@ -26,21 +29,22 @@
         "enum": ["ical", "jcal"]
       },
       {
-        "id": "ReturnFormat",
-        "choices": [
-          { "$ref": "CalendarItemFormats" },
-          { "type": "array", "items": { "$ref": "CalendarItemFormats" } }
-        ]
-      },
-      {
         "id": "CalendarItemAlarm",
         "type": "object",
         "description": "TODO needs real structure",
         "properties": {
           "itemId": { "type": "string" },
           "action": { "type": "string" },
-          "date": { "type": "string" },
-          "offset": { "type": "string" },
+          "date": {
+            "type": "string",
+            "optional": true,
+            "description": "The alarm time as an iCalendar date-time. Only present for an absolute alarm."
+          },
+          "offset": {
+            "type": "string",
+            "optional": true,
+            "description": "The offset from the start or end of the item as an iCalendar duration. Only present for an alarm relative to the item."
+          },
           "related": { "type": "string", "enum": ["absolute", "start", "end"] }
         }
       }
@@ -48,7 +52,7 @@
     "functions": [
       {
         "name": "get",
-        "async": true,
+        "async": "callback",
         "type": "function",
         "parameters": [
           { "type": "string", "name": "calendarId" },
@@ -58,21 +62,35 @@
             "name": "getOptions",
             "optional": true,
             "properties": {
-              "returnFormat": { "$ref": "ReturnFormat", "optional": true }
+              "returnFormat": { "$ref": "CalendarItemFormats", "optional": true }
             }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "choices": [
+                  { "$ref": "CalendarItem" },
+                  { "type": "null" }
+                ],
+                "description": "The item, or null if there is no item with that id."
+              }
+            ]
           }
          ]
       },
       {
         "name": "query",
-        "async": true,
+        "async": "callback",
         "type": "function",
         "parameters": [
           {
             "type": "object",
             "name": "queryOptions",
             "properties": {
-              "returnFormat": { "$ref": "ReturnFormat", "optional": true },
+              "returnFormat": { "$ref": "CalendarItemFormats", "optional": true },
               "id": { "type": "string", "optional": true },
               "calendarId": {
                 "choices": [
@@ -82,16 +100,42 @@
                 "optional": true
               },
               "type": { "type": "string", "enum": ["event", "task"], "optional": true },
-              "rangeStart": { "type": "string", "optional": true },
-              "rangeEnd": { "type": "string", "optional": true },
+              "rangeStart": {
+                "choices": [
+                  { "$ref": "extensionTypes.Date" },
+                  { "type": "string", "pattern": "^\\d{8}(T\\d{6}Z?)?$" }
+                ],
+                "optional": true,
+                "description": "Returns only items that end after this point in time. Either a date as used by the other Thunderbird APIs (an ISO 8601 string like 2026-12-01T00:00:00Z, a number of milliseconds since the epoch or a Date object), or an iCalendar date or date-time like 20261201T000000Z."
+              },
+              "rangeEnd": {
+                "choices": [
+                  { "$ref": "extensionTypes.Date" },
+                  { "type": "string", "pattern": "^\\d{8}(T\\d{6}Z?)?$" }
+                ],
+                "optional": true,
+                "description": "Returns only items that start before this point in time. Either a date as used by the other Thunderbird APIs (an ISO 8601 string like 2026-12-01T00:00:00Z, a number of milliseconds since the epoch or a Date object), or an iCalendar date or date-time like 20261201T000000Z."
+              },
               "expand": { "type": "boolean", "optional": true }
             }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "type": "array",
+                "items": { "$ref": "CalendarItem" },
+                "description": "The items that match."
+              }
+            ]
           }
         ]
       },
       {
         "name": "create",
-        "async": true,
+        "async": "callback",
         "type": "function",
         "parameters": [
           { "type": "string", "name": "calendarId" },
@@ -101,17 +145,35 @@
             "properties": {
               "id": { "type": "string", "optional": true },
               "type": { "type": "string", "enum": ["event", "task"] },
-              "format": { "$ref": "CalendarItemFormats", "optional": true },
-              "item": { "$ref": "RawCalendarItem" },
-              "returnFormat": { "$ref": "ReturnFormat", "optional": true },
+              "format": {
+                "$ref": "CalendarItemFormats",
+                "optional": true,
+                "description": "The format of item: ical for an iCalendar string, jcal for a jCal array. If it is omitted, it is detected from the type of item. If it is given, it has to match."
+              },
+              "item": {
+                "$ref": "RawCalendarItem",
+                "description": "The item, as an iCalendar string or a jCal array."
+              },
+              "returnFormat": { "$ref": "CalendarItemFormats", "optional": true },
               "metadata": { "type": "object", "properties": {}, "additionalProperties": { "type": "any" }, "optional": true }
             }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "$ref": "CalendarItem",
+                "description": "The created item."
+              }
+            ]
           }
         ]
       },
       {
         "name": "update",
-        "async": true,
+        "async": "callback",
         "type": "function",
         "parameters": [
           { "type": "string", "name": "calendarId" },
@@ -120,11 +182,29 @@
             "name": "updateProperties",
             "type": "object",
             "properties": {
-              "format": { "$ref": "CalendarItemFormats", "optional": true },
-              "item": { "$ref": "RawCalendarItem" },
-              "returnFormat": { "$ref": "ReturnFormat", "optional": true },
+              "format": {
+                "$ref": "CalendarItemFormats",
+                "optional": true,
+                "description": "The format of item: ical for an iCalendar string, jcal for a jCal array. If it is omitted, it is detected from the type of item. If it is given, it has to match."
+              },
+              "item": {
+                "$ref": "RawCalendarItem",
+                "description": "The item, as an iCalendar string or a jCal array."
+              },
+              "returnFormat": { "$ref": "CalendarItemFormats", "optional": true },
               "metadata": { "type": "object", "additionalProperties": { "type": "any" }, "optional": true }
             }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "$ref": "CalendarItem",
+                "description": "The updated item."
+              }
+            ]
           }
         ]
       },
@@ -149,7 +229,7 @@
       },
       {
         "name": "getCurrent",
-        "async": true,
+        "async": "callback",
         "type": "function",
         "parameters": [
           {
@@ -157,8 +237,22 @@
             "name": "getOptions",
             "optional": true,
             "properties": {
-              "returnFormat": { "$ref": "ReturnFormat", "optional": true }
+              "returnFormat": { "$ref": "CalendarItemFormats", "optional": true }
             }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "choices": [
+                  { "$ref": "CalendarItem" },
+                  { "type": "null" }
+                ],
+                "description": "The item shown in the current dialog, or null if there is none."
+              }
+            ]
           }
         ]
       }
@@ -175,7 +269,7 @@
             "type": "object",
             "optional": true,
             "properties": {
-              "returnFormat": { "$ref": "ReturnFormat", "optional": true }
+              "returnFormat": { "$ref": "CalendarItemFormats", "optional": true }
             }
           }
         ]
@@ -185,14 +279,14 @@
         "type": "function",
         "parameters": [
           { "name": "item", "$ref": "CalendarItem" },
-          { "name": "changeInfo", "type": "object", "properties": {}, "description": "TODO needs properties" }
+          { "name": "oldItem", "$ref": "CalendarItem" }
         ],
         "extraParameters": [
           {
             "type": "object",
             "optional": true,
             "properties": {
-              "returnFormat": { "$ref": "ReturnFormat", "optional": true }
+              "returnFormat": { "$ref": "CalendarItemFormats", "optional": true }
             }
           }
         ]
@@ -217,7 +311,7 @@
             "type": "object",
             "optional": true,
             "properties": {
-              "returnFormat": { "$ref": "ReturnFormat", "optional": true }
+              "returnFormat": { "$ref": "CalendarItemFormats", "optional": true }
             }
           }
         ]

@@ -2,10 +2,34 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-var { ExtensionCommon: { ExtensionAPI, EventManager } } = ChromeUtils.importESModule("resource://gre/modules/ExtensionCommon.sys.mjs");
+var { ExtensionCommon: { ExtensionAPI, EventManager, normalizeTime } } = ChromeUtils.importESModule("resource://gre/modules/ExtensionCommon.sys.mjs");
 var { ExtensionUtils: { ExtensionError } } = ChromeUtils.importESModule("resource://gre/modules/ExtensionUtils.sys.mjs");
 
 var { cal } = ChromeUtils.importESModule("resource:///modules/calendar/calUtils.sys.mjs");
+
+/**
+ * Converts a rangeStart or rangeEnd value of items.query. The schema only lets
+ * through an iCalendar date or date-time (20261201T000000Z), or an
+ * extensionTypes.Date: an ISO 8601 string, a number of milliseconds or a Date.
+ *
+ * The extensionTypes.Date form is the one messages.query (fromDate, toDate) and
+ * folders.query (lastUsed.after, lastUsed.before) use. The iCalendar form is
+ * accepted here in addition. NOTE: messages.query and folders.query should
+ * consider following and accept the iCalendar form as well, so that all
+ * queries take their dates the same way.
+ */
+function toDateTime(value) {
+  if (value == null) {
+    return null;
+  }
+  // An ISO 8601 string starts with a year and a dash, so a string that starts
+  // with eight digits can only be the iCalendar form. Keep handling it as
+  // before, so that all-day dates and floating times are unchanged.
+  if (typeof value == "string" && /^\d{8}/.test(value)) {
+    return cal.createDateTime(value);
+  }
+  return cal.dtz.jsDateToDateTime(normalizeTime(value));
+}
 
 this.calendar_items = class extends ExtensionAPI {
   getAPI(context) {
@@ -57,14 +81,16 @@ this.calendar_items = class extends ExtensionAPI {
                   filter |= Ci.calICalendar.ITEM_FILTER_CLASS_OCCURRENCES;
                 }
 
-                const rangeStart = queryProps.rangeStart ? cal.createDateTime(queryProps.rangeStart) : null;
-                const rangeEnd = queryProps.rangeEnd ? cal.createDateTime(queryProps.rangeEnd) : null;
+                const rangeStart = toDateTime(queryProps.rangeStart);
+                const rangeEnd = toDateTime(queryProps.rangeEnd);
 
                 return calendar.getItemsAsArray(filter, queryProps.limit ?? 0, rangeStart, rangeEnd);
               }));
             }
 
-            return calendarItems.flat().map(item => convertItem(item, queryProps, context.extension));
+            // Searching by id asks every calendar, and one that does not have
+            // the item answers null. Those are not results.
+            return calendarItems.flat().filter(Boolean).map(item => convertItem(item, queryProps, context.extension));
           },
           async get(calendarId, id, options) {
             const calendar = getResolvedCalendarById(context.extension, calendarId);
@@ -83,7 +109,15 @@ this.calendar_items = class extends ExtensionAPI {
 
             let createdItem;
             if (isCachedCalendar(calendarId)) {
-              createdItem = await calendar.modifyItem(item, null);
+              // The cache replaces an item with the same id instead of
+              // refusing it. Announce what actually happens: a new item is
+              // created, an existing one is modified.
+              const existingItem = await calendar.getItem(item.id);
+              if (existingItem) {
+                createdItem = await calendar.modifyItem(item, existingItem);
+              } else {
+                createdItem = await calendar.adoptItem(item);
+              }
             } else {
               createdItem = await calendar.adoptItem(item);
             }
@@ -183,10 +217,11 @@ this.calendar_items = class extends ExtensionAPI {
             name: "calendar.items.onUpdated",
             register: (fire, options) => {
               const observer = createCalendarObserver({
-                onModifyItem: (newItem, _oldItem) => {
-                  // TODO calculate changeInfo
-                  const changeInfo = {};
-                  fire.sync(convertItem(newItem, options, context.extension), changeInfo);
+                onModifyItem: (newItem, oldItem) => {
+                  fire.sync(
+                    convertItem(newItem, options, context.extension),
+                    convertItem(oldItem, options, context.extension)
+                  );
                 },
               });
 

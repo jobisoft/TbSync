@@ -91,7 +91,7 @@
             "type": "object",
             "optional": true,
             "properties": {
-              "returnFormat": { "$ref": "calendar.items.ReturnFormat", "optional": true }
+              "returnFormat": { "$ref": "calendar.items.CalendarItemFormats", "optional": true }
             }
           }
         ],
@@ -117,7 +117,7 @@
             "type": "object",
             "optional": true,
             "properties": {
-              "returnFormat": { "$ref": "calendar.items.ReturnFormat", "optional": true }
+              "returnFormat": { "$ref": "calendar.items.CalendarItemFormats", "optional": true }
             }
           }
         ],
@@ -142,7 +142,7 @@
             "type": "object",
             "optional": true,
             "properties": {
-              "returnFormat": { "$ref": "calendar.items.ReturnFormat", "optional": true }
+              "returnFormat": { "$ref": "calendar.items.CalendarItemFormats", "optional": true }
             }
           }
         ],
@@ -178,7 +178,7 @@
         "type": "function",
         "parameters": [
           {
-            "name": "FreeBusyOptions",
+            "name": "freeBusyOptions",
             "type": "object",
             "properties": {
               "addressee": { "type": "string" },
