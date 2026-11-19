@@ -10,6 +10,10 @@
 #
 # Repos that aren't checked out beside TbSync are skipped with a note, so a
 # partial checkout still gets its own copies refreshed.
+#
+# One thing here does not come from common/: the calendar Experiment
+# (src/experiments/calendar) is copied from the webext-experiments checkout
+# beside TbSync, into the repos that use the calendar API.
 
 set -u
 
@@ -45,6 +49,14 @@ NO_CALENDAR_REPOS=("$SIBLINGS_DIR/google-4-tbsync")
 # TbSync runs no bridge suite of its own - the providers' suites are what
 # exercise the harness - so it takes no copy.
 HARNESS_REPOS=("$SIBLINGS_DIR/EAS-4-TbSync" "$SIBLINGS_DIR/google-4-tbsync")
+
+# The calendar Experiment. Its source of truth is the thunderbird/
+# webext-experiments checkout beside TbSync, not common/, and it goes to the
+# repos that have a calendar copy, as an exact 1:1 copy: what the source does
+# not have is removed from the copy.
+EXPERIMENT_SRC="$SIBLINGS_DIR/webext-experiments/calendar/experiments/calendar"
+EXPERIMENT_DEST="src/experiments/calendar"
+EXPERIMENT_REPOS=("${CALENDAR_REPOS[@]}")
 
 check_only=0
 [ "${1:-}" = "--check" ] && check_only=1
@@ -119,9 +131,60 @@ REPOS=("${HARNESS_REPOS[@]}")
 sync_set test-harness "test/vendor" "${HARNESS_FILES[@]}"
 check_strays "test/vendor" "${HARNESS_FILES[@]}" README.md __pycache__
 
+# Copy the calendar Experiment from webext-experiments and verify it. The copy
+# is 1:1: what the source does not have is removed from a copy, and reported as
+# a stray by --check.
+sync_experiment() {
+  if [ ! -d "$EXPERIMENT_SRC" ]; then
+    echo "skip: webext-experiments is not checked out beside TbSync, the calendar Experiment is not synced"
+    return
+  fi
+  for repo in "${EXPERIMENT_REPOS[@]}"; do
+    if [ ! -d "$repo" ]; then
+      echo "skip: ${repo#"$SIBLINGS_DIR"/} is not checked out"
+      continue
+    fi
+    local target="$repo/$EXPERIMENT_DEST"
+    local shown="${target#"$SIBLINGS_DIR"/}"
+
+    if [ "$check_only" -eq 0 ]; then
+      mkdir -p "$target"
+      cp -R "$EXPERIMENT_SRC"/. "$target"/
+      while IFS= read -r rel; do
+        [ -e "$EXPERIMENT_SRC/$rel" ] || rm -f "$target/$rel"
+      done < <(cd "$target" 2>/dev/null && find . -type f)
+      find "$target" -type d -empty -delete 2>/dev/null
+    fi
+
+    local count=0 bad=0
+    while IFS= read -r rel; do
+      count=$((count + 1))
+      if ! diff -q "$EXPERIMENT_SRC/$rel" "$target/$rel" >/dev/null 2>&1; then
+        echo "DRIFT: $shown/${rel#./}"
+        bad=1
+      fi
+    done < <(cd "$EXPERIMENT_SRC" && find . -type f | sort)
+    while IFS= read -r rel; do
+      if [ ! -e "$EXPERIMENT_SRC/$rel" ]; then
+        echo "STRAY: $shown/${rel#./} is not in webext-experiments"
+        bad=1
+      fi
+    done < <(cd "$target" 2>/dev/null && find . -type f | sort)
+
+    if [ "$bad" -eq 0 ]; then
+      echo "ok:    $shown ($count files)"
+    else
+      status=1
+    fi
+  done
+}
+
+sync_experiment
+
 if [ "$status" -ne 0 ]; then
   echo
-  echo "One or more copies differ from common/, or a file is sitting in a"
+  echo "One or more copies differ from common/ (or from webext-experiments for the"
+  echo "calendar Experiment), or a file is sitting in a"
   echo "vendored directory without being vendored. Re-run without --check to"
   echo "refresh them - and if the difference came from editing a vendored"
   echo "copy, move that change into common/ first or it will be lost."

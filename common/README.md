@@ -74,6 +74,17 @@ resource is bound and what a probe looks like belong in the provider's own
 TbSync takes no copy: it runs no bridge suite of its own, and the providers'
 suites are what exercise these.
 
+## The calendar Experiment, from `webext-experiments`
+
+`src/experiments/calendar/` in TbSync and EAS-4-TbSync is not shared code of
+this directory. It is the calendar Experiment, an exact 1:1 copy of
+`calendar/experiments/calendar` in the `webext-experiments` checkout beside
+the TbSync repository. `vendor.sh` writes it, removes what the source does not
+have, and `--check` reports a changed file as `DRIFT` and an extra file as
+`STRAY`. google-4-tbsync has no calendar copy. Change the Experiment in
+`webext-experiments`, never in a copy, and record the source commit in each
+repo's `src/VENDOR.md`.
+
 ## Changing anything here
 
 1. Edit the file **in this directory**. Never edit a vendored copy —

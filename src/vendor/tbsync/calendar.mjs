@@ -107,10 +107,9 @@ export async function pickCalendarColor() {
  * cannot express and the server predictably rejects.
  *
  * The provider as a whole still supports both - that stays declared in the
- * manifest's `calendar_provider.capabilities`, and the Experiment merges the
- * two as `{...manifestCapabilities, ...overrideCapabilities}`. So `mutable`
- * and `requiresNetwork` keep coming from the manifest while `events` and
- * `tasks` are decided here, per calendar.
+ * manifest's `calendar_provider.capabilities`, and what is passed here
+ * overrides it key by key. So `mutable` and `requiresNetwork` keep coming from
+ * the manifest while `events` and `tasks` are decided here, per calendar.
  *
  * Note the names: the schema wants plain `capabilities.events` /
  * `capabilities.tasks`. `capabilities.events.supported` is Thunderbird's
