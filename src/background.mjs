@@ -586,7 +586,7 @@ function assertAccountReady(accountId) {
  *  Separate from `assertAccountReady`, which is shared with RPCs that have
  *  no reason to refuse this state. */
 function assertFolderSelectionUnlocked(acc) {
-  if (acc?.legacyImported) {
+  if (acc?.legacyLocked) {
     throw new Error("Account was set up by an older version");
   }
 }
@@ -1000,7 +1000,7 @@ ui.setManagerRpcHandler("getMigrationOffer", async ({ accountId }) => {
 ui.setManagerRpcHandler("startMigration", async ({ accountId }) => {
   const acc = await accounts.get(accountId);
   if (!acc) throw new Error("unknown account");
-  if (!acc.legacyImported) throw new Error("account is not carried over");
+  if (!acc.legacyLocked) throw new Error("account is not carried over");
   if (migratingAccounts.has(accountId)) {
     throw withCode(new Error("Migration already running"), "E:BUSY");
   }
@@ -1459,7 +1459,7 @@ ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
         // Only for an account that is actually carrying one. Every other
         // disconnect has nothing to lift, and a resource this add-on never
         // froze is not ours to make writable on the way out.
-        if (acc.legacyImported || acc.legacyReplayPending) {
+        if (acc.legacyLocked || acc.legacyReplayPending) {
           await liftLegacyLock(accountId);
         }
         // Rows first, targets second: dropping the rows is what unhooks the
@@ -1959,7 +1959,7 @@ async function liftLegacyLock(accountId) {
     console.warn("[tbsync] releasing legacy resources failed:", err),
   );
   await accounts.update(accountId, {
-    legacyImported: false,
+    legacyLocked: false,
     legacyReplayPending: false,
   });
   await dropLegacyRescue(accountId);
@@ -2005,7 +2005,7 @@ await ensureSchema();
 // rows exist, and nothing else can reach them yet.
 for (const acc of await accounts.list()) {
   if (acc.legacyMigrationPending) upgradeAccounts.add(acc.accountId);
-  if (acc.legacyImported) {
+  if (acc.legacyLocked) {
     // Freeze first: the rescue reads these resources, and nothing may edit
     // them while it does.
     await freezeLegacyTargets(acc.accountId).catch((err) =>

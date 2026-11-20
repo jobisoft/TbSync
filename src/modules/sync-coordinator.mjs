@@ -75,7 +75,7 @@ export async function maintainAccount(accountId) {
   const acc = await accounts.get(accountId);
   if (!acc || !acc.enabled) return false;
   if (acc.error === ERR.AUTH) return false;
-  if (acc.legacyImported) return false;
+  if (acc.legacyLocked) return false;
 
   maintainingAccounts.add(accountId);
   ui.broadcast({ type: "accounts-changed", accountId });
@@ -300,7 +300,7 @@ export async function syncAccount(
   // else out for the duration - so that flow says so and comes through.
   // Nothing else may pass this: an ordinary sync of a half-rebuilt account
   // is what the flag exists to prevent.
-  if (acc.legacyImported && !carriedOverMigration) return;
+  if (acc.legacyLocked && !carriedOverMigration) return;
   if (!router.isProviderConnected(acc.provider)) {
     await eventLog.append({
       accountId,

@@ -192,7 +192,7 @@ async function migrateAccounts(legacyAccounts68) {
       // can decide whether to trust the result or set the account up afresh.
       // The manager says so on the account, which it can only do if the
       // account still remembers.
-      legacyImported: true,
+      legacyLocked: true,
       // Held from this moment, before anything has looked at what the
       // account is carrying: "we have not looked yet" has to hold the
       // disconnect exactly as firmly as "there is something here". The

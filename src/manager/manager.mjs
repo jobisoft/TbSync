@@ -411,7 +411,7 @@ function effectiveAccountState(acc) {
   // After `disabled`, deliberately: disconnecting is the remedy this state
   // asks for, and an account that has taken it should read as off rather
   // than keep naming a condition it no longer has.
-  if (acc.legacyImported) {
+  if (acc.legacyLocked) {
     // Two ways out, and the status names the one on offer. Something was
     // kept for this account, or nothing was; the first has to be dealt with
     // before the account can be taken apart, the second is the remedy this
@@ -496,7 +496,7 @@ function accountActions(acc) {
 
   return {
     canRemove,
-    // Mirrors what `syncAccount` refuses on. `legacyImported` and a running
+    // Mirrors what `syncAccount` refuses on. `legacyLocked` and a running
     // teardown both hold syncing back the same way a rejected credential
     // does, and the host refuses all three silently, so offering the button
     // would only produce a click with no effect and no explanation.
@@ -504,7 +504,7 @@ function accountActions(acc) {
       baseEnabled &&
       !!acc.enabled &&
       !isReauth &&
-      !acc.legacyImported &&
+      !acc.legacyLocked &&
       !cancelling,
     // Connecting and disconnecting stay available while authentication is
     // outstanding - only syncing is held back. The account is left connected
@@ -530,7 +530,7 @@ function accountActions(acc) {
     // the rescued changes back, so it needs the provider present and the
     // account settled - and something to put back.
     canMigrate:
-      baseEnabled && !!acc.enabled && !!acc.legacyHeld && !!acc.legacyImported,
+      baseEnabled && !!acc.enabled && !!acc.legacyHeld && !!acc.legacyLocked,
     // Re-clicks while the popup is open should focus it, even if the
     // account is currently transient-busy from the popup's own RPC.
     canReauth: providerActive && isReauth && (!transientLocked || reauthOpen),
@@ -552,7 +552,7 @@ function accountActions(acc) {
     // by an older version is frozen until it is dealt with: deselecting a
     // resource deletes the local copy, which on such an account holds
     // everything that version never sent.
-    canEditFolders: baseEnabled && !!acc.enabled && !acc.legacyImported,
+    canEditFolders: baseEnabled && !!acc.enabled && !acc.legacyLocked,
   };
 }
 
@@ -875,7 +875,7 @@ function renderDetail() {
   // why nothing is happening, and which of the two ways out this account
   // has. Said here because this is where someone looks when an account
   // sits still, which a release note read months ago is not.
-  if (acc.legacyImported) {
+  if (acc.legacyLocked) {
     const note = frag.querySelector(".migrated-note");
     note.hidden = false;
     // With something kept, the account has to be migrated and the button
@@ -910,7 +910,7 @@ function renderDetail() {
   const pausedUntil = Number(acc.noAutosyncUntil ?? 0);
   const autosyncOn =
     acc.enabled &&
-    !acc.legacyImported &&
+    !acc.legacyLocked &&
     (acc.autoSyncIntervalMinutes ?? 0) > 0;
   if (autosyncOn && pausedUntil > Date.now()) {
     const note = frag.querySelector(".autosync-paused-note");

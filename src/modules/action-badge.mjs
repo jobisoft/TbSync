@@ -78,7 +78,7 @@ async function computeState() {
   );
   if (
     enabled.some(
-      (a) => a.error || a.legacyImported || !activeProviderIds.has(a.provider),
+      (a) => a.error || a.legacyLocked || !activeProviderIds.has(a.provider),
     )
   ) {
     return "error";

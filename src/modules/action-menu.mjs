@@ -134,7 +134,7 @@ function canSync(acc) {
   // Set up by a version before 5.2.2 and not reconnected since. syncAccount
   // refuses these, and silently, so an entry offered here would be a click
   // with no effect and no explanation.
-  if (acc.legacyImported) return false;
+  if (acc.legacyLocked) return false;
   if (!router.isProviderConnected(acc.provider)) return false;
   return true;
 }
