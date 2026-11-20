@@ -60,6 +60,7 @@ import {
   transplantIdentity,
 } from "./modules/legacy-rescue.mjs";
 import {
+  bootStepsFrom,
   countHeld,
   findFailure,
   foldersToRebuild,
@@ -445,6 +446,42 @@ router.setProviderRpcHandler(
   },
 );
 
+/** The provider's own step for a carried-over account, sent once.
+ *
+ *  Only once the provider has converted the account (its flag is cleared), and
+ *  only if it has not been sent: `legacyProviderStepPending` is cleared when
+ *  it has, whatever came of it, because it is optional and a provider that
+ *  cannot do it costs the user nothing. Waited for, but not for long: the
+ *  provider is waiting for the answer to the call this runs in, and gives up
+ *  after longer than this. */
+const PROVIDER_STEP_WAIT_MS = 10_000;
+async function sendProviderStep(providerId, acc) {
+  if (!acc.legacyProviderStepPending || acc.legacyMigrationPending) return;
+  try {
+    await Promise.race([
+      router.sendCmd(providerId, HOST_CMD.MIGRATE_LEGACY_ACCOUNT, {
+        accountId: acc.accountId,
+      }),
+      new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error("no answer in time")),
+          PROVIDER_STEP_WAIT_MS,
+        ),
+      ),
+    ]);
+  } catch (err) {
+    await eventLog
+      .append({
+        accountId: acc.accountId,
+        folderId: null,
+        level: "warning",
+        message: `The provider could not migrate its own settings for this account: ${err?.message ?? err}`,
+      })
+      .catch(() => {});
+  }
+  await accounts.update(acc.accountId, { legacyProviderStepPending: false });
+}
+
 router.setProviderRpcHandler(
   PROVIDER_CMD.SET_PROVIDER_UPGRADE_LOCK,
   async (providerId, args) => {
@@ -458,6 +495,14 @@ router.setProviderRpcHandler(
       // that flag, so one that survived the upgrade run is one that did
       // not convert. It gets another attempt on the next boot.
       else if (!a.legacyMigrationPending) upgradeAccounts.delete(a.accountId);
+    }
+    // The provider has finished its run, so every account it converted has
+    // its flag cleared. This is where it is asked to correct what the old
+    // version left wrong in its own settings, once, and where a crash that
+    // got no further is made up for: the next time the provider has finished
+    // a run, the flag is still set and the step goes out then.
+    if (!locked) {
+      await Promise.all(accs.map((a) => sendProviderStep(providerId, a)));
     }
     // One broadcast covers every affected account; manager re-renders the
     // sidebar from the snapshot returned by getState, which now reflects
@@ -553,28 +598,6 @@ router.setProviderRpcHandler(
     // flag without ever locking leaves the account blocked until the next
     // boot, when the seed below no longer sees a flag to act on.
     ui.broadcast({ type: "accounts-changed" });
-    // The provider's own step for a carried-over account: whatever it keeps
-    // that the old version left wrong is put right now, for every such
-    // account, not only the ones that go through the migration dialog. Sent
-    // once this handler has returned, and not waited for - the provider is
-    // still answering this call - and optional: a provider that fails it
-    // costs the user nothing here.
-    if (acc.legacyLocked) {
-      setTimeout(() => {
-        router
-          .sendCmd(providerId, HOST_CMD.MIGRATE_LEGACY_ACCOUNT, { accountId })
-          .catch((err) =>
-            eventLog
-              .append({
-                accountId,
-                folderId: null,
-                level: "warning",
-                message: `The provider could not migrate its own settings for this account: ${err?.message ?? err}`,
-              })
-              .catch(() => {}),
-          );
-      }, 0);
-    }
     return null;
   },
 );
@@ -2007,7 +2030,10 @@ async function heldCountOf(accountId) {
  *  outliving its account's lock would be a record nothing can ever offer. */
 async function liftLegacyLock(accountId) {
   await releaseDownloadOnly(accountId);
-  await accounts.update(accountId, { legacyLocked: false });
+  await accounts.update(accountId, {
+    legacyLocked: false,
+    legacyProviderStepPending: false,
+  });
   await dropLegacyRescue(accountId);
 }
 
@@ -2046,30 +2072,44 @@ await ensureSchema();
 // `registry.init` is what closes the window: no port can open, so no sync
 // can start against a flagged account before the flag takes effect.
 //
-// The same loop freezes the local resources of an account the importer
-// locked, for the same reason it runs here: this is the first moment those
-// rows exist, and nothing else can reach them yet.
+// The same loop freezes the local resources of an account the importer has
+// just locked, and reads what the old version left, for the same reason it
+// runs here: this is the first moment those rows exist, and nothing else can
+// reach them yet. Each step is recorded in `legacyMigrationPending` when it is
+// done, so a boot that dies half way goes on from there, and a later boot -
+// the account is locked already - freezes and reads nothing again.
 for (const acc of await accounts.list()) {
   if (acc.legacyMigrationPending) upgradeAccounts.add(acc.accountId);
-  if (acc.legacyLocked) {
-    // Freeze first: the rescue reads these resources, and nothing may edit
-    // them while it does.
-    await freezeLegacyTargets(acc.accountId).catch((err) =>
-      console.warn("[tbsync] freezing legacy resources failed:", err),
-    );
-    await rescueLegacyEdits(acc.accountId).catch(async (err) => {
-      console.warn("[tbsync] rescuing legacy edits failed:", err);
-      // Nothing is held for the account then, so the user can disconnect it.
-      // Said where they will look, because there is no dialog at boot.
-      await eventLog
-        .append({
-          accountId: acc.accountId,
-          folderId: null,
-          level: "error",
-          message: `Reading the local-only changes of a previous version failed: ${err?.message ?? err}`,
-        })
-        .catch(() => {});
-    });
+  for (const step of bootStepsFrom(acc.legacyMigrationPending)) {
+    if (step === "freeze") {
+      // The rescue reads these resources, and nothing may edit them while
+      // it does.
+      await freezeLegacyTargets(acc.accountId).catch((err) =>
+        console.warn("[tbsync] freezing legacy resources failed:", err),
+      );
+      await accounts.update(acc.accountId, {
+        legacyMigrationPending: "frozen",
+      });
+    } else {
+      await rescueLegacyEdits(acc.accountId).catch(async (err) => {
+        console.warn("[tbsync] rescuing legacy edits failed:", err);
+        // Nothing is held for the account then, so the user can disconnect
+        // it. Said where they will look, because there is no dialog at boot.
+        await eventLog
+          .append({
+            accountId: acc.accountId,
+            folderId: null,
+            level: "error",
+            message: `Reading the local-only changes of a previous version failed: ${err?.message ?? err}`,
+          })
+          .catch(() => {});
+      });
+      // Done whatever it found, and whether or not it threw: it is not tried
+      // again.
+      await accounts.update(acc.accountId, {
+        legacyMigrationPending: "rescued",
+      });
+    }
   }
 }
 ui.init();

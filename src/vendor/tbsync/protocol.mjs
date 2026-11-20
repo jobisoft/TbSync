@@ -205,19 +205,20 @@ export const HOST_CMD = {
    *  The former `purgeTargets` argument is gone - keeping or purging is
    *  the host's decision now. */
   ACCOUNT_DELETED: "accountDeleted",
-  /** `{ accountId }` - this carried-over account is being migrated in
-   *  place: its resources are about to be deleted, rebuilt from the server
-   *  and have the rescued changes replayed onto them.
+  /** `{ accountId }` - this account came from the legacy importer and the
+   *  provider has converted it (`legacyMigrationPending` is cleared).
    *
    *  A provider's chance to correct its own stored settings for the account
-   *  first. What needs correcting is the provider's business - the host
-   *  asks and does not look. Sent once per migration, before the first
-   *  folder is touched, so anything changed here is in force for the
-   *  rebuild's own pull.
+   *  once that is done. What needs correcting is the provider's business -
+   *  the host asks and does not look. Sent once per account, when the
+   *  provider has finished its run of upgrades, and again only if the host
+   *  was interrupted before it could record that it had been sent. The
+   *  account is not necessarily going to be migrated in place: the user may
+   *  disconnect and reconnect it instead.
    *
    *  Answering is optional: the base class does nothing, which is the
-   *  ordinary case. A provider that throws is logged and the migration
-   *  carries on, because the rebuild is worth having either way. */
+   *  ordinary case. A provider that throws or does not answer in time is
+   *  logged and nothing else happens. */
   MIGRATE_LEGACY_ACCOUNT: "migrateLegacyAccount",
   FOLDER_ENABLED: "folderEnabled",
   FOLDER_DISABLED: "folderDisabled",
@@ -261,6 +262,12 @@ export const HOST_CMD = {
  * shape any provider's `custom` should have - so it flags the row instead
  * and refuses to service the account until the owning provider reports
  * back via LEGACY_MIGRATION_DONE.
+ *
+ * What the flag holds is the host's own business: while it is set, its
+ * value records how far the host has got with the account ("imported",
+ * "frozen", "rescued"). A provider only asks whether it is set - any
+ * truthy value means "convert this account" - and clears it only through
+ * LEGACY_MIGRATION_DONE.
  *
  * The flag exists because the importer can run more than once. Its only
  * guard is the absence of the host's own account storage, and the legacy

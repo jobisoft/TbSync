@@ -75,3 +75,16 @@ export function findFailure({ account, rows }) {
   }
   return null;
 }
+
+/** What the boot still has to do for an account, given how far it got.
+ *
+ *  `legacyMigrationPending` records the last boot step that finished:
+ *  "imported" is where the importer leaves it, "frozen" follows the freeze and
+ *  "rescued" the rescue, whatever that found. Anything else - "rescued",
+ *  the boolean an earlier build wrote, a cleared flag - leaves nothing for the
+ *  host to do, so a later boot freezes and reads nothing again. */
+export function bootStepsFrom(step) {
+  if (step === "imported") return ["freeze", "rescue"];
+  if (step === "frozen") return ["rescue"];
+  return [];
+}

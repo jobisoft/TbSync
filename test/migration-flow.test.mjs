@@ -8,6 +8,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  bootStepsFrom,
   countHeld,
   findFailure,
   foldersToRebuild,
@@ -119,4 +120,16 @@ test("a deselected row is not asked about", () => {
     }),
     null,
   );
+});
+
+test("the boot goes on from the last step that finished", () => {
+  assert.deepEqual(bootStepsFrom("imported"), ["freeze", "rescue"]);
+  assert.deepEqual(bootStepsFrom("frozen"), ["rescue"]);
+});
+
+test("a boot that has finished its steps, or has none to know about, does nothing", () => {
+  assert.deepEqual(bootStepsFrom("rescued"), []);
+  assert.deepEqual(bootStepsFrom(true), []);
+  assert.deepEqual(bootStepsFrom(false), []);
+  assert.deepEqual(bootStepsFrom(undefined), []);
 });

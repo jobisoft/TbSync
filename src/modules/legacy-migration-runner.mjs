@@ -184,7 +184,16 @@ async function migrateAccounts(legacyAccounts68) {
       // account until its provider reports back via LEGACY_MIGRATION_DONE.
       // Set unconditionally, including for providers that aren't installed
       // right now: the flag simply waits until one turns up.
-      legacyMigrationPending: true,
+      //
+      // The value is the host's own record of how far it has got with the
+      // account - "imported", then "frozen", then "rescued" - so a boot that
+      // dies half way goes on from there instead of starting over or doing
+      // nothing. A provider only asks whether it is set.
+      legacyMigrationPending: "imported",
+      // Whether the provider has been asked to correct what the old version
+      // left wrong in its own settings. Host-only: it is cleared once that
+      // has been sent, and nothing else reads it.
+      legacyProviderStepPending: true,
       // Permanent, unlike the flag above: it records where this account came
       // from long after the conversion finished. A migration carries what it
       // can recognise, and this release cannot promise that was everything -

@@ -438,13 +438,13 @@ export class TbSyncProviderImplementation {
     return null;
   }
 
-  /** A carried-over account is being migrated in place - `{ accountId }`.
+  /** A carried-over account has been converted - `{ accountId }`.
    *
    *  Not `notImplemented`: a provider with nothing to correct is the
-   *  ordinary case. Override it to put stored settings right while the
-   *  account's resources are about to be rebuilt from the server, which is
-   *  what makes changing them safe. Called before the first folder is
-   *  touched, so what it writes governs the rebuild's own pull. */
+   *  ordinary case. Override it to put stored settings right for an account
+   *  the legacy importer produced. Called once the provider has finished its
+   *  upgrades and the account's `legacyMigrationPending` is cleared, whether
+   *  or not the account is going to be migrated in place. */
   async onMigrateLegacyAccount(_args) {}
 
   async onReauthenticate(_args) {
