@@ -20,12 +20,6 @@
         <div class="right">
           <button
             type="button"
-            id="btn-download"
-            class="secondary"
-            data-i18n-content="migration.button.download"
-          ></button>
-          <button
-            type="button"
             id="btn-start"
             data-i18n-content="migration.button.start"
           ></button>
@@ -37,6 +31,27 @@
     <section id="running" hidden>
       <p data-i18n-content="migration.running.lead"></p>
       <p id="running-step" class="hint"></p>
+    </section>
+
+    <!-- The rebuild did not work: nothing was lost, and there are two ways on. -->
+    <section id="failed" hidden>
+      <p id="failed-text"></p>
+      <p class="hint" data-i18n-content="migration.failed.hint"></p>
+      <div class="actions">
+        <div class="right">
+          <button
+            type="button"
+            id="btn-abort"
+            class="secondary"
+            data-i18n-content="migration.button.abort"
+          ></button>
+          <button
+            type="button"
+            id="btn-ok"
+            data-i18n-content="migration.button.ok"
+          ></button>
+        </div>
+      </div>
     </section>
 
     <!-- What was kept, once there is somewhere to put it. -->
@@ -81,5 +96,37 @@
         </div>
       </div>
     </section>
+
+    <!-- Offered in every state: the rescued changes are the one thing here
+         that cannot be had again, so a copy is always one click away. -->
+    <div class="actions" id="download-bar" hidden>
+      <button
+        type="button"
+        id="btn-download"
+        class="secondary"
+        data-i18n-content="migration.button.download"
+      ></button>
+    </div>
+
+    <dialog id="abort-dialog" class="confirm">
+      <h3 data-i18n-content="migration.abort.confirmTitle"></h3>
+      <p data-i18n-content="migration.abort.confirmBody"></p>
+      <div class="actions">
+        <div class="right">
+          <button
+            type="button"
+            id="btn-abort-cancel"
+            class="secondary"
+            data-i18n-content="migration.abort.cancel"
+          ></button>
+          <button
+            type="button"
+            id="btn-abort-confirm"
+            class="danger"
+            data-i18n-content="migration.abort.confirmButton"
+          ></button>
+        </div>
+      </div>
+    </dialog>
   </body>
 </html>

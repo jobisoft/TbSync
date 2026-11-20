@@ -522,5 +522,37 @@
         "content": "$1"
       }
     }
+  },
+  "migration.button.ok": {
+    "message": "OK"
+  },
+  "migration.button.abort": {
+    "message": "Abort migration (disconnect)"
+  },
+  "migration.failed.hint": {
+    "message": "Nothing was lost. The rescued changes are kept. Click OK to close this window and migrate again later, or abort to discard them and disconnect the account."
+  },
+  "migration.abort.confirmTitle": {
+    "message": "Discard the rescued changes?"
+  },
+  "migration.abort.confirmBody": {
+    "message": "The rescued local-only changes will be deleted and the account will be disconnected. This cannot be undone. Use the backup button first if you want to keep a copy."
+  },
+  "migration.abort.confirmButton": {
+    "message": "Discard and disconnect"
+  },
+  "migration.abort.cancel": {
+    "message": "Cancel"
+  },
+  "migration.done.failed": {
+    "message": "$COUNT$ changes could not be written. Use the backup below to restore them by hand.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.running.syncingAll": {
+    "message": "Downloading everything from the server…"
   }
 }

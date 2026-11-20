@@ -153,3 +153,19 @@ td.op.gone {
   color: var(--text-disabled);
   font-weight: normal;
 }
+
+#download-bar {
+  margin-top: 16px;
+}
+dialog.confirm {
+  max-width: 420px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  padding: 16px 20px;
+}
+dialog.confirm h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+}

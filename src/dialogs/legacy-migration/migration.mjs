@@ -7,9 +7,16 @@
  * way out. It rebuilds every resource from the server, then offers the
  * rescued changes back and lets the user choose which to restore.
  *
- * Three states, one window: what is about to happen, what is happening, and
- * what was kept. Closing it before the first step changes nothing - the
- * account is still locked and the offer still stands.
+ * Five states, one window: what is about to happen, what is happening, what
+ * went wrong, what was kept, and the end. Closing it before the first step
+ * changes nothing - the account is still locked and the offer still stands.
+ * The same holds after a failure: OK closes the window and the account stays
+ * as it was, ready to be migrated again; the other way out is to abort,
+ * which discards what was rescued and disconnects, and asks first.
+ *
+ * A copy of the rescued changes is offered in every state. It is fetched once
+ * when the window opens and kept, because finishing the migration drops the
+ * record it is made from.
  *
  * It talks over the same port the manager uses. The port is named, not
  * page-bound, so this needs no plumbing of its own, and the progress that
@@ -29,6 +36,7 @@ const accountId = new URLSearchParams(location.search).get("accountId");
 
 let offer = null;
 let plan = null;
+let backup = null;
 
 const client = createManagerClient({
   onEvent: (event) => {
@@ -37,9 +45,8 @@ const client = createManagerClient({
     $("running-step").textContent =
       event.step === "syncing"
         ? i18n(
-            "migration.running.syncing",
-            `Downloading ${event.folder}…`,
-            [event.folder],
+            "migration.running.syncingAll",
+            "Downloading everything from the server…",
           )
         : i18n(
             "migration.running.replacing",
@@ -50,7 +57,7 @@ const client = createManagerClient({
 });
 
 function show(which) {
-  for (const id of ["intro", "running", "replay", "done"]) {
+  for (const id of ["intro", "running", "failed", "replay", "done"]) {
     $(id).hidden = id !== which;
   }
 }
@@ -198,6 +205,12 @@ async function load() {
     showError(err);
     return;
   }
+  try {
+    backup = (await client.rpc("getRescueBackup", { accountId })).files;
+  } catch (err) {
+    showError(err);
+  }
+  $("download-bar").hidden = !backup?.length;
   $("intro-text").textContent = i18n(
     "migration.intro.lead",
     `${offer.changes} changes to "${offer.accountName}" were never synchronized with the server and have been rescued.`,
@@ -208,7 +221,7 @@ async function load() {
 
 $("btn-download").addEventListener("click", async () => {
   try {
-    const { files } = await client.rpc("getRescueBackup", { accountId });
+    const files = backup ?? [];
     if (!files.length) return;
     const encoder = new TextEncoder();
     const url = URL.createObjectURL(
@@ -233,8 +246,10 @@ $("btn-start").addEventListener("click", async () => {
   try {
     plan = await client.rpc("startMigration", { accountId });
   } catch (err) {
-    showError(err);
-    show("intro");
+    // Nothing was lost: the rescue is still held and the account is still
+    // locked. Said as the failure it is, with the two ways on.
+    $("failed-text").textContent = String(err?.message ?? err);
+    show("failed");
     return;
   }
   render();
@@ -256,6 +271,17 @@ $("btn-apply").addEventListener("click", async () => {
       `${restored} changes were restored and are waiting to be synchronized. The account is ready to use.`,
       [String(restored)],
     );
+    if (result.failed) {
+      // The rescue is gone now, but the copy fetched at the start is not:
+      // the download above still has everything that was not written.
+      $("done-text").textContent +=
+        " " +
+        i18n(
+          "migration.done.failed",
+          `${result.failed} changes could not be written. Use the backup below to restore them by hand.`,
+          [String(result.failed)],
+        );
+    }
     show("done");
   } catch (err) {
     showError(err);
@@ -264,5 +290,20 @@ $("btn-apply").addEventListener("click", async () => {
 });
 
 $("btn-close").addEventListener("click", () => window.close());
+$("btn-ok").addEventListener("click", () => window.close());
+
+$("btn-abort").addEventListener("click", () => $("abort-dialog").showModal());
+$("btn-abort-cancel").addEventListener("click", () =>
+  $("abort-dialog").close(),
+);
+$("btn-abort-confirm").addEventListener("click", async () => {
+  $("abort-dialog").close();
+  try {
+    await client.rpc("abortMigration", { accountId });
+    window.close();
+  } catch (err) {
+    showError(err);
+  }
+});
 
 load();
