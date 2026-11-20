@@ -60,6 +60,11 @@ import {
   transplantIdentity,
 } from "./modules/legacy-rescue.mjs";
 import {
+  countHeld,
+  findFailure,
+  foldersToRebuild,
+} from "./modules/migration-flow.mjs";
+import {
   addMailingListMember,
   createContact,
   createMailingList,
@@ -548,6 +553,28 @@ router.setProviderRpcHandler(
     // flag without ever locking leaves the account blocked until the next
     // boot, when the seed below no longer sees a flag to act on.
     ui.broadcast({ type: "accounts-changed" });
+    // The provider's own step for a carried-over account: whatever it keeps
+    // that the old version left wrong is put right now, for every such
+    // account, not only the ones that go through the migration dialog. Sent
+    // once this handler has returned, and not waited for - the provider is
+    // still answering this call - and optional: a provider that fails it
+    // costs the user nothing here.
+    if (acc.legacyLocked) {
+      setTimeout(() => {
+        router
+          .sendCmd(providerId, HOST_CMD.MIGRATE_LEGACY_ACCOUNT, { accountId })
+          .catch((err) =>
+            eventLog
+              .append({
+                accountId,
+                folderId: null,
+                level: "warning",
+                message: `The provider could not migrate its own settings for this account: ${err?.message ?? err}`,
+              })
+              .catch(() => {}),
+          );
+      }, 0);
+    }
     return null;
   },
 );
@@ -677,37 +704,52 @@ async function describeLegacyReplay(accountId) {
   return { folders: folders_ };
 }
 
-/** Rebuild every selected folder of a carried-over account from the server.
+/** Rebuild the folders of a carried-over account from the server.
  *
- *  Per folder: let go of the local resource, take it again, and pull it in
- *  full. Letting go deletes the resource and returns the provider's own
- *  per-folder state to nothing; taking it again builds a fresh one; and
- *  because the provider's sync key went back with it, the pull that follows
- *  is a complete one without anybody having to ask for that.
+ *  Works from the selection recorded when the edits were rescued, and takes
+ *  the folders of it that have not come back yet, so a second attempt after
+ *  a failure redoes only what is missing - including a folder a failed
+ *  attempt left without a resource, and one a crash left deselected.
+ *
+ *  Per folder: let go of the local resource and take it again, as one pair so
+ *  no folder is left deselected between steps, and mark it download-only
+ *  before anything is pulled. Nothing is unfrozen: deleting a frozen resource
+ *  works, and the new one is not touched. Then one sync of the account. Its
+ *  account-level step is the first authenticated request, so a rejected login
+ *  fails here, before any folder is asked for.
  *
  *  The row survives all of it, with the id this account's record refers to
  *  it by - which is what lets the whole thing happen in place, with the
  *  account never leaving the locked state that is keeping everyone else
- *  out. */
+ *  out.
+ *
+ *  Throws when anything has not come back, with the code of a rejected login
+ *  if that is what it was. */
 async function rebuildCarriedOverFolders(acc, report) {
-  const rows = (await folders.listForAccount(acc.accountId)).filter(
-    (row) => row.selected && row.targetID,
-  );
-  for (const row of rows) {
-    report({ folder: row.displayName, step: "replacing" });
-    // A restart part-way through would have found these already rebuilt and
-    // frozen them with the rest; nothing can be written to a resource in
-    // that state.
-    await thawLegacyTargets(acc.accountId).catch(() => {});
-    await selectFolder(acc, row.folderId, false);
-    await selectFolder(acc, row.folderId, true);
-    report({ folder: row.displayName, step: "syncing" });
-    await syncAccount(acc.accountId, {
-      syncList: false,
-      only: row.folderId,
-      carriedOverMigration: true,
-    });
+  const accountId = acc.accountId;
+  const stored = await browser.storage.local.get({ [KEYS.LEGACY_RESCUE]: {} });
+  const rows = await folders.listForAccount(accountId);
+  // A record written before the selection was part of it has no list; the
+  // rows that are selected now are the same folders, since a locked account
+  // cannot change its selection.
+  const selectedIds =
+    (stored[KEYS.LEGACY_RESCUE] ?? {})[accountId]?.selectedFolderIds ??
+    rows.filter((row) => row.selected).map((row) => row.folderId);
+  const names = new Map(rows.map((row) => [row.folderId, row.displayName]));
+  for (const folderId of foldersToRebuild(selectedIds, rows)) {
+    report({ folder: names.get(folderId), step: "replacing" });
+    await selectFolder(acc, folderId, false);
+    await selectFolder(acc, folderId, true);
+    await markDownloadOnly(accountId, folderId, true);
   }
+  report({ step: "syncing" });
+  await syncAccount(accountId, { carriedOverMigration: true });
+
+  const failure = findFailure({
+    account: await accounts.get(accountId),
+    rows: await folders.listForAccount(accountId),
+  });
+  if (failure) throw withCode(new Error(failure.message), failure.code);
 }
 
 /** Write one kept edit back. Returns the id it was written as, if it made
@@ -829,6 +871,9 @@ async function applyLegacyReplay(accountId, taken) {
       }
       continue;
     }
+    // Cleared before anything is written: a sync reverts local edits on a
+    // download-only folder, which would undo what is restored here.
+    await markDownloadOnly(accountId, row.folderId, false);
     const byServerId = await currentByServerId(row);
 
     for (const entry of held.items ?? []) {
@@ -1010,27 +1055,17 @@ ui.setManagerRpcHandler("startMigration", async ({ accountId }) => {
       ERR.PROVIDER_UNAVAILABLE,
     );
   }
+  // Not part of the flow - the manager hides Migrate while this stands - but
+  // a stale window or the bridge can still get here.
+  if (acc.error === ERR.AUTH) {
+    throw withCode(
+      new Error("The server rejected the login. Authenticate the account first."),
+      ERR.AUTH,
+    );
+  }
   migratingAccounts.add(accountId);
   ui.broadcast({ type: "accounts-changed", accountId });
   try {
-    // The provider's own step, before a single folder is touched: whatever
-    // it keeps for this account that a carried-over profile left wrong is
-    // put right while the resources are about to be replaced anyway, so
-    // the rebuild's own pull runs under the corrected settings. Optional,
-    // and a provider that fails it does not cost the user the rebuild.
-    try {
-      await router.sendCmd(acc.provider, HOST_CMD.MIGRATE_LEGACY_ACCOUNT, {
-        accountId,
-      });
-    } catch (err) {
-      await eventLog.append({
-        accountId,
-        folderId: null,
-        level: "warning",
-        message: `The provider could not migrate its own settings for this account: ${err?.message ?? err}`,
-      });
-    }
-
     await rebuildCarriedOverFolders(acc, (progress) =>
       ui.broadcast({ type: "migration-progress", accountId, ...progress }),
     );
@@ -1390,13 +1425,11 @@ ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
   // listening, and finds out by not finding its session if it is not.
   if (enabled) assertAccountReady(accountId);
   // The teardown deletes the account's calendars and address books, and
-  // while this flag stands they hold something no server can give back -
-  // either edits a previous version never sent, or the fact that nobody has
-  // looked yet. One term, and this does not ask why it is set. Refused here
-  // as well as in the manager because a second window, a stale render or
+  // while edits are held for it they hold something no server can give back:
+  // what a previous version never sent. Refused here as well as in the manager because a second window, a stale render or
   // the bridge reach this directly. Removing the account is still allowed,
   // and still deletes them - that one is the user saying so.
-  if (!enabled && acc.legacyReplayPending) {
+  if (!enabled && (await heldCountOf(accountId)) > 0) {
     throw new Error("Account still holds changes a previous version made");
   }
   if (enabled && !router.isProviderConnected(acc.provider)) {
@@ -1405,6 +1438,16 @@ ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
       ERR.PROVIDER_UNAVAILABLE,
     );
   }
+  return applyAccountEnabled(acc, enabled);
+});
+
+/** Connect or disconnect an account, once the caller has decided it may.
+ *
+ *  The guards belong to the callers: the manager's RPC refuses a disconnect
+ *  while rescued edits are held, and the migration's abort is the one path
+ *  that has been asked to discard them and so goes straight here. */
+async function applyAccountEnabled(acc, enabled) {
+  const accountId = acc.accountId;
   try {
     // Inside the try: `abortAccountSync` marks the account cancelling before
     // it does anything else, and only this `finally` releases that mark. A
@@ -1459,7 +1502,7 @@ ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
         // Only for an account that is actually carrying one. Every other
         // disconnect has nothing to lift, and a resource this add-on never
         // froze is not ours to make writable on the way out.
-        if (acc.legacyLocked || acc.legacyReplayPending) {
+        if (acc.legacyLocked) {
           await liftLegacyLock(accountId);
         }
         // Rows first, targets second: dropping the rows is what unhooks the
@@ -1477,6 +1520,21 @@ ui.setManagerRpcHandler("setAccountEnabled", async ({ accountId, enabled }) => {
   }
   ui.broadcast({ type: "folders-changed", accountId });
   return null;
+}
+
+/** Give up on the migration: discard what was rescued and disconnect.
+ *
+ *  The dialog asks the user first and says what is lost; this is the one
+ *  disconnect that goes past the hold on a carried-over account that holds
+ *  edits. Everything else that reaches `setAccountEnabled` is still refused. */
+ui.setManagerRpcHandler("abortMigration", async ({ accountId }) => {
+  const acc = await accounts.get(accountId);
+  if (!acc) throw new Error("unknown account");
+  if (!acc.legacyLocked) throw new Error("account is not carried over");
+  if (migratingAccounts.has(accountId)) {
+    throw withCode(new Error("Migration already running"), "E:BUSY");
+  }
+  return applyAccountEnabled(acc, false);
 });
 
 ui.setManagerRpcHandler(
@@ -1675,11 +1733,11 @@ browser.alarms.onAlarm.addListener((alarm) => {
  *  Best effort per resource: a book or calendar the user deleted by hand
  *  answers false or throws, and the rest still have to be frozen.
  *
- *  `liftLegacyLock` takes these flags off again, for both ways out of the
- *  lock - the disconnect, which deletes the resources in the same handler,
- *  and a finished migration, which keeps them. The flag blocks neither,
- *  since a whole book is removed through the address book manager rather
- *  than through the directory. */
+ *  Nothing takes the flag off again: both ways out of the lock end with these
+ *  resources deleted - the disconnect deletes them in the same handler, and
+ *  the migration replaces every one of them. The flag blocks neither, since
+ *  a whole book is removed through the address book manager rather than
+ *  through the directory. */
 async function freezeLegacyTargets(accountId) {
   for (const row of await folders.listForAccount(accountId)) {
     if (!row?.targetID) continue;
@@ -1698,18 +1756,6 @@ async function freezeLegacyTargets(accountId) {
       );
     }
   }
-}
-
-/** How many entries a rescue holds. Derived, never stored: a tally of the
- *  record is not a fact about it. */
-function countHeld(rescue) {
-  let n = 0;
-  for (const folder of rescue?.folders ?? []) {
-    for (const entry of folder.items ?? []) {
-      if (entry.op !== "context") n++;
-    }
-  }
-  return n;
 }
 
 /** Every mailing list in a book, as an entry of its own.
@@ -1788,33 +1834,6 @@ async function rescueMailingLists(bookId, properties, resolved, mintId) {
     }
   }
   return out;
-}
-
-/** Let a locked account's resources accept edits again.
- *
- *  The mirror of the freeze, and it exists because the freeze runs at every
- *  boot: a restart in the middle of a migration would find the *rebuilt*
- *  resources and make those read-only too, and nothing would ever write to
- *  them again. Whatever is bound to the account when the lock lifts is
- *  released, without asking how it came to be frozen. */
-async function thawLegacyTargets(accountId) {
-  for (const row of await folders.listForAccount(accountId)) {
-    if (!row?.targetID) continue;
-    try {
-      if (row.targetType === "contacts") {
-        await browser.LegacyData.setAddressBookReadOnly(row.targetID, false);
-      } else if (row.targetType === "calendars" || row.targetType === "tasks") {
-        await messenger.calendar.calendars.update(row.targetID, {
-          readOnly: false,
-        });
-      }
-    } catch (err) {
-      console.debug(
-        `[tbsync] releasing ${row.targetID} (${row.targetType}) failed:`,
-        err?.message ?? err,
-      );
-    }
-  }
 }
 
 /** Read out the edits a previous version queued and never sent.
@@ -1917,7 +1936,15 @@ async function rescueLegacyEdits(accountId) {
   // One write, at the end: a crash part-way leaves nothing rather than a
   // fragment that would be mistaken for a complete reading and never
   // retried.
-  all[accountId] = { capturedAt: Date.now(), folders: rescued };
+  // The original selection goes into the same write: the rebuild works
+  // from it, so a restart in the middle of one folder's deselect and
+  // reselect still knows which folders the user had.
+  const rows = await folders.listForAccount(accountId);
+  all[accountId] = {
+    capturedAt: Date.now(),
+    folders: rescued,
+    selectedFolderIds: rows.filter((row) => row.selected).map((row) => row.folderId),
+  };
   await serialize(() =>
     browser.storage.local.set({ [KEYS.LEGACY_RESCUE]: all }),
   );
@@ -1925,10 +1952,9 @@ async function rescueLegacyEdits(accountId) {
   const kept = counts.added + counts.modified + counts.deleted;
   if (!kept) {
     // Nothing was owed. The account is still locked and still cannot sync,
-    // but there is nothing here a teardown could destroy, so the hold on
-    // the disconnect comes off and the old remedy - disconnect, reconnect,
-    // rebuild from the server - is the way out again.
-    await accounts.update(accountId, { legacyReplayPending: false });
+    // but nothing is held for it, so the disconnect is allowed and the old
+    // remedy - disconnect, reconnect, rebuild from the server - is the way
+    // out again.
     ui.broadcast({ type: "accounts-changed", accountId });
     return;
   }
@@ -1944,24 +1970,44 @@ async function rescueLegacyEdits(accountId) {
   ui.broadcast({ type: "accounts-changed", accountId });
 }
 
+/** The folders of an account that the migration has marked download-only.
+ *
+ *  Written straight onto the rows: the manager's own toggle refuses a locked
+ *  account, and nothing in a carried-over row sets this on its own (the
+ *  importer keeps the previous version's setting in `readOnly`), so false is
+ *  what it goes back to. */
+async function markDownloadOnly(accountId, folderId, downloadOnly) {
+  await folders.update(accountId, folderId, { downloadOnly });
+}
+
+/** Take the migration's download-only mark off every folder of an account. */
+async function releaseDownloadOnly(accountId) {
+  for (const row of await folders.listForAccount(accountId)) {
+    if (row.downloadOnly) await markDownloadOnly(accountId, row.folderId, false);
+  }
+}
+
+/** How many rescued edits an account holds, read from the record. */
+async function heldCountOf(accountId) {
+  const stored = await browser.storage.local.get({ [KEYS.LEGACY_RESCUE]: {} });
+  return countHeld((stored[KEYS.LEGACY_RESCUE] ?? {})[accountId]);
+}
+
+
 /** Let a carried-over account go: it can sync again, nothing holds its
  *  disconnect, and what was kept for it is released.
  *
  *  The one way the lock comes off, whichever route the user took to it -
  *  disconnecting, or finishing the migration. Everything the lock put in
- *  place is undone here, so no route can undo half of it: the two flags go
- *  together, the kept edits go with them, and the resources are writable
- *  again. A rescue outliving its account's lock would be a record nothing
- *  can ever offer, and a resource left read-only would be a lock nobody
- *  can lift. */
+ *  place is undone here, so no route can undo half of it: the flag goes, the
+ *  kept edits go with it, and so does the download-only mark the migration
+ *  put on the folders. No resource needs releasing: the old ones, which are
+ *  the only frozen ones, are gone by now (the rebuild deleted them, or the
+ *  disconnect does), and the boot freeze leaves a rebuilt one alone. A rescue
+ *  outliving its account's lock would be a record nothing can ever offer. */
 async function liftLegacyLock(accountId) {
-  await thawLegacyTargets(accountId).catch((err) =>
-    console.warn("[tbsync] releasing legacy resources failed:", err),
-  );
-  await accounts.update(accountId, {
-    legacyLocked: false,
-    legacyReplayPending: false,
-  });
+  await releaseDownloadOnly(accountId);
+  await accounts.update(accountId, { legacyLocked: false });
   await dropLegacyRescue(accountId);
 }
 
@@ -2011,9 +2057,19 @@ for (const acc of await accounts.list()) {
     await freezeLegacyTargets(acc.accountId).catch((err) =>
       console.warn("[tbsync] freezing legacy resources failed:", err),
     );
-    await rescueLegacyEdits(acc.accountId).catch((err) =>
-      console.warn("[tbsync] rescuing legacy edits failed:", err),
-    );
+    await rescueLegacyEdits(acc.accountId).catch(async (err) => {
+      console.warn("[tbsync] rescuing legacy edits failed:", err);
+      // Nothing is held for the account then, so the user can disconnect it.
+      // Said where they will look, because there is no dialog at boot.
+      await eventLog
+        .append({
+          accountId: acc.accountId,
+          folderId: null,
+          level: "error",
+          message: `Reading the local-only changes of a previous version failed: ${err?.message ?? err}`,
+        })
+        .catch(() => {});
+    });
   }
 }
 ui.init();

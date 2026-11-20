@@ -522,15 +522,19 @@ function accountActions(acc) {
     // It does not ignore one thing: while an account still holds what a
     // previous version never sent, disconnecting destroys it - the teardown
     // deletes the local calendars and address books, and no server can give
-    // that back. One flag says so, and this does not ask why it is set.
-    // Remove stays available either way.
-    canDisconnect:
-      providerActive && !!acc.enabled && !acc.legacyReplayPending,
+    // that back. The number of rescued edits says so. Remove stays available
+    // either way.
+    canDisconnect: providerActive && !!acc.enabled && !acc.legacyHeld,
     // The migration rebuilds every resource from the server and then puts
     // the rescued changes back, so it needs the provider present and the
-    // account settled - and something to put back.
+    // account settled - and something to put back. Not while the login is
+    // being refused: the first thing it does is ask the server.
     canMigrate:
-      baseEnabled && !!acc.enabled && !!acc.legacyHeld && !!acc.legacyLocked,
+      baseEnabled &&
+      !!acc.enabled &&
+      !isReauth &&
+      !!acc.legacyHeld &&
+      !!acc.legacyLocked,
     // Re-clicks while the popup is open should focus it, even if the
     // account is currently transient-busy from the popup's own RPC.
     canReauth: providerActive && isReauth && (!transientLocked || reauthOpen),
@@ -773,7 +777,7 @@ function renderDetail() {
   // also the only time the disconnect above is refused - so the pane never
   // shows two dead buttons and no way forward.
   const btnMigrate = frag.querySelector("#btn-migrate");
-  btnMigrate.hidden = !acc.legacyHeld;
+  btnMigrate.hidden = !acc.legacyHeld || isNeedsReauth;
   btnMigrate.textContent = i18n("manager.account.migrate", "Migrate…");
   btnMigrate.disabled = !actions.canMigrate;
   btnMigrate.addEventListener("click", () => {
