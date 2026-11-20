@@ -13,6 +13,7 @@ import {
   findFailure,
   foldersToRebuild,
   hasComeBack,
+  heldByFolder,
 } from "../src/modules/migration-flow.mjs";
 import { ERR } from "../src/vendor/tbsync/protocol.mjs";
 
@@ -132,4 +133,22 @@ test("a boot that has finished its steps, or has none to know about, does nothin
   assert.deepEqual(bootStepsFrom(true), []);
   assert.deepEqual(bootStepsFrom(false), []);
   assert.deepEqual(bootStepsFrom(undefined), []);
+});
+
+test("what is owed is told per folder, and only for folders that hold something", () => {
+  assert.deepEqual(heldByFolder(undefined), []);
+  assert.deepEqual(
+    heldByFolder({
+      folders: [
+        { folderId: "a", items: [{ op: "added" }, { op: "context" }] },
+        { folderId: "b", items: [{ op: "context" }] },
+        { folderId: "c", items: [{ op: "modified" }, { op: "deleted" }] },
+        { folderId: "d" },
+      ],
+    }),
+    [
+      { folderId: "a", count: 1 },
+      { folderId: "c", count: 2 },
+    ],
+  );
 });

@@ -531,7 +531,7 @@
     "message": "Abort migration (disconnect)"
   },
   "migration.failed.hint": {
-    "message": "Nothing was lost. The rescued changes are kept. Click OK to close this window and migrate again later, or abort to discard them and disconnect the account."
+    "message": "Nothing was lost: the rescued changes are kept. Migrate again later, or abort to discard them and disconnect the account."
   },
   "migration.abort.confirmTitle": {
     "message": "Discard the rescued changes?"
@@ -555,5 +555,22 @@
   },
   "migration.running.syncingAll": {
     "message": "Downloading everything from the server…"
+  },
+  "migration.failed.hint.auth": {
+    "message": "Nothing was lost: the rescued changes are kept. Authenticate the account and migrate again, or abort to discard them and disconnect the account."
+  },
+  "migration.button.authenticate": {
+    "message": "Authenticate"
+  },
+  "migration.intro.rescued": {
+    "message": "\"$ACCOUNT$\" has local edits that were never synchronized with the server and have been rescued.",
+    "placeholders": {
+      "account": {
+        "content": "$1"
+      }
+    }
+  },
+  "migration.restoring.lead": {
+    "message": "Restoring the rescued changes…"
   }
 }

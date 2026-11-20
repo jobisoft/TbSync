@@ -22,6 +22,18 @@ export function countHeld(rescue) {
   return n;
 }
 
+/** What is owed per folder, for the dialog: the folders of a rescue that hold
+ *  something, with how many changes each holds. Context entries are not
+ *  counted, as in `countHeld`. */
+export function heldByFolder(rescue) {
+  const out = [];
+  for (const folder of rescue?.folders ?? []) {
+    const count = (folder.items ?? []).filter((e) => e.op !== "context").length;
+    if (count) out.push({ folderId: folder.folderId, count });
+  }
+  return out;
+}
+
 /** Whether a folder has been pulled from the server since the account was
  *  carried over. Derived from the row: the importer writes `status: null` for
  *  every carried-over folder, and deselecting one clears it again, so only a
@@ -57,9 +69,7 @@ export function findFailure({ account, rows }) {
   if (account?.error === ERR.AUTH) {
     return {
       code: ERR.AUTH,
-      message:
-        "The server rejected the login. Authenticate the account, then " +
-        "migrate it again. Nothing was lost: the rescued changes are kept.",
+      message: "The server rejected the login.",
     };
   }
   for (const row of rows ?? []) {
@@ -67,10 +77,7 @@ export function findFailure({ account, rows }) {
     const why = row.error || row.warning || "no answer from the server";
     return {
       code: null,
-      message:
-        `"${row.displayName}" could not be downloaded from the server ` +
-        `(${why}). Migrate the account again once that is resolved. ` +
-        `Nothing was lost: the rescued changes are kept.`,
+      message: `"${row.displayName}" could not be downloaded from the server (${why}).`,
     };
   }
   return null;

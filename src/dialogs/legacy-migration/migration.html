@@ -15,6 +15,7 @@
     <!-- Before anything has been touched. -->
     <section id="intro">
       <p id="intro-text"></p>
+      <ul id="intro-folders" class="changes"></ul>
       <p class="hint" data-i18n-content="migration.intro.what"></p>
       <div class="actions">
         <div class="right">
@@ -27,16 +28,18 @@
       </div>
     </section>
 
-    <!-- While the resources are being rebuilt. -->
-    <section id="running" hidden>
-      <p data-i18n-content="migration.running.lead"></p>
+    <!-- While the resources are being rebuilt: over the screen that started it,
+         which stays where it is and cannot be clicked. -->
+    <section id="running" class="overlay" hidden>
+      <div class="spinner"></div>
+      <p id="running-lead"></p>
       <p id="running-step" class="hint"></p>
     </section>
 
     <!-- The rebuild did not work: nothing was lost, and there are two ways on. -->
     <section id="failed" hidden>
-      <p id="failed-text"></p>
-      <p class="hint" data-i18n-content="migration.failed.hint"></p>
+      <div id="failed-text" class="error visible"></div>
+      <p id="failed-hint" class="hint"></p>
       <div class="actions">
         <div class="right">
           <button
@@ -45,11 +48,7 @@
             class="secondary"
             data-i18n-content="migration.button.abort"
           ></button>
-          <button
-            type="button"
-            id="btn-ok"
-            data-i18n-content="migration.button.ok"
-          ></button>
+          <button type="button" id="btn-ok"></button>
         </div>
       </div>
     </section>
@@ -99,14 +98,13 @@
 
     <!-- Offered in every state: the rescued changes are the one thing here
          that cannot be had again, so a copy is always one click away. -->
-    <div class="actions" id="download-bar" hidden>
-      <button
-        type="button"
-        id="btn-download"
-        class="secondary"
-        data-i18n-content="migration.button.download"
-      ></button>
-    </div>
+    <button
+      type="button"
+      id="btn-download"
+      class="secondary"
+      data-i18n-content="migration.button.download"
+      hidden
+    ></button>
 
     <dialog id="abort-dialog" class="confirm">
       <h3 data-i18n-content="migration.abort.confirmTitle"></h3>

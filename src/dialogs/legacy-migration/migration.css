@@ -7,6 +7,18 @@ body {
   background: var(--bg-page);
   margin: 0;
   padding: 20px 24px;
+  /* The window is a column: the screen showing takes the height that is left,
+     and its buttons sit at the bottom of it. */
+  box-sizing: border-box;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+body > section:not([hidden]) {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 /* A section that is not the current one takes no room at all. Said out
    loud rather than left to the browser's default for `hidden`, which any
@@ -56,9 +68,11 @@ section > :first-child {
   gap: 8px;
   margin-left: auto;
 }
+/* The list takes what the window has left, and scrolls inside it. */
 .scroll {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-x: auto;
-  max-height: 320px;
   overflow-y: auto;
   margin-top: 10px;
 }
@@ -154,8 +168,11 @@ td.op.gone {
   font-weight: normal;
 }
 
-#download-bar {
-  margin-top: 16px;
+/* At the bottom of the window, and never closer to the text than this. */
+section .actions {
+  margin-top: auto;
+  padding-top: 48px;
+  flex: none;
 }
 dialog.confirm {
   max-width: 420px;
@@ -168,4 +185,38 @@ dialog.confirm {
 dialog.confirm h3 {
   margin: 0 0 8px;
   font-size: 14px;
+}
+
+/* The rebuild: a layer over the window, so nothing under it can be pressed. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: color-mix(in srgb, var(--bg-page) 88%, transparent);
+}
+.overlay p {
+  margin: 12px 0 0;
+}
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-subtle);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 3s;
+  }
 }

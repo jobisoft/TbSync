@@ -37,6 +37,7 @@ const accountId = new URLSearchParams(location.search).get("accountId");
 let offer = null;
 let plan = null;
 let backup = null;
+let failedAuth = false;
 
 const client = createManagerClient({
   onEvent: (event) => {
@@ -56,10 +57,27 @@ const client = createManagerClient({
   },
 });
 
+/** Work in progress, shown over whatever screen started it: the rebuild, and
+ *  the restore. What is said under the spinner is the only difference. */
+function setRunning(on, lead = "") {
+  if (on) {
+    $("running-lead").textContent = lead;
+    $("running-step").textContent = "";
+  }
+  $("running").hidden = !on;
+}
+
 function show(which) {
-  for (const id of ["intro", "running", "failed", "replay", "done"]) {
+  for (const id of ["intro", "failed", "replay", "done"]) {
     $(id).hidden = id !== which;
   }
+  // The copy of the rescued changes is a button of the state that is showing:
+  // on the left of its row, where the state's own buttons are on the right.
+  const section = $(which);
+  const download = $("btn-download");
+  const buttons = section.querySelector(".actions");
+  if (buttons) buttons.prepend(download);
+  else section.append(download);
 }
 
 function showError(err) {
@@ -210,11 +228,18 @@ async function load() {
   } catch (err) {
     showError(err);
   }
-  $("download-bar").hidden = !backup?.length;
+  $("btn-download").hidden = !backup?.length;
   $("intro-text").textContent = i18n(
-    "migration.intro.lead",
-    `${offer.changes} changes to "${offer.accountName}" were never synchronized with the server and have been rescued.`,
-    [String(offer.changes), offer.accountName],
+    "migration.intro.rescued",
+    `"${offer.accountName}" has local edits that were never synchronized with the server and have been rescued.`,
+    [offer.accountName],
+  );
+  $("intro-folders").replaceChildren(
+    ...offer.folders.map(({ name, count }) => {
+      const li = document.createElement("li");
+      li.textContent = `${name}: ${count}`;
+      return li;
+    }),
   );
   show("intro");
 }
@@ -241,17 +266,39 @@ $("btn-download").addEventListener("click", async () => {
 });
 
 $("btn-start").addEventListener("click", async () => {
-  show("running");
-  $("running-step").textContent = "";
+  setRunning(
+    true,
+    i18n(
+      "migration.running.lead",
+      "Rebuilding this account from the server.",
+    ),
+  );
   try {
     plan = await client.rpc("startMigration", { accountId });
   } catch (err) {
+    setRunning(false);
     // Nothing was lost: the rescue is still held and the account is still
     // locked. Said as the failure it is, with the two ways on.
+    // A rejected login has its own remedy, which is the account's own
+    // authentication, so the button says so.
+    failedAuth = err?.code === "E:AUTH";
     $("failed-text").textContent = String(err?.message ?? err);
+    $("failed-hint").textContent = failedAuth
+      ? i18n(
+          "migration.failed.hint.auth",
+          "Nothing was lost: the rescued changes are kept. Authenticate the account and migrate again, or abort to discard them and disconnect the account.",
+        )
+      : i18n(
+          "migration.failed.hint",
+          "Nothing was lost: the rescued changes are kept. Migrate again later, or abort to discard them and disconnect the account.",
+        );
+    $("btn-ok").textContent = failedAuth
+      ? i18n("migration.button.authenticate", "Authenticate")
+      : i18n("migration.button.ok", "OK");
     show("failed");
     return;
   }
+  setRunning(false);
   render();
 });
 
@@ -260,8 +307,13 @@ $("btn-apply").addEventListener("click", async () => {
     .filter((c) => c.checked)
     .map((c) => c.dataset.rescueId);
   $("btn-apply").disabled = true;
+  setRunning(
+    true,
+    i18n("migration.restoring.lead", "Restoring the rescued changes…"),
+  );
   try {
     const result = await client.rpc("applyMigration", { accountId, take });
+    setRunning(false);
     // A mailing list is one of the rescued changes the count on the first
     // screen offered, and it is restored through its own step rather than
     // the per-item one, so it is counted back in here.
@@ -284,13 +336,24 @@ $("btn-apply").addEventListener("click", async () => {
     }
     show("done");
   } catch (err) {
+    setRunning(false);
     showError(err);
     $("btn-apply").disabled = false;
   }
 });
 
 $("btn-close").addEventListener("click", () => window.close());
-$("btn-ok").addEventListener("click", () => window.close());
+$("btn-ok").addEventListener("click", async () => {
+  if (failedAuth) {
+    // The account's own authentication runs in the manager's name and ends
+    // when the user is done with it; this window has nothing more to say, so
+    // it is started and the window goes. A moment is allowed for the request
+    // to leave before the window closes.
+    client.rpc("authenticateAccount", { accountId }).catch(() => {});
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  }
+  window.close();
+});
 
 $("btn-abort").addEventListener("click", () => $("abort-dialog").showModal());
 $("btn-abort-cancel").addEventListener("click", () =>

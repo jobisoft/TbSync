@@ -64,6 +64,7 @@ import {
   countHeld,
   findFailure,
   foldersToRebuild,
+  heldByFolder,
 } from "./modules/migration-flow.mjs";
 import {
   addMailingListMember,
@@ -1051,13 +1052,16 @@ ui.setManagerRpcHandler("getMigrationOffer", async ({ accountId }) => {
   if (!acc) throw new Error("unknown account");
   const stored = await browser.storage.local.get({ [KEYS.LEGACY_RESCUE]: {} });
   const rescue = (stored[KEYS.LEGACY_RESCUE] ?? {})[accountId];
-  let changes = 0;
-  for (const folder of rescue?.folders ?? []) {
-    for (const entry of folder.items ?? []) {
-      if (entry.op !== "context") changes++;
-    }
+  const byFolder = [];
+  for (const { folderId, count } of heldByFolder(rescue)) {
+    const row = await folders.get(accountId, folderId);
+    byFolder.push({ name: row?.displayName ?? folderId, count });
   }
-  return { accountName: acc.accountName, changes };
+  return {
+    accountName: acc.accountName,
+    changes: countHeld(rescue),
+    folders: byFolder,
+  };
 });
 
 /** Rebuild the account, then say what is left to decide.
