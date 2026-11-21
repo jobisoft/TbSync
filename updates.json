@@ -18,9 +18,9 @@
     "google-4-tbsync@marcozanon.com": {
       "updates": [
         {
-          "version": "5.3.5",
-          "update_info_url": "https://github.com/jobisoft/google-4-tbsync/releases/tag/v5.3.5",
-          "update_link": "https://github.com/jobisoft/google-4-tbsync/releases/download/v5.3.5/google-4-tbsync_5_3_5_beta.xpi",
+          "version": "5.3.6",
+          "update_info_url": "https://github.com/jobisoft/google-4-tbsync/releases/tag/v5.3.6",
+          "update_link": "https://github.com/jobisoft/google-4-tbsync/releases/download/v5.3.6/google-4-tbsync_5_3_6_beta.xpi",
           "applications": {
             "gecko": {
               "strict_min_version": "153.0",
