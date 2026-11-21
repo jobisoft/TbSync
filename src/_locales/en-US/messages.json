@@ -395,14 +395,6 @@
     "message": "[Orphaned] ",
     "description": "Prefix put in front of a calendar or address book that no account syncs any more, so it is recognisable in Thunderbird's lists. Keep the trailing space."
   },
-  "manager.provider.fundraiser": {
-    "message": "Visit fundraiser campaign for this provider",
-    "description": "Hover text on the provider row for a provider that does not exist yet and is being crowdfunded. Clicking opens the campaign page."
-  },
-  "provider.state.fundraiser": {
-    "message": "Fundraising",
-    "description": "Sub-label under such a provider's name, where an installed one reads 'Ready' and an absent one 'Not installed'."
-  },
   "manager.account.migrated": {
     "message": "This account was set up by an older version and cannot sync. Disconnect and reconnect it to rebuild it from the server.",
     "description": "Shown under the account status for an account set up by an older version. Such accounts cannot sync; the note names the remedy and warns that disconnecting deletes the local copies."

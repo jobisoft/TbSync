@@ -622,17 +622,11 @@ function renderSidebar() {
         !state.setupsInFlight.has(p.providerId) &&
         p.state === "active" &&
         p.capabilities?.folderTypes?.length;
-      // A fundraiser row is tested before the installable one, because it
-      // also satisfies "not active and carries a url" - and offering to
-      // install something that does not exist yet is the one thing this
-      // row must never do.
-      const isFundraiser = p.kind === "fundraiser" && p.state !== "active";
       // Installable means the provider isn't installed yet, not "addable
       // is unavailable for any reason" - otherwise an active provider's
       // plus icon would morph into the install arrow while setup is in
       // flight.
-      const canInstall =
-        !isFundraiser && p.state !== "active" && !!p.installUrl;
+      const canInstall = p.state !== "active" && !!p.installUrl;
       // An installed provider we refused reads as "not installed" without
       // this - the one thing the row must not tell someone who is running
       // it. The download stays: replacing the add-on is the remedy. The
@@ -650,53 +644,35 @@ function renderSidebar() {
       const row = cloneTpl("tpl-provider-row");
       row.classList.add(
         p.state,
-        canAdd
-          ? "addable"
-          : isFundraiser
-            ? "fundraiser"
-            : canInstall
-              ? "installable"
-              : "not-addable",
+        canAdd ? "addable" : canInstall ? "installable" : "not-addable",
       );
       // data-provider-id is what the click handler selects on, so a row
       // without it is not clickable at all, whatever else it carries.
       // Active providers always have it - addable ones launch a new setup,
       // not-addable ones (set-up-in-flight) ask the provider to focus its
       // popup. Inactive rows get it when there is somewhere to send the
-      // click: an install listing, or a fundraiser campaign.
-      if (canAdd || canInstall || isFundraiser || p.state === "active")
+      // click: an install listing.
+      if (canAdd || canInstall || p.state === "active")
         row.dataset.providerId = p.providerId;
-      // Both link kinds travel in the same dataset field; where they open
-      // differs, so the row says which - same `data-link-target` vocabulary
-      // the routed anchors use. A donation page is an external site with a
-      // payment flow and belongs in the user's own browser; an add-on
-      // listing belongs in a Thunderbird tab, because installing from it
-      // only works there.
-      if (canInstall || isFundraiser) row.dataset.installUrl = p.installUrl;
-      if (isFundraiser) row.dataset.linkTarget = "browser";
+      if (canInstall) row.dataset.installUrl = p.installUrl;
       row.title = canAdd
         ? i18n("manager.addAccount", "Add account")
-        : isFundraiser
-          ? i18n(
-              "manager.provider.fundraiser",
-              "Visit fundraiser campaign for this provider",
-            )
-          : canInstall
-            ? isBetaBuild()
-              ? i18n(
-                  "manager.provider.installBeta",
-                  "Install the beta from GitHub",
-                )
-              : i18n(
-                  "manager.provider.install",
-                  "Install from addons.thunderbird.net",
-                )
-            : p.state === "active"
-              ? i18n(
-                  "manager.provider.focusSetup",
-                  "Bring the setup window to the front",
-                )
-              : "";
+        : canInstall
+          ? isBetaBuild()
+            ? i18n(
+                "manager.provider.installBeta",
+                "Install the beta from GitHub",
+              )
+            : i18n(
+                "manager.provider.install",
+                "Install from addons.thunderbird.net",
+              )
+          : p.state === "active"
+            ? i18n(
+                "manager.provider.focusSetup",
+                "Bring the setup window to the front",
+              )
+            : "";
 
       row
         .querySelector(".col-provider-icon")
@@ -710,11 +686,7 @@ function renderSidebar() {
       row
         .querySelector(".col-status")
         .appendChild(
-          isFundraiser
-            ? cloneTpl("tpl-fundraise-icon")
-            : canInstall
-              ? cloneTpl("tpl-install-icon")
-              : cloneTpl("tpl-add-icon"),
+          canInstall ? cloneTpl("tpl-install-icon") : cloneTpl("tpl-add-icon"),
         );
       return row;
     });
@@ -1998,9 +1970,9 @@ async function openThunderbirdTab(url) {
 /** Open a url where the caller asked for it.
  *
  *  `"browser"` hands it to the system default browser - for anything the
- *  user should not be doing inside Thunderbird's content area, like a
- *  payment flow. Anything else opens a Thunderbird tab, which is what an
- *  add-on listing wants: installing works from there.
+ *  user should not be doing inside Thunderbird's content area. Anything
+ *  else opens a Thunderbird tab, which is what an add-on listing wants:
+ *  installing works from there.
  *
  *  `openDefaultBrowser` is wrapped rather than returned directly because
  *  not every version hands back a promise, and the callers want to attach
@@ -2031,11 +2003,9 @@ document.getElementById("account-list").addEventListener("click", (e) => {
 document.getElementById("provider-list").addEventListener("click", (e) => {
   const row = e.target.closest("tr[data-provider-id]");
   if (!row) return;
-  const { providerId, installUrl, linkTarget } = row.dataset;
+  const { providerId, installUrl } = row.dataset;
   if (installUrl) {
-    // The row says where it wants to be opened - a fundraiser campaign
-    // goes to the default browser, an add-on listing to a Thunderbird tab.
-    openLink(installUrl, linkTarget).catch(showError);
+    openThunderbirdTab(installUrl).catch(showError);
     return;
   }
   // Class drives intent: addable rows start a new setup; not-addable

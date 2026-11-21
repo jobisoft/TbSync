@@ -15,11 +15,7 @@ import * as accounts from "./modules/accounts.mjs";
 import * as consoleTail from "./modules/console-tail.mjs";
 import * as folders from "./modules/folders.mjs";
 import * as providers from "./modules/providers.mjs";
-import {
-  KNOWN_PROVIDERS,
-  installUrlFor,
-  linkFor,
-} from "./modules/known-providers.mjs";
+import { KNOWN_PROVIDERS, installUrlFor } from "./modules/known-providers.mjs";
 import * as eventLog from "./modules/event-log.mjs";
 import * as registry from "./modules/registry.mjs";
 import * as router from "./modules/router.mjs";
@@ -960,11 +956,7 @@ ui.setManagerRpcHandler("getState", async () => {
   const liveIds = new Set(live.map((p) => p.providerId));
   const providerList = live.map((p) => {
     const known = KNOWN_PROVIDERS[p.providerId];
-    // A fundraiser is an offer to pay for work that does not exist. Once it
-    // does and the add-on is running, the row's job is to add an account -
-    // so the campaign link is deliberately not carried onto a live provider.
-    if (!known || known.kind === "fundraiser") return p;
-    const installUrl = installUrlFor(known);
+    const installUrl = known && installUrlFor(known);
     return installUrl ? { ...p, installUrl } : p;
   });
   for (const [providerId, known] of Object.entries(KNOWN_PROVIDERS)) {
@@ -980,15 +972,10 @@ ui.setManagerRpcHandler("getState", async () => {
       // Thunderbird's add-on manager, so it names the thing they have to
       // go and replace.
       providerName: incompatible?.name ?? known.providerName,
-      kind: known.kind,
-      // "uninstalled" says a thing could be installed and is not. A
-      // fundraiser could not be, so it gets its own state and its own label.
-      state: known.kind === "fundraiser" ? "fundraiser" : "uninstalled",
+      state: "uninstalled",
       capabilities: {},
-      // Bundled with the host when the catalogue carries them. An entry
-      // with no add-on behind it has nobody else to announce an icon.
-      icons: known.icons ?? {},
-      installUrl: linkFor(known),
+      icons: {},
+      installUrl: installUrlFor(known),
       incompatibleVersion: incompatible?.version ?? null,
     });
   }

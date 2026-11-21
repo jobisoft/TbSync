@@ -154,11 +154,6 @@ body {
 .provider-list tr.addable { cursor: pointer; }
 .provider-list tr.installable { cursor: pointer; }
 .provider-list tr.installable:hover td { background: var(--row-hover); }
-/* A fundraiser row clicks through to the campaign, so it behaves like an
-   installable one - it just does not offer an install. */
-.provider-list tr.fundraiser { cursor: pointer; }
-.provider-list tr.fundraiser:hover td { background: var(--row-hover); }
-.provider-list tr.fundraiser td.col-account-name .name { font-style: italic; }
 .provider-list tr.not-addable td { cursor: default; }
 .provider-list tr.not-addable:hover td { background: transparent; }
 .provider-list tr.not-addable .add-account-icon { opacity: .3; }
@@ -178,12 +173,6 @@ body {
   width: 16px;
   height: 16px;
   color: var(--accent-alt);
-  vertical-align: middle;
-}
-.provider-list .provider-fundraise-icon {
-  width: 16px;
-  height: 16px;
-  color: var(--fundraise);
   vertical-align: middle;
 }
 

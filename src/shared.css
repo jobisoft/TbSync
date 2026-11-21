@@ -40,9 +40,6 @@
   --btn-secondary-hover: #d5d5d7;
   --btn-danger-bg: #c43b3b;
   --btn-danger-hover: #a92b2b;
-  /* The fundraiser heart. Its own token rather than the danger red: the
-     colour means "support this", not "this will destroy something". */
-  --fundraise: #d0453f;
 
   --status-error: #a92b2b;
   --status-warning: #8a6d1c;
@@ -87,7 +84,6 @@
     --btn-secondary-hover: #4a4d52;
     --btn-danger-bg: #a13535;
     --btn-danger-hover: #7e2828;
-    --fundraise: #e8796b;
 
     --status-error: #f18585;
     --status-warning: #e6c76c;
