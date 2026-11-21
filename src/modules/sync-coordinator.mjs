@@ -494,6 +494,9 @@ async function drainPendingWork(accountId) {
 /** The server rejected our credentials. Stamp `error: "E:AUTH"` so the
  *  manager offers the Authenticate button, and leave everything else alone.
  *
+ *  Called from a sync, and from a connect or an authentication that ends in
+ *  a rejected login.
+ *
  *  The stamp is all that is needed to stop syncing: `syncAccount` refuses an
  *  account carrying it, autosync skips it, and the manager greys out Sync.
  *  Nothing is torn down - the account stays connected, its folder rows keep
@@ -503,7 +506,7 @@ async function drainPendingWork(accountId) {
  *  Tearing down is what a user asking to disconnect means, not what an
  *  expired password means. Doing it here cost people their local calendars
  *  and a full re-download every time a password rotated. */
-async function flagAccountForReauth(acc, err) {
+export async function flagAccountForReauth(acc, err) {
   const accountId = acc.accountId;
   await accounts.update(accountId, { error: ERR.AUTH });
   await eventLog.append({
@@ -511,7 +514,7 @@ async function flagAccountForReauth(acc, err) {
     folderId: null,
     level: "error",
     message:
-      "The server rejected this account's credentials - syncing is paused until you authenticate again.",
+      "The server rejected this account's credentials - the account is paused until you authenticate again.",
     // `details` first: this error came back through a provider call, so it
     // carries what the console said while that call was failing. The message
     // is the fallback, and used to be all there was.

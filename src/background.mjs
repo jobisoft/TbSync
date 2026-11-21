@@ -39,6 +39,7 @@ import {
   abortAccountSync,
   endAccountCancel,
   recomputeAccountError,
+  flagAccountForReauth,
 } from "./modules/sync-coordinator.mjs";
 import {
   LEGACY_DIR,
@@ -1342,10 +1343,16 @@ ui.setManagerRpcHandler("authenticateAccount", async ({ accountId }) => {
       // still needs the enable flow to rebuild its Thunderbird resources
       // and folder list, so it heals on its first authentication.
       if (!acc.enabled) {
-        await router.sendCmd(acc.provider, HOST_CMD.ACCOUNT_ENABLED, {
-          accountId,
-        });
-        await accounts.update(accountId, { enabled: true });
+        try {
+          await router.sendCmd(acc.provider, HOST_CMD.ACCOUNT_ENABLED, {
+            accountId,
+          });
+          await accounts.update(accountId, { enabled: true });
+        } catch (err) {
+          if (err?.code !== ERR.AUTH) throw err;
+          // Still refused, so the error cleared above has to stand again.
+          await flagAccountForReauth(acc, err);
+        }
       }
     }
   });
@@ -1491,7 +1498,16 @@ async function applyAccountEnabled(acc, enabled) {
       // the deletion below runs after the rows themselves are gone.
       const rows = enabled ? null : await folders.listForAccount(accountId);
       if (enabled) {
-        await router.sendCmd(acc.provider, cmd, { accountId });
+        try {
+          await router.sendCmd(acc.provider, cmd, { accountId });
+        } catch (err) {
+          if (err?.code !== ERR.AUTH) throw err;
+          // The server refused the login. That is not a failure to show in
+          // a popup but the state the account is in: it stays disconnected
+          // and says so, and Authenticate is the way on.
+          await flagAccountForReauth(acc, err);
+          return;
+        }
       } else {
         // Ask the provider to stop and clean its own state first, so the
         // deletions below land on resources nothing is still writing to.
