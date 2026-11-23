@@ -1,5 +1,0 @@
-commit_message: https://crowdin.com/project/tbsync
-files:
-  - source: /src/_locales/en-US/*
-    translation: /src/_locales/%osx_locale%/%original_file_name%
-    escape_special_characters: 0
